@@ -179,6 +179,10 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             if (!TryPersistSnapshotLocked())
             {
                 _entries.TryRemove(entry.EscalationId, out _);
+                // Drop the ordering node too. A prolonged storage failure would otherwise
+                // leave one unreachable node per rejected park, and because _entries.Count
+                // never rises, trimming never reclaims them.
+                RemoveFromEntryOrder(entry.EscalationId);
                 _logger.LogError(
                     "Escalation {EscalationId} rolled back: the parked order could not be durably persisted",
                     entry.EscalationId);
@@ -691,6 +695,28 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Removes one id from the retention ordering queue. ConcurrentQueue has no targeted
+    /// removal, so the queue is drained and refilled without the id; only ever called on a
+    /// rollback, where the cost is bounded by the queue the rollback would otherwise grow.
+    /// </summary>
+    private void RemoveFromEntryOrder(string escalationId)
+    {
+        var retained = new List<string>(_entryOrder.Count);
+        while (_entryOrder.TryDequeue(out var queued))
+        {
+            if (!string.Equals(queued, escalationId, StringComparison.OrdinalIgnoreCase))
+            {
+                retained.Add(queued);
+            }
+        }
+
+        foreach (var id in retained)
+        {
+            _entryOrder.Enqueue(id);
+        }
+    }
+
     private void LoadSnapshot()
     {
         if (!File.Exists(_options.SnapshotPath))
@@ -799,7 +825,10 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 Action: action,
                 Outcome: outcome,
                 OccurredAt: DateTimeOffset.UtcNow,
-                Actor: entry.ResolvedBy ?? entry.Actor,
+                // Release is a distinct act with a distinct operator: when one approver
+                // clears an escalation and another releases it, attributing the release to
+                // the approver would name the wrong person in the durable record.
+                Actor: (outcome == "Released" ? entry.ReleasedBy : null) ?? entry.ResolvedBy ?? entry.Actor,
                 // Correlate the governed decision with the order it authorized: without
                 // this, an audit search keyed by the executed order id finds the
                 // submission and parking entries but none of the approval lifecycle.

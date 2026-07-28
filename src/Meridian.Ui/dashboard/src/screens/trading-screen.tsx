@@ -14,9 +14,16 @@ import {
 import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
 import { OrderStatusBanner } from "@/components/ui/order-status-banner";
-import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
+import {
+  promotionEvaluationPanelTone,
+  promotionEvaluationTextTone,
+  promotionOutcomeTone,
+  riskTone,
+  wiringTone
+} from "@/screens/trading-screen.tones";
 import {
   Sheet,
   SheetBody,
@@ -68,41 +75,13 @@ import {
   type TradingWorkflowCommandState,
   type TradingConfirmViewModel
 } from "@/screens/trading-screen.view-model";
+import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
   fundAccountId?: string | null;
 }
-
-const riskTone: Record<TradingWorkspaceResponse["risk"]["state"], string> = {
-  Healthy: "text-success",
-  Observe: "text-warning",
-  Constrained: "text-danger"
-};
-
-const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], string> = {
-  Connected: "text-success",
-  Degraded: "text-warning",
-  Disconnected: "text-danger"
-};
-
-const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger"
-};
-
-const promotionEvaluationPanelTone = {
-  success: "border-success/30 bg-success/10 text-success",
-  warning: "border-warning/30 bg-warning/10 text-warning",
-  danger: "border-danger/30 bg-danger/10 text-danger"
-} as const;
-
-const promotionEvaluationTextTone = {
-  success: "text-success",
-  warning: "text-warning"
-} as const;
 
 const promotionChecklistDotTone = {
   ready: "bg-success",
@@ -456,6 +435,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
+  const governedApprovals = useGovernedApprovalsViewModel(LIVE_GOVERNED_APPROVAL_SERVICES);
   const orderTicket = useOrderTicketViewModel({
     fundAccountId,
     positions: data?.positions ?? [],
@@ -463,7 +443,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     onOrderAccepted: async () => {
       await Promise.all([
         executionEvidence.refresh(),
-        tradingReadiness.refresh()
+        tradingReadiness.refresh(),
+        governedApprovals.refresh()
       ]);
     }
   });
@@ -757,9 +738,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
               )}
             </div>
-            <div className="mt-3">
-              <RiskControlPanel />
-            </div>
+            <TradingRiskControls governedApprovals={governedApprovals} />
           </CardContent>
         </Card>
 

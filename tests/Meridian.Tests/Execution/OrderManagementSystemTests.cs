@@ -1837,6 +1837,75 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             "an approved-but-unreleased escalation must be withdrawn when its order is cancelled");
     }
 
+    [Fact]
+    public async Task Fills_CarryTheOwningFundAndContractMultiplierIntoThePortfolio()
+    {
+        var fundAccountId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            ClientOrderId = "CLIENT-FUND-ATTRIBUTION",
+            FundAccountId = fundAccountId
+        });
+
+        placed.Success.Should().BeTrue();
+
+        // The shared execution account holds every fund's flow, so without the fill
+        // carrying its owner the position names a book rather than an owner — and every
+        // consumer that scopes or nets by fund is left guessing.
+        var position = portfolio.Accounts
+            .SelectMany(static account => account.Positions.Values)
+            .Single(static p => p.Symbol == "AAPL");
+
+        position.OwnerQuantities.Should().ContainKey(fundAccountId.ToString("D"));
+        position.OwnerQuantities[fundAccountId.ToString("D")].Should().Be(10m);
+    }
+
+    [Fact]
+    public async Task OptionFills_CarryTheContractMultiplierIntoThePortfolio()
+    {
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            ClientOrderId = "CLIENT-OPTION-MULTIPLIER",
+            OptionContract = new OptionContractIdentity
+            {
+                UnderlyingSymbol = "AAPL",
+                ExpirationDate = new DateOnly(2026, 12, 18),
+                StrikePrice = 250m,
+                Right = "C"
+            }
+        });
+
+        placed.Success.Should().BeTrue();
+
+        // No adapter-stamped multiplier: equity options are 100x, and assuming 1 would let
+        // every exposure check after this fill run against a hundredth of the real position.
+        var position = portfolio.Accounts
+            .SelectMany(static account => account.Positions.Values)
+            .Single(static p => p.Symbol == "AAPL");
+
+        position.ContractMultiplier.Should().Be(100m);
+    }
+
     // ---- Stubs ----
 
     private sealed class ApproveAllGate : ISecurityMasterGate

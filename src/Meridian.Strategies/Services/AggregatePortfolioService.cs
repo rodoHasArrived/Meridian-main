@@ -36,12 +36,10 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         // each run that trades it). Counting that instance once per key would multiply
         // every position and, through the exposure snapshot, invent risk that does not exist.
         //
-        // A shared instance is one book with no per-run split available, so its
-        // contributions can only be labelled with one of the run ids sharing it. Ordering
-        // the registry first makes that label deterministic rather than dependent on
-        // dictionary enumeration order, so the same composition always reports the same
-        // attribution. Splitting a shared book by owning run needs fill-level ownership the
-        // portfolio does not carry.
+        // A shared instance is one book, so the run id labelling it is only meaningful when
+        // the position carries no owner of its own. Ordering the registry first makes that
+        // fallback label deterministic rather than dependent on dictionary enumeration
+        // order; fills that carried a fund are split out by owner below.
         var seenPortfolios = new HashSet<Meridian.Execution.Models.IMultiAccountPortfolioState>(
             ReferenceEqualityComparer.Instance);
         foreach (var (runId, portfolio) in entries.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
@@ -55,16 +53,20 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
             {
                 foreach (var (symbol, pos) in account.Positions)
                 {
-                    var contribution = new RunPositionContribution(
-                        runId, account.AccountId, pos.Quantity, pos.AverageCostBasis, pos.UnrealizedPnl);
-
                     if (!symbolMap.TryGetValue(symbol, out var list))
                     {
                         list = [];
                         symbolMap[symbol] = list;
                     }
 
-                    list.Add(contribution);
+                    // Split the position by the fund that actually owns each part. Fills
+                    // through a shared execution account all land under one account id, so
+                    // without this the contribution names a book rather than an owner —
+                    // and every consumer that scopes or nets by fund is guessing.
+                    foreach (var contribution in SplitByOwner(runId, account.AccountId, pos))
+                    {
+                        list.Add(contribution);
+                    }
 
                     if (!symbolCostBasis.TryGetValue(symbol, out var agg))
                         agg = (0m, 0m, 0m);
@@ -129,8 +131,18 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         decimal net = 0m;
         decimal gross = 0m;
 
+        // Same reference deduplication the aggregate read uses: the host portfolio is
+        // registered under its own key and again under every active run id, so counting it
+        // once per key would report a single position two or three times over.
+        var seenPortfolios = new HashSet<Meridian.Execution.Models.IMultiAccountPortfolioState>(
+            ReferenceEqualityComparer.Instance);
         foreach (var portfolio in all.Values)
         {
+            if (!seenPortfolios.Add(portfolio))
+            {
+                continue;
+            }
+
             foreach (var account in portfolio.Accounts)
             {
                 if (account.Positions.TryGetValue(symbol, out var pos))
@@ -142,5 +154,58 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         }
 
         return new NetSymbolPosition(symbol, net, gross);
+    }
+
+    /// <summary>
+    /// Projects one account position into per-owning-fund contributions. Quantity attributed
+    /// to a fund is emitted under that fund's account id; whatever is left over — legacy
+    /// fills, paper runs, anything placed without a fund scope — stays under the account's
+    /// own id and remains unattributable, which downstream scoping treats accordingly.
+    /// </summary>
+    private static IEnumerable<RunPositionContribution> SplitByOwner(
+        string runId,
+        string accountId,
+        Meridian.Execution.Sdk.IPosition position)
+    {
+        var owners = position.OwnerQuantities;
+        var multiplier = position.ContractMultiplier;
+        if (owners.Count == 0)
+        {
+            yield return new RunPositionContribution(
+                runId, accountId, position.Quantity, position.AverageCostBasis, position.UnrealizedPnl, multiplier);
+            yield break;
+        }
+
+        var attributed = 0m;
+        foreach (var (owner, quantity) in owners)
+        {
+            if (quantity == 0m)
+            {
+                continue;
+            }
+
+            attributed += quantity;
+            yield return new RunPositionContribution(
+                runId,
+                owner,
+                quantity,
+                position.AverageCostBasis,
+                // Unrealised P&L splits pro rata on attributed quantity; it is a display
+                // figure here, while quantity is what every risk projection reads.
+                position.Quantity == 0m ? 0m : position.UnrealizedPnl * (quantity / position.Quantity),
+                multiplier);
+        }
+
+        var residual = position.Quantity - attributed;
+        if (residual != 0m)
+        {
+            yield return new RunPositionContribution(
+                runId,
+                accountId,
+                residual,
+                position.AverageCostBasis,
+                position.Quantity == 0m ? 0m : position.UnrealizedPnl * (residual / position.Quantity),
+                multiplier);
+        }
     }
 }

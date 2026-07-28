@@ -136,12 +136,11 @@ public static partial class WorkstationEndpoints
     /// removed and the position aggregates recomputed from what survives, so one fund's
     /// operator cannot read another fund's holdings or trade intentions.
     /// <para>
-    /// Non-Guid account ids name a shared execution book rather than a fund, so they carry
-    /// no ownership of their own: in a fund-partitioned aggregation that book can hold any
-    /// fund's routed flow. They stay visible only to a caller already authorized for every
-    /// fund account present — who therefore learns nothing new from them — which keeps the
-    /// wholly run-local paper case visible while closing the shared-account read path for a
-    /// fund-scoped operator. <see cref="UserPermission.AdminMaintenance"/> sees the full
+    /// Fund-scoped fills carry their owning fund onto the contribution, so a fund-keyed
+    /// contribution is checked against the caller's grants directly. What is left under a
+    /// non-Guid account id is genuinely unattributed — paper runs, and anything placed with
+    /// no fund scope — and cannot be shown to belong to this caller, so a scoped read does
+    /// not include it. <see cref="UserPermission.AdminMaintenance"/> sees the full
     /// aggregation. One scope check per distinct account, not per contribution.
     /// </para>
     /// </summary>
@@ -174,13 +173,11 @@ public static partial class WorkstationEndpoints
             }
         }
 
-        // The shared execution book is not readable by a scoped caller at all. The fill path
-        // records every fund-scoped order under the non-Guid "default" account, so in a real
-        // deployment there are no Guid contributions to compare against — an "authorized for
-        // every fund present" test is vacuously true exactly when the book is most likely to
-        // hold other funds' flow. Only a caller with admin authority (returned above) sees
-        // it; restoring it for scoped callers needs fund ownership carried onto the
-        // contribution itself, which the portfolio does not record today.
+        // Fund-scoped fills now carry their owning fund onto the contribution, so a
+        // fund-keyed contribution is checked against the caller's grants directly. What
+        // remains under a non-Guid account id is genuinely unattributed — paper runs, and
+        // fills placed with no fund scope — and cannot be shown to belong to this caller,
+        // so it stays hidden from a scoped read. Admin authority (returned above) sees all.
         const bool sharedBookVisible = false;
 
         var filtered = new List<AggregatedPosition>(positions.Count);

@@ -1,5 +1,6 @@
 import type {
   EvidenceStatus,
+  OrderResult,
   MeridianAssuranceScore,
   OperationsCloseChecklistTask,
   OperationsClosePackagePublication,
@@ -1009,6 +1010,12 @@ export interface RiskEscalation {
   resolvedBy: string | null;
   resolutionReason: string | null;
   resolvedAt: string | null;
+}
+
+/** Result of approving a parked escalation, with the release attempt when one was made. */
+export interface RiskEscalationApprovalResponse {
+  escalation: RiskEscalation;
+  releaseResult: OrderResult | null;
 }
 
 export type OperatorWorkItemKind =

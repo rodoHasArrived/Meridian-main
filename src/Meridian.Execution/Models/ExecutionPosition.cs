@@ -20,6 +20,16 @@ public sealed record ExecutionPosition(
     decimal UnrealisedPnl,
     decimal RealisedPnl) : IPosition
 {
+    /// <summary>
+    /// Signed quantity attributed to each owning fund account. Carried through from the
+    /// fills so a shared execution book can still be read per fund.
+    /// </summary>
+    public IReadOnlyDictionary<string, decimal> OwnerQuantities { get; init; } =
+        new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Contract multiplier; 1 for outright instruments, 100 for equity options.</summary>
+    public decimal ContractMultiplier { get; init; } = 1m;
+
     /// <summary>True when this is a short (negative) position.</summary>
     public bool IsShort => Quantity < 0;
 

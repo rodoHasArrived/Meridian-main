@@ -42,25 +42,12 @@ public sealed record SymbolExposure(
                 return accountNet;
             }
 
-            // No match. FundAccountId is an accounting scope, while exposure is keyed by
-            // execution-account ids ("default" for the paper portfolio), so a miss can mean
-            // either "different fund" or "same book under a different naming system". When
-            // exactly one account contributes and it is not itself fund-keyed, the mapping
-            // is unambiguous — that account is the whole book — and a fund-scoped close
-            // must be seen as reducing it rather than adding on top.
-            if (AccountNetNotional is { Count: 1 })
-            {
-                var (onlyAccount, onlyNet) = AccountNetNotional.First();
-                if (!Guid.TryParse(onlyAccount, out _))
-                {
-                    return onlyNet;
-                }
-            }
-
-            // Otherwise the order belongs to a book this snapshot cannot identify: fall
-            // back to the additive worst case rather than assuming it reduces someone else's
-            // position — a $20k sell from a flat fund against another fund's $100k long
-            // projects $120k, not $80k.
+            // No exact match means this fund has no attributed position in the symbol. A
+            // single unattributed account is NOT a safe stand-in for it: fills through a
+            // shared execution book land under one non-Guid id regardless of owner, so
+            // treating that book as this fund's position would let a flat Fund B sell
+            // $100k "against" Fund A's $100k long and project near-zero gross instead of
+            // the real $200k across the two. Fall back to the additive worst case.
             return null;
         }
 

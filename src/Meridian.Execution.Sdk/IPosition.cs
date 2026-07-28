@@ -38,4 +38,23 @@ public interface IPosition
 
     /// <summary>Signed notional market value at <paramref name="lastPrice"/>.</summary>
     decimal NotionalValue(decimal lastPrice) => Quantity * lastPrice;
+
+    /// <summary>
+    /// Signed quantity attributed to each owning fund account, when fills carried one. A
+    /// shared execution book holds several funds' flow under one account id, so without
+    /// this the only account key available is the shared one — which says nothing about
+    /// whose position it is. Empty when no fill carried an owner.
+    /// </summary>
+    IReadOnlyDictionary<string, decimal> OwnerQuantities => EmptyOwnerQuantities;
+
+    /// <summary>
+    /// Contract multiplier for a derivative position: the notional one unit of
+    /// <see cref="Quantity"/> represents. 1 for outright instruments, 100 for standard
+    /// equity option contracts. Exposure that ignores it under-measures an option position
+    /// by the multiplier.
+    /// </summary>
+    decimal ContractMultiplier => 1m;
+
+    private static IReadOnlyDictionary<string, decimal> EmptyOwnerQuantities { get; } =
+        new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
 }

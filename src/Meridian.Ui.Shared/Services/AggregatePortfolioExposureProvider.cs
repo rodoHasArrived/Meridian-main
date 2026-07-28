@@ -376,7 +376,12 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             var accountNet = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
             foreach (var contribution in position.Contributions)
             {
-                var price = liveMark is { } mark && mark > 0m ? mark : Math.Abs(contribution.CostBasis);
+                // The contract multiplier is part of the price of one unit of quantity: an
+                // option position of 100 contracts at a $5 premium is $50k of exposure, not
+                // $500. Ignoring it would let every check after the first option fill run
+                // against exposure understated by the multiplier.
+                var unitPrice = liveMark is { } mark && mark > 0m ? mark : Math.Abs(contribution.CostBasis);
+                var price = unitPrice * (contribution.ContractMultiplier > 0m ? contribution.ContractMultiplier : 1m);
                 symbolGross += Math.Abs(contribution.Quantity) * price;
                 symbolNet += contribution.Quantity * price;
                 absoluteQuantity += Math.Abs(contribution.Quantity);

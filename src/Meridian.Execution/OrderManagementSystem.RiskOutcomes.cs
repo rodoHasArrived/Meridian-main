@@ -212,6 +212,45 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>
+    /// Contract multiplier an order's fills carry: the notional one unit of quantity
+    /// represents. Equity options are 100 across every venue Meridian routes to, so an
+    /// option order with no adapter-stamped multiplier still measures as contracts rather
+    /// than shares. A multi-leg order takes the largest of its legs, which cannot
+    /// under-measure the position the fills open.
+    /// </summary>
+    private static decimal ResolveContractMultiplier(OrderRequest request)
+    {
+        const decimal defaultOptionMultiplier = 100m;
+
+        static decimal FromContract(OptionContractIdentity? contract)
+        {
+            if (contract is null)
+            {
+                return 1m;
+            }
+
+            return decimal.TryParse(
+                contract.Multiplier,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var parsed) && parsed > 0m
+                ? parsed
+                : defaultOptionMultiplier;
+        }
+
+        var multiplier = FromContract(request.OptionContract);
+        if (request.Legs is { Count: > 0 } legs)
+        {
+            foreach (var leg in legs)
+            {
+                multiplier = Math.Max(multiplier, FromContract(leg.OptionContract));
+            }
+        }
+
+        return multiplier;
+    }
+
+    /// <summary>
     /// Frees the client-order-id reservation an escalation held, once its released order is
     /// actually registered. From that point the tracked order guards the id itself, so the
     /// reservation has nothing left to protect — but until then it must stand, because every

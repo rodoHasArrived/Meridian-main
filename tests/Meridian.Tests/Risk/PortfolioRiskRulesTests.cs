@@ -697,10 +697,74 @@ public sealed class PortfolioRiskRulesTests
     [Fact]
     public async Task GrossExposure_FundScopedCloseAgainstTheDefaultAccount_ReducesExposure()
     {
-        // FundAccountId is an accounting scope; the paper portfolio records positions under
-        // the "default" execution account. With a single, non-fund-keyed contributing
-        // account the mapping is unambiguous, so a fund-scoped sell must be seen as closing
-        // that position rather than adding on top of it.
+        // Fills carry their owning fund through to the contribution, so the fund's own
+        // position is identifiable and a fund-scoped sell closes it rather than adding on
+        // top. A shared "default" book is NOT a stand-in for the fund — see the companion
+        // test below, where a flat fund's sell must not net against another fund's long.
+        var fundAccountId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+        var exposure = new SymbolExposure(
+            "AAPL",
+            GrossExposure: 100_000m,
+            NetQuantity: 1_000m,
+            ReferencePrice: 100m,
+            NetNotional: 100_000m,
+            AccountNetNotional: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+            {
+                [fundAccountId.ToString("D")] = 100_000m
+            });
+        var rule = new GrossExposureRule(
+            Provider(grossExposure: 100_000m, portfolioValue: 500_000m, symbols: exposure),
+            () => 110_000m,
+            NullLogger<GrossExposureRule>.Instance);
+
+        var order = CreateOrder(quantity: 500m, limitPrice: 100m, side: OrderSide.Sell) with
+        {
+            FundAccountId = fundAccountId
+        };
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeTrue("closing a position must not be measured as adding to it");
+    }
+
+    [Fact]
+    public async Task GrossExposure_FlatFundSellingAgainstAnotherFundsLong_UsesTheAdditiveWorstCase()
+    {
+        // Fund A is long $100k. Flat Fund B sells $100k. These are two books, not one
+        // position being closed: the projection must be the additive $200k, not near zero.
+        var fundA = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var fundB = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var exposure = new SymbolExposure(
+            "AAPL",
+            GrossExposure: 100_000m,
+            NetQuantity: 1_000m,
+            ReferencePrice: 100m,
+            NetNotional: 100_000m,
+            AccountNetNotional: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+            {
+                [fundA.ToString("D")] = 100_000m
+            });
+        var rule = new GrossExposureRule(
+            Provider(grossExposure: 100_000m, portfolioValue: 500_000m, symbols: exposure),
+            () => 150_000m,
+            NullLogger<GrossExposureRule>.Instance);
+
+        var order = CreateOrder(quantity: 1_000m, limitPrice: 100m, side: OrderSide.Sell) with
+        {
+            FundAccountId = fundB
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse(
+            "a flat fund's sell does not close another fund's long, so the projection is additive");
+    }
+
+    [Fact]
+    public async Task GrossExposure_FundOrderAgainstAnUnattributedBook_UsesTheAdditiveWorstCase()
+    {
+        // A shared, unattributed execution book is not a stand-in for the ordering fund:
+        // treating it as theirs is exactly how a flat fund's sell would net away another
+        // fund's long.
         var exposure = new SymbolExposure(
             "AAPL",
             GrossExposure: 100_000m,
@@ -713,16 +777,15 @@ public sealed class PortfolioRiskRulesTests
             });
         var rule = new GrossExposureRule(
             Provider(grossExposure: 100_000m, portfolioValue: 500_000m, symbols: exposure),
-            () => 110_000m,
+            () => 150_000m,
             NullLogger<GrossExposureRule>.Instance);
 
-        var order = CreateOrder(quantity: 500m, limitPrice: 100m, side: OrderSide.Sell) with
+        var order = CreateOrder(quantity: 1_000m, limitPrice: 100m, side: OrderSide.Sell) with
         {
             FundAccountId = Guid.Parse("99999999-9999-9999-9999-999999999999")
         };
-        var result = await rule.EvaluateAsync(order);
 
-        result.IsApproved.Should().BeTrue("closing a position must not be measured as adding to it");
+        (await rule.EvaluateAsync(order)).IsApproved.Should().BeFalse();
     }
 
     /// <summary>Provider exposing a wide two-sided book, so touch vs midpoint is visible.</summary>

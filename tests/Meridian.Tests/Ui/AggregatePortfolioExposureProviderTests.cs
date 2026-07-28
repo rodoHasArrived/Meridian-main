@@ -635,6 +635,33 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_OptionPosition_IsValuedAtContractNotional()
+    {
+        // 100 contracts at a $5 premium with the standard 100x multiplier is $50k of
+        // exposure. Measuring it as 100 shares would understate the book by 100x for every
+        // check made after the first option fill.
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns(
+        [
+            new AggregatedPosition(
+                Symbol: "AAPL_C250",
+                TotalQuantity: 100m,
+                LongQuantity: 100m,
+                ShortQuantity: 0m,
+                WeightedAverageCost: 5m,
+                TotalUnrealisedPnl: 0m,
+                Contributions:
+                [
+                    new RunPositionContribution("run-0", "default", 100m, 5m, 0m, ContractMultiplier: 100m)
+                ])
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(aggregate.Object);
+
+        provider.GetSnapshot().GrossExposure.Should().Be(50_000m);
+    }
+
+    [Fact]
     public void GetSnapshot_WithEmptyRegistry_FallsBackToHostPortfolioValue()
     {
         var aggregate = new Mock<IAggregatePortfolioService>();

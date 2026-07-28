@@ -404,10 +404,27 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     public void ApplyFill(ExecutionReport report) => ApplyFill(DefaultAccountId, report);
 
     /// <summary>
+    /// Applies a fill to the default account while recording the fund account that owns it
+    /// and the contract multiplier it carries. Cash and cost basis are unchanged; the
+    /// attribution lets a shared execution book be read per fund and keeps a derivative
+    /// position's exposure from being measured as if each contract were one share.
+    /// </summary>
+    public void ApplyFill(ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m)
+        => ApplyFill(DefaultAccountId, report, ownerAccountId, contractMultiplier);
+
+    /// <summary>
     /// Applies a fill to a specific <paramref name="accountId"/>.
     /// When the account does not exist it is ignored (no-op).
     /// </summary>
     public void ApplyFill(string accountId, ExecutionReport report)
+        => ApplyFill(accountId, report, ownerAccountId: null);
+
+    /// <inheritdoc cref="ApplyFill(string, ExecutionReport)"/>
+    public void ApplyFill(
+        string accountId,
+        ExecutionReport report,
+        string? ownerAccountId,
+        decimal contractMultiplier = 1m)
     {
         ArgumentNullException.ThrowIfNull(report);
 
@@ -427,7 +444,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 return;
 
             ApplyFillToAccount(account, report.Symbol, signedQty, report.FillPrice.Value,
-                report.Commission ?? 0m, report.Timestamp, report.OrderId);
+                report.Commission ?? 0m, report.Timestamp, report.OrderId,
+                ownerAccountId, contractMultiplier);
         }
     }
 
@@ -551,13 +569,19 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal price,
         decimal commission,
         DateTimeOffset ts,
-        string orderId)
+        string orderId,
+        string? ownerAccountId = null,
+        decimal contractMultiplier = 1m)
     {
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
             pos = new PaperPosition(symbol, price);
             account.Positions[symbol] = pos;
         }
+
+        // Attribution runs before the position math so it records the fill regardless of
+        // which branch below applies it, and never depends on the resulting quantity.
+        pos.AttributeFill(ownerAccountId, signedQty, contractMultiplier);
 
         // A fill that crosses through zero closes the existing side first, then opens
         // the residual on the opposite side — the residual must not be dropped.
@@ -994,6 +1018,7 @@ internal sealed class AccountState : IAccountPortfolio
 internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 {
     private readonly List<PositionLot> _lots = [];
+    private readonly Dictionary<string, decimal> _ownerQuantities = new(StringComparer.OrdinalIgnoreCase);
     public string Symbol { get; } = symbol;
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
@@ -1135,12 +1160,55 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         };
     }
 
+    /// <summary>
+    /// Contract multiplier for this position, taken from the fills that opened it. A
+    /// position mixing multipliers keeps the largest, which cannot under-measure exposure.
+    /// </summary>
+    public decimal ContractMultiplier { get; private set; } = 1m;
+
+    /// <summary>Signed quantity attributed to each owning fund account.</summary>
+    public IReadOnlyDictionary<string, decimal> OwnerQuantities => _ownerQuantities;
+
+    /// <summary>
+    /// Records which fund a fill belonged to. Attribution only — the lot book, cost basis,
+    /// and realised P&amp;L are untouched, so cash and accounting stay exactly as before
+    /// while the read path gains the ownership the shared execution account cannot express.
+    /// The tallies always sum to <see cref="Quantity"/>: each is that fund's net signed
+    /// contribution, so a fund that bought and sold the same size nets to zero.
+    /// </summary>
+    public void AttributeFill(string? ownerAccountId, decimal signedQuantity, decimal contractMultiplier)
+    {
+        if (contractMultiplier > ContractMultiplier)
+        {
+            ContractMultiplier = contractMultiplier;
+        }
+
+        if (string.IsNullOrWhiteSpace(ownerAccountId) || signedQuantity == 0m)
+        {
+            return;
+        }
+
+        var owner = ownerAccountId.Trim();
+        var updated = _ownerQuantities.GetValueOrDefault(owner) + signedQuantity;
+        if (updated == 0m)
+        {
+            _ownerQuantities.Remove(owner);
+            return;
+        }
+
+        _ownerQuantities[owner] = updated;
+    }
+
     public ExecutionPosition ToExecutionPosition() => new(
         Symbol,
         (long)Quantity,
         CostBasis,
         UnrealisedPnl,
-        0m);  // realised P&L is carried at the account level
+        0m)  // realised P&L is carried at the account level
+    {
+        OwnerQuantities = new Dictionary<string, decimal>(_ownerQuantities, StringComparer.OrdinalIgnoreCase),
+        ContractMultiplier = ContractMultiplier
+    };
 }
 
 internal sealed class PositionLot(string lotId, decimal openQuantity, decimal entryPrice, DateTimeOffset openedAt)

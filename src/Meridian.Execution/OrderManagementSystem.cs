@@ -56,6 +56,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     // Reports whose fill must already reserve exposure but whose precise increment is not
     // tracked yet. Held only across the window in which the order goes terminal.
     private readonly ConcurrentDictionary<ExecutionReport, ExecutionReport> _pendingFillReservations = new();
+    // Contract multiplier per order id, for derivative fills.
+    private readonly ConcurrentDictionary<string, decimal> _orderContractMultipliers = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
     private readonly object _disposeSync = new();
     private long _droppedExecutionReports;
@@ -421,6 +423,18 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     runId,
                     correlationId,
                     ct).ConfigureAwait(false);
+            }
+
+            // A derivative's contract multiplier must survive to the fill: the position it
+            // opens is measured by every exposure rail afterwards.
+            var orderMultiplier = ResolveContractMultiplier(safeRequest);
+            if (orderMultiplier > 1m)
+            {
+                _orderContractMultipliers[orderId] = orderMultiplier;
+            }
+            else
+            {
+                _orderContractMultipliers.TryRemove(orderId, out _);
             }
 
             if (safeRequest.FundAccountId is { } fundAccountId)
@@ -1405,7 +1419,21 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 if (_portfolioState is PaperTradingPortfolio paperPortfolio
                     && progress.IsTrackedOrder)
                 {
-                    paperPortfolio.ApplyFill(fillIncrement);
+                    // The fill carries which fund owns it and, for a derivative, what one
+                    // contract is worth. Without both, the shared execution book reports a
+                    // position no fund can be shown to own and an option position measured
+                    // as if each contract were a single share.
+                    var fillOrderId = fillIncrement.ClientOrderId ?? fillIncrement.OrderId;
+                    paperPortfolio.ApplyFill(
+                        fillIncrement,
+                        ownerAccountId: fillOrderId is not null
+                            && _orderFinancialAccountIds.TryGetValue(fillOrderId, out var owningFund)
+                            ? owningFund
+                            : null,
+                        contractMultiplier: fillOrderId is not null
+                            && _orderContractMultipliers.TryGetValue(fillOrderId, out var multiplier)
+                            ? multiplier
+                            : 1m);
                     progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
                 }
 
