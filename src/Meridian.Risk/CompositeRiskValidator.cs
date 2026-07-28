@@ -86,80 +86,107 @@ public sealed class CompositeRiskValidator : IRiskValidator
             (warnings ??= []).Add("Escalation released by governed approval.");
         }
 
-        foreach (var rule in _rules)
+        try
         {
-            ct.ThrowIfCancellationRequested();
-            var result = rule.TryEvaluate(request)
-                ?? await rule.EvaluateAsync(request, ct).ConfigureAwait(false);
-
-            if (result.Warnings.Count > 0)
+            foreach (var rule in _rules)
             {
-                (warnings ??= []).AddRange(result.Warnings);
-            }
+                ct.ThrowIfCancellationRequested();
+                var result = rule.TryEvaluate(request)
+                    ?? await rule.EvaluateAsync(request, ct).ConfigureAwait(false);
 
-            if (result.IsApproved)
-            {
-                continue;
-            }
-
-            var reason = string.IsNullOrWhiteSpace(result.RejectReason)
-                ? $"Rejected by risk rule '{rule.RuleName}'."
-                : result.RejectReason;
-
-            // A rule can escalate explicitly via its result; otherwise its declared
-            // severity decides the outcome of the failure.
-            if (result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
-            {
-                // A consumed approval satisfies only the escalation it was parked for;
-                // any other escalate-capable rule still parks its own approval.
-                if (releasedEntry is not null &&
-                    string.Equals(releasedEntry.RuleName, rule.RuleName, StringComparison.Ordinal))
+                if (result.Warnings.Count > 0)
                 {
-                    _logger.LogInformation(
-                        "Escalation from rule {RuleName} released by governed approval",
-                        rule.RuleName);
+                    (warnings ??= []).AddRange(result.Warnings);
+                }
+
+                if (result.IsApproved)
+                {
                     continue;
                 }
 
-                return RestoreOnFailure(
-                    Escalate(rule, request, reason, warnings),
-                    releasedEntry);
+                var reason = string.IsNullOrWhiteSpace(result.RejectReason)
+                    ? $"Rejected by risk rule '{rule.RuleName}'."
+                    : result.RejectReason;
+
+                // A rule can escalate explicitly via its result; otherwise its declared
+                // severity decides the outcome of the failure.
+                if (result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
+                {
+                    // A consumed approval satisfies only the escalation it was parked for;
+                    // any other escalate-capable rule still parks its own approval.
+                    if (releasedEntry is not null &&
+                        string.Equals(releasedEntry.RuleName, rule.RuleName, StringComparison.Ordinal))
+                    {
+                        _logger.LogInformation(
+                            "Escalation from rule {RuleName} released by governed approval",
+                            rule.RuleName);
+                        continue;
+                    }
+
+                    return RestoreOnFailure(
+                        Escalate(rule, request, reason, warnings),
+                        releasedEntry);
+                }
+
+                switch (rule.Severity)
+                {
+                    case RiskRuleSeverity.Info:
+                    case RiskRuleSeverity.Warning:
+                        // Order details stay out of the log: the flag is carried on the result
+                        // and the OMS audit trail retains full context.
+                        _logger.LogWarning(
+                            "Risk rule {RuleName} ({Severity}) flagged the order without blocking",
+                            rule.RuleName,
+                            rule.Severity);
+                        (warnings ??= []).Add($"{rule.RuleName}: {reason}");
+                        continue;
+
+                    case RiskRuleSeverity.Critical:
+                        _logger.LogError(
+                            "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
+                            rule.RuleName);
+                        await TripCircuitBreakerAsync(rule, reason, ct).ConfigureAwait(false);
+                        return RestoreOnFailure(
+                            WithWarnings(RiskValidationResult.Rejected(reason), warnings),
+                            releasedEntry);
+
+                    default:
+                        _logger.LogWarning(
+                            "Risk rule {RuleName} ({Severity}) rejected the order",
+                            rule.RuleName,
+                            rule.Severity);
+                        return RestoreOnFailure(
+                            WithWarnings(RiskValidationResult.Rejected(reason), warnings),
+                            releasedEntry);
+                }
             }
 
-            switch (rule.Severity)
-            {
-                case RiskRuleSeverity.Info:
-                case RiskRuleSeverity.Warning:
-                    // Order details stay out of the log: the flag is carried on the result
-                    // and the OMS audit trail retains full context.
-                    _logger.LogWarning(
-                        "Risk rule {RuleName} ({Severity}) flagged the order without blocking",
-                        rule.RuleName,
-                        rule.Severity);
-                    (warnings ??= []).Add($"{rule.RuleName}: {reason}");
-                    continue;
-
-                case RiskRuleSeverity.Critical:
-                    _logger.LogError(
-                        "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
-                        rule.RuleName);
-                    await TripCircuitBreakerAsync(rule, reason, ct).ConfigureAwait(false);
-                    return RestoreOnFailure(
-                        WithWarnings(RiskValidationResult.Rejected(reason), warnings),
-                        releasedEntry);
-
-                default:
-                    _logger.LogWarning(
-                        "Risk rule {RuleName} ({Severity}) rejected the order",
-                        rule.RuleName,
-                        rule.Severity);
-                    return RestoreOnFailure(
-                        WithWarnings(RiskValidationResult.Rejected(reason), warnings),
-                        releasedEntry);
-            }
+            return WithWarnings(RiskValidationResult.Approved(), warnings);
         }
+        catch
+        {
+            // Cancellation or a faulting rule exits validation without routing anything,
+            // so the consumed approval must not stay retired: re-arm it for retry, then
+            // let the exception continue unwinding.
+            RestoreOnFault(releasedEntry);
+            throw;
+        }
+    }
 
-        return WithWarnings(RiskValidationResult.Approved(), warnings);
+    /// <summary>
+    /// Re-arms a consumed approval after an exceptional validation exit (cancellation or
+    /// a faulting rule): the release routed nothing, so the operator's decision must not
+    /// be lost to the fault.
+    /// </summary>
+    private void RestoreOnFault(RiskEscalationEntry? releasedEntry)
+    {
+        if (releasedEntry is not null && _escalationQueue is not null &&
+            _escalationQueue.TryRestoreApproval(releasedEntry.EscalationId))
+        {
+            _logger.LogInformation(
+                "Governed approval {EscalationId} re-armed: validation exited before routing",
+                releasedEntry.EscalationId);
+        }
     }
 
     /// <summary>

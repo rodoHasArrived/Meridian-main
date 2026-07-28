@@ -337,6 +337,37 @@ public sealed class CompositeRiskValidatorTests
     }
 
     [Fact]
+    public async Task ValidateOrderAsync_RuleFaultAfterConsumption_ReArmsTheApproval()
+    {
+        var queue = CreateQueue();
+        var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band"));
+        var faulting = new FaultingRule("flaky-limit-feed");
+        var validator = new CompositeRiskValidator(
+            [escalating, faulting],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+
+        // The token is consumed up front; a later rule then faults out of validation.
+        var act = () => validator.ValidateOrderAsync(resubmission);
+        await act.Should().ThrowAsync<InvalidOperationException>();
+
+        queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
+            RiskEscalationStatus.Approved,
+            "an exceptional exit routed nothing, so the operator's approval must not stay retired");
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_ApprovedEscalation_DoesNotBypassLaterHardRules()
     {
         var queue = CreateQueue();
@@ -431,6 +462,14 @@ public sealed class CompositeRiskValidatorTests
         Type = OrderType.Market,
         Quantity = 10m,
     };
+
+    private sealed class FaultingRule(string ruleName) : IRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            throw new InvalidOperationException("limit feed unavailable");
+    }
 
     private sealed class ThresholdStubRule(string ruleName) : IRiskRule
     {

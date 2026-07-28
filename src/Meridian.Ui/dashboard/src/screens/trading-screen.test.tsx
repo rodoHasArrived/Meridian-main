@@ -503,6 +503,14 @@ describe("TradingScreen", () => {
             threshold: "escalate ≥ 50000, reject > 250000",
             utilizationPercent: null,
             severity: "Escalate"
+          },
+          {
+            ruleName: "GrossExposure",
+            state: "Constrained",
+            currentValue: "$1,500,000",
+            threshold: "$1,000,000",
+            utilizationPercent: 150,
+            severity: "Critical"
           }
         ]
       }
@@ -514,6 +522,11 @@ describe("TradingScreen", () => {
     expect(within(list).getByText(/88% · Observe/)).toBeInTheDocument();
     const bar = within(list).getByRole("progressbar", { name: /single-name concentration utilization/i });
     expect(bar).toHaveAttribute("aria-valuenow", "88");
+    // A breached guardrail clamps the bar fill at 100% but must announce the real
+    // utilization to assistive technology, not the clamp.
+    const breachedBar = within(list).getByRole("progressbar", { name: /gross exposure ceiling utilization/i });
+    expect(breachedBar).toHaveAttribute("aria-valuenow", "100");
+    expect(breachedBar).toHaveAttribute("aria-valuetext", "150% · Constrained");
     // A rule with no measurable utilization renders its state and thresholds without a bar.
     expect(within(list).getByText("Per-order notional")).toBeInTheDocument();
     expect(within(list).getByText("parks for approval")).toBeInTheDocument();

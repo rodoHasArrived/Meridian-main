@@ -310,8 +310,17 @@ public static class RiskEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var denied = queue.Deny(escalationId, ResolveActor(context), request?.Reason);
-            return denied is null ? Results.NotFound() : Results.Json(ToDto(denied), jsonOptions);
+            try
+            {
+                var denied = queue.Deny(escalationId, ResolveActor(context), request?.Reason);
+                return denied is null ? Results.NotFound() : Results.Json(ToDto(denied), jsonOptions);
+            }
+            catch (InvalidOperationException exception)
+            {
+                // A denial that cannot be durably committed is refused rather than left
+                // resurrectable; the entry remains pending for a retry.
+                return Results.Problem(exception.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
         })
         .Produces<RiskEscalationDto>(200)
         .Produces(403)

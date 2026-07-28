@@ -98,6 +98,9 @@ export function GuardrailUtilizationList({ guardrails }: { guardrails: RiskGuard
               className="mt-1.5"
               value={Math.min(100, guardrail.utilizationPercent)}
               aria-label={`${guardrailRuleLabel[guardrail.ruleName] ?? guardrail.ruleName} utilization`}
+              // The bar fill caps at 100%, but assistive technology must hear the real
+              // breached utilization, not the clamp.
+              aria-valuetext={`${guardrail.utilizationPercent.toFixed(0)}% · ${guardrail.state}`}
               indicatorClassName={guardrailBarTone[guardrail.state]}
             />
           ) : null}

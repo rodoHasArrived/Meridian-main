@@ -139,12 +139,29 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             .OrderBy(static entry => entry.ParkedAt)
             .ToArray();
 
-    /// <summary>Returns the most recent entries in any status, newest first.</summary>
-    public IReadOnlyList<RiskEscalationEntry> GetRecent(int take = 50) =>
-        _entries.Values
-            .OrderByDescending(static entry => entry.ParkedAt)
-            .Take(Math.Max(1, take))
+    /// <summary>
+    /// Returns recent entries newest first. Unresolved entries (pending or armed
+    /// approvals) are always included regardless of age — an old escalation that still
+    /// needs a decision must never scroll out of the only queue listing — while terminal
+    /// Denied/Released history fills whatever remains of the <paramref name="take"/> window.
+    /// </summary>
+    public IReadOnlyList<RiskEscalationEntry> GetRecent(int take = 50)
+    {
+        var snapshot = _entries.Values.ToArray();
+        var unresolved = snapshot
+            .Where(static entry => entry.Status is RiskEscalationStatus.PendingApproval or RiskEscalationStatus.Approved)
             .ToArray();
+        var historyBudget = Math.Max(0, Math.Max(1, take) - unresolved.Length);
+        var history = snapshot
+            .Where(static entry => entry.Status is not RiskEscalationStatus.PendingApproval and not RiskEscalationStatus.Approved)
+            .OrderByDescending(static entry => entry.ParkedAt)
+            .Take(historyBudget);
+
+        return unresolved
+            .Concat(history)
+            .OrderByDescending(static entry => entry.ParkedAt)
+            .ToArray();
+    }
 
     /// <summary>Returns the entry with <paramref name="escalationId"/>, or null.</summary>
     public RiskEscalationEntry? TryGet(string escalationId) =>
@@ -288,7 +305,28 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 ResolvedAt = DateTimeOffset.UtcNow
             };
             _entries[escalationId] = resolved;
-            PersistSnapshotLocked();
+            if (status == RiskEscalationStatus.Denied)
+            {
+                // A denial must never be resurrectable: if it cannot be durably committed,
+                // a restart would reload the entry as pending and a later approval could
+                // release an order the desk refused. Fail the denial instead.
+                if (!TryPersistSnapshotLocked())
+                {
+                    _entries[escalationId] = entry;
+                    _logger.LogError(
+                        "Risk escalation {EscalationId} denial rolled back: the decision could not be durably persisted",
+                        resolved.EscalationId);
+                    throw new InvalidOperationException(
+                        "The escalation denial could not be durably persisted; the entry remains pending approval.");
+                }
+            }
+            else
+            {
+                // Approval persistence stays best-effort because an unpersisted approval
+                // fails safe: a restart reloads the entry as pending and the operator must
+                // approve again before anything can release.
+                PersistSnapshotLocked();
+            }
 
             var approved = status == RiskEscalationStatus.Approved;
             _logger.LogInformation(
@@ -342,16 +380,21 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
     private void TrimRetainedEntries()
     {
-        while (_entries.Count > _options.MaxRetainedEntries && _entryOrder.TryDequeue(out var oldestId))
+        // Never drop an unresolved escalation: Pending awaits a decision and Approved is
+        // an armed one-shot release; those re-queue and the scan continues, so a single
+        // long-lived unresolved entry at the head cannot shield newer terminal history
+        // from trimming. The scan budget is one pass over the current order queue —
+        // when everything left is protected, retention yields to correctness.
+        var scanBudget = _entryOrder.Count;
+        while (_entries.Count > _options.MaxRetainedEntries &&
+               scanBudget-- > 0 &&
+               _entryOrder.TryDequeue(out var oldestId))
         {
-            // Never drop an unresolved escalation: Pending awaits a decision and Approved
-            // is an armed one-shot release; re-queue and stop rather than losing either
-            // to retention pressure. Only terminal Denied/Released history is trimmable.
             if (_entries.TryGetValue(oldestId, out var oldest) &&
                 oldest.Status is RiskEscalationStatus.PendingApproval or RiskEscalationStatus.Approved)
             {
                 _entryOrder.Enqueue(oldestId);
-                return;
+                continue;
             }
 
             _entries.TryRemove(oldestId, out _);
@@ -360,9 +403,10 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
     private void PersistSnapshotLocked()
     {
-        // Best-effort form for park/approve/deny: the in-memory transition already
-        // happened and is audited; a persistence failure must not fail the pre-trade
-        // path or an operator decision. Release uses the strict form instead.
+        // Best-effort form for park/approve: the in-memory transition already happened
+        // and is audited; a persistence failure must not fail the pre-trade path, and an
+        // unpersisted approval fails safe (a restart demands re-approval). Denial and
+        // release use the strict form because their loss is fail-dangerous.
         TryPersistSnapshotLocked();
     }
 

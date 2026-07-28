@@ -171,6 +171,79 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Trim_ContinuesPastProtectedEntries()
+    {
+        var options = new RiskEscalationQueueOptions(
+            Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"),
+            MaxRetainedEntries: 3);
+        var queue = CreateQueue(options);
+
+        // The oldest entry stays unresolved while terminal history piles up behind it.
+        var pending = queue.Park(CreateOrder(quantity: 1m), "long-lived pending");
+        var denied1 = queue.Park(CreateOrder(quantity: 2m), "history");
+        var denied2 = queue.Park(CreateOrder(quantity: 3m), "history");
+        queue.Deny(denied1.EscalationId, actor: "risk-desk");
+        queue.Deny(denied2.EscalationId, actor: "risk-desk");
+
+        // Retention pressure must trim terminal history even though the queue head is
+        // protected — a single unresolved entry cannot shield the rest from the bound.
+        queue.Park(CreateOrder(quantity: 4m), "newest");
+
+        queue.TryGet(pending.EscalationId)!.Status.Should().Be(RiskEscalationStatus.PendingApproval);
+        queue.TryGet(denied1.EscalationId).Should().BeNull("terminal history behind a protected head must still trim");
+    }
+
+    [Fact]
+    public void GetRecent_AlwaysIncludesUnresolvedEntries()
+    {
+        var queue = CreateQueue();
+        var pending = queue.Park(CreateOrder(quantity: 1m), "old pending");
+        for (var i = 0; i < 3; i++)
+        {
+            var denied = queue.Park(CreateOrder(quantity: 10m + i), "history");
+            queue.Deny(denied.EscalationId, actor: "risk-desk");
+        }
+
+        // The window is smaller than the newer terminal history, but the still-actionable
+        // pending entry must remain discoverable through the only queue listing.
+        var recent = queue.GetRecent(take: 2);
+
+        recent.Should().Contain(entry => entry.EscalationId == pending.EscalationId);
+    }
+
+    [Fact]
+    public void Deny_WhenSnapshotCannotPersist_RollsBackAndThrows()
+    {
+        // A file squatting on the snapshot directory makes every persist attempt fail.
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-blocked-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        File.WriteAllText(root, "blocks the snapshot directory");
+        try
+        {
+            var queue = CreateQueue(new RiskEscalationQueueOptions(Path.Combine(root, "escalations.json")));
+            var entry = queue.Park(CreateOrder(), "parked while storage is down");
+
+            var deny = () => queue.Deny(entry.EscalationId, actor: "risk-desk", reason: "refused");
+
+            deny.Should().Throw<InvalidOperationException>(
+                "an unpersisted denial would reload as pending after a restart and become approvable");
+            queue.TryGet(entry.EscalationId)!.Status.Should().Be(RiskEscalationStatus.PendingApproval);
+
+            // Once storage recovers the denial commits normally.
+            File.Delete(root);
+            queue.Deny(entry.EscalationId, actor: "risk-desk", reason: "refused")!
+                .Status.Should().Be(RiskEscalationStatus.Denied);
+        }
+        finally
+        {
+            if (File.Exists(root))
+            {
+                File.Delete(root);
+            }
+        }
+    }
+
+    [Fact]
     public void Queue_PersistsAcrossRestart_IncludingArmedApprovals()
     {
         var options = CreateOptions();
