@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v2",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-07-21",
+  "snapshotDate": "2026-07-28",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -184,6 +184,19 @@
       "Last Reviewed": "2026-06-22"
     },
     {
+      "ID": "W5X-OEG-001",
+      "Wave": "W5X",
+      "Title": "Operational evidence graph product surface",
+      "Workspaces": "Accounting; Portfolio; Reporting; Data",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Workstation Shell and UX",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-06-15"
+    },
+    {
       "ID": "W5X-STMT-ONBOARD-001",
       "Wave": "W5X",
       "Title": "Statement reconciliation onboarding wedge",
@@ -266,13 +279,13 @@
       "Wave": "W9",
       "Title": "Asset Accounting Event Spine and atomic lot posting",
       "Workspaces": "Accounting; Portfolio; Reporting",
-      "Status": "in_progress",
-      "Health": "on_track",
+      "Status": "done",
+      "Health": "green",
       "Priority": "critical",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "in_progress",
-      "Evidence": "docs/architecture/event-accounting-architecture.md; src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.cs; tests/Meridian.Tests/Storage/AssetAccountingPostingEvidenceValidatorTests.cs",
-      "Last Reviewed": "2026-07-21"
+      "Evidence Posture": "complete",
+      "Evidence": "docs/architecture/event-accounting-architecture.md; src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.cs; tests/Meridian.Tests/Storage/AssetAccountingPostingEvidenceValidatorTests.cs; tests/Meridian.Tests/AssetOperations/AssetAccountingEventSpineContractTests.cs; tests/Meridian.Tests/AssetOperations/InMemoryAssetAccountingEventProjectionStoreTests.cs; tests/Meridian.Tests/FinancialOperations/Ledger/AssetAccountingEventSpineServiceTests.cs; tests/Meridian.Tests/FinancialOperations/Ledger/AssetAccountingLifecycleSeparationTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountingConfiguration.cs; tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs",
+      "Last Reviewed": "2026-07-28"
     },
     {
       "ID": "W9-DEMO-002",

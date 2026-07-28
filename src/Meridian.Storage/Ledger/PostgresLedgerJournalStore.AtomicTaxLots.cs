@@ -1221,7 +1221,7 @@ public sealed partial class PostgresLedgerJournalStore
         if (assetAccounts.Length != 1)
         {
             throw new LedgerValidationException(
-                "Atomic disposal selections must resolve to one exact asset account.");
+                "Atomic tax-lot mutations must resolve to one exact asset account.");
         }
 
         var expectedCostBasis = mutations.Sum(static mutation => mutation.CostBasis);

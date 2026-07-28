@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-07-21
+Snapshot date: 2026-07-28
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -41,7 +41,7 @@ Snapshot date: 2026-07-21
 | W8-UX-CONSOL-001 | Browser workstation screen consolidation | in_progress | on_track | medium | Workstation Shell and UX |
 | W8-WPF-PARITY-001 | WPF desktop workstation reactivation and web-UI parity | in_progress | on_track | high | Desktop Workstation |
 | W9-ALPACA-004 | Alpaca fill streaming into order and ledger state | planned | green | high | Execution and Fund Accounts |
-| W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | in_progress | on_track | critical | Accounting and Ledger |
+| W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
 | W9-DEMO-002 | One-command seeded demo with durable storage | planned | green | critical | Workstation Shell and UX |
 | W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | planned | green | high | Platform Security and Governance |
 | W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | planned | green | high | Accounting and Ledger |

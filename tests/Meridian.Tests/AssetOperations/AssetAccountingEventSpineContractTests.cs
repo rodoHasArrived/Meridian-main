@@ -115,6 +115,143 @@ public sealed class AssetAccountingEventSpineContractTests
             .Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
+    [Fact]
+    public void DisposalSelections_CompleteVersionedEvidenceBackedInstruction_Passes()
+    {
+        var retained = BuildProjected().RetainedEvidence;
+        var instruction = BuildDisposalInstruction(retained[0].EvidenceId);
+
+        AssetLotMutationInstructionValidator.Validate(
+                AssetAccountingEventKindDto.Disposal,
+                instruction,
+                100m,
+                new DateOnly(2026, 6, 30),
+                retained)
+            .Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DisposalSelections_MissingReliefPolicyOrSelections_FailClosed()
+    {
+        var retained = BuildProjected().RetainedEvidence;
+        var instruction = BuildDisposalInstruction(retained[0].EvidenceId) with { ReliefMethod = null };
+
+        AssetLotMutationInstructionValidator.Validate(
+                AssetAccountingEventKindDto.Disposal,
+                instruction,
+                100m,
+                new DateOnly(2026, 6, 30),
+                retained)
+            .Should().ContainSingle(issue => issue.Contains("relief policy"));
+    }
+
+    [Fact]
+    public void DisposalSelections_UnretainedEvidenceDuplicateOrdinalOrWrongCostBasis_FailClosed()
+    {
+        var retained = BuildProjected().RetainedEvidence;
+        var valid = BuildDisposalInstruction(retained[0].EvidenceId);
+        var baseline = valid.DisposalSelections[0];
+
+        var unretainedEvidence = valid with
+        {
+            DisposalSelections = [baseline with { SelectionEvidenceId = "not-retained" }]
+        };
+        var duplicateOrdinal = valid with
+        {
+            DisposalSelections =
+            [
+                baseline,
+                baseline with { TaxLotRecordId = Guid.NewGuid(), LotId = "lot-b" }
+            ]
+        };
+        var wrongCostBasis = valid with
+        {
+            DisposalSelections = [baseline with { ExpectedCostBasis = baseline.ExpectedCostBasis + 1m }]
+        };
+
+        foreach (var mutated in new[] { unretainedEvidence, duplicateOrdinal, wrongCostBasis })
+        {
+            AssetLotMutationInstructionValidator.Validate(
+                    AssetAccountingEventKindDto.Disposal,
+                    mutated,
+                    100m,
+                    new DateOnly(2026, 6, 30),
+                    retained)
+                .Should().ContainSingle(issue => issue.Contains("Disposal selections require"));
+        }
+    }
+
+    [Fact]
+    public void NonLotEventKinds_CannotCarryLotMutations()
+    {
+        var retained = BuildProjected().RetainedEvidence;
+        var instruction = BuildDisposalInstruction(retained[0].EvidenceId);
+
+        AssetLotMutationInstructionValidator.Validate(
+                AssetAccountingEventKindDto.Valuation,
+                instruction,
+                100m,
+                new DateOnly(2026, 6, 30),
+                retained)
+            .Should().ContainSingle(issue => issue.Contains("cannot carry acquisition or disposal lot mutations"));
+    }
+
+    [Fact]
+    public void LotCorrections_PartialLineageOrUnapprovedMetadata_FailClosed()
+    {
+        var retained = BuildProjected().RetainedEvidence;
+        var valid = BuildDisposalInstruction(retained[0].EvidenceId);
+
+        var partialLineage = valid with { CorrectsJournalEntryId = Guid.NewGuid() };
+        AssetLotMutationInstructionValidator.Validate(
+                AssetAccountingEventKindDto.Disposal,
+                partialLineage,
+                100m,
+                new DateOnly(2026, 6, 30),
+                retained)
+            .Should().ContainSingle(issue => issue.Contains(
+                "corrected mutation batch, corrected journal, and approved correction metadata together"));
+
+        var unapproved = valid with
+        {
+            CorrectsMutationBatchId = Guid.NewGuid(),
+            CorrectsJournalEntryId = Guid.NewGuid(),
+            CorrectionApproval = new LedgerAdjustmentApprovalMetadataDto(
+                "approval-1",
+                LedgerAdjustmentApprovalStatusDto.Pending,
+                "approver",
+                DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+                "correction")
+        };
+        AssetLotMutationInstructionValidator.Validate(
+                AssetAccountingEventKindDto.Disposal,
+                unapproved,
+                100m,
+                new DateOnly(2026, 6, 30),
+                retained)
+            .Should().ContainSingle(issue => issue.Contains("complete, approved, and UTC"));
+    }
+
+    private static AssetLotMutationInstructionDto BuildDisposalInstruction(string selectionEvidenceId)
+        => new(
+            AssetLotMutationIntentDto.Dispose,
+            DisposalSelections:
+            [
+                new AssetDisposalLotSelectionDto(
+                    Guid.Parse("aaaaaaaa-2222-3333-4444-cccccccccccc"),
+                    "lot-a",
+                    ExpectedVersion: 2,
+                    ExpectedOpenQuantity: 10m,
+                    Quantity: 4m,
+                    SelectionOrdinal: 0,
+                    SelectionEvidenceId: selectionEvidenceId,
+                    ExpectedUnitCost: 25m,
+                    ExpectedCostBasis: 100m)
+            ],
+            ReliefMethod: "SpecificId",
+            PolicyRevision: "rev-7",
+            AssetAccountId: "Assets:Investment");
+
     private static AssetAccountingEventSpineDto BuildProjected()
     {
         var eventId = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb");

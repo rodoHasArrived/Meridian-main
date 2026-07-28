@@ -2,7 +2,7 @@
 
 This file is generated from `docs/roadmap/data/program-state.yml` and `docs/roadmap/data/roadmap-items.yml`.
 
-Snapshot date: 2026-07-21
+Snapshot date: 2026-07-28
 
 | ID | Wave | Title | Workspaces | Status | Health | Priority | Owner Lane | Evidence Posture | Last Reviewed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -18,13 +18,14 @@ Snapshot date: 2026-07-21
 | W5X-EVIDENCE-001 | W5X | Evidence Vault productization | Accounting; Reporting; Data | in_progress | green | high | Accounting and Ledger | in_progress | 2026-07-02 |
 | W5X-FINOPS-001 | W5X | Financial operations control center | Accounting; Reporting; Portfolio; Data | done | green | high | Accounting and Ledger | complete | 2026-06-24 |
 | W5X-FREX-001 | W5X | Shared financial record explorers | Accounting; Portfolio; Data; Reporting | done | green | high | Workstation Shell and UX | complete | 2026-06-22 |
+| W5X-OEG-001 | W5X | Operational evidence graph product surface | Accounting; Portfolio; Reporting; Data | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-06-15 |
 | W5X-STMT-ONBOARD-001 | W5X | Statement reconciliation onboarding wedge | Accounting | in_progress | green | high | Accounting and Ledger | in_progress | 2026-07-02 |
 | W6-BTSTUDIO-001 | W6 | Backtesting studio evidence loop | Strategy | planned | green | medium | Strategy Analytics | planned_evidence | 2026-06-04 |
 | W7-LIVE-001 | W7 | Live-readiness governance | Trading; Settings | done | green | medium | Accounting and Ledger | complete | 2026-07-05 |
 | W8-UX-CONSOL-001 | W8 | Browser workstation screen consolidation | Accounting; Reporting; Strategy; Data | in_progress | on_track | medium | Workstation Shell and UX | in_progress | 2026-07-19 |
 | W8-WPF-PARITY-001 | W8 | WPF desktop workstation reactivation and web-UI parity | Trading; Portfolio; Accounting; Reporting; Strategy; Data; Settings | in_progress | on_track | high | Desktop Workstation | in_progress | 2026-07-06 |
 | W9-ALPACA-004 | W9 | Alpaca fill streaming into order and ledger state | Trading | planned | green | high | Execution and Fund Accounts | planned_evidence | 2026-07-21 |
-| W9-ASSET-010 | W9 | Asset Accounting Event Spine and atomic lot posting | Accounting; Portfolio; Reporting | in_progress | on_track | critical | Accounting and Ledger | in_progress | 2026-07-21 |
+| W9-ASSET-010 | W9 | Asset Accounting Event Spine and atomic lot posting | Accounting; Portfolio; Reporting | done | green | critical | Accounting and Ledger | complete | 2026-07-28 |
 | W9-DEMO-002 | W9 | One-command seeded demo with durable storage | Data; Settings | planned | green | critical | Workstation Shell and UX | planned_evidence | 2026-07-21 |
 | W9-GOV-008 | W9 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | Settings; Accounting | planned | green | high | Platform Security and Governance | planned_evidence | 2026-07-21 |
 | W9-INGEST-009 | W9 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | Accounting; Data | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-21 |

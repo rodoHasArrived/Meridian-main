@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-07-21
+Snapshot date: 2026-07-28
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -581,16 +581,16 @@ Rank 4 of the 2026-07 first-order improvement slate. Alpaca is the only turnkey 
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | in_progress |
-| Health | on_track |
+| Status | done |
+| Health | green |
 | Priority | critical |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | complete |
+| Last reviewed | 2026-07-28 |
 
 ### Current Summary
 
-Active 2026-07-21. Establishes one evidence-backed Asset Accounting Event Spine across acquisition, capitalization, valuation, income, corporate action, impairment, depreciation/amortization, and disposal. Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported remain distinct lifecycle states; only a retained immutable journal may establish Posted impact. Acquisition lot creation and versioned selected-lot disposal are joined to the governed journal append in one idempotent serializable transaction, while readiness and UI projections fail closed when retained evidence identity, hash, source, review, effective-date, version, or scope is incomplete. Completion remains gated on focused and full CI evidence plus authoritative GitHub Actions checks.
+Completed 2026-07-28. One evidence-backed Asset Accounting Event Spine covers acquisition, capitalization, valuation, income, corporate action, impairment, depreciation/amortization, and disposal, resolving Security Master identity, versioned book position, ledger book, period, accounting basis, promoted rule pack, projection lineage, and complete typed retained evidence before candidate drafting. Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported remain distinct lifecycle states; only a retained immutable journal establishes Posted impact. Acquisition lot creation and versioned selected-lot disposal share one idempotent serializable journal-plus-lot transaction, and readiness and UI projections fail closed when retained evidence identity, hash, source, review, effective-date, version, or scope is incomplete. Focused contract, spine, storage, endpoint, shared-read-model, and readiness suites are green ahead of the authoritative GitHub Actions quality gate.
 
 ### Exit Criteria
 
