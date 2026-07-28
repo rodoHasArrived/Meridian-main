@@ -361,7 +361,27 @@ public sealed record WorkstationTradingFillRow(
     string Timestamp);
 
 /// <summary>
-/// Risk state block embedded inside the trading payload.
+/// One live guardrail from the enforced risk-rule registry, rendered as a utilization bar:
+/// how much of the rule's configured headroom the current portfolio consumes.
+/// </summary>
+/// <param name="RuleName">Registry rule name (e.g. "GrossExposure").</param>
+/// <param name="State">Healthy | Observe | Constrained.</param>
+/// <param name="CurrentValue">Display-formatted current measurement.</param>
+/// <param name="Threshold">Display-formatted configured threshold, or "unconfigured".</param>
+/// <param name="UtilizationPercent">Current/threshold percent; null when the rule has no measurable utilization.</param>
+/// <param name="Severity">Enforced outcome tier: Warning flags, Error rejects, Escalate parks for approval, Critical trips the circuit breaker.</param>
+public sealed record WorkstationRiskGuardrail(
+    string RuleName,
+    string State,
+    string CurrentValue,
+    string Threshold,
+    decimal? UtilizationPercent,
+    string Severity);
+
+/// <summary>
+/// Risk state block embedded inside the trading payload. <c>Guardrails</c> carries the
+/// live rule-registry utilization bars; <c>ActiveGuardrails</c> keeps the flat string
+/// rendering of the same registry entries for text-only consumers.
 /// </summary>
 public sealed record WorkstationTradingRiskState(
     string State,
@@ -371,7 +391,8 @@ public sealed record WorkstationTradingRiskState(
     string Var95,
     string MaxDrawdown,
     string BuyingPowerUsed,
-    IReadOnlyList<string> ActiveGuardrails);
+    IReadOnlyList<string> ActiveGuardrails,
+    IReadOnlyList<WorkstationRiskGuardrail>? Guardrails = null);
 
 /// <summary>
 /// Brokerage connection summary embedded inside the trading payload.

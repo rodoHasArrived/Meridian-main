@@ -157,6 +157,9 @@ public sealed class EnforcedRiskValidatorCompositionTests
         var runtime = CreateRuntime(ServicesWithPortfolio(100_000m, 2_000m, 0m));
         var extraRule = new Mock<IRiskRule>();
         extraRule.SetupGet(r => r.RuleName).Returns("HostRule");
+        // Moq returns the enum default (Info, flag-only) for unstubbed members; a blocking
+        // host rule declares Error severity like the IRiskRule interface default.
+        extraRule.SetupGet(r => r.Severity).Returns(RiskRuleSeverity.Error);
         extraRule
             .Setup(r => r.EvaluateAsync(It.IsAny<OrderRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Meridian.Execution.RiskValidationResult.Rejected("host rule rejected"));

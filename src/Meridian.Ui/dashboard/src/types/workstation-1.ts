@@ -964,6 +964,10 @@ export interface RiskRuleStatus {
   currentValue: string;
   asOf: string;
   recentViolations: string[];
+  /** Current/threshold percent; null when the rule has no measurable utilization. */
+  utilizationPercent?: number | null;
+  /** Enforced outcome tier: Warning flags, Error rejects, Escalate parks, Critical trips the breaker. */
+  severity?: string | null;
 }
 
 export interface RiskRuleConfig {
@@ -972,6 +976,10 @@ export interface RiskRuleConfig {
   symbolPositionLimits: Record<string, number> | null;
   maxDrawdownPercent: number | null;
   maxOrdersPerMinute: number | null;
+  maxGrossExposure?: number | null;
+  maxSymbolConcentrationPercent?: number | null;
+  maxOrderNotional?: number | null;
+  escalateOrderNotional?: number | null;
 }
 
 export interface RiskRuleConfigUpdateRequest {
@@ -980,6 +988,27 @@ export interface RiskRuleConfigUpdateRequest {
   maxDrawdownPercent?: number | null;
   maxOrdersPerMinute?: number | null;
   reason?: string | null;
+  maxGrossExposure?: number | null;
+  maxSymbolConcentrationPercent?: number | null;
+  maxOrderNotional?: number | null;
+  escalateOrderNotional?: number | null;
+}
+
+/** A parked risk escalation awaiting (or resolved by) governed operator approval. */
+export interface RiskEscalation {
+  escalationId: string;
+  symbol: string;
+  side: string;
+  type: string;
+  quantity: number;
+  limitPrice: number | null;
+  reason: string;
+  ruleName: string | null;
+  status: "PendingApproval" | "Approved" | "Denied" | "Released";
+  parkedAt: string;
+  resolvedBy: string | null;
+  resolutionReason: string | null;
+  resolvedAt: string | null;
 }
 
 export type OperatorWorkItemKind =

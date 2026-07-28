@@ -482,6 +482,53 @@ describe("TradingScreen", () => {
     expect(within(controls).getByText("BypassOrderControls (AAPL)")).toBeInTheDocument();
   });
 
+  it("renders guardrail utilization bars from the live rule registry", async () => {
+    const guardrailData: TradingWorkspaceResponse = {
+      ...data,
+      risk: {
+        ...data.risk,
+        guardrails: [
+          {
+            ruleName: "SymbolConcentration",
+            state: "Observe",
+            currentValue: "NVDA 26.40%",
+            threshold: "30.00%",
+            utilizationPercent: 88,
+            severity: "Error"
+          },
+          {
+            ruleName: "OrderNotional",
+            state: "Healthy",
+            currentValue: "0 pending approval(s)",
+            threshold: "escalate ≥ 50000, reject > 250000",
+            utilizationPercent: null,
+            severity: "Escalate"
+          }
+        ]
+      }
+    };
+    await renderTradingScreen(guardrailData, "/trading/risk");
+
+    const list = screen.getByRole("list", { name: "Guardrail utilization" });
+    expect(within(list).getByText("Single-name concentration")).toBeInTheDocument();
+    expect(within(list).getByText(/88% · Observe/)).toBeInTheDocument();
+    const bar = within(list).getByRole("progressbar", { name: /single-name concentration utilization/i });
+    expect(bar).toHaveAttribute("aria-valuenow", "88");
+    // A rule with no measurable utilization renders its state and thresholds without a bar.
+    expect(within(list).getByText("Per-order notional")).toBeInTheDocument();
+    expect(within(list).getByText("parks for approval")).toBeInTheDocument();
+    expect(within(list).queryByRole("progressbar", { name: /per-order notional utilization/i })).not.toBeInTheDocument();
+    // The legacy flat strings do not render when structured guardrails are present.
+    expect(screen.queryByText("Cap per single-name")).not.toBeInTheDocument();
+  });
+
+  it("falls back to flat guardrail strings when structured telemetry is absent", async () => {
+    await renderTradingScreen(data, "/trading/risk");
+
+    expect(screen.getByText("Cap per single-name")).toBeInTheDocument();
+    expect(screen.getByText("Throttle at 70%")).toBeInTheDocument();
+  });
+
   it("surfaces cockpit readiness against operator acceptance gates", async () => {
     await renderTradingScreen();
 

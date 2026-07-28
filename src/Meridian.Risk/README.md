@@ -21,14 +21,34 @@ This layer owns risk decision logic and reusable rules. It should stay independe
 
 ## Key folders and files
 
-- `Rules/` - individual risk rules.
+- `Rules/` - individual risk rules: position limit, drawdown circuit breaker, order-rate
+  throttle, and the portfolio-aware gross-exposure, symbol-concentration, and order-notional
+  gates.
+- `PortfolioExposure.cs` - `IPortfolioExposureProvider` and the exposure snapshot the
+  portfolio-aware rules consume (fed from `IAggregatePortfolioService` by the host).
 - Risk interfaces and shared validation primitives.
 
 ## Important workflows
 
 Use this module for pre-trade checks, limits, safety gates, and execution-control evidence.
-Composite risk validation runs rules by priority, uses synchronous fast paths when a rule exposes
-one, and stops at the first rejection so attribution and latency stay predictable on the order path.
+Composite risk validation runs rules by priority and uses synchronous fast paths when a rule
+exposes one. Rule severity maps to a real outcome in `CompositeRiskValidator`:
+
+- `Info`/`Warning` - the breach becomes a warning flag on the result; evaluation continues.
+- `Error` - the order is rejected (first rejection stops evaluation, so attribution and
+  latency stay predictable on the order path).
+- `Escalate` (or a rule returning `RiskValidationResult.Escalated`) - the order parks in the
+  execution-side governed-approval queue (`RiskEscalationQueueService`); an operator approval
+  arms a one-shot, fingerprint-matched release token that lets exactly that order back through
+  the escalation while every other rule still enforces.
+- `Critical` - the order is rejected and the execution circuit breaker
+  (`ExecutionOperatorControlService`) trips, halting routing until an operator closes it.
+
+Portfolio-aware rules read a `PortfolioExposureSnapshot` per evaluation, so thresholds tuned
+through the UI runtime service apply immediately and enforcement always sees the same
+aggregated cross-run exposure the Portfolio workspace reports. Thresholds are operator-tuned
+(null means unconfigured and the rule approves); order notional resolves from the limit/stop
+price or the symbol's reference price and never guesses a price for unknown symbols.
 
 ## Diagrams
 

@@ -1,0 +1,68 @@
+using Meridian.Execution;
+using Meridian.Execution.Sdk;
+using Microsoft.Extensions.Logging;
+using Interop = Meridian.FSharp.Interop;
+
+namespace Meridian.Risk.Rules;
+
+/// <summary>
+/// Rejects orders whose notional would push portfolio-wide gross exposure past the
+/// configured ceiling. Declared <see cref="RiskRuleSeverity.Critical"/>: a breach of the
+/// book-level exposure cap is systemic, so <see cref="CompositeRiskValidator"/> also trips
+/// the execution circuit breaker, halting further routing until an operator intervenes.
+/// A <see langword="null"/> ceiling means the rule is not configured and approves.
+/// </summary>
+public sealed class GrossExposureRule : IRiskRule
+{
+    private readonly IPortfolioExposureProvider _exposureProvider;
+    private readonly Func<decimal?> _maxGrossExposure;
+    private readonly ILogger<GrossExposureRule> _logger;
+
+    public GrossExposureRule(
+        IPortfolioExposureProvider exposureProvider,
+        Func<decimal?> maxGrossExposure,
+        ILogger<GrossExposureRule> logger)
+    {
+        _exposureProvider = exposureProvider ?? throw new ArgumentNullException(nameof(exposureProvider));
+        _maxGrossExposure = maxGrossExposure ?? throw new ArgumentNullException(nameof(maxGrossExposure));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <inheritdoc />
+    public string RuleName => "GrossExposure";
+
+    /// <inheritdoc />
+    public RiskRuleSeverity Severity => RiskRuleSeverity.Critical;
+
+    /// <inheritdoc />
+    public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+    {
+        var maxGrossExposure = _maxGrossExposure();
+        if (maxGrossExposure is null or <= 0m)
+        {
+            return Task.FromResult(RiskValidationResult.Approved());
+        }
+
+        var snapshot = _exposureProvider.GetSnapshot();
+        var context = Interop.RiskInterop.CreatePortfolioContext(
+            request,
+            portfolioExposure: snapshot.GrossExposure,
+            symbolExposure: snapshot.GetSymbolExposure(request.Symbol).GrossExposure,
+            portfolioValue: snapshot.PortfolioValue,
+            orderNotional: OrderNotionalResolver.Resolve(request, snapshot),
+            maxGrossExposure: maxGrossExposure,
+            maxSymbolConcentrationPercent: default,
+            maxOrderNotional: default,
+            escalateOrderNotional: default);
+        var decision = Interop.RiskInterop.EvaluateGrossExposure(context);
+
+        if (!decision.Approved)
+        {
+            var reason = decision.Reasons.FirstOrDefault() ?? "Gross exposure limit exceeded.";
+            _logger.LogWarning("Gross exposure rule rejected order for {Symbol}: {Reason}", request.Symbol, reason);
+            return Task.FromResult(RiskValidationResult.Rejected(reason));
+        }
+
+        return Task.FromResult(RiskValidationResult.Approved());
+    }
+}

@@ -30,21 +30,33 @@ public sealed record RiskRuleStatusDto(
     string Threshold,
     string CurrentValue,
     DateTimeOffset AsOf,
-    IReadOnlyList<string> RecentViolations);
+    IReadOnlyList<string> RecentViolations,
+    /// <summary>Live utilization of the rule's headroom (current/threshold, percent). Null when the rule has no measurable utilization or is unconfigured.</summary>
+    decimal? UtilizationPercent = null,
+    /// <summary>Enforced severity outcome of the rule: Warning flags, Error rejects, Escalate parks for approval, Critical trips the circuit breaker.</summary>
+    string? Severity = null);
 
 public sealed record RiskRuleConfigDto(
     string RuleName,
     decimal? DefaultMaxPositionSize,
     IReadOnlyDictionary<string, decimal>? SymbolPositionLimits,
     decimal? MaxDrawdownPercent,
-    int? MaxOrdersPerMinute);
+    int? MaxOrdersPerMinute,
+    decimal? MaxGrossExposure = null,
+    decimal? MaxSymbolConcentrationPercent = null,
+    decimal? MaxOrderNotional = null,
+    decimal? EscalateOrderNotional = null);
 
 public sealed record RiskRuleConfigUpdateRequest(
     decimal? DefaultMaxPositionSize = null,
     IReadOnlyDictionary<string, decimal?>? SymbolPositionLimits = null,
     decimal? MaxDrawdownPercent = null,
     int? MaxOrdersPerMinute = null,
-    string? Reason = null);
+    string? Reason = null,
+    decimal? MaxGrossExposure = null,
+    decimal? MaxSymbolConcentrationPercent = null,
+    decimal? MaxOrderNotional = null,
+    decimal? EscalateOrderNotional = null);
 
 /// <summary>
 /// Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only
@@ -68,6 +80,13 @@ public sealed class RiskRuleRuntimeService
     private decimal _maxDrawdownPercent = DefaultDrawdownPercent;
     private int _maxOrdersPerMinute = DefaultMaxOrdersPerMinute;
 
+    // Portfolio-aware thresholds. Null = unconfigured: the corresponding enforced rule
+    // approves and the dashboard reports the rule in its unconfigured Observe state.
+    private decimal? _maxGrossExposure;
+    private decimal? _maxSymbolConcentrationPercent;
+    private decimal? _maxOrderNotional;
+    private decimal? _escalateOrderNotional;
+
     public RiskRuleRuntimeService(
         IServiceProvider services,
         ILogger<RiskRuleRuntimeService> logger,
@@ -84,6 +103,30 @@ public sealed class RiskRuleRuntimeService
     /// throttle rule so hot updates take effect immediately.
     /// </summary>
     public int MaxOrdersPerMinute => GetMaxOrdersPerMinute();
+
+    /// <summary>
+    /// Operator-tuned portfolio-wide gross exposure ceiling, read per evaluation by the
+    /// enforced gross-exposure rule. Null when unconfigured (the rule approves).
+    /// </summary>
+    public decimal? MaxGrossExposure { get { lock (_gate) { return _maxGrossExposure; } } }
+
+    /// <summary>
+    /// Operator-tuned single-symbol concentration cap as a percentage of portfolio value,
+    /// read per evaluation by the enforced concentration rule. Null when unconfigured.
+    /// </summary>
+    public decimal? MaxSymbolConcentrationPercent { get { lock (_gate) { return _maxSymbolConcentrationPercent; } } }
+
+    /// <summary>
+    /// Operator-tuned hard per-order notional ceiling, read per evaluation by the enforced
+    /// order-notional rule. Null when unconfigured.
+    /// </summary>
+    public decimal? MaxOrderNotional { get { lock (_gate) { return _maxOrderNotional; } } }
+
+    /// <summary>
+    /// Operator-tuned notional band at or above which an order parks for governed approval,
+    /// read per evaluation by the enforced order-notional rule. Null when unconfigured.
+    /// </summary>
+    public decimal? EscalateOrderNotional { get { lock (_gate) { return _escalateOrderNotional; } } }
 
     /// <summary>
     /// Evaluates the drawdown circuit breaker against the same live portfolio state and
@@ -130,7 +173,10 @@ public sealed class RiskRuleRuntimeService
         [
             BuildPositionLimitStatus(auditEntries, asOf),
             BuildDrawdownStatus(auditEntries, asOf),
-            BuildOrderRateStatus(auditEntries, asOf)
+            BuildOrderRateStatus(auditEntries, asOf),
+            BuildGrossExposureStatus(auditEntries, asOf),
+            BuildSymbolConcentrationStatus(auditEntries, asOf),
+            BuildOrderNotionalStatus(auditEntries, asOf)
         ];
     }
 
@@ -180,6 +226,28 @@ public sealed class RiskRuleRuntimeService
                     SymbolPositionLimits: null,
                     MaxDrawdownPercent: null,
                     MaxOrdersPerMinute: _maxOrdersPerMinute),
+                "GrossExposure" => new RiskRuleConfigDto(
+                    RuleName: "GrossExposure",
+                    DefaultMaxPositionSize: null,
+                    SymbolPositionLimits: null,
+                    MaxDrawdownPercent: null,
+                    MaxOrdersPerMinute: null,
+                    MaxGrossExposure: _maxGrossExposure),
+                "SymbolConcentration" => new RiskRuleConfigDto(
+                    RuleName: "SymbolConcentration",
+                    DefaultMaxPositionSize: null,
+                    SymbolPositionLimits: null,
+                    MaxDrawdownPercent: null,
+                    MaxOrdersPerMinute: null,
+                    MaxSymbolConcentrationPercent: _maxSymbolConcentrationPercent),
+                "OrderNotional" => new RiskRuleConfigDto(
+                    RuleName: "OrderNotional",
+                    DefaultMaxPositionSize: null,
+                    SymbolPositionLimits: null,
+                    MaxDrawdownPercent: null,
+                    MaxOrdersPerMinute: null,
+                    MaxOrderNotional: _maxOrderNotional,
+                    EscalateOrderNotional: _escalateOrderNotional),
                 _ => null
             };
         }
@@ -241,6 +309,74 @@ public sealed class RiskRuleRuntimeService
                     normalizedRule,
                     actor,
                     maxOrdersPerMinute);
+                break;
+            case "GrossExposure":
+                var maxGrossExposure = NormalizeThreshold(request.MaxGrossExposure, nameof(request.MaxGrossExposure), required: true);
+
+                lock (_gate)
+                {
+                    _maxGrossExposure = maxGrossExposure;
+                }
+                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Risk rule config updated for {RuleName} by {Actor}: gross exposure ceiling {MaxGrossExposure}",
+                    normalizedRule,
+                    actor,
+                    maxGrossExposure?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
+                break;
+            case "SymbolConcentration":
+                var maxConcentration = NormalizeThreshold(request.MaxSymbolConcentrationPercent, nameof(request.MaxSymbolConcentrationPercent), required: true);
+                if (maxConcentration is > 100m)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(request.MaxSymbolConcentrationPercent), "MaxSymbolConcentrationPercent cannot exceed 100.");
+                }
+
+                lock (_gate)
+                {
+                    _maxSymbolConcentrationPercent = maxConcentration;
+                }
+                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Risk rule config updated for {RuleName} by {Actor}: concentration cap {MaxSymbolConcentrationPercent}%",
+                    normalizedRule,
+                    actor,
+                    maxConcentration?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
+                break;
+            case "OrderNotional":
+                if (!request.MaxOrderNotional.HasValue && !request.EscalateOrderNotional.HasValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(request.MaxOrderNotional), "Provide MaxOrderNotional and/or EscalateOrderNotional.");
+                }
+
+                decimal? maxOrderNotional;
+                decimal? escalateOrderNotional;
+                lock (_gate)
+                {
+                    maxOrderNotional = request.MaxOrderNotional.HasValue
+                        ? NormalizeThreshold(request.MaxOrderNotional, nameof(request.MaxOrderNotional), required: false)
+                        : _maxOrderNotional;
+                    escalateOrderNotional = request.EscalateOrderNotional.HasValue
+                        ? NormalizeThreshold(request.EscalateOrderNotional, nameof(request.EscalateOrderNotional), required: false)
+                        : _escalateOrderNotional;
+
+                    if (maxOrderNotional.HasValue && escalateOrderNotional.HasValue &&
+                        escalateOrderNotional.Value >= maxOrderNotional.Value)
+                    {
+                        throw new ArgumentOutOfRangeException(
+                            nameof(request.EscalateOrderNotional),
+                            "EscalateOrderNotional must be below MaxOrderNotional so the governed-approval band exists.");
+                    }
+
+                    _maxOrderNotional = maxOrderNotional;
+                    _escalateOrderNotional = escalateOrderNotional;
+                }
+                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Risk rule config updated for {RuleName} by {Actor}: notional ceiling {MaxOrderNotional}, escalation band {EscalateOrderNotional}",
+                    normalizedRule,
+                    actor,
+                    maxOrderNotional?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured",
+                    escalateOrderNotional?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
                 break;
             default:
                 return null;
@@ -339,7 +475,9 @@ public sealed class RiskRuleRuntimeService
                 : "unlimited",
             CurrentValue: maxAbsoluteQuantity.ToString("G29", CultureInfo.InvariantCulture),
             AsOf: asOf,
-            RecentViolations: violations);
+            RecentViolations: violations,
+            UtilizationPercent: ComputeUtilization(maxAbsoluteQuantity, threshold),
+            Severity: "Error");
     }
 
     private RiskRuleStatusDto BuildDrawdownStatus(
@@ -382,7 +520,9 @@ public sealed class RiskRuleRuntimeService
             Threshold: $"{maxDrawdownPercent:F2}%",
             CurrentValue: $"{drawdownPercent:F2}%",
             AsOf: asOf,
-            RecentViolations: violations);
+            RecentViolations: violations,
+            UtilizationPercent: ComputeUtilization(Math.Max(0m, -drawdownPercent), maxDrawdownPercent),
+            Severity: "Critical");
     }
 
     private RiskRuleStatusDto BuildOrderRateStatus(
@@ -422,7 +562,171 @@ public sealed class RiskRuleRuntimeService
             Threshold: $"{maxOrdersPerMinute} orders/minute",
             CurrentValue: $"{recentOrderCount} orders/minute",
             AsOf: asOf,
-            RecentViolations: violations);
+            RecentViolations: violations,
+            UtilizationPercent: ComputeUtilization(recentOrderCount, maxOrdersPerMinute),
+            Severity: "Error");
+    }
+
+    private RiskRuleStatusDto BuildGrossExposureStatus(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        DateTimeOffset asOf)
+    {
+        var maxGrossExposure = MaxGrossExposure;
+        var snapshot = Resolve<Meridian.Risk.IPortfolioExposureProvider>()?.GetSnapshot();
+        var grossExposure = snapshot?.GrossExposure ?? 0m;
+
+        var violations = FindViolations(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure");
+        var utilization = ComputeUtilization(grossExposure, maxGrossExposure);
+        var breached = maxGrossExposure.HasValue && grossExposure > maxGrossExposure.Value;
+        var state = breached || violations.Count > 0
+            ? "Constrained"
+            : !maxGrossExposure.HasValue
+                ? "Observe"
+                : utilization >= 80m ? "Observe" : "Healthy";
+        var summary = breached
+            ? "Portfolio gross exposure has breached the configured ceiling; new orders are rejected and the circuit breaker trips."
+            : violations.Count > 0
+                ? "Recent orders were rejected by the gross exposure ceiling."
+                : !maxGrossExposure.HasValue
+                    ? "No gross exposure ceiling is configured; the rule approves all orders."
+                    : state == "Observe"
+                        ? "Portfolio gross exposure is approaching the configured ceiling."
+                        : "Portfolio gross exposure is inside the configured ceiling.";
+
+        return new RiskRuleStatusDto(
+            RuleName: "GrossExposure",
+            State: state,
+            Summary: summary,
+            IsBreached: breached || violations.Count > 0,
+            Threshold: maxGrossExposure.HasValue
+                ? maxGrossExposure.Value.ToString("G29", CultureInfo.InvariantCulture)
+                : "unconfigured",
+            CurrentValue: grossExposure.ToString("F2", CultureInfo.InvariantCulture),
+            AsOf: asOf,
+            RecentViolations: violations,
+            UtilizationPercent: utilization,
+            Severity: "Critical");
+    }
+
+    private RiskRuleStatusDto BuildSymbolConcentrationStatus(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        DateTimeOffset asOf)
+    {
+        var maxPercent = MaxSymbolConcentrationPercent;
+        var snapshot = Resolve<Meridian.Risk.IPortfolioExposureProvider>()?.GetSnapshot();
+
+        var topSymbol = "—";
+        var topPercent = 0m;
+        if (snapshot is { PortfolioValue: > 0m })
+        {
+            foreach (var exposure in snapshot.SymbolExposures.Values)
+            {
+                var percent = exposure.GrossExposure / snapshot.PortfolioValue * 100m;
+                if (percent > topPercent)
+                {
+                    topPercent = percent;
+                    topSymbol = exposure.Symbol;
+                }
+            }
+        }
+
+        var violations = FindViolations(auditEntries, actionHint: "OrderRejected", textHint: "concentration");
+        var utilization = ComputeUtilization(topPercent, maxPercent);
+        var breached = maxPercent.HasValue && topPercent > maxPercent.Value;
+        var state = breached || violations.Count > 0
+            ? "Constrained"
+            : !maxPercent.HasValue
+                ? "Observe"
+                : utilization >= 80m ? "Observe" : "Healthy";
+        var summary = breached
+            ? $"{topSymbol} concentration has breached the configured cap."
+            : violations.Count > 0
+                ? "Recent orders were rejected by the concentration cap."
+                : !maxPercent.HasValue
+                    ? "No concentration cap is configured; the rule approves all orders."
+                    : state == "Observe"
+                        ? $"{topSymbol} concentration is approaching the configured cap."
+                        : "Single-symbol concentration is inside the configured cap.";
+
+        return new RiskRuleStatusDto(
+            RuleName: "SymbolConcentration",
+            State: state,
+            Summary: summary,
+            IsBreached: breached || violations.Count > 0,
+            Threshold: maxPercent.HasValue ? $"{maxPercent.Value:F2}%" : "unconfigured",
+            CurrentValue: snapshot is { PortfolioValue: > 0m } ? $"{topSymbol} {topPercent:F2}%" : "0.00%",
+            AsOf: asOf,
+            RecentViolations: violations,
+            UtilizationPercent: utilization,
+            Severity: "Error");
+    }
+
+    private RiskRuleStatusDto BuildOrderNotionalStatus(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        DateTimeOffset asOf)
+    {
+        var maxNotional = MaxOrderNotional;
+        var escalateAt = EscalateOrderNotional;
+        var pendingEscalations = Resolve<RiskEscalationQueueService>()?.GetPending() ?? [];
+
+        var violations = FindViolations(auditEntries, actionHint: "OrderRejected", textHint: "notional");
+        var configured = maxNotional.HasValue || escalateAt.HasValue;
+        var breached = violations.Count > 0;
+        var state = breached
+            ? "Constrained"
+            : !configured
+                ? "Observe"
+                : pendingEscalations.Count > 0 ? "Observe" : "Healthy";
+        var summary = breached
+            ? "Recent orders were rejected by the per-order notional ceiling."
+            : !configured
+                ? "No per-order notional limits are configured; the rule approves all orders."
+                : pendingEscalations.Count > 0
+                    ? $"{pendingEscalations.Count} order(s) are parked awaiting governed approval."
+                    : "Per-order notional limits are configured and no recent breaches were detected.";
+
+        var recentViolations = violations.Count > 0
+            ? violations
+            : pendingEscalations
+                .Take(5)
+                .Select(static entry =>
+                    $"Parked for approval: {entry.Request.Symbol} {entry.Request.Side} {entry.Request.Quantity} — {entry.Reason}")
+                .ToList();
+
+        var threshold = (maxNotional, escalateAt) switch
+        {
+            (not null, not null) => $"escalate ≥ {escalateAt.Value.ToString("G29", CultureInfo.InvariantCulture)}, reject > {maxNotional.Value.ToString("G29", CultureInfo.InvariantCulture)}",
+            (not null, null) => $"reject > {maxNotional.Value.ToString("G29", CultureInfo.InvariantCulture)}",
+            (null, not null) => $"escalate ≥ {escalateAt.Value.ToString("G29", CultureInfo.InvariantCulture)}",
+            _ => "unconfigured"
+        };
+
+        return new RiskRuleStatusDto(
+            RuleName: "OrderNotional",
+            State: state,
+            Summary: summary,
+            IsBreached: breached,
+            Threshold: threshold,
+            CurrentValue: $"{pendingEscalations.Count} pending approval(s)",
+            AsOf: asOf,
+            RecentViolations: recentViolations,
+            UtilizationPercent: null,
+            Severity: "Escalate");
+    }
+
+    /// <summary>
+    /// Percentage of the threshold consumed by the current value, clamped to [0, 999.99].
+    /// Null when no threshold is configured.
+    /// </summary>
+    private static decimal? ComputeUtilization(decimal currentValue, decimal? threshold)
+    {
+        if (!threshold.HasValue || threshold.Value <= 0m)
+        {
+            return null;
+        }
+
+        var utilization = currentValue / threshold.Value * 100m;
+        return Math.Clamp(Math.Round(utilization, 2), 0m, 999.99m);
     }
 
     private static List<string> FindViolations(
@@ -469,7 +773,34 @@ public sealed class RiskRuleRuntimeService
             "positionlimit" => "PositionLimit",
             "drawdowncircuitbreaker" => "DrawdownCircuitBreaker",
             "orderratethrottle" => "OrderRateThrottle",
+            "grossexposure" => "GrossExposure",
+            "symbolconcentration" => "SymbolConcentration",
+            "ordernotional" => "OrderNotional",
             _ => null
+        };
+    }
+
+    /// <summary>
+    /// Normalizes an operator-supplied threshold: positive sets the value, zero clears it
+    /// (disabling the rule), negative is invalid. <paramref name="required"/> demands a value.
+    /// </summary>
+    private static decimal? NormalizeThreshold(decimal? value, string parameterName, bool required)
+    {
+        if (!value.HasValue)
+        {
+            if (required)
+            {
+                throw new ArgumentOutOfRangeException(parameterName, $"{parameterName} is required.");
+            }
+
+            return null;
+        }
+
+        return value.Value switch
+        {
+            < 0m => throw new ArgumentOutOfRangeException(parameterName, $"{parameterName} cannot be negative."),
+            0m => null,
+            _ => value.Value
         };
     }
 
@@ -485,7 +816,11 @@ public sealed class RiskRuleRuntimeService
                 MaxOrdersPerMinute: _maxOrdersPerMinute,
                 UpdatedAt: DateTimeOffset.UtcNow,
                 UpdatedBy: actor,
-                Reason: reason);
+                Reason: reason,
+                MaxGrossExposure: _maxGrossExposure,
+                MaxSymbolConcentrationPercent: _maxSymbolConcentrationPercent,
+                MaxOrderNotional: _maxOrderNotional,
+                EscalateOrderNotional: _escalateOrderNotional);
         }
 
         var payload = JsonSerializer.Serialize(snapshot, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
@@ -512,6 +847,10 @@ public sealed class RiskRuleRuntimeService
             {
                 _maxDrawdownPercent = snapshot.MaxDrawdownPercent > 0m ? snapshot.MaxDrawdownPercent : DefaultDrawdownPercent;
                 _maxOrdersPerMinute = snapshot.MaxOrdersPerMinute > 0 ? snapshot.MaxOrdersPerMinute : DefaultMaxOrdersPerMinute;
+                _maxGrossExposure = snapshot.MaxGrossExposure is > 0m ? snapshot.MaxGrossExposure : null;
+                _maxSymbolConcentrationPercent = snapshot.MaxSymbolConcentrationPercent is > 0m ? snapshot.MaxSymbolConcentrationPercent : null;
+                _maxOrderNotional = snapshot.MaxOrderNotional is > 0m ? snapshot.MaxOrderNotional : null;
+                _escalateOrderNotional = snapshot.EscalateOrderNotional is > 0m ? snapshot.EscalateOrderNotional : null;
             }
         }
         catch (Exception exception)
@@ -529,7 +868,11 @@ public sealed record RiskRuleRuntimeSnapshot(
     int MaxOrdersPerMinute,
     DateTimeOffset UpdatedAt,
     string UpdatedBy,
-    string? Reason);
+    string? Reason,
+    decimal? MaxGrossExposure = null,
+    decimal? MaxSymbolConcentrationPercent = null,
+    decimal? MaxOrderNotional = null,
+    decimal? EscalateOrderNotional = null);
 
 [JsonSerializable(typeof(RiskRuleRuntimeSnapshot))]
 internal sealed partial class RiskRuleRuntimeSnapshotJsonContext : JsonSerializerContext

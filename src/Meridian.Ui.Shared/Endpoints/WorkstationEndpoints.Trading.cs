@@ -112,12 +112,10 @@ public static partial class WorkstationEndpoints
         // --- Risk state (derived from live portfolio when available) ---
         var riskState = "Healthy";
         var riskSummary = "Portfolio and order-book exposure are within configured paper thresholds.";
-        IReadOnlyList<string> activeGuardrails =
-        [
-            "Single-name concentration cap set at 30% notional.",
-            "Auto-throttle activates above 70% intraday buying power.",
-            "Strategy promotion to live blocked while state is Observe or Constrained."
-        ];
+        // Guardrails come exclusively from the live rule registry below — no synthetic
+        // placeholder entries when the runtime service is unavailable.
+        IReadOnlyList<string> activeGuardrails = [];
+        IReadOnlyList<WorkstationRiskGuardrail> guardrails = [];
         var grossExposure = 0m;
         var netExposureValue = 0m;
 
@@ -157,6 +155,7 @@ public static partial class WorkstationEndpoints
             riskState = runtimeRisk.State;
             riskSummary = runtimeRisk.Summary;
             activeGuardrails = runtimeRisk.ActiveGuardrails;
+            guardrails = runtimeRisk.Guardrails;
         }
 
         var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
@@ -210,7 +209,8 @@ public static partial class WorkstationEndpoints
                 Var95: "—",
                 MaxDrawdown: maxDrawdownDisplay,
                 BuyingPowerUsed: buyingPowerUsedDisplay,
-                ActiveGuardrails: activeGuardrails),
+                ActiveGuardrails: activeGuardrails,
+                Guardrails: guardrails),
             Brokerage: new WorkstationTradingBrokerageState(
                 Provider: brokerageValidation.GatewayDisplayName,
                 Account: run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",

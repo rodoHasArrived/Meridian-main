@@ -649,7 +649,44 @@ const fixtureTradingWorkspace: TradingWorkspaceResponse = {
     var95: "$9,000",
     maxDrawdown: "-1.1%",
     buyingPowerUsed: "58%",
-    activeGuardrails: ["Cap per single-name", "Throttle at 70%"]
+    activeGuardrails: [
+      "SymbolConcentration: NVDA 26.40% (threshold 30.00%, state Observe).",
+      "OrderRateThrottle: 41 orders/minute (threshold 60 orders/minute, state Healthy)."
+    ],
+    guardrails: [
+      {
+        ruleName: "SymbolConcentration",
+        state: "Observe",
+        currentValue: "NVDA 26.40%",
+        threshold: "30.00%",
+        utilizationPercent: 88,
+        severity: "Error"
+      },
+      {
+        ruleName: "GrossExposure",
+        state: "Healthy",
+        currentValue: "150000.00",
+        threshold: "400000",
+        utilizationPercent: 37.5,
+        severity: "Critical"
+      },
+      {
+        ruleName: "OrderRateThrottle",
+        state: "Healthy",
+        currentValue: "41 orders/minute",
+        threshold: "60 orders/minute",
+        utilizationPercent: 68.33,
+        severity: "Error"
+      },
+      {
+        ruleName: "OrderNotional",
+        state: "Healthy",
+        currentValue: "0 pending approval(s)",
+        threshold: "escalate ≥ 50000, reject > 250000",
+        utilizationPercent: null,
+        severity: "Escalate"
+      }
+    ]
   },
   brokerage: {
     provider: "Interactive Brokers",

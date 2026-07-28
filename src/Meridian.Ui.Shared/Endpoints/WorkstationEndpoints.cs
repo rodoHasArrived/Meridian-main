@@ -3579,6 +3579,7 @@ public static partial class WorkstationEndpoints
         var riskState = "Healthy";
         var riskSummary = "Portfolio exposure is within configured paper thresholds.";
         IReadOnlyList<string> activeGuardrails = [];
+        IReadOnlyList<WorkstationRiskGuardrail> guardrails = [];
 
         if (portfolio is not null)
         {
@@ -3608,6 +3609,7 @@ public static partial class WorkstationEndpoints
             riskState = runtimeRisk.State;
             riskSummary = runtimeRisk.Summary;
             activeGuardrails = runtimeRisk.ActiveGuardrails;
+            guardrails = runtimeRisk.Guardrails;
         }
 
         var risk = new WorkstationTradingRiskState(
@@ -3622,7 +3624,8 @@ public static partial class WorkstationEndpoints
             BuyingPowerUsed: portfolio is not null && portfolio.BuyingPower > 0m
                 ? FormatPercent(grossExposure / portfolio.BuyingPower)
                 : "—",
-            ActiveGuardrails: activeGuardrails);
+            ActiveGuardrails: activeGuardrails,
+            Guardrails: guardrails);
 
         // --- Brokerage state ---
         var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);

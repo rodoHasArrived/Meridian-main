@@ -44,6 +44,10 @@ public sealed class RiskEndpointsTests
         rules!.Should().Contain(rule => rule.RuleName == "PositionLimit");
         rules.Should().Contain(rule => rule.RuleName == "DrawdownCircuitBreaker");
         rules.Should().Contain(rule => rule.RuleName == "OrderRateThrottle");
+        rules.Should().Contain(rule => rule.RuleName == "GrossExposure");
+        rules.Should().Contain(rule => rule.RuleName == "SymbolConcentration");
+        rules.Should().Contain(rule => rule.RuleName == "OrderNotional");
+        rules.Should().OnlyContain(rule => !string.IsNullOrWhiteSpace(rule.Severity), "each guardrail declares its enforced severity outcome");
 
         var updateResponse = await client.PutAsync(
             "/api/risk/rules/PositionLimit/config",
@@ -60,6 +64,123 @@ public sealed class RiskEndpointsTests
         var config = JsonSerializer.Deserialize<RiskRuleConfigDto>(await configResponse.Content.ReadAsStringAsync(), JsonOptions());
         config.Should().NotBeNull();
         config!.DefaultMaxPositionSize.Should().Be(50m);
+
+        // Portfolio-aware rule config lifecycle: tune the notional bands, read them back.
+        var notionalUpdate = await client.PutAsync(
+            "/api/risk/rules/OrderNotional/config",
+            JsonContent(new
+            {
+                maxOrderNotional = 250_000m,
+                escalateOrderNotional = 50_000m,
+                reason = "Escalation band setup"
+            }));
+        notionalUpdate.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var notionalConfig = JsonSerializer.Deserialize<RiskRuleConfigDto>(
+            await (await client.GetAsync("/api/risk/rules/OrderNotional/config")).Content.ReadAsStringAsync(),
+            JsonOptions());
+        notionalConfig!.MaxOrderNotional.Should().Be(250_000m);
+        notionalConfig.EscalateOrderNotional.Should().Be(50_000m);
+
+        // An inverted band (escalate ≥ reject ceiling) is rejected.
+        var invertedBand = await client.PutAsync(
+            "/api/risk/rules/OrderNotional/config",
+            JsonContent(new { escalateOrderNotional = 400_000m }));
+        invertedBand.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var concentrationUpdate = await client.PutAsync(
+            "/api/risk/rules/SymbolConcentration/config",
+            JsonContent(new { maxSymbolConcentrationPercent = 25m }));
+        concentrationUpdate.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var grossUpdate = await client.PutAsync(
+            "/api/risk/rules/GrossExposure/config",
+            JsonContent(new { maxGrossExposure = 500_000m }));
+        grossUpdate.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task RiskEscalations_ApproveReleasesParkedOrderThroughRiskGate()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
+            services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
+            services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
+            services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(
+                NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }));
+            services.AddSingleton<RiskRuleRuntimeService>();
+            services.AddSingleton(new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance));
+            services.AddSingleton<Meridian.Risk.IPortfolioExposureProvider>(new StaticExposureProvider());
+            services.AddSingleton<IRiskValidator>(sp =>
+            {
+                var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
+                return new Meridian.Risk.CompositeRiskValidator(
+                    [
+                        new Meridian.Risk.Rules.OrderNotionalRule(
+                            sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>(),
+                            () => runtime.MaxOrderNotional,
+                            () => runtime.EscalateOrderNotional,
+                            NullLogger<Meridian.Risk.Rules.OrderNotionalRule>.Instance),
+                    ],
+                    NullLogger<Meridian.Risk.CompositeRiskValidator>.Instance,
+                    escalationQueue: sp.GetRequiredService<RiskEscalationQueueService>());
+            });
+            services.AddSingleton<IOrderManager>(sp =>
+                new OrderManagementSystem(
+                    sp.GetRequiredService<IExecutionGateway>(),
+                    NullLogger<OrderManagementSystem>.Instance,
+                    riskValidator: sp.GetRequiredService<IRiskValidator>(),
+                    portfolioState: sp.GetRequiredService<PaperTradingPortfolio>()));
+        }, includeExecutionEndpoints: true);
+
+        var client = app.GetTestClient();
+
+        var riskRules = app.Services.GetRequiredService<RiskRuleRuntimeService>();
+        await riskRules.UpdateConfigAsync(
+            "OrderNotional",
+            new RiskRuleConfigUpdateRequest(MaxOrderNotional: 100_000m, EscalateOrderNotional: 10_000m, Reason: "band"),
+            actor: "test");
+
+        // 200 × 100 = 20k notional lands in the governed-approval band: parked, not routed.
+        var parkedResponse = await client.PostAsync(
+            "/api/execution/orders/submit",
+            JsonContent(new
+            {
+                symbol = "AAPL",
+                side = 0,
+                type = 1,
+                timeInForce = 0,
+                quantity = 200,
+                limitPrice = 100m,
+                strategyId = "escalation-check"
+            }));
+        parkedResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var parkedResult = JsonSerializer.Deserialize<OrderResult>(await parkedResponse.Content.ReadAsStringAsync(), JsonOptions());
+        parkedResult!.ErrorMessage.Should().Contain("governed approval");
+
+        var escalationsResponse = await client.GetAsync("/api/risk/escalations");
+        escalationsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var escalations = JsonSerializer.Deserialize<RiskEscalationDto[]>(
+            await escalationsResponse.Content.ReadAsStringAsync(), JsonOptions());
+        escalations.Should().ContainSingle(entry => entry.Status == "PendingApproval");
+        var escalationId = escalations![0].EscalationId;
+
+        // Approve with release: the order goes back through the risk gate and routes.
+        var approveResponse = await client.PostAsync(
+            $"/api/risk/escalations/{escalationId}/approve",
+            JsonContent(new { reason = "cleared with the desk" }));
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var approval = JsonSerializer.Deserialize<RiskEscalationApprovalResponse>(
+            await approveResponse.Content.ReadAsStringAsync(), JsonOptions());
+        approval!.Escalation.Status.Should().Be("Released");
+        approval.ReleaseResult.Should().NotBeNull();
+        approval.ReleaseResult!.Success.Should().BeTrue("the consumed approval releases the order past the escalation band");
+
+        // Denying an already-resolved escalation 404s.
+        var denyAfter = await client.PostAsync($"/api/risk/escalations/{escalationId}/deny", JsonContent(new { }));
+        denyAfter.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -250,6 +371,16 @@ public sealed class RiskEndpointsTests
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
+
+    private sealed class StaticExposureProvider : Meridian.Risk.IPortfolioExposureProvider
+    {
+        public Meridian.Risk.PortfolioExposureSnapshot GetSnapshot() => new(
+            GrossExposure: 0m,
+            NetExposure: 0m,
+            PortfolioValue: 100_000m,
+            SymbolExposures: new Dictionary<string, Meridian.Risk.SymbolExposure>(StringComparer.OrdinalIgnoreCase),
+            AsOf: DateTimeOffset.UtcNow);
+    }
 
     private sealed class StaticPositionTracker : IPositionTracker
     {

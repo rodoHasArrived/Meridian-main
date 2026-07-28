@@ -91,6 +91,92 @@ let ``Scenario_RiskPositionLimit_GeneratedLargerExposureNeverTurnsRejectIntoAppr
 
     Check.One(Config.QuickThrowOnFailure.WithMaxTest(200), property)
 
+let private createPortfolioContext order portfolioExposure symbolExposure portfolioValue orderNotional maxGross maxConcentration maxNotional escalateNotional =
+    RiskInterop.CreatePortfolioContext(
+        order,
+        portfolioExposure,
+        symbolExposure,
+        portfolioValue,
+        orderNotional,
+        maxGross,
+        maxConcentration,
+        maxNotional,
+        escalateNotional)
+
+[<Fact>]
+let ``Gross exposure rejects projected breach of the ceiling`` () =
+    let ctx = createPortfolioContext (createOrder OrderSide.Buy 10m) (Nullable 95_000m) (Nullable()) (Nullable()) (Nullable 10_000m) (Nullable 100_000m) (Nullable()) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateGrossExposure(ctx)
+
+    result.Approved |> should equal false
+    result.Reasons[0].Contains("Gross exposure limit") |> should equal true
+
+[<Fact>]
+let ``Gross exposure approves when unconfigured`` () =
+    let ctx = createPortfolioContext (createOrder OrderSide.Buy 10m) (Nullable 95_000m) (Nullable()) (Nullable()) (Nullable 10_000m) (Nullable()) (Nullable()) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateGrossExposure(ctx)
+
+    result.Approved |> should equal true
+
+[<Fact>]
+let ``Symbol concentration rejects breach of the portfolio-value cap`` () =
+    // 20k existing + 10k order = 30% of a 100k portfolio > 25% cap.
+    let ctx = createPortfolioContext (createOrder OrderSide.Buy 100m) (Nullable 20_000m) (Nullable 20_000m) (Nullable 100_000m) (Nullable 10_000m) (Nullable()) (Nullable 25m) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateSymbolConcentration(ctx)
+
+    result.Approved |> should equal false
+    result.Reasons[0].Contains("Concentration limit") |> should equal true
+
+[<Fact>]
+let ``Symbol concentration approves without a positive portfolio value`` () =
+    let ctx = createPortfolioContext (createOrder OrderSide.Buy 100m) (Nullable 20_000m) (Nullable 20_000m) (Nullable 0m) (Nullable 10_000m) (Nullable()) (Nullable 25m) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateSymbolConcentration(ctx)
+
+    result.Approved |> should equal true
+
+[<Fact>]
+let ``Order notional rejects above the hard ceiling`` () =
+    let ctx = createPortfolioContext (createOrder OrderSide.Buy 100m) (Nullable()) (Nullable()) (Nullable()) (Nullable 60_000m) (Nullable()) (Nullable()) (Nullable 50_000m) (Nullable 10_000m)
+    let result = RiskInterop.EvaluateOrderNotional(ctx)
+
+    result.Approved |> should equal false
+    result.DecisionKind |> should equal "reject"
+
+[<Fact>]
+let ``Order notional escalates inside the governed-approval band`` () =
+    let ctx = createPortfolioContext (createOrder OrderSide.Buy 100m) (Nullable()) (Nullable()) (Nullable()) (Nullable 20_000m) (Nullable()) (Nullable()) (Nullable 50_000m) (Nullable 10_000m)
+    let result = RiskInterop.EvaluateOrderNotional(ctx)
+
+    result.Approved |> should equal false
+    result.DecisionKind |> should equal "escalate"
+    result.Reasons[0].Contains("governed-approval band") |> should equal true
+
+[<Fact>]
+let ``Order notional approves below the escalation band`` () =
+    let ctx = createPortfolioContext (createOrder OrderSide.Buy 100m) (Nullable()) (Nullable()) (Nullable()) (Nullable 5_000m) (Nullable()) (Nullable()) (Nullable 50_000m) (Nullable 10_000m)
+    let result = RiskInterop.EvaluateOrderNotional(ctx)
+
+    result.Approved |> should equal true
+
+[<Fact>]
+let ``Order notional approves when no notional is resolvable`` () =
+    let ctx = createPortfolioContext (createOrder OrderSide.Buy 100m) (Nullable()) (Nullable()) (Nullable()) (Nullable()) (Nullable()) (Nullable()) (Nullable 50_000m) (Nullable 10_000m)
+    let result = RiskInterop.EvaluateOrderNotional(ctx)
+
+    result.Approved |> should equal true
+
+[<Fact>]
+let ``Risk aggregation surfaces escalate decisions`` () =
+    let result =
+        RiskInterop.Aggregate(
+            [|
+                { Approved = true; DecisionKind = "approve"; Reasons = [||] }
+                { Approved = false; DecisionKind = "escalate"; Reasons = [| "governed approval required" |] }
+            |])
+
+    result.Approved |> should equal false
+    result.DecisionKind |> should equal "escalate"
+
 [<Fact>]
 let ``Risk aggregation returns approve when all decisions approve`` () =
     let result =

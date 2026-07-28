@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Risk;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -64,6 +65,191 @@ public sealed class CompositeRiskValidatorTests
         fastRule.EvaluateCalls.Should().Be(0);
     }
 
+    [Fact]
+    public async Task ValidateOrderAsync_WarningSeverityFailure_ApprovesWithFlag()
+    {
+        var warningRule = new StubRiskRule(
+            "concentration-watch",
+            RiskValidationResult.Rejected("nearing cap"),
+            severity: RiskRuleSeverity.Warning);
+        var downstream = new StubRiskRule("downstream", RiskValidationResult.Approved());
+        var validator = new CompositeRiskValidator(
+            [warningRule, downstream],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeTrue("warning severity flags without blocking");
+        result.Warnings.Should().ContainSingle(warning => warning.Contains("concentration-watch"));
+        downstream.EvaluateCalls.Should().Be(1, "evaluation continues past a warning-severity failure");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ApprovedRuleWarnings_PropagateToFinalResult()
+    {
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("soft-band", RiskValidationResult.ApprovedWithWarnings("soft-band: approaching cap"))],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeTrue();
+        result.Warnings.Should().ContainSingle(warning => warning.Contains("approaching cap"));
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CriticalSeverityFailure_RejectsAndTripsCircuitBreaker()
+    {
+        var controls = CreateOperatorControls();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeTrue("Critical severity trips the execution circuit breaker");
+        controls.GetSnapshot().CircuitBreaker.Reason.Should().Contain("gross-exposure");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CriticalSeverityWithBreakerAlreadyOpen_DoesNotRewriteBreakerState()
+    {
+        var controls = CreateOperatorControls();
+        await controls.SetCircuitBreakerAsync(true, "manual halt", "operator");
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        controls.GetSnapshot().CircuitBreaker.Reason.Should().Be("manual halt", "an already-open breaker keeps its original attribution");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CriticalSeverityWithoutControls_StillRejects()
+    {
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationWithQueue_ParksOrderForGovernedApproval()
+    {
+        var queue = new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance);
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        result.RequiresApproval.Should().BeTrue();
+        result.EscalationId.Should().NotBeNullOrWhiteSpace();
+        queue.GetPending().Should().ContainSingle(entry => entry.EscalationId == result.EscalationId);
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalateSeverityRule_ParksEvenWithPlainRejection()
+    {
+        var queue = new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance);
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("desk-review", RiskValidationResult.Rejected("needs desk review"), severity: RiskRuleSeverity.Escalate)],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.RequiresApproval.Should().BeTrue("Escalate severity converts a rejection into a governed-approval parking");
+        queue.GetPending().Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationWithoutQueue_FailsClosedAsRejection()
+    {
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        result.RequiresApproval.Should().BeFalse("without a queue the escalation degrades to a hard rejection");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ApprovedEscalation_ReleasesOrderThroughRemainingRules()
+    {
+        var queue = new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance);
+        var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"));
+        var downstream = new StubRiskRule("downstream", RiskValidationResult.Approved());
+        var validator = new CompositeRiskValidator(
+            [escalating, downstream],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk", reason: "cleared");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var released = await validator.ValidateOrderAsync(resubmission);
+
+        released.IsApproved.Should().BeTrue();
+        released.Warnings.Should().ContainSingle(warning => warning.Contains("governed approval"));
+        downstream.EvaluateCalls.Should().BeGreaterThan(0, "later rules still run after an approval releases the escalation");
+
+        // The approval is one-shot: an identical third submission parks again.
+        var reparked = await validator.ValidateOrderAsync(resubmission);
+        reparked.RequiresApproval.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ApprovedEscalation_DoesNotBypassLaterHardRules()
+    {
+        var queue = new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance);
+        var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"));
+        var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Rejected("position limit exceeded"));
+        var validator = new CompositeRiskValidator(
+            [escalating, hardStop],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var released = await validator.ValidateOrderAsync(resubmission);
+
+        released.IsApproved.Should().BeFalse("a governed approval clears the escalation, never the hard limits");
+        released.RejectReason.Should().Contain("position limit");
+    }
+
+    private static ExecutionOperatorControlService CreateOperatorControls() => new(
+        new ExecutionOperatorControlOptions(
+            Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"controls-{Guid.NewGuid():N}")),
+        NullLogger<ExecutionOperatorControlService>.Instance);
+
     private static OrderRequest CreateOrder() => new()
     {
         Symbol = "AAPL",
@@ -76,11 +262,14 @@ public sealed class CompositeRiskValidatorTests
         string ruleName,
         RiskValidationResult result,
         int priority = 0,
-        RiskValidationResult? syncResult = null) : IRiskRule
+        RiskValidationResult? syncResult = null,
+        RiskRuleSeverity severity = RiskRuleSeverity.Error) : IRiskRule
     {
         public string RuleName => ruleName;
 
         public int Priority => priority;
+
+        public RiskRuleSeverity Severity => severity;
 
         public int EvaluateCalls { get; private set; }
 
