@@ -205,6 +205,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 replacement_tax_lot_record_id,
                 replacement_lot_id,
                 disallowed_amount,
+                matched_quantity,
                 holding_period_carry_date,
                 policy_id,
                 window_days,
@@ -223,6 +224,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 @replacement_tax_lot_record_id,
                 @replacement_lot_id,
                 @disallowed_amount,
+                @matched_quantity,
                 @holding_period_carry_date,
                 @policy_id,
                 @window_days,
@@ -239,6 +241,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         command.Parameters.AddWithValue("replacement_tax_lot_record_id", deferral.ReplacementTaxLotRecordId);
         command.Parameters.AddWithValue("replacement_lot_id", deferral.ReplacementLotId.Trim());
         command.Parameters.AddWithValue("disallowed_amount", deferral.DisallowedAmount);
+        command.Parameters.AddWithValue("matched_quantity", deferral.MatchedReplacementQuantity);
         command.Parameters.AddWithValue("holding_period_carry_date", deferral.HoldingPeriodCarryDate);
         command.Parameters.AddWithValue("policy_id", RequireLineageText(deferral.PolicyId, nameof(deferral.PolicyId)));
         command.Parameters.AddWithValue("window_days", deferral.WindowDays);
@@ -283,6 +286,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                    replacement_tax_lot_record_id,
                    replacement_lot_id,
                    disallowed_amount,
+                   matched_quantity,
                    holding_period_carry_date,
                    policy_id,
                    window_days,
@@ -312,11 +316,12 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 reader.GetGuid(9),
                 reader.GetString(10),
                 reader.GetDecimal(11),
-                DateOnly.FromDateTime(reader.GetDateTime(12)),
-                reader.GetString(13),
-                reader.GetInt32(14),
-                Enum.Parse<WashSaleReplacementScope>(reader.GetString(15), ignoreCase: true),
-                ReadUtcDateTimeOffset(reader, 16)));
+                reader.GetDecimal(12),
+                DateOnly.FromDateTime(reader.GetDateTime(13)),
+                reader.GetString(14),
+                reader.GetInt32(15),
+                Enum.Parse<WashSaleReplacementScope>(reader.GetString(16), ignoreCase: true),
+                ReadUtcDateTimeOffset(reader, 17)));
         }
 
         return deferrals;
@@ -365,6 +370,14 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 nameof(deferral),
                 deferral.DisallowedAmount,
                 "A retained wash-sale deferral must carry a positive disallowed amount.");
+        }
+
+        if (deferral.MatchedReplacementQuantity <= 0m)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(deferral),
+                deferral.MatchedReplacementQuantity,
+                "A retained wash-sale deferral must carry the positive replacement quantity it matched.");
         }
 
         if (deferral.WindowDays < 0)

@@ -58,6 +58,7 @@ create table if not exists __SCHEMA__.wash_sale_deferrals (
     replacement_tax_lot_record_id uuid not null references __SCHEMA__.tax_lots(tax_lot_record_id),
     replacement_lot_id text not null,
     disallowed_amount numeric(38, 12) not null,
+    matched_quantity numeric(38, 12) not null,
     holding_period_carry_date date not null,
     policy_id text not null,
     window_days integer not null,
@@ -65,6 +66,8 @@ create table if not exists __SCHEMA__.wash_sale_deferrals (
     recorded_at timestamptz not null,
     constraint ck_wash_sale_deferrals_amount
         check (disallowed_amount > 0),
+    constraint ck_wash_sale_deferrals_matched_quantity
+        check (matched_quantity > 0),
     constraint ck_wash_sale_deferrals_security
         check (security_id <> '00000000-0000-0000-0000-000000000000'::uuid),
     constraint ck_wash_sale_deferrals_window

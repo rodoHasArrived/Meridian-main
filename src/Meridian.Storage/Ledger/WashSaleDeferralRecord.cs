@@ -12,6 +12,10 @@ namespace Meridian.Storage.Ledger;
 /// <param name="DisposalMutationBatchId">The atomic tax-lot batch that recorded the disposal.</param>
 /// <param name="DisposalAccount">The account that sold at a loss (not necessarily the account holding the replacement).</param>
 /// <param name="ReplacementTaxLotRecordId">Durable identity of the lot whose basis absorbed the loss.</param>
+/// <param name="MatchedReplacementQuantity">
+/// Replacement shares this disposal matched against, retained so a rebuilt projection reports the
+/// deferral that was actually booked rather than one re-derived from later lot history.
+/// </param>
 /// <param name="HoldingPeriodCarryDate">Holding-period start carried onto the replacement under IRC §1223(3).</param>
 /// <param name="PolicyId">The tax-lot policy revision in force when the deferral was computed.</param>
 /// <param name="WindowDays">Replacement window the deferral was matched under, retained for audit.</param>
@@ -26,6 +30,7 @@ public sealed record WashSaleDeferralRecord(
     Guid ReplacementTaxLotRecordId,
     string ReplacementLotId,
     decimal DisallowedAmount,
+    decimal MatchedReplacementQuantity,
     DateOnly HoldingPeriodCarryDate,
     string PolicyId,
     int WindowDays,
