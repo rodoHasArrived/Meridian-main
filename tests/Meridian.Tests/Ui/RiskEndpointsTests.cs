@@ -162,6 +162,8 @@ public sealed class RiskEndpointsTests
         parkedResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var parkedResult = JsonSerializer.Deserialize<OrderResult>(await parkedResponse.Content.ReadAsStringAsync(), JsonOptions());
         parkedResult!.ErrorMessage.Should().Contain("governed approval");
+        parkedResult.RequiresApproval.Should().BeTrue("a parked escalation is a typed outcome, not a plain rejection");
+        parkedResult.EscalationId.Should().NotBeNullOrWhiteSpace();
 
         var escalationsResponse = await client.GetAsync("/api/risk/escalations");
         escalationsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -343,6 +345,63 @@ public sealed class RiskEndpointsTests
         allowedResponse.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
+    [Fact]
+    public async Task RiskEscalations_List_RequiresPermissionAndFiltersByFundScope()
+    {
+        var deniedAccountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var allowedAccountId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new RiskEscalationQueueService(
+                NullLogger<RiskEscalationQueueService>.Instance,
+                options: new RiskEscalationQueueOptions(
+                    Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"))));
+            services.AddSingleton<IScopedAuthorizationService>(_ => new AccountScopedAuthorizationService(allowedAccountId));
+        });
+
+        var queue = app.Services.GetRequiredService<RiskEscalationQueueService>();
+        queue.Park(CreateParkedOrder(), "unscoped entry");
+        queue.Park(CreateParkedOrder(allowedAccountId), "allowed-fund entry");
+        queue.Park(CreateParkedOrder(deniedAccountId), "denied-fund entry");
+
+        var client = app.GetTestClient();
+
+        // Without order-management permission the queue is not visible at all.
+        var noPermission = new HttpRequestMessage(HttpMethod.Get, "/api/risk/escalations");
+        noPermission.Headers.Add("X-Test-Permissions", "None");
+        (await client.SendAsync(noPermission)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        // A scoped caller sees unscoped entries plus funds within their account authority;
+        // parked orders for other funds are filtered out of the listing.
+        var scopedResponse = await client.GetAsync("/api/risk/escalations");
+        scopedResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var scopedEntries = JsonSerializer.Deserialize<RiskEscalationDto[]>(
+            await scopedResponse.Content.ReadAsStringAsync(), JsonOptions());
+        scopedEntries!.Select(entry => entry.Reason).Should()
+            .Contain("unscoped entry").And
+            .Contain("allowed-fund entry").And
+            .NotContain("denied-fund entry");
+
+        // AdminMaintenance bypasses fund scoping and sees the full queue.
+        var adminRequest = new HttpRequestMessage(HttpMethod.Get, "/api/risk/escalations");
+        adminRequest.Headers.Add("X-Test-Permissions", "ManageOrders, AdminMaintenance");
+        var adminResponse = await client.SendAsync(adminRequest);
+        adminResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var adminEntries = JsonSerializer.Deserialize<RiskEscalationDto[]>(
+            await adminResponse.Content.ReadAsStringAsync(), JsonOptions());
+        adminEntries!.Should().HaveCount(3);
+    }
+
+    private static OrderRequest CreateParkedOrder(Guid? fundAccountId = null) => new()
+    {
+        Symbol = "AAPL",
+        Side = OrderSide.Buy,
+        Type = OrderType.Limit,
+        Quantity = 100m,
+        LimitPrice = 250m,
+        FundAccountId = fundAccountId,
+    };
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         bool includeExecutionEndpoints = false)
@@ -361,8 +420,12 @@ public sealed class RiskEndpointsTests
                 !string.IsNullOrWhiteSpace(configured)
                     ? configured.ToString()
                     : "risk-operator";
+            var permissions = context.Request.Headers.TryGetValue("X-Test-Permissions", out var configuredPermissions) &&
+                Enum.TryParse<UserPermission>(configuredPermissions.ToString(), out var parsedPermissions)
+                    ? parsedPermissions
+                    : UserPermission.ManageOrders;
             context.Items[LoginSessionMiddleware.CurrentUserKey] = user;
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageOrders;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "risk-test-company";
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "risk-test-tenant";
             return next();

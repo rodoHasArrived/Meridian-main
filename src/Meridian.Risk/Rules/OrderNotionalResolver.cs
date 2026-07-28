@@ -24,6 +24,13 @@ internal static class OrderNotionalResolver
             return null;
         }
 
+        // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")
+        // routes the metadata dollars, not quantity x price — value exactly what routes.
+        if (TryReadBrokerNotional(request) is { } brokerNotional)
+        {
+            return brokerNotional;
+        }
+
         var referencePrice = request.LimitPrice ?? request.StopPrice;
         if (referencePrice is null or <= 0m)
         {
@@ -32,6 +39,35 @@ internal static class OrderNotionalResolver
         }
 
         return referencePrice is { } price ? Math.Abs(request.Quantity) * price : null;
+    }
+
+    private static decimal? TryReadBrokerNotional(OrderRequest request)
+    {
+        if (request.Metadata is null)
+        {
+            return null;
+        }
+
+        foreach (var key in (ReadOnlySpan<string>)["notional", "alpaca:notional"])
+        {
+            if (!request.Metadata.TryGetValue(key, out var raw) || string.IsNullOrWhiteSpace(raw))
+            {
+                continue;
+            }
+
+            if (decimal.TryParse(raw, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var value) && value > 0m)
+            {
+                return value;
+            }
+
+            // The gateway also accepts a boolean flag meaning "quantity is dollars".
+            if (bool.TryParse(raw, out var isNotional) && isNotional)
+            {
+                return Math.Abs(request.Quantity);
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

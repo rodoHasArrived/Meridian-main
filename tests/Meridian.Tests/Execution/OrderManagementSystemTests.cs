@@ -1231,6 +1231,62 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             "a gate rejection under a previously unused id must still be visible in the order table");
     }
 
+    [Fact]
+    public async Task PlaceOrderAsync_RiskEscalation_ReturnsTypedParkedOutcome()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Escalated("Parked for governed approval (esc-1): above band", "esc-1"));
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-PARKED"
+        });
+
+        result.Success.Should().BeFalse("a parked order does not route");
+        result.RequiresApproval.Should().BeTrue("an escalation awaits governed approval instead of hard-rejecting");
+        result.EscalationId.Should().Be("esc-1");
+        oms.GetOrder("CLIENT-PARKED")!.Status.Should().Be(OrderStatus.Rejected,
+            "nothing is live at the broker while the escalation awaits its decision");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_RiskRejectionWithWarnings_CarriesWarningsOnResult()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("limit breach") with
+            {
+                Warnings = ["concentration-watch: approaching cap"]
+            });
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-WARNED"
+        });
+
+        result.Success.Should().BeFalse();
+        result.RequiresApproval.Should().BeFalse();
+        result.RiskWarnings.Should().ContainSingle(warning => warning.Contains("approaching cap"),
+            "non-blocking flags accumulated before the rejection must survive on the result");
+    }
+
     // ---- Stubs ----
 
     private sealed class ApproveAllGate : ISecurityMasterGate

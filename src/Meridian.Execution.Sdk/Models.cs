@@ -179,6 +179,16 @@ public sealed record OrderResult
     /// see them even though the order routed.
     /// </summary>
     public IReadOnlyList<string>? RiskWarnings { get; init; }
+
+    /// <summary>
+    /// True when the order did not route because a risk escalation parked it for governed
+    /// approval rather than rejecting it outright; <see cref="EscalationId"/> identifies
+    /// the approval-queue entry an operator can approve or deny.
+    /// </summary>
+    public bool RequiresApproval { get; init; }
+
+    /// <summary>Approval-queue entry id when <see cref="RequiresApproval"/> is true.</summary>
+    public string? EscalationId { get; init; }
 }
 
 /// <summary>Current state of an order tracked by the OMS.</summary>

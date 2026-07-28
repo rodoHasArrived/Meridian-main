@@ -43,7 +43,7 @@ public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> E
 /// <summary>
 /// Location of the durable governed-approval queue snapshot.
 /// </summary>
-public sealed record RiskEscalationQueueOptions(string SnapshotPath)
+public sealed record RiskEscalationQueueOptions(string SnapshotPath, int MaxRetainedEntries = 500)
 {
     public static RiskEscalationQueueOptions Default { get; } = new(
         Path.Combine(AppContext.BaseDirectory, "data", "execution", "risk-escalations", "escalations.json"));
@@ -60,12 +60,10 @@ public sealed record RiskEscalationQueueOptions(string SnapshotPath)
 /// executable order than the risk desk reviewed. Queue transitions persist atomically so
 /// parked decisions and armed approvals survive process restarts.
 /// </summary>
-public sealed class RiskEscalationQueueService
+public sealed class RiskEscalationQueueService : IAsyncDisposable
 {
     /// <summary>Order-metadata key carrying the escalation id of a governed approval.</summary>
     public const string ApprovalMetadataKey = "riskEscalationId";
-
-    private const int MaxRetainedEntries = 500;
 
     private readonly ConcurrentDictionary<string, RiskEscalationEntry> _entries = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<string> _entryOrder = new();
@@ -73,6 +71,7 @@ public sealed class RiskEscalationQueueService
     private readonly ILogger<RiskEscalationQueueService> _logger;
     private readonly RiskEscalationQueueOptions _options;
     private readonly Lock _resolveLock = new();
+    private readonly ConcurrentDictionary<Task, byte> _pendingAuditWrites = new();
 
     public RiskEscalationQueueService(
         ILogger<RiskEscalationQueueService> logger,
@@ -343,12 +342,13 @@ public sealed class RiskEscalationQueueService
 
     private void TrimRetainedEntries()
     {
-        while (_entries.Count > MaxRetainedEntries && _entryOrder.TryDequeue(out var oldestId))
+        while (_entries.Count > _options.MaxRetainedEntries && _entryOrder.TryDequeue(out var oldestId))
         {
-            // Never drop an unresolved escalation: re-queue and stop rather than losing a
-            // pending governed approval to retention pressure.
+            // Never drop an unresolved escalation: Pending awaits a decision and Approved
+            // is an armed one-shot release; re-queue and stop rather than losing either
+            // to retention pressure. Only terminal Denied/Released history is trimmable.
             if (_entries.TryGetValue(oldestId, out var oldest) &&
-                oldest.Status == RiskEscalationStatus.PendingApproval)
+                oldest.Status is RiskEscalationStatus.PendingApproval or RiskEscalationStatus.Approved)
             {
                 _entryOrder.Enqueue(oldestId);
                 return;
@@ -440,9 +440,26 @@ public sealed class RiskEscalationQueueService
             metadata["ruleName"] = entry.RuleName;
         }
 
-        // Fire-and-forget with logging: audit durability must not block or fail the
-        // pre-trade path; the persisted queue snapshot remains authoritative in-process.
-        _ = RecordAuditSafelyAsync(action, outcome, entry, message, metadata);
+        // Fire-and-forget with logging so audit latency never blocks the pre-trade path;
+        // outstanding writes are tracked and drained on disposal so a graceful shutdown
+        // cannot lose the durable approval evidence.
+        var task = RecordAuditSafelyAsync(action, outcome, entry, message, metadata);
+        _pendingAuditWrites.TryAdd(task, 0);
+        _ = task.ContinueWith(
+            completed => _pendingAuditWrites.TryRemove(completed, out _),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+    }
+
+    /// <summary>Drains outstanding audit writes so shutdown cannot lose approval evidence.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        var outstanding = _pendingAuditWrites.Keys.ToArray();
+        if (outstanding.Length > 0)
+        {
+            await Task.WhenAll(outstanding).ConfigureAwait(false);
+        }
     }
 
     private async Task RecordAuditSafelyAsync(

@@ -1,5 +1,6 @@
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
+using Meridian.Execution.Services;
 using Meridian.Risk;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Endpoints;
@@ -13,25 +14,30 @@ namespace Meridian.Ui.Shared.Services;
 /// aggregated cross-run positions the Portfolio workspace reports. Positions are valued
 /// at the same live marks the trading screen shows (quote mid, then last trade), falling
 /// back to each contribution's cost basis when no mark exists, so enforcement and display
-/// can never diverge on price. Portfolio value comes from the host
-/// <see cref="IPortfolioState"/> when available, falling back to gross exposure so
-/// concentration percentages stay defined for registry-only compositions.
+/// can never diverge on price. Portfolio value spans the same scope as the positions:
+/// the sum across every portfolio registered in the <see cref="PortfolioRegistry"/>
+/// (the host state is itself registered, so it is counted exactly once), falling back to
+/// the host <see cref="IPortfolioState"/> and finally to gross exposure so concentration
+/// percentages stay defined for thinner compositions.
 /// </summary>
 public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvider
 {
     private readonly IAggregatePortfolioService _aggregatePortfolio;
     private readonly IPortfolioState? _portfolioState;
+    private readonly PortfolioRegistry? _registry;
     private readonly QuoteCollector? _quotes;
     private readonly TradeDataCollector? _trades;
 
     public AggregatePortfolioExposureProvider(
         IAggregatePortfolioService aggregatePortfolio,
         IPortfolioState? portfolioState = null,
+        PortfolioRegistry? registry = null,
         QuoteCollector? quotes = null,
         TradeDataCollector? trades = null)
     {
         _aggregatePortfolio = aggregatePortfolio ?? throw new ArgumentNullException(nameof(aggregatePortfolio));
         _portfolioState = portfolioState;
+        _registry = registry;
         _quotes = quotes;
         _trades = trades;
     }
@@ -77,7 +83,28 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 NetNotional: symbolNet);
         }
 
-        var portfolioValue = _portfolioState?.PortfolioValue ?? 0m;
+        // The concentration denominator must cover the same portfolios the positions came
+        // from: sum value across the registry (deduplicated by instance — the host state is
+        // registered under its own run id, and a portfolio re-registered under a second run
+        // id must not count twice), not just the host state.
+        var portfolioValue = 0m;
+        if (_registry is not null)
+        {
+            foreach (var portfolio in _registry.GetAll().Values.Distinct<IMultiAccountPortfolioState>(ReferenceEqualityComparer.Instance))
+            {
+                var value = portfolio.PortfolioValue;
+                if (value > 0m)
+                {
+                    portfolioValue += value;
+                }
+            }
+        }
+
+        if (portfolioValue <= 0m)
+        {
+            portfolioValue = _portfolioState?.PortfolioValue ?? 0m;
+        }
+
         if (portfolioValue <= 0m)
         {
             portfolioValue = grossExposure;

@@ -77,6 +77,7 @@ public sealed class RiskRuleRuntimeService
     private readonly ILogger<RiskRuleRuntimeService> _logger;
     private readonly RiskRuleRuntimeOptions _options;
     private readonly Lock _gate = new();
+    private readonly SemaphoreSlim _updateGate = new(1, 1);
 
     private decimal _maxDrawdownPercent = DefaultDrawdownPercent;
     private int _maxOrdersPerMinute = DefaultMaxOrdersPerMinute;
@@ -281,11 +282,11 @@ public sealed class RiskRuleRuntimeService
 
                 var maxDrawdownPercent = request.MaxDrawdownPercent.Value;
 
-                lock (_gate)
-                {
-                    _maxDrawdownPercent = maxDrawdownPercent;
-                }
-                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
+                await CommitThresholdsAsync(
+                    current => current with { MaxDrawdownPercent = maxDrawdownPercent },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: {MaxDrawdownPercent}%",
                     normalizedRule,
@@ -300,11 +301,11 @@ public sealed class RiskRuleRuntimeService
 
                 var maxOrdersPerMinute = request.MaxOrdersPerMinute.Value;
 
-                lock (_gate)
-                {
-                    _maxOrdersPerMinute = maxOrdersPerMinute;
-                }
-                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
+                await CommitThresholdsAsync(
+                    current => current with { MaxOrdersPerMinute = maxOrdersPerMinute },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: {MaxOrdersPerMinute} orders/minute",
                     normalizedRule,
@@ -314,11 +315,11 @@ public sealed class RiskRuleRuntimeService
             case "GrossExposure":
                 var maxGrossExposure = NormalizeThreshold(request.MaxGrossExposure, nameof(request.MaxGrossExposure), required: true);
 
-                lock (_gate)
-                {
-                    _maxGrossExposure = maxGrossExposure;
-                }
-                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
+                await CommitThresholdsAsync(
+                    current => current with { MaxGrossExposure = maxGrossExposure },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: gross exposure ceiling {MaxGrossExposure}",
                     normalizedRule,
@@ -332,11 +333,11 @@ public sealed class RiskRuleRuntimeService
                     throw new ArgumentOutOfRangeException(nameof(request.MaxSymbolConcentrationPercent), "MaxSymbolConcentrationPercent cannot exceed 100.");
                 }
 
-                lock (_gate)
-                {
-                    _maxSymbolConcentrationPercent = maxConcentration;
-                }
-                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
+                await CommitThresholdsAsync(
+                    current => current with { MaxSymbolConcentrationPercent = maxConcentration },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: concentration cap {MaxSymbolConcentrationPercent}%",
                     normalizedRule,
@@ -349,29 +350,37 @@ public sealed class RiskRuleRuntimeService
                     throw new ArgumentOutOfRangeException(nameof(request.MaxOrderNotional), "Provide MaxOrderNotional and/or EscalateOrderNotional.");
                 }
 
-                decimal? maxOrderNotional;
-                decimal? escalateOrderNotional;
-                lock (_gate)
-                {
-                    maxOrderNotional = request.MaxOrderNotional.HasValue
-                        ? NormalizeThreshold(request.MaxOrderNotional, nameof(request.MaxOrderNotional), required: false)
-                        : _maxOrderNotional;
-                    escalateOrderNotional = request.EscalateOrderNotional.HasValue
-                        ? NormalizeThreshold(request.EscalateOrderNotional, nameof(request.EscalateOrderNotional), required: false)
-                        : _escalateOrderNotional;
-
-                    if (maxOrderNotional.HasValue && escalateOrderNotional.HasValue &&
-                        escalateOrderNotional.Value >= maxOrderNotional.Value)
+                // The band merges against whatever thresholds are current at commit time,
+                // so the ceiling/escalation locals are assigned inside the transform.
+                decimal? maxOrderNotional = null;
+                decimal? escalateOrderNotional = null;
+                await CommitThresholdsAsync(
+                    current =>
                     {
-                        throw new ArgumentOutOfRangeException(
-                            nameof(request.EscalateOrderNotional),
-                            "EscalateOrderNotional must be below MaxOrderNotional so the governed-approval band exists.");
-                    }
+                        maxOrderNotional = request.MaxOrderNotional.HasValue
+                            ? NormalizeThreshold(request.MaxOrderNotional, nameof(request.MaxOrderNotional), required: false)
+                            : current.MaxOrderNotional;
+                        escalateOrderNotional = request.EscalateOrderNotional.HasValue
+                            ? NormalizeThreshold(request.EscalateOrderNotional, nameof(request.EscalateOrderNotional), required: false)
+                            : current.EscalateOrderNotional;
 
-                    _maxOrderNotional = maxOrderNotional;
-                    _escalateOrderNotional = escalateOrderNotional;
-                }
-                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
+                        if (maxOrderNotional.HasValue && escalateOrderNotional.HasValue &&
+                            escalateOrderNotional.Value >= maxOrderNotional.Value)
+                        {
+                            throw new ArgumentOutOfRangeException(
+                                nameof(request.EscalateOrderNotional),
+                                "EscalateOrderNotional must be below MaxOrderNotional so the governed-approval band exists.");
+                        }
+
+                        return current with
+                        {
+                            MaxOrderNotional = maxOrderNotional,
+                            EscalateOrderNotional = escalateOrderNotional
+                        };
+                    },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: notional ceiling {MaxOrderNotional}, escalation band {EscalateOrderNotional}",
                     normalizedRule,
@@ -825,25 +834,73 @@ public sealed class RiskRuleRuntimeService
 
     private T? Resolve<T>() where T : class => _services.GetService(typeof(T)) as T;
 
-    private async Task PersistSnapshotAsync(string actor, string? reason, CancellationToken ct)
+    /// <summary>
+    /// Proposed live-threshold state produced by an update transform before it is durable.
+    /// </summary>
+    private sealed record ThresholdState(
+        decimal MaxDrawdownPercent,
+        int MaxOrdersPerMinute,
+        decimal? MaxGrossExposure,
+        decimal? MaxSymbolConcentrationPercent,
+        decimal? MaxOrderNotional,
+        decimal? EscalateOrderNotional);
+
+    /// <summary>
+    /// Applies a threshold change with persist-then-publish ordering: the proposed state is
+    /// written durably first and only published to the live fields the enforcement rules read
+    /// once the write succeeds. A failed snapshot write therefore leaves enforcement on the
+    /// previous thresholds instead of enforcing values that would silently revert on restart.
+    /// Updates serialize on <see cref="_updateGate"/> so the snapshot on disk always matches
+    /// the last published state.
+    /// </summary>
+    private async Task CommitThresholdsAsync(
+        Func<ThresholdState, ThresholdState> apply,
+        string actor,
+        string? reason,
+        CancellationToken ct)
     {
-        RiskRuleRuntimeSnapshot snapshot;
-        lock (_gate)
+        await _updateGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            snapshot = new RiskRuleRuntimeSnapshot(
-                MaxDrawdownPercent: _maxDrawdownPercent,
-                MaxOrdersPerMinute: _maxOrdersPerMinute,
+            ThresholdState proposed;
+            lock (_gate)
+            {
+                proposed = apply(new ThresholdState(
+                    _maxDrawdownPercent,
+                    _maxOrdersPerMinute,
+                    _maxGrossExposure,
+                    _maxSymbolConcentrationPercent,
+                    _maxOrderNotional,
+                    _escalateOrderNotional));
+            }
+
+            var snapshot = new RiskRuleRuntimeSnapshot(
+                MaxDrawdownPercent: proposed.MaxDrawdownPercent,
+                MaxOrdersPerMinute: proposed.MaxOrdersPerMinute,
                 UpdatedAt: DateTimeOffset.UtcNow,
                 UpdatedBy: actor,
                 Reason: reason,
-                MaxGrossExposure: _maxGrossExposure,
-                MaxSymbolConcentrationPercent: _maxSymbolConcentrationPercent,
-                MaxOrderNotional: _maxOrderNotional,
-                EscalateOrderNotional: _escalateOrderNotional);
-        }
+                MaxGrossExposure: proposed.MaxGrossExposure,
+                MaxSymbolConcentrationPercent: proposed.MaxSymbolConcentrationPercent,
+                MaxOrderNotional: proposed.MaxOrderNotional,
+                EscalateOrderNotional: proposed.EscalateOrderNotional);
+            var payload = JsonSerializer.Serialize(snapshot, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
+            await AtomicFileWriter.WriteAsync(_options.SnapshotPath, payload, ct).ConfigureAwait(false);
 
-        var payload = JsonSerializer.Serialize(snapshot, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
-        await AtomicFileWriter.WriteAsync(_options.SnapshotPath, payload, ct).ConfigureAwait(false);
+            lock (_gate)
+            {
+                _maxDrawdownPercent = proposed.MaxDrawdownPercent;
+                _maxOrdersPerMinute = proposed.MaxOrdersPerMinute;
+                _maxGrossExposure = proposed.MaxGrossExposure;
+                _maxSymbolConcentrationPercent = proposed.MaxSymbolConcentrationPercent;
+                _maxOrderNotional = proposed.MaxOrderNotional;
+                _escalateOrderNotional = proposed.EscalateOrderNotional;
+            }
+        }
+        finally
+        {
+            _updateGate.Release();
+        }
     }
 
     private void LoadSnapshot()

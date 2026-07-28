@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
 using Meridian.Execution.Events;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@ namespace Meridian.Execution;
 /// for backpressure-aware execution event processing.
 /// </summary>
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
-public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDisposable
+public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
@@ -304,6 +305,23 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
             if (!riskResult.IsApproved)
             {
+                // A parked escalation is not a rejection: the order awaits a governed
+                // approval decision, and the result says so in a typed way instead of
+                // hiding the queue entry inside a rejection string.
+                if (riskResult.RequiresApproval)
+                {
+                    return await ParkOrderForApprovalAsync(
+                        orderId,
+                        safeRequest,
+                        actor,
+                        brokerName,
+                        runId,
+                        correlationId,
+                        riskResult,
+                        sessionId,
+                        ct).ConfigureAwait(false);
+                }
+
                 return await RejectOrderAsync(
                     orderId,
                     safeRequest,
@@ -314,7 +332,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                     riskResult.RejectReason,
                     sessionId,
                     ct,
-                    rejectionSource: "risk validator")
+                    rejectionSource: "risk validator",
+                    metadata: BuildRiskWarningsAuditMetadata(riskResult.Warnings),
+                    riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null)
                     .ConfigureAwait(false);
             }
 
@@ -1685,7 +1705,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         CancellationToken ct,
         string rejectionSource,
         string? reasonCode = null,
-        IReadOnlyDictionary<string, string>? metadata = null)
+        IReadOnlyDictionary<string, string>? metadata = null,
+        IReadOnlyList<string>? riskWarnings = null)
     {
         var rejectedState = CreateRejectedState(orderId, request, message);
         // TryAdd, not the indexer: gate rejections run before the order id is registered, so an
@@ -1716,61 +1737,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             Success = false,
             OrderId = orderId,
             ErrorMessage = message,
-            OrderState = rejectedState
+            OrderState = rejectedState,
+            RiskWarnings = riskWarnings
         };
-    }
-
-    private async Task RecordRiskWarningsAsync(
-        string orderId,
-        OrderRequest request,
-        string? actor,
-        string brokerName,
-        string? runId,
-        string? correlationId,
-        IReadOnlyList<string> warnings,
-        CancellationToken ct)
-    {
-        _logger.LogWarning(
-            "Order {OrderId} approved with {WarningCount} non-blocking risk flag(s)",
-            orderId,
-            warnings.Count);
-
-        if (_auditTrail is null)
-        {
-            return;
-        }
-
-        try
-        {
-            var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < warnings.Count; i++)
-            {
-                metadata[$"warning{i + 1}"] = warnings[i];
-            }
-
-            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                AuditId: Guid.NewGuid().ToString("N"),
-                Category: "Risk",
-                Action: "RiskWarningsFlagged",
-                Outcome: "Approved",
-                OccurredAt: DateTimeOffset.UtcNow,
-                Actor: actor,
-                BrokerName: brokerName,
-                OrderId: orderId,
-                RunId: runId,
-                Symbol: request.Symbol,
-                CorrelationId: correlationId,
-                Message: $"Order approved with {warnings.Count} non-blocking risk flag(s).",
-                Scope: BuildOrderAuditScope(request, runId),
-                Metadata: metadata), ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Order {OrderId} risk warnings could not be recorded to the audit trail",
-                orderId);
-        }
     }
 
     private async Task RecordOrderRejectionAsync(

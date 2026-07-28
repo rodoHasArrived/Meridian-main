@@ -170,4 +170,35 @@ public sealed class EnforcedRiskValidatorCompositionTests
         result.IsApproved.Should().BeFalse();
         result.RejectReason.Should().Contain("host rule rejected");
     }
+
+    [Fact]
+    public async Task UpdateConfigAsync_WhenSnapshotWriteFails_LeavesLiveThresholdsUnchanged()
+    {
+        // A file squatting on the snapshot's parent directory makes the durable write fail,
+        // so the update must throw without publishing the new threshold to enforcement.
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"risk-rules-blocked-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        File.WriteAllText(root, "blocks the snapshot directory");
+        try
+        {
+            var runtime = new RiskRuleRuntimeService(
+                ServicesWithPortfolio(100_000m, 0m, 0m),
+                NullLogger<RiskRuleRuntimeService>.Instance,
+                new RiskRuleRuntimeOptions(Path.Combine(root, "risk-rules.json")));
+
+            var act = () => runtime.UpdateConfigAsync(
+                "GrossExposure",
+                new RiskRuleConfigUpdateRequest(MaxGrossExposure: 250_000m),
+                actor: "risk-desk");
+
+            await act.Should().ThrowAsync<IOException>("a threshold change must not outlive a failed durable write");
+            runtime.GetConfig("GrossExposure")!.MaxGrossExposure.Should().BeNull(
+                "a threshold that could not be persisted must not be live");
+            runtime.MaxGrossExposure.Should().BeNull();
+        }
+        finally
+        {
+            File.Delete(root);
+        }
+    }
 }

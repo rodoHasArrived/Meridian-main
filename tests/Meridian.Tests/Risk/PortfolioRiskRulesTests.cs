@@ -285,6 +285,56 @@ public sealed class PortfolioRiskRulesTests
         result.IsApproved.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("notional")]
+    [InlineData("alpaca:notional")]
+    public async Task OrderNotional_BrokerNotionalMetadata_MeasuresTheRoutedDollars(string metadataKey)
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 10_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // Broker-native notional sizing: the gateway routes the metadata dollars, so the
+        // rule must measure those dollars — a never-held symbol with no limit price would
+        // otherwise resolve to no notional at all and bypass the ceiling.
+        var order = CreateOrder(symbol: "ZZZZ", quantity: 1m) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [metadataKey] = "20000"
+            }
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse("the routed notional is the metadata dollars, not quantity × price");
+    }
+
+    [Fact]
+    public async Task OrderNotional_QuantityIsDollarsFlag_MeasuresQuantityAsDollars()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 10_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // The boolean flag form means "quantity is dollars": 20 000 dollars > 10k ceiling.
+        var order = CreateOrder(symbol: "ZZZZ", quantity: 20_000m) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "true"
+            }
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse();
+    }
+
     private sealed class StubExposureProvider(PortfolioExposureSnapshot snapshot) : IPortfolioExposureProvider
     {
         public PortfolioExposureSnapshot GetSnapshot() => snapshot;

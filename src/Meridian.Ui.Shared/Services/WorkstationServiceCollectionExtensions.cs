@@ -371,6 +371,7 @@ public static class WorkstationServiceCollectionExtensions
             new AggregatePortfolioExposureProvider(
                 sp.GetRequiredService<IAggregatePortfolioService>(),
                 sp.GetService<Meridian.Execution.Models.IPortfolioState>(),
+                sp.GetService<PortfolioRegistry>(),
                 sp.GetService<Meridian.Domain.Collectors.QuoteCollector>(),
                 sp.GetService<Meridian.Domain.Collectors.TradeDataCollector>()));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).

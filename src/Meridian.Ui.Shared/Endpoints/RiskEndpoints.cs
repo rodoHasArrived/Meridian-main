@@ -130,18 +130,56 @@ public static class RiskEndpoints
         .Produces(404)
         .Produces(503);
 
-        group.MapGet("/escalations", (HttpContext context) =>
+        group.MapGet("/escalations", async (HttpContext context) =>
         {
+            // The queue reveals retained order details (symbol, size, price), so listing
+            // requires the same order-management permission as acting on an entry.
+            if (!HasRiskConfigPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var queue = context.RequestServices.GetService<RiskEscalationQueueService>();
             if (queue is null)
             {
                 return Results.Problem("Risk escalation queue is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
-            var entries = queue.GetRecent().Select(ToDto).ToArray();
-            return Results.Json(entries, jsonOptions);
+            var entries = queue.GetRecent();
+            var isAdmin = EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
+            var visible = new List<RiskEscalationDto>(entries.Count);
+            // Fund-scoped entries are visible only within the caller's scoped account
+            // authority; one scope check per distinct account rather than per entry.
+            Dictionary<Guid, bool>? scopeCache = null;
+            foreach (var entry in entries)
+            {
+                if (!isAdmin && entry.Request.FundAccountId is { } fundAccountId)
+                {
+                    scopeCache ??= [];
+                    if (!scopeCache.TryGetValue(fundAccountId, out var authorized))
+                    {
+                        authorized = await EndpointAuthorization.HasScopedPermissionAsync(
+                            context,
+                            UserPermission.ManageOrders,
+                            AccessScopeKindDto.Account,
+                            fundAccountId,
+                            context.RequestAborted).ConfigureAwait(false);
+                        scopeCache[fundAccountId] = authorized;
+                    }
+
+                    if (!authorized)
+                    {
+                        continue;
+                    }
+                }
+
+                visible.Add(ToDto(entry));
+            }
+
+            return Results.Json(visible, jsonOptions);
         })
         .Produces<IReadOnlyList<RiskEscalationDto>>(200)
+        .Produces(403)
         .Produces(503);
 
         group.MapPost("/escalations/{escalationId}/approve", async (

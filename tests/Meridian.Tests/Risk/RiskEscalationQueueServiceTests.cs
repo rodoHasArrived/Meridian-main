@@ -141,6 +141,36 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Trim_DropsOnlyResolvedHistory_NeverPendingOrArmedApprovals()
+    {
+        var options = new RiskEscalationQueueOptions(
+            Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"),
+            MaxRetainedEntries: 3);
+        var queue = CreateQueue(options);
+
+        // Oldest first: two entries that become terminal history, then live entries.
+        var denied1 = queue.Park(CreateOrder(quantity: 1m), "history");
+        var denied2 = queue.Park(CreateOrder(quantity: 2m), "history");
+        queue.Deny(denied1.EscalationId, actor: "risk-desk");
+        queue.Deny(denied2.EscalationId, actor: "risk-desk");
+        var pending = queue.Park(CreateOrder(quantity: 3m), "awaiting decision");
+
+        // Exceeding retention trims the terminal history…
+        var armed = queue.Park(CreateOrder(quantity: 4m), "approved and armed");
+        queue.Approve(armed.EscalationId, actor: "risk-desk");
+        queue.Park(CreateOrder(quantity: 5m), "newest");
+
+        queue.TryGet(denied1.EscalationId).Should().BeNull("terminal history is trimmable");
+        queue.TryGet(denied2.EscalationId).Should().BeNull("terminal history is trimmable");
+
+        // …but retention pressure never evicts an unresolved escalation or an armed
+        // one-shot approval, even though the queue stays above its retention target.
+        queue.Park(CreateOrder(quantity: 6m), "over retention");
+        queue.TryGet(pending.EscalationId)!.Status.Should().Be(RiskEscalationStatus.PendingApproval);
+        queue.TryGet(armed.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+    }
+
+    [Fact]
     public void Queue_PersistsAcrossRestart_IncludingArmedApprovals()
     {
         var options = CreateOptions();

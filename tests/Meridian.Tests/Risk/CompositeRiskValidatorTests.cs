@@ -363,6 +363,57 @@ public sealed class CompositeRiskValidatorTests
         released.RejectReason.Should().Contain("position limit");
     }
 
+    [Fact]
+    public async Task ValidateOrderAsync_WhenBreakerTripCannotPersist_FailsClosedUntilTripLands()
+    {
+        // A file squatting on the controls root makes every snapshot persist fail, so the
+        // critical trip cannot land durably and the validator must fail closed.
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"controls-blocked-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        File.WriteAllText(root, "blocks the controls directory");
+        try
+        {
+            var controls = new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(root),
+                NullLogger<ExecutionOperatorControlService>.Instance);
+            var critical = new StubRiskRule(
+                "gross-exposure",
+                RiskValidationResult.Rejected("book over ceiling"),
+                severity: RiskRuleSeverity.Critical);
+            var benign = new StubRiskRule("benign", RiskValidationResult.Approved(), priority: 100);
+            var validator = new CompositeRiskValidator(
+                [critical, benign],
+                NullLogger<CompositeRiskValidator>.Instance,
+                operatorControls: controls);
+
+            var tripping = await validator.ValidateOrderAsync(CreateOrder());
+            tripping.IsApproved.Should().BeFalse();
+            controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeFalse("the durable trip failed");
+
+            // While the trip is owed, every order — including ones no rule would block —
+            // is rejected: the promised global halt holds without the breaker.
+            var duringLatch = await validator.ValidateOrderAsync(CreateOrder());
+            duringLatch.IsApproved.Should().BeFalse();
+            duringLatch.RejectReason.Should().Contain("failing closed");
+
+            // Clearing the blockage lets the retry land: the breaker opens and the
+            // validator resumes normal evaluation (the breaker gate itself lives in the
+            // operator-controls check, not in this validator).
+            File.Delete(root);
+            var afterRecovery = await validator.ValidateOrderAsync(CreateOrder());
+            controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeTrue("the pending trip must land once persistence recovers");
+            controls.GetSnapshot().CircuitBreaker.Reason.Should().Contain("gross-exposure");
+            afterRecovery.RejectReason.Should().NotContain("failing closed", "the latch releases once the trip lands");
+        }
+        finally
+        {
+            if (File.Exists(root))
+            {
+                File.Delete(root);
+            }
+        }
+    }
+
     private static RiskEscalationQueueService CreateQueue() => new(
         NullLogger<RiskEscalationQueueService>.Instance,
         options: new RiskEscalationQueueOptions(

@@ -121,4 +121,49 @@ public sealed class AggregatePortfolioExposureProviderTests
         snapshot.GrossExposure.Should().Be(0m);
         snapshot.SymbolExposures.Should().BeEmpty();
     }
+
+    [Fact]
+    public void GetSnapshot_WithRegistry_SumsPortfolioValueAcrossRegisteredPortfolios()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        // Positions aggregate across every registered portfolio, so the concentration
+        // denominator must too — not just the host state's own value.
+        var host = new Mock<IMultiAccountPortfolioState>();
+        host.SetupGet(p => p.PortfolioValue).Returns(100_000m);
+        var secondRun = new Mock<IMultiAccountPortfolioState>();
+        secondRun.SetupGet(p => p.PortfolioValue).Returns(50_000m);
+
+        var registry = new Meridian.Execution.Services.PortfolioRegistry();
+        registry.Register("workstation-paper", host.Object);
+        registry.Register("strategy-run", secondRun.Object);
+        // The same instance under a second run id must not double-count.
+        registry.Register("strategy-run-alias", secondRun.Object);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            portfolioState: host.Object,
+            registry: registry);
+
+        provider.GetSnapshot().PortfolioValue.Should().Be(
+            150_000m,
+            "the denominator spans the same registry scope as the aggregated positions, counting each portfolio once");
+    }
+
+    [Fact]
+    public void GetSnapshot_WithEmptyRegistry_FallsBackToHostPortfolioValue()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+        var portfolioState = new Mock<IPortfolioState>();
+        portfolioState.SetupGet(p => p.PortfolioValue).Returns(75_000m);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            portfolioState: portfolioState.Object,
+            registry: new Meridian.Execution.Services.PortfolioRegistry());
+
+        provider.GetSnapshot().PortfolioValue.Should().Be(75_000m);
+    }
 }

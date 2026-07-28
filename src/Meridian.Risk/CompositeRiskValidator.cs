@@ -29,6 +29,12 @@ public sealed class CompositeRiskValidator : IRiskValidator
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly RiskEscalationQueueService? _escalationQueue;
 
+    // Fail-closed latch: set when a critical rule demanded the circuit breaker but the
+    // durable trip failed. While latched, every order is rejected and the trip is retried,
+    // so the promised global halt holds even when control persistence is unavailable.
+    private volatile bool _breakerTripPending;
+    private string _breakerTripReason = string.Empty;
+
     public CompositeRiskValidator(
         IEnumerable<IRiskRule> rules,
         ILogger<CompositeRiskValidator> logger,
@@ -51,6 +57,18 @@ public sealed class CompositeRiskValidator : IRiskValidator
     public async Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
         List<string>? warnings = null;
+
+        if (_breakerTripPending)
+        {
+            // A critical halt is owed but not yet durably applied: reject everything and
+            // keep retrying the trip until it lands.
+            await TryApplyPendingBreakerTripAsync(ct).ConfigureAwait(false);
+            if (_breakerTripPending)
+            {
+                return RiskValidationResult.Rejected(
+                    "Risk engine is failing closed: a critical halt is pending but the execution circuit breaker could not be opened.");
+            }
+        }
 
         // Consume a carried governed-approval token up front, independent of whether the
         // current evaluation still escalates: thresholds may have moved between parking
@@ -228,12 +246,48 @@ public sealed class CompositeRiskValidator : IRiskValidator
         }
         catch (Exception exception)
         {
-            // The order rejection stands regardless; a breaker-trip failure must never
-            // resurrect the order or crash the pre-trade gate.
+            // The order rejection stands regardless, and the halt promise must too: latch
+            // fail-closed so every subsequent order is rejected until the trip lands.
+            _breakerTripReason = $"Tripped by critical risk rule '{rule.RuleName}': {reason}";
+            _breakerTripPending = true;
             _logger.LogError(
                 exception,
-                "Failed to trip execution circuit breaker after critical risk rule {RuleName}",
+                "Failed to trip execution circuit breaker after critical risk rule {RuleName}; the risk engine is now failing closed until the trip succeeds",
                 rule.RuleName);
+        }
+    }
+
+    private async Task TryApplyPendingBreakerTripAsync(CancellationToken ct)
+    {
+        if (_operatorControls is null)
+        {
+            // No controls to trip: the latch itself is the halt.
+            return;
+        }
+
+        try
+        {
+            if (_operatorControls.GetSnapshot().CircuitBreaker.IsOpen)
+            {
+                _breakerTripPending = false;
+                return;
+            }
+
+            await _operatorControls.SetCircuitBreakerAsync(
+                isOpen: true,
+                reason: _breakerTripReason,
+                changedBy: "risk-engine/fail-closed-retry",
+                ct: ct).ConfigureAwait(false);
+            _breakerTripPending = false;
+            _logger.LogInformation("Pending critical circuit-breaker trip applied; fail-closed latch released");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Retry of the pending circuit-breaker trip failed; the risk engine remains fail-closed");
         }
     }
 
