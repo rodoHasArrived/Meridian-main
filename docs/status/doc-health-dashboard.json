@@ -1,6 +1,6 @@
 {
   "total_files": 636,
-  "total_lines": 114704,
+  "total_lines": 114721,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1469,7 +1469,7 @@
     },
     {
       "path": "docs/architecture/event-accounting-architecture.md",
-      "line_count": 209,
+      "line_count": 219,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2565,7 +2565,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9602,
+      "line_count": 9603,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2893,7 +2893,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 401,
+      "line_count": 408,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4965,7 +4965,7 @@
     },
     {
       "path": "README.md",
-      "line_count": 258,
+      "line_count": 257,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
