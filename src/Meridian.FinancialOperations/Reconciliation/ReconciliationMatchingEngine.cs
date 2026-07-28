@@ -121,33 +121,50 @@ public sealed class ReconciliationMatchingEngine
 
         foreach (var tupleGroup in tupleGroups)
         {
-            var members = tupleGroup
-                .OrderBy(static p => p.Position.PositionId, StringComparer.Ordinal)
-                .ToArray();
             // Sided floor: identical tuples inside a single source are duplicated data, not a
-            // reconciliation match — the group must span at least two snapshots to resolve.
-            if (members.Select(static m => m.SnapshotId).Distinct(StringComparer.Ordinal).Count() < 2)
+            // reconciliation match. Balance the group across snapshots — each matching round takes
+            // exactly one row per contributing snapshot, so same-side duplicates in excess of the
+            // other sides' rows stay unresolved and surface as breaks instead of being laundered
+            // through a cross-source group.
+            var queues = tupleGroup
+                .GroupBy(static p => p.SnapshotId, StringComparer.Ordinal)
+                .Select(static g => new Queue<SidedPosition>(g
+                    .OrderBy(static p => p.Position.PositionId, StringComparer.Ordinal)))
+                .OrderBy(static q => q.Peek().SourceOrder)
+                .ToArray();
+            if (queues.Length < 2)
             {
                 continue;
             }
 
-            var memberIds = members.Select(static m => m.Position.PositionId).ToArray();
-            var evidence = accumulator.AddEvidence(
-                "Exact",
-                ExactPositionRuleId,
-                "Exact position tuple match.",
-                0m,
-                memberIds,
-                new Dictionary<string, string>
-                {
-                    ["matchShape"] = memberIds.Length == 2 ? "one-to-one" : "cross-source-group",
-                    ["positionIds"] = string.Join(",", memberIds),
-                    ["sources"] = string.Join(",", members.Select(static m => m.Source.ToString()).Distinct())
-                });
-            accumulator.AddMatch(BreakClassification.Matched, "Exact", ExactPositionRuleId, null, memberIds, [], evidence);
-            foreach (var id in memberIds)
+            while (queues.Count(static q => q.Count > 0) >= 2)
             {
-                consumed.Add(id);
+                var round = queues
+                    .Where(static q => q.Count > 0)
+                    .Select(static q => q.Dequeue())
+                    .ToArray();
+                var members = round
+                    .OrderBy(static p => p.Position.PositionId, StringComparer.Ordinal)
+                    .ToArray();
+                var memberIds = members.Select(static m => m.Position.PositionId).ToArray();
+                var memberKeys = members.Select(static m => m.Key).ToArray();
+                var evidence = accumulator.AddEvidence(
+                    "Exact",
+                    ExactPositionRuleId,
+                    "Exact position tuple match.",
+                    0m,
+                    memberKeys,
+                    new Dictionary<string, string>
+                    {
+                        ["matchShape"] = memberIds.Length == 2 ? "one-to-one" : "cross-source-group",
+                        ["positionIds"] = string.Join(",", memberIds),
+                        ["sources"] = string.Join(",", members.Select(static m => m.Source.ToString()).Distinct())
+                    });
+                accumulator.AddMatch(BreakClassification.Matched, "Exact", ExactPositionRuleId, null, memberIds, [], memberKeys, evidence);
+                foreach (var member in members)
+                {
+                    consumed.Add(member.Key);
+                }
             }
         }
     }
@@ -164,7 +181,7 @@ public sealed class ReconciliationMatchingEngine
         }
 
         var open = positions
-            .Where(p => !consumed.Contains(p.Position.PositionId))
+            .Where(p => !consumed.Contains(p.Key))
             .OrderBy(static p => p.Position.PositionId, StringComparer.Ordinal)
             .ToArray();
         if (open.Length < 2)
@@ -222,16 +239,17 @@ public sealed class ReconciliationMatchingEngine
             .ThenBy(static c => c.Right.Position.PositionId, StringComparer.Ordinal);
         var assigned = ReconciliationMatchKernel.SelectDeterministicAssignment(
             ordered,
-            static c => new[] { c.Left.Position.PositionId, c.Right.Position.PositionId });
+            static c => new[] { c.Left.Key, c.Right.Key });
         foreach (var pair in assigned)
         {
             var memberIds = new[] { pair.Left.Position.PositionId, pair.Right.Position.PositionId };
+            var memberKeys = new[] { pair.Left.Key, pair.Right.Key };
             var evidence = accumulator.AddEvidence(
                 "Tolerance",
                 pair.Rule.RuleId,
                 $"Position tolerance rule {pair.Rule.RuleId} allowed quantity/price/market value deltas.",
                 pair.MaxDelta,
-                memberIds,
+                memberKeys,
                 new Dictionary<string, string>
                 {
                     ["toleranceProfileId"] = accumulator.ProfileId,
@@ -254,9 +272,10 @@ public sealed class ReconciliationMatchingEngine
                 pair.Rule.RuleId,
                 memberIds,
                 [],
+                memberKeys,
                 evidence);
-            consumed.Add(pair.Left.Position.PositionId);
-            consumed.Add(pair.Right.Position.PositionId);
+            consumed.Add(pair.Left.Key);
+            consumed.Add(pair.Right.Key);
         }
     }
 
@@ -294,13 +313,13 @@ public sealed class ReconciliationMatchingEngine
 
                     var anchors = positions
                         .Where(p => string.Equals(p.SnapshotId, anchorSnapshot.SnapshotId, StringComparison.Ordinal)
-                            && !consumed.Contains(p.Position.PositionId))
+                            && !consumed.Contains(p.Key))
                         .OrderByDescending(static p => Math.Abs(p.Position.Quantity))
                         .ThenBy(static p => p.Position.PositionId, StringComparer.Ordinal)
                         .ToArray();
                     foreach (var anchor in anchors)
                     {
-                        if (consumed.Contains(anchor.Position.PositionId))
+                        if (consumed.Contains(anchor.Key))
                         {
                             continue;
                         }
@@ -308,7 +327,7 @@ public sealed class ReconciliationMatchingEngine
                         var anchorCurrency = NormalizeCurrency(anchor.Position.Currency);
                         var legPool = positions
                             .Where(p => string.Equals(p.SnapshotId, legSnapshot.SnapshotId, StringComparison.Ordinal)
-                                && !consumed.Contains(p.Position.PositionId)
+                                && !consumed.Contains(p.Key)
                                 && string.Equals(NormalizeCurrency(p.Position.Currency), anchorCurrency, StringComparison.Ordinal))
                             .ToArray();
                         if (legPool.Length < 2)
@@ -316,12 +335,29 @@ public sealed class ReconciliationMatchingEngine
                             continue;
                         }
 
+                        // Quantity discovers the split; the acceptance validator holds every
+                        // candidate subset to the same rule's market-value and derived-price
+                        // tolerances, so a subset that wins on quantity but fails value cannot
+                        // shadow a fully valid subset for the same anchor.
                         var legById = legPool.ToDictionary(static p => p.Position.PositionId, StringComparer.Ordinal);
                         var found = ReconciliationMatchKernel.TryFindSplit(
                             anchor.Position.Quantity,
                             legPool.Select(static p => new ReconciliationMatchKernel.SplitCandidate(p.Position.PositionId, p.Position.Quantity)).ToArray(),
                             rule.QuantityTolerance,
                             MaxSplitLegs,
+                            accept: candidateLegs =>
+                            {
+                                var candidatePositions = candidateLegs.Select(leg => legById[leg.Id]).ToArray();
+                                var candidateQuantity = candidatePositions.Sum(static p => p.Position.Quantity);
+                                var candidateMarketValue = candidatePositions.Sum(static p => p.Position.MarketValue);
+                                if (Math.Abs(anchor.Position.MarketValue - candidateMarketValue) > Math.Abs(rule.MarketValueTolerance))
+                                {
+                                    return false;
+                                }
+
+                                return candidateQuantity == 0m
+                                    || Math.Abs((candidateMarketValue / candidateQuantity) - anchor.Position.Price) <= Math.Abs(rule.PriceTolerance);
+                            },
                             out var legs,
                             out var quantityResidual);
                         if (!found)
@@ -329,36 +365,19 @@ public sealed class ReconciliationMatchingEngine
                             continue;
                         }
 
-                        // Quantity discovers the split; market value and derived price validate it
-                        // under the same rule so a numerically-coincidental lot set cannot pair with
-                        // an unrelated aggregate.
                         var legPositions = legs.Select(leg => legById[leg.Id]).ToArray();
-                        var legQuantity = legPositions.Sum(static p => p.Position.Quantity);
                         var legMarketValue = legPositions.Sum(static p => p.Position.MarketValue);
                         var marketValueDelta = Math.Abs(anchor.Position.MarketValue - legMarketValue);
-                        if (marketValueDelta > Math.Abs(rule.MarketValueTolerance))
-                        {
-                            continue;
-                        }
-
-                        if (legQuantity != 0m)
-                        {
-                            var derivedPrice = legMarketValue / legQuantity;
-                            if (Math.Abs(derivedPrice - anchor.Position.Price) > Math.Abs(rule.PriceTolerance))
-                            {
-                                continue;
-                            }
-                        }
-
                         var legIds = legPositions.Select(static p => p.Position.PositionId).OrderBy(static id => id, StringComparer.Ordinal).ToArray();
                         var memberIds = new[] { anchor.Position.PositionId }.Concat(legIds).ToArray();
+                        var memberKeys = new[] { anchor.Key }.Concat(legPositions.Select(static p => p.Key)).ToArray();
                         var shape = anchor.SourceOrder <= legSnapshot.SourceOrder ? "one-to-many" : "many-to-one";
                         var evidence = accumulator.AddEvidence(
                             "Split",
                             PositionSplitRuleId,
                             $"Position split: {legIds.Length} {legSnapshot.Source} lots aggregate to one {anchor.Source} position within tolerance rule {rule.RuleId}.",
                             Math.Abs(quantityResidual),
-                            memberIds,
+                            memberKeys,
                             new Dictionary<string, string>
                             {
                                 ["matchShape"] = shape,
@@ -379,11 +398,12 @@ public sealed class ReconciliationMatchingEngine
                             rule.RuleId,
                             memberIds,
                             [],
+                            memberKeys,
                             evidence);
-                        consumed.Add(anchor.Position.PositionId);
-                        foreach (var legId in legIds)
+                        consumed.Add(anchor.Key);
+                        foreach (var legPosition in legPositions)
                         {
-                            consumed.Add(legId);
+                            consumed.Add(legPosition.Key);
                         }
                     }
                 }
@@ -397,7 +417,7 @@ public sealed class ReconciliationMatchingEngine
         MatchAccumulator accumulator)
     {
         var unresolved = positions
-            .Where(p => !consumed.Contains(p.Position.PositionId))
+            .Where(p => !consumed.Contains(p.Key))
             .OrderBy(static p => p.Position.PositionId, StringComparer.Ordinal)
             .ToArray();
         if (unresolved.Length == 0)
@@ -406,13 +426,14 @@ public sealed class ReconciliationMatchingEngine
         }
 
         var memberIds = unresolved.Select(static p => p.Position.PositionId).ToArray();
+        var memberKeys = unresolved.Select(static p => p.Key).ToArray();
         var snapshotIds = unresolved.Select(static p => p.SnapshotId).Distinct(StringComparer.Ordinal).ToArray();
         var evidence = accumulator.AddEvidence(
             "Break",
             PositionBreakRuleId,
             "Position has no cross-source match within the tolerance profile.",
             null,
-            memberIds,
+            memberKeys,
             new Dictionary<string, string>
             {
                 ["unresolvedPositionIds"] = string.Join(",", memberIds),
@@ -423,7 +444,7 @@ public sealed class ReconciliationMatchingEngine
             PositionBreakRuleId,
             "No matching position candidate found.",
             snapshotIds,
-            memberIds,
+            memberKeys,
             evidence);
     }
 
@@ -483,19 +504,25 @@ public sealed class ReconciliationMatchingEngine
             }
         }
 
+        // Equal amounts in the same period can repeat on both sides: strong reference agreement and
+        // posting proximity outrank the ordinal-id tie-breakers so unrelated transactions do not
+        // cross-pair when settlement ids or counterparty references identify the true counterparts.
         var ordered = candidates
-            .OrderBy(static c => c.Left.Entry.CashEntryId, StringComparer.Ordinal)
+            .OrderBy(static c => HasReferenceAgreement(c.Left.Entry, c.Right.Entry) ? 0 : 1)
+            .ThenBy(static c => Math.Abs((c.Right.Entry.PostedAtUtc - c.Left.Entry.PostedAtUtc).Ticks))
+            .ThenBy(static c => c.Left.Entry.CashEntryId, StringComparer.Ordinal)
             .ThenBy(static c => c.Right.Entry.CashEntryId, StringComparer.Ordinal);
-        foreach (var pair in ReconciliationMatchKernel.SelectDeterministicAssignment(ordered, static c => new[] { c.Left.Entry.CashEntryId, c.Right.Entry.CashEntryId }))
+        foreach (var pair in ReconciliationMatchKernel.SelectDeterministicAssignment(ordered, static c => new[] { c.Left.Key, c.Right.Key }))
         {
             var memberIds = new[] { pair.Left.Entry.CashEntryId, pair.Right.Entry.CashEntryId };
+            var memberKeys = new[] { pair.Left.Key, pair.Right.Key };
             var postedDeltaMinutes = Math.Abs((pair.Right.Entry.PostedAtUtc - pair.Left.Entry.PostedAtUtc).TotalMinutes);
             var evidence = accumulator.AddEvidence(
                 "Exact",
                 ExactCashRuleId,
                 "Cash amounts are equal within the same accounting period.",
                 0m,
-                memberIds,
+                memberKeys,
                 new Dictionary<string, string>
                 {
                     ["matchShape"] = "one-to-one",
@@ -505,9 +532,9 @@ public sealed class ReconciliationMatchingEngine
                     ["leftSource"] = pair.Left.Source.ToString(),
                     ["rightSource"] = pair.Right.Source.ToString()
                 });
-            accumulator.AddMatch(BreakClassification.Matched, "Exact", ExactCashRuleId, null, [], memberIds, evidence);
-            consumed.Add(pair.Left.Entry.CashEntryId);
-            consumed.Add(pair.Right.Entry.CashEntryId);
+            accumulator.AddMatch(BreakClassification.Matched, "Exact", ExactCashRuleId, null, [], memberIds, memberKeys, evidence);
+            consumed.Add(pair.Left.Key);
+            consumed.Add(pair.Right.Key);
         }
     }
 
@@ -522,7 +549,7 @@ public sealed class ReconciliationMatchingEngine
             return;
         }
 
-        var open = entries.Where(c => !consumed.Contains(c.Entry.CashEntryId)).ToArray();
+        var open = entries.Where(c => !consumed.Contains(c.Key)).ToArray();
         if (open.Length < 2)
         {
             return;
@@ -573,10 +600,11 @@ public sealed class ReconciliationMatchingEngine
             .ThenBy(c => Math.Abs((c.Right.Entry.PostedAtUtc - c.Left.Entry.PostedAtUtc).Ticks))
             .ThenBy(static c => c.Left.Entry.CashEntryId, StringComparer.Ordinal)
             .ThenBy(static c => c.Right.Entry.CashEntryId, StringComparer.Ordinal);
-        foreach (var pair in ReconciliationMatchKernel.SelectDeterministicAssignment(ordered, static c => new[] { c.Left.Entry.CashEntryId, c.Right.Entry.CashEntryId }))
+        foreach (var pair in ReconciliationMatchKernel.SelectDeterministicAssignment(ordered, static c => new[] { c.Left.Key, c.Right.Key }))
         {
             var rule = pair.Rule!;
             var memberIds = new[] { pair.Left.Entry.CashEntryId, pair.Right.Entry.CashEntryId };
+            var memberKeys = new[] { pair.Left.Key, pair.Right.Key };
             var deltaMinutes = Math.Abs((pair.Right.Entry.PostedAtUtc - pair.Left.Entry.PostedAtUtc).TotalMinutes);
             var businessDayDelta = _calendar.CountBusinessDaysBetween(pair.Left.Period, pair.Right.Period);
             var evidence = accumulator.AddEvidence(
@@ -584,7 +612,7 @@ public sealed class ReconciliationMatchingEngine
                 rule.RuleId,
                 $"Cash tolerance rule {rule.RuleId} allowed amount/settlement-date delta.",
                 pair.AmountDelta,
-                memberIds,
+                memberKeys,
                 new Dictionary<string, string>
                 {
                     ["allowedTolerance"] = Invariant(pair.AllowedTolerance),
@@ -608,9 +636,10 @@ public sealed class ReconciliationMatchingEngine
                 rule.RuleId,
                 [],
                 memberIds,
+                memberKeys,
                 evidence);
-            consumed.Add(pair.Left.Entry.CashEntryId);
-            consumed.Add(pair.Right.Entry.CashEntryId);
+            consumed.Add(pair.Left.Key);
+            consumed.Add(pair.Right.Key);
         }
     }
 
@@ -649,13 +678,13 @@ public sealed class ReconciliationMatchingEngine
 
                     var anchors = entries
                         .Where(c => string.Equals(c.SnapshotId, anchorSnapshot.SnapshotId, StringComparison.Ordinal)
-                            && !consumed.Contains(c.Entry.CashEntryId))
+                            && !consumed.Contains(c.Key))
                         .OrderByDescending(static c => Math.Abs(c.Entry.AmountBase))
                         .ThenBy(static c => c.Entry.CashEntryId, StringComparer.Ordinal)
                         .ToArray();
                     foreach (var anchor in anchors)
                     {
-                        if (consumed.Contains(anchor.Entry.CashEntryId))
+                        if (consumed.Contains(anchor.Key))
                         {
                             continue;
                         }
@@ -667,7 +696,7 @@ public sealed class ReconciliationMatchingEngine
                                 : 0m);
                         var legPool = entries
                             .Where(c => string.Equals(c.SnapshotId, legSnapshot.SnapshotId, StringComparison.Ordinal)
-                                && !consumed.Contains(c.Entry.CashEntryId)
+                                && !consumed.Contains(c.Key)
                                 && (c.Entry.PostedAtUtc - anchor.Entry.PostedAtUtc).Duration() <= settlementWindow)
                             .ToArray();
                         if (legPool.Length < 2)
@@ -691,6 +720,7 @@ public sealed class ReconciliationMatchingEngine
                         var legEntries = legs.Select(leg => legById[leg.Id]).ToArray();
                         var legIds = legEntries.Select(static c => c.Entry.CashEntryId).OrderBy(static id => id, StringComparer.Ordinal).ToArray();
                         var memberIds = new[] { anchor.Entry.CashEntryId }.Concat(legIds).ToArray();
+                        var memberKeys = new[] { anchor.Key }.Concat(legEntries.Select(static c => c.Key)).ToArray();
                         var shape = anchor.SourceOrder <= legSnapshot.SourceOrder ? "one-to-many" : "many-to-one";
                         var businessDaySpread = legEntries
                             .Select(leg => Math.Abs(_calendar.CountBusinessDaysBetween(anchor.Period, leg.Period)))
@@ -701,7 +731,7 @@ public sealed class ReconciliationMatchingEngine
                             CashSplitRuleId,
                             $"Cash split: {legIds.Length} {legSnapshot.Source} entries sum to one {anchor.Source} entry within tolerance rule {rule.RuleId}.",
                             Math.Abs(residual),
-                            memberIds,
+                            memberKeys,
                             new Dictionary<string, string>
                             {
                                 ["matchShape"] = shape,
@@ -723,11 +753,12 @@ public sealed class ReconciliationMatchingEngine
                             rule.RuleId,
                             [],
                             memberIds,
+                            memberKeys,
                             evidence);
-                        consumed.Add(anchor.Entry.CashEntryId);
-                        foreach (var legId in legIds)
+                        consumed.Add(anchor.Key);
+                        foreach (var legEntry in legEntries)
                         {
-                            consumed.Add(legId);
+                            consumed.Add(legEntry.Key);
                         }
                     }
                 }
@@ -738,7 +769,7 @@ public sealed class ReconciliationMatchingEngine
     private static void MatchFuzzyCashReferences(SidedCash[] entries, HashSet<string> consumed, MatchAccumulator accumulator)
     {
         var open = entries
-            .Where(c => !consumed.Contains(c.Entry.CashEntryId))
+            .Where(c => !consumed.Contains(c.Key))
             .OrderBy(static c => c.Entry.CashEntryId, StringComparer.Ordinal)
             .ToArray();
         if (open.Length < 2)
@@ -771,15 +802,16 @@ public sealed class ReconciliationMatchingEngine
         var ordered = candidates
             .OrderBy(static c => c.Left.Entry.CashEntryId, StringComparer.Ordinal)
             .ThenBy(static c => c.Right.Entry.CashEntryId, StringComparer.Ordinal);
-        foreach (var pair in ReconciliationMatchKernel.SelectDeterministicAssignment(ordered, static c => new[] { c.Left.Entry.CashEntryId, c.Right.Entry.CashEntryId }))
+        foreach (var pair in ReconciliationMatchKernel.SelectDeterministicAssignment(ordered, static c => new[] { c.Left.Key, c.Right.Key }))
         {
             var memberIds = new[] { pair.Left.Entry.CashEntryId, pair.Right.Entry.CashEntryId };
+            var memberKeys = new[] { pair.Left.Key, pair.Right.Key };
             var evidence = accumulator.AddEvidence(
                 "Fuzzy",
                 FuzzyReferenceRuleId,
                 "Reference-level fuzzy hit.",
                 null,
-                memberIds,
+                memberKeys,
                 new Dictionary<string, string>
                 {
                     ["matchShape"] = "one-to-one",
@@ -787,25 +819,25 @@ public sealed class ReconciliationMatchingEngine
                     ["leftCashEntryId"] = pair.Left.Entry.CashEntryId,
                     ["rightCashEntryId"] = pair.Right.Entry.CashEntryId
                 });
-            accumulator.AddMatch(BreakClassification.PotentialBreak, "Fuzzy", FuzzyReferenceRuleId, null, [], memberIds, evidence);
-            consumed.Add(pair.Left.Entry.CashEntryId);
-            consumed.Add(pair.Right.Entry.CashEntryId);
+            accumulator.AddMatch(BreakClassification.PotentialBreak, "Fuzzy", FuzzyReferenceRuleId, null, [], memberIds, memberKeys, evidence);
+            consumed.Add(pair.Left.Key);
+            consumed.Add(pair.Right.Key);
         }
     }
 
     private static void EmitCashBreaks(SidedCash[] entries, HashSet<string> consumed, MatchAccumulator accumulator)
     {
         foreach (var entry in entries
-            .Where(c => !consumed.Contains(c.Entry.CashEntryId))
+            .Where(c => !consumed.Contains(c.Key))
             .OrderBy(static c => c.Entry.CashEntryId, StringComparer.Ordinal))
         {
-            var memberIds = new[] { entry.Entry.CashEntryId };
+            var memberKeys = new[] { entry.Key };
             var evidence = accumulator.AddEvidence(
                 "Break",
                 CashBreakRuleId,
                 "No exact/tolerance/fuzzy evidence available.",
                 null,
-                memberIds,
+                memberKeys,
                 new Dictionary<string, string>
                 {
                     ["cashEntryId"] = entry.Entry.CashEntryId,
@@ -820,7 +852,7 @@ public sealed class ReconciliationMatchingEngine
                 CashBreakRuleId,
                 "No matching candidate found.",
                 [entry.SnapshotId],
-                memberIds,
+                memberKeys,
                 evidence);
         }
     }
@@ -886,14 +918,26 @@ public sealed class ReconciliationMatchingEngine
         NormalizedPosition Position,
         string SnapshotId,
         ReconciliationSourceType Source,
-        int SourceOrder);
+        int SourceOrder)
+    {
+        /// <summary>
+        /// Snapshot-qualified consumption key: independent sources may legally reuse source-local
+        /// row ids, so bookkeeping must never treat two same-id rows from different snapshots as
+        /// one row.
+        /// </summary>
+        public string Key => SnapshotId + "\u001f" + Position.PositionId;
+    }
 
     private readonly record struct SidedCash(
         NormalizedCashEntry Entry,
         string SnapshotId,
         ReconciliationSourceType Source,
         int SourceOrder,
-        DateOnly Period);
+        DateOnly Period)
+    {
+        /// <summary>Snapshot-qualified consumption key; see <see cref="SidedPosition.Key"/>.</summary>
+        public string Key => SnapshotId + "\u001f" + Entry.CashEntryId;
+    }
 
     private sealed record PositionPairCandidate(
         SidedPosition Left,
@@ -934,16 +978,21 @@ public sealed class ReconciliationMatchingEngine
 
         private readonly StatementToleranceProfile _profile = profile;
 
+        /// <summary>
+        /// <paramref name="memberKeys"/> are the snapshot-qualified member keys used ONLY for id
+        /// derivation: sources may legally reuse raw row ids, so two artifacts over same-id rows
+        /// from different snapshots must still hash to distinct identifiers.
+        /// </summary>
         public MatchEvidence AddEvidence(
             string stage,
             string ruleId,
             string narrative,
             decimal? numericDelta,
-            IReadOnlyList<string> memberIds,
+            IReadOnlyList<string> memberKeys,
             Dictionary<string, string> attributes)
         {
-            var idParts = new List<string>(memberIds.Count + 3) { seed, stage, ruleId };
-            idParts.AddRange(memberIds.OrderBy(static id => id, StringComparer.Ordinal));
+            var idParts = new List<string>(memberKeys.Count + 3) { seed, stage, ruleId };
+            idParts.AddRange(memberKeys.OrderBy(static key => key, StringComparer.Ordinal));
             var evidence = new MatchEvidence(
                 ReconciliationMatchKernel.CreateDeterministicId("ev", idParts),
                 ruleId,
@@ -962,10 +1011,11 @@ public sealed class ReconciliationMatchingEngine
             string? toleranceRuleId,
             IReadOnlyList<string> positionIds,
             IReadOnlyList<string> cashEntryIds,
+            IReadOnlyList<string> memberKeys,
             MatchEvidence evidence)
         {
-            var idParts = new List<string>(positionIds.Count + cashEntryIds.Count + 3) { seed, stage, ruleId };
-            idParts.AddRange(positionIds.Concat(cashEntryIds).OrderBy(static id => id, StringComparer.Ordinal));
+            var idParts = new List<string>(memberKeys.Count + 3) { seed, stage, ruleId };
+            idParts.AddRange(memberKeys.OrderBy(static key => key, StringComparer.Ordinal));
             Matches.Add(new MatchGroup(
                 ReconciliationMatchKernel.CreateDeterministicId("mg", idParts),
                 classification,
@@ -985,11 +1035,11 @@ public sealed class ReconciliationMatchingEngine
             string ruleId,
             string reason,
             IReadOnlyList<string> snapshotIds,
-            IReadOnlyList<string> memberIds,
+            IReadOnlyList<string> memberKeys,
             MatchEvidence evidence)
         {
-            var idParts = new List<string>(memberIds.Count + 3) { seed, stage, ruleId };
-            idParts.AddRange(memberIds.OrderBy(static id => id, StringComparer.Ordinal));
+            var idParts = new List<string>(memberKeys.Count + 3) { seed, stage, ruleId };
+            idParts.AddRange(memberKeys.OrderBy(static key => key, StringComparer.Ordinal));
             Breaks.Add(new BreakRecord(
                 ReconciliationMatchKernel.CreateDeterministicId("br", idParts),
                 BreakClassification.TrueBreak,

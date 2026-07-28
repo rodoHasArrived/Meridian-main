@@ -110,6 +110,24 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
     }
 
     [Fact]
+    public async Task CaptureAsync_AdapterIgnoringCancellation_TimesOutViaHardDeadline()
+    {
+        var adapter = new StubbornAdapter(ReconciliationSourceType.Prime);
+        var scheduler = CreateScheduler(new ReconciliationIngestionOptions
+        {
+            MaxAttemptsPerSource = 2,
+            RetryBaseDelay = TimeSpan.FromMilliseconds(1),
+            PerSourceTimeout = TimeSpan.FromMilliseconds(40)
+        });
+
+        var act = async () => await scheduler.CaptureAsync([adapter], Request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<TimeoutException>(
+            "the deadline must hold even when an adapter never observes its cancellation token");
+        adapter.Attempts.Should().Be(2);
+    }
+
+    [Fact]
     public async Task CaptureAsync_UserCancellation_PropagatesWithoutRetry()
     {
         var adapter = new HangingAdapter(ReconciliationSourceType.Prime);
@@ -183,6 +201,22 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
         {
             Attempts++;
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            throw new InvalidOperationException("unreachable");
+        }
+    }
+
+    // Simulates an adapter stuck in non-cancellable I/O: it never observes its token, so only the
+    // scheduler's hard deadline can end the attempt.
+    private sealed class StubbornAdapter(ReconciliationSourceType sourceType) : IReconciliationSourceAdapter
+    {
+        public ReconciliationSourceType SourceType { get; } = sourceType;
+
+        public int Attempts { get; private set; }
+
+        public async Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
+        {
+            Attempts++;
+            await Task.Delay(TimeSpan.FromSeconds(30), CancellationToken.None);
             throw new InvalidOperationException("unreachable");
         }
     }

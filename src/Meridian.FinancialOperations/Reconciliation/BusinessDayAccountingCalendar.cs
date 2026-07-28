@@ -34,6 +34,14 @@ public sealed class BusinessDayAccountingCalendar : IAccountingCalendar
 
         foreach (var day in weekend)
         {
+            // Numeric JSON like "weekendDays": [7] deserializes to an undefined enum member;
+            // reject it as ArgumentException so file loading falls back instead of crashing on
+            // an out-of-range index.
+            if (!Enum.IsDefined(day))
+            {
+                throw new ArgumentException($"'{(int)day}' is not a valid day of the week.", nameof(weekendDays));
+            }
+
             _weekend[(int)day] = true;
         }
     }

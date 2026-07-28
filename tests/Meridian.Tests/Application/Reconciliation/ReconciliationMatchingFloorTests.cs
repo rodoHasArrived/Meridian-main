@@ -311,6 +311,115 @@ public sealed class ReconciliationMatchingFloorTests
     }
 
     [Fact]
+    public void Run_SameSideDuplicateWithSingleCounterpart_LeavesExcessDuplicateAsBreak()
+    {
+        var engine = new ReconciliationMatchingEngine();
+        var run = CreateRun([
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, positions:
+            [
+                CreatePosition("p1", "AAPL", 10m, 100m, 1000m),
+                CreatePosition("p2", "AAPL", 10m, 100m, 1000m)
+            ]),
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian, positions: [CreatePosition("p3", "AAPL", 10m, 100m, 1000m)])
+        ]);
+
+        var result = engine.Run(run, DefaultProfile());
+
+        var match = result.matches.Should().ContainSingle().Subject;
+        match.PositionIds.Should().BeEquivalentTo(["p1", "p3"], "each exact round pairs one row per snapshot");
+        var breakRecord = result.breaks.Should().ContainSingle(b => b.Classification == BreakClassification.TrueBreak).Subject;
+        var evidence = result.evidence.Single(e => e.EvidenceId == breakRecord.EvidenceIds.Single());
+        evidence.Attributes["unresolvedPositionIds"].Should().Be("p2", "the same-side duplicate must not be laundered through the cross-source group");
+    }
+
+    [Fact]
+    public void Run_CashIdsCollidingAcrossSources_AreTrackedPerSnapshot()
+    {
+        var engine = new ReconciliationMatchingEngine();
+        var profile = CashProfile(new CashToleranceRule("cash-abs-5-v1", 5m, null, TimeSpan.FromDays(1)));
+        var run = CreateRun([
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, cash: [CreateCash("x", 100m, Thursday)]),
+            // The custodian legally reuses the source-local id "x" for an unrelated row.
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian, cash:
+            [
+                CreateCash("y", 100m, Thursday.AddHours(2)),
+                CreateCash("x", 55m, Thursday)
+            ])
+        ]);
+
+        var result = engine.Run(run, profile);
+
+        var match = result.matches.Should().ContainSingle().Subject;
+        match.CashEntryIds.Should().BeEquivalentTo(["x", "y"]);
+        var breakRecord = result.breaks.Should().ContainSingle().Subject;
+        var evidence = result.evidence.Single(e => e.EvidenceId == breakRecord.EvidenceIds.Single());
+        evidence.Attributes["cashEntryId"].Should().Be("x");
+        evidence.Attributes["source"].Should().Be(nameof(ReconciliationSourceType.Custodian),
+            "the custodian's own 'x' row must surface as a break, not vanish because the prime-side 'x' was consumed");
+    }
+
+    [Fact]
+    public void Run_ExactCashPairs_PreferReferenceAgreementOverIdOrder()
+    {
+        var engine = new ReconciliationMatchingEngine();
+        var profile = CashProfile(new CashToleranceRule("cash-abs-5-v1", 5m, null, TimeSpan.FromDays(1)));
+        var run = CreateRun([
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, cash:
+            [
+                CreateCash("a1", 500m, Thursday, counterpartyReference: "WIRE-R1"),
+                CreateCash("a2", 500m, Thursday, counterpartyReference: "WIRE-R2")
+            ]),
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian, cash:
+            [
+                CreateCash("b1", 500m, Thursday.AddHours(1), counterpartyReference: "WIRE-R2"),
+                CreateCash("b2", 500m, Thursday.AddHours(2), counterpartyReference: "WIRE-R1")
+            ])
+        ]);
+
+        var result = engine.Run(run, profile);
+
+        result.breaks.Should().BeEmpty();
+        result.matches.Should().HaveCount(2);
+        result.matches.Should().ContainSingle(m => m.CashEntryIds.Contains("a1") && m.CashEntryIds.Contains("b2"),
+            "reference agreement must outrank ordinal id order when equal amounts repeat");
+        result.matches.Should().ContainSingle(m => m.CashEntryIds.Contains("a2") && m.CashEntryIds.Contains("b1"));
+    }
+
+    [Fact]
+    public void Run_PositionSplit_SkipsValueInvalidSubsetForValidAlternative()
+    {
+        var engine = new ReconciliationMatchingEngine();
+        var profile = new StatementToleranceProfile(
+            "lot-aggregation",
+            1,
+            [],
+            [new PositionToleranceRule("pos-lots-v1", 0.5m, 10m, 0.5m)],
+            []);
+        var run = CreateRun([
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, positions: [CreatePosition("p1", "AAPL", 100m, 50m, 5000m)]),
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian, positions:
+            [
+                // Best subset by quantity residual (exactly 100) but wildly wrong market value…
+                CreatePosition("b1", "AAPL", 50.01m, 180m, 9000m),
+                CreatePosition("b2", "AAPL", 49.99m, 18m, 900m),
+                // …must not shadow this fully valid subset (residual 0.2, value and price in rule).
+                CreatePosition("g1", "AAPL", 60m, 50m, 3000m),
+                CreatePosition("g2", "AAPL", 40.2m, 50m, 2010m)
+            ])
+        ]);
+
+        var result = engine.Run(run, profile);
+
+        var match = result.matches.Should().ContainSingle().Subject;
+        match.RuleId.Should().Be("position-split-v1");
+        var evidence = result.evidence.Single(e => e.EvidenceId == match.EvidenceIds.Single());
+        evidence.Attributes["legPositionIds"].Should().Be("g1,g2");
+        var breakRecord = result.breaks.Should().ContainSingle().Subject;
+        var breakEvidence = result.evidence.Single(e => e.EvidenceId == breakRecord.EvidenceIds.Single());
+        breakEvidence.Attributes["unresolvedPositionIds"].Should().Be("b1,b2");
+    }
+
+    [Fact]
     public void Run_ReEvaluatingSameRun_ProducesIdenticalArtifactIds()
     {
         var engine = new ReconciliationMatchingEngine();

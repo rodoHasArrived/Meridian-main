@@ -142,6 +142,54 @@ public sealed class ReconciliationMatchKernelTests
     }
 
     [Fact]
+    public void TryFindSplit_TieBreaksOnSortedLegIdSequences()
+    {
+        var candidates = new ReconciliationMatchKernel.SplitCandidate[]
+        {
+            new("z", 6m),
+            new("a", 4m),
+            new("b", 5m),
+            new("c", 5m)
+        };
+
+        var found = ReconciliationMatchKernel.TryFindSplit(10m, candidates, tolerance: 0m, maxLegs: 2, out var legs, out _);
+
+        found.Should().BeTrue();
+        legs.Select(static l => l.Id).Should().BeEquivalentTo(["a", "z"],
+            "equal residual and leg count must tie-break on the sorted id sequence, and [a,z] sorts before [b,c]");
+    }
+
+    [Fact]
+    public void TryFindSplit_AcceptValidator_SelectsBestValidSubset()
+    {
+        var candidates = new ReconciliationMatchKernel.SplitCandidate[]
+        {
+            new("p", 5.5m),
+            new("q", 4.5m),
+            new("r", 6m),
+            new("s", 5m)
+        };
+
+        var unconstrained = ReconciliationMatchKernel.TryFindSplit(10m, candidates, tolerance: 1m, maxLegs: 2, out var bestByAmount, out _);
+        unconstrained.Should().BeTrue();
+        bestByAmount.Select(static l => l.Id).Should().BeEquivalentTo(["p", "q"]);
+
+        var found = ReconciliationMatchKernel.TryFindSplit(
+            10m,
+            candidates,
+            tolerance: 1m,
+            maxLegs: 2,
+            accept: legs => legs.All(static l => l.Id != "p"),
+            out var legs,
+            out var residual);
+
+        found.Should().BeTrue();
+        legs.Select(static l => l.Id).Should().BeEquivalentTo(["q", "r"],
+            "a subset rejected by the validator must not shadow the best valid subset (q+r = 10.5 is the closest valid sum)");
+        residual.Should().Be(-0.5m);
+    }
+
+    [Fact]
     public void CreateDeterministicId_IsStableAndOrderSensitive()
     {
         var first = ReconciliationMatchKernel.CreateDeterministicId("mg", ["seed", "rule", "a", "b"]);

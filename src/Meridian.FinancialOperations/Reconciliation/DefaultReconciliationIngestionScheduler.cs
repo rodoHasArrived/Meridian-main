@@ -104,9 +104,16 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
             }
 
             var stopwatch = Stopwatch.StartNew();
+            Task<DataSourceSnapshot>? captureTask = null;
             try
             {
-                var snapshot = await adapter.CaptureSnapshotAsync(request, attemptCts.Token).ConfigureAwait(false);
+                captureTask = adapter.CaptureSnapshotAsync(request, attemptCts.Token);
+                // The linked token asks the adapter to stop cooperatively; WaitAsync enforces the
+                // deadline even when an adapter ignores its token or blocks in non-cancellable
+                // I/O, so a stuck source times the attempt out instead of hanging the run.
+                var snapshot = _options.PerSourceTimeout is { } deadline
+                    ? await captureTask.WaitAsync(deadline, ct).ConfigureAwait(false)
+                    : await captureTask.WaitAsync(ct).ConfigureAwait(false);
                 _log.LogInformation(
                     "Captured reconciliation snapshot from {SourceType} in {ElapsedMs}ms on attempt {Attempt}",
                     adapter.SourceType,
@@ -117,7 +124,16 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 // The run itself was cancelled — propagate, never retry.
+                ObserveAbandonedCapture(captureTask);
                 throw;
+            }
+            catch (TimeoutException hardTimeout) when (_options.PerSourceTimeout is not null)
+            {
+                // WaitAsync hit the hard deadline while the adapter kept running.
+                ObserveAbandonedCapture(captureTask);
+                lastFailure = ExceptionDispatchInfo.Capture(new TimeoutException(
+                    $"Reconciliation source {adapter.SourceType} exceeded the per-source capture timeout of {_options.PerSourceTimeout} on attempt {attempt}.",
+                    hardTimeout));
             }
             catch (OperationCanceledException timedOut) when (attemptCts.IsCancellationRequested)
             {
@@ -141,5 +157,19 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
 
         lastFailure!.Throw();
         throw new UnreachableException();
+    }
+
+    // An abandoned capture task (hard timeout / run cancellation) may still fault later; observe
+    // its exception so it never surfaces as an unobserved-task failure.
+    private static void ObserveAbandonedCapture(Task? captureTask)
+    {
+        if (captureTask is { IsCompleted: false })
+        {
+            _ = captureTask.ContinueWith(
+                static task => _ = task.Exception,
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
     }
 }

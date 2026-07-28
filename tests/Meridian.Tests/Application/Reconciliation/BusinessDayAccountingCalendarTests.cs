@@ -91,6 +91,33 @@ public sealed class BusinessDayAccountingCalendarTests
     }
 
     [Fact]
+    public void Constructor_UndefinedWeekendDay_Throws()
+    {
+        var act = () => new BusinessDayAccountingCalendar(weekendDays: [(DayOfWeek)7]);
+
+        act.Should().Throw<ArgumentException>("numeric JSON like [7] deserializes to an undefined enum member");
+    }
+
+    [Fact]
+    public void FileLoad_OutOfRangeWeekendEnum_FallsBackToWeekendsOnlyDefault()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            WriteCalendar(root, """{ "weekendDays": [7] }""");
+
+            var calendar = FileAccountingCalendar.Load(root, NullLogger.Instance);
+
+            calendar.IsBusinessDay(Monday).Should().BeTrue();
+            calendar.IsBusinessDay(Saturday).Should().BeFalse();
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public void FileLoad_ValidCalendarFile_LoadsHolidaysAndWeekend()
     {
         var root = CreateTempRoot();
