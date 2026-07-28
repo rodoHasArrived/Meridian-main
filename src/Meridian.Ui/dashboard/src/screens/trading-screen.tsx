@@ -65,7 +65,6 @@ import {
   type OrderPreviewWarning,
   type PaperSessionDetailPanel,
   type PaperSessionReplayPanel,
-  type PromotionOutcomeLevel,
   type TradingLoadingState,
   type TradingBlotterDetail,
   type TradingDataTone,
