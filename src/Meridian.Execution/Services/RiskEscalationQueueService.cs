@@ -168,13 +168,14 @@ public sealed class RiskEscalationQueueService
 
     /// <summary>
     /// Consumes a one-shot governed approval carried on <paramref name="request"/> metadata.
-    /// Returns <see langword="true"/> only when the token references an approved, unreleased
+    /// Returns the released entry only when the token references an approved, unreleased
     /// entry whose full order fingerprint matches the resubmitted order; the entry then
-    /// transitions to <see cref="RiskEscalationStatus.Released"/>. Consumption is
-    /// independent of whether the current evaluation still escalates, so an armed approval
-    /// is always retired by the release it authorized.
+    /// transitions to <see cref="RiskEscalationStatus.Released"/>. The release commits
+    /// durably before it is honored: if the snapshot cannot be persisted the in-memory
+    /// transition rolls back and consumption fails closed, so a restart can never reload a
+    /// stale approved token for an order that already routed.
     /// </summary>
-    public bool TryConsumeApproval(OrderRequest request)
+    public RiskEscalationEntry? TryConsumeApproval(OrderRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -182,7 +183,7 @@ public sealed class RiskEscalationQueueService
             !request.Metadata.TryGetValue(ApprovalMetadataKey, out var escalationId) ||
             string.IsNullOrWhiteSpace(escalationId))
         {
-            return false;
+            return null;
         }
 
         lock (_resolveLock)
@@ -190,7 +191,7 @@ public sealed class RiskEscalationQueueService
             if (!_entries.TryGetValue(escalationId, out var entry) ||
                 entry.Status != RiskEscalationStatus.Approved)
             {
-                return false;
+                return null;
             }
 
             if (!FingerprintMatches(entry.Request, request))
@@ -198,7 +199,7 @@ public sealed class RiskEscalationQueueService
                 _logger.LogWarning(
                     "Governed approval {EscalationId} rejected: the resubmitted order does not match the parked order fingerprint",
                     entry.EscalationId);
-                return false;
+                return null;
             }
 
             var released = entry with
@@ -207,13 +208,57 @@ public sealed class RiskEscalationQueueService
                 ResolvedAt = DateTimeOffset.UtcNow
             };
             _entries[escalationId] = released;
-            PersistSnapshotLocked();
+            if (!TryPersistSnapshotLocked())
+            {
+                _entries[escalationId] = entry;
+                _logger.LogError(
+                    "Governed approval {EscalationId} not consumed: the release could not be durably persisted",
+                    entry.EscalationId);
+                return null;
+            }
 
             RecordAudit(
                 action: "ParkedOrderReleased",
                 outcome: "Released",
                 entry: released,
                 message: $"Governed approval consumed; order released to the risk gate by {released.ResolvedBy ?? "operator"}.");
+
+            return released;
+        }
+    }
+
+    /// <summary>
+    /// Re-arms a released approval whose order did not route (a later hard rule rejected
+    /// it), restoring the entry to <see cref="RiskEscalationStatus.Approved"/> so the
+    /// operator's decision remains retryable once the blocking condition clears. Only a
+    /// caller that observed the failed release may restore, and only from Released.
+    /// </summary>
+    public bool TryRestoreApproval(string escalationId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(escalationId);
+
+        lock (_resolveLock)
+        {
+            if (!_entries.TryGetValue(escalationId, out var entry) ||
+                entry.Status != RiskEscalationStatus.Released)
+            {
+                return false;
+            }
+
+            var restored = entry with { Status = RiskEscalationStatus.Approved };
+            _entries[escalationId] = restored;
+            if (!TryPersistSnapshotLocked())
+            {
+                // Fail closed: without a durable restore the release stays consumed.
+                _entries[escalationId] = entry;
+                return false;
+            }
+
+            RecordAudit(
+                action: "ParkedOrderReleaseReverted",
+                outcome: "Approved",
+                entry: restored,
+                message: "Release did not route (a later rule rejected the order); the approval is re-armed.");
 
             return true;
         }
@@ -315,21 +360,29 @@ public sealed class RiskEscalationQueueService
 
     private void PersistSnapshotLocked()
     {
+        // Best-effort form for park/approve/deny: the in-memory transition already
+        // happened and is audited; a persistence failure must not fail the pre-trade
+        // path or an operator decision. Release uses the strict form instead.
+        TryPersistSnapshotLocked();
+    }
+
+    private bool TryPersistSnapshotLocked()
+    {
         try
         {
             var snapshot = new RiskEscalationSnapshot(
                 _entries.Values.OrderBy(static entry => entry.ParkedAt).ToArray());
             var payload = JsonSerializer.Serialize(snapshot, ExecutionJsonContext.Default.RiskEscalationSnapshot);
             AtomicFileWriter.Write(_options.SnapshotPath, payload);
+            return true;
         }
         catch (Exception exception)
         {
-            // The in-memory transition already happened and is audited; a persistence
-            // failure must not fail the pre-trade path or an operator decision.
             _logger.LogError(
                 exception,
                 "Failed to persist risk escalation queue snapshot to {SnapshotPath}",
                 _options.SnapshotPath);
+            return false;
         }
     }
 

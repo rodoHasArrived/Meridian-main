@@ -13,6 +13,17 @@ internal static class OrderNotionalResolver
 {
     public static decimal? Resolve(OrderRequest request, PortfolioExposureSnapshot snapshot)
     {
+        // Multi-leg and option orders are out of this resolver's measurement scope: the
+        // top-level price is only the net debit/credit of the combination, so treating it
+        // as a per-share price under-measures gross leg exposure and attributes it to the
+        // placeholder top-level symbol. Rather than produce a confidently wrong number,
+        // these orders resolve to null (rules approve without measuring); per-leg options
+        // exposure with contract multipliers belongs to the deferred derivatives-risk lane.
+        if (request.Legs is { Count: > 0 } || request.OptionContract is not null)
+        {
+            return null;
+        }
+
         var referencePrice = request.LimitPrice ?? request.StopPrice;
         if (referencePrice is null or <= 0m)
         {

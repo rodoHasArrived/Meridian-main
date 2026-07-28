@@ -370,7 +370,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<Meridian.Risk.IPortfolioExposureProvider>(sp =>
             new AggregatePortfolioExposureProvider(
                 sp.GetRequiredService<IAggregatePortfolioService>(),
-                sp.GetService<Meridian.Execution.Models.IPortfolioState>()));
+                sp.GetService<Meridian.Execution.Models.IPortfolioState>(),
+                sp.GetService<Meridian.Domain.Collectors.QuoteCollector>(),
+                sp.GetService<Meridian.Domain.Collectors.TradeDataCollector>()));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(

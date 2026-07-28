@@ -172,6 +172,13 @@ public sealed record OrderResult
     public required string OrderId { get; init; }
     public string? ErrorMessage { get; init; }
     public OrderState? OrderState { get; init; }
+
+    /// <summary>
+    /// Non-blocking risk flags raised while the order was approved (e.g. concentration
+    /// observe-band or warning-severity rule breaches), surfaced so callers and operators
+    /// see them even though the order routed.
+    /// </summary>
+    public IReadOnlyList<string>? RiskWarnings { get; init; }
 }
 
 /// <summary>Current state of an order tracked by the OMS.</summary>

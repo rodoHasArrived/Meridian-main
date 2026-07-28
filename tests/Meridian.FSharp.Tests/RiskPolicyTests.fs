@@ -132,6 +132,17 @@ let ``Gross exposure approves a de-risking sell near the ceiling`` () =
     result.Approved |> should equal true
 
 [<Fact>]
+let ``Gross exposure preserves offsetting contribution gross in projections`` () =
+    // Symbol gross 28k from offsetting lots (net -8k). A 100 buy moves only the net
+    // component: projected symbol gross = 28k - 8k + 7.9k = 27.9k. Collapsing to
+    // |net + order| = 7.9k would slip under this 20k ceiling; preserving the offsetting
+    // gross must reject.
+    let ctx = createPortfolioContextSigned (createOrder OrderSide.Buy 1m) (Nullable 28_000m) (Nullable 28_000m) (Nullable -8_000m) (Nullable()) (Nullable 100m) (Nullable 100m) (Nullable 20_000m) (Nullable()) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateGrossExposure(ctx)
+
+    result.Approved |> should equal false
+
+[<Fact>]
 let ``Gross exposure handles an order crossing through zero`` () =
     // Long 30k in symbol; selling 80k notional crosses to short 50k: projected gross
     // = 60k existing-other + 50k = 110k > 100k ceiling.

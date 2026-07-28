@@ -280,6 +280,63 @@ public sealed class CompositeRiskValidatorTests
     }
 
     [Fact]
+    public async Task ValidateOrderAsync_ApprovalBypassesOnlyTheParkedRule()
+    {
+        // Token parked by rule A must not release an escalation from rule B.
+        var queue = CreateQueue();
+        var ruleA = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band A"));
+        var ruleB = new StubRiskRule("desk-review", RiskValidationResult.Escalated("band B"));
+        var validator = new CompositeRiskValidator(
+            [ruleA, ruleB],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var second = await validator.ValidateOrderAsync(resubmission);
+
+        second.RequiresApproval.Should().BeTrue("rule B requires its own governed approval");
+        queue.GetPending().Should().ContainSingle(entry => entry.RuleName == "desk-review");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_HardRejectionAfterConsumption_ReArmsTheApproval()
+    {
+        var queue = CreateQueue();
+        var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band"));
+        var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Rejected("position limit exceeded"));
+        var validator = new CompositeRiskValidator(
+            [escalating, hardStop],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var blocked = await validator.ValidateOrderAsync(resubmission);
+
+        blocked.IsApproved.Should().BeFalse();
+        queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
+            RiskEscalationStatus.Approved,
+            "no order routed, so the operator's approval stays retryable");
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_ApprovedEscalation_DoesNotBypassLaterHardRules()
     {
         var queue = CreateQueue();

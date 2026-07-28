@@ -74,11 +74,15 @@ public sealed class SymbolConcentrationRule : IRiskRule
 
         // Observe band: approved, but flag concentrations at or above the warning fraction
         // of the cap so operators see pressure building before orders start bouncing.
-        // Direction-aware, mirroring the F# policy projection.
+        // Direction-aware and gross-preserving, mirroring the F# policy projection.
         if (snapshot.PortfolioValue > 0m)
         {
             var projectedExposure = signedOrderNotional is { } signedOrder
-                ? Math.Abs(symbolExposure.NetNotional + signedOrder)
+                ? Math.Max(
+                    0m,
+                    symbolExposure.GrossExposure
+                        - Math.Abs(symbolExposure.NetNotional)
+                        + Math.Abs(symbolExposure.NetNotional + signedOrder))
                 : symbolExposure.GrossExposure + (orderNotional ?? 0m);
             var projectedPercent = projectedExposure / snapshot.PortfolioValue * 100m;
             if (projectedPercent >= maxPercent.Value * ObserveBandFraction)

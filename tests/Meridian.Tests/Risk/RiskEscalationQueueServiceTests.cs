@@ -59,11 +59,11 @@ public sealed class RiskEscalationQueueServiceTests
         approved.ResolvedBy.Should().Be("risk-desk");
 
         var resubmission = WithApprovalToken(CreateOrder(), entry.EscalationId);
-        queue.TryConsumeApproval(resubmission).Should().BeTrue();
+        queue.TryConsumeApproval(resubmission).Should().NotBeNull();
         queue.TryGet(entry.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
 
         // One-shot: a second resubmission with the same token must not pass.
-        queue.TryConsumeApproval(resubmission).Should().BeFalse();
+        queue.TryConsumeApproval(resubmission).Should().BeNull();
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public sealed class RiskEscalationQueueServiceTests
         // Same token, different quantity: the approval must not transfer.
         var tampered = WithApprovalToken(CreateOrder(quantity: 5_000m), entry.EscalationId);
 
-        queue.TryConsumeApproval(tampered).Should().BeFalse();
+        queue.TryConsumeApproval(tampered).Should().BeNull();
         queue.TryGet(entry.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
     }
 
@@ -86,12 +86,12 @@ public sealed class RiskEscalationQueueServiceTests
         var queue = CreateQueue();
         var pending = queue.Park(CreateOrder(), "escalated");
         queue.TryConsumeApproval(WithApprovalToken(CreateOrder(), pending.EscalationId))
-            .Should().BeFalse("a pending entry has no operator approval yet");
+            .Should().BeNull("a pending entry has no operator approval yet");
 
         var denied = queue.Park(CreateOrder(), "escalated");
         queue.Deny(denied.EscalationId, actor: "risk-desk", reason: "too large for today");
         queue.TryConsumeApproval(WithApprovalToken(CreateOrder(), denied.EscalationId))
-            .Should().BeFalse("a denied entry must never release");
+            .Should().BeNull("a denied entry must never release");
         queue.TryGet(denied.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Denied);
     }
 
@@ -113,7 +113,7 @@ public sealed class RiskEscalationQueueServiceTests
         var queue = CreateQueue();
         queue.Park(CreateOrder(), "escalated");
 
-        queue.TryConsumeApproval(CreateOrder()).Should().BeFalse();
+        queue.TryConsumeApproval(CreateOrder()).Should().BeNull();
     }
 
     [Theory]
@@ -136,7 +136,7 @@ public sealed class RiskEscalationQueueServiceTests
         };
 
         queue.TryConsumeApproval(WithApprovalToken(tampered, entry.EscalationId))
-            .Should().BeFalse("the approval binds to the entire executable order, not a partial fingerprint");
+            .Should().BeNull("the approval binds to the entire executable order, not a partial fingerprint");
         queue.TryGet(entry.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
     }
 
@@ -157,8 +157,8 @@ public sealed class RiskEscalationQueueServiceTests
 
         // The armed approval survives and still releases exactly once.
         var resubmission = WithApprovalToken(CreateOrder(quantity: 20m), approved.EscalationId);
-        restarted.TryConsumeApproval(resubmission).Should().BeTrue();
-        restarted.TryConsumeApproval(resubmission).Should().BeFalse();
+        restarted.TryConsumeApproval(resubmission).Should().NotBeNull();
+        restarted.TryConsumeApproval(resubmission).Should().BeNull();
 
         // The release is durable too.
         var reloaded = CreateQueue(options);

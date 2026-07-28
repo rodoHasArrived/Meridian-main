@@ -241,7 +241,7 @@ public static class RiskEndpoints
         .Produces(409)
         .Produces(503);
 
-        group.MapPost("/escalations/{escalationId}/deny", (
+        group.MapPost("/escalations/{escalationId}/deny", async (
             string escalationId,
             RiskEscalationResolutionRequest? request,
             HttpContext context) =>
@@ -257,10 +257,26 @@ public static class RiskEndpoints
                 return Results.Problem("Risk escalation queue is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
+            // Denial transitions the retained order too: the same scoped fund-account
+            // authority applies as for approval.
+            if (queue.TryGet(escalationId) is { } entry &&
+                entry.Request.FundAccountId is { } fundAccountId &&
+                !EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance) &&
+                !await EndpointAuthorization.HasScopedPermissionAsync(
+                    context,
+                    UserPermission.ManageOrders,
+                    AccessScopeKindDto.Account,
+                    fundAccountId,
+                    context.RequestAborted).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var denied = queue.Deny(escalationId, ResolveActor(context), request?.Reason);
             return denied is null ? Results.NotFound() : Results.Json(ToDto(denied), jsonOptions);
         })
         .Produces<RiskEscalationDto>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(503);
     }

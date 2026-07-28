@@ -56,10 +56,15 @@ public sealed class CompositeRiskValidator : IRiskValidator
         // current evaluation still escalates: thresholds may have moved between parking
         // and release, and an armed approval must always be retired by the release it
         // authorized rather than surviving for replay against a later identical order.
-        var approvalReleased = _escalationQueue is not null && _escalationQueue.TryConsumeApproval(request);
-        if (approvalReleased)
+        // The consumed entry's rule identity scopes the bypass, and a rejection later in
+        // this evaluation re-arms the approval because no order routed.
+        var releasedEntry = _escalationQueue?.TryConsumeApproval(request);
+        if (releasedEntry is not null)
         {
-            _logger.LogInformation("Governed approval consumed; escalations are satisfied for this release");
+            _logger.LogInformation(
+                "Governed approval {EscalationId} consumed for the escalation parked by rule {RuleName}",
+                releasedEntry.EscalationId,
+                releasedEntry.RuleName ?? "unknown");
             (warnings ??= []).Add("Escalation released by governed approval.");
         }
 
@@ -87,9 +92,10 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // severity decides the outcome of the failure.
             if (result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
             {
-                // A release under a consumed approval passes escalations; later rules
-                // still run so hard limits stay enforced.
-                if (approvalReleased)
+                // A consumed approval satisfies only the escalation it was parked for;
+                // any other escalate-capable rule still parks its own approval.
+                if (releasedEntry is not null &&
+                    string.Equals(releasedEntry.RuleName, rule.RuleName, StringComparison.Ordinal))
                 {
                     _logger.LogInformation(
                         "Escalation from rule {RuleName} released by governed approval",
@@ -97,7 +103,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     continue;
                 }
 
-                return Escalate(rule, request, reason, warnings);
+                return RestoreOnFailure(
+                    Escalate(rule, request, reason, warnings),
+                    releasedEntry);
             }
 
             switch (rule.Severity)
@@ -118,18 +126,40 @@ public sealed class CompositeRiskValidator : IRiskValidator
                         "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
                         rule.RuleName);
                     await TripCircuitBreakerAsync(rule, reason, ct).ConfigureAwait(false);
-                    return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
+                    return RestoreOnFailure(
+                        WithWarnings(RiskValidationResult.Rejected(reason), warnings),
+                        releasedEntry);
 
                 default:
                     _logger.LogWarning(
                         "Risk rule {RuleName} ({Severity}) rejected the order",
                         rule.RuleName,
                         rule.Severity);
-                    return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
+                    return RestoreOnFailure(
+                        WithWarnings(RiskValidationResult.Rejected(reason), warnings),
+                        releasedEntry);
             }
         }
 
         return WithWarnings(RiskValidationResult.Approved(), warnings);
+    }
+
+    /// <summary>
+    /// Re-arms a consumed approval when this evaluation did not approve the order: the
+    /// release routed nothing, so the operator's decision stays retryable once the
+    /// blocking condition clears. A successful evaluation keeps the token retired.
+    /// </summary>
+    private RiskValidationResult RestoreOnFailure(RiskValidationResult result, RiskEscalationEntry? releasedEntry)
+    {
+        if (releasedEntry is not null && !result.IsApproved && _escalationQueue is not null &&
+            _escalationQueue.TryRestoreApproval(releasedEntry.EscalationId))
+        {
+            _logger.LogInformation(
+                "Governed approval {EscalationId} re-armed: the release was blocked before routing",
+                releasedEntry.EscalationId);
+        }
+
+        return result;
     }
 
     private RiskValidationResult Escalate(

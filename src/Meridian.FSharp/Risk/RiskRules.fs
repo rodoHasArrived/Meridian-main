@@ -29,15 +29,18 @@ let drawdownCircuitBreaker (ctx: RiskContext) : RiskDecision =
             Approve
     | _ -> Approve
 
-/// Projected absolute exposure of the order's symbol after the order executes.
-/// Direction-aware: a sell that reduces a long (or a buy that covers a short) shrinks
-/// the projection, including orders that cross through zero. Falls back to the additive
-/// worst case when the signed current position is unknown.
+/// Projected gross exposure of the order's symbol after the order executes.
+/// Direction-aware: the current contribution-level gross is preserved and only the net
+/// component moves with the order, so a sell that reduces a long (or a buy that covers a
+/// short) shrinks the projection — including orders that cross through zero — while
+/// offsetting long/short lots keep contributing their full gross. Falls back to the
+/// additive worst case when the signed current position is unknown.
 let projectedSymbolAbsoluteExposure (ctx: RiskContext) : decimal =
-    let currentAbs = ctx.SymbolExposure |> Option.defaultValue 0m
+    let currentGross = ctx.SymbolExposure |> Option.defaultValue 0m
     match ctx.SignedSymbolExposure, ctx.SignedOrderNotional with
-    | Some signedSymbol, Some signedOrder -> abs (signedSymbol + signedOrder)
-    | _ -> currentAbs + (ctx.OrderNotional |> Option.defaultValue 0m)
+    | Some signedSymbol, Some signedOrder ->
+        max 0m (currentGross - abs signedSymbol + abs (signedSymbol + signedOrder))
+    | _ -> currentGross + (ctx.OrderNotional |> Option.defaultValue 0m)
 
 /// Rejects an order whose notional would push the portfolio-wide gross exposure over the
 /// configured ceiling. Direction-aware: de-risking orders reduce the projection.

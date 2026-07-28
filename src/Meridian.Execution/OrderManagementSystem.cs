@@ -298,6 +298,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         }
 
         // Pre-trade risk check
+        IReadOnlyList<string>? riskWarnings = null;
         if (_riskValidator is not null)
         {
             var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
@@ -315,6 +316,22 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                     ct,
                     rejectionSource: "risk validator")
                     .ConfigureAwait(false);
+            }
+
+            // Non-blocking flags (warning-severity breaches, observe bands) must survive
+            // an approved order: carry them on the result and retain them durably.
+            if (riskResult.Warnings.Count > 0)
+            {
+                riskWarnings = riskResult.Warnings;
+                await RecordRiskWarningsAsync(
+                    orderId,
+                    safeRequest,
+                    actor,
+                    brokerName,
+                    runId,
+                    correlationId,
+                    riskWarnings,
+                    ct).ConfigureAwait(false);
             }
         }
 
@@ -453,7 +470,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 Success = report.OrderStatus is not OrderStatus.Rejected,
                 OrderId = orderId,
                 OrderState = updatedState,
-                ErrorMessage = report.RejectReason
+                ErrorMessage = report.RejectReason,
+                RiskWarnings = riskWarnings
             };
         }
         catch (AccountingHandoffException ex)
@@ -1700,6 +1718,59 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             ErrorMessage = message,
             OrderState = rejectedState
         };
+    }
+
+    private async Task RecordRiskWarningsAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        IReadOnlyList<string> warnings,
+        CancellationToken ct)
+    {
+        _logger.LogWarning(
+            "Order {OrderId} approved with {WarningCount} non-blocking risk flag(s)",
+            orderId,
+            warnings.Count);
+
+        if (_auditTrail is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < warnings.Count; i++)
+            {
+                metadata[$"warning{i + 1}"] = warnings[i];
+            }
+
+            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Risk",
+                Action: "RiskWarningsFlagged",
+                Outcome: "Approved",
+                OccurredAt: DateTimeOffset.UtcNow,
+                Actor: actor,
+                BrokerName: brokerName,
+                OrderId: orderId,
+                RunId: runId,
+                Symbol: request.Symbol,
+                CorrelationId: correlationId,
+                Message: $"Order approved with {warnings.Count} non-blocking risk flag(s).",
+                Scope: BuildOrderAuditScope(request, runId),
+                Metadata: metadata), ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Order {OrderId} risk warnings could not be recorded to the audit trail",
+                orderId);
+        }
     }
 
     private async Task RecordOrderRejectionAsync(
