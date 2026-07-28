@@ -19,26 +19,28 @@ public static class LogSanitizer
         }
 
         var bounded = value.Length > MaxLength ? value[..MaxLength] : value;
-        if (!ContainsControlCharacter(bounded))
+        if (ContainsOtherControlCharacter(bounded))
         {
-            return bounded;
+            bounded = string.Create(bounded.Length, bounded, static (span, source) =>
+            {
+                for (var i = 0; i < source.Length; i++)
+                {
+                    var ch = source[i];
+                    span[i] = char.IsControl(ch) && ch is not '\r' and not '\n' ? '_' : ch;
+                }
+            });
         }
 
-        return string.Create(bounded.Length, bounded, static (span, source) =>
-        {
-            for (var i = 0; i < source.Length; i++)
-            {
-                var ch = source[i];
-                span[i] = char.IsControl(ch) ? '_' : ch;
-            }
-        });
+        // Line endings are neutralized last via String.Replace so static log-injection
+        // analysis recognizes the flow as sanitized (String.Replace is the modeled barrier).
+        return bounded.Replace('\r', '_').Replace('\n', '_');
     }
 
-    private static bool ContainsControlCharacter(string value)
+    private static bool ContainsOtherControlCharacter(string value)
     {
         foreach (var ch in value)
         {
-            if (char.IsControl(ch))
+            if (char.IsControl(ch) && ch is not '\r' and not '\n')
             {
                 return true;
             }
