@@ -18,6 +18,15 @@ public interface IOrderManager
     /// <summary>Gets all currently open orders.</summary>
     IReadOnlyList<OrderState> GetOpenOrders();
 
+    /// <summary>
+    /// Orders whose exposure must still be reserved by pre-trade risk: the open book plus
+    /// any fill whose accounting handoff has not yet reached the portfolio. Without the
+    /// latter, a fill briefly belongs to neither the order book nor the position book, and
+    /// a concurrent validation in that window measures understated exposure.
+    /// Implementations without handoff tracking return the open book.
+    /// </summary>
+    IReadOnlyList<OrderState> GetExposureReservingOrders() => GetOpenOrders();
+
     /// <summary>Gets order state by ID.</summary>
     OrderState? GetOrder(string orderId);
 

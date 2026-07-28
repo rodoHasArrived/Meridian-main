@@ -71,6 +71,14 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// </summary>
     public const string TokenSeparator = ",";
 
+    /// <summary>
+    /// Order-metadata flag marking a probe evaluation: the rules should decide, but an
+    /// escalation must not park a queue entry. Amendment validation uses this, since an
+    /// escalated amendment could never be released as a modification and would leave an
+    /// unusable approval behind.
+    /// </summary>
+    public const string EvaluationOnlyMetadataKey = "riskEvaluationOnly";
+
     private readonly ConcurrentDictionary<string, RiskEscalationEntry> _entries = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<string> _entryOrder = new();
     private readonly ExecutionAuditTrailService? _auditTrail;
@@ -119,7 +127,19 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             _entries[entry.EscalationId] = entry;
             _entryOrder.Enqueue(entry.EscalationId);
             TrimRetainedEntries();
-            PersistSnapshotLocked();
+            // Strict: an escalation the operator can see and act on must survive a restart.
+            // A park that only lived in memory would hand out an escalation id, audit it,
+            // and then silently vanish on the next deployment while the submitter believes
+            // the order is awaiting a decision.
+            if (!TryPersistSnapshotLocked())
+            {
+                _entries.TryRemove(entry.EscalationId, out _);
+                _logger.LogError(
+                    "Escalation {EscalationId} rolled back: the parked order could not be durably persisted",
+                    entry.EscalationId);
+                throw new InvalidOperationException(
+                    "The escalation could not be durably persisted; the order was not parked for approval.");
+            }
         }
 
         // Order details stay out of the log; the audit entry and the persisted queue

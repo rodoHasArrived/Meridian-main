@@ -576,6 +576,58 @@ public sealed class CompositeRiskValidatorTests
         controls.GetSnapshot().CircuitBreaker.Reason.Should().Contain("gross-exposure");
     }
 
+    [Fact]
+    public async Task ValidateOrderAsync_EvaluationOnlyProbe_ReportsEscalationWithoutParking()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var probe = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.EvaluationOnlyMetadataKey] = "true"
+            }
+        };
+        var result = await validator.ValidateOrderAsync(probe);
+
+        result.RequiresApproval.Should().BeTrue("the caller still learns approval would be required");
+        result.EscalationId.Should().BeNull();
+        queue.GetPending().Should().BeEmpty(
+            "an amendment probe must not leave an entry no one could release");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WhenParkingCannotPersist_FailsClosedAsRejection()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-validator-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        File.WriteAllText(root, "blocks the snapshot directory");
+        try
+        {
+            var queue = new RiskEscalationQueueService(
+                NullLogger<RiskEscalationQueueService>.Instance,
+                options: new RiskEscalationQueueOptions(Path.Combine(root, "escalations.json")));
+            var validator = new CompositeRiskValidator(
+                [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+                NullLogger<CompositeRiskValidator>.Instance,
+                escalationQueue: queue);
+
+            var result = await validator.ValidateOrderAsync(CreateOrder());
+
+            result.IsApproved.Should().BeFalse();
+            result.RequiresApproval.Should().BeFalse(
+                "an escalation that could not be parked must reject rather than promise an approval path");
+        }
+        finally
+        {
+            File.Delete(root);
+        }
+    }
+
     private static RiskEscalationQueueService CreateQueue() => new(
         NullLogger<RiskEscalationQueueService>.Instance,
         options: new RiskEscalationQueueOptions(

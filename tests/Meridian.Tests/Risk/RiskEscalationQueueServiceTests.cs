@@ -242,6 +242,28 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Park_WhenSnapshotCannotPersist_RollsBackAndThrows()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-park-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        File.WriteAllText(root, "blocks the snapshot directory");
+        try
+        {
+            var queue = CreateQueue(new RiskEscalationQueueOptions(Path.Combine(root, "escalations.json")));
+
+            var park = () => queue.Park(CreateOrder(), "storage is down");
+
+            park.Should().Throw<InvalidOperationException>(
+                "an escalation that cannot survive a restart must not hand out an actionable id");
+            queue.GetPending().Should().BeEmpty("the rolled-back park leaves nothing behind");
+        }
+        finally
+        {
+            File.Delete(root);
+        }
+    }
+
+    [Fact]
     public void Consume_WithSeveralTokens_ReleasesEveryGrantedApproval()
     {
         var queue = CreateQueue();
@@ -317,13 +339,13 @@ public sealed class RiskEscalationQueueServiceTests
     {
         // A file squatting on the snapshot directory makes every persist attempt fail.
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-blocked-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        var queue = CreateQueue(new RiskEscalationQueueOptions(Path.Combine(root, "escalations.json")));
+        // Park while storage is healthy, then block it so only the denial fails.
+        var entry = queue.Park(CreateOrder(), "parked before storage failed");
+        Directory.Delete(root, recursive: true);
         File.WriteAllText(root, "blocks the snapshot directory");
         try
         {
-            var queue = CreateQueue(new RiskEscalationQueueOptions(Path.Combine(root, "escalations.json")));
-            var entry = queue.Park(CreateOrder(), "parked while storage is down");
-
             var deny = () => queue.Deny(entry.EscalationId, actor: "risk-desk", reason: "refused");
 
             deny.Should().Throw<InvalidOperationException>(

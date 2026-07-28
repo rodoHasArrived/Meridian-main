@@ -1451,6 +1451,45 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         queue.TryGet(second.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
     }
 
+    [Fact]
+    public async Task PlaceOrderAsync_WithoutClientOrderId_ParksTheRequestUnderTheGeneratedId()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                // Park exactly what the OMS handed the validator, as the composite does.
+                var seen = call.Arg<OrderRequest>();
+                var parked = queue.Park(seen, "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1
+            // No ClientOrderId: the OMS generates one.
+        });
+
+        result.RequiresApproval.Should().BeTrue();
+        queue.TryGet(result.EscalationId!)!.Request.ClientOrderId.Should().Be(
+            result.OrderId,
+            "releasing the retained request must route under the id the submitter already knows");
+    }
+
     // ---- Stubs ----
 
     private sealed class ApproveAllGate : ISecurityMasterGate

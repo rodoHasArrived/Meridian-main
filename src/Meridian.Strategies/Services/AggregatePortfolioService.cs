@@ -31,8 +31,19 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         var symbolCostBasis = new Dictionary<string, (decimal totalQty, decimal totalWeightedCost, decimal totalUnrealised)>(
             StringComparer.OrdinalIgnoreCase);
 
+        // The registry is keyed by run id, but several runs can share one portfolio
+        // instance (the workstation host state is registered for the host and again for
+        // each run that trades it). Counting that instance once per key would multiply
+        // every position and, through the exposure snapshot, invent risk that does not exist.
+        var seenPortfolios = new HashSet<Meridian.Execution.Models.IMultiAccountPortfolioState>(
+            ReferenceEqualityComparer.Instance);
         foreach (var (runId, portfolio) in entries)
         {
+            if (!seenPortfolios.Add(portfolio))
+            {
+                continue;
+            }
+
             foreach (var account in portfolio.Accounts)
             {
                 foreach (var (symbol, pos) in account.Positions)

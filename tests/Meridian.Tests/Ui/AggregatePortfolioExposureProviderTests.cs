@@ -131,7 +131,7 @@ public sealed class AggregatePortfolioExposureProviderTests
         // An accepted-but-unfilled limit buy: 100 x $600 = $60k of working exposure that
         // must be reserved, or a second identical order would also see a flat book.
         var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
-        orderManager.Setup(m => m.GetOpenOrders()).Returns(
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
         [
             new Meridian.Execution.Sdk.OrderState
             {
@@ -169,7 +169,7 @@ public sealed class AggregatePortfolioExposureProviderTests
         ]);
 
         var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
-        orderManager.Setup(m => m.GetOpenOrders()).Returns(
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
         [
             new Meridian.Execution.Sdk.OrderState
             {
@@ -203,7 +203,7 @@ public sealed class AggregatePortfolioExposureProviderTests
         // Alpaca-style notional sizing: the gateway routes $500k and discards quantity,
         // so reserving quantity x price would hold back roughly one share.
         var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
-        orderManager.Setup(m => m.GetOpenOrders()).Returns(
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
         [
             new Meridian.Execution.Sdk.OrderState
             {
@@ -237,7 +237,7 @@ public sealed class AggregatePortfolioExposureProviderTests
         // one-share partial fill at $100. Retiring by quantity would drop the entire
         // reserve while $499,900 is still working at the broker.
         var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
-        orderManager.Setup(m => m.GetOpenOrders()).Returns(
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
         [
             new Meridian.Execution.Sdk.OrderState
             {
@@ -261,6 +261,96 @@ public sealed class AggregatePortfolioExposureProviderTests
         provider.GetSnapshot().GrossExposure.Should().Be(
             499_900m,
             "the reserve retires by filled dollars, not by a placeholder share count");
+    }
+
+    [Fact]
+    public void GetSnapshot_WorkingOrderReducingAPosition_DoesNotInflateGross()
+    {
+        // A $100k long with a working $50k sell can never exceed $100k gross, so reserving
+        // the sell's full notional on top would report $150k and could trip the Critical
+        // gross-exposure breaker on an unrelated order.
+        var account = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns(
+        [
+            new AggregatedPosition(
+                Symbol: "AAPL",
+                TotalQuantity: 1_000m,
+                LongQuantity: 1_000m,
+                ShortQuantity: 0m,
+                WeightedAverageCost: 100m,
+                TotalUnrealisedPnl: 0m,
+                Contributions: [new RunPositionContribution("run-a", account.ToString("D"), 1_000m, 100m, 0m)])
+        ]);
+
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "reducing-sell",
+                Symbol = "AAPL",
+                Side = Meridian.Execution.Sdk.OrderSide.Sell,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = 500m,
+                LimitPrice = 100m,
+                FundAccountId = account,
+                Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        provider.GetSnapshot().GrossExposure.Should().Be(
+            100_000m,
+            "a working order that reduces its account's position adds no gross exposure");
+    }
+
+    [Fact]
+    public void GetSnapshot_WorkingOrderCrossingThroughFlat_ReservesOnlyTheNewSide()
+    {
+        // Long $100k with a working $150k sell: after the fill the account is $50k short,
+        // so the maximum gross this can reach is $100k — the $50k beyond the flat point
+        // is new exposure, the rest merely unwinds.
+        var account = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns(
+        [
+            new AggregatedPosition(
+                Symbol: "AAPL",
+                TotalQuantity: 1_000m,
+                LongQuantity: 1_000m,
+                ShortQuantity: 0m,
+                WeightedAverageCost: 100m,
+                TotalUnrealisedPnl: 0m,
+                Contributions: [new RunPositionContribution("run-a", account.ToString("D"), 1_000m, 100m, 0m)])
+        ]);
+
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "crossing-sell",
+                Symbol = "AAPL",
+                Side = Meridian.Execution.Sdk.OrderSide.Sell,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = 1_500m,
+                LimitPrice = 100m,
+                FundAccountId = account,
+                Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        provider.GetSnapshot().GrossExposure.Should().Be(100_000m);
     }
 
     [Fact]

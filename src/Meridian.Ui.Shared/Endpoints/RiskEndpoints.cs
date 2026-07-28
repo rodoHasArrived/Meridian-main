@@ -24,7 +24,20 @@ public sealed record RiskEscalationDto(
     DateTimeOffset ParkedAt,
     string? ResolvedBy,
     string? ResolutionReason,
-    DateTimeOffset? ResolvedAt);
+    DateTimeOffset? ResolvedAt,
+    // Everything else that determines what the approver is actually authorizing. Without
+    // these, a stop, trailing, option, multi-leg, or dollar-sized order is reviewed from a
+    // symbol and a placeholder quantity — a native $500k order can look like quantity 1.
+    decimal? StopPrice = null,
+    decimal? TrailPrice = null,
+    decimal? TrailPercent = null,
+    string? TimeInForce = null,
+    decimal? RoutedNotional = null,
+    Guid? FundAccountId = null,
+    string? StrategyId = null,
+    string? PositionIntent = null,
+    OptionContractIdentity? OptionContract = null,
+    IReadOnlyList<OrderLeg>? Legs = null);
 
 /// <summary>Operator resolution request for a parked escalation.</summary>
 /// <param name="Reason">Operator-supplied rationale, audited with the decision.</param>
@@ -354,7 +367,17 @@ public static class RiskEndpoints
         ParkedAt: entry.ParkedAt,
         ResolvedBy: entry.ResolvedBy,
         ResolutionReason: entry.ResolutionReason,
-        ResolvedAt: entry.ResolvedAt);
+        ResolvedAt: entry.ResolvedAt,
+        StopPrice: entry.Request.StopPrice,
+        TrailPrice: entry.Request.TrailPrice,
+        TrailPercent: entry.Request.TrailPercent,
+        TimeInForce: entry.Request.TimeInForce.ToString(),
+        RoutedNotional: BrokerNotionalMetadata.TryRead(entry.Request.Metadata, entry.Request.Quantity),
+        FundAccountId: entry.Request.FundAccountId,
+        StrategyId: entry.Request.StrategyId,
+        PositionIntent: entry.Request.PositionIntent?.ToString(),
+        OptionContract: entry.Request.OptionContract,
+        Legs: entry.Request.Legs);
 
     private static string ResolveActor(HttpContext context)
     {

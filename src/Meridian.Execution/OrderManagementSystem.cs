@@ -166,6 +166,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         using var operation = EnterOperation();
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
+        // Stamp the generated id before anything downstream retains the request: a parked
+        // escalation keeps the exact request it was given, and releasing one whose client
+        // order id was still null would route under a second, unrelated id that the
+        // submitter, audits, and cancellation lookups would never see.
+        request = request.ClientOrderId is null ? request with { ClientOrderId = orderId } : request;
         var brokerName = _gateway.GatewayId;
 
         // Extract metadata fields for audit correlation
@@ -705,15 +710,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // the portfolio-aware rails could be bypassed by placing a small order and amending
         // it upward. Validation and the amended reservation run under the same gate as a
         // placement so a concurrent order cannot slip past the increased exposure.
+        OrderState? speculativeReservation = null;
         if (IsRiskIncreasing(state, modification))
         {
-            var amended = BuildAmendedRequest(state, modification);
+            var amendmentProbe = BuildAmendmentProbe(state, modification);
             await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
                 if (_riskValidator is not null)
                 {
-                    var amendedRisk = await _riskValidator.ValidateOrderAsync(amended, ct).ConfigureAwait(false);
+                    var amendedRisk = await _riskValidator.ValidateOrderAsync(amendmentProbe, ct).ConfigureAwait(false);
                     if (!amendedRisk.IsApproved)
                     {
                         // An amendment is never parked: the original order stays live and
@@ -753,17 +759,18 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
                 // Reserve the amended size before releasing the gate so a concurrent
                 // placement measures against the larger order, then route the amendment.
-                _orders.TryUpdate(
-                    orderId,
-                    state with
-                    {
-                        Quantity = modification.NewQuantity ?? state.Quantity,
-                        LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
-                        StopPrice = modification.NewStopPrice ?? state.StopPrice,
-                        RoutedNotional = null,
-                        LastUpdatedAt = DateTimeOffset.UtcNow
-                    },
-                    state);
+                speculativeReservation = state with
+                {
+                    Quantity = modification.NewQuantity ?? state.Quantity,
+                    LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
+                    StopPrice = modification.NewStopPrice ?? state.StopPrice,
+                    RoutedNotional = null,
+                    LastUpdatedAt = DateTimeOffset.UtcNow
+                };
+                if (!_orders.TryUpdate(orderId, speculativeReservation, state))
+                {
+                    speculativeReservation = null;
+                }
             }
             finally
             {
@@ -771,9 +778,23 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             }
         }
 
-        var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
+        ExecutionReport report;
+        try
+        {
+            report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            // The gateway never accepted the amendment: the speculative reservation must
+            // not outlive the attempt, or the order table and every exposure snapshot
+            // would keep reserving a size the broker does not hold.
+            RollBackSpeculativeReservation(orderId, speculativeReservation, state);
+            throw;
+        }
+
         if (report.OrderStatus is OrderStatus.Rejected)
         {
+            RollBackSpeculativeReservation(orderId, speculativeReservation, state);
             // Do not apply a rejected modify to order state: ApplyReport would let the terminal
             // Rejected overwrite a completed Filled/Cancelled order, and returning Success would
             // misreport that overwrite as a successful modify. Mirror the cancel path and fail.
@@ -1933,24 +1954,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             => Interlocked.Exchange(ref _owner, null)?.ExitOperation();
     }
 
-    private sealed class FillProcessingProgress(
-        ExecutionReport fillIncrement,
-        decimal cumulativeFilledQuantity,
-        bool isTrackedOrder)
-    {
-        public SemaphoreSlim Gate { get; } = new(1, 1);
-        public ExecutionReport FillIncrement { get; } = fillIncrement;
-        public decimal CumulativeFilledQuantity { get; } = cumulativeFilledQuantity;
-        public bool IsTrackedOrder { get; } = isTrackedOrder;
-        public TradeExecutedEvent? TradeEvent { get; set; }
-        public decimal RealizedPnl { get; set; }
-        public decimal NewCash { get; set; }
-        public bool PortfolioApplied { get; set; }
-        public bool TradeEventPublished { get; set; }
-        public bool SessionRecorded { get; set; }
-        public bool ExecutionReportPublished { get; set; }
-        public volatile bool IsComplete;
-    }
 
     private sealed class AccountingHandoffException : Exception
     {

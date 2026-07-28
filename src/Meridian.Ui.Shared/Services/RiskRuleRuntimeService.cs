@@ -990,10 +990,18 @@ public sealed class RiskRuleRuntimeService
         }
         catch (Exception exception)
         {
-            _logger.LogWarning(
+            // A snapshot exists but cannot be read: its thresholds were configured by an
+            // operator and silently reverting them to "unconfigured" would disable the
+            // gross-exposure, concentration, and notional rails on the next restart while
+            // the dashboard still lists them as the enforced rail. Fail closed instead.
+            _logger.LogCritical(
                 exception,
-                "Failed to load risk runtime snapshot from {SnapshotPath}; using defaults.",
+                "Risk runtime snapshot at {SnapshotPath} could not be read; refusing to start with silently unconfigured portfolio limits.",
                 _options.SnapshotPath);
+            throw new InvalidOperationException(
+                $"The risk rule snapshot at '{_options.SnapshotPath}' exists but could not be read. " +
+                "Refusing to continue with unconfigured portfolio risk limits; restore or remove the snapshot.",
+                exception);
         }
     }
 }

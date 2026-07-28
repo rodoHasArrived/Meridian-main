@@ -237,12 +237,30 @@ public sealed class CompositeRiskValidator : IRiskValidator
         return result;
     }
 
+    private static bool IsEvaluationOnly(OrderRequest request) =>
+        request.Metadata is not null &&
+        request.Metadata.TryGetValue(RiskEscalationQueueService.EvaluationOnlyMetadataKey, out var flag) &&
+        bool.TryParse(flag, out var evaluationOnly) &&
+        evaluationOnly;
+
     private RiskValidationResult Escalate(
         IRiskRule rule,
         OrderRequest request,
         string reason,
         List<string>? warnings)
     {
+        if (IsEvaluationOnly(request))
+        {
+            // Decision only: report that governed approval would be required, without
+            // parking an entry no one could release.
+            _logger.LogInformation(
+                "Risk rule {RuleName} would escalate this evaluation; no queue entry parked (evaluation-only)",
+                rule.RuleName);
+            return WithWarnings(
+                RiskValidationResult.Escalated($"Would require governed approval: {reason}", escalationId: null),
+                warnings);
+        }
+
         if (_escalationQueue is null)
         {
             // No governed approval queue in this composition: fail closed as a plain rejection.
@@ -263,13 +281,27 @@ public sealed class CompositeRiskValidator : IRiskValidator
         string? runId = null;
         request.Metadata?.TryGetValue("runId", out runId);
 
-        var entry = _escalationQueue.Park(
-            request,
-            reason,
-            ruleName: rule.RuleName,
-            actor: actor,
-            runId: string.IsNullOrWhiteSpace(runId) ? request.StrategyId : runId,
-            correlationId: correlationId);
+        RiskEscalationEntry entry;
+        try
+        {
+            entry = _escalationQueue.Park(
+                request,
+                reason,
+                ruleName: rule.RuleName,
+                actor: actor,
+                runId: string.IsNullOrWhiteSpace(runId) ? request.StrategyId : runId,
+                correlationId: correlationId);
+        }
+        catch (Exception exception)
+        {
+            // The queue refused to park durably. Fail closed as a plain rejection rather
+            // than reporting an escalation id no operator will ever find.
+            _logger.LogError(
+                exception,
+                "Risk rule {RuleName} escalated the order but it could not be parked durably; rejecting",
+                rule.RuleName);
+            return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
+        }
         _logger.LogWarning(
             "Risk rule {RuleName} parked the order for governed approval ({EscalationId})",
             rule.RuleName,

@@ -69,7 +69,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             return;
         }
 
-        foreach (var order in orderManager.GetOpenOrders())
+        foreach (var order in orderManager.GetExposureReservingOrders())
         {
             var remaining = Math.Abs(order.Quantity) - Math.Abs(order.FilledQuantity);
             // Dollar-sized orders retire their reserve by filled notional below; their
@@ -137,7 +137,6 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 _ => 0m
             };
 
-            grossExposure += workingNotional;
             netExposure += signedNotional;
 
             // Attribute the reserve to the order's own accounting scope so direction-aware
@@ -147,11 +146,24 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             var accountNet = existing?.AccountNetNotional is { } trackedAccounts
                 ? new Dictionary<string, decimal>(trackedAccounts, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-            accountNet[accountKey] = accountNet.GetValueOrDefault(accountKey) + signedNotional;
+            var accountBefore = accountNet.GetValueOrDefault(accountKey);
+            var accountAfter = accountBefore + signedNotional;
+            accountNet[accountKey] = accountAfter;
+
+            // A working order that reduces its account's position does not add exposure —
+            // it retires some. Reserving its full notional on top of the position would
+            // report a $100k long with a working $50k sell as $150k gross and could trip
+            // the Critical gross-exposure breaker on an unrelated order. Reserve the
+            // larger of the current and projected exposure for this account, so fill
+            // uncertainty stays conservative without inventing exposure that cannot exist.
+            var accountGrossDelta = Math.Max(0m, Math.Abs(accountAfter) - Math.Abs(accountBefore));
+            var reservedGross = Math.Min(workingNotional, accountGrossDelta);
+
+            grossExposure += reservedGross;
 
             symbolExposures[order.Symbol] = new SymbolExposure(
                 Symbol: existing?.Symbol ?? order.Symbol,
-                GrossExposure: (existing?.GrossExposure ?? 0m) + workingNotional,
+                GrossExposure: (existing?.GrossExposure ?? 0m) + reservedGross,
                 NetQuantity: (existing?.NetQuantity ?? 0m) + signedQuantity,
                 ReferencePrice: existing is { ReferencePrice: > 0m } ? existing.ReferencePrice : price,
                 NetNotional: (existing?.NetNotional ?? 0m) + signedNotional,
