@@ -98,8 +98,11 @@ jobs:
             -c Release -r win-x64 -o $installSmokeHost --self-contained true `
             -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:PublishTrimmed=false
 
+          # Runner PostgreSQL directories are major-only names like '17', which
+          # [version] refuses to parse; sort on the leading integer instead.
           $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
-            Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
+            Where-Object { $_.Name -match '^\d+' } |
+            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
           if ($null -eq $postgres) { throw 'GitHub Windows runner has no PostgreSQL runtime for installed startup smoke.' }
           $payload = 'artifacts/postgresql-payload/win-x64'
           New-Item -ItemType Directory -Path $payload -Force | Out-Null

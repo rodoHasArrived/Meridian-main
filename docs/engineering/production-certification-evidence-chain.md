@@ -160,6 +160,18 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — `Production Certification` run #6
+  ([30338821749](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30338821749),
+  candidate `ab2a2e936`): with matching client tools the drill's encrypted backup, hash
+  verification, and staging all succeeded for the first time; the restore then hit a
+  `Set-StrictMode` defect in `invoke-production-recovery.ps1` (`.Count` on the `$null` an
+  empty restore root yields). Fixed on the candidate with an array subexpression. The
+  first-ever `Publish Smoke` `web-workstation`/`win-x64` run
+  ([30338532774](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30338532774))
+  published and packaged the workstation host successfully, then failed preparing installed
+  startup: the runner's PostgreSQL directory is the major-only name `17`, which the
+  workflow's `[version]` sort refuses to parse. Fixed on the candidate with a
+  leading-integer sort. Both workflows re-dispatched.
 - **2026-07-28** — `Production Certification` run #5
   ([30338531236](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30338531236),
   candidate `be0b5e247`): first run with the acceptance-gated npm audit. The recovery drill

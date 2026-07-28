@@ -357,7 +357,9 @@ function Invoke-Restore([string]$SelectedBackup, [string]$TargetConnection, [str
         }
         $targetRoot = Resolve-FullPath $TargetDataRoot
         if (Test-Path -LiteralPath $targetRoot) {
-            $existing = Get-ChildItem -LiteralPath $targetRoot -Force
+            # Under Set-StrictMode Latest, .Count throws on the $null an empty directory
+            # yields; the array subexpression always exposes a real Count.
+            $existing = @(Get-ChildItem -LiteralPath $targetRoot -Force)
             if ($existing.Count -gt 0) {
                 if (-not $AllowDataOverwrite) { throw "Restore data root is not empty: $targetRoot" }
                 $quarantine = "$targetRoot.pre-restore-$([DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssZ'))"
