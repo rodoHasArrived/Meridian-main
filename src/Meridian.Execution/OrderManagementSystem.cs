@@ -53,6 +53,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly Task _handoffRecoveryTask;
     private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<ExecutionReport, FillProcessingProgress> _fillProcessing = new();
+    // Reports whose fill must already reserve exposure but whose precise increment is not
+    // tracked yet. Held only across the window in which the order goes terminal.
+    private readonly ConcurrentDictionary<ExecutionReport, ExecutionReport> _pendingFillReservations = new();
     private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
     private readonly object _disposeSync = new();
     private long _droppedExecutionReports;
@@ -177,10 +180,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // order id was still null would route under a second, unrelated id that the
         // submitter, audits, and cancellation lookups would never see.
         request = request.ClientOrderId is null ? request with { ClientOrderId = orderId } : request;
-        // The evaluation-only flag suppresses queue creation and belongs to the internal
-        // amendment probe alone. A caller that set it on a real submission would get a
-        // parked response carrying no escalation id — one no operator could ever resolve.
-        request = StripEvaluationOnlyFlag(request);
+        // Internal risk-probe metadata belongs to the amendment probe alone. A caller that
+        // set the evaluation-only flag would get a parked response carrying no escalation
+        // id — one no operator could ever resolve — and one that set an incremental
+        // notional would declare their own order to add no exposure at all.
+        request = StripInternalRiskMetadata(request);
         var brokerName = _gateway.GatewayId;
 
         // Extract metadata fields for audit correlation
@@ -1273,40 +1277,66 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
 
-        OrderState? updatedState = null;
-        var previousFilledQuantity = 0m;
-        while (!string.IsNullOrWhiteSpace(orderId) && _orders.TryGetValue(orderId, out var existing))
+        var isFillReport = report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled;
+
+        // Publish the fill's exposure reservation BEFORE the tracked order can go terminal.
+        // A filled order leaves the open book the instant ApplyReport lands, while the
+        // portfolio only receives the fill inside ProcessFillReportAsync; in between, a
+        // concurrent validation would find the exposure in neither book and could admit an
+        // order that breaches the rails. The placeholder reserves the whole reported fill
+        // and is retired as soon as the precise increment is tracked.
+        if (isFillReport)
         {
-            var merged = ApplyReport(existing, report);
-            if (_orders.TryUpdate(orderId, merged, existing))
+            _pendingFillReservations[report] = report;
+        }
+
+        try
+        {
+            OrderState? updatedState = null;
+            var previousFilledQuantity = 0m;
+            while (!string.IsNullOrWhiteSpace(orderId) && _orders.TryGetValue(orderId, out var existing))
             {
-                previousFilledQuantity = existing.FilledQuantity;
-                updatedState = merged;
-                break;
+                var merged = ApplyReport(existing, report);
+                if (_orders.TryUpdate(orderId, merged, existing))
+                {
+                    previousFilledQuantity = existing.FilledQuantity;
+                    updatedState = merged;
+                    break;
+                }
+            }
+
+            if (updatedState is null)
+            {
+                _logger.LogWarning(
+                    "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
+                    report.OrderId, report.ReportType, report.OrderStatus);
+            }
+
+            if (isFillReport)
+            {
+                var sessionId = string.IsNullOrWhiteSpace(orderId) ? null : ResolveSessionId(orderId);
+                await ProcessFillReportAsync(
+                        sessionId,
+                        report,
+                        previousFilledQuantity,
+                        ct)
+                    .ConfigureAwait(false);
+            }
+
+            if (updatedState is not null)
+            {
+                await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
             }
         }
-
-        if (updatedState is null)
+        finally
         {
-            _logger.LogWarning(
-                "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
-                report.OrderId, report.ReportType, report.OrderStatus);
-        }
-
-        if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
-        {
-            var sessionId = string.IsNullOrWhiteSpace(orderId) ? null : ResolveSessionId(orderId);
-            await ProcessFillReportAsync(
-                    sessionId,
-                    report,
-                    previousFilledQuantity,
-                    ct)
-                .ConfigureAwait(false);
-        }
-
-        if (updatedState is not null)
-        {
-            await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
+            // Whatever happened, the placeholder must not outlive this report: either
+            // _fillProcessing now carries the precise increment, or the fill was a
+            // duplicate that reserves nothing.
+            if (isFillReport)
+            {
+                _pendingFillReservations.TryRemove(report, out _);
+            }
         }
     }
 
@@ -1763,57 +1793,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             Reason: report?.RejectReason,
             Scope: state is null ? null : BuildOrderAuditScope(state),
             Metadata: metadata ?? BuildOrderLifecycleAuditMetadata(state, report)), ct).ConfigureAwait(false);
-    }
-
-    private static IReadOnlyDictionary<string, string>? BuildOrderLifecycleAuditMetadata(
-        OrderState? state,
-        ExecutionReport? report)
-    {
-        if (state is null && report is null)
-        {
-            return null;
-        }
-
-        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (state is not null)
-        {
-            metadata["orderQuantity"] = state.Quantity.ToString("G29");
-            metadata["filledQuantity"] = state.FilledQuantity.ToString("G29");
-            metadata["orderType"] = state.Type.ToString();
-            metadata["side"] = state.Side.ToString();
-        }
-
-        if (report is not null)
-        {
-            metadata["reportType"] = report.ReportType.ToString();
-            metadata["reportStatus"] = report.OrderStatus.ToString();
-            metadata["gatewayOrderId"] = report.GatewayOrderId ?? string.Empty;
-        }
-
-        return metadata;
-    }
-
-    private static IReadOnlyDictionary<string, string> BuildOrderModificationAuditMetadata(
-        OrderModification modification,
-        OrderState state,
-        ExecutionReport? report,
-        IReadOnlyList<string>? riskWarnings = null)
-    {
-        var metadata = new Dictionary<string, string>(
-            BuildOrderLifecycleAuditMetadata(state, report) ?? new Dictionary<string, string>(),
-            StringComparer.OrdinalIgnoreCase);
-
-        metadata["newQuantity"] = modification.NewQuantity?.ToString("G29") ?? string.Empty;
-        metadata["newLimitPrice"] = modification.NewLimitPrice?.ToString("G29") ?? string.Empty;
-        metadata["newStopPrice"] = modification.NewStopPrice?.ToString("G29") ?? string.Empty;
-        metadata["newTrail"] = modification.NewTrail?.ToString("G29") ?? string.Empty;
-
-        if (riskWarnings is { Count: > 0 })
-        {
-            metadata["riskWarnings"] = string.Join("; ", riskWarnings);
-        }
-
-        return metadata;
     }
 
     private async Task<OrderResult> RejectOrderAsync(

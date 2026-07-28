@@ -122,8 +122,30 @@ public sealed partial class OrderManagementSystem
         var reserving = new List<OrderState>(GetOpenOrders());
 
         // A fill flips the tracked order terminal before ProcessFillReportAsync applies it
-        // to the portfolio. During that window the exposure exists at the broker but sits
-        // in neither book, so surface the un-applied increment as a reservation.
+        // to the portfolio. Reports whose precise increment is not tracked yet reserve
+        // their whole reported fill; once tracked, the increment below supersedes them.
+        foreach (var pending in _pendingFillReservations.Values)
+        {
+            if (_fillProcessing.ContainsKey(pending) || pending.FilledQuantity <= 0m)
+            {
+                continue;
+            }
+
+            reserving.Add(new OrderState
+            {
+                OrderId = pending.ClientOrderId ?? pending.OrderId,
+                Symbol = pending.Symbol,
+                Side = pending.Side,
+                Type = OrderType.Market,
+                Quantity = pending.FilledQuantity,
+                LimitPrice = pending.FillPrice,
+                Status = OrderStatus.PendingNew,
+                CreatedAt = pending.Timestamp
+            });
+        }
+
+        // During that window the exposure exists at the broker but sits in neither book,
+        // so surface the un-applied increment as a reservation.
         foreach (var progress in _fillProcessing.Values)
         {
             if (progress.PortfolioApplied)
@@ -259,10 +281,22 @@ public sealed partial class OrderManagementSystem
             return null;
         }
 
-        _escalationQueue.Deny(
-            escalationId,
-            actor: "order-management-system",
-            reason: "The submitter cancelled the order while it awaited governed approval.");
+        // Withdraw, not Deny: an operator may already have approved without releasing, and
+        // a plain denial only resolves pending entries. Fail closed on the result — if the
+        // entry survives, the escalation can still route, so this cancellation must not
+        // report success or drop the reservation that keeps its client order id.
+        if (_escalationQueue.Withdraw(
+                escalationId,
+                actor: "order-management-system",
+                reason: "The submitter cancelled the order while it awaited governed approval.") is null)
+        {
+            _logger.LogWarning(
+                "Order {OrderId} could not be cancelled: escalation {EscalationId} could not be withdrawn",
+                LogSanitizer.Sanitize(orderId),
+                escalationId);
+            return null;
+        }
+
         _parkedOrderIds.TryRemove(orderId, out _);
 
         if (!_orders.TryGetValue(orderId, out var state))
@@ -304,7 +338,13 @@ public sealed partial class OrderManagementSystem
             return false;
         }
 
-        if (request.Metadata is not null &&
+        // Only an APPROVED escalation's release may reclaim the id. The token is just the
+        // escalation id, which the submitter already received in their own parked response;
+        // honouring it while the entry is still pending would let them resubmit, and if the
+        // market or the configured threshold had since moved so the rule no longer
+        // escalates, the order would route with no operator decision behind it at all.
+        if (entry.Status == RiskEscalationStatus.Approved &&
+            request.Metadata is not null &&
             request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var tokens) &&
             RiskEscalationQueueService.SplitTokens(tokens).Contains(escalationId, StringComparer.OrdinalIgnoreCase))
         {
@@ -341,20 +381,36 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>
-    /// Removes the internal evaluation-only probe flag from a caller-supplied request. The
-    /// flag suppresses governed-approval parking, so honoring it from arbitrary order
-    /// metadata would let a caller obtain a parked outcome with no queue entry behind it.
+    /// Metadata keys only this OMS's internal amendment probe may set. The evaluation-only
+    /// flag suppresses governed-approval parking, and the incremental notional tells the
+    /// portfolio rules to charge less than the order's full size — a caller who could set
+    /// either would obtain a parked outcome with no queue entry behind it, or declare their
+    /// own order to add zero exposure and walk past the gross and concentration ceilings.
     /// </summary>
-    private static OrderRequest StripEvaluationOnlyFlag(OrderRequest request)
+    private static readonly string[] InternalRiskMetadataKeys =
+    [
+        RiskEscalationQueueService.EvaluationOnlyMetadataKey,
+        RiskEscalationQueueService.IncrementalNotionalMetadataKey
+    ];
+
+    /// <summary>
+    /// Removes internal risk-probe metadata from a caller-supplied request, so only orders
+    /// this OMS builds itself can carry it.
+    /// </summary>
+    private static OrderRequest StripInternalRiskMetadata(OrderRequest request)
     {
         if (request.Metadata is null ||
-            !request.Metadata.ContainsKey(RiskEscalationQueueService.EvaluationOnlyMetadataKey))
+            !InternalRiskMetadataKeys.Any(request.Metadata.ContainsKey))
         {
             return request;
         }
 
         var sanitized = new Dictionary<string, string>(request.Metadata, StringComparer.OrdinalIgnoreCase);
-        sanitized.Remove(RiskEscalationQueueService.EvaluationOnlyMetadataKey);
+        foreach (var key in InternalRiskMetadataKeys)
+        {
+            sanitized.Remove(key);
+        }
+
         return request with { Metadata = sanitized };
     }
 
@@ -527,9 +583,17 @@ public sealed partial class OrderManagementSystem
     /// snapshot already reserves the working order at its current size, so evaluating the
     /// full amended order would double-count it — raising a $1k working buy to $2k would
     /// project $3k. When both sizes are measurable, this returns a probe carrying only the
-    /// incremental value, so snapshot + probe equals the post-amendment book. When the
-    /// order cannot be measured from its own fields (a market order priced off the live
-    /// mark), it falls back to the full amended request, which is conservative.
+    /// incremental value, so snapshot + probe equals the post-amendment book.
+    /// <para>
+    /// The increment is only stamped when the order's own price is the price it will pay —
+    /// a buy limit. Everything else (any sell, a stop-market trigger, an unpriced order)
+    /// executes at the market, which the OMS cannot see, so an increment computed from the
+    /// order's own fields would understate it: raising a sell limited at $1 from 100 to 200
+    /// shares while the mark is $100 is a $10,000 increase, not $100. In those cases the
+    /// probe carries the whole amended order, which the rules price at the mark. That
+    /// double-counts the working order's existing reservation, but over-reserving can only
+    /// refuse an amendment, never admit one that breaches a ceiling.
+    /// </para>
     /// </summary>
     private static OrderRequest BuildAmendmentProbe(OrderState state, OrderModification modification)
     {
@@ -538,6 +602,14 @@ public sealed partial class OrderManagementSystem
         {
             [RiskEscalationQueueService.EvaluationOnlyMetadataKey] = "true"
         };
+
+        var pricePaidIsCapped = state.Side == OrderSide.Buy
+            && state.LimitPrice is > 0m
+            && amended.LimitPrice is > 0m;
+        if (!pricePaidIsCapped)
+        {
+            return amended with { Metadata = probeMetadata };
+        }
 
         var currentValue = MeasureOrderValue(state.Quantity, state.LimitPrice, state.StopPrice, state.RoutedNotional);
         var amendedValue = MeasureOrderValue(amended.Quantity, amended.LimitPrice, amended.StopPrice, routedNotional: null);

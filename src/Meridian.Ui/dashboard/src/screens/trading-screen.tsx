@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
+import { OrderStatusBanner } from "@/components/ui/order-status-banner";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -1024,13 +1025,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </form>
             </CardContent>
           )}
-          {!orderTicket.open && orderTicket.successText && (
-            <CardContent className="border-b border-border/60 pb-4">
-              <div role="status" className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 shrink-0" />
-                {orderTicket.successText}
-              </div>
-            </CardContent>
+          {!orderTicket.open && (
+            <OrderStatusBanner successText={orderTicket.successText} parkedText={orderTicket.parkedText} />
           )}
           <CardContent className="space-y-3">
             <DenseDataTable

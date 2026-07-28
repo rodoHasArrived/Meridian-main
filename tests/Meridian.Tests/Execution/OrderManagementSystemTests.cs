@@ -1647,6 +1647,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
 
         var parkedResult = await oms.PlaceOrderAsync(order);
         parkedResult.RequiresApproval.Should().BeTrue();
+        queue.Approve(parkedResult.EscalationId!, actor: "risk-desk", reason: "cleared");
 
         // The release re-places under the same client order id, so the report stream owns
         // the order from here — the run's mapping must stay alive to receive the fill.
@@ -1732,6 +1733,108 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         });
 
         released.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_ResubmittingAParkedOrderWithItsOwnEscalationId_IsRefusedUntilApproved()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var order = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-PENDING-REPLAY"
+        };
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        var parkNext = true;
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                if (!parkNext)
+                {
+                    // The threshold moved: the rule no longer escalates this order at all.
+                    return RiskValidationResult.Approved();
+                }
+
+                parkNext = false;
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var parkedResult = await oms.PlaceOrderAsync(order);
+        parkedResult.RequiresApproval.Should().BeTrue();
+
+        // The escalation id came back in the submitter's own parked response. It is not an
+        // approval, so replaying it must not route the order while the desk has not decided.
+        var replay = await oms.PlaceOrderAsync(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parkedResult.EscalationId!
+            }
+        });
+
+        replay.Success.Should().BeFalse("a pending escalation is not a governed approval");
+        queue.TryGet(parkedResult.EscalationId!)!.Status.Should().Be(RiskEscalationStatus.PendingApproval);
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_WhenTheEscalationCannotBeWithdrawn_DoesNotReportSuccess()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var parked = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-CANCEL-APPROVED"
+        });
+        parked.RequiresApproval.Should().BeTrue();
+
+        // An operator approved but has not released. Cancelling must withdraw that
+        // approval, not merely report success while it stays releasable.
+        queue.Approve(parked.EscalationId!, actor: "risk-desk", reason: "cleared");
+
+        var cancelled = await oms.CancelOrderAsync(parked.OrderId);
+
+        cancelled.Success.Should().BeTrue();
+        queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
+            RiskEscalationStatus.Denied,
+            "an approved-but-unreleased escalation must be withdrawn when its order is cancelled");
     }
 
     // ---- Stubs ----

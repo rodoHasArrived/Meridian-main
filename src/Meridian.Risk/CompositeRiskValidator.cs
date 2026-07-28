@@ -348,6 +348,14 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 exception,
                 "Failed to trip execution circuit breaker after critical risk rule {RuleName}; the risk engine is now failing closed until the trip succeeds",
                 rule.RuleName);
+
+            // The latch above lives only in this process. Record the demanded halt where a
+            // restart can find it, or a process recycle before the retry succeeds would
+            // reload the stale closed snapshot and resume routing under an unresolved
+            // critical breach.
+            await _operatorControls
+                .TryRecordPendingCircuitBreakerTripAsync(_breakerTripReason, CancellationToken.None)
+                .ConfigureAwait(false);
         }
     }
 

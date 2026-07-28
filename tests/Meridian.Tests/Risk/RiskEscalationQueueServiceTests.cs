@@ -493,6 +493,40 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Withdraw_ResolvesAnApprovedEntryThatWasNeverReleased()
+    {
+        var queue = CreateQueue();
+        var parked = queue.Park(CreateOrder(), "above band", ruleName: "OrderNotional");
+        queue.Approve(parked.EscalationId, actor: "risk-desk", reason: "cleared");
+
+        // An approval that has not been released is only a permission; if the order behind
+        // it is gone, the entry must resolve or an operator could still release it later.
+        queue.Deny(parked.EscalationId, actor: "oms", reason: "plain denial").Should().BeNull(
+            "a plain denial only resolves pending entries");
+
+        var withdrawn = queue.Withdraw(parked.EscalationId, actor: "oms", reason: "the submitter cancelled");
+
+        withdrawn.Should().NotBeNull();
+        queue.TryGet(parked.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Denied);
+        queue.TryConsumeApproval(WithApprovalToken(CreateOrder(), parked.EscalationId)).Should().BeNull(
+            "a withdrawn escalation can never release its order");
+    }
+
+    [Fact]
+    public void Withdraw_LeavesAReleaseThatIsAlreadyInFlight()
+    {
+        var queue = CreateQueue();
+        var parked = queue.Park(CreateOrder(), "above band", ruleName: "OrderNotional");
+        queue.Approve(parked.EscalationId, actor: "risk-desk", reason: "cleared");
+        queue.TryBeginRelease(parked.EscalationId).Should().BeTrue();
+
+        // That order is on its way to the broker; only its own outcome may resolve the
+        // entry, or the queue would disown an order that is about to exist.
+        queue.Withdraw(parked.EscalationId, actor: "oms", reason: "too late").Should().BeNull();
+        queue.TryGet(parked.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+    }
+
+    [Fact]
     public void TryConsumeApproval_WithADifferentClientOrderId_IsRefused()
     {
         var queue = CreateQueue();

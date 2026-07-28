@@ -974,11 +974,12 @@ public sealed class RiskRuleRuntimeService
             }
 
             var payload = File.ReadAllText(_options.SnapshotPath);
-            var snapshot = JsonSerializer.Deserialize(payload, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
-            if (snapshot is null)
-            {
-                return;
-            }
+            var snapshot = JsonSerializer.Deserialize(payload, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot)
+                // Valid JSON "null" is an existing snapshot carrying no thresholds — the
+                // same silent revert to "unconfigured" the catch below refuses, so it takes
+                // the same fail-closed path rather than quietly disabling the rails.
+                ?? throw new InvalidOperationException(
+                    "The risk rule snapshot contains no configuration.");
 
             lock (_gate)
             {

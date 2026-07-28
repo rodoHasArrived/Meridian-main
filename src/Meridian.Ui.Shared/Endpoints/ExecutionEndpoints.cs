@@ -184,12 +184,20 @@ public static class ExecutionEndpoints
 
             var result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
 
-            return result.Success
-                ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
-                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            // A parked order is not a rejection: nothing routed, but a live queue entry can
+            // still execute it once an operator approves. 202 keeps that distinguishable
+            // from the 400 a refusal returns, so a client cannot show "submission failed"
+            // for an order that is on its way to the desk.
+            return (result.Success, result.RequiresApproval) switch
+            {
+                (true, _) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created),
+                (false, true) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status202Accepted),
+                _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+            };
         })
         .WithName("SubmitOrder")
         .Produces<OrderResult>(201)
+        .Produces<OrderResult>(202)
         .Produces<OrderResult>(400)
         .Produces<OrderResult>(403)
         .Produces(429)

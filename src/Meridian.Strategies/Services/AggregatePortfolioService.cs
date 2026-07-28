@@ -35,9 +35,16 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         // instance (the workstation host state is registered for the host and again for
         // each run that trades it). Counting that instance once per key would multiply
         // every position and, through the exposure snapshot, invent risk that does not exist.
+        //
+        // A shared instance is one book with no per-run split available, so its
+        // contributions can only be labelled with one of the run ids sharing it. Ordering
+        // the registry first makes that label deterministic rather than dependent on
+        // dictionary enumeration order, so the same composition always reports the same
+        // attribution. Splitting a shared book by owning run needs fill-level ownership the
+        // portfolio does not carry.
         var seenPortfolios = new HashSet<Meridian.Execution.Models.IMultiAccountPortfolioState>(
             ReferenceEqualityComparer.Instance);
-        foreach (var (runId, portfolio) in entries)
+        foreach (var (runId, portfolio) in entries.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
         {
             if (!seenPortfolios.Add(portfolio))
             {

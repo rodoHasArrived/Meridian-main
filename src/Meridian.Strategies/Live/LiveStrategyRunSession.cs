@@ -534,8 +534,53 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
+        await WithdrawParkedOrdersAsync().ConfigureAwait(false);
         await RecordTerminalRunStateAsync(faulted).ConfigureAwait(false);
         await RecordSessionAuditAsync(faulted).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Cancels orders still awaiting governed approval as the run ends. The run is about to
+    /// be removed from the engine, so an approval granted after this point would route an
+    /// order for a strategy that is no longer running — and its fills would reach no
+    /// session at all. Cancelling withdraws the escalation, which is what makes the
+    /// approval unreachable rather than merely unattended.
+    /// </summary>
+    private async Task WithdrawParkedOrdersAsync()
+    {
+        if (_parkedClientOrderIds.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var clientOrderId in _parkedClientOrderIds.ToArray())
+        {
+            try
+            {
+                var cancelled = await _orderManager
+                    .CancelOrderAsync(clientOrderId, CancellationToken.None)
+                    .ConfigureAwait(false);
+                if (!cancelled.Success)
+                {
+                    _logger.LogWarning(
+                        "Run {RunId} ended with order {ClientOrderId} parked, and its escalation could not be withdrawn: {Reason}",
+                        _run.RunId, clientOrderId, cancelled.ErrorMessage ?? "no reason given");
+                    continue;
+                }
+
+                _logger.LogInformation(
+                    "Run {RunId} ended; withdrew the governed escalation still holding order {ClientOrderId}.",
+                    _run.RunId, clientOrderId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Run {RunId} could not withdraw parked order {ClientOrderId} during teardown.",
+                    _run.RunId, clientOrderId);
+            }
+        }
+
+        _parkedClientOrderIds.Clear();
     }
 
     private async Task RecordTerminalRunStateAsync(Exception? faulted)

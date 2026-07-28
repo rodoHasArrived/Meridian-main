@@ -1454,6 +1454,74 @@ describe("trading order ticket view model", () => {
     });
     expect(result.current.successText).toBe("Order submitted - ord-42.");
   });
+
+  it("reports a governed-approval park as parked rather than as a submission failure", async () => {
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockResolvedValue({
+        success: false,
+        orderId: "ord-77",
+        reason: null,
+        errorMessage: "Order notional is inside the governed-approval band.",
+        requiresApproval: true,
+        escalationId: "esc-9001"
+      })
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({
+      services,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.submitOrder();
+    });
+
+    // Nothing routed, but a live queue entry can still execute this order: showing a
+    // generic submission failure would tell the operator the opposite of what happened.
+    expect(result.current.phase).toBe("parked");
+    expect(result.current.errorText).toBeNull();
+    expect(result.current.escalationId).toBe("esc-9001");
+    expect(result.current.parkedText).toContain("parked for governed risk approval");
+    expect(result.current.parkedText).toContain("esc-9001");
+    expect(result.current.statusAnnouncement).toContain("parked for governed risk approval");
+  });
+
+  it("still reports an ordinary refusal as an error", async () => {
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockResolvedValue({
+        success: false,
+        orderId: "ord-78",
+        reason: null,
+        errorMessage: "Gross exposure limit exceeded.",
+        requiresApproval: false
+      })
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({
+      services,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.submitOrder();
+    });
+
+    expect(result.current.phase).toBe("error");
+    expect(result.current.parkedText).toBeNull();
+    expect(result.current.errorText).toBe("Gross exposure limit exceeded.");
+  });
 });
 
 describe("buildOrderPreview", () => {

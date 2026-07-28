@@ -910,6 +910,15 @@ export interface OrderResult {
   success: boolean;
   orderId: string | null;
   reason: string | null;
+  errorMessage?: string | null;
+  /**
+   * True when a risk escalation parked the order for governed approval. Nothing routed,
+   * but the queue entry can still execute once an operator approves it, so this is not a
+   * submission failure and must not be shown as one.
+   */
+  requiresApproval?: boolean;
+  escalationId?: string | null;
+  riskWarnings?: string[] | null;
 }
 
 export interface StrategyWorkspaceResponse {

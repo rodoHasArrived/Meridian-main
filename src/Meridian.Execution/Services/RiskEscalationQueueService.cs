@@ -429,19 +429,44 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Withdraws an escalation whose order can no longer be routed — the submitter
+    /// cancelled it, or the run that owned it ended. Unlike <see cref="Deny"/> this also
+    /// resolves an entry an operator already <see cref="RiskEscalationStatus.Approved"/>,
+    /// because an approval that has not been released is still only a permission: the
+    /// order behind it is gone. A release already in flight is left alone — that order is
+    /// on its way to the broker and only its own outcome may resolve the entry. Returns
+    /// null when there was nothing withdrawable, so callers can fail closed rather than
+    /// reporting a cancellation the queue never accepted.
+    /// </summary>
+    public RiskEscalationEntry? Withdraw(string escalationId, string actor, string? reason)
+        => Resolve(
+            escalationId,
+            RiskEscalationStatus.Denied,
+            actor,
+            reason,
+            allowApproved: true);
+
     private RiskEscalationEntry? Resolve(
         string escalationId,
         RiskEscalationStatus status,
         string actor,
-        string? reason)
+        string? reason,
+        bool allowApproved = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(escalationId);
         actor = string.IsNullOrWhiteSpace(actor) ? "operator" : actor.Trim();
 
         lock (_resolveLock)
         {
-            if (!_entries.TryGetValue(escalationId, out var entry) ||
-                entry.Status != RiskEscalationStatus.PendingApproval)
+            if (!_entries.TryGetValue(escalationId, out var entry))
+            {
+                return null;
+            }
+
+            var resolvable = entry.Status == RiskEscalationStatus.PendingApproval ||
+                (allowApproved && entry.Status == RiskEscalationStatus.Approved && !entry.ReleaseInFlight);
+            if (!resolvable)
             {
                 return null;
             }

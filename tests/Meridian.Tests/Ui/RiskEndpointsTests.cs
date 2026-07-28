@@ -159,7 +159,10 @@ public sealed class RiskEndpointsTests
                 limitPrice = 100m,
                 strategyId = "escalation-check"
             }));
-        parkedResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        parkedResponse.StatusCode.Should().Be(
+            HttpStatusCode.Accepted,
+            "a parked order is not a rejection: nothing routed, but a live queue entry can still execute it, "
+            + "and a client that saw 400 would tell the operator the submission failed");
         var parkedResult = JsonSerializer.Deserialize<OrderResult>(await parkedResponse.Content.ReadAsStringAsync(), JsonOptions());
         parkedResult!.ErrorMessage.Should().Contain("governed approval");
         parkedResult.RequiresApproval.Should().BeTrue("a parked escalation is a typed outcome, not a plain rejection");
