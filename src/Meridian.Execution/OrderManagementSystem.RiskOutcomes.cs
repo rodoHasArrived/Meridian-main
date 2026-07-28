@@ -153,6 +153,42 @@ public sealed partial class OrderManagementSystem
         return reserving;
     }
 
+    /// <summary>
+    /// Rebuilds the client-order-id reservations held by escalations that survived a
+    /// restart. The queue is durable but this map is not: without this, a resubmission
+    /// under a parked order's client order id would find the id free, route, and reach a
+    /// terminal state, after which the still-live escalation could be approved and route a
+    /// second execution under the same id — two orders sharing one order's audit history.
+    /// </summary>
+    private void RehydrateParkedOrderReservations()
+    {
+        if (_escalationQueue is null)
+        {
+            return;
+        }
+
+        var reclaimed = 0;
+        foreach (var entry in _escalationQueue.GetUnresolved())
+        {
+            if (entry.Request.ClientOrderId is not { Length: > 0 } clientOrderId)
+            {
+                continue;
+            }
+
+            if (_parkedOrderIds.TryAdd(clientOrderId, entry.EscalationId))
+            {
+                reclaimed++;
+            }
+        }
+
+        if (reclaimed > 0)
+        {
+            _logger.LogInformation(
+                "Reserved {Count} client order id(s) held by governed approvals that outlived the previous host",
+                reclaimed);
+        }
+    }
+
     /// <inheritdoc />
     public bool WasRiskApprovalDeclined(string orderId)
     {

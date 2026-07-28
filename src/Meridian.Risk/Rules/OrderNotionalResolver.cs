@@ -90,6 +90,13 @@ internal static class OrderNotionalResolver
             marketPrice = symbolPrice > 0m ? symbolPrice : null;
         }
 
+        // Only a limit price on a BUY caps what the order can pay. A sell limit is a floor
+        // — a marketable sell executes at the market, so 10,000 shares limited at $1 in a
+        // $100 symbol route ~$1m, not $10k. A buy STOP price is a trigger, not a cap: once
+        // crossed the order executes at the market, so a triggered 1,000-share buy stop at
+        // $1 in a $100 symbol routes ~$100k. Neither may be valued at its own price alone.
+        var pricePaidIsCapped = request.Side == OrderSide.Buy && request.LimitPrice is > 0m;
+
         if (referencePrice is null or <= 0m)
         {
             // No caller price: measure at the market. The portfolio may be flat in this
@@ -97,17 +104,13 @@ internal static class OrderNotionalResolver
             // execute it — that beats approving a market order unmeasured.
             referencePrice = marketPrice;
         }
-        else if (marketPrice is { } mark && mark > 0m && request.Side == OrderSide.Sell)
+        else if (marketPrice is { } mark && mark > 0m && !pricePaidIsCapped)
         {
-            // A sell limit is a floor, not a ceiling: a marketable sell executes at the
-            // market, so a 10,000-share sale limited at $1 in a $100 symbol routes ~$1m,
-            // not $10k. Value it at whichever side is larger.
-            // A BUY limit is the opposite — it caps the price paid — so a resting buy
-            // limit below the market is valued at its own limit. Valuing it at the mark
-            // would measure $100k for a 1,000-share order limited at $1 and could reject
-            // (and, at Critical severity, halt on) a harmless resting order.
             referencePrice = Math.Max(referencePrice.Value, mark);
         }
+        // A capped buy keeps its own limit: valuing a resting buy limited at $1 in a $100
+        // symbol at the mark would measure $100k for a harmless order and could reject it
+        // — or, at Critical severity, halt the desk on it.
 
         return referencePrice is { } price and > 0m ? Math.Abs(request.Quantity) * price : null;
     }

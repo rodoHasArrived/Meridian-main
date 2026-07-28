@@ -227,6 +227,18 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Returns every entry that can still route an order — awaiting approval or approved
+    /// and not yet released — oldest first. Used to rebuild the client-order-id
+    /// reservations a restarted host would otherwise lose while this durable queue keeps
+    /// the escalations themselves.
+    /// </summary>
+    public IReadOnlyList<RiskEscalationEntry> GetUnresolved() =>
+        _entries.Values
+            .Where(static entry => entry.Status is RiskEscalationStatus.PendingApproval or RiskEscalationStatus.Approved)
+            .OrderBy(static entry => entry.ParkedAt)
+            .ToArray();
+
     /// <summary>Returns entries awaiting approval, oldest first.</summary>
     public IReadOnlyList<RiskEscalationEntry> GetPending() =>
         _entries.Values
@@ -496,9 +508,13 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// <summary>
     /// Compares every routing- and payoff-relevant field of the parked order against the
     /// resubmission, so an approval cannot release a stop, trailing, time-in-force,
-    /// account, strategy, option, or leg variation the risk desk never reviewed.
+    /// account, strategy, option, or leg variation the risk desk never reviewed. The
+    /// client order id is part of the fingerprint: the parking and approval audit entries
+    /// are filed under it, and the OMS reserves it for this escalation alone, so a release
+    /// that routed under a different id would break both correlation and that reservation.
     /// </summary>
     private static bool FingerprintMatches(OrderRequest parked, OrderRequest resubmitted) =>
+        string.Equals(parked.ClientOrderId, resubmitted.ClientOrderId, StringComparison.OrdinalIgnoreCase) &&
         string.Equals(parked.Symbol, resubmitted.Symbol, StringComparison.OrdinalIgnoreCase) &&
         parked.Side == resubmitted.Side &&
         parked.Type == resubmitted.Type &&
@@ -625,37 +641,48 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
     private void LoadSnapshot()
     {
+        if (!File.Exists(_options.SnapshotPath))
+        {
+            // No snapshot is a legitimate first start; an unreadable one is not.
+            return;
+        }
+
+        RiskEscalationSnapshot? snapshot;
         try
         {
-            if (!File.Exists(_options.SnapshotPath))
-            {
-                return;
-            }
-
             var payload = File.ReadAllText(_options.SnapshotPath);
-            var snapshot = JsonSerializer.Deserialize(payload, ExecutionJsonContext.Default.RiskEscalationSnapshot);
-            if (snapshot is null)
-            {
-                return;
-            }
-
-            foreach (var entry in snapshot.Entries.OrderBy(static entry => entry.ParkedAt))
-            {
-                if (string.IsNullOrWhiteSpace(entry.EscalationId) || entry.Request is null)
-                {
-                    continue;
-                }
-
-                _entries[entry.EscalationId] = entry;
-                _entryOrder.Enqueue(entry.EscalationId);
-            }
+            snapshot = JsonSerializer.Deserialize(payload, ExecutionJsonContext.Default.RiskEscalationSnapshot);
         }
         catch (Exception exception)
         {
-            _logger.LogWarning(
-                exception,
-                "Failed to load risk escalation queue snapshot from {SnapshotPath}; starting empty.",
-                _options.SnapshotPath);
+            // Fail closed. Starting empty would silently erase every parked order and
+            // armed approval this queue already reported as durable, leaving operators
+            // unable to approve, deny, or audit decisions they were told were pending.
+            throw new InvalidOperationException(
+                $"The risk escalation queue snapshot at '{_options.SnapshotPath}' exists but could not be read; " +
+                "refusing to start with an empty governed-approval queue.",
+                exception);
+        }
+
+        if (snapshot is null)
+        {
+            throw new InvalidOperationException(
+                $"The risk escalation queue snapshot at '{_options.SnapshotPath}' exists but contains no queue state; " +
+                "refusing to start with an empty governed-approval queue.");
+        }
+
+        foreach (var entry in snapshot.Entries.OrderBy(static entry => entry.ParkedAt))
+        {
+            if (string.IsNullOrWhiteSpace(entry.EscalationId) || entry.Request is null)
+            {
+                continue;
+            }
+
+            // A release claim belongs to the process that took it. Any snapshot written
+            // while one was outstanding would otherwise reload an approval no future
+            // TryBeginRelease could ever claim, wedging it permanently.
+            _entries[entry.EscalationId] = entry with { ReleaseInFlight = false };
+            _entryOrder.Enqueue(entry.EscalationId);
         }
     }
 

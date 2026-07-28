@@ -154,6 +154,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     dropped.OrderId, dropped.ReportType, totalDropped);
             });
 
+        RehydrateParkedOrderReservations();
+
         // Consume the gateway's asynchronous execution report stream so partial fills,
         // rejects, and cancels that arrive after the synchronous submit ack still reach
         // order state, session persistence, and downstream fill consumers.

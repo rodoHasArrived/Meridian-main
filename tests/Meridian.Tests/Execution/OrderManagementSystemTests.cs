@@ -1663,6 +1663,77 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             "the order routed, so nothing about it was declined");
     }
 
+    [Fact]
+    public async Task Construction_ReReservesClientOrderIdsHeldByEscalationsThatOutlivedTheHost()
+    {
+        var options = new RiskEscalationQueueOptions(
+            Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"));
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: options);
+        var order = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-SURVIVES-RESTART"
+        };
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using (var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue))
+        {
+            (await oms.PlaceOrderAsync(order)).RequiresApproval.Should().BeTrue();
+        }
+
+        // A restarted host: the queue reloads from its snapshot, but the OMS order table
+        // and its id reservations start empty. Without rehydration a retry under the
+        // parked id would route now and the escalation could route again later, putting
+        // two executions under one order id.
+        var restartedQueue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: options);
+        var approveEverything = Substitute.For<IRiskValidator>();
+        approveEverything.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+
+        using var restarted = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: approveEverything,
+            escalationQueue: restartedQueue);
+
+        var retry = await restarted.PlaceOrderAsync(order);
+
+        retry.Success.Should().BeFalse("the client order id is still reserved by the live escalation");
+
+        // The escalation's own release still reclaims it.
+        var escalationId = restartedQueue.GetPending().Single().EscalationId;
+        restartedQueue.Approve(escalationId, actor: "risk-desk", reason: "cleared");
+        var released = await restarted.PlaceOrderAsync(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = escalationId
+            }
+        });
+
+        released.Success.Should().BeTrue();
+    }
+
     // ---- Stubs ----
 
     private sealed class ApproveAllGate : ISecurityMasterGate

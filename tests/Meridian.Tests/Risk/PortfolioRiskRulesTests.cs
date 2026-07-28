@@ -323,6 +323,41 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
+    public async Task OrderNotional_TriggeredBuyStop_IsValuedAtTheMarket()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(symbols: new SymbolExposure("AAPL", 10_000m, 100m, 100m, 10_000m)),
+            () => 50_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // A buy stop at $1 with the symbol at $100 has already triggered: it executes at
+        // the market, so 1,000 shares route ~$100k, not $1k. A stop price is a trigger,
+        // never a cap on what is paid.
+        var order = CreateOrder(quantity: 1_000m, type: OrderType.StopMarket) with { StopPrice = 1m };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse("a triggered buy stop routes at the market, not at its stop price");
+    }
+
+    [Fact]
+    public async Task OrderNotional_RestingBuyLimit_KeepsItsOwnCap()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(symbols: new SymbolExposure("AAPL", 10_000m, 100m, 100m, 10_000m)),
+            () => 50_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // The same numbers as a buy limit: the limit does cap what is paid, so 1,000
+        // shares at $1 is a $1k order however far the market has run above it.
+        var result = await rule.EvaluateAsync(CreateOrder(quantity: 1_000m, limitPrice: 1m));
+
+        result.IsApproved.Should().BeTrue("valuing a resting buy limit at the mark would reject a harmless order");
+    }
+
+    [Fact]
     public async Task OrderNotional_MarketOrderWithNoPriceReference_Approves()
     {
         var rule = new OrderNotionalRule(

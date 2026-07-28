@@ -13,9 +13,10 @@ namespace Meridian.Ui.Shared.Services;
 /// <see cref="IAggregatePortfolioService"/>, so the portfolio-aware pre-trade rules
 /// (gross exposure, symbol concentration, order notional) evaluate against the same
 /// aggregated cross-run positions the Portfolio workspace reports. Positions are valued
-/// at the same live marks the trading screen shows (quote mid, then last trade), falling
-/// back to each contribution's cost basis when no mark exists, so enforcement and display
-/// can never diverge on price. Portfolio value spans the same scope as the positions:
+/// at the same live marks the trading screen shows (quote mid, then last trade) — but only
+/// while those marks are still fresh, since a stalled feed would otherwise price risk at a
+/// quote the market has left behind — falling back to each contribution's cost basis when
+/// no current mark exists. Portfolio value spans the same scope as the positions:
 /// the sum across every portfolio registered in the <see cref="PortfolioRegistry"/>
 /// (the host state is itself registered, so it is counted exactly once), falling back to
 /// the host <see cref="IPortfolioState"/> and finally to gross exposure so concentration
@@ -32,6 +33,15 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     private readonly QuoteCollector? _quotes;
     private readonly TradeDataCollector? _trades;
     private readonly Func<IOrderManager?>? _orderManagerAccessor;
+    private readonly TimeSpan _markMaxAge;
+    private readonly Func<DateTimeOffset> _clock;
+
+    /// <summary>
+    /// How old a quote or trade may be and still price an order. A stalled feed keeps
+    /// serving its last mark forever; valuing risk at one would let a symbol cached before
+    /// an outage measure orders at a price the market left behind.
+    /// </summary>
+    public static readonly TimeSpan DefaultMarkMaxAge = TimeSpan.FromMinutes(5);
 
     public AggregatePortfolioExposureProvider(
         IAggregatePortfolioService aggregatePortfolio,
@@ -39,7 +49,9 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         PortfolioRegistry? registry = null,
         QuoteCollector? quotes = null,
         TradeDataCollector? trades = null,
-        Func<IOrderManager?>? orderManagerAccessor = null)
+        Func<IOrderManager?>? orderManagerAccessor = null,
+        TimeSpan? markMaxAge = null,
+        Func<DateTimeOffset>? clock = null)
     {
         _aggregatePortfolio = aggregatePortfolio ?? throw new ArgumentNullException(nameof(aggregatePortfolio));
         _portfolioState = portfolioState;
@@ -49,6 +61,67 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         // Resolved lazily: the OMS depends on the risk validator, which depends on this
         // provider, so a direct constructor dependency would close a DI cycle.
         _orderManagerAccessor = orderManagerAccessor;
+        _markMaxAge = markMaxAge is { } configured && configured > TimeSpan.Zero
+            ? configured
+            : DefaultMarkMaxAge;
+        _clock = clock ?? (static () => DateTimeOffset.UtcNow);
+    }
+
+    /// <summary>
+    /// The live mark, but only while the feed that produced it is still current. Every
+    /// valuation on this provider goes through here so no risk rail can be priced off a
+    /// mark the display surfaces are merely still showing: a symbol cached at $1 before an
+    /// outage and now trading at $100 would measure a 1,000-share order at $1k instead of
+    /// $100k and walk past every notional, exposure, and concentration ceiling. Returns
+    /// <see langword="null"/> when no source is current, so the caller falls back to the
+    /// order's own price or to cost basis rather than trusting a stale one.
+    /// </summary>
+    private decimal? ResolveMark(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        var asOf = _clock();
+        var earliest = asOf - _markMaxAge;
+        // A timestamp far in the future is as untrustworthy as a stale one: a bad clock or
+        // a malformed feed record must not hold a mark live indefinitely.
+        var latest = asOf + _markMaxAge;
+
+        if (_quotes is not null &&
+            _quotes.TryGet(symbol, out var bbo) &&
+            bbo is not null &&
+            bbo.Timestamp >= earliest &&
+            bbo.Timestamp <= latest)
+        {
+            if (bbo.MidPrice is { } mid && mid > 0m)
+            {
+                return mid;
+            }
+            if (bbo.AskPrice > 0m)
+            {
+                return bbo.AskPrice;
+            }
+            if (bbo.BidPrice > 0m)
+            {
+                return bbo.BidPrice;
+            }
+        }
+
+        if (_trades is not null)
+        {
+            var recent = _trades.GetRecentTrades(symbol, 1);
+            if (recent.Count > 0 &&
+                recent[0].Price > 0m &&
+                recent[0].Timestamp >= earliest &&
+                recent[0].Timestamp <= latest)
+            {
+                return recent[0].Price;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -87,7 +160,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             }
 
             var existing = symbolExposures.GetValueOrDefault(order.Symbol);
-            var mark = WorkstationEndpoints.ResolveLiveMark(order.Symbol, _quotes, _trades) ?? 0m;
+            var mark = ResolveMark(order.Symbol) ?? 0m;
             if (mark <= 0m)
             {
                 mark = existing?.ReferencePrice ?? 0m;
@@ -96,12 +169,14 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             // Value a working order exactly as the pre-trade gate valued it, or the reserve
             // contradicts the decision that let it through: a marketable sell limit executes
             // at the market (a 1,000-share sell limited at $1 with the symbol at $100 is a
-            // $100k order, not $1k), while a buy limit caps what is paid.
+            // $100k order, not $1k), and so does a triggered buy stop, whose stop price is a
+            // trigger rather than a cap. Only a buy LIMIT caps what is paid.
             var orderPrice = order.LimitPrice ?? order.StopPrice ?? 0m;
-            var price = (orderPrice > 0m, order.Side) switch
+            var pricePaidIsCapped = order.Side == OrderSide.Buy && order.LimitPrice is > 0m;
+            var price = (orderPrice > 0m, pricePaidIsCapped) switch
             {
-                (true, OrderSide.Sell) => Math.Max(orderPrice, mark),
-                (true, _) => orderPrice,
+                (true, true) => orderPrice,
+                (true, false) => Math.Max(orderPrice, mark),
                 _ => mark
             };
 
@@ -244,7 +319,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     /// <inheritdoc />
     public decimal? TryGetReferencePrice(string symbol)
     {
-        var mark = WorkstationEndpoints.ResolveLiveMark(symbol, _quotes, _trades);
+        var mark = ResolveMark(symbol);
         return mark > 0m ? mark : null;
     }
 
@@ -264,7 +339,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             // meaningless for offsetting long/short lots across runs (it can even go
             // negative), so cost-based gross must sum each contribution's absolute
             // quantity at its own positive cost basis.
-            var liveMark = WorkstationEndpoints.ResolveLiveMark(position.Symbol, _quotes, _trades);
+            var liveMark = ResolveMark(position.Symbol);
             var symbolGross = 0m;
             var symbolNet = 0m;
             var absoluteQuantity = 0m;

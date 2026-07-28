@@ -580,6 +580,61 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void TryGetReferencePrice_IgnoresAMarkOlderThanTheFreshnessBound()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var now = new DateTimeOffset(2026, 7, 28, 15, 0, 0, TimeSpan.Zero);
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(
+            new Meridian.Tests.TestHelpers.TestMarketEventPublisher());
+        quotes.Upsert(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: now - TimeSpan.FromMinutes(30),
+            Symbol: "AAPL",
+            BidPrice: 0.99m,
+            BidSize: 100,
+            AskPrice: 1.01m,
+            AskSize: 100));
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            markMaxAge: TimeSpan.FromMinutes(5),
+            clock: () => now);
+
+        // A feed stalled at $1 while the symbol trades at $100 would let a 1,000-share
+        // order measure $1k of notional. Fail closed: the rules fall back to the order's
+        // own price rather than pricing risk off a quote the market has left behind.
+        provider.TryGetReferencePrice("AAPL").Should().BeNull();
+    }
+
+    [Fact]
+    public void TryGetReferencePrice_UsesAMarkInsideTheFreshnessBound()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var now = new DateTimeOffset(2026, 7, 28, 15, 0, 0, TimeSpan.Zero);
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(
+            new Meridian.Tests.TestHelpers.TestMarketEventPublisher());
+        quotes.Upsert(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: now - TimeSpan.FromSeconds(30),
+            Symbol: "AAPL",
+            BidPrice: 99m,
+            BidSize: 100,
+            AskPrice: 101m,
+            AskSize: 100));
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            markMaxAge: TimeSpan.FromMinutes(5),
+            clock: () => now);
+
+        provider.TryGetReferencePrice("AAPL").Should().Be(100m, "a current quote still prices the order");
+    }
+
+    [Fact]
     public void GetSnapshot_WithEmptyRegistry_FallsBackToHostPortfolioValue()
     {
         var aggregate = new Mock<IAggregatePortfolioService>();

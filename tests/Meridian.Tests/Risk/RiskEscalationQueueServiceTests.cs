@@ -452,4 +452,63 @@ public sealed class RiskEscalationQueueServiceTests
         var reloaded = CreateQueue(options);
         reloaded.TryGet(approved.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
     }
+
+    [Fact]
+    public void Restart_FromUnreadableSnapshot_FailsClosed()
+    {
+        var options = CreateOptions();
+        var first = CreateQueue(options);
+        first.Park(CreateOrder(), "must not vanish", ruleName: "OrderNotional");
+
+        File.Exists(options.SnapshotPath).Should().BeTrue();
+        File.WriteAllText(options.SnapshotPath, "{ this is not valid json");
+
+        // Starting empty would erase every parked order and armed approval this queue has
+        // already reported as durable, with no operator able to approve, deny, or audit it.
+        var start = () => CreateQueue(options);
+
+        start.Should().Throw<InvalidOperationException>()
+            .WithMessage("*could not be read*");
+    }
+
+    [Fact]
+    public void Restart_ClearsReleaseClaimsHeldByThePreviousProcess()
+    {
+        var options = CreateOptions();
+        var first = CreateQueue(options);
+        var approved = first.Park(CreateOrder(quantity: 20m), "claimed then lost", ruleName: "OrderNotional");
+        first.Approve(approved.EscalationId, actor: "risk-desk", reason: "cleared");
+
+        first.TryBeginRelease(approved.EscalationId).Should().BeTrue();
+        // A concurrent park snapshots every entry, capturing the in-flight claim on disk.
+        first.Park(CreateOrder(quantity: 30m), "concurrent park", ruleName: "OrderNotional");
+
+        // The claim belongs to the process that took it. Reloading it would leave the
+        // approval permanently unclaimable, so the operator could never release the order.
+        var restarted = CreateQueue(options);
+
+        restarted.TryGet(approved.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+        restarted.TryBeginRelease(approved.EscalationId).Should().BeTrue(
+            "a release claim from a dead process must not wedge the approval");
+    }
+
+    [Fact]
+    public void TryConsumeApproval_WithADifferentClientOrderId_IsRefused()
+    {
+        var queue = CreateQueue();
+        var parked = queue.Park(
+            CreateOrder() with { ClientOrderId = "CLIENT-PARKED" },
+            "above band",
+            ruleName: "OrderNotional");
+        queue.Approve(parked.EscalationId, actor: "risk-desk", reason: "cleared");
+
+        // Same reviewed fields, different client identity: routing it would file the
+        // execution under an id the parking and approval audit entries never mention, and
+        // leave the reserved parked id stranded.
+        var renamed = WithApprovalToken(CreateOrder() with { ClientOrderId = "CLIENT-OTHER" }, parked.EscalationId);
+        queue.TryConsumeApproval(renamed).Should().BeNull();
+
+        var original = WithApprovalToken(CreateOrder() with { ClientOrderId = "CLIENT-PARKED" }, parked.EscalationId);
+        queue.TryConsumeApproval(original).Should().NotBeNull("the release under the parked id still works");
+    }
 }
