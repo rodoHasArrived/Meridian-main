@@ -169,7 +169,7 @@ means the capability exists in source with tests but is not the wired operator p
 | Realistic fill and cost models (`MarketImpactFillModel`, `OrderBookFillModel`, commission models, `src/Meridian.Backtesting/`) | Implemented for backtests; paper trading must adopt them | `W9-PAPER-003` |
 | Kill-switch, cancel-all, and pre-trade notional/collar controls | Partial foundation; WPF safety surfaces must be wired or visibly demoted | `W9-SAFETY-007` |
 | Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (`AuditChainService` exists for storage; the journal ledger chain and blanket route coverage do not) | Partial foundation | `W9-GOV-008` |
-| Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | In progress | `W9-ASSET-010` |
+| Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Complete | `W9-ASSET-010` |
 | Operational Evidence Graph as a shared product surface | Planned; explorer, proof-drawer, and manifest primitives exist | `W5X-OEG-001` |
 
 Rules of the doctrine:
@@ -432,6 +432,7 @@ operational record baseline:
 | W5X `W5X-FINOPS-001` | Financial Operations control center (Operations Continuity, close readiness, approval policy, close calendar, breaks, checklists, audit evidence, governed reopen) |
 | W5X `W5X-CONNECT-001` | Statement connector library with preview, confidence, drift detection, idempotency, retained source evidence |
 | W7 `W7-LIVE-001` | Bounded live-readiness governance gate: paper-to-live promotion requires the full evidence set plus a manual override; broader live execution productization remains outside this completion claim |
+| W9 `W9-ASSET-010` | Asset Accounting Event Spine: one governed event spine from acquisition to disposal; Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states; lot creation and versioned selected-lot disposal joined to the immutable journal in one idempotent, serializable transaction |
 
 **Active** (registry status `in_progress`):
 
@@ -441,7 +442,6 @@ operational record baseline:
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge (browser-first import → commit → retained Evidence Vault proof) |
 | `W8-WPF-PARITY-001` | WPF desktop workstation web-UI parity over shared contracts (`docs/development/wpf-web-ui-alignment-plan.md`) |
 | `W8-UX-CONSOL-001` | Browser workstation screen consolidation behind the seven charter roots (retired routes remain redirects) |
-| `W9-ASSET-010` | Asset Accounting Event Spine: one governed event spine from acquisition to disposal; Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states; lot creation and versioned selected-lot disposal joined to the immutable journal in one idempotent, serializable transaction |
 
 **Planned** (registry status `planned`): `W5X-OEG-001` (Operational Evidence Graph product
 surface), `W6-BTSTUDIO-001` (Backtesting Studio evidence loop), and the ranked W9 slate:
