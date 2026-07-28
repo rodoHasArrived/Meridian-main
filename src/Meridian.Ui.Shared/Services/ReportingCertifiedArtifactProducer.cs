@@ -983,7 +983,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
     }
 
     private static string EscapeCsv(string? value)
-        => SpreadsheetFormulaGuard.EscapeCsvCell(value);
+        => Meridian.Storage.Export.SpreadsheetFormulaGuard.EscapeCsvCell(value);
 
     private static void ValidateManifest(ReportingOutputManifest manifest)
     {
