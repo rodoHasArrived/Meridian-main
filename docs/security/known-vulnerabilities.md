@@ -60,6 +60,44 @@ Current NuGet audit surfaces:
 **Next Review:** 2026-08-17 (quarterly)
 **Approved By:** Security maintainers / repository owners
 
+### KV-2026-002 — react-router 7.12.0–8.2.0 - RSC Mode CSRF Bypass (GHSA-qwww-vcr4-c8h2)
+
+**CVE:** —
+**Severity:** High
+**Advisory:** https://github.com/advisories/GHSA-qwww-vcr4-c8h2
+**Ecosystem:** npm (transitive)
+**Affected Package:** react-router (via `react-router-dom` 7.18.1 in `src/Meridian.Ui/dashboard`)
+
+**Description:**
+React Router's server-side RSC/framework mode allows a CSRF bypass that can execute route
+actions. The advisory range is `>=7.12.0 <8.3.0` and there is no patched 7.x release.
+
+**Risk Assessment:**
+**LOW** - The dashboard is a client-only Vite SPA with no React Router server runtime, so the
+vulnerable server-side code path is unreachable in the shipped artifact. This assessment was
+recorded in the
+[2026-07-27 production-readiness audit](../engineering/production-readiness-audit-2026-07-27.md)
+(section 4).
+
+**Mitigations:**
+1. No React Router server runtime (RSC/framework mode) is bundled, configured, or reachable.
+2. `react-router-dom` is held at 7.18.1, the last 7.x patch line, so no fixes are dropped.
+3. Do **not** apply `npm audit fix --force`; the suggested downgrade to 7.11.0 would shed seven
+   minors of fixes without addressing the advisory.
+
+**Remediation Plan:**
+- Migrate the dashboard to `react-router` v8 (73 importing files) as its own change, or
+- Adopt a patched 7.x release if one appears, then remove this acceptance.
+
+**npm Audit Disposition:** Accepted in
+`build/config/security/npm-audit-accepted-advisories.json` and enforced fail-closed by
+`build/scripts/ci/validate-npm-audit.py` in the `Production Certification`
+dependency-evidence job. Any other high/critical npm advisory still fails the gate, and this
+acceptance expires at its review date.
+**Review Date:** 2026-07-28
+**Next Review:** 2026-10-28 (quarterly)
+**Approved By:** core-team (per the 2026-07-27 production-readiness audit acceptance)
+
 ---
 
 ## Fixed Vulnerabilities (2026-05-17)

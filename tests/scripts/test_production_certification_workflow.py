@@ -46,7 +46,16 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
 
     def test_scans_nuget_and_npm_dependencies(self) -> None:
         self.assertIn("dotnet list Meridian.sln package --vulnerable --include-transitive", self.workflow)
-        self.assertIn("npm audit --audit-level=high --json", self.workflow)
+        self.assertIn("npm audit --json", self.workflow)
+
+    def test_npm_advisories_gate_through_the_reviewed_acceptance_register(self) -> None:
+        self.assertIn("validate-npm-audit.py", self.workflow)
+        self.assertIn("npm-audit-accepted-advisories.json", self.workflow)
+        self.assertIn("--fail-level high", self.workflow)
+        register = (
+            REPO_ROOT / "build" / "config" / "security" / "npm-audit-accepted-advisories.json"
+        ).read_text(encoding="utf-8")
+        self.assertIn("docs/security/known-vulnerabilities.md", register)
 
 
 if __name__ == "__main__":

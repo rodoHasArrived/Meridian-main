@@ -147,6 +147,11 @@ jobs:
           cache: npm
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
       - name: Restore packages
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 
@@ -161,12 +166,22 @@ jobs:
             throw "Vulnerable NuGet packages were reported."
           }
 
-      - name: Fail on high-severity npm dependencies
+      # `npm audit` exits non-zero whenever any advisory exists, including advisories the
+      # security register has formally risk-accepted (docs/security/known-vulnerabilities.md).
+      # The gate decision belongs to validate-npm-audit.py, which fails closed on every
+      # high/critical advisory that lacks an unexpired acceptance entry — and on a missing
+      # or error-shaped audit report, so `|| true` cannot hide a failed scan.
+      - name: Fail on unaccepted high-severity npm advisories
         working-directory: src/Meridian.Ui/dashboard
         run: |
           npm ci
           mkdir -p ../../../artifacts/security
-          npm audit --audit-level=high --json > ../../../artifacts/security/npm-audit.json
+          npm audit --json > ../../../artifacts/security/npm-audit.json || true
+          python ../../../build/scripts/ci/validate-npm-audit.py \
+            --audit-json ../../../artifacts/security/npm-audit.json \
+            --accepted ../../../build/config/security/npm-audit-accepted-advisories.json \
+            --fail-level high \
+            --output ../../../artifacts/security/npm-audit-gate.json
 
       - name: Upload dependency evidence
         if: always()

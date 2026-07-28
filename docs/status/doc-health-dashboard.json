@@ -1,11 +1,11 @@
 {
-  "total_files": 636,
-  "total_lines": 114721,
+  "total_files": 637,
+  "total_lines": 114949,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 216,
-  "average_lines": 180.4,
+  "todo_count": 218,
+  "average_lines": 180.5,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2196,6 +2196,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/production-certification-evidence-chain.md",
+      "line_count": 178,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/production-readiness-audit-2026-07-27.md",
       "line_count": 111,
       "has_heading": true,
@@ -2205,7 +2213,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 297,
+      "line_count": 298,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2565,7 +2573,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9603,
+      "line_count": 9608,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2893,7 +2901,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 408,
+      "line_count": 414,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3453,7 +3461,7 @@
     },
     {
       "path": "docs/security/known-vulnerabilities.md",
-      "line_count": 138,
+      "line_count": 176,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
