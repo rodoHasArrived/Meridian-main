@@ -8,7 +8,7 @@ This plan operationalizes the v0.25 design-charter decision to reactivate the WP
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.
 
-- Charter decision: [`../product/meridian-design-document.md`](../product/meridian-design-document.md) (Version 0.25 reactivation statement).
+- Charter decision: [`../product/meridian-design-document.md`](../product/meridian-design-document.md) (decision originated in the Version 0.25 reactivation statement; carried forward by the Version 1.0 charter's active-surfaces policy and version history).
 - Roadmap item: `W8-WPF-PARITY-001` in [`../roadmap/data/roadmap-items.yml`](../roadmap/data/roadmap-items.yml).
 - Desktop architecture: [`wpf-implementation-notes.md`](./wpf-implementation-notes.md), [`../architecture/desktop-layers.md`](../architecture/desktop-layers.md).
 

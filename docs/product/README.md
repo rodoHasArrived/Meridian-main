@@ -10,7 +10,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 ## What a Stakeholder Should Read Here
 
 - If you need the current product framing, start with:
-  - [Meridian Design Document (Version 0.25)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update, the v0.19 no-code provider integration manifest, the v0.20 customer-neutral operational-finance architecture clarification, the v0.21 LedgerGraph OS / Close, Data and Evidence Control Tower positioning addendum, the v0.23 bounded W7 live-readiness gate, the v0.24 WPF deferral policy, and the v0.25 WPF desktop workstation reactivation and web-UI parity policy
+  - [Meridian Design Document (Version 1.0)](meridian-design-document.md) — ground-up rewrite of
+    the design charter: the proven-numbers value proposition, activation-over-expansion and
+    proven-slice delivery doctrines, truth discipline, current wave posture through the ranked W9
+    slate, and all retained normative invariants (customer-neutral core model, ledger truth and
+    treasury-ledger principles, fail-closed authority, governed-autonomy AI boundary, seven-root
+    navigation, no mobile lane). The superseded 0.15–0.25 lineage is summarized in its Section 25
+    and archived in full at `archive/docs/design/meridian-design-document-v0.25.md`
   - [Implementation and Readiness Tracker](implementation-todo-list.md) — current execution, evidence, and readiness follow-up
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
@@ -101,10 +107,10 @@ closing web-UI parity gaps for screens that shipped browser-first while it was d
 
 ## Design Charter Integration
 
-- The [Meridian Design Document (Version 0.25)](meridian-design-document.md) is the active stakeholder-facing product framing source.
+- The [Meridian Design Document (Version 1.0)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 0.25)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap, source-module evidence, private-capital operating patterns, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the WPF deferral and subsequent v0.25 WPF reactivation/web-UI parity policy, and the operational proof layer thesis.
+- Design Baseline: `Meridian Design Document (Version 1.0)` is the canonical product thesis. It centers the proven-numbers value proposition and Verified Coverage north star, encodes activation-over-expansion and truth-discipline doctrines from the 2026-07 adversarial program review, and preserves the charter invariants (customer-neutral operational-finance core, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the active WPF co-equal lane and web-UI parity policy, and the operational proof layer thesis).
 
 ## Stakeholder Narrative
 
@@ -192,7 +198,7 @@ Use this matrix to avoid source-of-truth drift:
 
 | Topic | Canonical home | Why |
 | --- | --- | --- |
-| Product design and assumptions | [Meridian Design Document (Version 0.25)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Product design and assumptions | [Meridian Design Document (Version 1.0)](meridian-design-document.md) | Core design source for stakeholder framing |
 | Extensibility engineering boundaries | [Core Extensibility Model](../architecture/core-extensibility-model.md) and `src/Meridian.Contracts/Extensibility/` | Stable-core and governed-configuration rules for implementation |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
@@ -217,7 +223,7 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 ## High-Value Input Files for Stakeholder Questions
 
-- [Meridian Design Document (Version 0.25)](meridian-design-document.md)
+- [Meridian Design Document (Version 1.0)](meridian-design-document.md)
 - [Roadmap README](../roadmap/README.md)
 - [Roadmap item register](../roadmap/generated/roadmap-register.md)
 - [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)

@@ -5,7 +5,7 @@
 **Reviewed:** 2026-07-22
 **Baseline:** current `main` history through `d3c472934`; production readiness remains blocked pending same-commit release evidence and required GitHub Actions checks
 **Previous production audit:** `f0ac384a2` on 2026-07-11
-**Sources:** [Meridian Design Document (Version 0.25)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
+**Sources:** [Meridian Design Document (Version 1.0)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
 
 This is Meridian's single active implementation list for turning the existing program into a supported production release. Roadmap rows marked `done` prove bounded product capabilities; they do not by themselves certify security, correctness, durability, operability, packaging, or recovery. Detailed product rationale remains in the design document, and roadmap status remains in the roadmap registry.
 
