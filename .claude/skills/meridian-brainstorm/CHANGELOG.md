@@ -1,5 +1,73 @@
 # meridian-brainstorm — Changelog
 
+## v2.0.0 (2026-07-28)
+
+Realignment to the current product charter. The skill had drifted to a v1.3.0 snapshot (2026-03-19)
+that framed Meridian as a market-data collection platform for hobbyist quants, academics, and
+institutional trading desks. That framing no longer matches the repository or the canonical design
+document.
+
+### Changed
+
+- **Product framing rewritten** — Meridian is now described as a self-hosted financial operations
+  platform selling *proven numbers* to fund administrators, private fund managers/fund CFOs, RIAs,
+  family offices, and hybrid institutional teams. Fund management is documented as a first-class
+  specialization, not the root model. The canonical operator spine
+  (`Import → Validate → Reconcile → Investigate → Approve → Report`) replaces the four-pillar
+  (ADR-016) framing as the organizing idea
+- **Project statistics replaced** — v1.3.0 claimed 868 source files, 261 test files, 22 main
+  projects, and 33 CI/CD workflows. Now sourced from the design charter §5.2 measurement table
+  (2026-07-28): 41 source projects, ~242,000 lines of C# across 2,902 files, 12,736 lines of F#,
+  ~295,000 lines of TypeScript/TSX, 845 `/api/...` routes, 22 provider adapter families,
+  6 statement connector formats, 142 ledger classes, ~12,900 xUnit facts/theories
+- **Wave posture added** — closed baselines (W1-W5, W5X FREX/FINOPS/CONNECT, W7, W9-ASSET-010),
+  active rows (`W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W8-WPF-PARITY-001`,
+  `W8-UX-CONSOL-001`), and the ranked W9 slate, with the roadmap registry named as the only live
+  status source
+- **WPF lane corrected** — was described as a "retained compatibility surface" with WPF product/UI
+  scope closed; it is an active co-equal operator UI lane whose current focus is web-UI parity
+  (`W8-WPF-PARITY-001`)
+- **Personas replaced** — Hobbyist Quant Developer / Academic / Institutional gave way to grouped
+  codes over the canonical 24-role Persona Matrix (design charter §4.2): OPS, ACCT, INV, GOV, EXEC,
+  STAKE, ADMIN. The Financial Operations Professional is named as the primary operator, and the
+  summary-table audience key changed from `H/Q/I` accordingly
+- **User Experience Lens rewritten** as the Operator Experience Lens — evidence-one-click-away,
+  self-explaining blocked states, and the two co-equal UI lanes replace "Meridian is a desktop
+  application people monitor for hours"
+- **Mode table updated** — added **Activation** (wire dormant capability), **Evidence &
+  Governance**, and **Adoption / Onboarding**; renamed Persona-Focused to Role-Focused; retargeted
+  Competitive and UX triggers to the current product surface. Growth mode's community/evangelism
+  framing was folded into Adoption
+- **Idea requirements expanded** — every idea now states its evidence and governance impact
+  (what proof it creates, what it blocks when absent, what approval it requires)
+- **Session ledger corrected** — `brainstorm-history.jsonl` is tracked in the repository, not
+  gitignored; the documented entry shape now matches the real records
+- **`references/idea-dimensions.md` rebuilt** — the anchor table is reorganized into seven verified
+  sections (import/providers, reconciliation, ledger/close, fund economics, evidence, reporting,
+  execution/research, platform seams) with all paths checked against the tree on 2026-07-28;
+  `GracefulShutdownService` repointed to `src/Meridian.Platform/Runtime/`; `UiApiRoutes` recorded at
+  `src/Meridian.Contracts/Api/`. The ten market-data-era dimension categories were replaced with
+  eleven current-domain categories, and an **Activation Targets** section was added from the
+  charter's activation register
+- **`references/competitive-landscape.md` rebuilt** — Bloomberg/Databento/Polygon/QuestDB
+  positioning was the whole file; it is now scoped to the Trading/Data lane, with close-and-controls
+  managers (BlackLine, Trintech), fund administration suites (Carta, FundStudio), asset servicing
+  (SS&C Advent Geneva, eFront, Addepar), and ledger APIs (Modern Treasury) as the primary
+  categories. The differentiation matrix and moat list follow design charter §1.4
+
+### Added
+
+- **Non-Negotiable Guardrails section** — seven root workspaces, no mobile lane, truth discipline,
+  governed autonomy, Meridian owns ledger truth, deferred expansion boundaries, claim rules, and
+  activation-before-expansion. Ideas that violate these are documented as wrong ideas
+- **Handoffs section** — routes to `meridian-blueprint`, `meridian-roadmap-strategist`,
+  `meridian-simulated-user-panel`, and `meridian-repo-navigation`, matching the Codex lane
+- **Durable-artifact step** in the completion workflow — brainstorms that produce documents write to
+  `docs/product/<topic>-brainstorm-<yyyy-mm>.md` as a dated working design input, never a status
+  source
+
+---
+
 ## v1.3.0 (2026-03-19)
 
 ### Changed
