@@ -174,9 +174,14 @@ public static partial class WorkstationEndpoints
             }
         }
 
-        // Vacuously true when no contribution is fund-keyed: the whole aggregation is
-        // run-local, so the shared book cannot be hiding a fund the caller may not read.
-        var sharedBookVisible = scopeCache.Values.All(static authorized => authorized);
+        // The shared execution book is not readable by a scoped caller at all. The fill path
+        // records every fund-scoped order under the non-Guid "default" account, so in a real
+        // deployment there are no Guid contributions to compare against — an "authorized for
+        // every fund present" test is vacuously true exactly when the book is most likely to
+        // hold other funds' flow. Only a caller with admin authority (returned above) sees
+        // it; restoring it for scoped callers needs fund ownership carried onto the
+        // contribution itself, which the portfolio does not record today.
+        const bool sharedBookVisible = false;
 
         var filtered = new List<AggregatedPosition>(positions.Count);
         foreach (var position in positions)

@@ -211,6 +211,15 @@ public sealed partial class OrderManagementSystem
         }
     }
 
+    /// <summary>
+    /// Frees the client-order-id reservation an escalation held, once its released order is
+    /// actually registered. From that point the tracked order guards the id itself, so the
+    /// reservation has nothing left to protect — but until then it must stand, because every
+    /// gate between the duplicate check and registration can still refuse the release while
+    /// the approval remains armed.
+    /// </summary>
+    private void ReleaseParkedOrderReservation(string orderId) => _parkedOrderIds.TryRemove(orderId, out _);
+
     /// <inheritdoc />
     public bool WasRiskApprovalDeclined(string orderId)
     {
@@ -338,22 +347,23 @@ public sealed partial class OrderManagementSystem
             return false;
         }
 
-        // Only an APPROVED escalation's release may reclaim the id. The token is just the
-        // escalation id, which the submitter already received in their own parked response;
-        // honouring it while the entry is still pending would let them resubmit, and if the
-        // market or the configured threshold had since moved so the rule no longer
-        // escalates, the order would route with no operator decision behind it at all.
-        if (entry.Status == RiskEscalationStatus.Approved &&
-            request.Metadata is not null &&
-            request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var tokens) &&
-            RiskEscalationQueueService.SplitTokens(tokens).Contains(escalationId, StringComparer.OrdinalIgnoreCase))
-        {
-            // This is the escalation's own release: it may reclaim the id.
-            _parkedOrderIds.TryRemove(orderId, out _);
-            return false;
-        }
-
-        return true;
+        // Only an APPROVED escalation's release may pass. The token is just the escalation
+        // id, which the submitter already received in their own parked response; honouring
+        // it while the entry is still pending would let them resubmit, and if the market or
+        // the configured threshold had since moved so the rule no longer escalates, the
+        // order would route with no operator decision behind it at all.
+        //
+        // The reservation is NOT dropped here. Several gates still stand between this check
+        // and the approval actually being consumed — placement, live readiness, operator
+        // controls, security master — and any of them can refuse the release while the
+        // approval stays armed. Freeing the id now would let a tokenless retry take it and
+        // execute, after which the original approval could still release a second order
+        // under the same id. ReleaseParkedOrderReservation clears it once the order is
+        // registered, and the live order itself guards the id from then on.
+        return entry.Status != RiskEscalationStatus.Approved ||
+            request.Metadata is null ||
+            !request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var tokens) ||
+            !RiskEscalationQueueService.SplitTokens(tokens).Contains(escalationId, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>

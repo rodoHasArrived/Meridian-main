@@ -104,24 +104,27 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             bbo.Timestamp >= earliest &&
             bbo.Timestamp <= latest)
         {
-            // Valuing an ORDER uses the touch it will actually cross — a buy pays the ask,
-            // a sell receives the bid. The midpoint is the right mark for a position
-            // already held, but for an order it understates a wide book badly: bid $1 /
-            // ask $100 values a market buy at $50.50 against limits it routes $100 into.
+            // Valuing an ORDER never goes below the mark, and rises to the touch it will
+            // cross. A buy pays the ask, so on a bid $1 / ask $100 book a market buy is
+            // $100, not the $50.50 mid it would otherwise slip through the limits at. A
+            // sell receives the bid, but the short it creates is marked at the mid and must
+            // be covered at the ask — valuing it at the $1 bid would let a 1,000-share sell
+            // book ~$50.5k of short exposure as a $1k increment. Taking the larger of mark
+            // and touch is right on both sides: it never under-measures new exposure and
+            // never over-credits a reduction.
             var touch = side switch
             {
                 OrderSide.Buy when bbo.AskPrice > 0m => bbo.AskPrice,
                 OrderSide.Sell when bbo.BidPrice > 0m => bbo.BidPrice,
                 _ => (decimal?)null
             };
+            if (bbo.MidPrice is { } midOrTouch && midOrTouch > 0m)
+            {
+                return touch is { } crossed ? Math.Max(midOrTouch, crossed) : midOrTouch;
+            }
             if (touch is { } executable)
             {
                 return executable;
-            }
-
-            if (bbo.MidPrice is { } mid && mid > 0m)
-            {
-                return mid;
             }
             if (bbo.AskPrice > 0m)
             {

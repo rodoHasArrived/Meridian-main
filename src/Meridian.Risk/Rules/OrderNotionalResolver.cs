@@ -66,12 +66,9 @@ internal static class OrderNotionalResolver
         PortfolioExposureSnapshot snapshot,
         Func<string, decimal?>? referencePriceLookup = null)
     {
-        if (request.Legs is { Count: > 0 } || request.OptionContract is not null)
-        {
-            return "Derivative and multi-leg orders cannot be valued by the portfolio risk rails, "
-                + "which measure per-share notional without contract multipliers or per-leg pricing.";
-        }
-
+        // Derivatives are valued, not refused. Blocking every option and spread whenever a
+        // notional ceiling is configured would take a working order path away from the desk
+        // to protect a limit those orders can instead simply consume.
         if (Resolve(request, snapshot, referencePriceLookup) is null)
         {
             return "No current price is available for this order, so its notional cannot be measured "
@@ -81,20 +78,95 @@ internal static class OrderNotionalResolver
         return null;
     }
 
+    /// <summary>
+    /// Default contract multiplier when a broker adapter did not stamp one. Equity options
+    /// are 100 across every venue Meridian routes to, and assuming 1 would under-measure a
+    /// contract order by two orders of magnitude.
+    /// </summary>
+    private const decimal DefaultContractMultiplier = 100m;
+
+    /// <summary>
+    /// Notional of an option or multi-leg order: the sum of each leg's contracts times its
+    /// price times its multiplier. Legs are summed on absolute value — a spread's risk is
+    /// not the netted debit, and one leg's exposure does not cancel another's for the
+    /// purposes of a gross ceiling. Returns null only when no leg can be priced at all,
+    /// which the caller treats the same as any other unpriceable order.
+    /// </summary>
+    private static decimal? ResolveDerivative(
+        OrderRequest request,
+        PortfolioExposureSnapshot snapshot,
+        Func<string, decimal?>? referencePriceLookup)
+    {
+        // Broker-native notional sizing still wins: it is what the gateway routes.
+        if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
+        {
+            return brokerNotional;
+        }
+
+        var legs = request.Legs is { Count: > 0 } declared
+            ? declared
+            : [new OrderLeg
+            {
+                Symbol = request.Symbol,
+                Side = request.Side,
+                RatioQuantity = 1m,
+                OptionContract = request.OptionContract
+            }];
+
+        // The top-level price prices the combination as a whole; each leg's ratio scales it.
+        var combinationPrice = request.LimitPrice ?? request.StopPrice;
+        var total = 0m;
+        var priced = false;
+
+        foreach (var leg in legs)
+        {
+            var legPrice = combinationPrice
+                ?? referencePriceLookup?.Invoke(leg.Symbol)
+                ?? PositiveOrNull(snapshot.GetSymbolExposure(leg.Symbol).ReferencePrice);
+            if (legPrice is not { } price || price <= 0m)
+            {
+                continue;
+            }
+
+            var multiplier = ResolveMultiplier(leg.OptionContract ?? request.OptionContract);
+            total += Math.Abs(request.Quantity) * Math.Abs(leg.RatioQuantity) * price * multiplier;
+            priced = true;
+        }
+
+        return priced ? total : null;
+    }
+
+    private static decimal? PositiveOrNull(decimal value) => value > 0m ? value : null;
+
+    private static decimal ResolveMultiplier(OptionContractIdentity? contract)
+    {
+        if (contract is null)
+        {
+            // A leg with no option identity is an outright: one unit per unit.
+            return 1m;
+        }
+
+        return decimal.TryParse(
+            contract.Multiplier,
+            System.Globalization.NumberStyles.Number,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var parsed) && parsed > 0m
+            ? parsed
+            : DefaultContractMultiplier;
+    }
+
     public static decimal? Resolve(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
         Func<string, decimal?>? referencePriceLookup = null)
     {
-        // Multi-leg and option orders are out of this resolver's measurement scope: the
-        // top-level price is only the net debit/credit of the combination, so treating it
-        // as a per-share price under-measures gross leg exposure and attributes it to the
-        // placeholder top-level symbol. Rather than produce a confidently wrong number,
-        // these orders resolve to null (rules approve without measuring); per-leg options
-        // exposure with contract multipliers belongs to the deferred derivatives-risk lane.
+        // Derivatives are measured with the same quantity x price arithmetic as anything
+        // else, scaled by the contract multiplier — no Greeks, no VaR, just the notional
+        // the contracts actually represent. A multi-leg order's top-level price is the net
+        // debit/credit of the combination, so each leg is valued on its own instead.
         if (request.Legs is { Count: > 0 } || request.OptionContract is not null)
         {
-            return null;
+            return ResolveDerivative(request, snapshot, referencePriceLookup);
         }
 
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")

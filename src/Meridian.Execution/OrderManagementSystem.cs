@@ -439,6 +439,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             {
                 _orderSessionIds[orderId] = sessionId;
             }
+
+            // The order now holds its own id in the tracked table, so an escalation
+            // reservation on it has nothing left to protect.
+            ReleaseParkedOrderReservation(orderId);
         }
         finally
         {

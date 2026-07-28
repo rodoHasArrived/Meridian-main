@@ -75,10 +75,13 @@ public sealed class WorkstationPortfolioAggregationScopeTests
     }
 
     [Fact]
-    public async Task Filter_KeepsSharedExecutionBook_WhenEveryFundPresentIsAuthorized()
+    public async Task Filter_HidesTheSharedExecutionBook_EvenWithNoFundKeyedContribution()
     {
-        // Nothing in this aggregation is hidden from the caller, so the shared book cannot
-        // be carrying a fund they may not read: it stays visible.
+        // The production fill path records every fund-scoped order under the non-Guid
+        // "default" execution account, so an aggregation of ordinary fills has no Guid
+        // contributions at all. An "authorized for every fund present" test is vacuously
+        // true exactly then — precisely when the shared book is most likely to hold another
+        // fund's flow — so a scoped caller must not see it.
         var positions = new[]
         {
             PositionWith(
@@ -90,15 +93,14 @@ public sealed class WorkstationPortfolioAggregationScopeTests
             CreateContext(UserPermission.ViewTrades), positions);
 
         var position = filtered.Should().ContainSingle().Subject;
-        position.Contributions.Should().HaveCount(2);
-        position.TotalQuantity.Should().Be(110m);
+        position.Contributions.Should().ContainSingle()
+            .Which.AccountId.Should().Be(AllowedAccountId.ToString("D"));
+        position.TotalQuantity.Should().Be(100m);
     }
 
     [Fact]
-    public async Task Filter_KeepsRunLocalPositions_WhenNoContributionIsFundKeyed()
+    public async Task Filter_HidesRunLocalPositionsFromScopedCallers()
     {
-        // A wholly paper/run-local aggregation partitions no funds at all, so filtering it
-        // would hide the caller's own runs from them for no security gain.
         var positions = new[]
         {
             PositionWith(
@@ -109,7 +111,25 @@ public sealed class WorkstationPortfolioAggregationScopeTests
         var filtered = await WorkstationEndpoints.FilterToAuthorizedAccountsAsync(
             CreateContext(UserPermission.ViewTrades), positions);
 
-        filtered.Should().ContainSingle().Which.Contributions.Should().HaveCount(2);
+        filtered.Should().BeEmpty("nothing in an unattributable book is provably the caller's");
+    }
+
+    [Fact]
+    public async Task Filter_AdminMaintenance_StillSeesTheSharedExecutionBook()
+    {
+        var positions = new[]
+        {
+            PositionWith(
+                Contribution("default", quantity: 100m),
+                Contribution("paper-run", quantity: 10m))
+        };
+
+        var filtered = await WorkstationEndpoints.FilterToAuthorizedAccountsAsync(
+            CreateContext(UserPermission.ViewTrades | UserPermission.AdminMaintenance), positions);
+
+        filtered.Should().ContainSingle().Which.Contributions.Should().HaveCount(
+            2,
+            "admin authority spans every fund, so the shared book reveals nothing new");
     }
 
     [Fact]

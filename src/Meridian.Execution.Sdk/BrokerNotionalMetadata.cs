@@ -36,19 +36,41 @@ public static class BrokerNotionalMetadata
                 continue;
             }
 
-            if (decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var value) && value > 0m)
+            // Same NumberStyles the gateway parses with: a value it would reject as a
+            // decimal must not be read as one here, or the two paths disagree about
+            // whether the order is dollar-sized at all.
+            if (decimal.TryParse(
+                    raw,
+                    NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
+                    CultureInfo.InvariantCulture,
+                    out var value) && value > 0m)
             {
                 return value;
             }
 
-            // The gateway also accepts a boolean flag meaning "quantity is dollars".
-            if (bool.TryParse(raw, out var isNotional) && isNotional)
+            // The gateway also accepts a boolean flag meaning "quantity is dollars", and it
+            // accepts more spellings than bool.TryParse does. Recognizing fewer of them than
+            // the gateway is a silent bypass: "notional=yes" on a 100,000-quantity order in
+            // a $0.01 symbol routes $100,000 while the rails measure $1,000 of shares.
+            if (IsTrue(raw))
             {
                 return Math.Abs(quantity);
             }
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Boolean spellings the brokerage gateways accept for a "quantity is dollars" flag.
+    /// Kept in step with <c>AlpacaBrokerageGateway.ReadMetadataBool</c>.
+    /// </summary>
+    private static bool IsTrue(string raw)
+    {
+        var normalized = raw.Trim().ToLowerInvariant();
+        return bool.TryParse(normalized, out var parsed)
+            ? parsed
+            : normalized is "1" or "yes" or "y";
     }
 
     private static string? TryReadValue(IReadOnlyDictionary<string, string> metadata, string key)

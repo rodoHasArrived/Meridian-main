@@ -534,7 +534,14 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
-        await WithdrawParkedOrdersAsync().ConfigureAwait(false);
+        // Only when the run is actually ending. A host shutdown calls RequestStop with
+        // completeRun: false precisely so the run can be resumed, and denying its parked
+        // orders there would durably discard live approvals and trade intentions on every
+        // deployment.
+        if (_completeRunOnExit)
+        {
+            await WithdrawParkedOrdersAsync().ConfigureAwait(false);
+        }
         await RecordTerminalRunStateAsync(faulted).ConfigureAwait(false);
         await RecordSessionAuditAsync(faulted).ConfigureAwait(false);
     }

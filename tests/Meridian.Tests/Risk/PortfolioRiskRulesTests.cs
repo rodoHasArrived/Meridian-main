@@ -28,6 +28,15 @@ public sealed class PortfolioRiskRulesTests
             LimitPrice = limitPrice,
         };
 
+    private static OptionContractIdentity OptionIdentity(string? multiplier) => new()
+    {
+        UnderlyingSymbol = "AAPL",
+        ExpirationDate = new DateOnly(2026, 12, 18),
+        StrikePrice = 250m,
+        Right = "C",
+        Multiplier = multiplier
+    };
+
     private static StubExposureProvider Provider(
         decimal grossExposure = 0m,
         decimal portfolioValue = 100_000m,
@@ -392,31 +401,96 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
-    public async Task GrossExposure_OptionOrder_RejectsRatherThanApprovingUnmeasured()
+    public async Task GrossExposure_OptionOrder_IsMeasuredAtContractNotional()
     {
         var rule = new GrossExposureRule(
             Provider(grossExposure: 1_000m),
             () => 100_000m,
             NullLogger<GrossExposureRule>.Instance);
 
-        // Per-leg premium and contract multipliers are the deferred derivatives lane, so
-        // this resolver cannot value the order — but the gateway routes it regardless.
+        // 100 contracts at a $5 premium with the standard 100x multiplier is $50k of
+        // notional, not $500. Measuring it as shares would let a contract order consume a
+        // hundredth of the ceiling it actually fills.
         var order = CreateOrder(quantity: 100m, limitPrice: 5m) with
         {
-            OptionContract = new OptionContractIdentity
-            {
-                UnderlyingSymbol = "AAPL",
-                ExpirationDate = new DateOnly(2026, 12, 18),
-                StrikePrice = 250m,
-                Right = "C",
-                Multiplier = "100"
-            }
+            OptionContract = OptionIdentity(multiplier: "100")
         };
 
         var result = await rule.EvaluateAsync(order);
 
-        result.IsApproved.Should().BeFalse();
-        result.RejectReason.Should().Contain("Derivative");
+        result.IsApproved.Should().BeTrue("$1k book + $50k order is inside the $100k ceiling");
+
+        // The same order against a ceiling the contract notional breaches but the raw
+        // share arithmetic would not.
+        var tighter = new GrossExposureRule(
+            Provider(grossExposure: 1_000m),
+            () => 20_000m,
+            NullLogger<GrossExposureRule>.Instance);
+
+        (await tighter.EvaluateAsync(order)).IsApproved.Should().BeFalse(
+            "the option's $50k contract notional breaches a $20k ceiling that $500 of shares would not");
+    }
+
+    [Fact]
+    public async Task OrderNotional_OptionOrderWithoutAMultiplier_AssumesTheStandardContractSize()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 20_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // A broker adapter that did not stamp a multiplier must not collapse the contract
+        // to 1x; equity options are 100x everywhere Meridian routes.
+        var order = CreateOrder(quantity: 100m, limitPrice: 5m) with
+        {
+            OptionContract = OptionIdentity(multiplier: null)
+        };
+
+        (await rule.EvaluateAsync(order)).IsApproved.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task OrderNotional_MultiLegOrder_SumsEveryLegRatherThanNetting()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 90_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // A vertical spread: the net debit is small, but both legs carry real exposure and
+        // a gross ceiling does not net one against the other. 10 x (1 + 1) x $5 x 100 = $10k
+        // per leg pair... sized here to exceed the ceiling only when both legs count.
+        var order = CreateOrder(quantity: 100m, limitPrice: 5m) with
+        {
+            Legs =
+            [
+                new OrderLeg { Symbol = "AAPL_C250", Side = OrderSide.Buy, RatioQuantity = 1m, OptionContract = OptionIdentity("100") },
+                new OrderLeg { Symbol = "AAPL_C260", Side = OrderSide.Sell, RatioQuantity = 1m, OptionContract = OptionIdentity("100") }
+            ]
+        };
+
+        (await rule.EvaluateAsync(order)).IsApproved.Should().BeFalse(
+            "both legs of a spread carry exposure; a gross ceiling does not net them");
+    }
+
+    [Fact]
+    public async Task OrderNotional_MarketSell_IsNotValuedBelowTheMark()
+    {
+        // The short a sell creates is marked at the mid and covered at the ask, so valuing
+        // it at the $1 bid would book ~$50.5k of short exposure as a $1k increment.
+        var provider = new TouchQuotingProvider(bid: 1m, ask: 100m);
+        var rule = new OrderNotionalRule(
+            provider,
+            () => 40_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            CreateOrder(symbol: "WIDE", quantity: 1_000m, side: OrderSide.Sell));
+
+        result.IsApproved.Should().BeFalse("a sell is never valued below the mark");
     }
 
     [Fact]
@@ -464,7 +538,34 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
-    public async Task OrderNotional_QuantityIsDollarsFlag_MeasuresQuantityAsDollars()
+    public async Task OrderNotional_NumericNotionalMetadata_IsTheDollarAmountNotAFlag()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 10_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // Both this parser and the gateway try the decimal form first, so "1" routes one
+        // dollar of notional rather than flagging the 20,000 quantity as dollars. The two
+        // paths must agree on that, or the rails measure an order the gateway never sends.
+        var order = CreateOrder(symbol: "ZZZZ", quantity: 20_000m) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "1"
+            }
+        };
+
+        (await rule.EvaluateAsync(order)).IsApproved.Should().BeTrue("a $1 notional order is well inside the ceiling");
+    }
+
+    [Theory]
+    [InlineData("true")]
+    [InlineData("yes")]
+    [InlineData("y")]
+    [InlineData("YES")]
+    public async Task OrderNotional_QuantityIsDollarsFlag_MeasuresQuantityAsDollars(string flag)
     {
         var rule = new OrderNotionalRule(
             Provider(),
@@ -473,11 +574,13 @@ public sealed class PortfolioRiskRulesTests
             NullLogger<OrderNotionalRule>.Instance);
 
         // The boolean flag form means "quantity is dollars": 20 000 dollars > 10k ceiling.
+        // The gateway accepts more spellings than bool.TryParse does; recognizing fewer of
+        // them here would measure shares while the gateway routes dollars.
         var order = CreateOrder(symbol: "ZZZZ", quantity: 20_000m) with
         {
             Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["notional"] = "true"
+                ["notional"] = flag
             }
         };
 
@@ -629,8 +732,11 @@ public sealed class PortfolioRiskRulesTests
 
         public decimal? TryGetReferencePrice(string symbol) => (bid + ask) / 2m;
 
-        public decimal? TryGetExecutablePrice(string symbol, OrderSide side) =>
-            side == OrderSide.Buy ? ask : bid;
+        public decimal? TryGetExecutablePrice(string symbol, OrderSide side)
+        {
+            var mid = (bid + ask) / 2m;
+            return Math.Max(mid, side == OrderSide.Buy ? ask : bid);
+        }
     }
 
     private sealed class StubExposureProvider(
