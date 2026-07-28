@@ -1,6 +1,6 @@
 {
   "total_files": 638,
-  "total_lines": 115522,
+  "total_lines": 115534,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2573,7 +2573,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9609,
+      "line_count": 9618,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5085,7 +5085,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 642,
+      "line_count": 645,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
