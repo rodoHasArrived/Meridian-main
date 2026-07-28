@@ -38,6 +38,14 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         self.assertIn("--require-trx-prefix meridian-integrations", self.workflow)
         self.assertIn("--require-trx-prefix direct-lending-integrations", self.workflow)
 
+    def test_postgres_client_tools_match_the_service_major(self) -> None:
+        # pg_dump refuses to dump a newer server, so both PostgreSQL-service jobs
+        # (deterministic integrations' schema capture and the recovery drill) must
+        # install client tools matching the postgres:17 service containers.
+        self.assertIn("image: postgres:17", self.workflow)
+        self.assertGreaterEqual(self.workflow.count("postgresql-client-17"), 2)
+        self.assertIn("/usr/lib/postgresql/17/bin", self.workflow)
+
     def test_captures_schema_and_migration_ledger_evidence(self) -> None:
         self.assertIn("pg_dump", self.workflow)
         self.assertIn("database-schema.sql", self.workflow)

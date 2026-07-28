@@ -69,6 +69,16 @@ jobs:
         with:
           python-version: "3.12"
 
+      # The runner image ships PostgreSQL 16 client tools; pg_dump refuses to dump the
+      # newer postgres:17 service, which would void the schema evidence capture.
+      - name: Install PostgreSQL 17 client tools to match the service major
+        run: |
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
+          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
       - name: Restore deterministic integration projects
         run: |
           dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj
@@ -220,6 +230,16 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1
+
+      # The runner image ships PostgreSQL 16 client tools; pg_dump refuses to dump the
+      # newer postgres:17 service, so the drill's backup stage fails at preflight.
+      - name: Install PostgreSQL 17 client tools to match the service major
+        run: |
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
+          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
 
       - name: Seed source and clean recovery targets
         run: |

@@ -34,7 +34,7 @@ dispositions:
 | --- | --- | --- |
 | deterministic PostgreSQL integration and coverage evidence | 541 failed / 218 passed / 759 total in 10s — the main-wide PostgreSQL test-harness debt (shared-fixture poisoning, destructive tests, reference-equality assertions) documented in the [2026-07-27 audit §2](production-readiness-audit-2026-07-27.md). Failure modes are heterogeneous (missing relations, FK violations, NREs, assertion failures), not one root cause. | **Open.** Blocked on the audit's remediation lanes (isolated per-class databases/schemas first). Do not narrow the `Category=Integration` filter to force green; that would hollow out the gate. |
 | NuGet and npm dependency evidence | `npm audit --audit-level=high` exits non-zero while the risk-accepted `react-router` advisory (GHSA-qwww-vcr4-c8h2, no patched 7.x, unreachable server-side path) exists — the job could never pass as written, which would also have hidden any new advisory behind the expected failure. | **Fixed in this candidate.** Advisories now gate through `build/scripts/ci/validate-npm-audit.py` against the reviewed register `build/config/security/npm-audit-accepted-advisories.json` (mirroring `KV-2026-002` in [known-vulnerabilities](../security/known-vulnerabilities.md)). Fail-closed: unlisted, expired, or ceiling-exceeding advisories and missing/error audit reports all fail; stale acceptances fail until pruned. |
-| encrypted backup and clean restore drill | `invoke-production-recovery.ps1` connection-string parsing defect (`DbConnectionStringBuilder` property assignment adapted as a dictionary write) — every backup/restore/drill failed at preflight. | **Fixed on `main`** in `ff620a73e` (after run #4); `ProductionRecoveryScriptTests` proves the parse end-to-end. Expected green on the next dispatch. |
+| encrypted backup and clean restore drill | `invoke-production-recovery.ps1` connection-string parsing defect (`DbConnectionStringBuilder` property assignment adapted as a dictionary write) — every backup/restore/drill failed at preflight. | **Fixed on `main`** in `ff620a73e` (after run #4); `ProductionRecoveryScriptTests` proves the parse end-to-end. Candidate run #5 then surfaced the next defect in the chain: the runner image ships PostgreSQL 16 client tools and `pg_dump` 16 refuses to dump the `postgres:17` service. **Fixed in this candidate** by installing `postgresql-client-17` (PATH-pinned) in both PostgreSQL-service jobs — the same skew would have voided the integrations job's schema-evidence capture once its tests pass. |
 | same-commit documentation evidence | Generated-doc drift on `main` @ `104171091` (`ai-inventory-report.json`, `doc-health-dashboard.md` stale against sources). | **Fixed on `main`** by the subsequent regeneration commits; the core profile is drift-free on this candidate. |
 
 Earlier context: runs #1 (2026-07-21), #2 (scheduled, 2026-07-26), and #3 (2026-07-27, branch)
@@ -160,6 +160,14 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — `Production Certification` run #5
+  ([30338531236](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30338531236),
+  candidate `be0b5e247`): first run with the acceptance-gated npm audit. The recovery drill
+  failed one layer deeper than run #4 — the connection-string parse now succeeds and the
+  drill reaches `pg_dump`, which refuses the version skew (client 16 vs `postgres:17`
+  service). Fixed on the candidate by installing matching `postgresql-client-17` in both
+  PostgreSQL-service jobs; re-dispatched. A first-ever `Publish Smoke`
+  `web-workstation`/`win-x64` run was also dispatched on the candidate.
 - **2026-07-28** — candidate `claude/production-certification-evidence-aoyrom`: diagnosed all
   four failing `Production Certification` jobs from run #4 (table above); replaced the
   permanently-red raw `npm audit --audit-level=high` gate with the fail-closed accepted-advisory gate
