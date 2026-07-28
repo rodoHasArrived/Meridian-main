@@ -110,21 +110,43 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
     }
 
     [Fact]
-    public async Task CaptureAsync_AdapterIgnoringCancellation_TimesOutViaHardDeadline()
+    public async Task CaptureAsync_AdapterIgnoringCancellation_IsTerminalWithoutRetry()
     {
         var adapter = new StubbornAdapter(ReconciliationSourceType.Prime);
         var scheduler = CreateScheduler(new ReconciliationIngestionOptions
         {
-            MaxAttemptsPerSource = 2,
+            MaxAttemptsPerSource = 5,
             RetryBaseDelay = TimeSpan.FromMilliseconds(1),
-            PerSourceTimeout = TimeSpan.FromMilliseconds(40)
+            PerSourceTimeout = TimeSpan.FromMilliseconds(40),
+            CancellationGracePeriod = TimeSpan.FromMilliseconds(25)
         });
 
         var act = async () => await scheduler.CaptureAsync([adapter], Request, CancellationToken.None);
 
         await act.Should().ThrowAsync<TimeoutException>(
-            "the deadline must hold even when an adapter never observes its cancellation token");
-        adapter.Attempts.Should().Be(2);
+            "the hard deadline must hold even when an adapter never observes its cancellation token");
+        adapter.Attempts.Should().Be(1,
+            "retrying a source whose capture is still live would stack concurrent requests outside the concurrency accounting");
+    }
+
+    [Fact]
+    public async Task CaptureAsync_BlockingSynchronousAdapter_IsFencedByHardDeadline()
+    {
+        var adapter = new BlockingSynchronousAdapter(ReconciliationSourceType.Prime);
+        var scheduler = CreateScheduler(new ReconciliationIngestionOptions
+        {
+            MaxAttemptsPerSource = 3,
+            RetryBaseDelay = TimeSpan.FromMilliseconds(1),
+            PerSourceTimeout = TimeSpan.FromMilliseconds(40),
+            CancellationGracePeriod = TimeSpan.FromMilliseconds(25)
+        });
+
+        var act = async () => await scheduler.CaptureAsync([adapter], Request, CancellationToken.None);
+
+        // A vendor SDK that blocks before returning its task must not stall the run inline: the
+        // pool dispatch keeps the deadline fence in control, and the blocked capture is terminal.
+        await act.Should().ThrowAsync<TimeoutException>();
+        adapter.Attempts.Should().Be(1);
     }
 
     [Fact]
@@ -141,7 +163,9 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
         var act = async () => await scheduler.CaptureAsync([adapter], Request, cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
-        adapter.Attempts.Should().Be(1, "run cancellation must never be retried");
+        // Zero attempts is legal (cancellation can win the pool-dispatch race and stop the attempt
+        // before the adapter ever runs); what run cancellation must never do is retry.
+        adapter.Attempts.Should().BeLessThanOrEqualTo(1, "run cancellation must never be retried");
     }
 
     [Fact]
@@ -216,8 +240,24 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
         public async Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
         {
             Attempts++;
-            await Task.Delay(TimeSpan.FromSeconds(30), CancellationToken.None);
+            await Task.Delay(TimeSpan.FromSeconds(5), CancellationToken.None);
             throw new InvalidOperationException("unreachable");
+        }
+    }
+
+    // Simulates a vendor SDK that blocks synchronously before ever returning a task — the worst
+    // case for a deadline: without a pool dispatch, the call would stall the capture loop inline.
+    private sealed class BlockingSynchronousAdapter(ReconciliationSourceType sourceType) : IReconciliationSourceAdapter
+    {
+        public ReconciliationSourceType SourceType { get; } = sourceType;
+
+        public int Attempts { get; private set; }
+
+        public Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
+        {
+            Attempts++;
+            Thread.Sleep(TimeSpan.FromSeconds(2));
+            return Task.FromResult(CreateSnapshot(SourceType));
         }
     }
 

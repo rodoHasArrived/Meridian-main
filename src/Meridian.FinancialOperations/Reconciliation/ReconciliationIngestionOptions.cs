@@ -22,6 +22,14 @@ public sealed record ReconciliationIngestionOptions
     /// <summary>Per-attempt timeout; <c>null</c> disables the timeout.</summary>
     public TimeSpan? PerSourceTimeout { get; init; } = TimeSpan.FromSeconds(30);
 
+    /// <summary>
+    /// Extra time past <see cref="PerSourceTimeout"/> for an adapter to observe its cancellation
+    /// token before the attempt is declared non-cooperative. A cooperative cancellation inside the
+    /// grace window is retryable; blowing through it is terminal for the source — retrying would
+    /// stack another live request on a vendor call that is neither finishing nor cancellable.
+    /// </summary>
+    public TimeSpan CancellationGracePeriod { get; init; } = TimeSpan.FromSeconds(5);
+
     public void Validate()
     {
         if (MaxConcurrentCaptures < 1)
@@ -42,6 +50,11 @@ public sealed record ReconciliationIngestionOptions
         if (PerSourceTimeout is { } timeout && timeout <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(PerSourceTimeout), timeout, "Per-source timeout must be positive when set.");
+        }
+
+        if (CancellationGracePeriod < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(CancellationGracePeriod), CancellationGracePeriod, "Cancellation grace period cannot be negative.");
         }
     }
 }
