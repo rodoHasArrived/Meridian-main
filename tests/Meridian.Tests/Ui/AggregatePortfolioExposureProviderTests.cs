@@ -399,6 +399,45 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_OpposingWorkingOrders_ReserveTheWorstFillSubset()
+    {
+        // A flat account with a working $100k buy and a working $100k sell nets to zero,
+        // but either can fill alone and create $100k of exposure. Reserving the net would
+        // understate the book and let another order breach the ceiling.
+        var account = Guid.Parse("88888888-8888-8888-8888-888888888888");
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        Meridian.Execution.Sdk.OrderState Order(string id, Meridian.Execution.Sdk.OrderSide side) => new()
+        {
+            OrderId = id,
+            Symbol = "AAPL",
+            Side = side,
+            Type = Meridian.Execution.Sdk.OrderType.Limit,
+            Quantity = 1_000m,
+            LimitPrice = 100m,
+            FundAccountId = account,
+            Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
+        [
+            Order("buy-1", Meridian.Execution.Sdk.OrderSide.Buy),
+            Order("sell-1", Meridian.Execution.Sdk.OrderSide.Sell)
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        provider.GetSnapshot().GrossExposure.Should().Be(
+            100_000m,
+            "each order fills independently, so the reserve covers the worst reachable subset");
+    }
+
+    [Fact]
     public void GetSnapshot_AttributesExposurePerAccount()
     {
         // Offsetting books across two accounts: the aggregate net says nothing about

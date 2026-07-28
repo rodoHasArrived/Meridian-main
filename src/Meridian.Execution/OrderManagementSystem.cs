@@ -646,6 +646,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
+        // A parked order has no broker order to cancel: withdraw the escalation and
+        // complete the cancellation locally instead of failing at the gateway.
+        if (await TryCancelParkedOrderAsync(orderId, ct).ConfigureAwait(false) is { } parkedCancellation)
+        {
+            return parkedCancellation;
+        }
+
         var report = await _gateway.CancelOrderAsync(orderId, ct).ConfigureAwait(false);
         if (report.OrderStatus is not OrderStatus.Cancelled)
         {

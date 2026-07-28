@@ -33,15 +33,33 @@ public sealed record SymbolExposure(
     {
         if (fundAccountId is { } accountId)
         {
-            // The order names its account: use that account's own exposure, or fall back
-            // to the additive worst case when the account holds nothing here. Returning
-            // the aggregate would treat an order from an empty account as if it reduced
-            // another account's position — a $20k sell from a flat account against a
-            // $100k long elsewhere would project $80k gross instead of $120k.
-            return AccountNetNotional is not null &&
-                AccountNetNotional.TryGetValue(accountId.ToString("D"), out var accountNet)
-                    ? accountNet
-                    : null;
+            // An exact match is the order's own book.
+            if (AccountNetNotional is not null &&
+                AccountNetNotional.TryGetValue(accountId.ToString("D"), out var accountNet))
+            {
+                return accountNet;
+            }
+
+            // No match. FundAccountId is an accounting scope, while exposure is keyed by
+            // execution-account ids ("default" for the paper portfolio), so a miss can mean
+            // either "different fund" or "same book under a different naming system". When
+            // exactly one account contributes and it is not itself fund-keyed, the mapping
+            // is unambiguous — that account is the whole book — and a fund-scoped close
+            // must be seen as reducing it rather than adding on top.
+            if (AccountNetNotional is { Count: 1 })
+            {
+                var (onlyAccount, onlyNet) = AccountNetNotional.First();
+                if (!Guid.TryParse(onlyAccount, out _))
+                {
+                    return onlyNet;
+                }
+            }
+
+            // Otherwise the order belongs to a book this snapshot cannot identify: fall
+            // back to the additive worst case rather than assuming it reduces someone else's
+            // position — a $20k sell from a flat fund against another fund's $100k long
+            // projects $120k, not $80k.
+            return null;
         }
 
         // Unscoped order: the aggregate is exact only when a single account contributes.

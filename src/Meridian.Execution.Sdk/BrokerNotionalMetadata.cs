@@ -27,7 +27,11 @@ public static class BrokerNotionalMetadata
 
         foreach (var key in Keys)
         {
-            if (!metadata.TryGetValue(key, out var raw) || string.IsNullOrWhiteSpace(raw))
+            // The gateway scans metadata with OrdinalIgnoreCase, so a caller writing
+            // "Notional" into an ordinal dictionary would route dollars the risk rails
+            // never measured. Match how the value is actually consumed.
+            var raw = TryReadValue(metadata, key);
+            if (string.IsNullOrWhiteSpace(raw))
             {
                 continue;
             }
@@ -41,6 +45,24 @@ public static class BrokerNotionalMetadata
             if (bool.TryParse(raw, out var isNotional) && isNotional)
             {
                 return Math.Abs(quantity);
+            }
+        }
+
+        return null;
+    }
+
+    private static string? TryReadValue(IReadOnlyDictionary<string, string> metadata, string key)
+    {
+        if (metadata.TryGetValue(key, out var direct))
+        {
+            return direct;
+        }
+
+        foreach (var (candidateKey, value) in metadata)
+        {
+            if (string.Equals(candidateKey, key, StringComparison.OrdinalIgnoreCase))
+            {
+                return value;
             }
         }
 

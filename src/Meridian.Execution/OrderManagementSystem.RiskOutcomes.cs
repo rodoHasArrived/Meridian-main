@@ -154,6 +154,77 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>
+    /// Cancels an order awaiting governed approval: the escalation is withdrawn so no
+    /// operator can later execute an order the submitter cancelled, and the cancellation
+    /// completes locally because no broker order exists. Returns null when the order is
+    /// not parked, leaving the ordinary gateway cancellation to run.
+    /// </summary>
+    private async Task<OrderResult?> TryCancelParkedOrderAsync(string orderId, CancellationToken ct)
+    {
+        if (TryWithdrawParkedEscalation(orderId) is not { } withdrawnState)
+        {
+            return null;
+        }
+
+        await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), withdrawnState, ct).ConfigureAwait(false);
+        await RecordOrderLifecycleAuditAsync(
+            action: "OrderCancelled",
+            outcome: OrderStatus.Cancelled.ToString(),
+            orderId: orderId,
+            state: withdrawnState,
+            report: null,
+            message: "Cancelled while awaiting governed approval; the escalation was withdrawn.",
+            ct: ct).ConfigureAwait(false);
+
+        return new OrderResult { Success = true, OrderId = orderId, OrderState = withdrawnState };
+    }
+
+    /// <summary>
+    /// Withdraws the governed-approval escalation holding <paramref name="orderId"/>, if
+    /// any, and marks the tracked order cancelled. Returns the cancelled state when the
+    /// order was parked (so the caller completes the cancellation locally), or null when
+    /// the order is not awaiting approval.
+    /// </summary>
+    private OrderState? TryWithdrawParkedEscalation(string orderId)
+    {
+        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId) || _escalationQueue is null)
+        {
+            return null;
+        }
+
+        var entry = _escalationQueue.TryGet(escalationId);
+        if (entry is null || entry.Status is not RiskEscalationStatus.PendingApproval and not RiskEscalationStatus.Approved)
+        {
+            // Already resolved: nothing to withdraw, and the id is free.
+            _parkedOrderIds.TryRemove(orderId, out _);
+            return null;
+        }
+
+        _escalationQueue.Deny(
+            escalationId,
+            actor: "order-management-system",
+            reason: "The submitter cancelled the order while it awaited governed approval.");
+        _parkedOrderIds.TryRemove(orderId, out _);
+
+        if (!_orders.TryGetValue(orderId, out var state))
+        {
+            return null;
+        }
+
+        var cancelled = state with
+        {
+            Status = OrderStatus.Cancelled,
+            LastUpdatedAt = DateTimeOffset.UtcNow
+        };
+        _orders[orderId] = cancelled;
+        _logger.LogInformation(
+            "Order {OrderId} cancelled while parked; escalation {EscalationId} withdrawn",
+            LogSanitizer.Sanitize(orderId),
+            escalationId);
+        return cancelled;
+    }
+
+    /// <summary>
     /// True when <paramref name="orderId"/> is reserved by a live escalation that
     /// <paramref name="request"/> is not the authorized release for. The release carries the
     /// escalation's approval token; anything else must not reclaim the id. A reservation

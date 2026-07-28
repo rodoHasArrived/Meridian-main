@@ -87,16 +87,23 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             }
 
             var existing = symbolExposures.GetValueOrDefault(order.Symbol);
-            var price = order.LimitPrice ?? order.StopPrice ?? 0m;
-            if (price <= 0m)
+            var mark = WorkstationEndpoints.ResolveLiveMark(order.Symbol, _quotes, _trades) ?? 0m;
+            if (mark <= 0m)
             {
-                price = WorkstationEndpoints.ResolveLiveMark(order.Symbol, _quotes, _trades) ?? 0m;
+                mark = existing?.ReferencePrice ?? 0m;
             }
 
-            if (price <= 0m)
+            // Value a working order exactly as the pre-trade gate valued it, or the reserve
+            // contradicts the decision that let it through: a marketable sell limit executes
+            // at the market (a 1,000-share sell limited at $1 with the symbol at $100 is a
+            // $100k order, not $1k), while a buy limit caps what is paid.
+            var orderPrice = order.LimitPrice ?? order.StopPrice ?? 0m;
+            var price = (orderPrice > 0m, order.Side) switch
             {
-                price = existing?.ReferencePrice ?? 0m;
-            }
+                (true, OrderSide.Sell) => Math.Max(orderPrice, mark),
+                (true, _) => orderPrice,
+                _ => mark
+            };
 
             decimal workingNotional;
             if (order.RoutedNotional is { } routedNotional && routedNotional > 0m)
@@ -141,6 +148,18 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             bucket.SignedNotional += direction * workingNotional;
             bucket.SignedQuantity += direction * Math.Max(0m, remaining);
             bucket.GrossNotional += workingNotional;
+            // Orders fill independently, so the reserve must cover the worst subset, not
+            // just the all-filled net: a flat account with a working $100k buy AND a
+            // working $100k sell nets to zero but either alone creates $100k of exposure.
+            if (direction > 0m)
+            {
+                bucket.BuyNotional += workingNotional;
+            }
+            else if (direction < 0m)
+            {
+                bucket.SellNotional += workingNotional;
+            }
+
             bucket.ReferencePrice = bucket.ReferencePrice > 0m ? bucket.ReferencePrice : price;
             buckets[key] = bucket;
         }
@@ -156,10 +175,15 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             accountNet[accountKey] = accountAfter;
 
             // Orders that reduce their account's position add no gross exposure — they
-            // retire some. Reserve only the growth in the account's absolute exposure,
-            // capped by the notional actually working, so fill uncertainty stays
-            // conservative without inventing exposure no fill subset could produce.
-            var accountGrossDelta = Math.Max(0m, Math.Abs(accountAfter) - Math.Abs(accountBefore));
+            // retire some — but each order fills independently, so the reserve covers the
+            // largest absolute exposure ANY fill subset can reach. That extreme is all
+            // buys filling (nothing else) or all sells filling; every mixed subset lies
+            // between them. Capped by the notional actually working, so the reserve stays
+            // conservative without inventing exposure no subset could produce.
+            var worstReachable = Math.Max(
+                Math.Abs(accountBefore + bucket.BuyNotional),
+                Math.Abs(accountBefore - bucket.SellNotional));
+            var accountGrossDelta = Math.Max(0m, worstReachable - Math.Abs(accountBefore));
             var reservedGross = Math.Min(bucket.GrossNotional, accountGrossDelta);
 
             grossExposure += reservedGross;
@@ -181,6 +205,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         public decimal SignedNotional { get; set; }
         public decimal SignedQuantity { get; set; }
         public decimal GrossNotional { get; set; }
+        public decimal BuyNotional { get; set; }
+        public decimal SellNotional { get; set; }
         public decimal ReferencePrice { get; set; }
     }
 
