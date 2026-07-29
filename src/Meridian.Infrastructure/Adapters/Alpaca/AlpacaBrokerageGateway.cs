@@ -40,8 +40,16 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync
+public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway
 {
+    /// <inheritdoc />
+    /// <remarks>
+    /// Alpaca is the one adapter that reads the notional metadata keys and sends the dollar
+    /// amount as the order's size; see the <c>payload.Notional</c> assignment in
+    /// <c>BuildOrderPayload</c>.
+    /// </remarks>
+    public bool SupportsNotionalOrderSizing => true;
+
     private const int AccountActivityPageSize = 100;
 
     private const string PaperBaseUrl = "https://paper-api.alpaca.markets";

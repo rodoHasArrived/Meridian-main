@@ -35,6 +35,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly OrderManagementSystemOptions _options;
     private readonly ExecutionMode _gatewayExecutionMode;
+    private readonly bool _gatewayRoutesNotionalMetadata;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
@@ -140,6 +141,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
             : BrokerageOrderPlacementGate.ResolveExecutionMode(brokerageConfiguration, gateway.GatewayId);
+        // Only a gateway that advertises native notional sizing routes the metadata dollars.
+        // Everything else routes Quantity, so measuring those orders at the metadata amount
+        // would hand the rails a number the broker never sees.
+        _gatewayRoutesNotionalMetadata =
+            gateway is INotionalOrderSizingGateway { SupportsNotionalOrderSizing: true };
         // ExecutionReports is a best-effort observer stream: order state, session fill history,
         // and the durable accounting handoff own correctness. The previous FullMode.Wait made a
         // slow (or absent — there is no production reader today) subscriber block WriteAsync on
@@ -224,6 +230,22 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 runId,
                 correlationId,
                 ct).ConfigureAwait(false);
+        }
+
+        if (CarriesUnroutableNotionalMetadata(safeRequest))
+        {
+            return await RejectOrderAsync(
+                orderId,
+                safeRequest,
+                actor,
+                brokerName,
+                runId,
+                correlationId,
+                UnroutableNotionalMetadataReason(brokerName),
+                sessionId,
+                ct,
+                rejectionSource: "notional metadata gate")
+                .ConfigureAwait(false);
         }
 
         var placementGate = BrokerageOrderPlacementGate.Evaluate(
@@ -1601,54 +1623,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             return false;
         }
     }
-
-    private static TradeExecutedEvent CreateTradeExecutedEvent(
-        ExecutionReport fillIncrement,
-        decimal cumulativeFilledQuantity,
-        decimal realizedPnl,
-        decimal newCash,
-        string? financialAccountId)
-    {
-        if (fillIncrement.FillPrice is not { } fillPrice)
-        {
-            throw new InvalidOperationException(
-                $"Fill report '{fillIncrement.OrderId}' for '{fillIncrement.Symbol}' has no execution price.");
-        }
-
-        var canonicalIdentity = string.Join(
-            "|",
-            EncodeIdentityPart(fillIncrement.OrderId),
-            EncodeIdentityPart(fillIncrement.ClientOrderId),
-            EncodeIdentityPart(fillIncrement.GatewayOrderId),
-            EncodeIdentityPart(fillIncrement.Symbol),
-            ((int)fillIncrement.Side).ToString(CultureInfo.InvariantCulture),
-            fillIncrement.FilledQuantity.ToString(CultureInfo.InvariantCulture),
-            cumulativeFilledQuantity.ToString(CultureInfo.InvariantCulture),
-            fillPrice.ToString(CultureInfo.InvariantCulture),
-            (fillIncrement.Commission ?? 0m).ToString(CultureInfo.InvariantCulture),
-            fillIncrement.Timestamp.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture),
-            EncodeIdentityPart(financialAccountId));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity));
-        var fillId = new Guid(hash.AsSpan(0, 16));
-
-        return new TradeExecutedEvent(
-            fillId,
-            fillIncrement.ClientOrderId ?? fillIncrement.OrderId,
-            fillIncrement.Symbol,
-            fillIncrement.Side,
-            fillIncrement.FilledQuantity,
-            fillPrice,
-            fillIncrement.Commission ?? 0m,
-            realizedPnl,
-            newCash,
-            fillIncrement.Timestamp,
-            financialAccountId);
-    }
-
-    private static string EncodeIdentityPart(string? value)
-        => value is null
-            ? "-"
-            : Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
 
     private async Task RecordSessionOrderUpdateAsync(
         string? sessionId,

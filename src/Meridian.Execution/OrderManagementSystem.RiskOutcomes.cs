@@ -173,6 +173,22 @@ public sealed partial class OrderManagementSystem
     /// 100-contract fill at $5 reserves $500 instead of $50,000 during precisely the window
     /// this reservation exists to cover.
     /// </summary>
+    /// <summary>
+    /// Whether the order carries broker-native notional sizing metadata that this gateway
+    /// will not route. Every rail that measures an order's economic size reads the routed
+    /// notional from that metadata, so on a gateway that routes <c>Quantity</c> instead,
+    /// <c>notional=1</c> on a 100,000-share order is measured as a one-dollar order by the
+    /// order-notional, gross-exposure, and concentration rules while the broker fills all
+    /// 100,000 shares. Refusing beats measuring one size and routing another.
+    /// </summary>
+    private bool CarriesUnroutableNotionalMetadata(OrderRequest request) =>
+        !_gatewayRoutesNotionalMetadata &&
+        BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null;
+
+    private static string UnroutableNotionalMetadataReason(string brokerName) =>
+        $"Broker-native notional sizing metadata is not supported by {brokerName}; this gateway "
+            + "routes order quantity. Remove the notional metadata and size the order in quantity.";
+
     private OrderState BuildHandoffReservation(
         string orderId,
         string symbol,

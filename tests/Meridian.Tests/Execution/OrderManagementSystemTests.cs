@@ -125,6 +125,71 @@ public sealed class OrderManagementSystemTests : IDisposable
         position.AverageCostBasis.Should().Be(25m);
     }
 
+    // ---- Broker-native notional metadata is scoped to gateways that route it ----
+
+    [Theory]
+    [InlineData("notional", "1")]
+    [InlineData("alpaca:notional", "1")]
+    [InlineData("Notional", "true")]
+    public async Task PlaceOrderAsync_OnGatewayThatRoutesQuantity_RejectsNotionalSizingMetadata(
+        string key,
+        string value)
+    {
+        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        // The paper gateway routes Quantity. Measuring this as a $1 order while it fills
+        // 100,000 shares would consume none of the notional, gross, or concentration limits.
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100_000m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { [key] = value }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("notional");
+        result.ErrorMessage.Should().Contain("routes order quantity");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_OnGatewayThatAdvertisesNotionalSizing_AcceptsNotionalMetadata()
+    {
+        var gateway = new NotionalSizingPaperExecutionGateway("alpaca");
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 100m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["notional"] = "2500" }
+        });
+
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_OnGatewayThatRoutesQuantity_AllowsOrdersWithoutNotionalMetadata()
+    {
+        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["actor"] = "desk" }
+        });
+
+        result.Success.Should().BeTrue();
+    }
+
     // ---- GetCompletedOrders — cancelled orders are included ----
 
     [Fact]
@@ -867,7 +932,20 @@ public sealed class OrderManagementSystemTests : IDisposable
         }
     }
 
-    private sealed class TypedPaperExecutionGateway(string gatewayId) : IExecutionGateway, IExecutionGatewayModeProvider
+    /// <summary>
+    /// Paper gateway that also advertises broker-native notional sizing, standing in for the
+    /// Alpaca adapter in tests that need the notional metadata to be routable.
+    /// </summary>
+    private sealed class NotionalSizingPaperExecutionGateway(string gatewayId)
+        : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway
+    {
+        public bool SupportsNotionalOrderSizing => true;
+    }
+
+    private sealed class TypedPaperExecutionGateway(string gatewayId)
+        : TypedPaperExecutionGatewayBase(gatewayId);
+
+    private abstract class TypedPaperExecutionGatewayBase(string gatewayId) : IExecutionGateway, IExecutionGatewayModeProvider
     {
         public string GatewayId => gatewayId;
 

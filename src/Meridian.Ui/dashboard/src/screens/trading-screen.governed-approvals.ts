@@ -77,6 +77,9 @@ export function useGovernedApprovalsViewModel(
     try {
       setEscalations(await services.getRiskEscalations());
       setForbidden(false);
+      // A recovered poll must retire the outage banner. Leaving it up beside current data
+      // gives an operator no way to tell a live failure from a healed one.
+      setErrorText(null);
     } catch (error) {
       if (error instanceof ApiError && error.status === 403) {
         // Not an error state: this session simply does not manage orders. Latch it so the

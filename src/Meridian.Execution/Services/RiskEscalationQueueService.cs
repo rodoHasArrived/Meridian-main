@@ -494,12 +494,16 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 continue;
             }
 
-            if (Resolve(linkedId, RiskEscalationStatus.Denied, actor, reason, allowApproved: true) is not null)
+            // Log the resolved entry's own id, never the caller-supplied token: the metadata
+            // this list came from is client-controlled, and echoing it into the log would let
+            // a submitter forge log entries.
+            if (Resolve(linkedId, RiskEscalationStatus.Denied, actor, reason, allowApproved: true)
+                is { } linkedEntry)
             {
                 _logger.LogInformation(
                     "Governed approval {LinkedEscalationId} withdrawn with escalation {EscalationId} for the same order",
-                    linkedId,
-                    escalationId);
+                    linkedEntry.EscalationId,
+                    withdrawn.EscalationId);
             }
         }
 
