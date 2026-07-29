@@ -283,6 +283,36 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>
+    /// Withdraws every live parked escalation, for an emergency cancel-all. A parked order
+    /// is tracked in a terminal state and so is absent from the open book, which means the
+    /// ordinary cancel-all sweep never reaches it — leaving escalations that can still be
+    /// released to the broker after cancellation reports completion.
+    /// </summary>
+    private async Task WithdrawAllParkedEscalationsAsync(CancellationToken ct)
+    {
+        var parkedOrderIds = _parkedOrderIds.Keys.ToArray();
+        if (parkedOrderIds.Length == 0)
+        {
+            return;
+        }
+
+        _logger.LogInformation(
+            "Cancel-all is withdrawing {ParkedCount} parked escalation(s)",
+            parkedOrderIds.Length);
+
+        foreach (var parkedOrderId in parkedOrderIds)
+        {
+            var withdrawn = await TryCancelParkedOrderAsync(parkedOrderId, ct).ConfigureAwait(false);
+            if (withdrawn is null or { Success: false })
+            {
+                _logger.LogError(
+                    "Cancel-all could not withdraw the governed escalation holding order {OrderId}; it remains releasable",
+                    LogSanitizer.Sanitize(parkedOrderId));
+            }
+        }
+    }
+
+    /// <summary>
     /// Cancels an order awaiting governed approval: the escalation is withdrawn so no
     /// operator can later execute an order the submitter cancelled, and the cancellation
     /// completes locally because no broker order exists. Returns null when the order is

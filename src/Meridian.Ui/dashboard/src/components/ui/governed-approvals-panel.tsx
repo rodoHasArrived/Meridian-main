@@ -83,11 +83,13 @@ export function GovernedApprovalsPanel({ model }: GovernedApprovalsPanelProps) {
                   type="button"
                   size="sm"
                   disabled={busy || reason.trim().length === 0}
-                  aria-label={`Approve and release the ${escalation.symbol} order`}
+                  aria-label={escalation.status === "Approved"
+                    ? `Retry the release of the ${escalation.symbol} order`
+                    : `Approve and release the ${escalation.symbol} order`}
                   onClick={() => void model.approve(escalation.escalationId)}
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Approve and release
+                  {escalation.status === "Approved" ? "Retry release" : "Approve and release"}
                 </Button>
                 <Button
                   type="button"

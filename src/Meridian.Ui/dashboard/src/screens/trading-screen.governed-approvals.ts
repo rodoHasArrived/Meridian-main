@@ -36,6 +36,9 @@ export const LIVE_GOVERNED_APPROVAL_SERVICES: GovernedApprovalServices = {
   denyRiskEscalation: (escalationId, reason) => denyRiskEscalation(escalationId, reason)
 };
 
+/** How often the approvals queue re-polls while the screen is open. */
+export const DEFAULT_APPROVAL_REFRESH_MS = 15_000;
+
 function toErrorText(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
 }
@@ -49,7 +52,8 @@ function toErrorText(error: unknown, fallback: string): string {
  */
 export function useGovernedApprovalsViewModel(
   services: GovernedApprovalServices,
-  enabled = true
+  enabled = true,
+  refreshIntervalMs = DEFAULT_APPROVAL_REFRESH_MS
 ): GovernedApprovalsViewModel {
   const [escalations, setEscalations] = useState<RiskEscalation[]>([]);
   const [reasons, setReasons] = useState<Record<string, string>>({});
@@ -71,7 +75,13 @@ export function useGovernedApprovalsViewModel(
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+
+    // Escalations arrive from live strategy runs and other operators, not only from this
+    // browser's own ticket. Without a poll the panel would show a queue frozen at mount
+    // for as long as the screen stays open.
+    const timer = setInterval(() => void refresh(), refreshIntervalMs);
+    return () => clearInterval(timer);
+  }, [refresh, refreshIntervalMs]);
 
   const setReason = useCallback((escalationId: string, reason: string) => {
     setReasons((current) => ({ ...current, [escalationId]: reason }));
@@ -93,9 +103,16 @@ export function useGovernedApprovalsViewModel(
           // Approval and release are separate outcomes: the release re-enters the risk
           // gate and can still be refused, which is not an approval failure but must not
           // be reported as a routed order either.
-          setStatusText(response.releaseResult?.success === false
-            ? `Approved, but the release was refused: ${response.releaseResult.errorMessage ?? response.releaseResult.reason ?? "no reason given"}`
-            : "Approved and released.");
+          // Three distinct outcomes, and only one of them routed an order. A null release
+          // result means the server recorded the approval but never submitted — reporting
+          // that as "released" would tell the desk an order is working that is not.
+          if (!response.releaseResult) {
+            setStatusText("Approved. The order was not released; retry the release when execution is available.");
+          } else if (response.releaseResult.success === false) {
+            setStatusText(`Approved, but the release was refused: ${response.releaseResult.errorMessage ?? response.releaseResult.reason ?? "no reason given"}`);
+          } else {
+            setStatusText("Approved and released.");
+          }
         } else {
           await services.denyRiskEscalation(escalationId, reason);
           setStatusText("Denied. The order was withdrawn and can no longer be released.");

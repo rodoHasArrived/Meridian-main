@@ -556,6 +556,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                     ? 1m
                     : adjustment.AdjustedCostBasis / originalCostBasis;
                 pos.RescaleLots(quantityFactor, priceFactor);
+                // Ownership rides on quantity, so a split that doubles the position must
+                // double each fund's share too. Leaving the tallies behind would surface
+                // the difference as an unattributable residual a scoped operator cannot see.
+                pos.RescaleOwnerQuantities(quantityFactor);
             }
         }
     }
@@ -1071,6 +1075,30 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// desynced book would push post-split sells into the shortfall fallback and fabricate
     /// cost basis at the aggregate average.
     /// </summary>
+    /// <summary>
+    /// Rescales every owner tally by the corporate-action quantity factor, keeping fund
+    /// attribution in step with the position it describes.
+    /// </summary>
+    public void RescaleOwnerQuantities(decimal quantityFactor)
+    {
+        if (quantityFactor == 1m || _ownerQuantities.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var owner in _ownerQuantities.Keys.ToArray())
+        {
+            var rescaled = _ownerQuantities[owner] * quantityFactor;
+            if (rescaled == 0m)
+            {
+                _ownerQuantities.Remove(owner);
+                continue;
+            }
+
+            _ownerQuantities[owner] = rescaled;
+        }
+    }
+
     public void RescaleLots(decimal quantityFactor, decimal priceFactor)
     {
         if (quantityFactor == 1m && priceFactor == 1m)

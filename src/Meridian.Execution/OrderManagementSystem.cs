@@ -881,6 +881,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     {
         using var operation = EnterOperation();
 
+        await WithdrawAllParkedEscalationsAsync(ct).ConfigureAwait(false);
+
         var openOrders = GetOpenOrders();
         _logger.LogInformation("Cancelling all {Count} open orders", openOrders.Count);
 

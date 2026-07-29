@@ -146,13 +146,23 @@ public sealed class RiskRuleRuntimeService
         }
 
         var portfolioValue = portfolio.PortfolioValue;
+        var totalPnl = portfolio.RealisedPnl + portfolio.UnrealisedPnl;
         if (portfolioValue <= 0m)
         {
-            // No portfolio value to measure against, matching BuildDrawdownStatus's 0% baseline.
+            // Nonpositive value with a loss behind it is not "nothing to measure" — it is
+            // the worst possible drawdown. A book that fell from $100k to -$10k on -$110k of
+            // P&L has a valid baseline and a >100% drawdown; approving further trading there
+            // is exactly the outcome the guardrail exists to prevent. Only a book that never
+            // had value (no baseline at all) is genuinely unmeasurable.
+            if (portfolioValue - totalPnl > 0m)
+            {
+                return RiskValidationResult.Rejected(
+                    "Drawdown circuit breaker: portfolio value is exhausted.");
+            }
+
             return RiskValidationResult.Approved();
         }
 
-        var totalPnl = portfolio.RealisedPnl + portfolio.UnrealisedPnl;
         var drawdownPercent = ComputeDrawdownPercent(portfolioValue, totalPnl);
         var maxDrawdownPercent = GetMaxDrawdownPercent();
 

@@ -414,6 +414,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         // registered under its own run id, and a portfolio re-registered under a second run
         // id must not count twice), not just the host state.
         var portfolioValue = 0m;
+        var measuredAnyPortfolio = false;
         if (_registry is not null)
         {
             // Sum SIGNED values: positions from a loss-impaired portfolio still enter the
@@ -423,17 +424,23 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             foreach (var portfolio in _registry.GetAll().Values.Distinct<IMultiAccountPortfolioState>(ReferenceEqualityComparer.Instance))
             {
                 portfolioValue += portfolio.PortfolioValue;
+                measuredAnyPortfolio = true;
             }
         }
 
-        if (portfolioValue <= 0m)
+        // "No registered portfolio reported a value" and "the registered portfolios sum to
+        // zero or less" are different facts. Only the first is missing data; the second is a
+        // known insolvent book, and substituting the host NAV or gross exposure for it would
+        // manufacture a positive denominator that lets percentage-of-NAV caps pass orders
+        // against a portfolio that has nothing left to risk. Leave it as measured.
+        if (!measuredAnyPortfolio)
         {
             portfolioValue = _portfolioState?.PortfolioValue ?? 0m;
-        }
 
-        if (portfolioValue <= 0m)
-        {
-            portfolioValue = grossExposure;
+            if (portfolioValue <= 0m)
+            {
+                portfolioValue = grossExposure;
+            }
         }
 
         return new PortfolioExposureSnapshot(

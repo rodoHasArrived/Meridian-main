@@ -113,16 +113,21 @@ internal static class OrderNotionalResolver
                 OptionContract = request.OptionContract
             }];
 
-        // The top-level price prices the combination as a whole; each leg's ratio scales it.
+        // A multi-leg order's top-level price is the NET debit or credit of the package, not
+        // what any one contract is worth: a one-contract spread limited at $1 whose legs
+        // trade at $10 and $9 carries $1,900 of gross, not $200. Each leg is therefore
+        // valued at its own market price, and the combination price is only a fallback for
+        // an order that has no per-leg market at all (including the single-contract case,
+        // where the top-level price IS that contract's premium).
         var combinationPrice = request.LimitPrice ?? request.StopPrice;
         var total = 0m;
         var priced = false;
 
         foreach (var leg in legs)
         {
-            var legPrice = combinationPrice
-                ?? referencePriceLookup?.Invoke(leg.Symbol)
-                ?? PositiveOrNull(snapshot.GetSymbolExposure(leg.Symbol).ReferencePrice);
+            var legPrice = referencePriceLookup?.Invoke(leg.Symbol)
+                ?? PositiveOrNull(snapshot.GetSymbolExposure(leg.Symbol).ReferencePrice)
+                ?? combinationPrice;
             if (legPrice is not { } price || price <= 0m)
             {
                 // Fail closed on the whole order. A partial total looks measurable while an
