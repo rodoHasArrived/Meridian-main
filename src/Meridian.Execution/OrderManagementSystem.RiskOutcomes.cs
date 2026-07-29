@@ -602,7 +602,12 @@ public sealed partial class OrderManagementSystem
     /// price. Returns null when the state carries no price of its own (a market order),
     /// where only the live mark — which the OMS does not hold — could measure it.
     /// </summary>
-    private static decimal? MeasureOrderValue(decimal quantity, decimal? limitPrice, decimal? stopPrice, decimal? routedNotional)
+    private static decimal? MeasureOrderValue(
+        decimal quantity,
+        decimal? limitPrice,
+        decimal? stopPrice,
+        decimal? routedNotional,
+        decimal contractMultiplier = 1m)
     {
         if (routedNotional is { } notional && notional > 0m)
         {
@@ -610,7 +615,15 @@ public sealed partial class OrderManagementSystem
         }
 
         var price = limitPrice ?? stopPrice;
-        return price is { } resolved && resolved > 0m ? Math.Abs(quantity) * resolved : null;
+        if (price is not { } resolved || resolved <= 0m)
+        {
+            return null;
+        }
+
+        // A contract is not a share. Measuring an option amendment at quantity x premium
+        // would assess an increase from 10 to 100 contracts at $5 as a $450 increment
+        // instead of $45,000, and the per-order rule would see a $500 order.
+        return Math.Abs(quantity) * resolved * (contractMultiplier > 0m ? contractMultiplier : 1m);
     }
 
     /// <summary>
@@ -654,7 +667,11 @@ public sealed partial class OrderManagementSystem
         StopPrice = modification.NewStopPrice ?? state.StopPrice,
         ClientOrderId = state.OrderId,
         StrategyId = state.StrategyId,
-        FundAccountId = state.FundAccountId
+        FundAccountId = state.FundAccountId,
+        // Without the derivative identity the rules re-value the amended order as shares,
+        // repeating the 1x mistake the multiplier above exists to prevent.
+        OptionContract = state.OptionContract,
+        Legs = state.Legs
     };
 
     /// <summary>
@@ -690,8 +707,10 @@ public sealed partial class OrderManagementSystem
             return amended with { Metadata = probeMetadata };
         }
 
-        var currentValue = MeasureOrderValue(state.Quantity, state.LimitPrice, state.StopPrice, state.RoutedNotional);
-        var amendedValue = MeasureOrderValue(amended.Quantity, amended.LimitPrice, amended.StopPrice, routedNotional: null);
+        var currentValue = MeasureOrderValue(
+            state.Quantity, state.LimitPrice, state.StopPrice, state.RoutedNotional, state.ContractMultiplier);
+        var amendedValue = MeasureOrderValue(
+            amended.Quantity, amended.LimitPrice, amended.StopPrice, routedNotional: null, state.ContractMultiplier);
         if (currentValue is not { } current || amendedValue is not { } proposed || proposed <= current)
         {
             return amended with { Metadata = probeMetadata };

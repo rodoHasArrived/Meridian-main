@@ -230,6 +230,16 @@ internal static class OrderNotionalResolver
         PortfolioExposureSnapshot snapshot,
         Func<string, decimal?>? referencePriceLookup = null)
     {
+        // A multi-leg order has no single direction. Its notional is the sum of every
+        // leg's absolute value, and the gateway routes each leg's own side, so signing
+        // that whole sum by the top-level side can present an all-buy combination as
+        // reducing a long position and let the policy approve a real increase. Return
+        // null instead: the projection falls back to the additive worst case.
+        if (request.Legs is { Count: > 1 })
+        {
+            return null;
+        }
+
         var notional = Resolve(request, snapshot, referencePriceLookup);
         if (notional is not { } absolute)
         {

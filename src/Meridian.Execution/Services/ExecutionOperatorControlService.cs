@@ -199,7 +199,18 @@ public sealed class ExecutionOperatorControlService
         // Immediately after the snapshot commit and before the audit write: an audit
         // failure or a cancelled request must not leave a superseded marker on disk, or
         // the next restart would reopen the breaker an operator just durably closed.
-        ClearPendingTripMarker();
+        //
+        // Marker removal is part of the close decision, not bookkeeping after it. A marker
+        // that survives will reopen the breaker on the next restart, so reporting a
+        // successful close while it is still there would promise a state the next start
+        // silently revokes.
+        if (!ClearPendingTripMarker())
+        {
+            throw new InvalidOperationException(
+                $"The circuit breaker decision was persisted, but the pending-trip marker at "
+                + $"'{_options.PendingTripPath}' could not be removed; a restart would reopen the breaker. "
+                + "Remove the marker before relying on this state.");
+        }
 
         await RecordAuditAsync(
             isOpen ? "CircuitBreakerOpened" : "CircuitBreakerClosed",
@@ -608,7 +619,7 @@ public sealed class ExecutionOperatorControlService
     /// Clears the pending-trip marker once an explicit breaker decision has been durably
     /// written — the snapshot is authoritative again, in either direction.
     /// </summary>
-    private void ClearPendingTripMarker()
+    private bool ClearPendingTripMarker()
     {
         try
         {
@@ -616,10 +627,13 @@ public sealed class ExecutionOperatorControlService
             {
                 File.Delete(_options.PendingTripPath);
             }
+
+            return true;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            _logger.LogWarning(exception, "Pending circuit-breaker trip marker could not be cleared");
+            _logger.LogError(exception, "Pending circuit-breaker trip marker could not be cleared");
+            return false;
         }
     }
 

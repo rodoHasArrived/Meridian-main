@@ -535,9 +535,10 @@ public sealed class RiskRuleRuntimeService
 
         var portfolioValue = portfolio?.PortfolioValue ?? 0m;
         var totalPnl = (portfolio?.RealisedPnl ?? 0m) + (portfolio?.UnrealisedPnl ?? 0m);
-        var drawdownPercent = portfolioValue > 0m
-            ? ComputeDrawdownPercent(portfolioValue, totalPnl)
-            : 0m;
+        // Same exhausted-book rule the enforced guardrail applies. Forcing 0% whenever value
+        // is nonpositive would show Healthy on the dashboard while EvaluateDrawdownGuardrail
+        // is rejecting every order for a greater-than-100% loss on the same portfolio.
+        var drawdownPercent = ComputeDrawdownPercent(portfolioValue, totalPnl);
 
         var breached = drawdownPercent <= -maxDrawdownPercent;
         var state = breached
@@ -841,6 +842,9 @@ public sealed class RiskRuleRuntimeService
     private static decimal ComputeDrawdownPercent(decimal portfolioValue, decimal totalPnl)
     {
         var baseline = portfolioValue - totalPnl;
+        // A baseline that never existed is genuinely unmeasurable and reads as 0%. A real
+        // baseline that has been wiped out is the opposite of that: the ratio below carries
+        // it past -100%, which is exactly what an exhausted book should report.
         return baseline > 0m ? (totalPnl / baseline) * 100m : 0m;
     }
 

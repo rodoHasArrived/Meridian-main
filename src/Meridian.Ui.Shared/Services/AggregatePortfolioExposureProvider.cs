@@ -208,8 +208,14 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             };
             // A working option order reserves contract notional: 100 contracts at a $5
             // limit hold back $50k, not $500, or a second order passes the ceilings while
-            // the first is still executable.
-            var price = unitPrice * (order.ContractMultiplier > 0m ? order.ContractMultiplier : 1m);
+            // the first is still executable. A combination reserves the sum of its legs'
+            // ratios for the same reason the gate charged them that way — its top-level
+            // price is the net package debit, not what any leg is worth.
+            var multiplier = order.ContractMultiplier > 0m ? order.ContractMultiplier : 1m;
+            var legRatioTotal = order.Legs is { Count: > 0 } legs
+                ? legs.Sum(leg => Math.Abs(leg.RatioQuantity))
+                : 1m;
+            var price = unitPrice * multiplier * (legRatioTotal > 0m ? legRatioTotal : 1m);
 
             decimal workingNotional;
             if (order.RoutedNotional is { } routedNotional && routedNotional > 0m)

@@ -413,8 +413,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 // exposure reserve for this working order must value what actually routes.
                 RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity),
                 // A working option order reserves contract notional, not share notional:
-                // 100 contracts at a $5 limit hold back $50k, not $500.
-                ContractMultiplier = orderMultiplier
+                // 100 contracts at a $5 limit hold back $50k, not $500. The derivative
+                // identity travels too, so the reserve and any amendment are valued exactly
+                // as the pre-trade gate valued the order.
+                ContractMultiplier = orderMultiplier,
+                OptionContract = safeRequest.OptionContract,
+                Legs = safeRequest.Legs
             };
 
             if (!TryRegisterOrder(orderId, orderState))

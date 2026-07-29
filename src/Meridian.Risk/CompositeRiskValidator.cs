@@ -68,6 +68,13 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 return RiskValidationResult.Rejected(
                     "Risk engine is failing closed: a critical halt is pending but the execution circuit breaker could not be opened.");
             }
+
+            // The trip has just landed, but the operator-control gate that reads the breaker
+            // already ran for THIS order earlier in the pipeline and saw it closed. Letting
+            // validation continue would route exactly one order through the halt at the
+            // moment it became durable — the single order the halt was raised to stop.
+            return RiskValidationResult.Rejected(
+                "Execution circuit breaker opened by a pending critical halt; resubmit once an operator clears it.");
         }
 
         // Consume a carried governed-approval token up front, independent of whether the

@@ -386,7 +386,11 @@ public static class RiskEndpoints
 
             try
             {
-                var denied = queue.Deny(escalationId, ResolveActor(context), request?.Reason);
+                // Withdraw, not Deny: an operator can also be revoking an approval that was
+                // granted but whose release a later gate refused. A plain denial resolves only
+                // pending entries, so that revocation would 404 while leaving the approval armed
+                // and still releasable — the opposite of what the operator just asked for.
+                var denied = queue.Withdraw(escalationId, ResolveActor(context), request?.Reason);
                 return denied is null ? Results.NotFound() : Results.Json(ToDto(denied), jsonOptions);
             }
             catch (InvalidOperationException exception)

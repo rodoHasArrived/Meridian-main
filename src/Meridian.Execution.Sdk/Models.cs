@@ -225,6 +225,19 @@ public sealed record OrderState
     /// a hundredth of what 100 contracts will actually execute.
     /// </summary>
     public decimal ContractMultiplier { get; init; } = 1m;
+
+    /// <summary>
+    /// Derivative identity of the working order, retained so its exposure reserve and any
+    /// amendment are valued the same way the pre-trade gate valued it.
+    /// </summary>
+    public OptionContractIdentity? OptionContract { get; init; }
+
+    /// <summary>
+    /// Legs of a working combination order. A spread's reserve is the sum of its legs'
+    /// absolute notionals, not its net package price — without the legs, a $1 net-debit
+    /// spread reserves $100 where the gate charged $1,900.
+    /// </summary>
+    public IReadOnlyList<OrderLeg>? Legs { get; init; }
 }
 
 /// <summary>Current position state for a symbol.</summary>
