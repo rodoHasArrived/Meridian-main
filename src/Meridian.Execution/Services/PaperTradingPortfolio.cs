@@ -47,7 +47,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         _corporateActionAdjuster = corporateActionAdjuster;
         _lotSelectionMethod = lotSelectionMethod;
 
-        var defaultAccount = new AccountState(DefaultAccountId, "Default Paper Account", AccountKind.Brokerage, initialCash);
+        var defaultAccount = new AccountState(
+            DefaultAccountId, "Default Paper Account", AccountKind.Brokerage, initialCash, syncRoot: _lock);
         _accounts[DefaultAccountId] = defaultAccount;
 
         if (ledger is not null && initialCash > 0)
@@ -92,7 +93,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             _accounts[def.AccountId] = new AccountState(
                 def.AccountId, def.DisplayName, def.Kind, def.InitialCash,
-                def.MarginType, def.MarginModel);
+                def.MarginType, def.MarginModel, syncRoot: _lock);
 
             if (ledger is not null && def.InitialCash > 0)
             {
@@ -923,14 +924,24 @@ internal sealed class AccountState : IAccountPortfolio
 
     public Dictionary<string, PaperPosition> Positions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// The owning portfolio's lock. Read-only projections off this account enumerate the
+    /// live position dictionary, and a fill mutating it mid-enumeration throws. Since the
+    /// pre-trade risk gate reads these projections on every submission, that exception
+    /// surfaces as a server error refusing live order flow.
+    /// </summary>
+    private readonly Lock _syncRoot;
+
     public AccountState(
         string accountId,
         string displayName,
         AccountKind kind,
         decimal cash,
         MarginAccountType marginType = MarginAccountType.Cash,
-        IMarginModel? marginModel = null)
+        IMarginModel? marginModel = null,
+        Lock? syncRoot = null)
     {
+        _syncRoot = syncRoot ?? new Lock();
         AccountId = accountId;
         DisplayName = displayName;
         Kind = kind;
@@ -945,11 +956,19 @@ internal sealed class AccountState : IAccountPortfolio
     }
 
     // IAccountPortfolio explicit implementation (read-only projection)
-    IReadOnlyDictionary<string, IPosition> IAccountPortfolio.Positions =>
-        Positions.ToDictionary(
-            static kv => kv.Key,
-            static kv => (IPosition)kv.Value.ToExecutionPosition(),
-            StringComparer.OrdinalIgnoreCase);
+    IReadOnlyDictionary<string, IPosition> IAccountPortfolio.Positions
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return Positions.ToDictionary(
+                    static kv => kv.Key,
+                    static kv => (IPosition)kv.Value.ToExecutionPosition(),
+                    StringComparer.OrdinalIgnoreCase);
+            }
+        }
+    }
 
     /// <summary>
     /// Total amount borrowed from the broker to fund long positions.

@@ -576,21 +576,22 @@ internal sealed class LiveStrategyRunSession
         {
             try
             {
+                // Ask before cancelling, not after. An escalation the desk already denied
+                // needs no withdrawal, and cancelling one drops its parked reservation on
+                // the way to a gateway cancel that fails for an order which never routed —
+                // after which the denial is no longer recognizable and an otherwise clean
+                // run is recorded Failed.
+                if (_orderManager.WasRiskApprovalDeclined(clientOrderId))
+                {
+                    _parkedClientOrderIds.Remove(clientOrderId);
+                    continue;
+                }
+
                 var cancelled = await _orderManager
                     .CancelOrderAsync(clientOrderId, CancellationToken.None)
                     .ConfigureAwait(false);
                 if (!cancelled.Success)
                 {
-                    // An escalation the desk already denied needs no withdrawal: the
-                    // cancellation falls through to the gateway for an order that never
-                    // routed and fails there. Counting that as unwithdrawn would record an
-                    // otherwise clean run as Failed.
-                    if (_orderManager.WasRiskApprovalDeclined(clientOrderId))
-                    {
-                        _parkedClientOrderIds.Remove(clientOrderId);
-                        continue;
-                    }
-
                     unwithdrawn++;
                     _logger.LogError(
                         "Run {RunId} ended with order {ClientOrderId} parked, and its escalation could not be withdrawn: {Reason}",
