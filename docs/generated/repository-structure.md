@@ -1074,6 +1074,96 @@ Meridian-main
 │   │   └── __init__.py
 │   ├── rules
 │   │   └── doc-rules.yaml
+│   ├── schema-control
+│   │   └── candidate
+│   │       ├── docs
+│   │       │   ├── contracts
+│   │       │   │   ├── asset-operations-contracts.md
+│   │       │   │   ├── banking-contracts.md
+│   │       │   │   ├── direct-lending-contracts-page-01.md
+│   │       │   │   ├── direct-lending-contracts-page-02.md
+│   │       │   │   ├── direct-lending-contracts.md
+│   │       │   │   ├── fund-governance-contracts-page-01.md
+│   │       │   │   ├── fund-governance-contracts-page-02.md
+│   │       │   │   ├── fund-governance-contracts.md
+│   │       │   │   ├── identity-access-contracts.md
+│   │       │   │   ├── ledger-contracts-page-01.md
+│   │       │   │   ├── ledger-contracts-page-02.md
+│   │       │   │   ├── ledger-contracts-page-03.md
+│   │       │   │   ├── ledger-contracts-page-04.md
+│   │       │   │   ├── ledger-contracts.md
+│   │       │   │   ├── money-market-contracts.md
+│   │       │   │   ├── reporting-contracts.md
+│   │       │   │   ├── security-master-contracts-page-01.md
+│   │       │   │   ├── security-master-contracts-page-02.md
+│   │       │   │   ├── security-master-contracts-page-03.md
+│   │       │   │   └── security-master-contracts.md
+│   │       │   ├── diagrams
+│   │       │   │   ├── asset_operations.mmd
+│   │       │   │   ├── banking.mmd
+│   │       │   │   ├── contracts-asset-operations-contracts.mmd
+│   │       │   │   ├── contracts-banking-contracts.mmd
+│   │       │   │   ├── contracts-direct-lending-contracts-page-01.mmd
+│   │       │   │   ├── contracts-direct-lending-contracts-page-02.mmd
+│   │       │   │   ├── contracts-fund-governance-contracts-page-01.mmd
+│   │       │   │   ├── contracts-fund-governance-contracts-page-02.mmd
+│   │       │   │   ├── contracts-identity-access-contracts.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-01.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-02.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-03.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-04.mmd
+│   │       │   │   ├── contracts-money-market-contracts.mmd
+│   │       │   │   ├── contracts-reporting-contracts.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-01.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-02.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-03.mmd
+│   │       │   │   ├── fund_accounts.mmd
+│   │       │   │   ├── fund_structure.mmd
+│   │       │   │   ├── identity_access.mmd
+│   │       │   │   ├── ledger.mmd
+│   │       │   │   ├── money_market.mmd
+│   │       │   │   ├── public.mmd
+│   │       │   │   ├── reporting.mmd
+│   │       │   │   └── security_master.mmd
+│   │       │   ├── modules
+│   │       │   │   ├── asset_operations.md
+│   │       │   │   ├── banking.md
+│   │       │   │   ├── fund_accounts.md
+│   │       │   │   ├── fund_structure.md
+│   │       │   │   ├── identity_access.md
+│   │       │   │   ├── ledger.md
+│   │       │   │   ├── money_market.md
+│   │       │   │   ├── public.md
+│   │       │   │   ├── reporting.md
+│   │       │   │   └── security_master.md
+│   │       │   ├── data-object-catalog.md
+│   │       │   ├── README.md
+│   │       │   └── schema-catalog.md
+│   │       ├── manifest
+│   │       │   ├── schemas
+│   │       │   │   ├── asset_operations.json
+│   │       │   │   ├── banking.json
+│   │       │   │   ├── fund_accounts.json
+│   │       │   │   ├── fund_structure.json
+│   │       │   │   ├── identity_access.json
+│   │       │   │   ├── ledger.json
+│   │       │   │   ├── money_market.json
+│   │       │   │   ├── public.json
+│   │       │   │   ├── reporting.json
+│   │       │   │   └── security_master.json
+│   │       │   ├── catalog.json
+│   │       │   ├── contracts.json
+│   │       │   ├── dependencies.json
+│   │       │   ├── migrations.json
+│   │       │   └── policies.json
+│   │       ├── reports
+│   │       │   ├── artifact-drift.json
+│   │       │   ├── migration-application.json
+│   │       │   ├── policy-report.json
+│   │       │   ├── schema-diff.json
+│   │       │   ├── schema-diff.md
+│   │       │   └── summary.md
+│   │       └── render-manifest.json
 │   └── scripts
 │       ├── ai
 │       │   ├── tests
@@ -4275,6 +4365,8 @@ Meridian-main
 │   │   ├── Live
 │   │   │   ├── ILiveMarketEventFeed.cs
 │   │   │   └── LiveMarketEventHub.cs
+│   │   ├── Logging
+│   │   │   └── LogSanitizer.cs
 │   │   ├── Margin
 │   │   │   ├── IMarginModel.cs
 │   │   │   ├── MarginAccountType.cs
@@ -4319,6 +4411,7 @@ Meridian-main
 │   │   │   ├── PositionSyncOptions.cs
 │   │   │   ├── ReconciliationSetComparer.cs
 │   │   │   ├── ReplayDriftDetector.cs
+│   │   │   ├── RiskEscalationQueueService.cs
 │   │   │   └── SessionTcaReporter.cs
 │   │   ├── TaxLotAccounting
 │   │   │   ├── ITaxLotSelector.cs
@@ -4331,7 +4424,10 @@ Meridian-main
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
+│   │   ├── OrderManagementSystem.Audit.cs
 │   │   ├── OrderManagementSystem.cs
+│   │   ├── OrderManagementSystem.FillIdentity.cs
+│   │   ├── OrderManagementSystem.RiskOutcomes.cs
 │   │   ├── OrderManagementSystemOptions.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
@@ -4345,12 +4441,14 @@ Meridian-main
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── BrokerageOrderPlacementGate.cs
 │   │   ├── BrokerageValidationEvaluator.cs
+│   │   ├── BrokerNotionalMetadata.cs
 │   │   ├── ExecutionOrderMetadataPolicy.cs
 │   │   ├── IBrokerageAccountSync.cs
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
+│   │   ├── INotionalOrderSizingGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
@@ -4920,6 +5018,7 @@ Meridian-main
 │   │   ├── IDepreciationScheduleCalculator.cs
 │   │   ├── ILedgerReportBinaryRenderer.cs
 │   │   ├── IReadOnlyLedger.cs
+│   │   ├── IWashSaleReplacementResolver.cs
 │   │   ├── JournalEntry.cs
 │   │   ├── JournalEntryMetadata.cs
 │   │   ├── JournalEvidenceReference.cs
@@ -4967,6 +5066,7 @@ Meridian-main
 │   │   ├── LedgerTaxLotBasisAdjuster.cs
 │   │   ├── LedgerTaxLotBasisAdjustment.cs
 │   │   ├── LedgerTaxLotBasisAdjustmentKind.cs
+│   │   ├── LedgerTaxLotReliefHistoryProjector.cs
 │   │   ├── LedgerTaxLotReliefInput.cs
 │   │   ├── LedgerTaxLotReliefMethod.cs
 │   │   ├── LedgerTaxLotReliefProjection.cs
@@ -5018,6 +5118,7 @@ Meridian-main
 │   │   ├── ShareClass.cs
 │   │   ├── ShareClassUnitRegisterProjector.cs
 │   │   ├── StalePricePolicy.cs
+│   │   ├── TaxCharacter.cs
 │   │   ├── WashSale.cs
 │   │   └── YearEndClose.cs
 │   ├── Meridian.LifecycleSupervisor
@@ -5248,11 +5349,16 @@ Meridian-main
 │   ├── Meridian.Risk
 │   │   ├── Rules
 │   │   │   ├── DrawdownCircuitBreaker.cs
+│   │   │   ├── GrossExposureRule.cs
+│   │   │   ├── OrderNotionalResolver.cs
+│   │   │   ├── OrderNotionalRule.cs
 │   │   │   ├── OrderRateThrottle.cs
-│   │   │   └── PositionLimitRule.cs
+│   │   │   ├── PositionLimitRule.cs
+│   │   │   └── SymbolConcentrationRule.cs
 │   │   ├── CompositeRiskValidator.cs
 │   │   ├── IRiskRule.cs
 │   │   ├── Meridian.Risk.csproj
+│   │   ├── PortfolioExposure.cs
 │   │   └── README.md
 │   ├── Meridian.Setup
 │   │   ├── Meridian.Setup.csproj
@@ -5398,7 +5504,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_024__tax_lot_average_cost_method.sql
 │   │   │   │   ├── V_ledger_025__global_posting_command_identity.sql
 │   │   │   │   ├── V_ledger_026__journal_leg_currency.sql
-│   │   │   │   └── V_ledger_027__atomic_tax_lot_posting.sql
+│   │   │   │   ├── V_ledger_027__atomic_tax_lot_posting.sql
+│   │   │   │   └── V_ledger_028__wash_sale_activation.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5417,7 +5524,10 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
-│   │   │   └── PostgresLedgerJournalStore.Validation.cs
+│   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
+│   │   │   ├── PostgresLedgerJournalStore.Validation.cs
+│   │   │   ├── PostgresLedgerJournalStore.WashSale.cs
+│   │   │   └── WashSaleDeferralRecord.cs
 │   │   ├── Maintenance
 │   │   │   ├── ArchiveMaintenanceModels.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManager.cs
@@ -5988,6 +6098,8 @@ Meridian-main
 │   │   │   │   │       ├── freshness-chip.view-model.ts
 │   │   │   │   │       ├── gauge.test.tsx
 │   │   │   │   │       ├── gauge.tsx
+│   │   │   │   │       ├── governed-approvals-panel.tsx
+│   │   │   │   │       ├── guardrail-utilization.tsx
 │   │   │   │   │       ├── input.tsx
 │   │   │   │   │       ├── kbd.tsx
 │   │   │   │   │       ├── label.tsx
@@ -5997,6 +6109,7 @@ Meridian-main
 │   │   │   │   │       ├── multi-select.tsx
 │   │   │   │   │       ├── number-input.test.tsx
 │   │   │   │   │       ├── number-input.tsx
+│   │   │   │   │       ├── order-status-banner.tsx
 │   │   │   │   │       ├── panel-surface.tsx
 │   │   │   │   │       ├── popover.test.tsx
 │   │   │   │   │       ├── popover.tsx
@@ -6028,7 +6141,8 @@ Meridian-main
 │   │   │   │   │       ├── theme-toggle.test.tsx
 │   │   │   │   │       ├── theme-toggle.tsx
 │   │   │   │   │       ├── toast.tsx
-│   │   │   │   │       └── tooltip.tsx
+│   │   │   │   │       ├── tooltip.tsx
+│   │   │   │   │       └── trading-risk-controls.tsx
 │   │   │   │   ├── design-system
 │   │   │   │   │   ├── assets.ts
 │   │   │   │   │   ├── badge.tsx
@@ -6130,6 +6244,7 @@ Meridian-main
 │   │   │   │   │   ├── api.operations-continuity.test.ts
 │   │   │   │   │   ├── api.private-capital.test.ts
 │   │   │   │   │   ├── api.reconciliation.test.ts
+│   │   │   │   │   ├── api.risk-escalations.ts
 │   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
 │   │   │   │   │   ├── csv.test.ts
@@ -6142,6 +6257,7 @@ Meridian-main
 │   │   │   │   │   ├── dense-virtualization.ts
 │   │   │   │   │   ├── density.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
+│   │   │   │   │   ├── dev-fixtures.trading-risk.ts
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── focus-classes.ts
 │   │   │   │   │   ├── format.test.ts
@@ -6434,10 +6550,14 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.a11y.test.tsx
 │   │   │   │   │   ├── trading-screen.acceptance-panel.tsx
 │   │   │   │   │   ├── trading-screen.evidence-timeline.ts
+│   │   │   │   │   ├── trading-screen.governed-approvals.test.ts
+│   │   │   │   │   ├── trading-screen.governed-approvals.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
+│   │   │   │   │   ├── trading-screen.order-ticket-text.ts
 │   │   │   │   │   ├── trading-screen.readiness-summary.ts
 │   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tones.ts
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.view-model.ts
@@ -6804,6 +6924,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.IBResults.cs
 │   │   │   ├── WorkstationEndpoints.OperatorInbox.cs
 │   │   │   ├── WorkstationEndpoints.PlotTool.cs
+│   │   │   ├── WorkstationEndpoints.PortfolioAggregation.cs
 │   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
 │   │   │   ├── WorkstationEndpoints.ReconciliationBreaks.cs
@@ -6887,6 +7008,7 @@ Meridian-main
 │   │   │   ├── AccountingProductionCertificationProfileStore.cs
 │   │   │   ├── AccountingProductionReadinessService.cs
 │   │   │   ├── AccountingTenantAdministrationProfileStore.cs
+│   │   │   ├── AggregatePortfolioExposureProvider.cs
 │   │   │   ├── AlpacaBrokerageConnectionService.cs
 │   │   │   ├── AuditTrailExplorerService.cs
 │   │   │   ├── AutomatedJournalDividendPositionResolver.cs
@@ -8592,8 +8714,10 @@ Meridian-main
 │   │   │   ├── LedgerReportPackTestData.cs
 │   │   │   ├── LedgerReportRendererCompositionTests.cs
 │   │   │   ├── LedgerScheduledExportFormatTests.cs
+│   │   │   ├── LedgerTaxCharacterTests.cs
 │   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
 │   │   │   ├── LedgerTaxLotReliefWashSaleTests.cs
+│   │   │   ├── LedgerWashSaleActivationTests.cs
 │   │   │   ├── LotConsumptionTests.cs
 │   │   │   ├── NavPerUnitAndEqualizationTests.cs
 │   │   │   ├── PartnersCapitalAllocationBreakoutTests.cs
@@ -8703,7 +8827,9 @@ Meridian-main
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
 │   │   │   ├── EnforcedRiskValidatorCompositionTests.cs
 │   │   │   ├── OrderRateThrottleTests.cs
+│   │   │   ├── PortfolioRiskRulesTests.cs
 │   │   │   ├── PositionLimitRuleTests.cs
+│   │   │   ├── RiskEscalationQueueServiceTests.cs
 │   │   │   └── RiskIntegrationTests.cs
 │   │   ├── Scripts
 │   │   │   └── ProductionRecoveryScriptTests.cs
@@ -8964,6 +9090,7 @@ Meridian-main
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
 │   │   │   ├── AccountingReportPackageServiceTests.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
+│   │   │   ├── AggregatePortfolioExposureProviderTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs
 │   │   │   ├── ApiHostOptionsDeploymentModeTests.cs
@@ -9096,6 +9223,7 @@ Meridian-main
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
+│   │   │   ├── WorkstationPortfolioAggregationScopeTests.cs
 │   │   │   ├── WorkstationServiceCollectionExtensionsTests.cs
 │   │   │   ├── WorkstationStatementCaseworkAuthorityEndpointTests.cs
 │   │   │   ├── WorkstationStatementReconciliationEndpointTests.cs
