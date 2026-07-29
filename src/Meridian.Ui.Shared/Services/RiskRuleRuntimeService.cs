@@ -724,7 +724,11 @@ public sealed class RiskRuleRuntimeService
         var escalateAt = EscalateOrderNotional;
         // The queue is shared by every escalate-capable rule; this guardrail reports only
         // its own parked orders so host-contributed escalations are not misattributed.
-        var pendingEscalations = (Resolve<RiskEscalationQueueService>()?.GetPending() ?? [])
+        // Unresolved, not merely pending: an entry approved with Release=false, or one whose
+        // consumed approval was restored after a downstream refusal, is armed and can still
+        // route. Counting only PendingApproval let the guardrail read Healthy with an
+        // approved exception waiting to go.
+        var pendingEscalations = (Resolve<RiskEscalationQueueService>()?.GetUnresolved() ?? [])
             .Where(static entry => string.Equals(entry.RuleName, "OrderNotional", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
@@ -742,7 +746,7 @@ public sealed class RiskRuleRuntimeService
             : !configured
                 ? "No per-order notional limits are configured; the rule approves all orders."
                 : pendingEscalations.Count > 0
-                    ? $"{pendingEscalations.Count} order(s) are parked awaiting governed approval."
+                    ? $"{pendingEscalations.Count} order(s) are parked awaiting governed approval or release."
                     : "Per-order notional limits are configured and no recent breaches were detected.";
 
         // Only the count, never the parked orders' details: this status is served by the
@@ -752,7 +756,7 @@ public sealed class RiskRuleRuntimeService
         var recentViolations = violations.Count > 0
             ? violations
             : pendingEscalations.Count > 0
-                ? [$"{pendingEscalations.Count} order(s) parked awaiting governed approval."]
+                ? [$"{pendingEscalations.Count} order(s) parked awaiting governed approval or release."]
                 : new List<string>();
 
         var threshold = (maxNotional, escalateAt) switch
