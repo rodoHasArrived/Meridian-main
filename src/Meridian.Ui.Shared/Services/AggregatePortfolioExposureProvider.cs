@@ -380,6 +380,12 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             var symbolGross = 0m;
             var symbolNet = 0m;
             var absoluteQuantity = 0m;
+            // Gross at the UNSCALED premium, kept only to derive a reference price. Dividing
+            // multiplier-scaled gross by a contract count yields premium x multiplier, and
+            // the resolver multiplies the reference price by the multiplier again — a $5
+            // option would price at $50,000 per contract, breaching a ceiling it is nowhere
+            // near and, at Critical severity, halting the desk on a small order.
+            var symbolUnitGross = 0m;
             // Per-account signed exposure: direction-aware projections must know which
             // contribution an order changes, since offsetting books across accounts make
             // the aggregate net useless for deciding whether an order adds or reduces risk.
@@ -393,6 +399,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 var unitPrice = liveMark is { } mark && mark > 0m ? mark : Math.Abs(contribution.CostBasis);
                 var price = unitPrice * (contribution.ContractMultiplier > 0m ? contribution.ContractMultiplier : 1m);
                 symbolGross += Math.Abs(contribution.Quantity) * price;
+                symbolUnitGross += Math.Abs(contribution.Quantity) * unitPrice;
                 symbolNet += contribution.Quantity * price;
                 absoluteQuantity += Math.Abs(contribution.Quantity);
                 accountNet[contribution.AccountId] =
@@ -406,9 +413,11 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 Symbol: position.Symbol,
                 GrossExposure: symbolGross,
                 NetQuantity: position.TotalQuantity,
+                // Per contract, never per contract-times-multiplier: every consumer
+                // applies the multiplier itself.
                 ReferencePrice: liveMark is { } markPrice && markPrice > 0m
                     ? markPrice
-                    : absoluteQuantity > 0m ? symbolGross / absoluteQuantity : 0m,
+                    : absoluteQuantity > 0m ? symbolUnitGross / absoluteQuantity : 0m,
                 NetNotional: symbolNet,
                 AccountNetNotional: accountNet);
         }

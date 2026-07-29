@@ -75,6 +75,43 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_OptionWithNoLiveMark_ReportsThePremiumNotThePremiumTimesMultiplier()
+    {
+        // 100 contracts at a $5 premium, 100x multiplier: $50,000 of exposure, but the
+        // reference price is what ONE contract costs. Deriving it by dividing the
+        // multiplier-scaled gross by the contract count returned $500, and the resolver
+        // multiplies the reference price by the multiplier again — pricing the contract at
+        // $50,000. A small option order then breaches the gross ceiling, and that rule is
+        // Critical, so it would halt the desk.
+        var contribution = new RunPositionContribution(
+            RunId: "run-0",
+            AccountId: "acct-0",
+            Quantity: 100m,
+            CostBasis: 5m,
+            UnrealisedPnl: 0m,
+            ContractMultiplier: 100m);
+
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns(
+        [
+            new AggregatedPosition(
+                Symbol: "AAPL240119C00150000",
+                TotalQuantity: 100m,
+                LongQuantity: 100m,
+                ShortQuantity: 0m,
+                WeightedAverageCost: 5m,
+                TotalUnrealisedPnl: 0m,
+                Contributions: [contribution])
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(aggregate.Object);
+        var exposure = provider.GetSnapshot().GetSymbolExposure("AAPL240119C00150000");
+
+        exposure.GrossExposure.Should().Be(50_000m, "100 contracts x $5 x 100 multiplier");
+        exposure.ReferencePrice.Should().Be(5m, "the reference price is per contract; consumers apply the multiplier");
+    }
+
+    [Fact]
     public void GetSnapshot_OffsettingLotsAcrossRuns_ReportsPositiveGrossExposure()
     {
         // Long 100 @ 100 and short 90 @ 200 in the same symbol: the netted weighted
