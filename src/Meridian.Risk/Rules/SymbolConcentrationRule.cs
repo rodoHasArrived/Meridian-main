@@ -64,7 +64,7 @@ public sealed class SymbolConcentrationRule : IRiskRule
         if (OrderNotionalResolver.DescribeUnmeasurable(request, snapshot, PriceForOrder, PriceForLeg) is { } unmeasurable)
         {
             _logger.LogWarning("Symbol concentration rule rejected an order it cannot value against the configured limits");
-            return Task.FromResult(RiskValidationResult.Rejected(unmeasurable));
+            return Task.FromResult(RiskValidationResult.Unmeasurable(unmeasurable));
         }
         var orderNotional = OrderNotionalResolver.ResolveIncremental(request, snapshot, PriceForOrder, PriceForLeg);
         var signedOrderNotional = OrderNotionalResolver.ResolveIncrementalSigned(request, snapshot, PriceForOrder, PriceForLeg);

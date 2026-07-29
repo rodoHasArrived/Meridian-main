@@ -153,6 +153,19 @@ public sealed class CompositeRiskValidator : IRiskValidator
                         (warnings ??= []).Add($"{rule.RuleName}: {reason}");
                         continue;
 
+                    // A Critical rule that could not value the order has established no
+                    // breach. Halting the desk on it would turn a stale feed or an
+                    // unpriceable symbol into a full trading outage that only an operator
+                    // can clear. Refuse this order and let the next one be measured.
+                    case RiskRuleSeverity.Critical when result.IsUnmeasurable:
+                        _logger.LogWarning(
+                            "Risk rule {RuleName} (Critical) rejected an order it could not measure; "
+                                + "the circuit breaker stays closed because no breach was established",
+                            rule.RuleName);
+                        return RestoreOnFailure(
+                            WithWarnings(RiskValidationResult.Unmeasurable(reason), warnings),
+                            releasedEntries);
+
                     case RiskRuleSeverity.Critical:
                         _logger.LogError(
                             "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",

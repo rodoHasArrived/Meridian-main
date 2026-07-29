@@ -114,6 +114,28 @@ public sealed class CompositeRiskValidatorTests
     }
 
     [Fact]
+    public async Task ValidateOrderAsync_CriticalRuleCannotMeasureOrder_RejectsWithoutTrippingBreaker()
+    {
+        var controls = CreateOperatorControls();
+        var validator = new CompositeRiskValidator(
+            [
+                new StubRiskRule(
+                    "gross-exposure",
+                    RiskValidationResult.Unmeasurable("No current price is available for this order."),
+                    severity: RiskRuleSeverity.Critical)
+            ],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse("an order that cannot be valued still fails closed");
+        result.IsUnmeasurable.Should().BeTrue();
+        controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeFalse(
+            "a pricing gap establishes no breach, so one unpriceable order must not halt the desk");
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_CriticalSeverityWithBreakerAlreadyOpen_DoesNotRewriteBreakerState()
     {
         var controls = CreateOperatorControls();

@@ -60,7 +60,7 @@ public sealed class GrossExposureRule : IRiskRule
         if (OrderNotionalResolver.DescribeUnmeasurable(request, snapshot, PriceForOrder, PriceForLeg) is { } unmeasurable)
         {
             _logger.LogWarning("Gross exposure rule rejected an order it cannot value against the configured limits");
-            return Task.FromResult(RiskValidationResult.Rejected(unmeasurable));
+            return Task.FromResult(RiskValidationResult.Unmeasurable(unmeasurable));
         }
         var context = Interop.RiskInterop.CreatePortfolioContext(
             request,

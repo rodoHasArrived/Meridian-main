@@ -42,8 +42,23 @@ public sealed record RiskValidationResult
     /// </summary>
     public string? ConsumedApprovalId { get; init; }
 
+    /// <summary>
+    /// When <see langword="true"/> the rule refused an order it could not measure rather than
+    /// measuring a breach. A Critical rule's breach halts the desk; its inability to price one
+    /// order must not, or a stale feed becomes a trading halt. The order is still rejected.
+    /// </summary>
+    public bool IsUnmeasurable { get; init; }
+
     public static RiskValidationResult Approved() => new() { IsApproved = true };
     public static RiskValidationResult Rejected(string reason) => new() { IsApproved = false, RejectReason = reason };
+
+    /// <summary>
+    /// Rejects an order the rule could not value. Fails closed for this order without
+    /// asserting the ceiling was breached, so a Critical rule does not trip the circuit
+    /// breaker on a pricing gap.
+    /// </summary>
+    public static RiskValidationResult Unmeasurable(string reason) =>
+        new() { IsApproved = false, RejectReason = reason, IsUnmeasurable = true };
 
     /// <summary>Approves the order while carrying non-blocking warning flags.</summary>
     public static RiskValidationResult ApprovedWithWarnings(params string[] warnings) =>
