@@ -6,16 +6,16 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 
 | Physical schema | Logical migration modules | Relations | Functions | Triggers | Policies | Fingerprint |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 16 | 1 | 2 | 0 | `19ff2952343e` |
-| [`banking`](modules/banking.md) | `banking` | 3 | 0 | 0 | 0 | `5fa6e194d55c` |
-| [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 12 | 0 | 0 | 0 | `7c18960a1a0e` |
-| [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 13 | 0 | 0 | 0 | `bbdd6e592564` |
-| [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `a91d89797f55` |
-| [`ledger`](modules/ledger.md) | `ledger` | 22 | 1 | 2 | 0 | `5bf8db339657` |
-| [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `f99f87613588` |
+| [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 16 | 1 | 2 | 0 | `78161959c33a` |
+| [`banking`](modules/banking.md) | `banking` | 3 | 0 | 0 | 0 | `f2356c67a593` |
+| [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 12 | 0 | 0 | 0 | `c11c69e353f5` |
+| [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 13 | 0 | 0 | 0 | `83ea628e2319` |
+| [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `bef1840f1d59` |
+| [`ledger`](modules/ledger.md) | `ledger` | 21 | 1 | 2 | 0 | `72748467f9d0` |
+| [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |
-| [`reporting`](modules/reporting.md) | `reporting` | 20 | 18 | 21 | 0 | `2c086ef8c8c7` |
-| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 70 | 1 | 1 | 0 | `3566bf14bbae` |
+| [`reporting`](modules/reporting.md) | `reporting` | 15 | 12 | 14 | 0 | `b27a859e8dd2` |
+| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 70 | 1 | 1 | 0 | `d3baca69e8da` |
 
 ## Default topology
 
