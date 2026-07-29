@@ -24,6 +24,32 @@ namespace Meridian.Tests.Ui;
 public sealed class RiskEndpointsTests
 {
     [Fact]
+    public async Task RiskRuleStatus_WithoutTradeRead_IsForbidden()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IPositionTracker, StaticPositionTracker>();
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(Path.GetTempPath(), $"execution-controls-{Guid.NewGuid():N}")));
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<RiskRuleRuntimeService>();
+            services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
+        });
+
+        var client = app.GetTestClient();
+
+        // Rule status carries aggregate gross exposure across every registered portfolio
+        // and violation reasons that can name traded symbols. A session with no trade-read
+        // authority must not be able to recover the book from the guardrail surface.
+        foreach (var route in new[] { "/api/risk/rules", "/api/risk/rules/GrossExposure/status" })
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, route);
+            request.Headers.Add("X-Test-Permissions", nameof(UserPermission.ViewReporting));
+
+            (await client.SendAsync(request)).StatusCode.Should().Be(HttpStatusCode.Forbidden, "{0} exposes book data", route);
+        }
+    }
+
+    [Fact]
     public async Task RiskEndpoints_ListStatusAndConfigLifecycle_WorkAsExpected()
     {
         await using var app = await CreateAppAsync(services =>
@@ -445,7 +471,11 @@ public sealed class RiskEndpointsTests
             var permissions = context.Request.Headers.TryGetValue("X-Test-Permissions", out var configuredPermissions) &&
                 Enum.TryParse<UserPermission>(configuredPermissions.ToString(), out var parsedPermissions)
                     ? parsedPermissions
-                    : UserPermission.ManageOrders;
+                    // Every role that can manage orders also reads trades — see
+                    // RolePermissions: Admin and TradeDesk both carry the pair. A
+                    // ManageOrders-only principal matches no real role, and defaulting to
+                    // one hid the fact that rule status is now a trade read.
+                    : UserPermission.ManageOrders | UserPermission.ViewTrades;
             context.Items[LoginSessionMiddleware.CurrentUserKey] = user;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "risk-test-company";

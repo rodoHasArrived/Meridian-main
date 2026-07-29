@@ -82,8 +82,18 @@ public static class RiskEndpoints
 
     private static void MapRiskRoutes(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        // Rule status now carries live book data — aggregate gross exposure across every
+        // registered portfolio, and violation reasons that can name traded symbols. Before
+        // the portfolio rules landed these routes returned only thresholds and health
+        // labels, which is why they were open; they are trade reads now and are gated as
+        // such, the same way the escalation queue below gates its holdings.
         group.MapGet("/rules", async (HttpContext context) =>
         {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var runtime = context.RequestServices.GetService<RiskRuleRuntimeService>();
             if (runtime is null)
             {
@@ -94,10 +104,16 @@ public static class RiskEndpoints
             return Results.Json(statuses, jsonOptions);
         })
         .Produces<IReadOnlyList<RiskRuleStatusDto>>(200)
+        .Produces(403)
         .Produces(503);
 
         group.MapGet("/rules/{ruleName}/status", async (string ruleName, HttpContext context) =>
         {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var runtime = context.RequestServices.GetService<RiskRuleRuntimeService>();
             if (runtime is null)
             {
@@ -108,6 +124,7 @@ public static class RiskEndpoints
             return status is null ? Results.NotFound() : Results.Json(status, jsonOptions);
         })
         .Produces<RiskRuleStatusDto>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(503);
 
