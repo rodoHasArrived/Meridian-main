@@ -1351,6 +1351,7 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
             journalStore,
             tenancyRegistry,
             fundStructure,
-            _services.GetService<TimeProvider>());
+            _services.GetService<TimeProvider>(),
+            journalStore);
     }
 }

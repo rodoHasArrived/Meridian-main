@@ -1383,11 +1383,18 @@ if (-not $SkipDashboardBuild) {
 }
 
 $workstationAssetSource = $dashboardBundle
-if (-not (Test-Path -LiteralPath (Join-Path $workstationAssetSource "index.html")) -and
-    $SkipDashboardBuild -and
-    (Test-Path -LiteralPath (Join-Path $targetBundle "index.html"))) {
-    Write-Warn "Built workstation bundle was not found under the repo; reusing the installed workstation assets."
-    $workstationAssetSource = $targetBundle
+$publishedBundle = Join-Path $publishRoot "wwwroot\workstation"
+if (-not (Test-Path -LiteralPath (Join-Path $workstationAssetSource "index.html")) -and $SkipDashboardBuild) {
+    if (Test-Path -LiteralPath (Join-Path $publishedBundle "index.html")) {
+        # A clean checkout has no generated repo bundle; the published artifact being
+        # installed carries its own wwwroot/workstation and is the exact asset truth.
+        Write-Warn "Built workstation bundle was not found under the repo; using the published host's workstation assets."
+        $workstationAssetSource = $publishedBundle
+    }
+    elseif (Test-Path -LiteralPath (Join-Path $targetBundle "index.html")) {
+        Write-Warn "Built workstation bundle was not found under the repo; reusing the installed workstation assets."
+        $workstationAssetSource = $targetBundle
+    }
 }
 
 Assert-RequiredPath -Path (Join-Path $workstationAssetSource "index.html") -Description "Built workstation index.html"
