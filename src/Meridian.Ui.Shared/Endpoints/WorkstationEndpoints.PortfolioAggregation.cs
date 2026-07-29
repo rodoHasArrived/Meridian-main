@@ -104,7 +104,11 @@ public static partial class WorkstationEndpoints
             var gross = 0m;
             foreach (var contribution in position.Contributions)
             {
-                var value = Math.Abs(contribution.Quantity) * Math.Abs(contribution.CostBasis);
+                // Same multiplier the risk snapshot applies: an operator-facing exposure
+                // figure that contradicts enforcement is worse than no figure at all.
+                var value = Math.Abs(contribution.Quantity)
+                    * Math.Abs(contribution.CostBasis)
+                    * (contribution.ContractMultiplier > 0m ? contribution.ContractMultiplier : 1m);
                 gross += value;
                 if (contribution.Quantity >= 0m)
                 {

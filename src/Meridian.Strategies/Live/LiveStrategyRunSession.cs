@@ -540,7 +540,16 @@ internal sealed class LiveStrategyRunSession
         // deployment.
         if (_completeRunOnExit)
         {
-            await WithdrawParkedOrdersAsync().ConfigureAwait(false);
+            // An escalation that survives teardown can still route an order into a run that
+            // no longer exists, whose fills reach no session. If any withdrawal fails the
+            // run is not cleanly complete, and must not be recorded as if it were.
+            var unwithdrawn = await WithdrawParkedOrdersAsync().ConfigureAwait(false);
+            if (unwithdrawn > 0)
+            {
+                faulted ??= new InvalidOperationException(
+                    $"{unwithdrawn} governed risk escalation(s) could not be withdrawn as the run ended; "
+                    + "an approval could still route an order this run cannot receive.");
+            }
         }
         await RecordTerminalRunStateAsync(faulted).ConfigureAwait(false);
         await RecordSessionAuditAsync(faulted).ConfigureAwait(false);
@@ -553,12 +562,15 @@ internal sealed class LiveStrategyRunSession
     /// session at all. Cancelling withdraws the escalation, which is what makes the
     /// approval unreachable rather than merely unattended.
     /// </summary>
-    private async Task WithdrawParkedOrdersAsync()
+    /// <returns>How many escalations remain actionable because withdrawal failed.</returns>
+    private async Task<int> WithdrawParkedOrdersAsync()
     {
         if (_parkedClientOrderIds.Count == 0)
         {
-            return;
+            return 0;
         }
+
+        var unwithdrawn = 0;
 
         foreach (var clientOrderId in _parkedClientOrderIds.ToArray())
         {
@@ -569,25 +581,30 @@ internal sealed class LiveStrategyRunSession
                     .ConfigureAwait(false);
                 if (!cancelled.Success)
                 {
-                    _logger.LogWarning(
+                    unwithdrawn++;
+                    _logger.LogError(
                         "Run {RunId} ended with order {ClientOrderId} parked, and its escalation could not be withdrawn: {Reason}",
                         _run.RunId, clientOrderId, cancelled.ErrorMessage ?? "no reason given");
                     continue;
                 }
 
+                _parkedClientOrderIds.Remove(clientOrderId);
                 _logger.LogInformation(
                     "Run {RunId} ended; withdrew the governed escalation still holding order {ClientOrderId}.",
                     _run.RunId, clientOrderId);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex,
+                unwithdrawn++;
+                _logger.LogError(ex,
                     "Run {RunId} could not withdraw parked order {ClientOrderId} during teardown.",
                     _run.RunId, clientOrderId);
             }
         }
 
-        _parkedClientOrderIds.Clear();
+        // Ids that failed to withdraw stay tracked: they are still actionable, and clearing
+        // them would lose the only record that they need resolving.
+        return unwithdrawn;
     }
 
     private async Task RecordTerminalRunStateAsync(Exception? faulted)

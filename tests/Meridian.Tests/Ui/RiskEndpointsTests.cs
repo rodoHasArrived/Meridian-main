@@ -206,8 +206,16 @@ public sealed class RiskEndpointsTests
         approval.ReleaseResult.Should().NotBeNull();
         approval.ReleaseResult!.Success.Should().BeTrue("the consumed approval releases the order past the escalation band");
 
+        // A governed decision without a rationale is refused before any queue state changes:
+        // the audit record would otherwise fall back to the original risk-breach reason and
+        // read as though the operator supplied evidence they never did.
+        var unreasonedDeny = await client.PostAsync(
+            $"/api/risk/escalations/{escalationId}/deny", JsonContent(new { }));
+        unreasonedDeny.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
         // Denying an already-resolved escalation is refused (the queue only denies pending entries).
-        var denyAfter = await client.PostAsync($"/api/risk/escalations/{escalationId}/deny", JsonContent(new { }));
+        var denyAfter = await client.PostAsync(
+            $"/api/risk/escalations/{escalationId}/deny", JsonContent(new { reason = "too late" }));
         denyAfter.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

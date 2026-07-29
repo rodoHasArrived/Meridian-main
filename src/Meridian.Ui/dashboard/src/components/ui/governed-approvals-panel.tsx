@@ -27,7 +27,11 @@ function describeOrder(escalation: RiskEscalation): string {
  */
 export function GovernedApprovalsPanel({ model }: GovernedApprovalsPanelProps) {
   const { escalations, reasons, pendingId, errorText, statusText } = model;
-  const pending = escalations.filter((entry) => entry.status === "PendingApproval");
+  // Approved is actionable too: when a release is refused by a later gate the server
+  // restores the entry to Approved so it can be retried once the blocking condition
+  // clears. Dropping it here would leave the operator the refusal and no way to act on it.
+  const pending = escalations.filter(
+    (entry) => entry.status === "PendingApproval" || entry.status === "Approved");
 
   return (
     <Card>
@@ -39,7 +43,7 @@ export function GovernedApprovalsPanel({ model }: GovernedApprovalsPanelProps) {
         <CardDescription>
           {pending.length === 0
             ? "No orders are awaiting a risk decision."
-            : `${pending.length} order(s) parked awaiting a risk decision. An order routes only once approved.`}
+            : `${pending.length} order(s) awaiting a risk decision or release. An order routes only once approved.`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

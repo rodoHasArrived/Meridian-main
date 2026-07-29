@@ -44,6 +44,26 @@ public sealed record RiskEscalationDto(
 /// <param name="Release">Approve only: when true (default) the approved order is immediately resubmitted through the full pre-trade gate.</param>
 public sealed record RiskEscalationResolutionRequest(string? Reason = null, bool Release = true);
 
+/// <summary>
+/// Guards for governed escalation decisions. A decision without a rationale is not an
+/// auditable decision: the audit record would fall back to the original risk-breach reason
+/// and read as though the operator supplied evidence they never did.
+/// </summary>
+internal static class RiskEscalationDecision
+{
+    internal static bool TryReadReason(RiskEscalationResolutionRequest? request, out string reason)
+    {
+        reason = request?.Reason?.Trim() ?? string.Empty;
+        return reason.Length > 0;
+    }
+
+    internal static IResult MissingReason(JsonSerializerOptions jsonOptions) =>
+        Results.Json(
+            new { error = "A decision reason is required; it is recorded with the governed approval." },
+            jsonOptions,
+            statusCode: StatusCodes.Status400BadRequest);
+}
+
 /// <summary>Approve response: the resolved escalation plus the release order result when resubmitted.</summary>
 public sealed record RiskEscalationApprovalResponse(RiskEscalationDto Escalation, OrderResult? ReleaseResult);
 
@@ -205,6 +225,11 @@ public static class RiskEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            if (!RiskEscalationDecision.TryReadReason(request, out _))
+            {
+                return RiskEscalationDecision.MissingReason(jsonOptions);
+            }
+
             var queue = context.RequestServices.GetService<RiskEscalationQueueService>();
             if (queue is null)
             {
@@ -331,6 +356,11 @@ public static class RiskEndpoints
             if (!HasRiskConfigPermission(context))
             {
                 return EndpointHelpers.Forbidden();
+            }
+
+            if (!RiskEscalationDecision.TryReadReason(request, out _))
+            {
+                return RiskEscalationDecision.MissingReason(jsonOptions);
             }
 
             var queue = context.RequestServices.GetService<RiskEscalationQueueService>();

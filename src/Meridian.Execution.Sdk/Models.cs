@@ -217,6 +217,14 @@ public sealed record OrderState
     /// orders must value these at the routed dollars, not quantity x price.
     /// </summary>
     public decimal? RoutedNotional { get; init; }
+
+    /// <summary>
+    /// Contract multiplier for a derivative order: the notional one unit of
+    /// <see cref="Quantity"/> represents. 1 for outright instruments, 100 for standard
+    /// equity option contracts. A working-order exposure reserve that ignores it holds back
+    /// a hundredth of what 100 contracts will actually execute.
+    /// </summary>
+    public decimal ContractMultiplier { get; init; } = 1m;
 }
 
 /// <summary>Current position state for a symbol.</summary>

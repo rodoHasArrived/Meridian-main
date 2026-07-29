@@ -125,7 +125,10 @@ internal static class OrderNotionalResolver
                 ?? PositiveOrNull(snapshot.GetSymbolExposure(leg.Symbol).ReferencePrice);
             if (legPrice is not { } price || price <= 0m)
             {
-                continue;
+                // Fail closed on the whole order. A partial total looks measurable while an
+                // arbitrarily valuable missing leg consumes none of the limits — worse than
+                // measuring nothing, because it reports a number the caller will trust.
+                return null;
             }
 
             var multiplier = ResolveMultiplier(leg.OptionContract ?? request.OptionContract);

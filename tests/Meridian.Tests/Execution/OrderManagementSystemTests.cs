@@ -1906,6 +1906,49 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         position.ContractMultiplier.Should().Be(100m);
     }
 
+    [Fact]
+    public async Task OffsettingFundBooks_InAFlatSharedAccount_StillReportExposure()
+    {
+        var fundA = Guid.Parse("aaaaaaaa-1111-1111-1111-aaaaaaaaaaaa");
+        var fundB = Guid.Parse("bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb");
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            ClientOrderId = "CLIENT-FUND-A-LONG",
+            FundAccountId = fundA
+        })).Success.Should().BeTrue();
+
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            ClientOrderId = "CLIENT-FUND-B-SHORT",
+            FundAccountId = fundB
+        })).Success.Should().BeTrue();
+
+        // The shared execution account nets to zero, but two funds hold real opposing
+        // books. Dropping the position here would erase both from every gross limit.
+        var position = portfolio.Accounts
+            .SelectMany(static account => account.Positions.Values)
+            .SingleOrDefault(static p => p.Symbol == "AAPL");
+
+        position.Should().NotBeNull("a net-flat shared book is not a flat book");
+        position!.Quantity.Should().Be(0);
+        position.OwnerQuantities[fundA.ToString("D")].Should().Be(100m);
+        position.OwnerQuantities[fundB.ToString("D")].Should().Be(-100m);
+    }
+
     // ---- Stubs ----
 
     private sealed class ApproveAllGate : ISecurityMasterGate

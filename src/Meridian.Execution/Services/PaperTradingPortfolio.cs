@@ -618,7 +618,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
         pos.MarketPrice = price;
 
-        if (pos.Quantity == 0m)
+        // A net-flat SHARED book is not a flat book. Fund A long 100 against Fund B short
+        // 100 nets to zero here, but both funds still hold real, opposing exposure that
+        // gross limits must see. Only drop the position when nobody is left holding it.
+        if (pos.Quantity == 0m && !pos.HasOwnerExposure)
             account.Positions.Remove(symbol);
     }
 
@@ -1168,6 +1171,12 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
     /// <summary>Signed quantity attributed to each owning fund account.</summary>
     public IReadOnlyDictionary<string, decimal> OwnerQuantities => _ownerQuantities;
+
+    /// <summary>
+    /// True while some fund still holds a non-zero position here, even if they cancel out
+    /// in aggregate. Offsetting fund books are exposure, not an absence of it.
+    /// </summary>
+    public bool HasOwnerExposure => _ownerQuantities.Count > 0;
 
     /// <summary>
     /// Records which fund a fill belonged to. Attribution only — the lot book, cost basis,

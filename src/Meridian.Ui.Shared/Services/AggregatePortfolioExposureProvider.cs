@@ -200,12 +200,16 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             // trigger rather than a cap. Only a buy LIMIT caps what is paid.
             var orderPrice = order.LimitPrice ?? order.StopPrice ?? 0m;
             var pricePaidIsCapped = order.Side == OrderSide.Buy && order.LimitPrice is > 0m;
-            var price = (orderPrice > 0m, pricePaidIsCapped) switch
+            var unitPrice = (orderPrice > 0m, pricePaidIsCapped) switch
             {
                 (true, true) => orderPrice,
                 (true, false) => Math.Max(orderPrice, mark),
                 _ => mark
             };
+            // A working option order reserves contract notional: 100 contracts at a $5
+            // limit hold back $50k, not $500, or a second order passes the ceilings while
+            // the first is still executable.
+            var price = unitPrice * (order.ContractMultiplier > 0m ? order.ContractMultiplier : 1m);
 
             decimal workingNotional;
             if (order.RoutedNotional is { } routedNotional && routedNotional > 0m)

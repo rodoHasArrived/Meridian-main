@@ -393,6 +393,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 }
             }
 
+            // A derivative's contract multiplier must reach both the working-order reserve
+            // and the fill: every exposure rail measures the position it opens.
+            var orderMultiplier = ResolveContractMultiplier(safeRequest);
             orderState = new OrderState
             {
                 OrderId = orderId,
@@ -408,7 +411,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 FundAccountId = safeRequest.FundAccountId,
                 // Broker-native notional orders route dollars and discard quantity; the
                 // exposure reserve for this working order must value what actually routes.
-                RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity)
+                RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity),
+                // A working option order reserves contract notional, not share notional:
+                // 100 contracts at a $5 limit hold back $50k, not $500.
+                ContractMultiplier = orderMultiplier
             };
 
             if (!TryRegisterOrder(orderId, orderState))
@@ -425,9 +431,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     ct).ConfigureAwait(false);
             }
 
-            // A derivative's contract multiplier must survive to the fill: the position it
-            // opens is measured by every exposure rail afterwards.
-            var orderMultiplier = ResolveContractMultiplier(safeRequest);
             if (orderMultiplier > 1m)
             {
                 _orderContractMultipliers[orderId] = orderMultiplier;
@@ -1942,6 +1945,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _orders.TryRemove(removableOrderId, out _);
             _orderSessionIds.TryRemove(removableOrderId, out _);
             _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
+            _orderContractMultipliers.TryRemove(removableOrderId, out _);
         }
     }
 
