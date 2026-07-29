@@ -1946,6 +1946,15 @@ public sealed class OrderManagementSystemGateTests : IDisposable
 
         position.OwnerQuantities.Should().ContainKey(fundAccountId.ToString("D"));
         position.OwnerQuantities[fundAccountId.ToString("D")].Should().Be(10m);
+
+        // ...but it must never reach the wire. /api/execution/positions and /portfolio
+        // serialize this record with no fund-account scope check, so an emitted map would
+        // disclose other funds' ids and exact holdings to any authenticated reader.
+        var serialized = System.Text.Json.JsonSerializer.Serialize(
+            (Meridian.Execution.Models.ExecutionPosition)position);
+
+        serialized.Should().NotContainEquivalentOf("ownerQuantities");
+        serialized.Should().NotContain(fundAccountId.ToString("D"));
     }
 
     [Fact]

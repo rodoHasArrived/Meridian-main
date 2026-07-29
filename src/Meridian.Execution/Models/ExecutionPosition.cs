@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution.Models;
@@ -24,6 +25,16 @@ public sealed record ExecutionPosition(
     /// Signed quantity attributed to each owning fund account. Carried through from the
     /// fills so a shared execution book can still be read per fund.
     /// </summary>
+    /// <remarks>
+    /// Never serialized. The general execution reads — <c>/api/execution/positions</c>,
+    /// <c>/api/execution/portfolio</c>, and the account-position routes — return this record
+    /// directly with no fund-account scope check, so emitting the map would hand every
+    /// authenticated execution reader the fund ids and exact signed holdings of funds they
+    /// are not authorized to see. Attribution is consumed in-process by
+    /// <c>AggregatePortfolioService</c>; the scoped aggregate routes do their own
+    /// authorization before projecting per-fund figures.
+    /// </remarks>
+    [JsonIgnore]
     public IReadOnlyDictionary<string, decimal> OwnerQuantities { get; init; } =
         new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
 
