@@ -1642,6 +1642,41 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     [Fact]
+    public async Task FractionalFundFill_DoesNotInventAnOpposingResidualContribution()
+    {
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var fundAccountId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 0.5m,
+            LimitPrice = 100m,
+            FundAccountId = fundAccountId
+        })).Success.Should().BeTrue();
+
+        var registry = new PortfolioRegistry();
+        registry.Register("run-1", portfolio);
+        var aggregate = new Meridian.Strategies.Services.AggregatePortfolioService(registry);
+
+        var aapl = aggregate.GetAggregatedPositions(null).Single(static p => p.Symbol == "AAPL");
+
+        // IPosition.Quantity is whole shares, so deriving the unattributed remainder from
+        // it turned a 0.5-share fund holding into +0.5 owned and -0.5 unowned: zero net
+        // exposure and double gross, straight into the portfolio rails.
+        aapl.Contributions.Should().ContainSingle("a wholly attributed fractional fill leaves no remainder");
+        aapl.Contributions[0].Quantity.Should().Be(0.5m);
+        aapl.TotalQuantity.Should().Be(0.5m);
+        aapl.ShortQuantity.Should().Be(0m, "no phantom opposing side is invented");
+    }
+
+    [Fact]
     public async Task ParkedOrder_SurvivesTerminalOrderRetentionTrimming()
     {
         var queue = new RiskEscalationQueueService(

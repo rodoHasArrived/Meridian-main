@@ -41,6 +41,25 @@ public sealed record ExecutionPosition(
     /// <summary>Contract multiplier; 1 for outright instruments, 100 for equity options.</summary>
     public decimal ContractMultiplier { get; init; } = 1m;
 
+    private readonly decimal? _exactQuantity;
+
+    /// <summary>
+    /// Signed quantity before the whole-share rounding <see cref="Quantity"/> applies.
+    /// Falls back to <see cref="Quantity"/> when a producer did not carry a fractional
+    /// size, so positions that only ever hold whole shares are unaffected.
+    /// </summary>
+    /// <remarks>
+    /// Not serialized: <see cref="Quantity"/> remains the wire contract, and emitting a
+    /// second quantity would give clients two fields to disagree about. Consumed in-process
+    /// by fund-ownership attribution, which must not round.
+    /// </remarks>
+    [JsonIgnore]
+    public decimal ExactQuantity
+    {
+        get => _exactQuantity ?? Quantity;
+        init => _exactQuantity = value;
+    }
+
     /// <summary>True when this is a short (negative) position.</summary>
     public bool IsShort => Quantity < 0;
 

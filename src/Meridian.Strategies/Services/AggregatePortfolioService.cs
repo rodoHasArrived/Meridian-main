@@ -71,9 +71,12 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
                     if (!symbolCostBasis.TryGetValue(symbol, out var agg))
                         agg = (0m, 0m, 0m);
 
+                    // Unrounded, for the same reason the contributions are: a fractional
+                    // holding must not report a whole-share total that disagrees with the
+                    // per-fund split feeding the exposure rails.
                     symbolCostBasis[symbol] = (
-                        agg.totalQty + pos.Quantity,
-                        agg.totalWeightedCost + pos.Quantity * pos.AverageCostBasis,
+                        agg.totalQty + pos.ExactQuantity,
+                        agg.totalWeightedCost + pos.ExactQuantity * pos.AverageCostBasis,
                         agg.totalUnrealised + pos.UnrealizedPnl);
                 }
             }
@@ -172,7 +175,7 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         if (owners.Count == 0)
         {
             yield return new RunPositionContribution(
-                runId, accountId, position.Quantity, position.AverageCostBasis, position.UnrealizedPnl, multiplier);
+                runId, accountId, position.ExactQuantity, position.AverageCostBasis, position.UnrealizedPnl, multiplier);
             yield break;
         }
 
@@ -192,11 +195,13 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
                 position.AverageCostBasis,
                 // Unrealised P&L splits pro rata on attributed quantity; it is a display
                 // figure here, while quantity is what every risk projection reads.
-                position.Quantity == 0m ? 0m : position.UnrealizedPnl * (quantity / position.Quantity),
+                position.ExactQuantity == 0m ? 0m : position.UnrealizedPnl * (quantity / position.ExactQuantity),
                 multiplier);
         }
 
-        var residual = position.Quantity - attributed;
+        // Against the unrounded aggregate: a rounded one turns a fractional holding into a
+        // phantom opposing contribution, which reads as zero net and double gross.
+        var residual = position.ExactQuantity - attributed;
         if (residual != 0m)
         {
             yield return new RunPositionContribution(
@@ -204,7 +209,7 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
                 accountId,
                 residual,
                 position.AverageCostBasis,
-                position.Quantity == 0m ? 0m : position.UnrealizedPnl * (residual / position.Quantity),
+                position.ExactQuantity == 0m ? 0m : position.UnrealizedPnl * (residual / position.ExactQuantity),
                 multiplier);
         }
     }

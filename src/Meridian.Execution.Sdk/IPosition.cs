@@ -48,6 +48,17 @@ public interface IPosition
     IReadOnlyDictionary<string, decimal> OwnerQuantities => EmptyOwnerQuantities;
 
     /// <summary>
+    /// Signed quantity without the whole-share rounding <see cref="Quantity"/> carries.
+    /// Fractional and notional-sized fills are real, and <see cref="OwnerQuantities"/>
+    /// records them exactly, so deriving the unattributed remainder from the rounded
+    /// quantity invents a contribution that was never held: a 0.5-share holding attributed
+    /// to one fund yields owner +0.5 against a rounded aggregate of 0, hence a phantom
+    /// -0.5 residual, zero net and double gross. Defaults to <see cref="Quantity"/> for
+    /// positions that only ever hold whole shares.
+    /// </summary>
+    decimal ExactQuantity => Quantity;
+
+    /// <summary>
     /// Contract multiplier for a derivative position: the notional one unit of
     /// <see cref="Quantity"/> represents. 1 for outright instruments, 100 for standard
     /// equity option contracts. Exposure that ignores it under-measures an option position

@@ -440,7 +440,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 // as the pre-trade gate valued the order.
                 ContractMultiplier = orderMultiplier,
                 OptionContract = safeRequest.OptionContract,
-                Legs = safeRequest.Legs
+                // Snapshot the legs. An in-process caller can hand in a mutable list and
+                // clear or edit it after submission returns, while the broker keeps working
+                // the combination it received — the working-order reserve would then value
+                // a different leg count than actually routed. The escalation queue already
+                // copies legs for the same reason.
+                Legs = safeRequest.Legs is { Count: > 0 } submittedLegs
+                    ? [.. submittedLegs]
+                    : safeRequest.Legs
             };
 
             if (!TryRegisterOrder(orderId, orderState))

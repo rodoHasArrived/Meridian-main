@@ -1244,7 +1244,10 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         0m)  // realised P&L is carried at the account level
     {
         OwnerQuantities = new Dictionary<string, decimal>(_ownerQuantities, StringComparer.OrdinalIgnoreCase),
-        ContractMultiplier = ContractMultiplier
+        ContractMultiplier = ContractMultiplier,
+        // The record's Quantity is whole shares; owner attribution is not. Carry the
+        // unrounded size so the unattributed remainder is a real remainder.
+        ExactQuantity = Quantity
     };
 }
 
