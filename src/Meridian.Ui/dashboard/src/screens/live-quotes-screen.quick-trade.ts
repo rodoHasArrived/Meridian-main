@@ -8,7 +8,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { workflowTargetPath } from "@/lib/workspace";
 import type { OrderResult, OrderSubmitRequest } from "@/types";
 
-export type QuickTicketPhase = "idle" | "seeded" | "submitting" | "submitted" | "error";
+export type QuickTicketPhase = "idle" | "seeded" | "submitting" | "submitted" | "parked" | "error";
 
 export interface QuickTicketForm {
   side: "Buy" | "Sell";
@@ -249,6 +249,22 @@ export function useQuickTradeTicket(
           message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
           details: [],
           orderId: result.orderId,
+          validationVisible: false,
+          acknowledged: false
+        }));
+        submitLifecycle.succeed(token);
+      } else if (result.requiresApproval) {
+        // Parked, not rejected. Showing this as an error invites a retry, and every retry
+        // gets a fresh server-generated client order id — so one intended order becomes
+        // several parked orders that can all execute once an approver releases them.
+        applyCurrentSubmission((current) => ({
+          ...current,
+          phase: "parked" as const,
+          message: result.escalationId
+            ? `Order parked for governed approval (escalation ${result.escalationId}). Do not resubmit.`
+            : "Order parked for governed approval. Do not resubmit.",
+          details: [],
+          orderId: result.orderId ?? null,
           validationVisible: false,
           acknowledged: false
         }));
@@ -618,11 +634,11 @@ function shouldSurfaceQuickTicketValidation(ticket: QuickTicketState, validation
 }
 
 function resetQuickTicketFeedbackPhase(phase: QuickTicketPhase): QuickTicketPhase {
-  return phase === "seeded" || phase === "submitted" || phase === "error" ? "idle" : phase;
+  return phase === "seeded" || phase === "submitted" || phase === "parked" || phase === "error" ? "idle" : phase;
 }
 
 function shouldClearQuickTicketFeedbackMessage(phase: QuickTicketPhase): boolean {
-  return phase === "seeded" || phase === "submitted" || phase === "error";
+  return phase === "seeded" || phase === "submitted" || phase === "parked" || phase === "error";
 }
 
 function buildQuickTicketSeededMessage(symbol: string, side: "Buy" | "Sell", priceLabel: string): string {
