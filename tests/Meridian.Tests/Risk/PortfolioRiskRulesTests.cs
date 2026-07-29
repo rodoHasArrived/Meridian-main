@@ -537,6 +537,36 @@ public sealed class PortfolioRiskRulesTests
         result.IsApproved.Should().BeFalse("the routed notional is the metadata dollars, not quantity × price");
     }
 
+    [Theory]
+    [InlineData("false")]
+    [InlineData("not-a-number")]
+    public async Task OrderNotional_UnusableFirstAlias_DoesNotFallThroughToTheSecond(string firstAliasValue)
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 10_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // The gateway's ReadMetadataString returns on the FIRST non-blank alias whether or
+        // not that value parses, so a "notional" it cannot use means the order routes by
+        // quantity. Reading past it to "alpaca:notional" would measure $1 against the
+        // ceiling while the gateway sends 100,000 shares.
+        var order = CreateOrder(symbol: "AAPL", quantity: 100_000m) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = firstAliasValue,
+                ["alpaca:notional"] = "1"
+            }
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse(
+            "the order is quantity-sized, so it must be measured at quantity x price, not the ignored second alias");
+    }
+
     [Fact]
     public async Task OrderNotional_NumericNotionalMetadata_IsTheDollarAmountNotAFlag()
     {

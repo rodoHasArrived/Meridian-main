@@ -56,6 +56,14 @@ public static class BrokerNotionalMetadata
             {
                 return Math.Abs(quantity);
             }
+
+            // The first non-blank alias is the only one the gateway consults: its
+            // ReadMetadataString returns on that alias whether or not the value parses.
+            // Falling through to a later alias here would read a number the gateway never
+            // sees — "notional=false, alpaca:notional=1" on 100,000 shares would be
+            // measured as a $1 order while Alpaca routes all 100,000 via Qty. This order
+            // is quantity-sized; say so.
+            return null;
         }
 
         return null;
