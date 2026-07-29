@@ -408,12 +408,12 @@ classDiagram
         +string? ClosePackageId
         +string? ClosePackageManifestId
         +string? ClosePackageRetainedManifestRoute
+        +string? ControllerRole
         +string? CorrelationId
         +IReadOnlyList~string~ EvidenceLinks
         +long ExpectedWorkflowVersion
         +bool PrepareClosingEntriesOnly
         +string Rationale
-        +string ReportPackId
     }
     class Meridian_Contracts_Ledger_ManualJournalEntryDraftDto["ManualJournalEntryDraftDto"] {
         +AccountingBasisKindDto AccountingBasis
