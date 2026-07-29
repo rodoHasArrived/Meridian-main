@@ -479,7 +479,16 @@ public sealed partial class OrderManagementSystem
     /// The consumed value is a token set — an order can carry one approval per
     /// escalation-capable rule — so each id is restored individually.
     /// </summary>
-    private void RestoreConsumedApprovals(string? consumedApprovalId, string cause)
+    /// <param name="rearmedOrderId">
+    /// Client order id to re-reserve alongside the approval, for a release submission that
+    /// did not route. Registration drops the parked reservation as soon as the order claims
+    /// its own id, so re-arming the approval without it leaves the approval releasable while
+    /// the submitter can no longer cancel it — the parked-order path cannot find the id —
+    /// and the now-terminal tracked state lets an unrelated submission reclaim that id.
+    /// Omitted for amendments: there the order is working rather than parked, so the
+    /// ordinary cancel path owns it and a parked reservation would wrongly intercept.
+    /// </param>
+    private void RestoreConsumedApprovals(string? consumedApprovalId, string cause, string? rearmedOrderId = null)
     {
         if (consumedApprovalId is null || _escalationQueue is null)
         {
@@ -490,6 +499,11 @@ public sealed partial class OrderManagementSystem
         {
             if (_escalationQueue.TryRestoreApproval(escalationId))
             {
+                if (rearmedOrderId is not null)
+                {
+                    _parkedOrderIds[rearmedOrderId] = escalationId;
+                }
+
                 _logger.LogInformation(
                     "Governed approval {EscalationId} re-armed after {Cause}",
                     escalationId,

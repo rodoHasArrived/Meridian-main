@@ -584,7 +584,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 // The broker refused it: nothing routed, so consumed approvals must be
                 // retryable once the broker-side condition clears. This mirrors the
                 // exception path below — a normal rejected report is just as final.
-                RestoreConsumedApprovals(consumedApprovalId, "a gateway rejection");
+                RestoreConsumedApprovals(consumedApprovalId, "a gateway rejection", orderId);
             }
 
             return new OrderResult
@@ -638,7 +638,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, safeRequest.Symbol);
 
-            RestoreConsumedApprovals(consumedApprovalId, "a gateway submission failure");
+            RestoreConsumedApprovals(consumedApprovalId, "a gateway submission failure", orderId);
 
             var rejectedState = orderState with
             {
@@ -1910,11 +1910,17 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
 
         var removableOrderIds = _orders.Values
-            .Where(static order => order.Status is
+            .Where(order => order.Status is
                 OrderStatus.Filled or
                 OrderStatus.Cancelled or
                 OrderStatus.Rejected or
                 OrderStatus.Expired)
+            // A parked order is recorded Rejected but is not finished: its escalation is
+            // still live in the durable queue and can still route. Evicting its tracked
+            // state makes CancelOrderAsync answer "order not found", stranding an approval
+            // the submitter can no longer withdraw. Retain it until the escalation
+            // resolves, which is exactly when its reservation is dropped.
+            .Where(order => !_parkedOrderIds.ContainsKey(order.OrderId))
             .OrderBy(static order => order.LastUpdatedAt ?? order.CreatedAt)
             .Take(_orders.Count - _options.ValidatedMaxRetainedOrders)
             .Select(static order => order.OrderId)

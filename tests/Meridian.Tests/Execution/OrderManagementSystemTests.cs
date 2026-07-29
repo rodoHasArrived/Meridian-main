@@ -1642,6 +1642,73 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     [Fact]
+    public async Task ParkedOrder_SurvivesTerminalOrderRetentionTrimming()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var seen = call.Arg<OrderRequest>();
+                if (seen.Symbol != "PARKED")
+                {
+                    return RiskValidationResult.Approved();
+                }
+
+                var parked = queue.Park(seen, "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        // A tiny retention budget so ordinary traffic immediately pressures the table.
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue,
+            options: new OrderManagementSystemOptions { MaxRetainedOrders = 2 });
+
+        var parkedResult = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "PARKED",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "parked-order-1"
+        });
+
+        parkedResult.RequiresApproval.Should().BeTrue();
+
+        // Fill enough ordinary orders to push the parked entry well past the retention
+        // budget. A parked order is recorded Rejected, so before this fix the trimmer
+        // treated it as finished history and evicted it.
+        for (var i = 0; i < 6; i++)
+        {
+            (await oms.PlaceOrderAsync(new OrderRequest
+            {
+                Symbol = "MSFT",
+                Side = OrderSide.Buy,
+                Type = OrderType.Market,
+                Quantity = 1,
+                LimitPrice = 10m,
+                ClientOrderId = $"ordinary-{i}"
+            })).Success.Should().BeTrue();
+        }
+
+        // The escalation is still live, so the submitter must still be able to withdraw it.
+        oms.GetOrder("parked-order-1").Should().NotBeNull(
+            "a parked order is not finished history while its approval can still route");
+
+        var cancelled = await oms.CancelOrderAsync("parked-order-1");
+
+        cancelled.Success.Should().BeTrue("the parked order must stay cancellable");
+        queue.TryGet(parkedResult.EscalationId!)!.Status.Should().Be(RiskEscalationStatus.Denied);
+    }
+
+    [Fact]
     public async Task WasRiskApprovalDeclined_TracksTheParkedOrderUntilTheEscalationResolves()
     {
         var queue = new RiskEscalationQueueService(
