@@ -26,7 +26,13 @@ function describeOrder(escalation: RiskEscalation): string {
  * client-side.
  */
 export function GovernedApprovalsPanel({ model }: GovernedApprovalsPanelProps) {
-  const { escalations, reasons, pendingId, errorText, statusText } = model;
+  const { escalations, forbidden, reasons, pendingId, errorText, statusText } = model;
+  // Roles with trade-read but not order management cannot act on this queue at all;
+  // showing them a permanently failing panel would be noise, not information.
+  if (forbidden) {
+    return null;
+  }
+
   // Approved is actionable too: when a release is refused by a later gate the server
   // restores the entry to Approved so it can be retried once the blocking condition
   // clears. Dropping it here would leave the operator the refusal and no way to act on it.

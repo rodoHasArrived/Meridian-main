@@ -666,7 +666,6 @@ public sealed class RiskRuleRuntimeService
         var maxPercent = MaxSymbolConcentrationPercent;
         var snapshot = Resolve<Meridian.Risk.IPortfolioExposureProvider>()?.GetSnapshot();
 
-        var topSymbol = "—";
         var topPercent = 0m;
         if (snapshot is { PortfolioValue: > 0m })
         {
@@ -676,7 +675,6 @@ public sealed class RiskRuleRuntimeService
                 if (percent > topPercent)
                 {
                     topPercent = percent;
-                    topSymbol = exposure.Symbol;
                 }
             }
         }
@@ -692,13 +690,13 @@ public sealed class RiskRuleRuntimeService
                 ? "Observe"
                 : utilization >= 80m ? "Observe" : "Healthy";
         var summary = breached
-            ? $"{topSymbol} concentration has breached the configured cap."
+            ? "Single-symbol concentration has breached the configured cap."
             : liveViolation
                 ? "Recent orders were rejected by the concentration cap."
                 : !maxPercent.HasValue
                     ? "No concentration cap is configured; the rule approves all orders."
                     : state == "Observe"
-                        ? $"{topSymbol} concentration is approaching the configured cap."
+                        ? "Single-symbol concentration is approaching the configured cap."
                         : "Single-symbol concentration is inside the configured cap.";
 
         return new RiskRuleStatusDto(
@@ -707,7 +705,11 @@ public sealed class RiskRuleRuntimeService
             Summary: summary,
             IsBreached: breached || liveViolation,
             Threshold: maxPercent.HasValue ? $"{maxPercent.Value:F2}%" : "unconfigured",
-            CurrentValue: snapshot is { PortfolioValue: > 0m } ? $"{topSymbol} {topPercent:F2}%" : "0.00%",
+            // Percentage only, never the symbol. This status is served by the rules
+            // endpoint, which authenticates but applies no trade-read permission or fund
+            // scope, so naming the leading holding would tell any logged-in user what
+            // another fund's largest position is — data the portfolio routes filter.
+            CurrentValue: snapshot is { PortfolioValue: > 0m } ? $"{topPercent:F2}%" : "0.00%",
             AsOf: asOf,
             RecentViolations: violations,
             UtilizationPercent: utilization,

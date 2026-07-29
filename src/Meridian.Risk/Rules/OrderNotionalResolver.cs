@@ -21,7 +21,8 @@ internal static class OrderNotionalResolver
     public static decimal? ResolveIncremental(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
-        Func<string, decimal?>? referencePriceLookup = null)
+        Func<string, decimal?>? referencePriceLookup = null,
+        Func<string, OrderSide, decimal?>? sideAwarePriceLookup = null)
     {
         if (request.Metadata is not null &&
             request.Metadata.TryGetValue(Meridian.Execution.Services.RiskEscalationQueueService.IncrementalNotionalMetadataKey, out var incrementalRaw) &&
@@ -31,7 +32,7 @@ internal static class OrderNotionalResolver
             return incremental;
         }
 
-        return Resolve(request, snapshot, referencePriceLookup);
+        return Resolve(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
     }
 
     /// <summary>
@@ -40,9 +41,10 @@ internal static class OrderNotionalResolver
     public static decimal? ResolveIncrementalSigned(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
-        Func<string, decimal?>? referencePriceLookup = null)
+        Func<string, decimal?>? referencePriceLookup = null,
+        Func<string, OrderSide, decimal?>? sideAwarePriceLookup = null)
     {
-        var notional = ResolveIncremental(request, snapshot, referencePriceLookup);
+        var notional = ResolveIncremental(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
         if (notional is not { } absolute)
         {
             return null;
@@ -64,12 +66,13 @@ internal static class OrderNotionalResolver
     public static string? DescribeUnmeasurable(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
-        Func<string, decimal?>? referencePriceLookup = null)
+        Func<string, decimal?>? referencePriceLookup = null,
+        Func<string, OrderSide, decimal?>? sideAwarePriceLookup = null)
     {
         // Derivatives are valued, not refused. Blocking every option and spread whenever a
         // notional ceiling is configured would take a working order path away from the desk
         // to protect a limit those orders can instead simply consume.
-        if (Resolve(request, snapshot, referencePriceLookup) is null)
+        if (Resolve(request, snapshot, referencePriceLookup, sideAwarePriceLookup) is null)
         {
             return "No current price is available for this order, so its notional cannot be measured "
                 + "against the configured limits.";
@@ -95,7 +98,8 @@ internal static class OrderNotionalResolver
     private static decimal? ResolveDerivative(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
-        Func<string, decimal?>? referencePriceLookup)
+        Func<string, decimal?>? referencePriceLookup,
+        Func<string, OrderSide, decimal?>? sideAwarePriceLookup)
     {
         // Broker-native notional sizing still wins: it is what the gateway routes.
         if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
@@ -125,7 +129,12 @@ internal static class OrderNotionalResolver
 
         foreach (var leg in legs)
         {
-            var legPrice = referencePriceLookup?.Invoke(leg.Symbol)
+            // Each leg crosses its OWN side of the book. A credit spread carries a buy leg
+            // whose side is the opposite of the combination's, and pricing it at the
+            // top-level side would value it at the midpoint of a wide book instead of the
+            // ask it actually pays.
+            var legPrice = sideAwarePriceLookup?.Invoke(leg.Symbol, leg.Side)
+                ?? referencePriceLookup?.Invoke(leg.Symbol)
                 ?? PositiveOrNull(snapshot.GetSymbolExposure(leg.Symbol).ReferencePrice)
                 ?? combinationPrice;
             if (legPrice is not { } price || price <= 0m)
@@ -166,7 +175,8 @@ internal static class OrderNotionalResolver
     public static decimal? Resolve(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
-        Func<string, decimal?>? referencePriceLookup = null)
+        Func<string, decimal?>? referencePriceLookup = null,
+        Func<string, OrderSide, decimal?>? sideAwarePriceLookup = null)
     {
         // Derivatives are measured with the same quantity x price arithmetic as anything
         // else, scaled by the contract multiplier — no Greeks, no VaR, just the notional
@@ -174,7 +184,7 @@ internal static class OrderNotionalResolver
         // debit/credit of the combination, so each leg is valued on its own instead.
         if (request.Legs is { Count: > 0 } || request.OptionContract is not null)
         {
-            return ResolveDerivative(request, snapshot, referencePriceLookup);
+            return ResolveDerivative(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
         }
 
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")
@@ -228,7 +238,8 @@ internal static class OrderNotionalResolver
     public static decimal? ResolveSigned(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
-        Func<string, decimal?>? referencePriceLookup = null)
+        Func<string, decimal?>? referencePriceLookup = null,
+        Func<string, OrderSide, decimal?>? sideAwarePriceLookup = null)
     {
         // A multi-leg order has no single direction. Its notional is the sum of every
         // leg's absolute value, and the gateway routes each leg's own side, so signing
@@ -240,7 +251,7 @@ internal static class OrderNotionalResolver
             return null;
         }
 
-        var notional = Resolve(request, snapshot, referencePriceLookup);
+        var notional = Resolve(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
         if (notional is not { } absolute)
         {
             return null;

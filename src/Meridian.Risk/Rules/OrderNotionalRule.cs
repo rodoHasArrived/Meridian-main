@@ -54,12 +54,14 @@ public sealed class OrderNotionalRule : IRiskRule
         // market buy routes near $100, so measuring it at the $50.50 mid would let it
         // through at roughly half its real size.
         decimal? PriceForOrder(string symbol) => _exposureProvider.TryGetExecutablePrice(symbol, request.Side);
+        // A combination's legs each cross their own side of the book.
+        decimal? PriceForLeg(string symbol, OrderSide side) => _exposureProvider.TryGetExecutablePrice(symbol, side);
 
         // A configured ceiling that an unmeasurable order sails past is not a ceiling. An
         // order this resolver cannot value — a derivative, or anything with no current
         // price — consumes no limit and still routes at whatever the market gives it, so
         // refuse it instead of approving it unmeasured.
-        if (OrderNotionalResolver.DescribeUnmeasurable(request, snapshot, PriceForOrder) is { } unmeasurable)
+        if (OrderNotionalResolver.DescribeUnmeasurable(request, snapshot, PriceForOrder, PriceForLeg) is { } unmeasurable)
         {
             _logger.LogWarning("Order notional rule rejected an order it cannot value against the configured limits");
             return Task.FromResult(RiskValidationResult.Rejected(unmeasurable));
@@ -70,8 +72,8 @@ public sealed class OrderNotionalRule : IRiskRule
             symbolExposure: symbolExposure.GrossExposure,
             signedSymbolExposure: symbolExposure.ResolveSignedExposureFor(request.FundAccountId),
             portfolioValue: snapshot.PortfolioValue,
-            orderNotional: OrderNotionalResolver.Resolve(request, snapshot, PriceForOrder),
-            signedOrderNotional: OrderNotionalResolver.ResolveSigned(request, snapshot, PriceForOrder),
+            orderNotional: OrderNotionalResolver.Resolve(request, snapshot, PriceForOrder, PriceForLeg),
+            signedOrderNotional: OrderNotionalResolver.ResolveSigned(request, snapshot, PriceForOrder, PriceForLeg),
             maxGrossExposure: default,
             maxSymbolConcentrationPercent: default,
             maxOrderNotional: maxNotional,

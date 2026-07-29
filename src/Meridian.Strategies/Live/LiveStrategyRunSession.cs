@@ -581,6 +581,16 @@ internal sealed class LiveStrategyRunSession
                     .ConfigureAwait(false);
                 if (!cancelled.Success)
                 {
+                    // An escalation the desk already denied needs no withdrawal: the
+                    // cancellation falls through to the gateway for an order that never
+                    // routed and fails there. Counting that as unwithdrawn would record an
+                    // otherwise clean run as Failed.
+                    if (_orderManager.WasRiskApprovalDeclined(clientOrderId))
+                    {
+                        _parkedClientOrderIds.Remove(clientOrderId);
+                        continue;
+                    }
+
                     unwithdrawn++;
                     _logger.LogError(
                         "Run {RunId} ended with order {ClientOrderId} parked, and its escalation could not be withdrawn: {Reason}",

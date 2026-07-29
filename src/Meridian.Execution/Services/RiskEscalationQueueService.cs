@@ -471,12 +471,53 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// reporting a cancellation the queue never accepted.
     /// </summary>
     public RiskEscalationEntry? Withdraw(string escalationId, string actor, string? reason)
-        => Resolve(
+    {
+        var withdrawn = Resolve(
             escalationId,
             RiskEscalationStatus.Denied,
             actor,
             reason,
             allowApproved: true);
+        if (withdrawn is null)
+        {
+            return null;
+        }
+
+        // An order breaching two escalate-capable rules carries the first rule's granted
+        // token in the metadata of the second rule's parked request. Withdrawing only the
+        // entry named here would leave that earlier approval armed, so an operator could
+        // retry it and route the very order this denial promised was withdrawn.
+        foreach (var linkedId in ReadLinkedApprovalIds(withdrawn.Request))
+        {
+            if (string.Equals(linkedId, escalationId, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (Resolve(linkedId, RiskEscalationStatus.Denied, actor, reason, allowApproved: true) is not null)
+            {
+                _logger.LogInformation(
+                    "Governed approval {LinkedEscalationId} withdrawn with escalation {EscalationId} for the same order",
+                    linkedId,
+                    escalationId);
+            }
+        }
+
+        return withdrawn;
+    }
+
+    /// <summary>Approval tokens the parked order already carried when it was parked.</summary>
+    private static IReadOnlyList<string> ReadLinkedApprovalIds(OrderRequest request)
+    {
+        if (request.Metadata is null ||
+            !request.Metadata.TryGetValue(ApprovalMetadataKey, out var tokens) ||
+            string.IsNullOrWhiteSpace(tokens))
+        {
+            return [];
+        }
+
+        return SplitTokens(tokens);
+    }
 
     private RiskEscalationEntry? Resolve(
         string escalationId,

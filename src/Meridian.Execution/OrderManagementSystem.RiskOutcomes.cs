@@ -131,17 +131,13 @@ public sealed partial class OrderManagementSystem
                 continue;
             }
 
-            reserving.Add(new OrderState
-            {
-                OrderId = pending.ClientOrderId ?? pending.OrderId,
-                Symbol = pending.Symbol,
-                Side = pending.Side,
-                Type = OrderType.Market,
-                Quantity = pending.FilledQuantity,
-                LimitPrice = pending.FillPrice,
-                Status = OrderStatus.PendingNew,
-                CreatedAt = pending.Timestamp
-            });
+            reserving.Add(BuildHandoffReservation(
+                pending.ClientOrderId ?? pending.OrderId,
+                pending.Symbol,
+                pending.Side,
+                pending.FilledQuantity,
+                pending.FillPrice,
+                pending.Timestamp));
         }
 
         // During that window the exposure exists at the broker but sits in neither book,
@@ -159,20 +155,47 @@ public sealed partial class OrderManagementSystem
                 continue;
             }
 
-            reserving.Add(new OrderState
-            {
-                OrderId = increment.ClientOrderId ?? increment.OrderId,
-                Symbol = increment.Symbol,
-                Side = increment.Side,
-                Type = OrderType.Market,
-                Quantity = increment.FilledQuantity,
-                LimitPrice = increment.FillPrice,
-                Status = OrderStatus.PendingNew,
-                CreatedAt = increment.Timestamp
-            });
+            reserving.Add(BuildHandoffReservation(
+                increment.ClientOrderId ?? increment.OrderId,
+                increment.Symbol,
+                increment.Side,
+                increment.FilledQuantity,
+                increment.FillPrice,
+                increment.Timestamp));
         }
 
         return reserving;
+    }
+
+    /// <summary>
+    /// Reservation standing in for a fill that has left the order book but not yet reached
+    /// the portfolio. It carries the tracked order's derivative sizing: without it a
+    /// 100-contract fill at $5 reserves $500 instead of $50,000 during precisely the window
+    /// this reservation exists to cover.
+    /// </summary>
+    private OrderState BuildHandoffReservation(
+        string orderId,
+        string symbol,
+        OrderSide side,
+        decimal filledQuantity,
+        decimal? fillPrice,
+        DateTimeOffset timestamp)
+    {
+        _orders.TryGetValue(orderId, out var tracked);
+        return new OrderState
+        {
+            OrderId = orderId,
+            Symbol = symbol,
+            Side = side,
+            Type = OrderType.Market,
+            Quantity = filledQuantity,
+            LimitPrice = fillPrice,
+            Status = OrderStatus.PendingNew,
+            CreatedAt = timestamp,
+            ContractMultiplier = tracked?.ContractMultiplier ?? 1m,
+            OptionContract = tracked?.OptionContract,
+            Legs = tracked?.Legs
+        };
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ import {
   denyRiskEscalation,
   getRiskEscalations
 } from "@/lib/api.risk-escalations";
+import { ApiError } from "@/lib/api-errors";
 import type { RiskEscalation, RiskEscalationApprovalResponse } from "@/types";
 
 export interface GovernedApprovalServices {
@@ -15,6 +16,12 @@ export interface GovernedApprovalServices {
 
 export interface GovernedApprovalsViewModel {
   escalations: RiskEscalation[];
+  /**
+   * True when the session may not act on the governed queue at all. Several supported
+   * roles hold trade-read without order management, and for them this surface is simply
+   * not theirs — not an error, and not something to keep re-requesting.
+   */
+  forbidden: boolean;
   reasons: Record<string, string>;
   pendingId: string | null;
   errorText: string | null;
@@ -60,6 +67,7 @@ export function useGovernedApprovalsViewModel(
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [statusText, setStatusText] = useState<string | null>(null);
+  const [forbidden, setForbidden] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!enabled) {
@@ -68,20 +76,37 @@ export function useGovernedApprovalsViewModel(
 
     try {
       setEscalations(await services.getRiskEscalations());
+      setForbidden(false);
     } catch (error) {
+      if (error instanceof ApiError && error.status === 403) {
+        // Not an error state: this session simply does not manage orders. Latch it so the
+        // poll stops re-requesting something it will never be allowed to have.
+        setForbidden(true);
+        setEscalations([]);
+        setErrorText(null);
+        return;
+      }
+
       setErrorText(toErrorText(error, "Could not load the governed approval queue."));
     }
   }, [enabled, services]);
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
 
+  useEffect(() => {
     // Escalations arrive from live strategy runs and other operators, not only from this
     // browser's own ticket. Without a poll the panel would show a queue frozen at mount
-    // for as long as the screen stays open.
+    // for as long as the screen stays open — but a session that may not read the queue
+    // must not keep asking.
+    if (forbidden) {
+      return;
+    }
+
     const timer = setInterval(() => void refresh(), refreshIntervalMs);
     return () => clearInterval(timer);
-  }, [refresh, refreshIntervalMs]);
+  }, [forbidden, refresh, refreshIntervalMs]);
 
   const setReason = useCallback((escalationId: string, reason: string) => {
     setReasons((current) => ({ ...current, [escalationId]: reason }));
@@ -136,5 +161,5 @@ export function useGovernedApprovalsViewModel(
   const approve = useCallback((escalationId: string) => resolve(escalationId, true), [resolve]);
   const deny = useCallback((escalationId: string) => resolve(escalationId, false), [resolve]);
 
-  return { escalations, reasons, pendingId, errorText, statusText, setReason, approve, deny, refresh };
+  return { escalations, forbidden, reasons, pendingId, errorText, statusText, setReason, approve, deny, refresh };
 }
