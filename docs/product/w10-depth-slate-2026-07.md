@@ -145,6 +145,165 @@ documentation automation and same-commit drift, not product evidence artifacts.
 - It does not claim the activation rows are trivial. "Already built" describes the backend, not the
   governance, the operator surface, or the tests each row still owes.
 
+## Known Constraints from Source
+
+The roadmap rows state outcomes and acceptance evidence, which is what a `planned` registry row is
+for. This section carries the implementation constraints found while checking each row against the
+code, so they are available as blueprint input without the registry asserting design nobody has
+validated against a build.
+
+Every entry below was verified against the type that owns the behavior. **Read this section before
+blueprinting any row** — several of these are the reason a row's outcome is phrased the way it is.
+
+### `W10-MARK-001` — valuation freshness
+
+- The daily pricing policy defaults stale-price handling to disabled, and only one production caller
+  overrides it. Flipping the default is a behavioral change, and the policy type is public, so it is
+  breaking for external constructors.
+- Two freshness controls overlap: the ledger stale-price policy and the mark-price quality policy,
+  both driven from the same maximum-age input in the one production path.
+- **A mark dated after the valuation date is currently treated as fresh.** The assessment computes a
+  negative age, clamps it to zero, and returns fresh; a test pins that behavior. A fail-closed policy
+  that only blocks *old* marks still admits prices that were not observable as of the valuation.
+
+### `W10-RECON-001` — break identity
+
+- Two incompatible identifiers exist. The statement matcher mints a random per-run identifier; the
+  queue projection derives one from a fingerprint that hashes the variance amount, the tolerance, the
+  as-of date, and the accounting period — so a one-cent move produces a different break.
+- A single-hop, caller-supplied re-key hook already acknowledges the instability, but it is a patch,
+  not a lineage chain.
+- The SLA policy declares a holiday-calendar field that is never read; the calendar is weekend-only.
+
+### `W10-PROV-001` — amount provenance
+
+- The amount-provenance service is served by one legacy route and has **no client consumer** in the
+  browser workstation, the shared UI services, or the desktop workstation.
+- The Number Passport component exists and never fetches provenance — it infers all its rows by
+  keyword-scanning relationship labels.
+- The proof drawer is a private, unexported function inside one explorer screen.
+- The evidence graph service already fans out over a registered contributor collection behind a
+  subject-addressed route family, which is the seam to extend rather than duplicate.
+- The provenance service currently substring-matches a full break-queue scan and scrapes provider
+  detail out of delimited key-value strings; that fragility should not be carried forward.
+
+### `W10-RECON-002` — clustering and bulk resolution
+
+- Bulk casework is **implemented end to end and unwired**: contracts with an idempotency key and a
+  bounded case count, a repository implementation with dry-run and retained receipts, a mapped
+  endpoint, and browser client functions that no screen calls.
+- The break classifier is constructed inline rather than injected, so its materiality policy is never
+  configurable.
+- The classifier's break type and recommended action survive only inside formatted message strings;
+  materiality and absolute variance do not survive at all. The natural grouping key is therefore
+  present in prose but not queryable on a stored break.
+- Grouping must not include the lineage key from `W10-RECON-001` — that key identifies a single
+  break, so including it would make every group contain exactly one member.
+
+### `W10-JRNL-001` — recurring journals
+
+- The owning service is **not registered in dependency injection anywhere**; only tests reference it.
+- Its schedules *and* its posted-occurrence idempotency guard are both in-memory.
+- A schedule holds only a template identifier, while the template book and the locked-period book are
+  separate in-memory fields — so durable schedules alone leave a restarted worker unable to
+  materialize a journal or evaluate a lock.
+- The planner already emits an idempotency key of the right shape, and a durable schedule store, a
+  time-provider-driven worker with a deterministic single-run seam, and an evidence-carrying intake
+  path all already exist for monthly automated journals. Copy that pattern.
+- The existing intake carries evidence links and an evidence assessment; a recurring draft must pass
+  the same admission gate rather than relying on persistence and lock checks alone.
+
+### `W10-TAX-001` — tax character and relief
+
+- The engine computes per-parcel character, holding period, wash-sale holding-period extension, short
+  and long term totals, and disallowed loss, and terminates in a single report-pack artifact that no
+  endpoint serves and no screen reads. The tax character type has no reference in the shared
+  contracts or either workstation.
+- **Wash-sale deferral is computed from the sale aggregate.** The projector returns no wash sale
+  whenever the aggregate realized result is nonnegative, and its own documentation records that mixed
+  gain and loss sales are not decomposed. A disposal containing loss shares can therefore report zero
+  exposure. Per-loss-lot decomposition is a prerequisite for presenting exposure as decision support.
+- **Account relief policy is not effective-dated.** The policy book holds one policy per account and
+  registration replaces it; resolution *throws* when the stored policy postdates the disposal. After a
+  method change, regenerating an earlier pack fails outright, or silently produces different relief
+  and realized-gain figures if the new policy is backdated. Append-only effective-dated versions are
+  required for reproducibility.
+- The realized gain and loss contract that already reaches the workstation exposes a single scalar
+  with no character split — extending it is the lowest-friction first move.
+- The shared contracts must not reference the ledger implementation assembly; define contract-side
+  types and map in the shared UI or financial-operations layer. Dashboard TypeScript types are
+  hand-maintained.
+
+### `W10-SEAM-001` — close readiness
+
+- Four services compute close readiness and a fifth computes asset-class coverage under a readiness
+  name. Between them they encode readiness five incompatible ways: a scored close-readiness record, an
+  evidence-status enum, an accounting-readiness enum, and two different free-string status
+  vocabularies.
+- The scored record is only reachable nested inside a workflow record, never as its own payload.
+- The cross-lane operator readiness console aggregates client-side in roughly two thousand lines,
+  which is why the desktop parity plan is scheduled to reimplement rather than consume it.
+- The command-center read service already injects the calendar and cockpit services, making it the
+  natural consolidation point.
+
+### `W10-RECON-003` — tolerance and replay
+
+- Three tolerance shapes exist and the engine consumes only the flattest, so the price, basis-point
+  cash, and settlement-date rules are structurally unreachable.
+- Scoping is by profile identifier alone; the file-backed provider is load-once and read-only with no
+  write path and no edit surface.
+- The statement checkpoint store is a resumption cursor holding counts for the newest run per account
+  — not a replay surface.
+- **Normalized-entity and match-result repositories already exist** with file-backed implementations
+  and zero references outside their own file. Retention is activation work, not new storage.
+- Match-kernel determinism is unverified and must be proven before any simulation result is shown.
+
+### `W10-RECON-004` — learned matching
+
+- The engine's match result carries a rule identifier list and an explanation, but that result is
+  ephemeral: persistence keeps only the **first** rule identifier as a single tolerance-rule field,
+  with no promoting operator anywhere. Durable attribution needs a contract and storage change.
+- The matching engine is sealed with a hard-coded stage ladder and no stage abstraction, so an ordered
+  stage collection must be introduced.
+- The matcher deliberately separates position, cash, and transaction matching and enforces currency
+  and instrument identity as prerequisites. A learned rule generalized without those predicates could
+  let a reviewed pattern in one currency suppress an unrelated break in another.
+- A competing reconciliation vocabulary exists in the functional calculation projects; do not grow a
+  second matching model there.
+
+### `W10-PERF-001` — return measurement
+
+- A brokerage-sourced performance endpoint already exists, registered inline with no shared route
+  constant, returning a single-period cash-adjusted return (ending equity minus beginning equity minus
+  net cash flow) over balance snapshots for one linked account.
+- The daily pricing projection is a **single-day snapshot with no cross-day persistence**, so a
+  chainable series has to be added.
+- The capital-account subledger supplies dated investor cash flows but **no residual ending value**,
+  which a complete money-weighted return requires.
+- It records approval state and posted state separately; admitting approved-but-unposted activity puts
+  flows into a return the ledger-derived residual value does not carry.
+- **Chaining sub-period returns across an external capital flow attributes that flow to performance.**
+  Time-weighted return needs a subperiod boundary and valuation at each external flow, or an
+  explicitly documented and labeled approximation.
+- The extended internal rate of return kernel is internal to the backtesting assembly and unreachable
+  from the ledger and financial-operations lanes.
+
+### `W10-CONSOL-001` — intercompany elimination
+
+- Intercompany and consolidation-elimination are **accounting treatment kinds**, selected through the
+  accounting policy rule — not journal sources. That rule already carries journal template, evidence,
+  approval, and auto-posting settings, which is the seam for producing elimination drafts.
+- The consolidated trial balance sums its sub-ledgers with no elimination step, and no rule produces
+  the elimination treatment today.
+- Posting entity and counterparty are **separate optional dimensions** and the consolidated book key
+  carries no legal-entity identity, so pairing on counterparty alone can combine balances from
+  unrelated entities facing the same affiliate.
+- Effective-dated ownership links with an ownership percentage already exist and are the authoritative
+  source for resolving an as-of consolidation perimeter.
+- Without a deterministic key over perimeter, as-of date, reciprocal pair, and rule version plus a
+  stale-version guard, a rerun can produce a duplicate draft and both can be approved, double-
+  eliminating the balance. The row maps to a tracker control that requires exactly that discipline.
+
 ## Known Risks at Adoption
 
 1. **`W10-RECON-003` is the weakest row.** Its two prerequisites — unifying three incompatible
