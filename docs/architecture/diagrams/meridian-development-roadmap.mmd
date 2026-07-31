@@ -1,7 +1,29 @@
 flowchart LR
   W1_DATA_001["W1-DATA-001\nW1 - done / green"]
+  W10_CONSOL_001["W10-CONSOL-001\nW10 - planned / green"]
+  W1_DATA_001 --> W10_CONSOL_001
+  W10_JRNL_001["W10-JRNL-001\nW10 - planned / green"]
+  W10_CONSOL_001 --> W10_JRNL_001
+  W10_MARK_001["W10-MARK-001\nW10 - planned / green"]
+  W10_JRNL_001 --> W10_MARK_001
+  W10_PERF_001["W10-PERF-001\nW10 - planned / green"]
+  W10_MARK_001 --> W10_PERF_001
+  W10_PROV_001["W10-PROV-001\nW10 - planned / green"]
+  W10_PERF_001 --> W10_PROV_001
+  W10_RECON_001["W10-RECON-001\nW10 - planned / green"]
+  W10_PROV_001 --> W10_RECON_001
+  W10_RECON_002["W10-RECON-002\nW10 - planned / green"]
+  W10_RECON_001 --> W10_RECON_002
+  W10_RECON_003["W10-RECON-003\nW10 - planned / green"]
+  W10_RECON_002 --> W10_RECON_003
+  W10_RECON_004["W10-RECON-004\nW10 - planned / green"]
+  W10_RECON_003 --> W10_RECON_004
+  W10_SEAM_001["W10-SEAM-001\nW10 - planned / green"]
+  W10_RECON_004 --> W10_SEAM_001
+  W10_TAX_001["W10-TAX-001\nW10 - planned / green"]
+  W10_SEAM_001 --> W10_TAX_001
   W2_PROMO_001["W2-PROMO-001\nW2 - done / green"]
-  W1_DATA_001 --> W2_PROMO_001
+  W10_TAX_001 --> W2_PROMO_001
   W2_TRD_001["W2-TRD-001\nW2 - done / green"]
   W2_PROMO_001 --> W2_TRD_001
   W3_CONT_001["W3-CONT-001\nW3 - done / green"]

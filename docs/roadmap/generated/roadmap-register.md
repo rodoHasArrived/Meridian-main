@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-07-28
+Snapshot date: 2026-07-31
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -45,6 +45,344 @@ Provider validation packets and DK1 operator sign-off are the baseline evidence 
 - `SRC-HOST`
 - `SRC-APP`
 - `SRC-CONTRACTS`
+
+## W10-CONSOL-001 - Intercompany elimination on consolidated ledger views
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 11 of the 2026-07 W10 depth slate. The ledger book contracts already define intercompany and consolidation-elimination journal sources, and the fund ledger book already produces a consolidated trial balance by summing its sub-ledgers with no elimination pass, so consolidated views double-count intercompany balances and the enum value for the correction has no producer. This row adds the elimination pass as reviewable drafts on the existing approval rail plus an unmatched-intercompany report. Scope is deliberately limited to wholly owned fully consolidated entities so the work stops short of the deferred capital-structure modeling boundary.
+
+### Exit Criteria
+
+- Intercompany pairs resolve from the counterparty entity dimension on ledger line dimensions rather than from naming conventions.
+- Proposed eliminations enter the existing journal draft and approval rail as reviewable drafts and are never auto-posted.
+- Consolidated views offer a gross and eliminated presentation and state which one is being displayed.
+- Intercompany balances that do not agree between the two sides surface as their own reported break class rather than being silently netted.
+- Scope is limited to wholly owned fully consolidated entities, and ownership percentages, partial consolidation, and minority interest are explicitly excluded from this row.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the pair resolution, the elimination drafts, the consolidated presentation, and the unmatched-intercompany tests.
+
+### Source Modules
+
+- `SRC-LEDGER`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+
+## W10-JRNL-001 - Durable recurring journal schedules and draft runner
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is complete, covering six cadences, anchor dates, per-run parameters, dimensional scope, end dates, and period-lock awareness, but the service that owns it holds both its schedules and its posted-occurrence idempotency guard in memory and is not registered in dependency injection anywhere, so planned occurrences never become journals. A durable schedule store, a time-provider-driven hosted worker with a deterministic single-run seam, and an idempotent intake path all already exist for monthly automated journals and are the template to copy. Occurrences become drafts for human approval and never post directly.
+
+### Exit Criteria
+
+- Recurring journal schedules and their posted-occurrence idempotency state persist durably and survive a restart, failing closed when the durable store is unavailable.
+- A registered hosted worker materializes due occurrences into automated journal drafts on its cadence and a repeated run is a no-op through the retained occurrence idempotency key.
+- Generated drafts enter the existing automated journal approval rail and the runner never submits, approves, or posts a journal entry.
+- Occurrences blocked by a locked period surface the lock owner and the governed reopen path rather than failing silently.
+- The accounting journal draft queue shows a recurring lane covering what the calendar generated, what awaits approval, and what a period lock blocked.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the durable store, the hosted worker, the intake request, and the restart and idempotency tests.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-LEDGER`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+
+## W10-MARK-001 - Fail-closed stale-mark policy and mark-age surfacing
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 1 of the 2026-07 W10 depth slate. The daily portfolio pricing policy defaults its stale-price handling to Disabled, so an arbitrarily old mark can price a valuation without saying so, while the one production construction site already passes an explicit blocking policy. This row makes fail-closed the default, consolidates the overlapping mark-price quality freshness control into a single owner, and surfaces mark age wherever positions appear. It discharges part of RISK-SIM-REAL-001 under the same truth doctrine as W9-TRUTH-001, which is why it is pulled ahead of the rest of the slate.
+
+### Exit Criteria
+
+- The default daily pricing policy blocks marks older than a configured bound instead of accepting them silently.
+- Every construction site of the daily portfolio pricing policy passes an explicit freshness policy rather than relying on an implicit default.
+- Valuations resting on a stale or missing mark render as review-required with the offending positions named, never as plausible-looking values.
+- The overlapping stale-price and mark-price-quality freshness controls resolve to one owner rather than two independently configured gates.
+- A preview reports how many current valuations the new default would block before the change is enabled, and operator overrides are dated, approved, and retained as evidence.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the policy default, the consolidated freshness control, the operator surfaces, and the fail-closed tests.
+
+### Source Modules
+
+- `SRC-LEDGER`
+- `SRC-APP`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+
+## W10-PERF-001 - Portfolio and investor return measurement
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 10 of the 2026-07 W10 depth slate and the one genuinely new capability in it. Meridian can prove a valuation but cannot state what a portfolio returned. There is no time-weighted, money-weighted, or Modified Dietz calculation anywhere outside the backtesting lane, no performance route among the shared workstation routes, and the extended internal rate of return kernel is internal to the backtesting assembly. Three inputs are missing rather than merely unwired. Daily pricing produces a single-day projection with no cross-day series, the capital-account subledger supplies dated investor cash flows but no residual ending value, and the kernel is unreachable. It is sequenced last because it depends on the mark discipline in W10-MARK-001 and the proof drawer in W10-PROV-001 to be honest.
+
+### Exit Criteria
+
+- A shared deterministic return kernel covering extended internal rate of return and time-weighted return is reachable from the ledger and financial-operations lanes rather than confined to the backtesting assembly.
+- Daily pricing projections persist as a dated series sufficient to chain sub-period returns.
+- Investor-level money-weighted return resolves both the dated capital-activity series and a residual ending value, and unapproved activity is excluded.
+- Any period containing a mark gap renders as review-required rather than an interpolated return, and every returned figure names its convention, its period, and its mark completeness.
+- Golden-file tests cover the return kernels against worked examples.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the shared kernel, the persisted series, the residual value resolution, the operator surface, and the golden-file tests.
+
+### Source Modules
+
+- `SRC-FSHARP`
+- `SRC-LEDGER`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+
+## W10-PROV-001 - Ledger-amount evidence subject and shared proof drawer
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 3 of the 2026-07 W10 depth slate and the platform bet the rest of the slate depends on. Both halves of amount-level provenance are already built and neither is connected. The ledger amount provenance service is served by a single legacy report-pack route and has no client consumer in the browser workstation, the shared UI services, or the desktop workstation, while the Number Passport component infers all of its rows by keyword-scanning relationship strings instead of fetching provenance. The evidence graph service already fans out over a registered contributor collection behind a subject-addressed route family, so the work is to add a ledger-amount subject kind, express provenance as a contributor, make the passport data-driven, and promote the proof drawer from a private function inside one explorer into a shared component. This is the first concrete slice of W5X-OEG-001 and does not duplicate it.
+
+### Exit Criteria
+
+- A ledger-amount evidence subject kind resolves through the existing subject-addressed evidence routes without introducing a parallel endpoint family.
+- Amount provenance is expressed as a registered evidence contributor and no longer depends on substring matching over a full break-queue scan or on scraping delimited key-value strings.
+- The Number Passport renders from retained evidence rather than inferring rows by keyword-scanning relationship labels.
+- One shared proof drawer component is reachable from report lines, ledger rows, portfolio marks, and capital-account balances instead of each surface composing its own.
+- Missing or stale provenance renders as review-required or blocked rather than an empty passport that reads as proven.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the subject kind, the contributor, the shared drawer, the browser surface, and the WPF parity slice or its explicit deferral.
+
+### Source Modules
+
+- `SRC-UI-SHARED`
+- `SRC-CONTRACTS`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W10-RECON-001 - Durable break lineage identity and run-over-run break diff
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity that survives a run. The statement matcher mints a random identifier per run, and the queue projection derives its break identifier from a fingerprint that includes the variance amount, the tolerance, the as-of date, and the accounting period, so a break whose amount moves by one cent becomes a different break. The repository already carries a single-hop caller-supplied re-key hook that acknowledges the instability. This row introduces a stable lineage key over identifying dimensions only, then uses it to show which breaks are new, persisting, or cleared since the prior run. It is sequenced ahead of clustering because grouping and aging are unsound without it.
+
+### Exit Criteria
+
+- A break carries a lineage identity derived only from identifying dimensions, separate from the content fingerprint that legitimately changes when an amount changes.
+- Lineage identity survives a variance change, a tolerance change, and an as-of date change for the same underlying break.
+- The reconciliation queue reports new, persisting with age, and cleared counts against the prior run and defaults its filter to new items.
+- Break aging derived from lineage feeds the reconciliation SLA calculation so escalation pressure is visible before an SLA is missed.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the lineage key, the diff projection, the queue surface, and the identity-stability tests.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STRATEGIES`
+- `SRC-CONTRACTS`
+- `SRC-UI-DASHBOARD`
+
+## W10-RECON-002 - Break clustering and bulk-resolution activation
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than construction. Bulk casework is already implemented end to end with an idempotency key, a bounded case count, dry-run and partial-success handling, retained receipts, a mapped endpoint, and three browser client functions, yet no screen calls any of them and the queue remains single-select. Separately, the statement break classifier is constructed inline rather than injected, so its materiality policy is never configurable, and six of its nine result fields are discarded including the canonical break type that is the natural clustering key. This row persists the classification, groups a run into clusters, and wires the existing bulk rails into the queue.
+
+### Exit Criteria
+
+- The statement break classifier is injected with a configurable workflow policy and its canonical break type, recommended action, materiality, and absolute variance are persisted on the break rather than discarded.
+- The reconciliation queue presents clusters as the top layer with individual breaks as the drill-down, grouped over break type, counterparty, currency, sign, variance band, and lineage key.
+- Bulk resolution runs through the existing dry-run and execute rails, and the dry run is surfaced to the operator as a preview before any state changes.
+- Every member break of a resolved cluster retains its own hash-chained case transition and actor alongside a reference to the shared cluster justification.
+- Clusters above the materiality threshold require the same approval separation an individual material break requires.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the persisted classification, the clustering projection, the wired bulk surface, and the per-break evidence retention tests.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STRATEGIES`
+- `SRC-UI-DASHBOARD`
+
+## W10-RECON-003 - Unified tolerance model and what-if replay workbench
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 8 of the 2026-07 W10 depth slate and the largest row in the reconciliation arc. Editing a matching tolerance today is a blind change discovered on the next production run. Two prerequisites stand in front of the preview itself. The tolerance model exists as three incompatible shapes and the matching engine consumes only the flattest of them, so the price, basis-point cash, and settlement-date rules are structurally unreachable, scoping is by profile identifier alone, and the file-backed provider is load-once and read-only with no write path and no edit surface. Separately the statement checkpoint store is a resumption cursor holding counts for the newest run per account, so nothing retained supports replay. This row unifies the tolerance model, retains replayable run artifacts, and only then builds the governed preview.
+
+### Exit Criteria
+
+- One tolerance model reaches the matching engine, so price, basis-point cash, and settlement-date rules are reachable rather than structurally discarded.
+- Tolerance scoping supports account, currency, and transaction-type dimensions rather than a single profile identifier.
+- Reconciliation runs retain the artifacts a replay requires, covering normalized rows, matched pairs, variances, and the tolerance profile version, rather than counts for the newest run per account.
+- A match-kernel determinism audit proves replay does not depend on wall-clock time or mutable reference data before any simulation result is shown to an operator.
+- A proposed tolerance change previews its effect against retained runs, naming the breaks it would newly auto-match and the previously escalated breaks it would suppress, and the committed change retains that simulation as its justification.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the unified model, the retained run artifacts, the determinism audit, and the preview surface.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+
+## W10-RECON-004 - Operator-taught match rules with promotion gate
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes today is discarded, so a recurring counterparty pattern is as unmatched on its tenth appearance as on its first. The match result contract already carries a rule identifier list and a human-readable explanation, so a learned rule can name itself in retained evidence with no contract change, but the matching engine is sealed with a hard-coded stage ladder and no stage abstraction, so an ordered stage collection must be introduced. Learned patterns accumulate as drafts that shadow-match without acting and only participate after an operator promotes them, keeping the system inside governed autonomy rather than deciding on its own.
+
+### Exit Criteria
+
+- A manual match captures a generalizable draft rule covering counterparty, normalized description tokens, account, sign, and tolerance band without acting on it.
+- Draft rules accumulate shadow-match hit counts across runs and are offered for promotion only after meeting a stated accuracy threshold.
+- The matching engine exposes an ordered stage collection so a promoted rule participates as an explicitly labeled stage rather than through edits scattered across the fixed ladder.
+- Every match produced by a learned rule names that rule and its promoting operator in retained evidence, and no unpromoted pattern ever produces a match.
+- The learned matching model lives in one place rather than forking a second vocabulary alongside the existing reconciliation types in the functional calculation projects.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the draft capture, the promotion gate, the engine stage seam, and the rule-attribution tests.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STRATEGIES`
+- `SRC-UI-DASHBOARD`
+
+## W10-SEAM-001 - Unified close-readiness projection behind one shared contract
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 7 of the 2026-07 W10 depth slate. Close readiness has four independent owners plus one service that computes asset-class coverage under a readiness name, and they encode readiness five incompatible ways across a scored close-readiness record, an evidence status enum, and three different status vocabularies. The cross-lane operator readiness console then performs its aggregation client-side in the browser, which is why the desktop parity plan is scheduled to reimplement the same aggregation rather than consume it. The command-center read service already injects the calendar and cockpit services and is the natural consolidation point. This row promotes one readiness projection with typed named blockers to a top-level shared contract and makes both workstation lanes consume it instead of deriving it.
+
+### Exit Criteria
+
+- One close-readiness projection is exposed as a top-level shared contract rather than only as a nested field on a workflow record.
+- The existing readiness owners contribute to that projection instead of publishing independent readiness vocabularies, and the asset-class coverage service is renamed or rescoped so it no longer reads as close readiness.
+- Every blocker carries a type, a count, a severity, an owner, and a deep link to the records causing it, covering open material breaks, unapproved journal drafts, stale marks, missing evidence packets, unresolved quality violations, and unposted recurring occurrences.
+- The browser operator readiness console consumes the shared projection rather than aggregating readiness client-side.
+- The desktop parity lane consumes the same projection, and the sequencing handshake with W8-WPF-PARITY-001 is recorded so the client-side aggregation is retired rather than duplicated.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the shared contract, the contributing services, both workstation consumers, and the blocker-projection tests.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-CONTRACTS`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W10-TAX-001 - Tax character, wash-sale, and lot-relief operator surface
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-31 |
+
+### Current Summary
+
+Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine landed in 2026-07 with per-parcel character, holding period, wash-sale holding-period extension, short and long term realized totals, disallowed loss, and durable deferral records, and it terminates in a single report-pack CSV artifact that no endpoint serves and no screen reads. The tax character type has no reference anywhere in the shared contracts, the browser workstation, or the desktop workstation. This row publishes the character split through the realized gain and loss contract that already reaches the workstation, then adds a lot-level surface with replacement-lot linkage and a relief-method comparison across the five supported methods.
+
+### Exit Criteria
+
+- The realized gain and loss contract carries the short-term, long-term, disallowed wash-sale, and recognized amounts rather than a single undifferentiated scalar.
+- A tax character contract type is defined in the shared contracts without those contracts taking a dependency on the ledger implementation assembly.
+- Position drill-down shows per-lot acquisition date, holding period, tax character, and, where a wash sale fired, the disallowed loss, the basis adjustment, and a link to the replacement lot that triggered it.
+- A pending disposal can be previewed across all supported cost-basis relief methods showing realized gain, character split, and wash-sale exposure side by side, with method, lot set, and as-of date retained on every projection.
+- Changing an account standing relief policy mid-period requires approval and a retained rationale, and every surface presents the comparison as decision support rather than tax advice.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the contract extension, the lot surface, the relief comparison, and the character and wash-sale projection tests.
+
+### Source Modules
+
+- `SRC-LEDGER`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
 
 ## W2-PROMO-001 - Paper promotion evidence and operator acceptance
 | Field | Value |

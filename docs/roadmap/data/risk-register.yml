@@ -26,7 +26,8 @@ risks:
     status: open
     severity: high
     owner_lane: Data Confidence and Validation
-    mitigation: W9-TRUTH-001 makes simulation labeling mandatory across both workstations and requires supported production profiles to fail closed when in-memory or placeholder persistence is selected for a durable role; W9-DEMO-002 keeps seeded demo data durable, labeled, and isolated from non-demo data roots.
+    mitigation: W9-TRUTH-001 makes simulation labeling mandatory across both workstations and requires supported production profiles to fail closed when in-memory or placeholder persistence is selected for a durable role; W9-DEMO-002 keeps seeded demo data durable, labeled, and isolated from non-demo data roots; W10-MARK-001 extends the same doctrine to valuation inputs by making the stale-mark policy fail closed by default so an aged mark can no longer price a valuation silently.
     related_roadmap_items:
       - W9-TRUTH-001
       - W9-DEMO-002
+      - W10-MARK-001

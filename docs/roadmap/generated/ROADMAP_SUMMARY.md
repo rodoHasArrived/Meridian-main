@@ -18,11 +18,22 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-07-28
+Snapshot date: 2026-07-31
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
 | W1-DATA-001 | Provider trust gate and data confidence baseline | done | green | critical | Data Confidence and Validation |
+| W10-CONSOL-001 | Intercompany elimination on consolidated ledger views | planned | green | medium | Accounting and Ledger |
+| W10-JRNL-001 | Durable recurring journal schedules and draft runner | planned | green | high | Accounting and Ledger |
+| W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | planned | green | high | Accounting and Ledger |
+| W10-PERF-001 | Portfolio and investor return measurement | planned | green | high | Accounting and Ledger |
+| W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | planned | green | high | Workstation Shell and UX |
+| W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
+| W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
+| W10-RECON-003 | Unified tolerance model and what-if replay workbench | planned | green | medium | Accounting and Ledger |
+| W10-RECON-004 | Operator-taught match rules with promotion gate | planned | green | medium | Accounting and Ledger |
+| W10-SEAM-001 | Unified close-readiness projection behind one shared contract | planned | green | high | Workstation Shell and UX |
+| W10-TAX-001 | Tax character, wash-sale, and lot-relief operator surface | planned | green | high | Accounting and Ledger |
 | W2-PROMO-001 | Paper promotion evidence and operator acceptance | done | green | high | Execution and Fund Accounts |
 | W2-TRD-001 | Paper trading cockpit reliability | done | green | critical | Execution and Fund Accounts |
 | W3-CONT-001 | Research to paper continuity | done | green | high | Strategy Analytics |
