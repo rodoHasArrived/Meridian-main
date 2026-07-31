@@ -63,7 +63,7 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 
 ### Exit Criteria
 
-- Consolidated views no longer double-count intercompany balances and state whether they are presenting gross or eliminated figures.
+- Consolidated views no longer double-count intercompany balances and state whether they are presenting gross or eliminated figures, and an eliminated figure reflects only approved and posted eliminations, with a proposed draft visible solely as a labeled preview.
 - Eliminations are proposed as reviewable drafts on the existing approval rail and never post automatically, and the treatment is driven by a rule on the existing policy seam with no parallel discriminator beside it.
 - Rerunning the same perimeter and as-of date cannot produce a duplicate elimination for the same pair.
 - The consolidation perimeter is enforced from authoritative ownership data rather than asserted, and an entity outside scope is rejected rather than silently eliminated.
@@ -72,6 +72,7 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 
 ### Source Modules
 
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-LEDGER`
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
@@ -221,6 +222,7 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 ### Exit Criteria
 
 - A break keeps one identity across runs even when its amount, tolerance, or as-of date changes.
+- A break that clears and later recurs is recognizable as the same lineage while remaining a distinct occurrence, so a recurrence neither inherits the age of the original nor overwrites the interval during which it was clear.
 - The queue shows what is new, what remains open and for how long, and what cleared since the prior run, without hiding open work behind a default filter.
 - Break age derived from that identity drives escalation before an SLA is missed.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the lineage identity, the diff projection, the queue surface, and the identity-stability tests.
@@ -253,7 +255,7 @@ Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than c
 - An operator can resolve a group of related breaks in one governed action instead of one action per break.
 - Every member of a resolved group retains its own case transition, actor, and evidence alongside the shared justification.
 - Groups above materiality require the same approval separation an individual material break requires.
-- A preview shows the effect of a group action before any state changes.
+- A preview shows the effect of a group action before any state changes, and the action that follows applies only to the breaks the preview showed in the state it showed them; drift returns the operator to a fresh preview rather than through.
 - Break classification is queryable on a stored break rather than readable only in prose.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the persisted classification, the grouping projection, the wired bulk surface, and the per-break evidence retention tests.
 
@@ -283,7 +285,7 @@ Rank 8 of the 2026-07 W10 depth slate and the largest row in the reconciliation 
 - One tolerance model reaches the matching engine, so every tolerance an operator can configure is one the engine actually applies.
 - Tolerances can be scoped to the account, currency, and transaction type they belong to.
 - An operator can see the effect of a proposed tolerance change against retained runs before committing it, and the committed change retains that simulation as its justification.
-- Replay determinism is proven before any simulation result is shown to an operator.
+- A replayed result differs from the original run only because the tolerance differs, which requires both sides of that run to be retained as of it - the external statement population and the internal positions, cash, and ledger activity it was matched against - and replay determinism is proven before any simulation result reaches an operator.
 - Run-artifact retention reuses the existing stores rather than introducing a second artifact vocabulary and storage path.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the unified model, the retained artifacts, the determinism proof, and the preview surface.
 
@@ -319,6 +321,7 @@ Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes toda
 ### Source Modules
 
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-DOMAIN`
 - `SRC-STRATEGIES`
 - `SRC-UI-DASHBOARD`
 
@@ -341,6 +344,7 @@ Rank 7 of the 2026-07 W10 depth slate. Close readiness has several independent o
 
 - One close-readiness projection is the shared source both workstation lanes consume rather than each lane deriving its own.
 - Every blocker names its type, count, severity, owner, and the records causing it.
+- A contributing lane that is unregistered, failing, stale, or out of scope makes the projection incomplete and blocking rather than silently absent, so readiness is never reported because a contributor did not answer.
 - The contributing services report into that projection instead of publishing independent readiness vocabularies, and the asset-class coverage service no longer reads as close readiness.
 - The sequencing handshake with W8-WPF-PARITY-001 is recorded so the client-side aggregation is retired rather than duplicated into the desktop lane.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the shared contract, the contributing services, both workstation consumers, and the blocker-projection tests.
@@ -374,7 +378,7 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 - An operator comparing cost-basis relief methods for a pending disposal sees realized gain, character split, and wash-sale exposure per method, and any figure the engine cannot yet compute completely renders as incomplete rather than as a settled zero.
 - Reopening or regenerating an earlier period reproduces the tax figures originally reported, including after a relief-policy change.
 - Changing an account standing relief policy requires approval and a retained rationale, and every surface presents the comparison as decision support rather than tax advice.
-- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the operator surface, the relief comparison, the reproducibility guarantee, and the character and wash-sale tests.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the operator surfaces on both workstation lanes, the relief comparison, the reproducibility guarantee, and the character and wash-sale tests.
 
 ### Source Modules
 
@@ -382,6 +386,7 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
+- `SRC-WPF`
 
 ## W2-PROMO-001 - Paper promotion evidence and operator acceptance
 | Field | Value |

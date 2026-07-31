@@ -1,11 +1,11 @@
 {
-  "total_files": 637,
-  "total_lines": 115250,
+  "total_files": 638,
+  "total_lines": 115972,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 218,
-  "average_lines": 180.9,
+  "todo_count": 220,
+  "average_lines": 181.8,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2573,7 +2573,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9626,
+      "line_count": 9627,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2933,7 +2933,15 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 254,
+      "line_count": 259,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/w10-depth-slate-2026-07.md",
+      "line_count": 363,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3293,7 +3301,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 843,
+      "line_count": 1185,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3301,7 +3309,7 @@
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 52,
+      "line_count": 63,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

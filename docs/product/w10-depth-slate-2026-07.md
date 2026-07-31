@@ -174,6 +174,10 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 - A single-hop, caller-supplied re-key hook already acknowledges the instability, but it is a patch,
   not a lineage chain.
 - The SLA policy declares a holiday-calendar field that is never read; the calendar is weekend-only.
+- The queue carries a single break identifier and nothing distinguishing a lineage from an occurrence
+  of it. Adding lineage alone leaves a cleared-then-recurring break able to reopen its original item
+  and keep the original SLA age, or to overwrite the interval during which it was clear. Lineage and
+  occurrence need separate identifiers with explicit recurrence and split semantics.
 
 ### `W10-PROV-001` — amount provenance
 
@@ -199,6 +203,13 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   present in prose but not queryable on a stored break.
 - Grouping must not include the lineage key from `W10-RECON-001` — that key identifies a single
   break, so including it would make every group contain exactly one member.
+- **The bulk request carries no expected versions and no preview receipt.** It holds break IDs, an
+  action, an actor, command and correlation IDs, a source, an idempotency key, dry-run and
+  partial-success flags, and optional reason, assignee, and priority — and the repository reads each
+  case's version only once execution begins. A dry run and the execution that follows are therefore
+  independent reads, so a concurrent edit between them applies the action to state the preview never
+  showed. Binding execution to the previewed versions is what turns the existing dry run into a
+  governance control rather than a display.
 
 ### `W10-JRNL-001` — recurring journals
 
@@ -233,6 +244,9 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 - The shared contracts must not reference the ledger implementation assembly; define contract-side
   types and map in the shared UI or financial-operations layer. Dashboard TypeScript types are
   hand-maintained.
+- The desktop lane presents the same positions through its own blotter and fund-ledger view models, so
+  a browser-only surface leaves the co-equal lane showing positions without their tax character or
+  wash-sale state. The same applies to the mark-age surfacing in `W10-MARK-001`.
 
 ### `W10-SEAM-001` — close readiness
 
@@ -244,7 +258,11 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 - The cross-lane operator readiness console aggregates client-side in roughly two thousand lines,
   which is why the desktop parity plan is scheduled to reimplement rather than consume it.
 - The command-center read service already injects the calendar and cockpit services, making it the
-  natural consolidation point.
+  natural consolidation point — **but it takes both as optional constructor parameters defaulted to
+  null** and computes readiness without requiring the calendar. Moving consumers onto it therefore
+  carries the false-ready path forward rather than closing it: a lane that is unregistered or failing
+  is indistinguishable from a lane with nothing to report. The projection needs an explicit
+  contributor manifest, so an absent contributor is a blocking incomplete state.
 
 ### `W10-RECON-003` — tolerance and replay
 
@@ -256,6 +274,12 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   — not a replay surface.
 - **Normalized-entity and match-result repositories already exist** with file-backed implementations
   and zero references outside their own file. Retention is activation work, not new storage.
+- **Those two stores cover only half a run.** The retained normalized entities are the statement-side
+  populations — positions, cash balances, transactions, securities, source rows — and the match-result
+  store retains outputs, while the matching engine also requires internal positions, internal cash
+  balances, and internal ledger transactions. Replaying against live internal state would attribute
+  intervening portfolio, cash, or ledger movement to the tolerance change. The internal side has to be
+  retained immutably or version-addressed alongside the existing artifacts.
 - Match-kernel determinism is unverified and must be proven before any simulation result is shown.
 
 ### `W10-RECON-004` — learned matching
@@ -263,6 +287,9 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 - The engine's match result carries a rule identifier list and an explanation, but that result is
   ephemeral: persistence keeps only the **first** rule identifier as a single tolerance-rule field,
   with no promoting operator anywhere. Durable attribution needs a contract and storage change.
+- That durable contract is a domain type, not a financial-operations one — the retained match link
+  lives in the domain assembly's reconciliation aggregate. Work confined to Financial Operations,
+  Strategies, and the dashboard cannot widen the schema that has to carry the attribution.
 - The matching engine is sealed with a hard-coded stage ladder and no stage abstraction, so an ordered
   stage collection must be introduced.
 - The matcher deliberately separates position, cash, and transaction matching and enforces currency
@@ -303,6 +330,14 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 - Without a deterministic key over perimeter, as-of date, reciprocal pair, and rule version plus a
   stale-version guard, a rerun can produce a duplicate draft and both can be approved, double-
   eliminating the balance. The row maps to a tracker control that requires exactly that discipline.
+- An unapproved draft must not reach a reported figure. Subtracting proposed eliminations from the
+  consolidated view satisfies "no double-counting" while concealing a genuine intercompany balance
+  behind work nobody approved; gross views stay ledger-derived, eliminated figures consume only posted
+  entries, and drafts appear as a labeled preview.
+- The policy-rule and draft-production services that own both seams live in the Financial Operations
+  design module, not in Ledger. Implementation routed through Ledger, Contracts, and UI Shared alone
+  can add consolidated-view logic without ever defining the elimination treatment on the authoritative
+  policy path.
 
 ## Known Risks at Adoption
 
