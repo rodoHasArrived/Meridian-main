@@ -1,11 +1,11 @@
 {
   "total_files": 637,
-  "total_lines": 114999,
+  "total_lines": 115250,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 218,
-  "average_lines": 180.5,
+  "average_lines": 180.9,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -509,7 +509,7 @@
     },
     {
       "path": ".agents/skills/meridian-brainstorm/CHANGELOG.md",
-      "line_count": 54,
+      "line_count": 122,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -517,7 +517,7 @@
     },
     {
       "path": ".agents/skills/meridian-brainstorm/references/competitive-landscape.md",
-      "line_count": 77,
+      "line_count": 118,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -525,7 +525,7 @@
     },
     {
       "path": ".agents/skills/meridian-brainstorm/references/idea-dimensions.md",
-      "line_count": 233,
+      "line_count": 330,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -533,7 +533,7 @@
     },
     {
       "path": ".agents/skills/meridian-brainstorm/SKILL.md",
-      "line_count": 273,
+      "line_count": 309,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2573,7 +2573,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9617,
+      "line_count": 9626,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
