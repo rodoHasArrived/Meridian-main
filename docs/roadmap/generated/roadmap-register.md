@@ -160,13 +160,14 @@ Rank 10 of the 2026-07 W10 depth slate and the one genuinely new capability in i
 - Operators and investors can see portfolio and investor-level returns derived from Meridian's own records rather than only from a brokerage feed.
 - The existing brokerage performance seam is extended or explicitly superseded with the reason recorded, and no parallel performance API is introduced beside it.
 - Reported returns are correct across periods containing external capital flows, and any convention approximation is documented and labeled on the figure.
-- Returns resting on activity the ledger has not posted, or on incomplete inputs, render as labeled pro-forma or review-required rather than as the reported return, and every figure names its convention, period, and completeness.
-- Golden-file tests cover the return kernels against worked examples.
-- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the brokerage-seam disposition, the shared kernel, the operator surface, and the golden-file tests.
+- A return spanning more than one currency is either reported per currency or translated into one declared presentation currency at each flow's and the terminal value's as-of rate; nominal amounts in different currencies are never summed.
+- Returns resting on activity the ledger has not posted, or on incomplete inputs including a missing translation rate, render as labeled pro-forma or review-required rather than as the reported return, and every figure names its convention, period, currency, and completeness.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the brokerage-seam disposition, the shared kernel, the operator surface, and golden-file tests of the return kernels against worked examples.
 
 ### Source Modules
 
 - `SRC-BACKTESTING`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-FSHARP`
 - `SRC-LEDGER`
 - `SRC-CONTRACTS`
@@ -284,7 +285,7 @@ Rank 8 of the 2026-07 W10 depth slate and the largest row in the reconciliation 
 
 - One tolerance model reaches the matching engine, so every tolerance an operator can configure is one the engine actually applies.
 - Tolerances can be scoped to the account, currency, and transaction type they belong to.
-- An operator can see the effect of a proposed tolerance change against retained runs before committing it, and the committed change retains that simulation as its justification.
+- An operator can see the effect of a proposed tolerance change against retained runs before committing it, and what commits is the profile version the simulation previewed rather than whatever the profile has become since; drift returns the operator to a fresh preview, and the retained simulation is the justification for that exact committed profile.
 - A replayed result differs from the original run only because the tolerance differs, which requires both sides of that run to be retained as of it - the external statement population and the internal positions, cash, and ledger activity it was matched against - and replay determinism is proven before any simulation result reaches an operator.
 - Run-artifact retention reuses the existing stores rather than introducing a second artifact vocabulary and storage path.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the unified model, the retained artifacts, the determinism proof, and the preview surface.

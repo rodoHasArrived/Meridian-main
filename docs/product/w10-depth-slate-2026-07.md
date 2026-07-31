@@ -281,6 +281,12 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   intervening portfolio, cash, or ledger movement to the tolerance change. The internal side has to be
   retained immutably or version-addressed alongside the existing artifacts.
 - Match-kernel determinism is unverified and must be proven before any simulation result is shown.
+- The tolerance profile already carries a version, but the file-backed provider is a static load-only
+  class with no save, write, or compare-and-swap path. Adding an edit surface without a version
+  boundary lets a preview taken against version N be retained as justification for a commit that
+  lands on N+1 — the same preview-to-execute drift as the bulk-casework gap, in a different seam. The
+  commit needs to carry the expected profile version and a receipt binding the proposed profile to
+  the run inputs it was previewed against.
 
 ### `W10-RECON-004` — learned matching
 
@@ -314,6 +320,15 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   explicitly documented and labeled approximation.
 - The extended internal rate of return kernel is internal to the backtesting assembly and unreachable
   from the ledger and financial-operations lanes.
+- **Capital-account activity is partitioned by currency.** The projection builder groups subledger
+  entries by capital account, investor, *and* currency, so an investor transacting in two currencies
+  has two activity rows. Summing their nominal amounts into one cash-flow series produces a figure
+  with no meaning — a USD contribution against a EUR distribution — while still satisfying every
+  completeness label. Returns need per-currency reporting or translation at each flow's as-of rate,
+  with a missing rate blocking the figure.
+- The investor and capital-account activity projection — cash-flow dates, investor identity, and
+  posted state — is owned by the Financial Operations design module, not by Ledger. A kernel built
+  from Ledger and Contracts alone would bypass the authoritative investor cash-flow source.
 
 ### `W10-CONSOL-001` — intercompany elimination
 
