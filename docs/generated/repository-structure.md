@@ -1841,6 +1841,7 @@ Meridian-main
 │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── README.md
+│   │   ├── w10-depth-slate-2026-07.md
 │   │   ├── web-ui-improvements-brainstorm-2026-07.md
 │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   ├── web-ui-report-run-stream-blueprint-2026-07.md
@@ -4920,6 +4921,7 @@ Meridian-main
 │   │   ├── IDepreciationScheduleCalculator.cs
 │   │   ├── ILedgerReportBinaryRenderer.cs
 │   │   ├── IReadOnlyLedger.cs
+│   │   ├── IWashSaleReplacementResolver.cs
 │   │   ├── JournalEntry.cs
 │   │   ├── JournalEntryMetadata.cs
 │   │   ├── JournalEvidenceReference.cs
@@ -4967,6 +4969,7 @@ Meridian-main
 │   │   ├── LedgerTaxLotBasisAdjuster.cs
 │   │   ├── LedgerTaxLotBasisAdjustment.cs
 │   │   ├── LedgerTaxLotBasisAdjustmentKind.cs
+│   │   ├── LedgerTaxLotReliefHistoryProjector.cs
 │   │   ├── LedgerTaxLotReliefInput.cs
 │   │   ├── LedgerTaxLotReliefMethod.cs
 │   │   ├── LedgerTaxLotReliefProjection.cs
@@ -5018,6 +5021,7 @@ Meridian-main
 │   │   ├── ShareClass.cs
 │   │   ├── ShareClassUnitRegisterProjector.cs
 │   │   ├── StalePricePolicy.cs
+│   │   ├── TaxCharacter.cs
 │   │   ├── WashSale.cs
 │   │   └── YearEndClose.cs
 │   ├── Meridian.LifecycleSupervisor
@@ -5398,7 +5402,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_024__tax_lot_average_cost_method.sql
 │   │   │   │   ├── V_ledger_025__global_posting_command_identity.sql
 │   │   │   │   ├── V_ledger_026__journal_leg_currency.sql
-│   │   │   │   └── V_ledger_027__atomic_tax_lot_posting.sql
+│   │   │   │   ├── V_ledger_027__atomic_tax_lot_posting.sql
+│   │   │   │   └── V_ledger_028__wash_sale_activation.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5417,7 +5422,10 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
-│   │   │   └── PostgresLedgerJournalStore.Validation.cs
+│   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
+│   │   │   ├── PostgresLedgerJournalStore.Validation.cs
+│   │   │   ├── PostgresLedgerJournalStore.WashSale.cs
+│   │   │   └── WashSaleDeferralRecord.cs
 │   │   ├── Maintenance
 │   │   │   ├── ArchiveMaintenanceModels.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManager.cs
@@ -8592,8 +8600,10 @@ Meridian-main
 │   │   │   ├── LedgerReportPackTestData.cs
 │   │   │   ├── LedgerReportRendererCompositionTests.cs
 │   │   │   ├── LedgerScheduledExportFormatTests.cs
+│   │   │   ├── LedgerTaxCharacterTests.cs
 │   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
 │   │   │   ├── LedgerTaxLotReliefWashSaleTests.cs
+│   │   │   ├── LedgerWashSaleActivationTests.cs
 │   │   │   ├── LotConsumptionTests.cs
 │   │   │   ├── NavPerUnitAndEqualizationTests.cs
 │   │   │   ├── PartnersCapitalAllocationBreakoutTests.cs

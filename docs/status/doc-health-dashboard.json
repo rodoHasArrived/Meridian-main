@@ -1,11 +1,11 @@
 {
-  "total_files": 637,
-  "total_lines": 114999,
-  "orphaned_count": 258,
+  "total_files": 638,
+  "total_lines": 115749,
+  "orphaned_count": 259,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 218,
-  "average_lines": 180.5,
+  "todo_count": 220,
+  "average_lines": 181.4,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -225,6 +225,7 @@
     "docs/plans/report-writer-auto-preview-blueprint.md",
     "docs/product/adversarial-program-review-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
+    "docs/product/w10-depth-slate-2026-07.md",
     "docs/product/web-ui-report-run-stream-blueprint-2026-07.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -509,7 +510,7 @@
     },
     {
       "path": ".agents/skills/meridian-brainstorm/CHANGELOG.md",
-      "line_count": 54,
+      "line_count": 122,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -517,7 +518,7 @@
     },
     {
       "path": ".agents/skills/meridian-brainstorm/references/competitive-landscape.md",
-      "line_count": 77,
+      "line_count": 118,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -525,7 +526,7 @@
     },
     {
       "path": ".agents/skills/meridian-brainstorm/references/idea-dimensions.md",
-      "line_count": 233,
+      "line_count": 330,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -533,7 +534,7 @@
     },
     {
       "path": ".agents/skills/meridian-brainstorm/SKILL.md",
-      "line_count": 273,
+      "line_count": 309,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2573,7 +2574,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9617,
+      "line_count": 9627,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2940,6 +2941,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/w10-depth-slate-2026-07.md",
+      "line_count": 149,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/web-ui-improvements-brainstorm-2026-07.md",
       "line_count": 266,
       "has_heading": true,
@@ -3293,7 +3302,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 843,
+      "line_count": 1181,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3301,7 +3310,7 @@
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 52,
+      "line_count": 63,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
