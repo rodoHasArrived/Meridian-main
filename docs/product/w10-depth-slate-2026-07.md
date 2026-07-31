@@ -31,6 +31,14 @@ new code.** Verified at adoption time against current source:
 - The wash-sale and tax-character engine terminates in one report-pack CSV artifact that no endpoint
   serves and no screen reads.
 
+Return measurement is the exception — a genuine gap rather than an unwired one — but it is narrower
+than a first pass suggested. A brokerage-sourced fund-account performance endpoint already exists,
+returning a single-period cash-adjusted return (ending equity minus beginning equity minus net cash
+flow) over balance snapshots. It is registered inline with no constant in `UiApiRoutes.cs`, which is
+why a route-constant search misses it. What is absent is ledger-derived, time-weighted,
+money-weighted, and investor-level return — so `W10-PERF-001` extends or supersedes that seam rather
+than building beside it.
+
 The ordering is truth and identity first, then the shared seam later rows depend on, then
 reconciliation economics, then accounting depth, then genuinely new capability last.
 
@@ -47,7 +55,7 @@ reconciliation economics, then accounting depth, then genuinely new capability l
 | 7 | `W10-SEAM-001` | Unified close-readiness projection behind one shared contract | consolidation | Five readiness encodings, and the console aggregates client-side so the desktop lane must fork it |
 | 8 | `W10-RECON-003` | Unified tolerance model and what-if replay workbench | new capability | Changing a tolerance is a blind edit discovered on the next production run |
 | 9 | `W10-RECON-004` | Operator-taught match rules with promotion gate | new capability | Every manual match is discarded; the governed-autonomy answer to agentic reconciliation |
-| 10 | `W10-PERF-001` | Portfolio and investor return measurement | new capability | 855 shared routes and not one reports what a portfolio returned |
+| 10 | `W10-PERF-001` | Portfolio and investor return measurement | new capability | The only return today is a brokerage single-period cash-adjusted figure; nothing is ledger-derived, time-weighted, or investor-level |
 | 11 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views | new capability | Consolidated trial balances double-count; the enum value for the fix has no producer |
 
 ## Ordering Rationale
@@ -98,19 +106,28 @@ conventional per-area numbering and rank is recorded in this document's table in
 
 ## Production-Readiness Tracker Mapping
 
+Mapped conservatively. A row appears here only where it advances the tracker control as that control
+is actually defined; where no honest relationship exists the cell is empty, because a wrong mapping
+lets release planning count W10 delivery against an unrelated production blocker.
+
 | Roadmap row | Related tracker rows |
 | --- | --- |
-| `W10-MARK-001` | `PRD-005` (no authoritative-looking output without authoritative inputs), `PRD-000` |
-| `W10-RECON-001` | `PRD-101` (deterministic reconciliation semantics), `PRD-007` |
-| `W10-PROV-001` | `PRD-017` (evidence-chained artifacts), `PRD-005` |
+| `W10-MARK-001` | `PRD-005` (no authoritative-looking output without authoritative inputs) |
+| `W10-RECON-001` | `PRD-101` (deterministic reconciliation semantics) |
+| `W10-PROV-001` | `PRD-005` (authoritative as-of outputs with retained support) |
 | `W10-RECON-002` | `PRD-101`, `PRD-007` (retained case evidence under bulk action) |
 | `W10-JRNL-001` | `PRD-003`, `PRD-004` (governed posting boundary and close safety), `PRD-007` (durable workflow state) |
-| `W10-TAX-001` | `PRD-005`, `PRD-017` |
+| `W10-TAX-001` | `PRD-005` |
 | `W10-SEAM-001` | `PRD-100`, `PRD-110` (workstation surface honesty and route parity) |
-| `W10-RECON-003` | `PRD-101` (deterministic matching), `PRD-010` |
+| `W10-RECON-003` | `PRD-101` (deterministic matching) |
 | `W10-RECON-004` | `PRD-101`, `PRD-007` |
 | `W10-PERF-001` | `PRD-005` (authoritative as-of outputs); mark-gap periods must block rather than interpolate |
 | `W10-CONSOL-001` | `PRD-003` (governed posting boundary for elimination drafts) |
+
+Three mappings from the first draft were removed as incorrect: `PRD-000` governs deployment-posture
+parsing and supported startup policy, not valuation freshness; `PRD-010` governs provider and
+statement ingress security with bounded parsing, not tolerance replay; `PRD-017` governs
+documentation automation and same-commit drift, not product evidence artifacts.
 
 ## What This Slate Is Not
 

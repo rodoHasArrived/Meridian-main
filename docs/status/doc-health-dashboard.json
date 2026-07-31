@@ -1,11 +1,11 @@
 {
   "total_files": 638,
-  "total_lines": 115749,
-  "orphaned_count": 259,
+  "total_lines": 115772,
+  "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 181.4,
+  "average_lines": 181.5,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -225,7 +225,6 @@
     "docs/plans/report-writer-auto-preview-blueprint.md",
     "docs/product/adversarial-program-review-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
-    "docs/product/w10-depth-slate-2026-07.md",
     "docs/product/web-ui-report-run-stream-blueprint-2026-07.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -2934,7 +2933,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 254,
+      "line_count": 257,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2942,7 +2941,7 @@
     },
     {
       "path": "docs/product/w10-depth-slate-2026-07.md",
-      "line_count": 149,
+      "line_count": 166,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3302,7 +3301,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 1181,
+      "line_count": 1184,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

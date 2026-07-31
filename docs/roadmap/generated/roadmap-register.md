@@ -151,16 +151,17 @@ Rank 1 of the 2026-07 W10 depth slate. The daily portfolio pricing policy defaul
 
 ### Current Summary
 
-Rank 10 of the 2026-07 W10 depth slate and the one genuinely new capability in it. Meridian can prove a valuation but cannot state what a portfolio returned. There is no time-weighted, money-weighted, or Modified Dietz calculation anywhere outside the backtesting lane, no performance route among the shared workstation routes, and the extended internal rate of return kernel is internal to the backtesting assembly. Three inputs are missing rather than merely unwired. Daily pricing produces a single-day projection with no cross-day series, the capital-account subledger supplies dated investor cash flows but no residual ending value, and the kernel is unreachable. It is sequenced last because it depends on the mark discipline in W10-MARK-001 and the proof drawer in W10-PROV-001 to be honest.
+Rank 10 of the 2026-07 W10 depth slate and the one genuinely new capability in it. A brokerage-sourced performance surface already exists and this row must extend or deliberately supersede it rather than build beside it. The fund-account performance endpoint served from BrokeragePortfolioSyncService returns a single-period cash-adjusted return, computed as ending equity minus beginning equity minus net cash flow over brokerage balance snapshots for one linked account, and it is registered inline without a shared route constant. What does not exist is ledger-derived return measurement, time-weighted return with sub-period chaining, money-weighted return that honors cash-flow timing, and investor-level return over capital-account activity. Three inputs are also missing rather than merely unwired. Daily pricing produces a single-day projection with no cross-day series, the capital-account subledger supplies dated investor cash flows but no residual ending value, and the extended internal rate of return kernel is internal to the backtesting assembly. It is sequenced last because it depends on the mark discipline in W10-MARK-001 and the proof drawer in W10-PROV-001 to be honest.
 
 ### Exit Criteria
 
+- The existing brokerage cash-adjusted performance seam is either extended to carry the new measures or explicitly superseded with the reason recorded, and no parallel performance API is introduced beside it.
 - A shared deterministic return kernel covering extended internal rate of return and time-weighted return is reachable from the ledger and financial-operations lanes rather than confined to the backtesting assembly.
-- Daily pricing projections persist as a dated series sufficient to chain sub-period returns.
+- Time-weighted return chains sub-period returns from a persisted dated pricing series rather than reporting a single-period simple return across the whole window.
 - Investor-level money-weighted return resolves both the dated capital-activity series and a residual ending value, and unapproved activity is excluded.
-- Any period containing a mark gap renders as review-required rather than an interpolated return, and every returned figure names its convention, its period, and its mark completeness.
+- Every returned figure names its convention, its period, its source lane, and its mark completeness, and any period containing a mark gap renders as review-required rather than an interpolated return.
 - Golden-file tests cover the return kernels against worked examples.
-- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the shared kernel, the persisted series, the residual value resolution, the operator surface, and the golden-file tests.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the brokerage-seam disposition, the shared kernel, the persisted series, the residual value resolution, the operator surface, and the golden-file tests.
 
 ### Source Modules
 
@@ -249,7 +250,8 @@ Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than c
 ### Exit Criteria
 
 - The statement break classifier is injected with a configurable workflow policy and its canonical break type, recommended action, materiality, and absolute variance are persisted on the break rather than discarded.
-- The reconciliation queue presents clusters as the top layer with individual breaks as the drill-down, grouped over break type, counterparty, currency, sign, variance band, and lineage key.
+- The reconciliation queue presents clusters as the top layer with individual breaks as the drill-down, grouped over break type, counterparty, currency, sign, and variance band.
+- Lineage identity is retained on each cluster member for diffing and evidence but is excluded from the grouping key, so breaks that share a cause still share a cluster.
 - Bulk resolution runs through the existing dry-run and execute rails, and the dry run is surfaced to the operator as a preview before any state changes.
 - Every member break of a resolved cluster retains its own hash-chained case transition and actor alongside a reference to the shared cluster justification.
 - Clusters above the materiality threshold require the same approval separation an individual material break requires.
@@ -309,7 +311,8 @@ Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes toda
 ### Exit Criteria
 
 - A manual match captures a generalizable draft rule covering counterparty, normalized description tokens, account, sign, and tolerance band without acting on it.
-- Draft rules accumulate shadow-match hit counts across runs and are offered for promotion only after meeting a stated accuracy threshold.
+- Draft rules accumulate shadow matches that an operator adjudicates as correct or incorrect, and a raw hit count never substitutes for an adjudicated outcome.
+- Promotion requires a minimum adjudicated sample size and a stated precision or false-positive bound, so a broad rule cannot become promotable by accumulating unlabeled matches.
 - The matching engine exposes an ordered stage collection so a promoted rule participates as an explicitly labeled stage rather than through edits scattered across the fixed ladder.
 - Every match produced by a learned rule names that rule and its promoting operator in retained evidence, and no unpromoted pattern ever produces a match.
 - The learned matching model lives in one place rather than forking a second vocabulary alongside the existing reconciliation types in the functional calculation projects.
