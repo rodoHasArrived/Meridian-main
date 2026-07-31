@@ -59,10 +59,11 @@ Provider validation packets and DK1 operator sign-off are the baseline evidence 
 
 ### Current Summary
 
-Rank 11 of the 2026-07 W10 depth slate. The ledger book contracts already define intercompany and consolidation-elimination journal sources, and the fund ledger book already produces a consolidated trial balance by summing its sub-ledgers with no elimination pass, so consolidated views double-count intercompany balances and the enum value for the correction has no producer. This row adds the elimination pass as reviewable drafts on the existing approval rail plus an unmatched-intercompany report. Scope is deliberately limited to wholly owned fully consolidated entities so the work stops short of the deferred capital-structure modeling boundary.
+Rank 11 of the 2026-07 W10 depth slate. Intercompany and consolidation-elimination already exist as accounting treatment kinds on the shared ledger book contracts, selected through the accounting policy rule that also carries journal template, evidence, approval, and auto-posting settings. What is missing is a treatment rule that produces elimination drafts and an elimination pass over the consolidated view. The fund ledger book produces a consolidated trial balance by summing its sub-ledgers with no elimination step, so consolidated views double-count intercompany balances while the treatment kind for the correction has no rule behind it. This row defines that rule on the existing policy seam rather than introducing a parallel discriminator, and adds an unmatched-intercompany report. Scope is deliberately limited to wholly owned fully consolidated entities so the work stops short of the deferred capital-structure modeling boundary.
 
 ### Exit Criteria
 
+- The consolidation-elimination treatment kind is driven by an accounting policy rule on the existing contract seam, with no parallel source or treatment discriminator introduced beside it.
 - Intercompany pairs resolve from the counterparty entity dimension on ledger line dimensions rather than from naming conventions.
 - Proposed eliminations enter the existing journal draft and approval rail as reviewable drafts and are never auto-posted.
 - Consolidated views offer a gross and eliminated presentation and state which one is being displayed.
@@ -120,7 +121,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 
 ### Current Summary
 
-Rank 1 of the 2026-07 W10 depth slate. The daily portfolio pricing policy defaults its stale-price handling to Disabled, so an arbitrarily old mark can price a valuation without saying so, while the one production construction site already passes an explicit blocking policy. This row makes fail-closed the default, consolidates the overlapping mark-price quality freshness control into a single owner, and surfaces mark age wherever positions appear. It discharges part of RISK-SIM-REAL-001 under the same truth doctrine as W9-TRUTH-001, which is why it is pulled ahead of the rest of the slate.
+Rank 1 of the 2026-07 W10 depth slate. The daily portfolio pricing policy defaults its stale-price handling to Disabled, so an arbitrarily old mark can price a valuation without saying so, while the one production construction site already passes an explicit blocking policy. This row makes fail-closed the default, consolidates the overlapping mark-price quality freshness control into a single owner, and surfaces mark age wherever positions appear. It discharges RISK-STALE-MARK-001 and follows the same fail-closed truth doctrine as W9-TRUTH-001, which is why it is pulled ahead of the rest of the slate. An aged mark is real data presenting as current rather than simulated data presenting as real, so it is tracked as its own risk instead of counting against the simulation risk.
 
 ### Exit Criteria
 
@@ -165,6 +166,7 @@ Rank 10 of the 2026-07 W10 depth slate and the one genuinely new capability in i
 
 ### Source Modules
 
+- `SRC-BACKTESTING`
 - `SRC-FSHARP`
 - `SRC-LEDGER`
 - `SRC-CONTRACTS`

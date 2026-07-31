@@ -26,8 +26,15 @@ risks:
     status: open
     severity: high
     owner_lane: Data Confidence and Validation
-    mitigation: W9-TRUTH-001 makes simulation labeling mandatory across both workstations and requires supported production profiles to fail closed when in-memory or placeholder persistence is selected for a durable role; W9-DEMO-002 keeps seeded demo data durable, labeled, and isolated from non-demo data roots; W10-MARK-001 extends the same doctrine to valuation inputs by making the stale-mark policy fail closed by default so an aged mark can no longer price a valuation silently.
+    mitigation: W9-TRUTH-001 makes simulation labeling mandatory across both workstations and requires supported production profiles to fail closed when in-memory or placeholder persistence is selected for a durable role; W9-DEMO-002 keeps seeded demo data durable, labeled, and isolated from non-demo data roots.
     related_roadmap_items:
       - W9-TRUTH-001
       - W9-DEMO-002
+  - id: RISK-STALE-MARK-001
+    title: Aged valuation inputs can price current outputs without disclosure
+    status: open
+    severity: high
+    owner_lane: Accounting and Ledger
+    mitigation: W10-MARK-001 makes the stale-price policy fail closed by default rather than accepting an unbounded mark age, consolidates the overlapping stale-price and mark-price-quality freshness controls into one owner, surfaces mark age wherever positions appear, and renders valuations resting on an aged or missing mark as review-required with the offending positions named.
+    related_roadmap_items:
       - W10-MARK-001

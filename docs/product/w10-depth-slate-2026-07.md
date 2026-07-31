@@ -93,8 +93,10 @@ release commit.
 exceptions, and they are pulled forward because they *serve* the release gate rather than compete
 with it:
 
-- `W10-MARK-001` discharges part of `RISK-SIM-REAL-001` and applies the `W9-TRUTH-001` fail-closed
-  doctrine to the one input that most quietly corrupts a valuation.
+- `W10-MARK-001` discharges `RISK-STALE-MARK-001` and applies the `W9-TRUTH-001` fail-closed
+  doctrine to the one input that most quietly corrupts a valuation. It is tracked as its own risk
+  rather than against `RISK-SIM-REAL-001`: an aged mark is real data presenting as current, not
+  simulated data presenting as real, and conflating them would overstate simulation-safety burn-down.
 - `W10-SEAM-001` removes a client-side fork of product state that the WPF parity lane would
   otherwise duplicate into the desktop workstation.
 
