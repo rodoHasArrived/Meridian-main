@@ -68,7 +68,8 @@ Rank 11 of the 2026-07 W10 depth slate. Intercompany and consolidation-eliminati
 - Proposed eliminations enter the existing journal draft and approval rail as reviewable drafts and are never auto-posted.
 - Consolidated views offer a gross and eliminated presentation and state which one is being displayed.
 - Intercompany balances that do not agree between the two sides surface as their own reported break class rather than being silently netted.
-- Scope is limited to wholly owned fully consolidated entities, and ownership percentages, partial consolidation, and minority interest are explicitly excluded from this row.
+- The elimination run resolves its as-of consolidation perimeter from the authoritative effective-dated ownership graph and rejects any entity whose ownership is missing, expired, or below full ownership, so the wholly-owned boundary is enforced rather than asserted. Ownership links already carry an ownership percentage with effective-from and effective-to dates; without resolving against them a caller-selected entity could receive full eliminations while sitting outside this row's scope.
+- Scope is limited to wholly owned fully consolidated entities, and partial consolidation and minority interest are explicitly excluded from this row.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the pair resolution, the elimination drafts, the consolidated presentation, and the unmatched-intercompany tests.
 
 ### Source Modules
@@ -98,6 +99,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 - A restored schedule resolves its journal template, with version, and an authoritative period-lock source from durable state rather than from process memory. A schedule retains only a template identifier while the template book and the locked-period book are separate in-memory fields today, so persisting the schedule alone would leave a restarted worker unable to materialize its journal or evaluate its lock.
 - A registered hosted worker materializes due occurrences into automated journal drafts on its cadence and a repeated run is a no-op through the retained occurrence idempotency key.
 - Generated drafts enter the existing automated journal approval rail and the runner never submits, approves, or posts a journal entry.
+- A recurring occurrence carries retained source evidence and an evidence assessment through the same admission gate the existing automated intake applies, failing closed when evidence is absent, and that evidence stays attached through posting. Persistence, period-lock, and idempotency checks alone would otherwise let an operator approve a recurring entry with nothing supporting it.
 - Occurrences blocked by a locked period surface the lock owner and the governed reopen path rather than failing silently.
 - The accounting journal draft queue shows a recurring lane covering what the calendar generated, what awaits approval, and what a period lock blocked.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the durable store, the hosted worker, the intake request, and the restart and idempotency tests.
@@ -129,6 +131,7 @@ Rank 1 of the 2026-07 W10 depth slate. The daily portfolio pricing policy defaul
 - The default daily pricing policy blocks marks older than a configured bound instead of accepting them silently.
 - Every construction site of the daily portfolio pricing policy passes an explicit freshness policy rather than relying on an implicit default.
 - Valuations resting on a stale or missing mark render as review-required with the offending positions named, never as plausible-looking values.
+- A mark dated after the valuation date is blocked or surfaced as its own invalid-observation state rather than treated as fresh. The current assessment computes a negative age for a future mark, clamps it to zero, and returns fresh, with a test pinning that behavior, so a price that was not observable as of the valuation date passes the freshness gate today.
 - The overlapping stale-price and mark-price-quality freshness controls resolve to one owner rather than two independently configured gates.
 - A preview reports how many current valuations the new default would block before the change is enabled, and operator overrides are dated, approved, and retained as evidence.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the policy default, the consolidated freshness control, the operator surfaces, and the fail-closed tests.
@@ -160,7 +163,7 @@ Rank 10 of the 2026-07 W10 depth slate and the one genuinely new capability in i
 - The existing brokerage cash-adjusted performance seam is either extended to carry the new measures or explicitly superseded with the reason recorded, and no parallel performance API is introduced beside it.
 - A shared deterministic return kernel covering extended internal rate of return and time-weighted return is reachable from the ledger and financial-operations lanes rather than confined to the backtesting assembly.
 - Time-weighted return chains sub-period returns from a persisted dated pricing series rather than reporting a single-period simple return across the whole window.
-- Investor-level money-weighted return resolves both the dated capital-activity series and a residual ending value, and unapproved activity is excluded.
+- Investor-level money-weighted return resolves both the dated capital-activity series and a residual ending value, and its cash flows are backed by posted ledger activity rather than by approval state alone. The subledger records approval state and posted state separately, so admitting an approved but unposted event would put activity into the return that the ledger-derived residual value does not yet carry. Any return that includes unposted activity renders as a separately labeled pro-forma figure rather than as the reported return.
 - Every returned figure names its convention, its period, its source lane, and its mark completeness, and any period containing a mark gap renders as review-required rather than an interpolated return.
 - Golden-file tests cover the return kernels against worked examples.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the brokerage-seam disposition, the shared kernel, the persisted series, the residual value resolution, the operator surface, and the golden-file tests.
@@ -233,6 +236,7 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-STRATEGIES`
 - `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 
 ## W10-RECON-002 - Break clustering and bulk-resolution activation
@@ -314,6 +318,7 @@ Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes toda
 ### Exit Criteria
 
 - A manual match captures a generalizable draft rule covering counterparty, normalized description tokens, account, sign, and tolerance band without acting on it.
+- A learned stage retains the immutable identity predicates the existing matcher already enforces, covering match kind and currency or instrument identity, so a promoted pattern can never act across a different record kind or currency. Position, cash, and transaction matching are deliberately separate ladders and currency equality is a prerequisite today; a rule generalized without them could let a reviewed pattern in one currency suppress an unrelated break in another.
 - Draft rules accumulate shadow matches that an operator adjudicates as correct or incorrect, and a raw hit count never substitutes for an adjudicated outcome.
 - Promotion requires a minimum adjudicated sample size and a stated precision or false-positive bound, so a broad rule cannot become promotable by accumulating unlabeled matches.
 - The matching engine exposes an ordered stage collection so a promoted rule participates as an explicitly labeled stage rather than through edits scattered across the fixed ladder.
