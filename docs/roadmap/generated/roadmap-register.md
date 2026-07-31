@@ -64,7 +64,7 @@ Rank 11 of the 2026-07 W10 depth slate. Intercompany and consolidation-eliminati
 ### Exit Criteria
 
 - The consolidation-elimination treatment kind is driven by an accounting policy rule on the existing contract seam, with no parallel source or treatment discriminator introduced beside it.
-- Intercompany pairs resolve from the counterparty entity dimension on ledger line dimensions rather than from naming conventions.
+- Intercompany pairs resolve from reciprocal posting-entity and counterparty-entity pairs on ledger line dimensions, scoped by account and currency, rather than from the counterparty dimension alone or from naming conventions. Posting entity and counterparty are separate optional dimensions and the consolidated book key carries no legal-entity identity, so matching on counterparty alone can combine balances from unrelated entities facing the same affiliate.
 - Proposed eliminations enter the existing journal draft and approval rail as reviewable drafts and are never auto-posted.
 - Consolidated views offer a gross and eliminated presentation and state which one is being displayed.
 - Intercompany balances that do not agree between the two sides surface as their own reported break class rather than being silently netted.
@@ -95,6 +95,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 ### Exit Criteria
 
 - Recurring journal schedules and their posted-occurrence idempotency state persist durably and survive a restart, failing closed when the durable store is unavailable.
+- A restored schedule resolves its journal template, with version, and an authoritative period-lock source from durable state rather than from process memory. A schedule retains only a template identifier while the template book and the locked-period book are separate in-memory fields today, so persisting the schedule alone would leave a restarted worker unable to materialize its journal or evaluate its lock.
 - A registered hosted worker materializes due occurrences into automated journal drafts on its cadence and a repeated run is a no-op through the retained occurrence idempotency key.
 - Generated drafts enter the existing automated journal approval rail and the runner never submits, approves, or posts a journal entry.
 - Occurrences blocked by a locked period surface the lock owner and the governed reopen path rather than failing silently.
@@ -223,7 +224,7 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 
 - A break carries a lineage identity derived only from identifying dimensions, separate from the content fingerprint that legitimately changes when an amount changes.
 - Lineage identity survives a variance change, a tolerance change, and an as-of date change for the same underlying break.
-- The reconciliation queue reports new, persisting with age, and cleared counts against the prior run and defaults its filter to new items.
+- The reconciliation queue reports new, persisting with age, and cleared counts against the prior run, and defaults to every actionable open break rather than filtering to new ones. From the second run onward most unresolved work is persisting, so a new-only default would hide aging and SLA-pressured breaks behind an apparently empty queue. New is a distinguishing marker on a row, not a filter that suppresses the rest.
 - Break aging derived from lineage feeds the reconciliation SLA calculation so escalation pressure is visible before an SLA is missed.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the lineage key, the diff projection, the queue surface, and the identity-stability tests.
 
@@ -278,13 +279,13 @@ Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than c
 
 ### Current Summary
 
-Rank 8 of the 2026-07 W10 depth slate and the largest row in the reconciliation arc. Editing a matching tolerance today is a blind change discovered on the next production run. Two prerequisites stand in front of the preview itself. The tolerance model exists as three incompatible shapes and the matching engine consumes only the flattest of them, so the price, basis-point cash, and settlement-date rules are structurally unreachable, scoping is by profile identifier alone, and the file-backed provider is load-once and read-only with no write path and no edit surface. Separately the statement checkpoint store is a resumption cursor holding counts for the newest run per account, so nothing retained supports replay. This row unifies the tolerance model, retains replayable run artifacts, and only then builds the governed preview.
+Rank 8 of the 2026-07 W10 depth slate and the largest row in the reconciliation arc. Editing a matching tolerance today is a blind change discovered on the next production run. Two prerequisites stand in front of the preview itself. The tolerance model exists as three incompatible shapes and the matching engine consumes only the flattest of them, so the price, basis-point cash, and settlement-date rules are structurally unreachable, scoping is by profile identifier alone, and the file-backed provider is load-once and read-only with no write path and no edit surface. Separately the statement checkpoint store is a resumption cursor holding counts for the newest run per account, so it is not a replay surface, while the normalized-entity and match-result repositories that would serve as one already exist with file-backed implementations and are unregistered and unwired. This row unifies the tolerance model, activates and extends those retention repositories, and only then builds the governed preview.
 
 ### Exit Criteria
 
 - One tolerance model reaches the matching engine, so price, basis-point cash, and settlement-date rules are reachable rather than structurally discarded.
 - Tolerance scoping supports account, currency, and transaction-type dimensions rather than a single profile identifier.
-- Reconciliation runs retain the artifacts a replay requires, covering normalized rows, matched pairs, variances, and the tolerance profile version, rather than counts for the newest run per account.
+- Reconciliation runs retain the artifacts a replay requires by activating and extending the existing normalized-entity and match-result repositories, including any missing variance and tolerance-profile-version fields, rather than introducing a second artifact vocabulary and storage path. Those repositories and their file-backed implementations already exist and are currently unregistered and unwired, so this is activation work; the statement checkpoint store remains a resumption cursor and is not the retention surface.
 - A match-kernel determinism audit proves replay does not depend on wall-clock time or mutable reference data before any simulation result is shown to an operator.
 - A proposed tolerance change previews its effect against retained runs, naming the breaks it would newly auto-match and the previously escalated breaks it would suppress, and the committed change retains that simulation as its justification.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the unified model, the retained run artifacts, the determinism audit, and the preview surface.
@@ -308,7 +309,7 @@ Rank 8 of the 2026-07 W10 depth slate and the largest row in the reconciliation 
 
 ### Current Summary
 
-Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes today is discarded, so a recurring counterparty pattern is as unmatched on its tenth appearance as on its first. The match result contract already carries a rule identifier list and a human-readable explanation, so a learned rule can name itself in retained evidence with no contract change, but the matching engine is sealed with a hard-coded stage ladder and no stage abstraction, so an ordered stage collection must be introduced. Learned patterns accumulate as drafts that shadow-match without acting and only participate after an operator promotes them, keeping the system inside governed autonomy rather than deciding on its own.
+Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes today is discarded, so a recurring counterparty pattern is as unmatched on its tenth appearance as on its first. The match result the engine returns already carries a rule identifier list and a human-readable explanation, but that result is ephemeral and persistence keeps only its first rule identifier as a single tolerance-rule field with no promoting operator, so durable attribution needs a contract and storage change rather than riding on engine output. The matching engine is also sealed with a hard-coded stage ladder and no stage abstraction, so an ordered stage collection must be introduced. Learned patterns accumulate as drafts that shadow-match without acting and only participate after an operator promotes them, keeping the system inside governed autonomy rather than deciding on its own.
 
 ### Exit Criteria
 
@@ -316,6 +317,7 @@ Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes toda
 - Draft rules accumulate shadow matches that an operator adjudicates as correct or incorrect, and a raw hit count never substitutes for an adjudicated outcome.
 - Promotion requires a minimum adjudicated sample size and a stated precision or false-positive bound, so a broad rule cannot become promotable by accumulating unlabeled matches.
 - The matching engine exposes an ordered stage collection so a promoted rule participates as an explicitly labeled stage rather than through edits scattered across the fixed ladder.
+- Retained match records carry the full contributing rule list and the promoting operator rather than a single tolerance-rule identifier, so attribution survives a restart instead of living only in the engine's in-memory result.
 - Every match produced by a learned rule names that rule and its promoting operator in retained evidence, and no unpromoted pattern ever produces a match.
 - The learned matching model lives in one place rather than forking a second vocabulary alongside the existing reconciliation types in the functional calculation projects.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the draft capture, the promotion gate, the engine stage seam, and the rule-attribution tests.
@@ -378,9 +380,11 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 - The realized gain and loss contract carries the short-term, long-term, disallowed wash-sale, and recognized amounts rather than a single undifferentiated scalar.
 - A tax character contract type is defined in the shared contracts without those contracts taking a dependency on the ledger implementation assembly.
 - Position drill-down shows per-lot acquisition date, holding period, tax character, and, where a wash sale fired, the disallowed loss, the basis adjustment, and a link to the replacement lot that triggered it.
+- Wash-sale deferral decomposes per loss lot within a mixed gain and loss disposal, with regression evidence, before any surface presents wash-sale exposure as decision support. The projector currently computes deferral from the sale aggregate and returns no wash sale whenever the aggregate is nonnegative, so a mixed disposal containing loss shares reports zero exposure today.
 - A pending disposal can be previewed across all supported cost-basis relief methods showing realized gain, character split, and wash-sale exposure side by side, with method, lot set, and as-of date retained on every projection.
+- Until per-loss-lot decomposition lands, any mixed gain and loss disposal renders its wash-sale figure as incomplete rather than as a zero exposure, so the preview never presents a known-partial number as a settled one.
 - Changing an account standing relief policy mid-period requires approval and a retained rationale, and every surface presents the comparison as decision support rather than tax advice.
-- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the contract extension, the lot surface, the relief comparison, and the character and wash-sale projection tests.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the contract extension, the lot surface, the per-loss-lot decomposition, the relief comparison, and the character and wash-sale projection tests.
 
 ### Source Modules
 

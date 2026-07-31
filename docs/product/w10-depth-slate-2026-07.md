@@ -148,7 +148,8 @@ documentation automation and same-commit drift, not product evidence artifacts.
 ## Known Risks at Adoption
 
 1. **`W10-RECON-003` is the weakest row.** Its two prerequisites — unifying three incompatible
-   tolerance shapes, and retaining replayable run artifacts where only a resumption cursor exists —
+   tolerance shapes, and activating the unwired normalized-entity and match-result repositories that
+   replay retention needs, since the statement checkpoint store is only a resumption cursor —
    are each larger than the headline preview feature. Splitting the tolerance-model unification into
    its own row, or dropping the row from v1, is a live option.
 2. **`W10-SEAM-001` races the WPF parity lane.** It needs an explicit sequencing handshake with
