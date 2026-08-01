@@ -1166,6 +1166,7 @@ Meridian-main
 │       │   ├── sync-source-readmes.py
 │       │   ├── test-scripts.py
 │       │   ├── update-claude-md.py
+│       │   ├── validate-agent-definitions.py
 │       │   ├── validate-api-docs.py
 │       │   ├── validate-design-document-adaptation.py
 │       │   ├── validate-design-module-conformance.py
@@ -9172,6 +9173,7 @@ Meridian-main
 │   │   │   ├── AnalysisExportServiceBaseTests.cs
 │   │   │   ├── AnalysisExportWizardServiceTests.cs
 │   │   │   ├── ApiClientServiceTests.cs
+│   │   │   ├── ApiClientSingletonCollection.cs
 │   │   │   ├── ArchiveBrowserServiceTests.cs
 │   │   │   ├── AtomicPersistenceServiceTests.cs
 │   │   │   ├── BackendServiceManagerBaseTests.cs
