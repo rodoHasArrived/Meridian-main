@@ -22,8 +22,14 @@ Absent from source: `FixedAssetRecordDto` / `DepreciationMethodDto` / `Depreciat
 wire contracts — note the domain types above ship without a `Dto` counterpart),
 `IFixedAssetRegisterStore` and its Postgres migration, the posted-through watermark,
 `FixedAssetDepreciationService`, any depreciation route in `UiApiRoutes`, the dashboard `types.ts`
-DTOs, and the accounting-screen read model. Depreciation is computable but not yet storable,
-postable through the governed draft path, or operable.
+DTOs, and the accounting-screen read model.
+
+**The governed-draft seam itself is *not* missing — do not rebuild it.**
+`FixedAssetDepreciationDraftBuilder.BuildDraft` already returns an `AutomatedJournalDraft`, and
+`FixedAssetDepreciationDraftBuilderTests.BuildDraft_ProducesSubmittableApproval` verifies it enters
+`AutomatedJournalApproval` as `Submitted`. What remains is the **orchestration around** that seam —
+a service to drive it, a durable store to feed it, and the operator surfaces to trigger and review
+it. Depreciation is computable and draftable today; it is not yet storable or operable.
 
 Engines 1 (**repo / reverse-repo**) and 3 (**borrower-side term debt**) are design-only: there is no
 `Meridian.Application.Financing` project, no repo or borrowing projector, and no
@@ -683,7 +689,8 @@ PR3 Borrowings.
 - [x] `DepreciationScheduleCalculator` + `FixedAssetDepreciationProjector` +
       `FixedAssetDepreciationDraftBuilder`.
 - [ ] `IFixedAssetRegisterStore` + Postgres impl + migration + posted-through watermark.
-- [ ] `FixedAssetDepreciationService`; wire the `DepreciationPosted` governed draft path.
+- [ ] `FixedAssetDepreciationService` to orchestrate the already-shipped `DepreciationPosted`
+      draft seam (`FixedAssetDepreciationDraftBuilder` — do not rebuild it).
 - [ ] Endpoints + `types.ts` DTOs + accounting-screen read model.
 
 **What actually landed:** the in-memory calculation core only — `DepreciationScheduleCalculator`

@@ -16,7 +16,7 @@ one register. Add new blueprints here as well as to their lane index.
 
 | Blueprint | Home | Lane | Delivery state |
 |---|---|---|---|
-| [Repo Engine, Depreciation Schedule, and Borrower-Side Debt](financing-liabilities-depreciation-blueprint.md) | `docs/engineering/blueprints/` | Ledger / financing | **Partially implemented** — depreciation *calculation core* shipped (`DepreciationScheduleCalculator`, `FixedAssetDepreciationProjector`, `FixedAssetDepreciationDraftBuilder`, `AutomatedJournalEventKind.DepreciationPosted`). No fixed-asset store, migration, service, endpoints, or read model yet; repo and borrower-side debt remain design-only |
+| [Repo Engine, Depreciation Schedule, and Borrower-Side Debt](financing-liabilities-depreciation-blueprint.md) | `docs/engineering/blueprints/` | Ledger / financing | **Partially implemented** — depreciation *calculation core and governed-draft seam* shipped (`DepreciationScheduleCalculator`, `FixedAssetDepreciationProjector`, `FixedAssetDepreciationDraftBuilder` with a submittable-approval test, `AutomatedJournalEventKind.DepreciationPosted`). No fixed-asset store, migration, orchestrating service, endpoints, or read model yet; repo and borrower-side debt remain design-only |
 | [Full Incentive-Fee Mechanics](../../development/accounting-blueprints/incentive-fee-mechanics.md) | `docs/development/accounting-blueprints/` | Ledger / fund accounting | **Design** — no incentive-fee policy, hurdle calculator, or durable HWM/LCF state in source |
 | [Commitment & Capital-Call Engine](../../development/accounting-blueprints/commitment-and-capital-call-engine.md) | `docs/development/accounting-blueprints/` | Ledger / private capital | **Partially implemented** — domain and posting layers shipped (`PrivateCapitalCommitments`, `CommitmentRollForwardCalculator`, `CapitalCallDraftFactory`, `CapitalCallPlanBuilder`); persistence, endpoints, and workbench remain design-only |
 | [Equalization / Series Accounting](../../development/accounting-blueprints/equalization-and-series-accounting.md) | `docs/development/accounting-blueprints/` | Ledger / fund accounting | **Partially implemented** — `EqualizationCalculator` shipped as an *entry-exposure helper only* (no `GAV_cryst`, so it is not the §5.1/§5.2 crystallization math); lot-level Method A, Method B series accounting, persistence, and endpoints remain design-only |
@@ -134,16 +134,25 @@ inferred. Current recorded contract:
 - **High-water-mark ownership** — incentive-fee `Fork G` and equalization `§9`.
   **`incentive_fee_state` is the single durable owner of the HWM under both equalization methods**
   (incentive-fee §7.2). Fork G selects the *scope* of a row, not a different store:
-  `FundLevel` + Method A ⇒ one row per book, `series_id is null`, `high_water_mark` in fund NAV
-  terms; `InvestorSeries` + Method B ⇒ one row per series, `series_id` set,
-  `high_water_mark_per_share` in per-share terms. The scope is a **series, never an investor**;
-  per-investor HWM rows are not permitted under either method.
+  `FundLevel` + Method A ⇒ one row per book, `series_id is null`; `InvestorSeries` + Method B ⇒ one
+  row per series, `series_id` set. The scope is a **series, never an investor**; per-investor HWM
+  rows are not permitted under either method.
 
-  **Unit discipline.** The two HWM columns are in different units, and
-  `PartnershipInvestorAccountingProjector` works in total-NAV terms only. A series row's per-share
-  HWM must be multiplied by series units before the projector call and divided back before it is
-  persisted (equalization §6.1, incentive-fee §5.3). Passing a per-share HWM into a total-NAV
-  subtraction overstates the fee by roughly the unit count.
+  **The HWM is stored per share in both methods** (`high_water_mark_per_share`). A total-NAV HWM is
+  not invariant to capital flows — a subscription raises ending NAV without being gain, so the
+  projector would charge fee on contributed capital, and Method A's equalisation step cannot correct
+  it because that step preserves the projector's total and only redistributes it.
+  `PartnershipInvestorAccountingProjector` works in total-NAV terms only, so **every** call scales in
+  (`× unitsOutstanding`) and scales the candidate back out (`÷ unitsOutstanding`) before persisting
+  (equalization §6.1, incentive-fee §5.4). At zero units — a scope fully redeemed on a
+  crystallization date — do not divide: price on pre-redemption units and close the scope.
+
+  **Scope lifecycle.** `incentive_fee_state` carries a `status` (`Live` / `Closed` /
+  `Consolidated`); only `Live` scopes are hydrated, and the unique key is partial on it. Opening,
+  consolidating, and closing a scope are **single transactional adapter operations**
+  (`CreateSeriesWithStateAsync`, `ConsolidateSeriesStateAsync`, `CloseIncentiveFeeStateAsync`), not
+  sequences a caller composes — two store calls cannot give all-or-nothing, and a crash between them
+  leaves a series with no protected level.
 
   Two things are explicitly *not* HWM owners, both of which an earlier draft of this contract got
   wrong. `PartnershipInvestorAllocationInput.HighWaterMark` is a `sealed record` constructor

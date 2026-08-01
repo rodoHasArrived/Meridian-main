@@ -459,6 +459,17 @@ automatic and exact.
 > If `units_s` changes mid-period (a redemption out of the series — series take no new
 > subscriptions after issuance, §6.2), scale in with the **same** `units_s` used to scale out, or
 > the crystallised HWM will not round-trip.
+>
+> **This applies to Method A too**, with `units_s` = fund units outstanding. The fund-level scope
+> stores a per-share HWM for the same reason (§9): a total-NAV HWM would let a mid-period
+> subscription look like gain.
+>
+> **`units_s = 0` — full redemption on a crystallization date.** `CrystallizeOnRedemption` funds can
+> crystallize a scope that redeems out entirely, and the scale-out is undefined there. Do not divide:
+> compute the fee on the units outstanding **immediately before** the redemption, write no per-share
+> HWM, and close the scope (`CloseIncentiveFeeStateAsync`, `Status = Closed`). A later series for the
+> same investor is a new scope seeded at its own issue price, not a revival. Incentive-fee §5.4
+> carries the same rule on the roller side.
 
 ### 6.2 Roll-up / consolidation
 
@@ -785,18 +796,32 @@ public interface IFundSeriesStore
 > hydrates no HWM and can charge performance fee on the **entire** series NAV rather than on gains
 > above the issue price.
 >
-> Series creation is therefore a **two-store transaction**, and the ordered checklist (§14 step 6)
-> implements both halves together:
+> Two separate store calls **cannot** give that guarantee — a crash between them leaves exactly the
+> corrupt state described above — so this is a **single adapter operation owning one database
+> transaction**, not a sequence the caller composes:
 >
-> 1. `IFundSeriesStore.UpsertAsync(series)` — the series registry row.
-> 2. `SaveIncentiveFeeStateAsync` (incentive-fee §6.1) — a new `incentive_fee_state` row with
->    `series_id = series.SeriesId`, `high_water_mark_per_share = series.IssuePrice`,
->    `loss_carryforward = 0`, `accrued_fee_balance = 0`, `last_crystallized_date = null`.
+> ```csharp
+> // incentive-fee §6.1. Both rows commit or neither does.
+> Task<IncentiveFeeStateRecord> CreateSeriesWithStateAsync(
+>     FundSeriesDefinition series, IncentiveFeeStateRecord seedState, CancellationToken ct = default);
+> ```
 >
-> Both writes commit together or neither does; a series registered without its HWM row is a
-> corrupt state, not a recoverable one. Symmetrically, **consolidation** (§6.2) closes the absorbed
-> series' HWM row as part of `RecordConsolidationAsync` rather than leaving an orphan, and
-> **loading** a series for fee evaluation joins `incentive_fee_state` to obtain `HWM_s` — the value
+> The seed state is `series_id = series.SeriesId`,
+> `high_water_mark_per_share = series.IssuePrice`, `status = Live`, `loss_carryforward = 0`,
+> `accrued_fee_balance = 0`, `last_crystallized_date = null`.
+>
+> Two symmetric operations complete the lifecycle, for the same reason:
+>
+> - **Consolidation** (§6.2) → `ConsolidateSeriesStateAsync(consolidation)` records the
+>   consolidation *and* sets the absorbed scope's `Status = Consolidated` in one transaction.
+>   `RecordConsolidationAsync` alone would leave the absorbed scope indistinguishable from a live
+>   one, and `ListIncentiveFeeStatesAsync` would keep returning it as an active fee context.
+> - **Full redemption on a crystallization date** → `CloseIncentiveFeeStateAsync` sets
+>   `Status = Closed`. See the zero-units rule in incentive-fee §5.4: the fee is computed on
+>   pre-redemption units and no per-share HWM is written, because the divide-back is undefined at
+>   zero units.
+>
+> **Loading** a series for fee evaluation joins `incentive_fee_state` to obtain `HWM_s` — the value
 > on `FundSeriesDefinition` is a creation-time seed and must never be read as current state.
 
 ---
@@ -837,8 +862,15 @@ Method A is the lighter, recommended default.
 >
 > | Equalization method | Incentive-fee Fork G | HWM row in `incentive_fee_state` |
 > |---|---|---|
-> | Method A (default) | `FundLevel` (default) | One row per book, `series_id is null`, `high_water_mark` in fund NAV terms. No per-investor rows. |
-> | Method B | `InvestorSeries` | One row per series, `series_id` set, `high_water_mark_per_share` in per-share terms. |
+> | Method A (default) | `FundLevel` (default) | One row per book, `series_id is null`. No per-investor rows. |
+> | Method B | `InvestorSeries` | One row per series, `series_id` set. |
+>
+> **The HWM is stored per share in both methods** (`high_water_mark_per_share`) — which is what this
+> blueprint's glossary (§3) has always meant by `HWM`. A total-NAV HWM is not invariant to capital
+> flows: a subscription raises ending NAV without being gain, so the projector would charge fee on
+> contributed capital, and Method A's equalisation step cannot correct it because that step
+> preserves the projector's total fund fee and only redistributes it. Every projector call therefore
+> scales in (`× unitsOutstanding`) and scales back out (`÷ unitsOutstanding`) — §6.1.
 >
 > **This blueprint's `fund_series` table therefore does not carry a HWM column.** An earlier draft
 > proposed `fund_series.high_water_mark_per_share`; it is removed (§10.3) because it would compete
@@ -1179,10 +1211,11 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
 6. **Persistence** — add `V_ledger_033__equalization_policy.sql`,
    `V_ledger_034__equalization_subscription_lots.sql`, `V_ledger_035__fund_series.sql` (idempotent,
    `__SCHEMA__`); implement `IFundSeriesStore` + a Postgres adapter in `Meridian.Storage.Ledger`.
-   **In the same step**, wire series creation to write the matching `incentive_fee_state` row
-   (`series_id`, `high_water_mark_per_share = IssuePrice`) transactionally with the registry row,
-   close it on consolidation, and hydrate `HWM_s` from it on load (§7.3 note). Shipping
-   `IFundSeriesStore` on its own leaves every new series without a durable HWM.
+   **In the same step**, implement the three transactional ports from incentive-fee §6.1 —
+   `CreateSeriesWithStateAsync` (registry row + seeded `incentive_fee_state` row in one
+   transaction), `ConsolidateSeriesStateAsync`, and `CloseIncentiveFeeStateAsync` — and hydrate
+   `HWM_s` from `incentive_fee_state` on load (§7.3 note). Shipping `IFundSeriesStore` on its own
+   leaves every new series without a durable HWM.
 7. **Application service** — `IEqualizationProjectionService` /
    `EqualizationProjectionService` in `Meridian.FinancialOperations.Ledger`, dispatching on method
    and routing every posting set through `IAccountingJournalDraftService.BuildDraftAsync` with

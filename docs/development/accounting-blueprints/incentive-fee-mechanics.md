@@ -241,8 +241,17 @@ today's behavior for funds that do not opt in.
 >
 > | Fork G | Equalization method | HWM row in `incentive_fee_state` |
 > |---|---|---|
-> | `FundLevel` (default) | Method A — equalisation credit/debit (default) | Exactly one row per book, `series_id is null`, `high_water_mark` in fund NAV terms. Equalisation *reallocates* the one fund fee across subscription lots; no per-investor rows exist. |
-> | `InvestorSeries` | Method B — series of shares | One row per series, `series_id` set, `high_water_mark_per_share` in per-share terms. The fee projector runs once per series. |
+> | `FundLevel` (default) | Method A — equalisation credit/debit (default) | Exactly one row per book, `series_id is null`. Equalisation *reallocates* the one fund fee across subscription lots; no per-investor rows exist. |
+> | `InvestorSeries` | Method B — series of shares | One row per series, `series_id` set. The fee projector runs once per series. |
+>
+> **The HWM is stored per share in both methods** (`high_water_mark_per_share`), and the projector
+> is called with `HighWaterMark = high_water_mark_per_share × unitsOutstanding`. A total-NAV HWM is
+> *not* invariant to capital flows: a fund at HWM `10,000` with 100 shares that issues 100 more at
+> `100` has ending NAV `20,000` and zero market return, but the projector would compute
+> `0.20 × (20,000 − 10,000) = 2,000` of fee on pure contributed capital. Equalisation cannot undo
+> that — it preserves the projector's total fund fee and only redistributes it. Storing per share
+> makes the protected level invariant to subscriptions and redemptions, and matches what the
+> equalization blueprint's glossary has always meant by `HWM`.
 >
 > Two consequences, both of which earlier drafts of this contract got wrong:
 >
@@ -502,6 +511,18 @@ on a crystallization date the accrued balance **locks**, the HWM rolls forward t
 namespace Meridian.Ledger;
 
 public enum IncentiveResetMode { HighWaterMark, LossCarryforward, Both }
+
+/// <summary>
+/// Lifecycle of one HWM scope. Only Live scopes are hydrated for fee evaluation;
+/// ListIncentiveFeeStatesAsync filters to Live so a closed or absorbed scope can never be
+/// mistaken for an active one.
+/// </summary>
+public enum IncentiveFeeScopeStatus
+{
+    Live = 0,
+    Closed = 1,        // redeemed to zero units on a crystallization date
+    Consolidated = 2,  // Method B: absorbed into a lead series (equalization §6.2)
+}
 public enum IncentiveFeeAccountingModel { FundLevel, InvestorSeries }
 
 /// <summary>
@@ -516,8 +537,8 @@ public sealed record IncentiveFeeStateRecord(
     Guid LedgerBookId,
     string FundProfileId,
     string? SeriesId,                   // null == fund-level series (Method A)
-    decimal? HighWaterMark,             // fund NAV terms; set iff SeriesId is null
-    decimal? HighWaterMarkPerShare,     // per-share terms; set iff SeriesId is not null
+    decimal HighWaterMarkPerShare,      // PER SHARE in both methods — see the Fork G contract
+    IncentiveFeeScopeStatus Status,     // Live | Closed | Consolidated — see below
     decimal LossCarryforward,           // >= 0
     DateOnly? LastCrystallizedDate,
     decimal CumulativeCrystallizedFee,
@@ -559,12 +580,26 @@ Roll-forward rules (pure, in `IncentiveFeeStateRoller.Roll(prior, result, crysta
   This roller is the **only** writer of the HWM. Because `incentive_fee_state` is the single durable
   owner, no equalization-side code advances a HWM independently.
 
-  **Unit discipline on series rows.** `result.CandidateHighWaterMark` comes out of
-  `PartnershipInvestorAccountingProjector` in **total-NAV terms**, but a series row persists
-  `HighWaterMarkPerShare`. Divide by the series units outstanding used for that period's
-  `EndingNavBeforeFees` before writing, and multiply back when hydrating the next period's input
-  (equalization §6.1). Writing the total-NAV candidate straight into the per-share column silently
-  overstates every subsequent period's fee.
+  **Unit discipline — applies to every row, both methods.**
+  `result.CandidateHighWaterMark` comes out of `PartnershipInvestorAccountingProjector` in
+  **total-NAV terms**, but every row persists `HighWaterMarkPerShare`. Divide by the units
+  outstanding used for that period's `EndingNavBeforeFees` before writing, and multiply back when
+  hydrating the next period's input (equalization §6.1). Writing the total-NAV candidate straight
+  into the per-share column silently overstates every subsequent period's fee.
+
+  **Zero units — full redemption on a crystallization date.** `CrystallizeOnRedemption` funds can
+  crystallize a scope that redeems to zero units, where the divide-back is undefined. Handle it
+  explicitly rather than dividing:
+
+  - Compute the period's fee using the units outstanding **immediately before** the redemption —
+    that is the population the fee is owed on.
+  - Do **not** write a per-share HWM. Set `Status = Closed` (§5.3) and leave
+    `HighWaterMarkPerShare` at its prior value as a historical record; a closed scope is never
+    hydrated again.
+  - A scope that later re-opens (a new series with the same investor) is a **new row** with its own
+    issue-price seed, not a revival of the closed one.
+
+  The snapshot row still records the crystallized fee, so the audit trail is complete.
 
 ### 5.4 The policy aggregate
 
@@ -615,9 +650,16 @@ public sealed record IncentiveFeePolicy
 ```
 
 `HurdleType`, `HurdleBasis`, `IncentiveCrystallizationFrequency`, `IncentiveResetMode`, and
-`IncentiveFeeAccountingModel` are also mirrored as thin enums in `src/Meridian.Contracts/Ledger` (or the
-`Meridian.Ledger` enums are referenced directly from contracts, following how `LedgerTaxLotReliefMethod`
-is shared) so DTOs in Section 7 can name them.
+`IncentiveFeeAccountingModel` **must be mirrored as thin enums in `src/Meridian.Contracts/Ledger`**
+so the Section 7 DTOs can name them.
+
+> Referencing the `Meridian.Ledger` enums directly from contracts is **not** an option, though an
+> earlier draft of this blueprint offered it. `Meridian.Contracts` has no `ProjectReference` at all
+> — it is a leaf, and the graph runs `Meridian.Ledger` → `Meridian.Core` → `Meridian.Contracts`, so
+> a direct reference would need Contracts→Ledger and invert it. The `LedgerTaxLotReliefMethod`
+> precedent that draft cited does not support the claim either: that enum lives in
+> `src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs`, so Contracts cannot name it directly for the
+> same reason. See the [register's DTO-layering convention](../../engineering/blueprints/README.md#dto-layering).
 
 ---
 
@@ -642,9 +684,31 @@ Task<IReadOnlyList<IncentiveFeePolicyRecord>> ListIncentiveFeePoliciesAsync(Guid
 Task<IncentiveFeeStateRecord?> GetIncentiveFeeStateAsync(Guid ledgerBookId, string? seriesId, CancellationToken ct = default)
     => Task.FromException<IncentiveFeeStateRecord?>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
-/// <summary>All live HWM scopes for a book: one row under Method A, one per series under Method B.</summary>
+/// <summary>Live HWM scopes for a book (status = Live only): one row under Method A, one per series under Method B.</summary>
 Task<IReadOnlyList<IncentiveFeeStateRecord>> ListIncentiveFeeStatesAsync(Guid ledgerBookId, CancellationToken ct = default)
     => Task.FromException<IReadOnlyList<IncentiveFeeStateRecord>>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
+
+/// <summary>
+/// Method B: open a series and its HWM scope in ONE database transaction. Both rows commit or
+/// neither does — a series registered without its HWM scope is corrupt state, and two separate
+/// store calls cannot give that guarantee (a crash between them leaves exactly that).
+/// The adapter owns the transaction; callers never compose this from smaller operations.
+/// </summary>
+Task<IncentiveFeeStateRecord> CreateSeriesWithStateAsync(FundSeriesDefinition series, IncentiveFeeStateRecord seedState, CancellationToken ct = default)
+    => Task.FromException<IncentiveFeeStateRecord>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
+
+/// <summary>
+/// Method B: consolidate an absorbed series into its lead in ONE transaction — record the
+/// consolidation, set the absorbed scope's Status to Consolidated, and (per equalization §6.2)
+/// leave the lead scope's HWM untouched. Prevents an orphaned scope that ListIncentiveFeeStatesAsync
+/// would still return as live.
+/// </summary>
+Task ConsolidateSeriesStateAsync(SeriesConsolidation consolidation, CancellationToken ct = default)
+    => Task.FromException(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
+
+/// <summary>Close a scope that redeemed to zero units on a crystallization date (Status = Closed).</summary>
+Task CloseIncentiveFeeStateAsync(Guid stateRecordId, long expectedVersion, CancellationToken ct = default)
+    => Task.FromException(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>Persist rolled-forward state and its audit snapshot atomically; enforces optimistic Version.</summary>
 Task<IncentiveFeeStateRecord> SaveIncentiveFeeStateAsync(IncentiveFeeStateRecord state, IncentiveFeeStateSnapshotRecord snapshot, long expectedVersion, CancellationToken ct = default)
@@ -764,8 +828,11 @@ create table if not exists __SCHEMA__.incentive_fee_state (
     fund_profile_id text not null,
     -- Scope is a series, never an investor. This table is the single durable HWM owner.
     series_id text null,                               -- null == fund-level series (Method A)
-    high_water_mark numeric(38, 12) null,              -- fund NAV terms; set iff series_id is null
-    high_water_mark_per_share numeric(38, 12) null,    -- per-share terms; set iff series_id is not null
+    -- PER SHARE in both methods. A total-NAV HWM is not invariant to capital flows: a subscription
+    -- raises ending NAV without being gain, so the projector would charge fee on contributed
+    -- capital. Per-share is also what the equalization glossary means by HWM.
+    high_water_mark_per_share numeric(38, 12) not null,
+    status text not null default 'Live',               -- Live | Closed | Consolidated
     loss_carryforward numeric(38, 12) not null default 0,
     last_crystallized_date date null,
     cumulative_crystallized_fee numeric(38, 12) not null default 0,
@@ -775,19 +842,15 @@ create table if not exists __SCHEMA__.incentive_fee_state (
     updated_at timestamptz not null,
     version bigint not null default 0,
     constraint ck_incentive_fee_state_lcf check (loss_carryforward >= 0),
-    constraint ck_incentive_fee_state_hwm check (
-        coalesce(high_water_mark, high_water_mark_per_share) >= 0),
-    -- Exactly one HWM unit is populated, decided by scope. Prevents a row carrying both.
-    constraint ck_incentive_fee_state_hwm_scope check (
-        (series_id is null
-            and high_water_mark is not null and high_water_mark_per_share is null)
-     or (series_id is not null
-            and high_water_mark_per_share is not null and high_water_mark is null))
+    constraint ck_incentive_fee_state_hwm check (high_water_mark_per_share >= 0)
 );
 
--- One live series per (book, series); coalesce so the fund-level (null) series has a stable key.
+-- One LIVE scope per (book, series); coalesce so the fund-level (null) series has a stable key.
+-- Partial on status so a closed or consolidated scope stays queryable for history without
+-- blocking a replacement scope from being opened under the same key.
 create unique index if not exists ux_incentive_fee_state_book_series
-    on __SCHEMA__.incentive_fee_state (ledger_book_id, coalesce(series_id, ''));
+    on __SCHEMA__.incentive_fee_state (ledger_book_id, coalesce(series_id, ''))
+    where status = 'Live';
 
 create table if not exists __SCHEMA__.incentive_fee_state_snapshots (
     snapshot_id uuid primary key,
@@ -891,7 +954,7 @@ public sealed record IncentiveFeePolicyDto(
 
 public sealed record IncentiveFeeStateDto(
     string FundProfileId, string? SeriesId,
-    decimal? HighWaterMark, decimal? HighWaterMarkPerShare, decimal LossCarryforward,
+    decimal HighWaterMarkPerShare, string Status, decimal LossCarryforward,
     DateOnly? LastCrystallizedDate, decimal CumulativeCrystallizedFee, decimal AccruedFeeBalance);
 
 public sealed record IncentiveFeeAccrualPreviewRequest(
