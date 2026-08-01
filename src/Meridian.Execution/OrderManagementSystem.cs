@@ -359,7 +359,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 brokerName,
                 runId,
                 correlationId,
-                ct).ConfigureAwait(false);
+                ct,
+                // The loser of the race still had risk evaluated, so its ticket keeps those
+                // findings rather than showing a bare duplicate-id error.
+                riskSummary: riskDecision).ConfigureAwait(false);
         }
 
         if (safeRequest.FundAccountId is { } fundAccountId)
@@ -978,7 +981,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         string brokerName,
         string? runId,
         string? correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        RiskDecisionSummary? riskSummary = null)
     {
         var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
 
@@ -998,7 +1002,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         {
             Success = false,
             OrderId = orderId,
-            ErrorMessage = message
+            ErrorMessage = message,
+            RiskDecision = riskSummary
         };
     }
 

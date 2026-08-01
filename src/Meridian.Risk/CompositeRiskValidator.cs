@@ -31,9 +31,15 @@ public sealed class CompositeRiskValidator : IRiskValidator
     }
 
     /// <param name="perRuleTimeout">
-    /// Bounds a single rule's evaluation. A rule that never completes would otherwise hang the
-    /// pre-trade gate for callers that supply no deadline of their own. Pass
+    /// Bounds a single <em>asynchronous</em> rule evaluation. A rule that never completes would
+    /// otherwise hang the pre-trade gate for callers that supply no deadline of their own. Pass
     /// <see cref="Timeout.InfiniteTimeSpan"/> to disable.
+    /// <para>
+    /// This does <b>not</b> bound <see cref="IRiskRule.TryEvaluate"/>. That path runs synchronously
+    /// on the calling thread and a synchronous call cannot be abandoned, so a fast-path rule that
+    /// blocks will block the submission regardless of this value. Rules only opt into the fast path
+    /// when they need no I/O — see <see cref="IRiskRule.HasSyncFastPath"/> — and must not block.
+    /// </para>
     /// </param>
     public CompositeRiskValidator(
         IEnumerable<IRiskRule> rules,
@@ -72,6 +78,12 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     violations.Add(ToViolation(rule, finding));
                 }
             }
+        }
+            // Cancellation during the final rule would otherwise go unnoticed: the loop's check
+            // runs before each rule, so a rule that reserves and then returns just after the token
+            // is cancelled has no later check to catch it. Without this, a cancelled submission
+            // transfers its reservation and the OMS conservatively commits it.
+            ct.ThrowIfCancellationRequested();
         }
         catch
         {
@@ -122,6 +134,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // The synchronous fast path runs inside this handler, not before it. The production
             // DrawdownGuardrailRule uses it, and a failure reading portfolio state must become a
             // structured risk rejection rather than an unstructured submission failure.
+            //
+            // It is deliberately NOT wrapped in the hard timeout: a synchronous call cannot be
+            // abandoned, so wrapping it would bound only the wait and leak the blocked thread while
+            // still hanging the submission. A rule opts into this path by declaring it needs no
+            // I/O, so blocking here is a contract violation rather than a case to time out.
             if (rule.HasSyncFastPath)
             {
                 return rule.TryEvaluate(request);

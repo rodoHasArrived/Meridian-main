@@ -132,12 +132,40 @@ public sealed class OrderRateThrottle : IReservingRiskRule
         }
     }
 
-    /// <summary>One consumed slot in the rate window. Settling is idempotent.</summary>
+    /// <summary>
+    /// Re-stamps a committed slot to the time the order was actually routed. The window measures
+    /// routed orders, so a slot reserved at evaluation time but acknowledged seconds later must
+    /// expire relative to the acknowledgement — otherwise, at a one-per-minute ceiling, an order
+    /// reserved at t=0 and accepted at t=50 frees its slot at t=60, only ten seconds after it
+    /// actually routed.
+    /// </summary>
+    private void Restamp(DateTimeOffset from, DateTimeOffset to)
+    {
+        lock (_sync)
+        {
+            var index = _admitted.LastIndexOf(from);
+            if (index >= 0)
+            {
+                _admitted[index] = to;
+            }
+        }
+    }
+
+    /// <summary>
+    /// One consumed slot in the rate window. Settling is idempotent, and the slot keeps blocking
+    /// capacity while it is pending, so an in-flight submission cannot be double-spent.
+    /// </summary>
     private sealed class SlotReservation(OrderRateThrottle owner, DateTimeOffset stamp) : IRiskReservation
     {
         private int _settled;
 
-        public void Commit() => Interlocked.Exchange(ref _settled, 1);
+        public void Commit()
+        {
+            if (Interlocked.Exchange(ref _settled, 1) == 0)
+            {
+                owner.Restamp(stamp, owner._timeProvider.GetUtcNow());
+            }
+        }
 
         public void Rollback()
         {

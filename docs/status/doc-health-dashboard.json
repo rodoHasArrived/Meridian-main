@@ -1,6 +1,6 @@
 {
   "total_files": 639,
-  "total_lines": 117258,
+  "total_lines": 117263,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2164,7 +2164,7 @@
     },
     {
       "path": "docs/engineering/blueprints/risk-engine-severity-and-decision-journal-blueprint.md",
-      "line_count": 1151,
+      "line_count": 1156,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

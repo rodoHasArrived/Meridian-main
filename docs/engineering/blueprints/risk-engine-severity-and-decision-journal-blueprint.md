@@ -678,7 +678,7 @@ GET /api/risk/decisions?take=100&symbol=AAPL&decision=Rejected&orderId=ord-8823
           "limitValue": 1000
         },
         {
-          "ruleName": "OrderRateThrottle",
+          "ruleName": "OrderRateNearLimitRule",
           "severity": "Warning",
           "code": "ORDER_RATE_NEAR_LIMIT",
           "message": "52 orders in the last minute against a 60 order ceiling.",
@@ -886,8 +886,12 @@ decision. `/api/risk/decisions` must filter on the discriminator, not the action
    readiness, operator-control, and security-master gates.
 2. `CompositeRiskValidator.ValidateOrderAsync` evaluates all four rules.
 3. `DrawdownGuardrailRule` → `Pass`. `PositionLimitRule` → `Pass`.
-   `OrderRateThrottle` → finding `ORDER_RATE_NEAR_LIMIT` (observed 52, limit 60); rule severity is
-   `Warning`, so the validator resolves it to an annotation and capacity is reserved.
+   `OrderRateNearLimitRule` → finding `ORDER_RATE_NEAR_LIMIT` (observed 52, limit 60); that rule's
+   severity is `Warning`, so the validator resolves it to an annotation. **Note:** this rule is
+   deferred to `W9-SAFETY-007` with the rest of the catalogue — the shipped `OrderRateThrottle` is
+   fixed `Error` severity and fires only at the ceiling. The flow is written against the eventual
+   catalogue to show what an admitted-with-warnings decision looks like; nothing implemented today
+   produces one.
 4. Precedence resolves `ApprovedWithWarnings`.
 5. The throttle's reservation is committed; the window keeps the order.
 6. `RiskDecisionJournal.RecordAsync` writes an `ExecutionAuditEntry` (the decision carries a
@@ -901,7 +905,8 @@ decision. `/api/risk/decisions` must filter on the discriminator, not the action
 
 1–2. As above.
 3. `PositionLimitRule` → `Block(POSITION_LIMIT_EXCEEDED, observed 1240, limit 1000)`.
-   `OrderRateThrottle` → finding `ORDER_RATE_NEAR_LIMIT` (`Warning` → annotation). Both evaluated.
+   `OrderRateNearLimitRule` → finding `ORDER_RATE_NEAR_LIMIT` (`Warning` → annotation; deferred to
+   `W9-SAFETY-007`, see above). Both evaluated.
 4. Precedence resolves `Rejected`; violations ordered `[POSITION_LIMIT_EXCEEDED (Error),
    ORDER_RATE_NEAR_LIMIT (Warning)]`.
 5. Commit phase **skipped** — the throttle does not record a blocked order.
