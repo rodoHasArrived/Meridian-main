@@ -353,6 +353,22 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             StrategyId = safeRequest.StrategyId
         };
 
+        // A token already cancelled here is provably pre-dispatch — the gateway has not been called,
+        // and gateways that check the token on entry would throw without sending anything — so the
+        // slot goes back rather than being conservatively committed.
+        //
+        // This sits before registration deliberately. Checking after it would leave a PendingNew
+        // order in the books with no path to a terminal state: GetOpenOrders would report an order
+        // that never reached a venue, its client order id would be refused as an active duplicate,
+        // and CancelAllAsync would try to cancel it at the broker. Cancellation observed later, in
+        // the window between registration and dispatch, still falls through to the gateway, where
+        // the ambiguous handler terminalizes the state correctly and commits conservatively.
+        if (ct.IsCancellationRequested)
+        {
+            SettleReservations(riskOutcome, commit: false, orderId);
+            ct.ThrowIfCancellationRequested();
+        }
+
         if (!TryRegisterOrder(orderId, orderState))
         {
             // Lost a race with a concurrent submission that claimed the same client order id
@@ -387,17 +403,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
             _orderSessionIds[orderId] = sessionId;
-        }
-
-        // A token already cancelled here is the one cancellation that is provably pre-dispatch: the
-        // gateway has not been called, and gateways that check the token on entry would throw
-        // without sending anything. Releasing the slot now keeps the conservative commit below for
-        // genuinely ambiguous failures only. Checking and throwing before the try is deliberate —
-        // doing it inside would hand the cancellation to the ambiguous handler, which commits.
-        if (ct.IsCancellationRequested)
-        {
-            SettleReservations(riskOutcome, commit: false, orderId);
-            ct.ThrowIfCancellationRequested();
         }
 
         try

@@ -116,6 +116,22 @@ public sealed class RiskValidationResultTests
         result.BlockingViolation.Should().NotBeNull();
     }
 
+    /// <summary>
+    /// The snapshot must not be castable back to a writable collection. An array handed out through
+    /// <see cref="IReadOnlyList{T}"/> can be cast to <c>RiskViolation[]</c> and written through,
+    /// which would swap an admitted Warning for an Error while <c>Decision</c> stayed
+    /// <c>ApprovedWithWarnings</c> — the aliasing hole entered from the other side.
+    /// </summary>
+    [Fact]
+    public void Violations_AreNotCastableToAWritableCollection()
+    {
+        var result = RiskValidationResult.FromViolations([Violation(RiskRuleSeverity.Warning)]);
+
+        result.Violations.Should().NotBeAssignableTo<RiskViolation[]>();
+        result.Violations.Should().BeAssignableTo<IList<RiskViolation>>()
+            .Which.IsReadOnly.Should().BeTrue("the exposed collection must refuse writes, not just hide them");
+    }
+
     [Fact]
     public void FromViolations_Null_Throws()
     {

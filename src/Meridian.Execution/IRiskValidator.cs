@@ -40,7 +40,7 @@ public sealed record RiskValidationOutcome(
     /// their place.
     /// </summary>
     public IReadOnlyList<IRiskReservation> Reservations { get; } =
-        Reservations?.ToArray() ?? throw new ArgumentNullException(nameof(Reservations));
+        Reservations?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(Reservations));
 
     /// <summary>An approving outcome that holds no reservations.</summary>
     public static RiskValidationOutcome Approved() =>
@@ -111,7 +111,12 @@ public sealed record RiskValidationResult
     private RiskValidationResult(RiskDecisionKind decision, IReadOnlyList<RiskViolation> violations)
     {
         Decision = decision;
-        Violations = violations;
+
+        // Wrapped here rather than in each factory, so a factory added later cannot forget. An
+        // array or list exposed through IReadOnlyList can be cast back to its concrete type and
+        // written through, which would let a caller swap an admitted Warning for an Error after the
+        // decision was derived — the aliasing hole again, entered from the other side.
+        Violations = violations.ToList().AsReadOnly();
     }
 
     /// <summary>The aggregate verdict.</summary>
@@ -179,9 +184,12 @@ public sealed record RiskValidationResult
         // violation after an empty set produced Approved — leaving IsApproved true over findings
         // that should have rejected. Sealing construction is only half the invariant; this is the
         // other half.
-        var snapshot = violations.ToArray();
+        //
+        // Local snapshot so the decision is derived from a set the caller can no longer touch; the
+        // constructor wraps it again for what the result exposes.
+        var snapshot = violations.ToList();
 
-        if (snapshot.Length == 0)
+        if (snapshot.Count == 0)
         {
             return Approved();
         }
