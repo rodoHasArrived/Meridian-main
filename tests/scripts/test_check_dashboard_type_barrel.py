@@ -104,6 +104,39 @@ class DashboardTypeBarrelTests(unittest.TestCase):
         self.assertEqual(counts["duplicates"], 1)
         self.assertTrue(any("NestedDto" in p for p in problems), msg=problems)
 
+    def test_ignores_a_declaration_inside_a_block_comment(self):
+        # A phantom name here collides with the real declaration elsewhere and blocks a valid
+        # change over a duplicate TypeScript never emitted.
+        self.fixture.write_module(
+            "workstation-2",
+            ["/*", " * export interface LedgerRowDto { id: string; }", " */", "export type Tone = 'Info';"],
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0)
+        self.assertEqual(problems, [])
+
+    def test_ignores_a_declaration_inside_a_line_comment(self):
+        self.fixture.write_module(
+            "workstation-2",
+            ["// export interface LedgerRowDto { id: string; }", "export type Tone = 'Info';"],
+        )
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0)
+
+    def test_ignores_a_declaration_inside_a_template_literal(self):
+        self.fixture.write_module(
+            "workstation-2",
+            ["export const sample = `", "export interface LedgerRowDto { id: string; }", "`;"],
+        )
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0)
+
     def test_recognises_every_exported_declaration_form(self):
         self.fixture.write_module(
             "workstation-2",

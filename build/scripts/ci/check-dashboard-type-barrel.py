@@ -59,8 +59,65 @@ def read_barrel_modules(barrel_path: Path) -> list[str]:
     return BARREL_EXPORT.findall(barrel_path.read_text(encoding="utf-8"))
 
 
+def strip_comments_and_strings(text: str) -> str:
+    """Blank out comments and string/template contents, preserving line structure.
+
+    Matching raw text counts a declaration written inside a block comment or a template
+    literal as a live export. Unlike the metric gate — where that produces a false pass —
+    here it produces a false *failure*: the phantom name collides with the real declaration
+    in another module and the gate blocks a valid change over a duplicate TypeScript never
+    emitted. Newlines are preserved so any future line reporting stays accurate.
+    """
+    out: list[str] = []
+    i = 0
+    length = len(text)
+    while i < length:
+        ch = text[i]
+        if ch in "\"'`":
+            quote = ch
+            out.append(" ")
+            i += 1
+            while i < length:
+                if text[i] == "\\":
+                    out.append("  ")
+                    i += 2
+                    continue
+                if text[i] == "\n":
+                    # Only template literals span lines; keep the newline either way so line
+                    # numbers do not shift.
+                    out.append("\n")
+                    i += 1
+                    if quote != "`":
+                        break
+                    continue
+                if text[i] == quote:
+                    out.append(" ")
+                    i += 1
+                    break
+                out.append(" ")
+                i += 1
+            continue
+        if ch == "/" and i + 1 < length and text[i + 1] == "/":
+            while i < length and text[i] != "\n":
+                out.append(" ")
+                i += 1
+            continue
+        if ch == "/" and i + 1 < length and text[i + 1] == "*":
+            out.append("  ")
+            i += 2
+            while i + 1 < length and not (text[i] == "*" and text[i + 1] == "/"):
+                out.append("\n" if text[i] == "\n" else " ")
+                i += 1
+            out.append("  ")
+            i += 2
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
+
+
 def declared_names(module_path: Path) -> list[str]:
-    return DECLARATION.findall(module_path.read_text(encoding="utf-8"))
+    return DECLARATION.findall(strip_comments_and_strings(module_path.read_text(encoding="utf-8")))
 
 
 def discover_contract_modules(types_dir: Path) -> list[str]:

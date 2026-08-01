@@ -154,6 +154,19 @@ describe("FinancialRecordExplorerShell", () => {
     expect(rows[rows.length - 1]).toHaveFocus();
   });
 
+  it("lets a focused cell link handle its own Enter key", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const link = screen.getByRole("link", { name: "Cash" });
+    act(() => link.focus());
+    await user.keyboard("{Enter}");
+
+    // The row's activation handler must not swallow Enter aimed at a descendant link, or the
+    // browser never follows it and the proof drawer opens instead.
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("marks only the selected row as selected", async () => {
     const user = userEvent.setup();
     renderExplorer();

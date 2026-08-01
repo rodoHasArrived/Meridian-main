@@ -498,6 +498,12 @@ function ExplorerGrid({
 
   const handleRowKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTableRowElement>, recordId: string, rowIndex: number) => {
+      // Only act on keys aimed at the row itself. A cell link is focusable, and its Enter
+      // keydown bubbles here: preventing default and selecting the record meant the browser
+      // never followed the link and the proof drawer opened instead. Mouse activation was
+      // unaffected because the anchor stops click propagation, so this only broke keyboard use.
+      if (event.target !== event.currentTarget) return;
+
       switch (event.key) {
         case "Enter":
         case " ":
