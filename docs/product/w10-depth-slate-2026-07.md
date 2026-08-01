@@ -189,6 +189,11 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   same break-queue item collection and maps it into the Fund Ledger queue. Lineage and occurrence
   fields added for the browser alone would leave the two co-equal lanes with different queue
   semantics.
+- **Absence from a run is only evidence of clearing when that run finished.** `StatementRunStatus`
+  carries explicit validation-failed, failed, and cancelled states. A diff that treats "missing from
+  the newer run" as cleared will hide open work after a failed import. Both compared runs must be
+  complete and bound to the same account, source, period, and profile version; otherwise the prior
+  break stays open or its state reads as unknown.
 - The queue carries a single break identifier and nothing distinguishing a lineage from an occurrence
   of it. Adding lineage alone leaves a cleared-then-recurring break able to reopen its original item
   and keep the original SLA age, or to overwrite the interval during which it was clear. Lineage and
@@ -224,6 +229,11 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   present in prose but not queryable on a stored break.
 - Grouping must not include the lineage key from `W10-RECON-001` — that key identifies a single
   break, so including it would make every group contain exactly one member.
+- **Materiality is a per-break property, not a group property.** The classifier sets `IsMaterial`
+  from each break's absolute variance. A group whose signed aggregate falls below a group threshold
+  can still contain a material member, and gating only on the aggregate lets that member bypass the
+  independent approval it individually requires. Any group cap must be measured on gross exposure,
+  and the presence of one material or high-risk member must force the approval separation.
 - **The bulk request carries no expected versions and no preview receipt.** It holds break IDs, an
   action, an actor, command and correlation IDs, a source, an idempotency key, dry-run and
   partial-success flags, and optional reason, assignee, and priority — and the repository reads each
@@ -244,6 +254,12 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   path all already exist for monthly automated journals. Copy that pattern.
 - The existing intake carries evidence links and an evidence assessment; a recurring draft must pass
   the same admission gate rather than relying on persistence and lock checks alone.
+- **Idempotent posting does not imply idempotent drafting.** The due-occurrence calculation keeps
+  returning an occurrence until it is confirmed posted, so a runner polling while the first draft
+  awaits approval will enqueue another one every pass. Preventing duplicate *postings* leaves the
+  approval queue accumulating conflicting drafts for the same occurrence. The claim has to be taken
+  at initial enqueue, keyed by schedule and occurrence date, with retries returning the existing
+  draft.
 
 ### `W10-TAX-001` — tax character and relief
 
@@ -260,6 +276,12 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   method change, regenerating an earlier pack fails outright, or silently produces different relief
   and realized-gain figures if the new policy is backdated. Append-only effective-dated versions are
   required for reproducibility.
+- **An open replacement window makes zero exposure provisional, not settled.** The wash-sale policy
+  defines a symmetric window before and after the sale, so an acquisition after the disposal can
+  still change the disallowed loss. The engine will happily compute zero from the acquisitions known
+  today, and a generic incomplete-input rule does not catch that — the inputs are complete, the
+  window simply has not closed. The figure needs an as-of/provisional label, the remaining window,
+  and re-evaluation or governed finalization when it closes.
 - The realized gain and loss contract that already reaches the workstation exposes a single scalar
   with no character split — extending it is the lowest-friction first move.
 - The shared contracts must not reference the ledger implementation assembly; define contract-side
@@ -284,6 +306,12 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   carries the false-ready path forward rather than closing it: a lane that is unregistered or failing
   is indistinguishable from a lane with nothing to report. The projection needs an explicit
   contributor manifest, so an absent contributor is a blocking incomplete state.
+- **Present and fresh is not the same as about the same thing.** The WPF fund-ledger view model calls
+  the shared service with only a fund profile id, and the read service does not use that value when
+  listing workflows — it selects the most recently updated workflow, then queries the cockpit with
+  the requested fund. So a projection can combine one fund's workflow blockers with another fund's
+  cockpit while every contributor is registered, healthy, and current. Subject binding across fund
+  profile, ledger book, fund account, entity, and period is a separate requirement from presence.
 
 ### `W10-RECON-003` — tolerance and replay
 

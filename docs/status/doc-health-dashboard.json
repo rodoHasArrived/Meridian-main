@@ -1,11 +1,11 @@
 {
   "total_files": 638,
-  "total_lines": 116074,
+  "total_lines": 116106,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 181.9,
+  "average_lines": 182.0,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2940,7 +2940,7 @@
     },
     {
       "path": "docs/product/w10-depth-slate-2026-07.md",
-      "line_count": 435,
+      "line_count": 463,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3300,7 +3300,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 1196,
+      "line_count": 1200,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
