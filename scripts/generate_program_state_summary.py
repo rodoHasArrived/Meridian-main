@@ -15,7 +15,7 @@ DOCS_COMMON_DIR = DEFAULT_REPO_ROOT / "build" / "scripts" / "docs"
 if str(DOCS_COMMON_DIR) not in sys.path:
     sys.path.insert(0, str(DOCS_COMMON_DIR))
 
-from common import load_data, markdown_table  # noqa: E402
+from common import load_data, markdown_table, roadmap_item_sort_key  # noqa: E402
 
 PROGRAM_STATE_DATA = "docs/roadmap/data/program-state.yml"
 ROADMAP_ITEMS_DATA = "docs/roadmap/data/roadmap-items.yml"
@@ -60,7 +60,12 @@ def load_program_state(root: Path) -> tuple[dict[str, Any], list[dict[str, str]]
         raise ValueError(f"{ROADMAP_ITEMS_DATA} must contain roadmap items")
 
     rows: list[dict[str, str]] = []
-    for item in sorted(items, key=lambda entry: str(entry.get("id", ""))):
+    # Shares `roadmap_item_sort_key` with the roadmap renderers so this compatibility view cannot
+    # disagree with ROADMAP_SUMMARY.md about delivery order. Sorting on the raw identifier placed
+    # W10 between W1 and W2 and ignored the `sequence` rank those rows now declare, so the two
+    # generated status documents contradicted each other. Both the Markdown and JSON outputs are
+    # built from these rows, so ordering them here fixes both.
+    for item in sorted(items, key=roadmap_item_sort_key):
         if not isinstance(item, dict):
             continue
         rows.append(
