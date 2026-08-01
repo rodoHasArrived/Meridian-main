@@ -894,7 +894,7 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 
 - A break keeps one identity across runs even when its amount, tolerance, or as-of date changes.
 - A break that clears and later recurs is recognizable as the same lineage while remaining a distinct occurrence, so a recurrence neither inherits the age of the original nor overwrites the interval during which it was clear.
-- The queue shows what is new, what remains open and for how long, and what cleared since the prior run, without hiding open work behind a default filter. A break reads as cleared only when the successor run completed over the same account, source, period, and profile version; after an incomplete or scope-divergent run the prior break stays open rather than disappearing.
+- The queue shows what is new, what remains open and for how long, and what cleared since the prior run, without hiding open work behind a default filter. A break reads as cleared only when the successor run reconciled successfully over the same account, source, period, and profile version - a successful run that still carries open breaks counts, a failed, validation-failed, or cancelled one does not; after an inconclusive or scope-divergent run the prior break stays open rather than disappearing.
 - Break age derived from that identity drives escalation before an SLA is missed, measured against the business and holiday calendars the SLA policy names rather than a weekends-only approximation.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the lineage identity, the diff projection, the queue surfaces on both workstation lanes, and the identity-stability and calendar-boundary tests.
 

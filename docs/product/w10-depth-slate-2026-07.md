@@ -189,11 +189,18 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   same break-queue item collection and maps it into the Fund Ledger queue. Lineage and occurrence
   fields added for the browser alone would leave the two co-equal lanes with different queue
   semantics.
-- **Absence from a run is only evidence of clearing when that run finished.** `StatementRunStatus`
-  carries explicit validation-failed, failed, and cancelled states. A diff that treats "missing from
-  the newer run" as cleared will hide open work after a failed import. Both compared runs must be
-  complete and bound to the same account, source, period, and profile version; otherwise the prior
-  break stays open or its state reads as unknown.
+- **Absence from a run is only evidence of clearing when that run finished — and "finished" is not
+  `Completed`.** `StatementRunStatus` (`StatementReconciliationDtos.cs:9-20`) carries both
+  `ReviewRequired = 6` and `Completed = 7` as successful terminal states, and
+  `ReconciliationApiService.cs:92` assigns `breakDtos.Length == 0 ? Completed : ReviewRequired`
+  (same shape at `:187-188`, `:232`, `:634`). **`Completed` is therefore exactly the set of runs with
+  zero breaks.** An implementation gating the diff on `status == Completed` would suppress
+  run-over-run comparison precisely when breaks exist: in a successor where break A remains and
+  break B disappeared, B would never clear. The conclusive successor is a *successfully reconciled
+  terminal run* — `ReviewRequired` or `Completed` — while `ValidationFailed`, `Failed`, and
+  `Canceled` are inconclusive. Both compared runs must be conclusive in that sense and bound to the
+  same account, source, period, and profile version; otherwise the prior break stays open or its
+  state reads as unknown.
 - The queue carries a single break identifier and nothing distinguishing a lineage from an occurrence
   of it. Adding lineage alone leaves a cleared-then-recurring break able to reopen its original item
   and keep the original SLA age, or to overwrite the interval during which it was clear. Lineage and
@@ -306,12 +313,21 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   carries the false-ready path forward rather than closing it: a lane that is unregistered or failing
   is indistinguishable from a lane with nothing to report. The projection needs an explicit
   contributor manifest, so an absent contributor is a blocking incomplete state.
-- **Present and fresh is not the same as about the same thing.** The WPF fund-ledger view model calls
-  the shared service with only a fund profile id, and the read service does not use that value when
-  listing workflows — it selects the most recently updated workflow, then queries the cockpit with
-  the requested fund. So a projection can combine one fund's workflow blockers with another fund's
-  cockpit while every contributor is registered, healthy, and current. Subject binding across fund
-  profile, ledger book, fund account, entity, and period is a separate requirement from presence.
+- **Present and fresh is not the same as about the same thing.** `FundLedgerViewModel.cs:1037-1038`
+  calls `IFinancialOperationsCommandCenterReadService.GetCommandCenterAsync(fundProfileId:
+  activeFund.FundProfileId, ct: ct)` — only the fund profile id, leaving fund account, ledger book,
+  period, and entity null. `FinancialOperationsCommandCenterReadService.cs:42-43` then calls
+  `ListAsync(fundAccountId, periodId, status: null, ct, ledgerBookId: ledgerBookId)` with all three
+  null, so the listing spans every fund; `ResolveActiveWorkflow` picks one, `:57` adopts its fund via
+  `effectiveFundAccountId = fundAccountId ?? activeWorkflow?.FundAccountId`, and `:66` queries the
+  cockpit with the *requested* profile. So a projection can combine one fund's workflow blockers with
+  another fund's cockpit while every contributor is registered, healthy, and current.
+- **A second subject-binding gap, same-fund this time.** `FundOperationsWorkspaceReadService` does
+  scope correctly by fund — `:2600-2614` filters workflow summaries to the requested fund's account
+  ids before taking the most recently updated one — but that selection ignores the summary's
+  `LedgerBookId` and `PeriodId`. The result is a right-fund, wrong-book-or-period mismatch. Subject
+  binding across fund profile, ledger book, fund account, entity, and period is a separate
+  requirement from presence, and both services need it.
 
 ### `W10-RECON-003` — tolerance and replay
 

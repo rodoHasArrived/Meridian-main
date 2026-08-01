@@ -72,6 +72,7 @@ modules:
       - W2-PROMO-001
       - W3-CONT-001
       - W5-ACCT-001
+      - W10-MARK-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -103,6 +104,16 @@ modules:
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
       - W9-ASSET-010
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -165,6 +176,7 @@ modules:
       - W1-DATA-001
       - W2-TRD-001
       - W4-RECON-001
+      - W10-RECON-004
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -337,6 +349,9 @@ modules:
       - W3-CONT-001
       - W6-BTSTUDIO-001
       - W7-LIVE-001
+      - W10-RECON-001
+      - W10-RECON-002
+      - W10-RECON-004
     stage_gates:
       - PromotionReview
       - ResearchContinuity
@@ -361,6 +376,7 @@ modules:
       - W3-CONT-001
       - W5-MASSET-001
       - W6-BTSTUDIO-001
+      - W10-PERF-001
     stage_gates:
       - ResearchContinuity
       - BacktestingEvidence
@@ -406,6 +422,11 @@ modules:
       - W4-RPT-001
       - W5-ACCT-001
       - W9-ASSET-010
+      - W10-MARK-001
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -428,6 +449,7 @@ modules:
     roadmap_items:
       - W3-CONT-001
       - W6-BTSTUDIO-001
+      - W10-PERF-001
     stage_gates:
       - ResearchContinuity
       - BacktestingEvidence
@@ -745,6 +767,14 @@ modules:
       - W5X-CONNECT-001
       - W5X-STMT-ONBOARD-001
       - W9-ASSET-010
+      - W10-RECON-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -940,6 +970,17 @@ modules:
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
       - W9-ASSET-010
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
@@ -972,6 +1013,17 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -1004,6 +1056,17 @@ modules:
       - W5-ACCT-001
       - W5-MASSET-001
       - W8-WPF-PARITY-001
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack

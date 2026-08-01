@@ -696,6 +696,17 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `W8-WPF-PARITY-001` | WPF desktop workstation reactivation and web-UI parity |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W10-TAX-001` | Tax character, wash-sale, and lot-relief operator surface |
+| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract |
+| `W10-RECON-003` | Unified tolerance model and what-if replay workbench |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
+| `W10-PERF-001` | Portfolio and investor return measurement |
+| `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

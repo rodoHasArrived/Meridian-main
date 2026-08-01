@@ -114,6 +114,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W3-CONT-001` | Research to paper continuity |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W10-PERF-001` | Portfolio and investor return measurement |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
