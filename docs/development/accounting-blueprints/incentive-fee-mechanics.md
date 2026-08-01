@@ -234,21 +234,30 @@ today's behavior for funds that do not opt in.
   investors that subscribed at different NAVs/dates and is the reason the durable state in
   Section 5.3 exists; a fund flips to it via config once the equalization method is chosen (O-3).
 
-> **Cross-blueprint contract — HWM ownership (recorded 2026-08-01).** There is exactly one HWM store
-> per fund, and this fork does not create a second one. Fork G is the *selector*; the
-> [equalization / series-accounting blueprint](equalization-and-series-accounting.md) §9 is the
-> *authority* on where the HWM physically lives:
+> **Cross-blueprint contract — HWM ownership (recorded 2026-08-01, revised after review).**
+> `incentive_fee_state` (§7.2) is the **single durable owner of the high-water mark** under both
+> equalization methods. Fork G selects the *scope* of a row, not a different store:
 >
-> | Fork G | Equalization method | Where the HWM lives |
+> | Fork G | Equalization method | HWM row in `incentive_fee_state` |
 > |---|---|---|
-> | `FundLevel` (default) | Method A — equalisation credit/debit (default) | Single fund HWM, already in `PartnershipInvestorAllocationInput.HighWaterMark`. Equalisation *reallocates* the one fund fee across subscription lots; no per-investor HWM rows exist. |
-> | `InvestorSeries` | Method B — series of shares | Per-series HWM rows in `fund_series.high_water_mark_per_share` (equalization §10.3). The fee projector runs once per series. |
+> | `FundLevel` (default) | Method A — equalisation credit/debit (default) | Exactly one row per book, `series_id is null`, `high_water_mark` in fund NAV terms. Equalisation *reallocates* the one fund fee across subscription lots; no per-investor rows exist. |
+> | `InvestorSeries` | Method B — series of shares | One row per series, `series_id` set, `high_water_mark_per_share` in per-share terms. The fee projector runs once per series. |
 >
-> Section 5.3's durable state therefore carries **loss-carryforward, accrual, and crystallization
-> history** keyed by the scope this fork selects (fund or series) — it is not a competing
-> per-investor HWM table. If Fork G is set to `InvestorSeries`, this blueprint and the equalization
-> blueprint's Method B must land as one slice; shipping either alone produces two HWM sources of
-> truth. Both documents record this contract; the canonical copy is the
+> Two consequences, both of which earlier drafts of this contract got wrong:
+>
+> - **`PartnershipInvestorAllocationInput.HighWaterMark` is not an owner.** It is a `sealed record`
+>   constructor parameter — a transient per-period projector input. Under this contract it is
+>   *hydrated from* `incentive_fee_state` before each `Project` call and written back through the
+>   §5.4 roller. Nothing durable lives on it.
+> - **`fund_series` does not carry a HWM column.** Equalization §10.3 previously proposed
+>   `fund_series.high_water_mark_per_share`; that column is removed, and series HWM is read from
+>   `incentive_fee_state` keyed by `series_id`. Keeping both would let crystallization advance one
+>   HWM while the next fee calculation reads the other.
+>
+> The scope is a **series, never an investor** — `IncentiveFeeStateRecord.SeriesId`, not
+> `InvestorId`. Per-investor HWM rows are not permitted under either method. If Fork G is set to
+> `InvestorSeries`, this blueprint and the equalization blueprint's Method B must land as one slice.
+> Both documents record this contract; the canonical copy is the
 > [blueprint register](../../engineering/blueprints/README.md#cross-blueprint-contracts).
 
 ### Fork H — Downward accrual adjustments (NAV falls below prior accrual)
@@ -495,15 +504,19 @@ public enum IncentiveResetMode { HighWaterMark, LossCarryforward, Both }
 public enum IncentiveFeeAccountingModel { FundLevel, InvestorSeries }
 
 /// <summary>
-/// Durable, rolled-forward incentive-fee state for one series (fund-level when InvestorId is null,
-/// per-investor otherwise). This replaces "HWM passed in per period" with persisted state.
+/// Durable, rolled-forward incentive-fee state for one HWM scope. This table is the **single
+/// durable owner of the high-water mark** (see the HWM-ownership contract in Section 4, Fork G).
+/// The scope is a *series*, never an investor: SeriesId is null for the fund-level series
+/// (Method A, exactly one row per book) and carries the series key under Method B (one row per
+/// series). This replaces "HWM passed in per period" with persisted state.
 /// </summary>
 public sealed record IncentiveFeeStateRecord(
     Guid StateRecordId,
     Guid LedgerBookId,
     string FundProfileId,
-    string? InvestorId,                 // null == fund-level series
-    decimal HighWaterMark,
+    string? SeriesId,                   // null == fund-level series (Method A)
+    decimal? HighWaterMark,             // fund NAV terms; set iff SeriesId is null
+    decimal? HighWaterMarkPerShare,     // per-share terms; set iff SeriesId is not null
     decimal LossCarryforward,           // >= 0
     DateOnly? LastCrystallizedDate,
     decimal CumulativeCrystallizedFee,
@@ -535,10 +548,15 @@ Roll-forward rules (pure, in `IncentiveFeeStateRoller.Roll(prior, result, crysta
 - **Accrual period (not crystallizing):** `AccruedFeeBalance' = result.IncentiveFee` (snapshot records the
   delta vs prior accrual; a decrease is a reversal — Fork H). HWM and `LastCrystallizedDate` unchanged.
   LCF updates to `result.CandidateLossCarryforward` for reporting when `ResetMode` ∈ {LossCarryforward, Both}.
-- **Crystallization period:** `HighWaterMark' = result.CandidateHighWaterMark`,
+- **Crystallization period:** the scope's HWM advances to `result.CandidateHighWaterMark` — writing
+  `HighWaterMark'` on a fund-level row (`SeriesId is null`) or `HighWaterMarkPerShare'` on a series
+  row, per the Fork G contract above. Then
   `CumulativeCrystallizedFee' += AccruedFeeBalance(→ result.IncentiveFee)`, `AccruedFeeBalance' = 0`,
   `LastCrystallizedDate' = periodEnd`, `LossCarryforward' = 0` when `ResetMode == HighWaterMark` else
   `result.CandidateLossCarryforward`.
+
+  This roller is the **only** writer of the HWM. Because `incentive_fee_state` is the single durable
+  owner, no equalization-side code advances a HWM independently.
 
 ### 5.4 The policy aggregate
 
@@ -726,8 +744,10 @@ create table if not exists __SCHEMA__.incentive_fee_state (
     state_record_id uuid primary key,
     ledger_book_id uuid not null references __SCHEMA__.ledger_books(ledger_book_id) on delete cascade,
     fund_profile_id text not null,
-    investor_id text null,                             -- null == fund-level series
-    high_water_mark numeric(38, 12) not null,
+    -- Scope is a series, never an investor. This table is the single durable HWM owner.
+    series_id text null,                               -- null == fund-level series (Method A)
+    high_water_mark numeric(38, 12) null,              -- fund NAV terms; set iff series_id is null
+    high_water_mark_per_share numeric(38, 12) null,    -- per-share terms; set iff series_id is not null
     loss_carryforward numeric(38, 12) not null default 0,
     last_crystallized_date date null,
     cumulative_crystallized_fee numeric(38, 12) not null default 0,
@@ -737,12 +757,19 @@ create table if not exists __SCHEMA__.incentive_fee_state (
     updated_at timestamptz not null,
     version bigint not null default 0,
     constraint ck_incentive_fee_state_lcf check (loss_carryforward >= 0),
-    constraint ck_incentive_fee_state_hwm check (high_water_mark >= 0)
+    constraint ck_incentive_fee_state_hwm check (
+        coalesce(high_water_mark, high_water_mark_per_share) >= 0),
+    -- Exactly one HWM unit is populated, decided by scope. Prevents a row carrying both.
+    constraint ck_incentive_fee_state_hwm_scope check (
+        (series_id is null
+            and high_water_mark is not null and high_water_mark_per_share is null)
+     or (series_id is not null
+            and high_water_mark_per_share is not null and high_water_mark is null))
 );
 
--- One live series per (book, investor); coalesce so the fund-level (null) series has a stable key.
-create unique index if not exists ux_incentive_fee_state_book_investor
-    on __SCHEMA__.incentive_fee_state (ledger_book_id, coalesce(investor_id, ''));
+-- One live series per (book, series); coalesce so the fund-level (null) series has a stable key.
+create unique index if not exists ux_incentive_fee_state_book_series
+    on __SCHEMA__.incentive_fee_state (ledger_book_id, coalesce(series_id, ''));
 
 create table if not exists __SCHEMA__.incentive_fee_state_snapshots (
     snapshot_id uuid primary key,
@@ -845,7 +872,8 @@ public sealed record IncentiveFeePolicyDto(
     string AccountingModel, string ResetMode, DateOnly EffectiveDate, string PolicyVersion);
 
 public sealed record IncentiveFeeStateDto(
-    string FundProfileId, string? InvestorId, decimal HighWaterMark, decimal LossCarryforward,
+    string FundProfileId, string? SeriesId,
+    decimal? HighWaterMark, decimal? HighWaterMarkPerShare, decimal LossCarryforward,
     DateOnly? LastCrystallizedDate, decimal CumulativeCrystallizedFee, decimal AccruedFeeBalance);
 
 public sealed record IncentiveFeeAccrualPreviewRequest(

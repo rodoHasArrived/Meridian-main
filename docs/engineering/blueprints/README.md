@@ -16,14 +16,15 @@ one register. Add new blueprints here as well as to their lane index.
 
 | Blueprint | Home | Lane | Delivery state |
 |---|---|---|---|
-| [Repo Engine, Depreciation Schedule, and Borrower-Side Debt](financing-liabilities-depreciation-blueprint.md) | `docs/engineering/blueprints/` | Ledger / financing | **Partially implemented** — depreciation shipped (`FixedAssetDepreciationProjector`, `DepreciationScheduleCalculator`, `AutomatedJournalEventKind.DepreciationPosted`); repo and borrower-side debt remain design-only |
+| [Repo Engine, Depreciation Schedule, and Borrower-Side Debt](financing-liabilities-depreciation-blueprint.md) | `docs/engineering/blueprints/` | Ledger / financing | **Partially implemented** — depreciation *calculation core* shipped (`DepreciationScheduleCalculator`, `FixedAssetDepreciationProjector`, `FixedAssetDepreciationDraftBuilder`, `AutomatedJournalEventKind.DepreciationPosted`). No fixed-asset store, migration, service, endpoints, or read model yet; repo and borrower-side debt remain design-only |
 | [Full Incentive-Fee Mechanics](../../development/accounting-blueprints/incentive-fee-mechanics.md) | `docs/development/accounting-blueprints/` | Ledger / fund accounting | **Design** — no incentive-fee policy, hurdle calculator, or durable HWM/LCF state in source |
 | [Commitment & Capital-Call Engine](../../development/accounting-blueprints/commitment-and-capital-call-engine.md) | `docs/development/accounting-blueprints/` | Ledger / private capital | **Partially implemented** — domain and posting layers shipped (`PrivateCapitalCommitments`, `CommitmentRollForwardCalculator`, `CapitalCallDraftFactory`, `CapitalCallPlanBuilder`); persistence, endpoints, and workbench remain design-only |
-| [Equalization / Series Accounting](../../development/accounting-blueprints/equalization-and-series-accounting.md) | `docs/development/accounting-blueprints/` | Ledger / fund accounting | **Partially implemented** — single-NAV `EqualizationCalculator` shipped; lot-level Method A, Method B series accounting, persistence, and endpoints remain design-only |
+| [Equalization / Series Accounting](../../development/accounting-blueprints/equalization-and-series-accounting.md) | `docs/development/accounting-blueprints/` | Ledger / fund accounting | **Partially implemented** — `EqualizationCalculator` shipped as an *entry-exposure helper only* (no `GAV_cryst`, so it is not the §5.1/§5.2 crystallization math); lot-level Method A, Method B series accounting, persistence, and endpoints remain design-only |
 | [Portfolio Cash Ladder](../../product/portfolio-cash-ladder-blueprint-2026-07.md) | `docs/product/` | Portfolio forecasting | **Partially implemented** — compute-on-request vertical slice shipped; persisted runs, per-currency views, and structured sourcing remain design-only |
 | [Quote-stream fan-out](../../product/web-ui-stream-fan-out-blueprint-2026-07.md) | `docs/product/` | Workstation shell | **Implemented** — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
-| [Report-run status stream](../../product/web-ui-report-run-stream-blueprint-2026-07.md) | `docs/product/` | Workstation shell / reporting | **Implemented** — D1–D3 shipped |
+| [Report-run status stream](../../product/web-ui-report-run-stream-blueprint-2026-07.md) | `docs/product/` | Workstation shell / reporting | **Implemented, one open divergence** — D1/D3 as designed; D2's shared SSE helper landed additively, so `WorkstationEndpoints.Stream.cs` still has a duplicate loop and `ResolveStreamSessionId` |
 | [Report Writer Debounced Live Auto-Preview](../../plans/report-writer-auto-preview-blueprint.md) | `docs/plans/` | Browser workstation | **Design** — `reporting-screen.report-writer-auto-preview.ts` does not exist in source |
+| [Security Master Passport Workbench](../../plans/security-master-passport-workbench.md) | `docs/plans/` | Data confidence / accounting | **Largely implemented** — Phases 1–4 shipped (governed-write DTOs, `ISecurityMasterConflictAuthorityPolicy`, `ISecurityMasterWorkbenchCommandService`, `WorkstationEndpoints.SecurityMasterWorkbench.cs`, `SecurityMasterWorkbenchOptions`, WPF `SecurityPassportEditorViewModel`). Open (`[~]`): browser `security-passport-editor.tsx`, `IRestatementCandidateResolver` follow-ons (repeated restatement, `IGovernedLedgerAdjustmentPoster`, durable security→report-line index), full lifecycle integration tests, ADR record |
 
 Delivery state is a documentation-coherence marker, not roadmap truth. Live status stays in the
 roadmap registry (`docs/roadmap/README.md`, `docs/roadmap/data/*.yml`).
@@ -78,7 +79,8 @@ posting; storage precision is not the rounding policy.
 `UiApiRoutes` has no `/api/accounting/` or `/api/financing/` prefix. Ledger, fund-accounting, and
 financing surfaces belong under the existing **`/api/ledger/...`** prefix (62 routes today; e.g.
 `/api/ledger/private-capital/...`, `/api/ledger/close-management`). Workstation read models belong
-under `/api/workstation/...`; reporting and fund-structure surfaces under `/api/fund-structure/...`.
+under `/api/workstation/...`; reporting and fund-structure surfaces under `/api/fund-structure/...`;
+instrument reference-data surfaces under `/api/security-master/...`.
 Introducing a new top-level prefix is a decision to make once, in this register, not per blueprint.
 
 ### Enum extension
@@ -91,22 +93,36 @@ blueprint reserves `16–18`.
 ### Terminology
 
 Use **US spelling in code identifiers, routes, and wire contracts** (`Crystallize`,
-`Equalization`) — this is what the shipped `EqualizationCalculator` already uses. UK spelling in
-narrative prose is tolerated, but a blueprint must not let the two spellings reach an interface, a
-route segment, or a column name, because the incentive-fee and equalization engines share one
-crystallization boundary.
+`Equalization`). UK spelling in narrative prose is tolerated, but a blueprint must not let the two
+spellings reach an interface, a route segment, or a column name, because the incentive-fee and
+equalization engines share one crystallization boundary.
+
+This convention is **not yet uniformly true of source**, and a blueprint must not claim otherwise.
+The shipped type is `EqualizationCalculator` / `EqualizationAdjustment` (US), but its members are
+`EqualisationCredit` and `HasEqualisationCredit` (UK), as is the `EqualisationCredit` field on
+`ShareClassUnitRegisterProjector`. Those three are **grandfathered** — they keep UK spelling until a
+deliberate rename lands with its own migration and PR. New identifiers use US spelling and must not
+copy them; the equalization blueprint carries the exception table.
 
 ### Cross-blueprint contracts
 
 Where two blueprints touch the same state, the contract is recorded in **both** documents, not
 inferred. Current recorded contract:
 
-- **High-water-mark ownership** — incentive-fee `Fork G` and equalization `§9`. There is exactly one
-  HWM store per fund. `Fork G = FundLevel` pairs with equalization Method A (single fund HWM, fee
-  *reallocated* across subscription lots, no per-investor HWM rows). `Fork G = InvestorSeries` is
-  realized by equalization Method B (per-series HWM in `fund_series.high_water_mark_per_share`).
-  Incentive-fee `§5.3` durable state carries loss-carryforward and accrual history against whichever
-  scope that choice selects; it does not introduce a competing per-investor HWM.
+- **High-water-mark ownership** — incentive-fee `Fork G` and equalization `§9`.
+  **`incentive_fee_state` is the single durable owner of the HWM under both equalization methods**
+  (incentive-fee §7.2). Fork G selects the *scope* of a row, not a different store:
+  `FundLevel` + Method A ⇒ one row per book, `series_id is null`, `high_water_mark` in fund NAV
+  terms; `InvestorSeries` + Method B ⇒ one row per series, `series_id` set,
+  `high_water_mark_per_share` in per-share terms. The scope is a **series, never an investor**;
+  per-investor HWM rows are not permitted under either method.
+
+  Two things are explicitly *not* HWM owners, both of which an earlier draft of this contract got
+  wrong. `PartnershipInvestorAllocationInput.HighWaterMark` is a `sealed record` constructor
+  parameter — a transient per-period projector input hydrated from `incentive_fee_state`, not a
+  store. And equalization's `fund_series` table carries **no** HWM column: the previously proposed
+  `fund_series.high_water_mark_per_share` is removed, because two stores let crystallization advance
+  one HWM while the next fee calculation reads the other.
 
 ## Adding a blueprint
 

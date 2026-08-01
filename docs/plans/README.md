@@ -30,7 +30,9 @@ historical index; migration batch evidence is captured in `docs/documentation-in
 
 The files still present here stay because they are active or consumed by tooling at these paths:
 
-- [security-master-passport-workbench.md](security-master-passport-workbench.md) — active plan.
+- [security-master-passport-workbench.md](security-master-passport-workbench.md) — active plan; a
+  full blueprint, registered in the canonical
+  [blueprint register](../engineering/blueprints/README.md).
 - [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) and
   [desktop-workstation-screen-blueprint.checklist.json](desktop-workstation-screen-blueprint.checklist.json)
   — consumed by `scripts/dev/desktop_screen_blueprint_checklist.py` and its tests.

@@ -18,7 +18,7 @@ blueprint register — **before** claiming a migration ordinal, route prefix, or
 
 | Blueprint | Scope | Delivery state |
 |---|---|---|
-| [incentive-fee-mechanics.md](incentive-fee-mechanics.md) | Hurdle rates (soft/hard + GP catch-up), first-class crystallization schedules, and durable per-investor high-water-mark / loss-carryforward state — replacing today's pass-in HWM. | **Design** — nothing from this blueprint is in source yet |
+| [incentive-fee-mechanics.md](incentive-fee-mechanics.md) | Hurdle rates (soft/hard + GP catch-up), first-class crystallization schedules, and durable loss-carryforward / accrual / crystallization history scoped by Fork G (fund-level or per-series) — replacing today's pass-in HWM. Its `incentive_fee_state` table is the single durable HWM owner for all three blueprints; the scope is a series, never an investor. | **Design** — nothing from this blueprint is in source yet |
 | [commitment-and-capital-call-engine.md](commitment-and-capital-call-engine.md) | Investor commitments, drawdown schedules, uncalled-commitment roll-forward (`net-called + uncalled + expired = total`), recallable distributions, and default / late-interest handling. | **Partially implemented** — see below |
 | [equalization-and-series-accounting.md](equalization-and-series-accounting.md) | Equalisation credit/debit vs. series-of-shares accounting for open-end funds with mid-period subscriptions, so performance-fee equity is fair across investors who entered at different NAVs. | **Partially implemented** — see below |
 
@@ -46,10 +46,14 @@ the blueprint:
 Still design-only: the migration and stores (§6), the endpoints (§8.3), and the commitment
 workbench read model (§8.2/§8.4).
 
-**Equalization / series accounting** — `src/Meridian.Ledger/EqualizationCalculator.cs` ships the
-single-NAV equalisation credit / contingent-redemption math against a class high-water mark. The
-lot-level Method A projection (§5, §7.2), Method B series accounting (§6, §7.3), persistence (§10),
-and endpoints (§12.2) are design-only.
+**Equalization / series accounting** — `src/Meridian.Ledger/EqualizationCalculator.cs` ships an
+**entry-exposure helper**: it sizes the equalisation credit / contingent redemption at subscription
+against a class high-water mark. It is *not* the §5.1/§5.2 algorithm — it takes no `GAV_cryst`, so
+it computes neither the bounded credit returned at crystallisation nor the recovery-to-date
+contingent redemption, and its NAV parameter is the dealing NAV rather than §5.1's gross `GAV_d`.
+Treat it as a helper to call, not a base to build the per-unit math on. The lot-level Method A
+projection (§5, §7.2), Method B series accounting (§6, §7.3), persistence (§10), and endpoints
+(§12.2) are design-only.
 
 **Incentive-fee mechanics** — nothing yet. The engine still computes a fund-level HWM performance
 fee inside `PartnershipInvestorAccountingProjector.Project` with the HWM passed in per period,

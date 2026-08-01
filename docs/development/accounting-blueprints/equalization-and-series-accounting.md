@@ -12,13 +12,23 @@ contracts, and a test plan.
 
 ## Delivery state (2026-08-01)
 
-`src/Meridian.Ledger/EqualizationCalculator.cs` already ships the **single-NAV** form of the Method A
-math: `Compute(navPerUnit, highWaterNavPerUnit, subscriptionUnits, performanceFeeRate)` returns an
-`EqualizationAdjustment(EqualisationCredit, ContingentRedemption)` using the same
-`perfRate × |nav − highWater| × units` formulas as §5.1/§5.2. Build the lot-level projection (§5,
-§7.2) **on top of** that calculator rather than re-deriving the arithmetic; the per-lot projector's
-job is scoping, zone classification, and the fund-fee reconciliation invariant, not the per-unit
-math.
+`src/Meridian.Ledger/EqualizationCalculator.cs` ships an **entry-exposure helper only** — not the
+§5.1/§5.2 algorithm. `Compute(navPerUnit, highWaterNavPerUnit, subscriptionUnits,
+performanceFeeRate)` returns an `EqualizationAdjustment(EqualisationCredit, ContingentRedemption)`
+sized at the moment of subscription. Two limits matter before you reuse it:
+
+- **It cannot crystallize.** There is no `GAV_cryst` parameter, so it can produce neither §5.1's
+  bounded `creditReturned = f × Max(0, Min(GAV_cryst, GAV_d) − HWM) × shares` nor §5.2's
+  recovery-to-date contingent redemption. Both are crystallization-time quantities.
+- **Its NAV parameter is not §5.1's `GAV_d`.** §5.1 sizes the credit off the **gross** GAV before
+  the accrued fee reverses into NAV; `navPerUnit` is the dealing NAV. In the §13.1 golden case
+  (`GAV_d = 120`, `NAV_d = 116`, `HWM = 100`, `f = 0.20`, 100 shares) passing the documented dealing
+  NAV returns `0.20 × (116 − 100) × 100 = 320`, where the required credit is `400`.
+
+So **do not** treat the calculator as the per-unit math for the lot-level projection. Either call it
+only for entry-time exposure and implement §5.1/§5.2 in the projector, or first extend it to take
+the full crystallization inputs. The per-lot projector still owns scoping, zone classification, and
+the fund-fee reconciliation invariant regardless.
 
 Design-only: lot-level Method A projection (§5, §7.2), Method B series accounting (§6, §7.3),
 persistence (§10), contracts and endpoints (§12).
@@ -30,9 +40,24 @@ persistence (§10), contracts and endpoints (§12).
 > DDL precision, route prefixes, terminology, and the HWM-ownership contract are recorded in the
 > canonical [blueprint register](../../engineering/blueprints/README.md#shared-conventions).
 >
-> **Spelling:** this document uses UK spelling ("equalisation", "crystallisation") in prose. Code
-> identifiers, route segments, and column names use **US spelling** to match the shipped
-> `EqualizationCalculator` and the sibling incentive-fee blueprint's `Crystallize*` surface.
+> **Spelling:** this document uses UK spelling ("equalisation", "crystallisation") in **prose only**.
+> Every identifier it proposes — types, interfaces, DTOs, enum members, table and column names, route
+> segments, test names — uses **US spelling**, matching the shipped `EqualizationCalculator` type and
+> the sibling incentive-fee blueprint's `Crystallize*` surface.
+>
+> **Grandfathered exceptions (shipped, UK-spelled, do not rename in passing).** Three members
+> already in source keep UK spelling until someone does a deliberate rename with its own migration
+> and PR:
+>
+> | Member | Location |
+> |---|---|
+> | `EqualizationAdjustment.EqualisationCredit` | `src/Meridian.Ledger/EqualizationCalculator.cs` |
+> | `EqualizationAdjustment.HasEqualisationCredit` | `src/Meridian.Ledger/EqualizationCalculator.cs` |
+> | `ShareClassUnitRegisterProjector`'s `EqualisationCredit` field/parameters | `src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs` |
+>
+> Note the split already in source: the *type* is `EqualizationAdjustment` (US) while its *members*
+> are `EqualisationCredit` (UK). New code must not copy the member spelling — that split is the
+> defect this convention exists to stop spreading, not a precedent.
 
 ---
 
@@ -60,7 +85,7 @@ Two industry approaches are designed in full:
   therefore on the same fee footing.
 
 **Recommended default: Method (A), Equalisation Credit/Debit**, exposed behind an
-`EqualisationMethod` policy fork so a fund can opt into Method (B). Rationale (see §4): Meridian's
+`EqualizationMethod` policy fork so a fund can opt into Method (B). Rationale (see §4): Meridian's
 capital-account subledger and ledger book are keyed by investor/capital-account/currency and a
 *single* fund NAV, not by series; Method (A) extends the existing single-HWM projector with additive
 adjustment records rather than forking NAV strikes per subscription date, and preserves the single
@@ -253,15 +278,15 @@ precision and rounded only when producing a posted amount, mirroring the existin
 
 ### 4.1 Fork 1 — Equalization method (the primary decision)
 
-`EqualisationMethod` (fund/vehicle-scoped policy):
+`EqualizationMethod` (fund/vehicle-scoped policy):
 
 | Option | Behaviour | When to pick |
 |---|---|---|
-| **`EqualisationCreditDebit`** ✅ **RECOMMENDED DEFAULT** | Single published NAV/share; per-subscriber equalisation credit (entry above peak) or contingent redemption / equalisation debit (entry below HWM). | Open-end / commingled vehicles with a single dealing NAV, frequent subscriptions, and a fund-level HWM — the exact shape Meridian's subledger and projector already model. |
+| **`EqualizationCreditDebit`** ✅ **RECOMMENDED DEFAULT** | Single published NAV/share; per-subscriber equalisation credit (entry above peak) or contingent redemption / equalisation debit (entry below HWM). | Open-end / commingled vehicles with a single dealing NAV, frequent subscriptions, and a fund-level HWM — the exact shape Meridian's subledger and projector already model. |
 | **`SeriesOfShares`** | Each subscription date opens a new series with its own HWM; series roll up into the lead series after crystallisation. | Funds contractually organised as series (common Cayman/BVI master-feeder and Series-LLC / SPC structures — see `LegalEntityFormDto.SeriesLimitedLiabilityCompany`, `SegregatedPortfolioCompany`). |
 | **`None`** | Preserve today's single-HWM behaviour verbatim. | Funds where all investors enter at inception NAV, or no performance fee. Back-compatible no-op. |
 
-**Recommendation: `EqualisationCreditDebit` as the platform default**, with `SeriesOfShares`
+**Recommendation: `EqualizationCreditDebit` as the platform default**, with `SeriesOfShares`
 selectable per fund/vehicle. Rationale, grounded in code:
 
 1. **Grain fit.** The capital-account subledger key is `CapitalAccountId | InvestorId | Currency`
@@ -316,21 +341,21 @@ fee reverses into NAV). To equalise, the subscriber pays an **Equalisation Credi
 accrued fee per share at entry:
 
 ```
-equalisationCreditPerShare = f × (GAV_d − HWM)          // == accruedFeePerShare_d
-equalisationCredit          = equalisationCreditPerShare × shares
-amountPaidBySubscriber      = shares × NAV_d + equalisationCredit
+equalizationCreditPerShare = f × (GAV_d − HWM)          // == accruedFeePerShare_d
+equalizationCredit          = equalizationCreditPerShare × shares
+amountPaidBySubscriber      = shares × NAV_d + equalizationCredit
                             = shares × GAV_d              // economically the gross price
 ```
 
 **At the next crystallisation** (period end, fund still ≥ entry): the subscriber must not pay
 performance fee on the `HWM → GAV_d` gain that predates their entry, so the manager **returns the
-equalisation credit** — by issuing additional shares worth `equalisationCredit` at the
+equalisation credit** — by issuing additional shares worth `equalizationCredit` at the
 post-crystallisation NAV (`redemptionStyle = ShareIssuance`, default) or as cash
 (`CashRebate`). If the fund is **below** entry at crystallisation, only the still-earned portion is
 returned:
 
 ```
-creditReturned = f × Max(0, Min(GAV_cryst, GAV_d) − HWM) × shares      // bounded, ≤ equalisationCredit
+creditReturned = f × Max(0, Min(GAV_cryst, GAV_d) − HWM) × shares      // bounded, ≤ equalizationCredit
 ```
 
 ### 5.2 Case 2 — subscription **below** the HWM (`GAV_d < HWM`)
@@ -358,7 +383,7 @@ fee for gains beyond `HWM`.
 `GAV_1 = 120.00`, `accruedFeePerShare = 0.20 × (120 − 100) = 4.00`, `NAV_1 = 116.00`.
 
 - **Case 1 subscriber Q** buys 100 shares mid-period at `NAV_1 = 116.00`:
-  - `equalisationCredit = 0.20 × (120 − 100) × 100 = 400.00`; Q pays `116.00×100 + 400 = 12,000` (= `120×100`).
+  - `equalizationCredit = 0.20 × (120 − 100) × 100 = 400.00`; Q pays `116.00×100 + 400 = 12,000` (= `120×100`).
   - At period-end crystallisation (still `GAV = 120`): P crystallises fee `4.00×100 = 400`; Q's `400`
     credit is returned (share issuance). Post-fee: P net `11,600`, Q net `12,000`. Both entered at
     gross 120; both now pay fee only on **future** gains. ✅
@@ -368,28 +393,28 @@ fee for gains beyond `HWM`.
   - `contingentRedemption = 0.20 × (100 − 90) × 100 = 200`, redeemed and paid to manager.
   - R retains `100×100 − 200 = 9,800` — exactly as if charged 20% on the `1,000` gain. ✅
 
-These two vectors become `EqualisationProjectorTests` golden cases (§11).
+These two vectors become `EqualizationProjectorTests` golden cases (§11).
 
 ### 5.4 Ledger postings (Method A)
 
 New scoped accounts in `LedgerAccounts` (mirroring §2.2):
 
 ```csharp
-// Liability owed back to a mid-period subscriber (equalisation credit collected at entry).
-public static LedgerAccount EqualisationCreditPayableFor(string investorId) =>
-    CreateScoped("Equalisation Credit Payable", LedgerAccountType.Liability, investorId);
+// Liability owed back to a mid-period subscriber (equalization credit collected at entry).
+public static LedgerAccount EqualizationCreditPayableFor(string investorId) =>
+    CreateScoped("Equalization Credit Payable", LedgerAccountType.Liability, investorId);
 
-// Contra-equity capturing the crystallised equalisation performance fee split.
-public static LedgerAccount EqualisationReserveFor(string fundId) =>
-    CreateScoped("Equalisation Reserve", LedgerAccountType.Equity, fundId);
+// Contra-equity capturing the crystallized equalization performance fee split.
+public static LedgerAccount EqualizationReserveFor(string fundId) =>
+    CreateScoped("Equalization Reserve", LedgerAccountType.Equity, fundId);
 ```
 
 Reuse `PerformanceFeeExpenseFor` / `PerformanceFeePayableFor` / `InvestorCapitalFor`.
 
 - **Entry, Case 1 (collect credit):** `Dr Cash [investor subscription]` / `Cr InvestorCapitalFor(Q)`
-  (net NAV portion) and `Cr EqualisationCreditPayableFor(Q)` (the `400`).
+  (net NAV portion) and `Cr EqualizationCreditPayableFor(Q)` (the `400`).
 - **Crystallisation, Case 1 (return credit, `ShareIssuance`):**
-  `Dr EqualisationCreditPayableFor(Q)` / `Cr InvestorCapitalFor(Q)` for `creditReturned`; any
+  `Dr EqualizationCreditPayableFor(Q)` / `Cr InvestorCapitalFor(Q)` for `creditReturned`; any
   unreturned remainder reverses to `PerformanceFeePayableFor(fund)`.
 - **Crystallisation, Case 2 (contingent redemption):** `Dr InvestorCapitalFor(R)` /
   `Cr PerformanceFeePayableFor(fund)` for `contingentRedemption`.
@@ -470,27 +495,27 @@ New engine types live beside the existing projector in **`Meridian.Ledger`** (se
 ```csharp
 namespace Meridian.Ledger;
 
-public enum EqualisationMethod
+public enum EqualizationMethod
 {
     None = 0,
-    EqualisationCreditDebit = 1,   // recommended default
+    EqualizationCreditDebit = 1,   // recommended default
     SeriesOfShares = 2,
 }
 
-public enum EqualisationCreditRedemptionStyle { ShareIssuance = 0, CashRebate = 1 }
+public enum EqualizationCreditRedemptionStyle { ShareIssuance = 0, CashRebate = 1 }
 public enum BelowHwmEntryHandling             { ContingentRedemption = 0, DepreciationDeposit = 1 }
 
 /// <summary>Which side of the peak a subscriber entered on.</summary>
-public enum EqualisationZone { AtPeak = 0, AbovePeak = 1, BelowHighWaterMark = 2 }
+public enum EqualizationZone { AtPeak = 0, AbovePeak = 1, BelowHighWaterMark = 2 }
 ```
 
 New `AutomatedJournalEventKind` members (append to the existing enum, preserving ordinals):
 
 ```csharp
-EqualisationCreditCollected,     // entry, Case 1
-EqualisationCreditReturned,      // crystallisation, Case 1
-EqualisationDebitCrystallised,   // crystallisation, Case 2 (contingent redemption)
-SeriesFeeCrystallised,           // Method B per-series fee
+EqualizationCreditCollected,     // entry, Case 1
+EqualizationCreditReturned,      // crystallization, Case 1
+EqualizationDebitCrystallized,   // crystallization, Case 2 (contingent redemption)
+SeriesFeeCrystallized,           // Method B per-series fee
 SeriesConsolidationPosted,       // Method B roll-up
 ```
 
@@ -498,8 +523,8 @@ New `ManualJournalEntryTypeDto` members (append after `ClosingEntry = 15`, in
 `src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs`):
 
 ```csharp
-EqualisationCredit = 16,
-EqualisationDebit = 17,
+EqualizationCredit = 16,
+EqualizationDebit = 17,
 SeriesConsolidation = 18,
 ```
 
@@ -508,7 +533,7 @@ SeriesConsolidation = 18,
 ```csharp
 namespace Meridian.Ledger;
 
-/// <summary>A single dated subscription tranche eligible for equalisation.</summary>
+/// <summary>A single dated subscription tranche eligible for equalization.</summary>
 public sealed record InvestorSubscriptionLot
 {
     public InvestorSubscriptionLot(
@@ -551,41 +576,41 @@ public sealed record InvestorSubscriptionLot
     public decimal PeakPerShareAtEntry { get; }
     public string Currency { get; }
 
-    public EqualisationZone Zone =>
-        GrossNavPerShareAtEntry > PeakPerShareAtEntry ? EqualisationZone.AbovePeak
-        : NetNavPerShareAtEntry < PeakPerShareAtEntry ? EqualisationZone.BelowHighWaterMark
-        : EqualisationZone.AtPeak;
+    public EqualizationZone Zone =>
+        GrossNavPerShareAtEntry > PeakPerShareAtEntry ? EqualizationZone.AbovePeak
+        : NetNavPerShareAtEntry < PeakPerShareAtEntry ? EqualizationZone.BelowHighWaterMark
+        : EqualizationZone.AtPeak;
 }
 
-/// <summary>Period-level equalisation input; extends the partnership allocation input with lots.</summary>
-public sealed record EqualisationPeriodInput(
+/// <summary>Period-level equalization input; extends the partnership allocation input with lots.</summary>
+public sealed record EqualizationPeriodInput(
     PartnershipInvestorAllocationInput Allocation,   // reuses existing fund-level fee/HWM inputs
-    EqualisationMethod Method,
+    EqualizationMethod Method,
     decimal FundHighWaterMarkPerShare,               // HWM per share at period start
-    decimal GrossNavPerShareEnd,                     // GAV at crystallisation
+    decimal GrossNavPerShareEnd,                     // GAV at crystallization
     IReadOnlyList<InvestorSubscriptionLot> Lots,
-    EqualisationCreditRedemptionStyle RedemptionStyle = EqualisationCreditRedemptionStyle.ShareIssuance,
+    EqualizationCreditRedemptionStyle RedemptionStyle = EqualizationCreditRedemptionStyle.ShareIssuance,
     BelowHwmEntryHandling BelowHwmHandling = BelowHwmEntryHandling.ContingentRedemption);
 
-/// <summary>Per-subscriber equalisation result for one crystallisation.</summary>
-public sealed record EqualisationAdjustment(
+/// <summary>Per-subscriber equalization result for one crystallization.</summary>
+public sealed record EqualizationAdjustment(
     InvestorSubscriptionLot Lot,
-    EqualisationZone Zone,
-    decimal EqualisationCreditCollected,     // Case 1, at entry
-    decimal EqualisationCreditReturned,      // Case 1, at crystallisation
+    EqualizationZone Zone,
+    decimal EqualizationCreditCollected,     // Case 1, at entry
+    decimal EqualizationCreditReturned,      // Case 1, at crystallization
     decimal ContingentRedemption,            // Case 2
-    decimal NetEqualisationPerformanceFee,   // fee attributable to this lot after equalisation
+    decimal NetEqualizationPerformanceFee,   // fee attributable to this lot after equalization
     LedgerAccount InvestorCapitalAccount,
-    LedgerAccount EqualisationCreditAccount);
+    LedgerAccount EqualizationCreditAccount);
 
 /// <summary>Balanced projection; mirrors PartnershipInvestorAllocationProjection self-check.</summary>
-public sealed record EqualisationProjection(
-    EqualisationPeriodInput Input,
+public sealed record EqualizationProjection(
+    EqualizationPeriodInput Input,
     decimal FundPerformanceFee,                 // == PartnershipInvestorAllocationProjection.PerformanceFee
-    decimal TotalEqualisationCreditReturned,
+    decimal TotalEqualizationCreditReturned,
     decimal TotalContingentRedemption,
     string Description,
-    IReadOnlyList<EqualisationAdjustment> Adjustments,
+    IReadOnlyList<EqualizationAdjustment> Adjustments,
     IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Lines)
 {
     public decimal TotalDebits  => Lines.Sum(static line => line.debit);
@@ -599,7 +624,7 @@ public sealed record EqualisationProjection(
 ```csharp
 namespace Meridian.Ledger;
 
-public enum FundSeriesStatus { Open = 0, Crystallised = 1, Consolidated = 2, Closed = 3 }
+public enum FundSeriesStatus { Open = 0, Crystallized = 1, Consolidated = 2, Closed = 3 }
 
 public sealed record FundSeriesDefinition(
     string SeriesId,
@@ -628,7 +653,7 @@ public sealed record SeriesConsolidation(
     public bool IsBalanced => Lines.Sum(static l => l.debit) == Lines.Sum(static l => l.credit);
 }
 
-public sealed record SeriesCrystallisationProjection(
+public sealed record SeriesCrystallizationProjection(
     IReadOnlyList<FundSeriesDefinition> SeriesAfter,
     IReadOnlyList<PartnershipInvestorAllocationProjection> PerSeriesFee,   // one per series, reusing the existing projector
     IReadOnlyList<SeriesConsolidation> Consolidations,
@@ -647,16 +672,16 @@ public sealed record SeriesCrystallisationProjection(
 ```csharp
 namespace Meridian.Ledger;
 
-public static class EqualisationProjector
+public static class EqualizationProjector
 {
-    /// <summary>Method A: per-subscriber equalisation credit/debit for one crystallisation.</summary>
-    public static EqualisationProjection Project(EqualisationPeriodInput input);
+    /// <summary>Method A: per-subscriber equalization credit/debit for one crystallization.</summary>
+    public static EqualizationProjection Project(EqualizationPeriodInput input);
 }
 
 public static class SeriesAccountingProjector
 {
-    /// <summary>Method B: per-series fee + roll-up into the lead series for one crystallisation.</summary>
-    public static SeriesCrystallisationProjection Crystallise(
+    /// <summary>Method B: per-series fee + roll-up into the lead series for one crystallization.</summary>
+    public static SeriesCrystallizationProjection Crystallize(
         IReadOnlyList<FundSeriesDefinition> series,
         IReadOnlyList<SeriesHolding> holdings,
         IReadOnlyList<PartnershipInvestorAllocationInput> perSeriesInputs,
@@ -669,25 +694,25 @@ public static class SeriesAccountingProjector
 ```csharp
 namespace Meridian.FinancialOperations.Ledger;
 
-public interface IEqualisationProjectionService
+public interface IEqualizationProjectionService
 {
-    /// <summary>Dispatches on EqualisationMethod, builds governed drafts via IAccountingJournalDraftService.</summary>
-    Task<EqualisationDraftResult> BuildEqualisationDraftsAsync(
-        EqualisationDraftRequest request,
+    /// <summary>Dispatches on EqualizationMethod, builds governed drafts via IAccountingJournalDraftService.</summary>
+    Task<EqualizationDraftResult> BuildEqualizationDraftsAsync(
+        EqualizationDraftRequest request,
         CancellationToken ct = default);
 }
 
-public sealed record EqualisationDraftRequest(
+public sealed record EqualizationDraftRequest(
     Guid LedgerBookId,
     Guid PeriodId,
     string FundProfileId,
-    EqualisationMethod Method,
-    EqualisationPeriodInput? EqualisationInput,             // Method A
-    SeriesCrystallisationRequest? SeriesInput,             // Method B
+    EqualizationMethod Method,
+    EqualizationPeriodInput? EqualizationInput,             // Method A
+    SeriesCrystallizationRequest? SeriesInput,             // Method B
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
     IReadOnlyList<string>? EvidenceLinks = null);
 
-public sealed record EqualisationDraftResult(
+public sealed record EqualizationDraftResult(
     IReadOnlyList<AccountingJournalDraftResult> Drafts,     // one per governed posting set
     bool AllBalanced,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
@@ -715,42 +740,47 @@ public interface IFundSeriesStore
 
 - **Method A (per-investor equalisation, single fund HWM).** Call
   `PartnershipInvestorAccountingProjector.Project(input.Allocation)` exactly as today to obtain the
-  single fund `PerformanceFee` and `UpdatedHighWaterMark`. Then `EqualisationProjector.Project`
+  single fund `PerformanceFee` and `UpdatedHighWaterMark`. Then `EqualizationProjector.Project`
   *reallocates* that fee across subscription lots via the §5 formulas: each lot's
-  `NetEqualisationPerformanceFee` is the fund fee attributable to that lot after removing pre-entry
+  `NetEqualizationPerformanceFee` is the fund fee attributable to that lot after removing pre-entry
   gains (credit) or adding post-entry recovery fee (debit). The **invariant**
-  `Σ NetEqualisationPerformanceFee (+ credits returned − debits) == FundPerformanceFee` is asserted
+  `Σ NetEqualizationPerformanceFee (+ credits returned − debits) == FundPerformanceFee` is asserted
   (§11) so the manager's crystallised fee is unchanged by equalisation — only its *distribution*
   across investors changes. The fund HWM stays a single value; there is **no per-investor HWM state**
   to persist.
 
 - **Method B (per-series HWM).** Each series is an independent fee context: call
   `PartnershipInvestorAccountingProjector.Project` **once per series** with that series'
-  `HighWaterMark = HWM_s`. This means **per-series HWM is real persisted state**
-  (`fund_series.high_water_mark_per_share`, §10) and each series advances its own HWM through the
-  existing `updatedHighWaterMark = Math.Max(...)` line. Roll-up then collapses consolidated series
-  onto the lead HWM.
+  `HighWaterMark = HWM_s`. This means **per-series HWM is real persisted state** — one
+  `incentive_fee_state` row per series, keyed by `series_id` (incentive-fee blueprint §7.2) — and
+  each series advances its own HWM through the existing
+  `updatedHighWaterMark = Math.Max(...)` line. Roll-up then collapses consolidated series onto the
+  lead series' HWM row.
 
-The choice therefore determines *where the HWM lives*: Method A keeps the single fund HWM already in
-`PartnershipInvestorAllocationInput.HighWaterMark`; Method B introduces per-series HWM rows. This is
-the core reason Method A is the lighter, recommended default.
+The choice therefore determines the *scope* of the HWM, not its home: Method A keeps a single
+fund-scoped row, Method B one row per series. Both live in the same table. This is the core reason
+Method A is the lighter, recommended default.
 
-> **Cross-blueprint contract — HWM ownership (recorded 2026-08-01).** The
+> **Cross-blueprint contract — HWM ownership (recorded 2026-08-01, revised after review).** The
 > [incentive-fee blueprint](incentive-fee-mechanics.md) exposes the same choice as its **Fork G**
-> (`FundLevel` vs `InvestorSeries`) and defers to this section for where the HWM physically lives.
-> There is exactly one HWM store per fund:
+> (`FundLevel` vs `InvestorSeries`), and its `incentive_fee_state` table (§7.2 there) is the
+> **single durable owner of the HWM under both methods**. This section is the authority on the
+> *scope* of a row, not on a second store:
 >
-> | Equalization method | Incentive-fee Fork G | Where the HWM lives |
+> | Equalization method | Incentive-fee Fork G | HWM row in `incentive_fee_state` |
 > |---|---|---|
-> | Method A (default) | `FundLevel` (default) | Single fund HWM in `PartnershipInvestorAllocationInput.HighWaterMark`. No per-investor HWM rows. |
-> | Method B | `InvestorSeries` | Per-series HWM in `fund_series.high_water_mark_per_share` (§10.3). |
+> | Method A (default) | `FundLevel` (default) | One row per book, `series_id is null`, `high_water_mark` in fund NAV terms. No per-investor rows. |
+> | Method B | `InvestorSeries` | One row per series, `series_id` set, `high_water_mark_per_share` in per-share terms. |
 >
-> The incentive-fee blueprint's §5.3 durable state is **not** a competing per-investor HWM table: it
-> carries loss-carryforward, accrual, and crystallization history keyed by whichever scope the pair
-> above selects. If a fund adopts Method B, this blueprint's series accounting and the incentive-fee
-> blueprint's `InvestorSeries` fork must land as one slice — shipping either alone produces two HWM
-> sources of truth. Both documents record this contract; the canonical copy is the
-> [blueprint register](../../engineering/blueprints/README.md#cross-blueprint-contracts).
+> **This blueprint's `fund_series` table therefore does not carry a HWM column.** An earlier draft
+> proposed `fund_series.high_water_mark_per_share`; it is removed (§10.3) because it would compete
+> with `incentive_fee_state` — crystallization could advance one while the next fee calculation read
+> the other. `PartnershipInvestorAllocationInput.HighWaterMark` is likewise **not** an owner: it is a
+> transient `sealed record` projector input, hydrated from `incentive_fee_state` per period.
+>
+> If a fund adopts Method B, this blueprint's series accounting and the incentive-fee blueprint's
+> `InvestorSeries` fork must land as one slice. Both documents record this contract; the canonical
+> copy is the [blueprint register](../../engineering/blueprints/README.md#cross-blueprint-contracts).
 
 ---
 
@@ -765,12 +795,12 @@ implementation time and update the register if another lane lands first.
 ### 10.1 `V_ledger_033__equalization_policy.sql`
 
 ```sql
--- Equalisation policy per fund structure node (method + Method-A styling forks). Inert until the
--- projection service reads it; a null/absent row means EqualisationMethod=None (today's behaviour).
-create table if not exists __SCHEMA__.fund_equalisation_policy (
+-- Equalization policy per fund structure node (method + Method-A styling forks). Inert until the
+-- projection service reads it; a null/absent row means EqualizationMethod=None (today's behaviour).
+create table if not exists __SCHEMA__.fund_equalization_policy (
     ledger_book_id            uuid not null references __SCHEMA__.ledger_books(ledger_book_id),
     fund_profile_id           text not null,
-    equalisation_method       text not null default 'None',        -- None | EqualisationCreditDebit | SeriesOfShares
+    equalization_method       text not null default 'None',        -- None | EqualizationCreditDebit | SeriesOfShares
     credit_redemption_style   text not null default 'ShareIssuance',
     below_hwm_handling        text not null default 'ContingentRedemption',
     tenant_id                 text null,
@@ -779,15 +809,15 @@ create table if not exists __SCHEMA__.fund_equalisation_policy (
     primary key (ledger_book_id)
 );
 
-create index if not exists ix_fund_equalisation_policy_fund
-    on __SCHEMA__.fund_equalisation_policy (lower(trim(fund_profile_id)));
+create index if not exists ix_fund_equalization_policy_fund
+    on __SCHEMA__.fund_equalization_policy (lower(trim(fund_profile_id)));
 ```
 
 ### 10.2 `V_ledger_034__equalization_subscription_lots.sql`
 
 ```sql
--- Method A: dated subscription tranches and their per-crystallisation equalisation adjustments.
-create table if not exists __SCHEMA__.equalisation_subscription_lots (
+-- Method A: dated subscription tranches and their per-crystallization equalization adjustments.
+create table if not exists __SCHEMA__.equalization_subscription_lots (
     subscription_id                text not null,
     ledger_book_id                 uuid not null references __SCHEMA__.ledger_books(ledger_book_id),
     investor_id                    text not null,
@@ -804,17 +834,17 @@ create table if not exists __SCHEMA__.equalisation_subscription_lots (
     primary key (ledger_book_id, subscription_id)
 );
 
-create index if not exists ix_equalisation_lots_investor
-    on __SCHEMA__.equalisation_subscription_lots (ledger_book_id, lower(trim(investor_id)));
+create index if not exists ix_equalization_lots_investor
+    on __SCHEMA__.equalization_subscription_lots (ledger_book_id, lower(trim(investor_id)));
 
-create table if not exists __SCHEMA__.equalisation_adjustments (
+create table if not exists __SCHEMA__.equalization_adjustments (
     ledger_book_id                 uuid not null references __SCHEMA__.ledger_books(ledger_book_id),
     period_id                      uuid not null,
     subscription_id                text not null,
-    equalisation_credit_collected  numeric(38, 12) not null default 0,
-    equalisation_credit_returned   numeric(38, 12) not null default 0,
+    equalization_credit_collected  numeric(38, 12) not null default 0,
+    equalization_credit_returned   numeric(38, 12) not null default 0,
     contingent_redemption          numeric(38, 12) not null default 0,
-    net_equalisation_perf_fee      numeric(38, 12) not null default 0,
+    net_equalization_perf_fee      numeric(38, 12) not null default 0,
     journal_entry_id               uuid null,
     tenant_id                      text null,
     created_at                     timestamptz not null,
@@ -833,9 +863,10 @@ create table if not exists __SCHEMA__.fund_series (
     vehicle_id                text null,
     issue_date                date not null,
     issue_price               numeric(38, 12) not null,
-    high_water_mark_per_share numeric(38, 12) not null,
+    -- No HWM column here by contract (§9): the series HWM lives in incentive_fee_state,
+    -- one row per series keyed by series_id. Join, do not duplicate.
     is_lead                   boolean not null default false,
-    status                    text not null default 'Open',      -- Open | Crystallised | Consolidated | Closed
+    status                    text not null default 'Open',      -- Open | Crystallized | Consolidated | Closed
     currency                  text not null,
     tenant_id                 text null,
     created_at                timestamptz not null,
@@ -868,11 +899,13 @@ create table if not exists __SCHEMA__.fund_series_consolidations (
 );
 ```
 
-**Rounding/precision note:** every column uses the ledger convention `numeric(38, 12)`
-([register](../../engineering/blueprints/README.md#ddl-precision)) — per-share, share-count, and
-monetary alike. Storage precision is *not* the rounding policy: posted monetary amounts are still
-rounded in C# to the 2-dp
-`RoundCurrency` policy. Never post an unrounded per-share figure.
+**Rounding/precision note:** every **numeric amount, rate, share-count, and per-share** column above
+uses the ledger convention `numeric(38, 12)`
+([register](../../engineering/blueprints/README.md#ddl-precision)). This applies to the numeric
+columns only — the same tables also carry `uuid`, `text`, `date`, `boolean`, and `timestamptz`
+columns, which keep their natural types. Storage precision is *not* the rounding policy: posted
+monetary amounts are still rounded in C# to the 2-dp `RoundCurrency` policy. Never post an
+unrounded per-share figure.
 
 ---
 
@@ -881,10 +914,10 @@ rounded in C# to the 2-dp
 Flow (Method A shown; Method B is analogous with per-series inputs and a consolidation posting set):
 
 ```
-EqualisationPeriodInput
+EqualizationPeriodInput
   -> PartnershipInvestorAccountingProjector.Project(input.Allocation)   // single fund fee + HWM (unchanged)
-  -> EqualisationProjector.Project(input)                              // reallocate fee -> EqualisationProjection (balanced tuples)
-  -> IEqualisationProjectionService.BuildEqualisationDraftsAsync(...)
+  -> EqualizationProjector.Project(input)                              // reallocate fee -> EqualizationProjection (balanced tuples)
+  -> IEqualizationProjectionService.BuildEqualizationDraftsAsync(...)
        for each posting set:
          new AccountingJournalDraftRequest(
              AggregateId:        <fund/investor aggregate>,
@@ -894,7 +927,7 @@ EqualisationPeriodInput
              Lines:              adjustment.Lines.Select(l => new AccountingJournalDraftLineRequest(
                                      l.account, l.debit, l.credit,
                                      Dimensions: new LedgerDimensionSetDto{ InvestorId=..., FundId=..., /* SeriesId via ExternalGlDimensions */ })),
-             EffectiveDate:      crystallisationDate,
+             EffectiveDate:      crystallizationDate,
              LedgerBookId:       request.LedgerBookId,
              PostingKind:        LedgerPostingKindDto.Originating,
              AdjustmentApproval: request.AdjustmentApproval,
@@ -911,7 +944,7 @@ Rules:
   timestamps/GUIDs are injected by the service, not read inside the projector, so golden tests are
   reproducible.
 - **Idempotency:** set `AutomatedJournalEvent.IdempotencyKey` /
-  `JournalEntryMetadata.IdempotencyKey` to `"equalisation:{ledgerBookId}:{periodId}:{subscriptionId}"`
+  `JournalEntryMetadata.IdempotencyKey` to `"equalization:{ledgerBookId}:{periodId}:{subscriptionId}"`
   (Method A) or `"series-consol:{ledgerBookId}:{fromSeriesId}:{effectiveDate}"` (Method B), matching
   the journal idempotency guards from `V_ledger_013__journal_idempotency_guards.sql`.
 - **Series identity for Method B** rides in `JournalEntryMetadata.Tags["seriesId"]` and
@@ -927,17 +960,19 @@ Rules:
 
 ### 12.1 DTOs (`Meridian.Contracts.Ledger`)
 
-- `EqualisationPolicyDto(Guid LedgerBookId, string FundProfileId, EqualisationMethod Method,
-  EqualisationCreditRedemptionStyle RedemptionStyle, BelowHwmEntryHandling BelowHwmHandling)`.
-- `EqualisationAdjustmentDto(string InvestorId, string SubscriptionId, DateOnly SubscriptionDate,
-  string Zone, decimal EqualisationCreditCollected, decimal EqualisationCreditReturned,
-  decimal ContingentRedemption, decimal NetEqualisationPerformanceFee, string Currency)`.
+- `EqualizationPolicyDto(Guid LedgerBookId, string FundProfileId, EqualizationMethod Method,
+  EqualizationCreditRedemptionStyle RedemptionStyle, BelowHwmEntryHandling BelowHwmHandling)`.
+- `EqualizationAdjustmentDto(string InvestorId, string SubscriptionId, DateOnly SubscriptionDate,
+  string Zone, decimal EqualizationCreditCollected, decimal EqualizationCreditReturned,
+  decimal ContingentRedemption, decimal NetEqualizationPerformanceFee, string Currency)`.
 - `FundSeriesDto(string SeriesId, DateOnly IssueDate, decimal IssuePrice,
-  decimal HighWaterMarkPerShare, bool IsLead, string Status, string Currency)`.
+  decimal HighWaterMarkPerShare, bool IsLead, string Status, string Currency)` — note
+  `HighWaterMarkPerShare` is a **joined read** from `incentive_fee_state` (§9 HWM contract), not a
+  column on `fund_series`.
 - `SeriesConsolidationDto(string FromSeriesId, string ToLeadSeriesId, DateOnly EffectiveDate,
   decimal ConversionRatio, IReadOnlyList<SeriesConsolidationHolderDto> Holders)`.
-- `EqualisationCrystallisationViewDto(Guid LedgerBookId, Guid PeriodId, EqualisationMethod Method,
-  decimal FundPerformanceFee, IReadOnlyList<EqualisationAdjustmentDto> Adjustments,
+- `EqualizationCrystallizationViewDto(Guid LedgerBookId, Guid PeriodId, EqualizationMethod Method,
+  decimal FundPerformanceFee, IReadOnlyList<EqualizationAdjustmentDto> Adjustments,
   IReadOnlyList<SeriesConsolidationDto> Consolidations, bool AllBalanced,
   IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues)`.
 
@@ -953,9 +988,9 @@ that shares their crystallization boundary
 ([register](../../engineering/blueprints/README.md#api-route-prefixes)). Route segments use US
 spelling, matching the shipped `EqualizationCalculator`.
 
-- `GET  /api/ledger/equalization/policy/{ledgerBookId}` → `EqualisationPolicyDto`.
+- `GET  /api/ledger/equalization/policy/{ledgerBookId}` → `EqualizationPolicyDto`.
 - `PUT  /api/ledger/equalization/policy/{ledgerBookId}` (governed; approval-gated).
-- `POST /api/ledger/equalization/crystallize/preview` → `EqualisationCrystallisationViewDto`
+- `POST /api/ledger/equalization/crystallize/preview` → `EqualizationCrystallizationViewDto`
   (dry-run: builds drafts, does not post; sets `DryRunCorrelationId` on the draft request).
 - `POST /api/ledger/equalization/crystallize/submit` → submits governed drafts for approval.
 - `GET  /api/ledger/equalization/series/{ledgerBookId}` → `IReadOnlyList<FundSeriesDto>`.
@@ -983,21 +1018,21 @@ Mirror the existing ledger projector tests (`tests/Meridian.Tests`, e.g. the
 `PartnershipInvestorAccountingProjector` suite). Deterministic, no clock/GUID reads inside
 projectors.
 
-### 13.1 `EqualisationProjectorTests` (Method A)
+### 13.1 `EqualizationProjectorTests` (Method A)
 
-- **`Project_AbovePeakSubscriber_CollectsAccruedFeeAsEqualisationCredit`** — the §5.3 Q vector:
-  `equalisationCredit.Should().Be(400.00m)`; amount paid `== 120 × shares`.
-- **`Project_AbovePeakSubscriber_ReturnsCreditAtCrystallisation_WhenStillAbove`** — full `400`
+- **`Project_AbovePeakSubscriber_CollectsAccruedFeeAsEqualizationCredit`** — the §5.3 Q vector:
+  `equalizationCredit.Should().Be(400.00m)`; amount paid `== 120 × shares`.
+- **`Project_AbovePeakSubscriber_ReturnsCreditAtCrystallization_WhenStillAbove`** — full `400`
   returned; net worth reconciles.
 - **`Project_AbovePeakSubscriber_ReturnsPartialCredit_WhenFundFellBelowEntry`** — bounded
   `creditReturned = f × Max(0, Min(GAV_cryst, GAV_d) − HWM) × shares`.
 - **`Project_BelowHwmSubscriber_LeviesContingentRedemption_OnRecoveryToHwm`** — the §5.3 R vector:
   `contingentRedemption.Should().Be(200.00m)`; retained value `9,800`.
 - **`Project_BelowHwmSubscriber_NoRedemption_WhenNoRecovery`** — recovery `≤ 0` ⇒ `0`.
-- **`Project_AtPeakSubscriber_ProducesNoEqualisation`** — zone `AtPeak`, all adjustments `0`.
+- **`Project_AtPeakSubscriber_ProducesNoEqualization`** — zone `AtPeak`, all adjustments `0`.
 - **`Project_SumOfLotFees_EqualsFundPerformanceFee`** — the invariant in §9 across a randomised set
   of lots (property-style with a fixed seed): manager fee is subscriber-count invariant.
-- **`Project_AllPostingSets_AreBalanced`** — every `EqualisationProjection.IsBalanced` true;
+- **`Project_AllPostingSets_AreBalanced`** — every `EqualizationProjection.IsBalanced` true;
   `TotalDebits == TotalCredits`.
 - **`Project_RoundingResidual_AbsorbedByLastAllocation`** — matches the existing plug convention;
   totals reconcile to the penny.
@@ -1008,24 +1043,24 @@ projectors.
 
 ### 13.2 `SeriesAccountingProjectorTests` (Method B)
 
-- **`Crystallise_PerSeriesFee_UsesOwnHighWaterMark`** — §6.3 vectors: Series 1 fee `2.32`, Series 2
+- **`Crystallize_PerSeriesFee_UsesOwnHighWaterMark`** — §6.3 vectors: Series 1 fee `2.32`, Series 2
   fee `2.00`.
-- **`Crystallise_RollUp_ConversionRatioPreservesValue`** — ratio `108.00/125.28`; issued lead shares
+- **`Crystallize_RollUp_ConversionRatioPreservesValue`** — ratio `108.00/125.28`; issued lead shares
   ≈ `86.20`; value preserved within `RoundCurrency` tolerance.
-- **`Crystallise_UnderwaterSeries_NotConsolidated`** — a series with no crystallised fee stays
+- **`Crystallize_UnderwaterSeries_NotConsolidated`** — a series with no crystallised fee stays
   `Open`.
-- **`Crystallise_ConsolidationPostings_NetToZero`** — `SeriesConsolidation.IsBalanced` true.
-- **`Crystallise_LeadSeriesUniqueness`** — exactly one `IsLead` series after roll-up (matches
+- **`Crystallize_ConsolidationPostings_NetToZero`** — `SeriesConsolidation.IsBalanced` true.
+- **`Crystallize_LeadSeriesUniqueness`** — exactly one `IsLead` series after roll-up (matches
   `ux_fund_series_lead`).
 
 ### 13.3 Service / integration
 
-- **`EqualisationProjectionServiceTests`** — dispatch on `EqualisationMethod`; each posting set flows
+- **`EqualizationProjectionServiceTests`** — dispatch on `EqualizationMethod`; each posting set flows
   through a faked `IAccountingJournalDraftService` and returns `AllBalanced == true`;
   `IdempotencyKey` stable across re-runs (no duplicate drafts).
-- **`EqualisationPersistenceTests`** — round-trip `IFundSeriesStore`; migration replay is idempotent
+- **`EqualizationPersistenceTests`** — round-trip `IFundSeriesStore`; migration replay is idempotent
   (apply `V_ledger_033..035` twice, assert no error / no dup rows).
-- **`EqualisationSubledgerProjectionTests`** — Method A adjustments appear in
+- **`EqualizationSubledgerProjectionTests`** — Method A adjustments appear in
   `PrivateCapitalCapitalAccountSubledgerBuilder.Build(...)` on the existing
   `CapitalAccountId|InvestorId|Currency` key without schema change.
 
@@ -1037,33 +1072,33 @@ projectors.
 - Structured logging only; no string interpolation inside log calls — Quality Guardrail.
 
 Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
---filter FullyQualifiedName~Equalisation` (or the GitHub `Targeted Test` workflow,
+--filter FullyQualifiedName~Equalization` (or the GitHub `Targeted Test` workflow,
 `mode=dotnet-filtered`, per CLAUDE.md).
 
 ---
 
 ## 14. Implementation checklist (ordered, code-ready)
 
-1. **Enums & event kinds** — add `EqualisationMethod`, `EqualisationCreditRedemptionStyle`,
-   `BelowHwmEntryHandling`, `EqualisationZone`, `FundSeriesStatus` in `Meridian.Ledger`; append
-   `EqualisationCreditCollected/Returned`, `EqualisationDebitCrystallised`, `SeriesFeeCrystallised`,
-   `SeriesConsolidationPosted` to `AutomatedJournalEventKind`; append `EqualisationCredit=16`,
-   `EqualisationDebit=17`, `SeriesConsolidation=18` to `ManualJournalEntryTypeDto`.
-2. **Chart of accounts** — add `EqualisationCreditPayableFor`, `EqualisationReserveFor`,
+1. **Enums & event kinds** — add `EqualizationMethod`, `EqualizationCreditRedemptionStyle`,
+   `BelowHwmEntryHandling`, `EqualizationZone`, `FundSeriesStatus` in `Meridian.Ledger`; append
+   `EqualizationCreditCollected/Returned`, `EqualizationDebitCrystallized`, `SeriesFeeCrystallized`,
+   `SeriesConsolidationPosted` to `AutomatedJournalEventKind`; append `EqualizationCredit=16`,
+   `EqualizationDebit=17`, `SeriesConsolidation=18` to `ManualJournalEntryTypeDto`.
+2. **Chart of accounts** — add `EqualizationCreditPayableFor`, `EqualizationReserveFor`,
    `SeriesCapitalFor` to `LedgerAccounts.cs` (mirror `CreateScoped` / per-symbol patterns).
-3. **Domain records** — `InvestorSubscriptionLot`, `EqualisationPeriodInput`,
-   `EqualisationAdjustment`, `EqualisationProjection`; `FundSeriesDefinition`, `SeriesHolding`,
-   `SeriesConsolidation`, `SeriesCrystallisationProjection` (constructor validation + `IsBalanced`).
-4. **Projectors** — implement `EqualisationProjector.Project` (§5 math) and
-   `SeriesAccountingProjector.Crystallise` (§6 math), reusing
+3. **Domain records** — `InvestorSubscriptionLot`, `EqualizationPeriodInput`,
+   `EqualizationAdjustment`, `EqualizationProjection`; `FundSeriesDefinition`, `SeriesHolding`,
+   `SeriesConsolidation`, `SeriesCrystallizationProjection` (constructor validation + `IsBalanced`).
+4. **Projectors** — implement `EqualizationProjector.Project` (§5 math) and
+   `SeriesAccountingProjector.Crystallize` (§6 math), reusing
    `PartnershipInvestorAccountingProjector.Project` and `RoundCurrency`. Pure/static/deterministic.
 5. **Unit tests first-class** — author §13.1/§13.2 golden vectors against the projectors *before*
    wiring persistence (they need no DB).
 6. **Persistence** — add `V_ledger_033__equalization_policy.sql`,
    `V_ledger_034__equalization_subscription_lots.sql`, `V_ledger_035__fund_series.sql` (idempotent,
    `__SCHEMA__`); implement `IFundSeriesStore` + a Postgres adapter in `Meridian.Storage.Ledger`.
-7. **Application service** — `IEqualisationProjectionService` /
-   `EqualisationProjectionService` in `Meridian.FinancialOperations.Ledger`, dispatching on method
+7. **Application service** — `IEqualizationProjectionService` /
+   `EqualizationProjectionService` in `Meridian.FinancialOperations.Ledger`, dispatching on method
    and routing every posting set through `IAccountingJournalDraftService.BuildDraftAsync` with
    idempotency keys and evidence links; register in DI.
 8. **Contracts/DTOs** — add the §12.1 DTOs to `Meridian.Contracts.Ledger`, wire into the
@@ -1077,8 +1112,8 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
     `src/Meridian.Ui/dashboard/`. WPF parity follows.
 12. **Service/integration tests** — §13.3.
 13. **Docs** — link this blueprint from `docs/development/accounting-blueprints/` index and the
-    accounting docs front door; note the `EqualisationMethod` policy fork in operator docs.
-14. **Validation** — `bash scripts/ci.sh` locally; targeted `dotnet test ...~Equalisation`; then the
+    accounting docs front door; note the `EqualizationMethod` policy fork in operator docs.
+14. **Validation** — `bash scripts/ci.sh` locally; targeted `dotnet test ...~Equalization`; then the
     authoritative GitHub `Meridian CI / quality-gate`.
 
 ---
@@ -1089,7 +1124,7 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
    ledger book (not a new `FundStructureNodeKindDto`). If the roadmap wants series to appear in the
    fund-structure graph and ownership links, promoting `Series` to a node kind is a larger,
    separate change — confirm before committing.
-2. **NAV source of truth.** `EqualisationProjector` needs `GrossNavPerShareEnd` and per-share
+2. **NAV source of truth.** `EqualizationProjector` needs `GrossNavPerShareEnd` and per-share
    entry NAVs. Which subsystem is authoritative for per-share NAV strikes (pricing/valuation vs. the
    ledger)? The blueprint treats them as inputs; the producer must be pinned.
 3. **Multi-currency lots.** `InvestorSubscriptionLot.Currency` and the subledger key include

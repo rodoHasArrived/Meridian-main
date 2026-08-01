@@ -1,11 +1,11 @@
 {
   "total_files": 638,
-  "total_lines": 116452,
+  "total_lines": 116565,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 182.5,
+  "average_lines": 182.7,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1690,7 +1690,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/equalization-and-series-accounting.md",
-      "line_count": 1110,
+      "line_count": 1145,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1698,7 +1698,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/incentive-fee-mechanics.md",
-      "line_count": 1020,
+      "line_count": 1048,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1706,7 +1706,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/README.md",
-      "line_count": 68,
+      "line_count": 72,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2146,7 +2146,7 @@
     },
     {
       "path": "docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md",
-      "line_count": 749,
+      "line_count": 766,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2154,7 +2154,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 120,
+      "line_count": 136,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2826,7 +2826,7 @@
     },
     {
       "path": "docs/plans/README.md",
-      "line_count": 54,
+      "line_count": 56,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2850,7 +2850,7 @@
     },
     {
       "path": "docs/plans/security-master-passport-workbench.md",
-      "line_count": 730,
+      "line_count": 737,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2962,7 +2962,7 @@
     },
     {
       "path": "docs/product/web-ui-report-run-stream-blueprint-2026-07.md",
-      "line_count": 394,
+      "line_count": 398,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -1,7 +1,8 @@
 <!-- phase:PR7 -->
 # Blueprint — Report-run status stream (stream fan-out PR D, scoped to `report-run:<id>`)
 
-**Status:** Implemented — D1–D3 shipped (§9)
+**Status:** Implemented with one open divergence — D1 and D3 shipped as designed; D2's shared-helper
+extraction landed additively, leaving `WorkstationEndpoints.Stream.cs` un-refactored (§9 D2)
 **Owner:** Workstation Shell and UX
 **Reviewed:** 2026-08-01
 
@@ -365,14 +366,17 @@ npm --prefix src/Meridian.Ui/dashboard run build
 
 ## 9. Phasing (each a separate PR, hot-path review gated)
 
-All three phases have shipped. The checklist is retained as the delivery record.
+D1 and D3 shipped as designed; **D2 shipped only partially** (see the divergence note under it). The
+checklist is retained as the delivery record.
 
 1. **PR D1 — Notifier seam + topic generalization + generic broadcaster (shadow).** ✅ Shipped. Landed as isolated, individually CI-verifiable commits so hot-path review is scoped:
    - **D1a — Notifier seam.** `IReportingRunNotifier`/`NullReportingRunNotifier` (Contracts); `ReportingOrchestrationService` gains the binary-compatible ctor overload (§5.1) firing `NotifyRunChanged` in `PersistAsync`; DI resolves it (null-object default). Tests: fires on generation/failure/each approval transition; a throwing notifier never surfaces and the run still persists. **Requires hot-path review** of the call site.
    - **D1b — `StreamTopic` generalization.** Add `Argument` + `StreamTopic.ReportRun`, keeping the quote surface (`Quotes`/`AllQuotes`/`SymbolFilter`). Unit tests.
    - **D1c — Generic broadcaster extraction.** Extract `StreamBroadcaster<TPayload>` (with `WakeAll()`/`Wake(topic)` and `EvictEmptyTopics`) and refactor `QuoteStreamBroadcaster` onto it — behavior-preserving; `QuoteStreamBroadcasterTests`/`WorkstationStreamEndpointTests` pass **unchanged** as the gate.
    - **D1d — Report-run broadcaster (shadow).** `ReportRunStreamBroadcaster` (`EvictEmptyTopics=true`, targeted wake) + payload builder + DI, wired to `IReportingRunNotifier`, but **not yet exposed by an endpoint**. Broadcaster unit tests incl. topic eviction.
-2. **PR D2 — SSE endpoint + auth + registry/caps.** ✅ Shipped. Extract the shared SSE loop/heartbeat/`ResolveStreamSessionId` helper out of `WorkstationEndpoints.Stream.cs`; add `GET /api/fund-structure/reporting/runs/{runId}/stream` with subscribe-time authorization (403/404), 429/503, heartbeat. Endpoint tests. Flip the feature on.
+2. **PR D2 — SSE endpoint + auth + registry/caps.** ⚠️ **Partially shipped.** The endpoint half landed as designed: `GET /api/fund-structure/reporting/runs/{runId}/stream` with subscribe-time authorization (403/404), 429/503, heartbeat, endpoint tests, feature on. `StreamEndpointHelpers` exists (`WriteEventStreamAsync<TPayload>`, `ResolveStreamSessionId`) and `FundStructureEndpoints.ReportingRunStream.cs` consumes it.
+
+   **Divergence — the extraction was additive, not a refactor.** The design said to extract the shared SSE loop/heartbeat/`ResolveStreamSessionId` helper *out of* `WorkstationEndpoints.Stream.cs`. In source that file contains **no reference to `StreamEndpointHelpers`** and still carries its own `StreamHeartbeatIntervalMs` constant, its own SSE write/flush/heartbeat loop, and its own `private static string ResolveStreamSessionId` — so the quote endpoint was never moved onto the shared helper. The helper was written alongside it instead. Result: two SSE loops and two session-id resolvers, which is the duplication this phase existed to remove. Closing it is a behavior-preserving follow-up gated by the unchanged `WorkstationStreamEndpointTests`.
 3. **PR D3 — Client stream + reporting-screen adoption.** ✅ Shipped. `report-run-stream.ts`, `use-report-run-stream.ts`, watched-run live status + `FreshnessChip`. Client tests. Additive — no poll suspended.
 
 ## 10. Risks & mitigations

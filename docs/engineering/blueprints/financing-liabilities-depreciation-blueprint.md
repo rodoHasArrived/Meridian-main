@@ -1,14 +1,14 @@
 # Blueprint — Repo Engine, Depreciation Schedule, and Borrower-Side Debt
 
-**Status:** Partially implemented — the depreciation engine shipped; repo and borrower-side debt
-remain design-only
+**Status:** Partially implemented — the depreciation *calculation core* shipped (no persistence,
+endpoints, or UI); repo and borrower-side debt remain design-only
 **Owner:** Accounting and Ledger lane
 **Reviewed:** 2026-08-01
 
 ## Delivery state (2026-08-01)
 
-Engine 2 (**fixed-asset depreciation**) is in source. Treat its sections as built and verify against
-the live types rather than re-deriving them:
+Engine 2 (**fixed-asset depreciation**) has its *calculation core* in source. Treat only these
+sections as built, and verify against the live types rather than re-deriving them:
 
 - `src/Meridian.Ledger/DepreciationScheduleCalculator.cs` + `IDepreciationScheduleCalculator.cs`,
   `DepreciationMethod.cs`, `DepreciationInput.cs`, `DepreciationPeriod.cs`,
@@ -17,10 +17,18 @@ the live types rather than re-deriving them:
 - `LedgerAccounts.AccumulatedDepreciationFor` / `DepreciationExpenseFor`.
 - **`AutomatedJournalEventKind.DepreciationPosted` is already on the enum — do not re-append it.**
 
+Engine 2's **persistence and operator surfaces are not built**, so Phase 2 is *partially* complete.
+Absent from source: `FixedAssetRecordDto` / `DepreciationMethodDto` / `DepreciationPeriodDto` (the
+wire contracts — note the domain types above ship without a `Dto` counterpart),
+`IFixedAssetRegisterStore` and its Postgres migration, the posted-through watermark,
+`FixedAssetDepreciationService`, any depreciation route in `UiApiRoutes`, the dashboard `types.ts`
+DTOs, and the accounting-screen read model. Depreciation is computable but not yet storable,
+postable through the governed draft path, or operable.
+
 Engines 1 (**repo / reverse-repo**) and 3 (**borrower-side term debt**) are design-only: there is no
 `Meridian.Application.Financing` project, no repo or borrowing projector, and no
 `RepoInterestAccrued` / `BorrowingInterestAccrued` / `DebtIssuanceCostAmortized` enum member.
-Phase 2 of the implementation checklist is therefore complete; Phases 3–4 are not.
+Phases 3–4 of the implementation checklist are therefore untouched.
 
 > **Shared-convention notice.** This blueprint appends to the shared `AutomatedJournalEventKind`
 > enum and adds ledger routes. Ordinals, DDL precision, and route prefixes are recorded in the
@@ -669,18 +677,27 @@ PR3 Borrowings.
       `AddOptions<FinancingOptions>().BindConfiguration(FinancingOptions.SectionName)` (not manual
       `Configure`) so `IOptionsMonitor` hot-reload works.
 
-### Phase 2: Depreciation (PR1) — shipped
+### Phase 2: Depreciation (PR1) — partially shipped (calculation core only)
 
-- [x] `FixedAssetRecordDto`, `DepreciationMethodDto`, `DepreciationPeriodDto` contracts.
+- [ ] `FixedAssetRecordDto`, `DepreciationMethodDto`, `DepreciationPeriodDto` contracts.
 - [x] `DepreciationScheduleCalculator` + `FixedAssetDepreciationProjector` +
       `FixedAssetDepreciationDraftBuilder`.
-- [x] `IFixedAssetRegisterStore` + Postgres impl + migration + posted-through watermark.
-- [x] `FixedAssetDepreciationService`; wire the `DepreciationPosted` governed draft path.
-- [x] Endpoints + `types.ts` DTOs + accounting-screen read model.
+- [ ] `IFixedAssetRegisterStore` + Postgres impl + migration + posted-through watermark.
+- [ ] `FixedAssetDepreciationService`; wire the `DepreciationPosted` governed draft path.
+- [ ] Endpoints + `types.ts` DTOs + accounting-screen read model.
 
-The `AutomatedJournalEventKind.DepreciationPosted` member and the
-`AccumulatedDepreciationFor` / `DepreciationExpenseFor` account factories from Phase 1 landed with
-this phase; only the repo/borrowing halves of Phase 1 remain.
+**What actually landed:** the in-memory calculation core only — `DepreciationScheduleCalculator`
+(+ `IDepreciationScheduleCalculator`), `FixedAssetDepreciationProjector`, and
+`FixedAssetDepreciationDraftBuilder`, all in `src/Meridian.Ledger/`, plus the
+`AutomatedJournalEventKind.DepreciationPosted` member and the `AccumulatedDepreciationFor` /
+`DepreciationExpenseFor` account factories from Phase 1.
+
+**What remains in this phase:** every persistence and operator-facing slice. There is no fixed-asset
+DTO contract, no `IFixedAssetRegisterStore` or its migration, no posted-through watermark, no
+`FixedAssetDepreciationService`, no route in `UiApiRoutes`, no `types.ts` DTO, and no
+accounting-screen read model. Depreciation can be *computed* today; it cannot yet be *stored,
+posted through the governed draft path, or operated*. The repo/borrowing halves of Phase 1 also
+remain.
 
 ### Phase 3: Repo engine (PR2)
 
