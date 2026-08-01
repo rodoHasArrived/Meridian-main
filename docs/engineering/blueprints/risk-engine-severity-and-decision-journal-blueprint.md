@@ -41,10 +41,26 @@ assembly that both `Meridian.Execution` and `Meridian.Risk` can see. `Meridian.E
 that assembly: it references only `Meridian.Contracts`, both projects already reference it, and it
 already owns `OrderRequest` and `OrderResult`.
 
-**All shared risk contracts therefore live in `Meridian.Execution.Sdk`:** `RiskRuleSeverity`,
-`RiskFinding`, `RiskViolation`, and `RiskDecisionKind`. `Meridian.Risk` keeps only the rule-facing
-surface (`IRiskRule`, `IReservingRiskRule`, `IRiskReservation`, `CompositeRiskValidator`, and the
-rule implementations).
+**Every type this blueprint introduces or moves, and where it lives.** Three separate review
+findings on this document were the same mistake — a type left in `Meridian.Risk` that
+`Meridian.Execution` then had to reference. This table is the single source of truth; the code
+blocks below follow it, and any snippet that disagrees with it is wrong.
+
+| Type | Assembly | Why |
+| --- | --- | --- |
+| `RiskRuleSeverity` | `Meridian.Execution.Sdk` | **Moved** from `Meridian.Risk`. Referenced by `RiskViolation`, which `RiskValidationResult` exposes |
+| `RiskFinding` | `Meridian.Execution.Sdk` | Returned by `IRiskRule`; read by the validator |
+| `RiskViolation` | `Meridian.Execution.Sdk` | Exposed on `RiskValidationResult` |
+| `RiskDecisionKind` | `Meridian.Execution.Sdk` | Referenced by `RiskDecisionSummary`, which the SDK's own `OrderResult` exposes |
+| `RiskDecisionSummary` | `Meridian.Execution.Sdk` | Carried on `OrderResult` |
+| `IRiskReservation` | `Meridian.Execution.Sdk` | **Handed to the OMS** for settlement, so `Meridian.Execution` must see it |
+| `RiskValidationResult` | `Meridian.Execution` | **Unchanged location.** Extended in place |
+| `IRiskValidator` | `Meridian.Execution` | Unchanged location |
+| `IRiskDecisionJournal`, `RiskDecisionJournalEntry`, `RiskJournalOptions`, `RiskDecisionJournal` | `Meridian.Execution` | Injected into the OMS |
+| `IRiskRule`, `IReservingRiskRule`, `CompositeRiskValidator`, rule implementations | `Meridian.Risk` | Rule-facing surface. Nothing in `Meridian.Execution` references these |
+
+The rule of thumb behind the table: **if the OMS or `RiskValidationResult` touches it, it cannot
+live in `Meridian.Risk`.**
 
 ---
 
@@ -441,17 +457,31 @@ public interface IReservingRiskRule : IRiskRule
         CancellationToken ct = default);
 }
 
+```
+
+`IRiskReservation` lives in `Meridian.Execution.Sdk`, not here: the OMS receives these handles and
+settles them at the routing boundary (Decision 8), so `Meridian.Execution` has to see the type.
+Declaring it in `Meridian.Risk` would recreate the project cycle.
+
+```csharp
+namespace Meridian.Execution.Sdk;
+
 /// <summary>
 /// Capacity held for one in-flight evaluation. Exactly one of <see cref="Commit"/> or
-/// <see cref="Rollback"/> must be called; both are idempotent so the validator's finally-block
-/// can release unconditionally without double-settling.
+/// <see cref="Rollback"/> is called; both are idempotent so a cleanup path can settle
+/// unconditionally without double-settling.
+/// <para>
+/// Ownership moves: the validator rolls these back if evaluation throws or is cancelled, and
+/// transfers them to the OMS on a normal return. Only the OMS commits, and only once the gateway
+/// has accepted the order.
+/// </para>
 /// </summary>
 public interface IRiskReservation
 {
-    /// <summary>Keeps the reserved capacity — the order was admitted.</summary>
+    /// <summary>Keeps the reserved capacity — the order was routed.</summary>
     void Commit();
 
-    /// <summary>Returns the reserved capacity — the order was blocked, threw, or was cancelled.</summary>
+    /// <summary>Returns the reserved capacity — the order was blocked, threw, cancelled, or failed downstream.</summary>
     void Rollback();
 }
 ```
@@ -479,6 +509,14 @@ public enum RiskDecisionKind
     /// <summary>Blocked.</summary>
     Rejected
 }
+```
+
+`RiskValidationResult` itself stays in `Meridian.Execution` — it is an existing public type, and
+moving it would break fully-qualified consumers such as the current risk-composition tests and
+widen the migration well past the factory-only change Decision 2 promises.
+
+```csharp
+namespace Meridian.Execution;
 
 public sealed record RiskValidationResult
 {
@@ -665,13 +703,37 @@ field into a decision.
 **Error handling**
 
 A rule that throws must not take down the pre-trade gate, but must also not silently admit an order.
-Catch per-rule, log at `Error`, and synthesise a `Block` violation with code
-`RISK_RULE_EVALUATION_FAILED` carrying the rule name. Fail closed: a gate that cannot evaluate is
-not a gate that passed. `OperationCanceledException` propagates unchanged.
+Catch per-rule, log at `Error`, and synthesise a violation with code
+`RISK_RULE_EVALUATION_FAILED` carrying the failing rule's name. Fail closed: a gate that cannot
+evaluate is not a gate that passed.
+
+**The synthesised violation carries `Critical`, not the rule's declared severity**, and this is the
+one deliberate exception to "a violation carries its declaring rule's own severity". The reason is
+that the two rules interact badly: `IsBlocking` derives from severity alone, so preserving an
+`Info`/`Warning` rule's severity would either admit an order after its gate failed, or produce a
+`Rejected` result whose `BlockingViolation`, `RejectReason`, and `RejectCode` are all null. Neither
+is acceptable, and silently rewriting the rule's severity to `Error` would be a quieter version of
+the same contradiction.
+
+An evaluation failure is an *engine* fault, not a finding about the order, so it is attributed to
+the engine: `RuleName` identifies which rule failed, `Severity` is `Critical` because the platform
+could not evaluate a gate. Test both that an `Info`-severity rule throwing still blocks, and that
+the resulting `RejectReason` and `RejectCode` are non-null.
 
 **Cancellation**
 
-`ct.ThrowIfCancellationRequested()` before each rule, as today.
+`ct.ThrowIfCancellationRequested()` before each rule, as today — but cancellation must not leak
+reserved capacity. Rules evaluated before the cancellation point may already hold reservations, and
+because Decision 8 transfers those handles through the *return value*, an exception path returns
+nothing and the OMS has no handles to roll back. Repeated cancelled submissions would then consume
+the throttle window and block later orders.
+
+**The validator owns reservation cleanup until a successful handoff.** Wrap evaluation in a
+`try`/`catch`: on any exception, including `OperationCanceledException`, roll back every reservation
+taken so far and then rethrow. Ownership transfers to the OMS only when `ValidateOrderAsync` returns
+normally. This is the one piece of settlement that stays in the validator, and it is not in tension
+with Decision 8 — the validator handles failures *before* the handoff, the OMS handles everything
+after.
 
 ### `OrderRateThrottle` (modified)
 
@@ -940,8 +1002,11 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
       `RejectCode`; make `IsApproved` / `RejectReason` computed; retain both factories
 - [ ] Re-verify no object-initializer construction of `RiskValidationResult` has appeared
 - [ ] Rewrite `CompositeRiskValidator`: evaluate all, map each rule's `Severity` to an outcome,
-      resolve precedence, order violations, per-rule fail-closed catch, settle reservations in a
-      `finally` so no path leaks capacity
+      resolve precedence, order violations, per-rule fail-closed catch
+- [ ] Reservation ownership: the validator rolls back on any exception before it returns (including
+      cancellation), then **transfers** the handles to the OMS on a normal return. It must not
+      commit — per Decision 8 that happens at the gateway-routing boundary, and committing here
+      would consume capacity for orders that later fail id registration, journaling, or submission
 - [ ] Migrate the four rules to `RiskFinding?` with stable SCREAMING_SNAKE codes
 - [ ] Convert `OrderRateThrottle` to `IReservingRiskRule`: keep purge → count → reserve inside the
       existing lock; add commit/rollback
