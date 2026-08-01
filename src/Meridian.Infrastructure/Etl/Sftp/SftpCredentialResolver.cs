@@ -133,8 +133,23 @@ public sealed class SftpCapabilityService : ISftpCapabilityService
             issues.Add("SFTP username is missing.");
         if (string.IsNullOrWhiteSpace(secretRef))
             issues.Add("SFTP secretRef is missing.");
-        if (string.IsNullOrWhiteSpace(hostKeyFingerprint))
+        // Presence is not enough: SftpConnectionOptions.Create rejects a fingerprint that
+        // NormalizeSha256Fingerprint cannot parse, so a non-blank but malformed value would
+        // report Ready and then fail before the connection was attempted — exactly the
+        // accepted-then-broken export this preflight exists to prevent.
+        var hasFingerprint = !string.IsNullOrWhiteSpace(hostKeyFingerprint);
+        if (!hasFingerprint)
+        {
             issues.Add("SFTP hostKeySha256Fingerprint is missing.");
+        }
+        else if (SftpConnectionOptions.NormalizeSha256Fingerprint(hostKeyFingerprint) is null)
+        {
+            issues.Add(
+                "SFTP hostKeySha256Fingerprint is not a valid SHA-256 host key fingerprint "
+                + "(expected 64 hex characters or an OpenSSH 'SHA256:<base64>' value).");
+            hasFingerprint = false;
+        }
+
         if (!RealSftpEnabled)
             issues.Add("Real SFTP support is disabled in this build. Build with /p:EnableSftp=true.");
 
@@ -144,7 +159,7 @@ public sealed class SftpCapabilityService : ISftpCapabilityService
             hasSftpUri,
             !string.IsNullOrWhiteSpace(username),
             !string.IsNullOrWhiteSpace(secretRef),
-            !string.IsNullOrWhiteSpace(hostKeyFingerprint),
+            hasFingerprint,
             issues.Count == 0,
             issues);
     }

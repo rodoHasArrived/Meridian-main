@@ -44,6 +44,38 @@ public sealed class SftpCapabilityServiceTests
         status.Issues.Should().Contain(issue => issue.Contains("hostKeySha256Fingerprint", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory]
+    [InlineData("not-a-sha256-fingerprint")]
+    [InlineData("SHA256:!!!not-base64!!!")]
+    [InlineData("0011223344")]
+    public void Evaluate_Destination_WithAMalformedFingerprint_IsNotReady(string fingerprint)
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(hostKeyFingerprint: fingerprint));
+
+        // A non-blank but unparsable fingerprint previously reported Ready, so an export job was
+        // accepted and then rejected by SftpConnectionOptions.Create before connecting.
+        status.HasHostKeyFingerprint.Should().BeFalse();
+        status.Ready.Should().BeFalse();
+        status.Issues.Should().Contain(issue =>
+            issue.Contains("not a valid SHA-256 host key fingerprint", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData("00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF")]
+    [InlineData("SHA256:ABEiM0RVZneImaq7zN3u/wARIjNEVWZ3iJmqu8zd7v8")]
+    public void Evaluate_Destination_WithAWellFormedFingerprint_AcceptsIt(string fingerprint)
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(hostKeyFingerprint: fingerprint));
+
+        status.HasHostKeyFingerprint.Should().BeTrue();
+        status.Issues.Should().NotContain(issue =>
+            issue.Contains("hostKeySha256Fingerprint", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Fact]
     public void Evaluate_Destination_WhenRealSftpIsDisabled_IsNotReadyEvenWhenFullyConfigured()
     {
@@ -150,13 +182,15 @@ public sealed class SftpCapabilityServiceTests
             .WithMessage("*destination secretRef is required*");
     }
 
-    private static EtlDestinationDefinition CompleteDestination(string? secretRef = "literal-secret") => new()
+    private static EtlDestinationDefinition CompleteDestination(
+        string? secretRef = "literal-secret",
+        string? hostKeyFingerprint = "00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF") => new()
     {
         Kind = EtlDestinationKind.Sftp,
         Location = "sftp://partner.example.com/inbound",
         Username = "meridian-ops",
         SecretRef = secretRef,
-        HostKeySha256Fingerprint = "SHA256:0000000000000000000000000000000000000000000"
+        HostKeySha256Fingerprint = hostKeyFingerprint
     };
 
     private sealed class ThrowingSftpClientFactory : ISftpClientFactory
