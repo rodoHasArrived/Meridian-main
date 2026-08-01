@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.6,
+  "score_percent": 29.7,
   "endpoint_coverage_percent": 41.2,
-  "contract_coverage_percent": 12.2,
+  "contract_coverage_percent": 12.4,
   "summary": {
     "endpoint_count": 617,
     "documented_endpoint_count": 254,
     "undocumented_endpoint_count": 363,
     "workstation_contract_count": 903,
-    "documented_workstation_contract_count": 110,
-    "undocumented_workstation_contract_count": 793
+    "documented_workstation_contract_count": 112,
+    "undocumented_workstation_contract_count": 791
   },
   "endpoints": [
     {
@@ -7031,7 +7031,7 @@
     {
       "name": "StatementRunStatus",
       "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:9",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementValidationSeverity",
@@ -7116,7 +7116,7 @@
     {
       "name": "StatementRunDto",
       "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:269",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementRunCreateDto",

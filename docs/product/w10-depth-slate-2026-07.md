@@ -199,8 +199,16 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   break B disappeared, B would never clear. The conclusive successor is a *successfully reconciled
   terminal run* — `ReviewRequired` or `Completed` — while `ValidationFailed`, `Failed`, and
   `Canceled` are inconclusive. Both compared runs must be conclusive in that sense and bound to the
-  same account, source, period, and profile version; otherwise the prior break stays open or its
+  same account, source, period, and profile identity; otherwise the prior break stays open or its
   state reads as unknown.
+- **"Profile version" is two pairs, and both are currently unrecorded.** `StatementRunDto`
+  (`StatementReconciliationDtos.cs:277-282`) exposes `MappingProfileId` / `MappingProfileVersion`
+  *and* `ToleranceProfileId` / `ToleranceProfileVersion` as independent nullable members, and the
+  adapter at `ReconciliationApiService.cs:693-696` hardcodes **both versions to `null`** while
+  passing the ids through. A naive equality check would therefore compare `null == null` and read
+  two materially different runs as matching. The comparison needs both ids *and* both versions, and
+  must treat an absent version as unknown rather than as agreement — which in turn means the
+  adapter has to start recording them.
 - The queue carries a single break identifier and nothing distinguishing a lineage from an occurrence
   of it. Adding lineage alone leaves a cleared-then-recurring break able to reopen its original item
   and keep the original SLA age, or to overwrite the interval during which it was clear. Lineage and
@@ -289,6 +297,15 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   today, and a generic incomplete-input rule does not catch that — the inputs are complete, the
   window simply has not closed. The figure needs an as-of/provisional label, the remaining window,
   and re-evaluation or governed finalization when it closes.
+- **But provisional is not the right label for every open-window disposal.** `ComputeWashSale`
+  (`LedgerTaxLotReliefProjector.cs:225-232`) returns `null` when `realizedGainOrLoss >= 0m`, so a
+  disposal whose relieved lots all realize a gain cannot attract a wash sale no matter what is
+  acquired later — its exposure is settled while the calendar window is still open, and marking it
+  provisional would force re-evaluation that can never change the answer. The one caveat is in the
+  method's own doc comment: a *net* gain that nonetheless contains loss shares is not yet
+  decomposed to defer only those shares, so that case cannot currently be excluded and does stay
+  provisional. Provisional therefore belongs to loss-generating disposals and to mixed gain/loss
+  reliefs, not to every recent one.
 - The realized gain and loss contract that already reaches the workstation exposes a single scalar
   with no character split — extending it is the lowest-friction first move.
 - The shared contracts must not reference the ledger implementation assembly; define contract-side
@@ -322,6 +339,15 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   `effectiveFundAccountId = fundAccountId ?? activeWorkflow?.FundAccountId`, and `:66` queries the
   cockpit with the *requested* profile. So a projection can combine one fund's workflow blockers with
   another fund's cockpit while every contributor is registered, healthy, and current.
+- **The scope itself is inferred, so contributor agreement is not enough.** Every dimension of
+  `GetCommandCenterAsync` is optional (`FinancialOperationsCommandCenterReadService.cs:32-43`), and
+  `:56-58` fills the gaps from whichever workflow was selected —
+  `effectiveFundAccountId = fundAccountId ?? activeWorkflow?.FundAccountId`, and the same for the
+  period. Requiring contributors merely to agree *with each other* still lets a recently updated
+  workflow for the wrong book or period become the supposedly consistent subject, and a null
+  dimension cannot register as a mismatch because there is nothing to compare it against. The
+  request — or an explicit operator selection — has to establish the canonical close scope, and a
+  missing or ambiguous dimension has to block.
 - **A second subject-binding gap, same-fund this time.** `FundOperationsWorkspaceReadService` does
   scope correctly by fund — `:2600-2614` filters workflow summaries to the requested fund's account
   ids before taking the most recently updated one — but that selection ignores the summary's
