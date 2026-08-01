@@ -343,11 +343,26 @@ fee reverses into NAV). To equalise, the subscriber pays an **Equalisation Credi
 accrued fee per share at entry:
 
 ```
-equalizationCreditPerShare = f × (GAV_d − HWM)          // == accruedFeePerShare_d
+equalizationCreditPerShare = accruedFeePerShare_d       // see the policy note below
 equalizationCredit          = equalizationCreditPerShare × shares
 amountPaidBySubscriber      = shares × NAV_d + equalizationCredit
                             = shares × GAV_d              // economically the gross price
 ```
+
+> **`accruedFeePerShare_d` is the *effective* accrued fee, not `f × (GAV_d − HWM)`.** The two
+> coincide only under a plain HWM policy with no hurdle, no catch-up, and no loss carryforward. As
+> soon as a fund enables any of the incentive-fee blueprint's forks, the flat expression overstates
+> the credit: at `GAV_d = 120`, `HWM = 100`, `f = 20%` with an **8% hard hurdle**, the accrued fee
+> per share is `0.20 × (120 − 108) = 2.40`, while `f × (GAV_d − HWM)` collects `4.00`. Method A
+> would overcharge the subscriber by `1.60`/share and then **fail its own §11 reconciliation
+> invariant**, because the redistributed total no longer equals the fund fee the projector computed.
+>
+> So the equalization projector must take the fund's **effective incentive-fee policy** as an input
+> and obtain the accrued fee from `IncentiveFeeCalculator` (incentive-fee §5.1), not re-derive it:
+> `EqualizationPeriodInput` carries the resolved policy, and both the entry credit and the
+> crystallization-time `creditReturned` / contingent-redemption figures below are computed from the
+> calculator's result for the relevant NAV level. `f × (GAV − HWM)` survives in this section only as
+> the **no-hurdle special case**, and is written that way from here on.
 
 **At the next crystallisation** (period end, fund still ≥ entry): the subscriber must not pay
 performance fee on the `HWM → GAV_d` gain that predates their entry, so the manager **returns the
@@ -635,6 +650,11 @@ public sealed record InvestorSubscriptionLot
 public sealed record EqualizationPeriodInput(
     PartnershipInvestorAllocationInput Allocation,   // reuses existing fund-level fee/HWM inputs
     EqualizationMethod Method,
+    // The fund's EFFECTIVE incentive-fee terms (hurdle, catch-up, reset mode). Required: the
+    // per-subscriber credit is the accrued fee from IncentiveFeeCalculator, NOT f x (GAV - HWM),
+    // which overstates it whenever a hurdle or catch-up applies (§5.1). Without this the projector
+    // cannot compute a credit that reconciles to the fund fee (§11 invariant).
+    IncentiveFeePolicy IncentiveFeePolicy,
     decimal FundHighWaterMarkPerShare,               // HWM per share at period start
     decimal GrossNavPerShareEnd,                     // GAV at crystallization
     IReadOnlyList<InvestorSubscriptionLot> Lots,

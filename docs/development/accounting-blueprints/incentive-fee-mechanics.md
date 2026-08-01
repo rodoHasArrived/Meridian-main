@@ -756,9 +756,16 @@ public interface IIncentiveFeeStateService
 ```
 
 `IncentiveFeePeriodRequest` carries `LedgerBookId`, `FundProfileId`, `PeriodId`, `AsOfDate`,
-fund-level `BeginningNav` and `EndingNavBeforeIncentiveFee` (used under `FundLevel`), an optional
-`IsRedemption` flag, and — under `InvestorSeries` — a **series roster** that must carry each series'
-**own NAV basis**, not just its key:
+fund-level `BeginningNav`, `EndingNavBeforeIncentiveFee`, **`FundUnitsOutstanding`** (used under
+`FundLevel`), an optional `IsRedemption` flag, and — under `InvestorSeries` — a **series roster**
+that must carry each series' **own NAV basis**, not just its key:
+
+> **`FundUnitsOutstanding` is not optional under `FundLevel`.** The persisted HWM is per share, and
+> `PartnershipInvestorAccountingProjector` works in total-NAV terms, so Method A performs the same
+> scale-in/scale-out as Method B (§5.4) — and `PartnershipInvestorAllocationInput` carries no unit
+> count of its own. Without this field the caller has nowhere to get the multiplier and would either
+> mix per-share against total-NAV values or invent units from an undocumented source. Same rule at
+> zero: a fund winding down to zero units closes its scope rather than dividing.
 
 ```csharp
 /// <summary>One series' complete fee inputs for a period. Each series is an independent fee
@@ -1039,11 +1046,25 @@ public sealed record IncentiveFeeSeriesInputDto(
 public sealed record IncentiveFeeAccrualPreviewRequest(
     Guid LedgerBookId, string PeriodId, DateOnly AsOfDate,
     decimal BeginningNav, decimal EndingNavBeforeFees,
+    // Required under FundLevel: the scale-in/scale-out multiplier for the per-share HWM (§6.2).
+    decimal FundUnitsOutstanding,
     // Required under InvestorSeries; empty under FundLevel. Mirrors IncentiveFeePeriodRequest
     // (§6.2) — the wire surface must expose per-series NAV or the preview cannot reproduce the
     // per-series fees the service computes.
     IReadOnlyList<IncentiveFeeSeriesInputDto>? Series = null,
     bool IsRedemption = false);
+
+/// <summary>
+/// Enablement command: turns the engine on for a book and opens its fund-level HWM scope.
+/// Separate from the policy POST because the opening HWM is operator-confirmed input that exists
+/// nowhere in the schema (§7 enablement gate) — the policy shape alone cannot carry it, and the
+/// state DTO is read-only. Idempotent: re-sending returns the live scope unchanged.
+/// </summary>
+public sealed record IncentiveFeeEnablementRequest(
+    Guid LedgerBookId, string FundProfileId, string PolicyId,
+    decimal OpeningHighWaterMarkPerShare,   // last crystallised NAV/share, or current NAV/share
+    string OpeningBasisNote,                // operator's stated basis, retained as evidence
+    bool AcknowledgeOpeningLevel);          // explicit confirmation; the server rejects false
 
 public sealed record IncentiveFeeAccrualPreviewResponse(
     decimal ManagementFee, decimal IncentiveFee, decimal HurdleAmount, decimal CatchUpFee, decimal CarryFee,
@@ -1061,6 +1082,7 @@ public const string LedgerIncentiveFeePolicyByBook   = "/api/ledger/incentive-fe
 public const string LedgerIncentiveFeeState          = "/api/ledger/incentive-fee/state/{ledgerBookId:guid}";
 public const string LedgerIncentiveFeeAccrualPreview = "/api/ledger/incentive-fee/accrual-preview";
 public const string LedgerIncentiveFeeCrystallize    = "/api/ledger/incentive-fee/crystallize";
+public const string LedgerIncentiveFeeEnable         = "/api/ledger/incentive-fee/enable";
 ```
 
 - `GET LedgerIncentiveFeePolicyByBook` — list effective-dated policies for a book.
@@ -1070,6 +1092,25 @@ public const string LedgerIncentiveFeeCrystallize    = "/api/ledger/incentive-fe
 - `POST LedgerIncentiveFeeAccrualPreview` — pure `EvaluatePeriodAsync` preview (no posting).
 - `POST LedgerIncentiveFeeCrystallize` — governed `CommitAsync` for a crystallization date (Submit→Approve→
   Post + state roll-forward); requires actor + evidence, consistent with the other governed ledger POSTs.
+- `POST LedgerIncentiveFeeEnable` — `IncentiveFeeEnablementRequest` → `EnsureFundLevelStateAsync`.
+  **This is the only surface that can supply the opening HWM**, so a book cannot be enabled without
+  one. Rejects `AcknowledgeOpeningLevel = false` with 422, and validates the equalization pairing
+  below. Idempotent; returns the live scope. `POST LedgerIncentiveFeePolicies` deliberately does
+  **not** accept an opening HWM — a policy edit must never silently reset a protected level that
+  has already advanced.
+
+> **Pairing validation — Fork G and `EqualizationMethod` are not independently writable.**
+> The HWM contract (§4) requires `FundLevel` ↔ Method A and `InvestorSeries` ↔ Method B, but the
+> two settings live in different tables (`incentive_fee_policy.accounting_model` and
+> `fund_equalization_policy.equalization_method`), so nothing structurally stops a caller writing
+> `SeriesOfShares` + `FundLevel` — which computes one fund fee where per-series fees are owed — or
+> `Equalisation` + `InvestorSeries`, which demands a series roster that does not exist.
+>
+> Both `POST LedgerIncentiveFeeEnable` and `POST LedgerIncentiveFeePolicies` therefore **read the
+> counterpart policy and reject a mismatched pair with 422**, naming both values. Changing one side
+> is a single governed operation that writes both or neither; `EvaluatePeriodAsync` re-checks the
+> pairing and fails closed, because a mismatch persisted by any other path must not silently
+> produce wrong fees. Test 28 covers both rejection directions.
 
 ### 9.3 UI surfaces
 
@@ -1152,6 +1193,13 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
     call after the HWM has advanced returns the live scope unchanged.
 25. `CloseScope_ClosesSeriesRegistryAndState_Atomically` — after a full redemption no `Open`
     `fund_series` row survives without a live HWM scope, and neither does the inverse.
+28. `SavePolicy_MismatchedEqualizationPairing_Rejects` — `SeriesOfShares` + `FundLevel` and
+    `Equalisation` + `InvestorSeries` are both rejected with 422, from either write side, and
+    `EvaluatePeriodAsync` fails closed on a pair persisted by any other path.
+29. `Equalization_WithHardHurdle_CreditMatchesAccruedFee` — the §5.1 credit is the
+    `IncentiveFeeCalculator` accrued fee, not `f × (GAV − HWM)`. At `GAV_d = 120`, `HWM = 100`,
+    `f = 20%`, 8% hard hurdle: credit is `2.40`/share, not `4.00`, and the §11 fund-fee
+    reconciliation still holds.
 
 **Store (Postgres integration, mirroring tax-lot store tests):**
 26. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and

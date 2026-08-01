@@ -13,13 +13,19 @@ endpoints, and the workbench read model remain design-only
 
 ## Delivery state (2026-08-01)
 
-Already in source — treat §4.1–§4.4 and §7.2 as **built**, and verify against the live types rather
+Already in source — treat §4.1–§4.5 and §7.2 as **built**, and verify against the live types rather
 than re-deriving them:
 
 - `src/Meridian.Ledger/PrivateCapitalCommitments.cs` — `CommitmentStatus`,
-  `DrawdownInstallmentStatus`, `DistributionRecallability`, commitment and installment records (§4.1–§4.3).
+  `DrawdownInstallmentStatus`, `DistributionRecallability`, commitment and installment records
+  (§4.1–§4.3), plus the §4.5 default-interest records (`CapitalCallDefault`,
+  `DefaultInterestAccrual`, `DefaultInterestConvention`).
 - `src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs` — the
   `net-called + uncalled + expired = total` invariant carrier (§4.4).
+- `src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs` — **§4.5 default
+  and late-interest handling is shipped**, not outstanding: `ComputeSimpleInterest`, the
+  `Thirty360Days` day-count, and `Evaluate`, with `DefaultInterestCalculatorTests` covering them.
+  Do not re-implement it from the §4.5 sketch.
 - `src/Meridian.Ledger/CapitalCallDraftFactory.cs`, `CapitalCallPlanBuilder.cs`,
   `CapitalCallScheduleDraftBuilder.cs` — governed drafting (§7.2).
 - `AutomatedJournalEventKind.CapitalCallIssued` / `CapitalCallFunded` /
