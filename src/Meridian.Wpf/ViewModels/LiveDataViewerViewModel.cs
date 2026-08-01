@@ -68,6 +68,9 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
     private int _tradeCount;
     private decimal _vwapNumerator;
     private decimal _lastPrice;
+    // Observation time of the trade that set _lastPrice, carried from the event's own timestamp
+    // rather than read from the local clock at render time.
+    private DateTime? _lastTradeAt;
     private decimal _bidPrice;
     private decimal _askPrice;
     private int _bidSize;
@@ -517,6 +520,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         if (evt.Type != "TRD" || evt.RawPrice <= 0)
             return;
         _lastPrice = evt.RawPrice;
+        _lastTradeAt = evt.RawTimestamp;
         if (!_sessionHigh.HasValue || evt.RawPrice > _sessionHigh)
             _sessionHigh = evt.RawPrice;
         if (!_sessionLow.HasValue || evt.RawPrice < _sessionLow)
@@ -560,7 +564,9 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         }
 
         LastTradeText = _lastPrice > 0 ? _lastPrice.ToString("F2") : "--";
-        LastTradeTimeText = _lastPrice > 0 ? DateTime.Now.ToString("HH:mm:ss") : "--";
+        LastTradeTimeText = _lastPrice > 0 && _lastTradeAt.HasValue
+            ? _lastTradeAt.Value.ToString("HH:mm:ss")
+            : "--";
         SessionHighText = _sessionHigh?.ToString("F2") ?? "--";
         SessionLowText = _sessionLow?.ToString("F2") ?? "--";
         SessionVolumeText = _sessionVolume > 0 ? FormatNumber(_sessionVolume) : "--";
@@ -576,6 +582,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         _tradeCount = 0;
         _vwapNumerator = 0;
         _lastPrice = 0;
+        _lastTradeAt = null;
         _bidPrice = 0;
         _askPrice = 0;
         _bidSize = 0;

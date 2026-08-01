@@ -838,7 +838,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     // ── Mapping ───────────────────────────────────────────────────────────────
 
-    private static BlotterEntry MapToEntry(ExecutionPositionDetailResponse pos)
+    internal static BlotterEntry MapToEntry(ExecutionPositionDetailResponse pos)
     {
         return new BlotterEntry
         {
@@ -856,7 +856,13 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             SupportsClose = pos.SupportsClose,
             SupportsUpsize = pos.SupportsUpsize,
             UnrealisedPnl = pos.UnrealisedPnl,
-            MarketTime = TimeOnly.FromDateTime(DateTime.Now)
+            // MarketTime is deliberately left unset. ExecutionPositionDetailResponse carries no
+            // observation timestamp, and neither does anything upstream of it: BrokerPosition and
+            // IPosition have no timestamp member, and the snapshot envelope's AsOf is
+            // DateTimeOffset.UtcNow taken when the response is built. Stamping the local clock here
+            // would present the moment this row was constructed as a market observation time.
+            // Null is the honest value; UpdateStatusBar renders it as "—". Plumbing a real
+            // observation time through the contract belongs to W10-MARK-001.
         };
     }
 
