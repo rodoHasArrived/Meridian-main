@@ -105,6 +105,19 @@ def find_skip_positions(text: str) -> list[int]:
     while i < length:
         ch = text[i]
         if ch == '"':
+            # A C# raw string literal opens with three or more quotes and closes with the same
+            # count. Treating its quotes as ordinary boundaries let the scan resume inside the
+            # literal, so a fixture holding quoted JSON such as {"source":"Skip = reason"} was
+            # inventoried as a real skipped test and failed the gate.
+            fence = 0
+            while i + fence < length and text[i + fence] == '"':
+                fence += 1
+            if fence >= 3:
+                closing = '"' * fence
+                end = text.find(closing, i + fence)
+                i = length if end == -1 else end + fence
+                continue
+
             verbatim = i > 0 and text[i - 1] == "@"
             i += 1
             while i < length:
@@ -164,6 +177,19 @@ def read_expression(text: str, start: int) -> str | None:
     while i < length:
         ch = text[i]
         if ch == '"':
+            # A C# raw string literal opens with three or more quotes and closes with the same
+            # count. Treating its quotes as ordinary boundaries let the scan resume inside the
+            # literal, so a fixture holding quoted JSON such as {"source":"Skip = reason"} was
+            # inventoried as a real skipped test and failed the gate.
+            fence = 0
+            while i + fence < length and text[i + fence] == '"':
+                fence += 1
+            if fence >= 3:
+                closing = '"' * fence
+                end = text.find(closing, i + fence)
+                i = length if end == -1 else end + fence
+                continue
+
             verbatim = i > 0 and text[i - 1] == "@"
             i += 1
             while i < length:

@@ -6,6 +6,18 @@
         docker docker-build docker-up docker-down docker-logs docker-restart \
         docker-clean docker-monitoring
 
+# Compose model. Teardown must name the same files the start command did: services and
+# named volumes absent from the model passed to `down` are neither stopped nor removed, so
+# tearing down with the base file alone would strand the monitoring containers and volumes.
+COMPOSE_BASE := -f deploy/docker/docker-compose.yml
+COMPOSE_ALL := $(COMPOSE_BASE) -f deploy/docker/docker-compose.monitoring.yml
+
+# Compose interpolates every variable before running any command, including `down`, so the
+# override's required Grafana credentials would block teardown for anyone who never set them.
+# Teardown does not authenticate to Grafana; it only needs the file to parse, so satisfy the
+# requirement with placeholders rather than weakening it to a default in the file itself.
+COMPOSE_TEARDOWN_ENV := GF_SECURITY_ADMIN_USER=teardown GF_SECURITY_ADMIN_PASSWORD=teardown
+
 quickstart: ## Zero-to-running setup for new contributors
 	@echo ""
 	@echo "$(BLUE)Meridian - Quick Start$(NC)"
@@ -78,27 +90,27 @@ docker-build: ## Build Docker image
 
 docker-up: setup-config ## Start Docker container
 	@echo "$(BLUE)Starting Docker container...$(NC)"
-	docker compose -f deploy/docker/docker-compose.yml up -d
+	docker compose $(COMPOSE_BASE) up -d
 	@echo "$(GREEN)Container started!$(NC)"
 	@echo "  API:       http://localhost:$(HTTP_PORT)"
 	@echo "  Health:    http://localhost:$(HTTP_PORT)/health"
 	@echo "  Metrics:   http://localhost:$(HTTP_PORT)/metrics"
 
-docker-down: ## Stop Docker container
-	docker compose -f deploy/docker/docker-compose.yml down
+docker-down: ## Stop Docker containers (application and monitoring)
+	$(COMPOSE_TEARDOWN_ENV) docker compose $(COMPOSE_ALL) down --remove-orphans
 
 docker-logs: ## View Docker logs
-	docker compose -f deploy/docker/docker-compose.yml logs -f
+	docker compose $(COMPOSE_BASE) logs -f
 
 docker-restart: ## Restart Docker container
-	docker compose -f deploy/docker/docker-compose.yml restart
+	docker compose $(COMPOSE_BASE) restart
 
-docker-clean: ## Remove Docker containers and images
-	docker compose -f deploy/docker/docker-compose.yml down -v
+docker-clean: ## Remove Docker containers, volumes, and images (application and monitoring)
+	$(COMPOSE_TEARDOWN_ENV) docker compose $(COMPOSE_ALL) down -v --remove-orphans
 	docker rmi $(DOCKER_IMAGE) 2>/dev/null || true
 
 docker-monitoring: ## Start with Prometheus and Grafana (requires GF_SECURITY_ADMIN_USER/PASSWORD)
-	docker compose -f deploy/docker/docker-compose.yml -f deploy/docker/docker-compose.monitoring.yml up -d
+	docker compose $(COMPOSE_ALL) up -d
 	@echo "$(GREEN)Monitoring stack started!$(NC)"
 	@echo "  Prometheus: http://localhost:9090"
 	@echo "  Grafana:    http://localhost:3000 (sign in with $$GF_SECURITY_ADMIN_USER)"

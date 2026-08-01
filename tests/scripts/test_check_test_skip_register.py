@@ -203,6 +203,32 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertEqual(len(self.fixture.sites()), 1)
 
+    def test_ignores_a_skip_inside_a_raw_string_literal(self):
+        # A raw string holding quoted JSON let the scan resume inside the literal, so the
+        # fixture text was inventoried as a real skipped test.
+        (self.fixture.tests_dir / "RawFixtureTests.cs").write_text(
+            'public sealed class T {\n'
+            '    const string Payload = """\n'
+            '        {"source":"Skip = reason","note":"not a real skip"}\n'
+            '        """;\n'
+            "}\n",
+            encoding="utf-8",
+        )
+
+        self.assertEqual(len(self.fixture.sites()), 1)
+
+    def test_ignores_a_skip_inside_a_multi_quote_raw_string(self):
+        (self.fixture.tests_dir / "WideRawTests.cs").write_text(
+            'public sealed class T {\n'
+            '    const string Payload = """"\n'
+            '        A raw string containing """ and Skip = "still not real";\n'
+            '        """";\n'
+            "}\n",
+            encoding="utf-8",
+        )
+
+        self.assertEqual(len(self.fixture.sites()), 1)
+
     def test_does_not_match_an_identifier_ending_in_skip(self):
         (self.fixture.tests_dir / "IdentifierTests.cs").write_text(
             "public sealed class T { void M() { var shouldSkip = true; } }\n", encoding="utf-8"

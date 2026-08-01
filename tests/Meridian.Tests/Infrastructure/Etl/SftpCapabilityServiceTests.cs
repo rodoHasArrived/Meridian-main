@@ -77,6 +77,55 @@ public sealed class SftpCapabilityServiceTests
     }
 
     [Fact]
+    public void Evaluate_Destination_WithAnUnsetEnvSecretRef_IsNotReady()
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(secretRef: "env:MERIDIAN_TEST_SFTP_DEFINITELY_UNSET"));
+
+        // EnvironmentSftpCredentialResolver throws for an unset variable, so accepting this as
+        // ready meant taking an export job that could never open a connection.
+        status.HasSecretRef.Should().BeFalse();
+        status.Ready.Should().BeFalse();
+        status.Issues.Should().Contain(issue =>
+            issue.Contains("MERIDIAN_TEST_SFTP_DEFINITELY_UNSET", StringComparison.Ordinal)
+            && issue.Contains("unset or empty", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Evaluate_Destination_WithAnEmptyEnvReference_IsNotReady()
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(secretRef: "env:"));
+
+        status.HasSecretRef.Should().BeFalse();
+        status.Issues.Should().Contain(issue =>
+            issue.Contains("names no environment variable", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Evaluate_Destination_WithAResolvableEnvSecretRef_AcceptsIt()
+    {
+        const string variable = "MERIDIAN_TEST_SFTP_PREFLIGHT";
+        Environment.SetEnvironmentVariable(variable, "resolved-secret");
+        try
+        {
+            var service = new SftpCapabilityService();
+
+            var status = service.Evaluate(CompleteDestination(secretRef: $"env:{variable}"));
+
+            status.HasSecretRef.Should().BeTrue();
+            status.Issues.Should().NotContain(issue =>
+                issue.Contains("secretRef", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+    }
+
+    [Fact]
     public void Evaluate_Destination_WhenRealSftpIsDisabled_IsNotReadyEvenWhenFullyConfigured()
     {
         var service = new SftpCapabilityService();

@@ -131,8 +131,32 @@ public sealed class SftpCapabilityService : ISftpCapabilityService
             issues.Add($"SFTP {role} location must be a full sftp:// URI.");
         if (string.IsNullOrWhiteSpace(username))
             issues.Add("SFTP username is missing.");
-        if (string.IsNullOrWhiteSpace(secretRef))
+        // Presence is not enough for an `env:` reference: EnvironmentSftpCredentialResolver
+        // throws when the named variable is absent or empty, so a destination naming a unset
+        // variable would report Ready and then fail before connecting.
+        var hasSecretRef = !string.IsNullOrWhiteSpace(secretRef);
+        if (!hasSecretRef)
+        {
             issues.Add("SFTP secretRef is missing.");
+        }
+        else
+        {
+            var trimmed = secretRef.Trim();
+            if (trimmed.StartsWith("env:", StringComparison.OrdinalIgnoreCase))
+            {
+                var variable = trimmed[4..].Trim();
+                if (variable.Length == 0)
+                {
+                    issues.Add("SFTP secretRef 'env:' reference names no environment variable.");
+                    hasSecretRef = false;
+                }
+                else if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable)))
+                {
+                    issues.Add($"SFTP secretRef environment variable '{variable}' is unset or empty.");
+                    hasSecretRef = false;
+                }
+            }
+        }
         // Presence is not enough: SftpConnectionOptions.Create rejects a fingerprint that
         // NormalizeSha256Fingerprint cannot parse, so a non-blank but malformed value would
         // report Ready and then fail before the connection was attempted — exactly the
@@ -158,7 +182,7 @@ public sealed class SftpCapabilityService : ISftpCapabilityService
             kindIsSftp,
             hasSftpUri,
             !string.IsNullOrWhiteSpace(username),
-            !string.IsNullOrWhiteSpace(secretRef),
+            hasSecretRef,
             hasFingerprint,
             issues.Count == 0,
             issues);
