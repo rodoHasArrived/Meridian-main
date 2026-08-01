@@ -1916,6 +1916,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             return;
         }
 
+        // A fill that has left the order book but not yet reached the portfolio still needs
+        // its tracked state and its sidecars. ProcessFillReportAsync reads the contract
+        // multiplier from _orderContractMultipliers, so evicting an option order in that
+        // window makes the fill fall back to 1 and books a standard contract at a hundredth
+        // of its exposure; losing the order entirely can also leave the report untracked.
+        var pendingFillOrderIds = _pendingFillReservations.Keys
+            .Select(static report => report.ClientOrderId ?? report.OrderId)
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         var removableOrderIds = _orders.Values
             .Where(order => order.Status is
                 OrderStatus.Filled or
@@ -1928,6 +1938,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // the submitter can no longer withdraw. Retain it until the escalation
             // resolves, which is exactly when its reservation is dropped.
             .Where(order => !_parkedOrderIds.ContainsKey(order.OrderId))
+            .Where(order => !pendingFillOrderIds.Contains(order.OrderId))
             .OrderBy(static order => order.LastUpdatedAt ?? order.CreatedAt)
             .Take(_orders.Count - _options.ValidatedMaxRetainedOrders)
             .Select(static order => order.OrderId)
