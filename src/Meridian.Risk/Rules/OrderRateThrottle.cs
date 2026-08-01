@@ -19,7 +19,14 @@ public sealed class OrderRateThrottle : IReservingRiskRule
     /// <summary>Code emitted when the ceiling is reached.</summary>
     public const string RateExceededCode = "ORDER_RATE_EXCEEDED";
 
-    private readonly List<DateTimeOffset> _admitted = [];
+    // Slots for orders that actually routed. Only these expire out of the rolling window.
+    private readonly List<DateTimeOffset> _committed = [];
+
+    // Slots held by in-flight submissions. These deliberately do NOT expire: a submission whose
+    // acknowledgement takes longer than the window must keep blocking capacity, or the slot would
+    // be purged while the order is still live and a second order could take it.
+    private readonly HashSet<long> _pending = [];
+    private long _nextReservationId;
 
     // Serializes purge → count → reserve. Each step is cheap; the lock exists so concurrent
     // callers cannot all observe room below the cap and all consume it.
@@ -87,9 +94,10 @@ public sealed class OrderRateThrottle : IReservingRiskRule
 
         lock (_sync)
         {
-            _admitted.RemoveAll(timestamp => timestamp < cutoff);
+            _committed.RemoveAll(timestamp => timestamp < cutoff);
 
-            var count = _admitted.Count;
+            // Capacity is committed-in-window plus everything still in flight.
+            var count = _committed.Count + _pending.Count;
             if (count >= maxOrdersPerMinute)
             {
                 _logger.LogWarning(
@@ -113,49 +121,48 @@ public sealed class OrderRateThrottle : IReservingRiskRule
                 return new RiskRuleReservationResult(Finding: null, Reservation: null);
             }
 
-            _admitted.Add(now);
+            var id = ++_nextReservationId;
+            _pending.Add(id);
             return new RiskRuleReservationResult(
                 Finding: null,
-                Reservation: new SlotReservation(this, now));
+                Reservation: new SlotReservation(this, id));
         }
     }
 
-    private void Release(DateTimeOffset stamp)
+    /// <summary>Releases a pending slot: the order never routed.</summary>
+    private void Release(long id)
     {
         lock (_sync)
         {
-            var index = _admitted.LastIndexOf(stamp);
-            if (index >= 0)
-            {
-                _admitted.RemoveAt(index);
-            }
+            _pending.Remove(id);
         }
     }
 
     /// <summary>
-    /// Re-stamps a committed slot to the time the order was actually routed. The window measures
-    /// routed orders, so a slot reserved at evaluation time but acknowledged seconds later must
-    /// expire relative to the acknowledgement — otherwise, at a one-per-minute ceiling, an order
-    /// reserved at t=0 and accepted at t=50 frees its slot at t=60, only ten seconds after it
-    /// actually routed.
+    /// Converts a pending slot into a committed one stamped at the routing time.
+    /// <para>
+    /// The window measures routed orders, so the slot expires relative to acknowledgement rather
+    /// than to reservation: at a one-per-minute ceiling, an order reserved at t=0 and accepted at
+    /// t=50 must hold its slot until t=110, not t=60.
+    /// </para>
     /// </summary>
-    private void Restamp(DateTimeOffset from, DateTimeOffset to)
+    private void Promote(long id, DateTimeOffset routedAt)
     {
         lock (_sync)
         {
-            var index = _admitted.LastIndexOf(from);
-            if (index >= 0)
+            if (_pending.Remove(id))
             {
-                _admitted[index] = to;
+                _committed.Add(routedAt);
             }
         }
     }
 
     /// <summary>
     /// One consumed slot in the rate window. Settling is idempotent, and the slot keeps blocking
-    /// capacity while it is pending, so an in-flight submission cannot be double-spent.
+    /// capacity while it is pending — including past the window length — so an in-flight submission
+    /// cannot be double-spent.
     /// </summary>
-    private sealed class SlotReservation(OrderRateThrottle owner, DateTimeOffset stamp) : IRiskReservation
+    private sealed class SlotReservation(OrderRateThrottle owner, long id) : IRiskReservation
     {
         private int _settled;
 
@@ -163,7 +170,7 @@ public sealed class OrderRateThrottle : IReservingRiskRule
         {
             if (Interlocked.Exchange(ref _settled, 1) == 0)
             {
-                owner.Restamp(stamp, owner._timeProvider.GetUtcNow());
+                owner.Promote(id, owner._timeProvider.GetUtcNow());
             }
         }
 
@@ -171,7 +178,7 @@ public sealed class OrderRateThrottle : IReservingRiskRule
         {
             if (Interlocked.Exchange(ref _settled, 1) == 0)
             {
-                owner.Release(stamp);
+                owner.Release(id);
             }
         }
     }

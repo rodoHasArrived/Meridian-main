@@ -35,10 +35,13 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// otherwise hang the pre-trade gate for callers that supply no deadline of their own. Pass
     /// <see cref="Timeout.InfiniteTimeSpan"/> to disable.
     /// <para>
-    /// This does <b>not</b> bound <see cref="IRiskRule.TryEvaluate"/>. That path runs synchronously
-    /// on the calling thread and a synchronous call cannot be abandoned, so a fast-path rule that
-    /// blocks will block the submission regardless of this value. Rules only opt into the fast path
-    /// when they need no I/O — see <see cref="IRiskRule.HasSyncFastPath"/> — and must not block.
+    /// This does <b>not</b> bound <see cref="IRiskRule.TryEvaluate"/>, nor any synchronous work a
+    /// rule performs before it returns its <see cref="Task"/>. Both run on the calling thread, and
+    /// a synchronous call cannot be abandoned — bounding them would need a thread hop on every
+    /// evaluation, which is not worth it on the pre-trade path, and would leak the blocked thread
+    /// anyway. The contract is therefore that rules do not block: they either declare
+    /// <see cref="IRiskRule.HasSyncFastPath"/> because they need no I/O, or they return a task
+    /// promptly and do their waiting inside it, where this timeout applies.
     /// </para>
     /// </param>
     public CompositeRiskValidator(

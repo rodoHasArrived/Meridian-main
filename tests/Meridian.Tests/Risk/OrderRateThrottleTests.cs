@@ -169,13 +169,47 @@ public sealed class OrderRateThrottleTests
         results.Count(r => r.Finding is not null).Should().Be(burst - limit);
     }
 
+    /// <summary>
+    /// A pending reservation must keep blocking capacity even past the window length. Expiring it
+    /// would free the slot while the order is still in flight, letting a second order route and
+    /// leaving the first uncounted when it finally commits.
+    /// </summary>
     [Fact]
-    public async Task Window_ExpiresConsumedSlotsAfterOneMinute()
+    public async Task PendingReservation_DoesNotExpireWithTheWindow()
     {
         var time = new StubTimeProvider(DateTimeOffset.Parse("2026-08-01T00:00:00Z"));
         var sut = CreateSut(maxOrdersPerMinute: 1, time);
 
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().BeNull();
+        var pending = await sut.EvaluateAndReserveAsync(CreateOrder());
+        pending.Reservation.Should().NotBeNull();
+
+        // Acknowledgement is slow: well past the one-minute window.
+        time.Advance(TimeSpan.FromSeconds(120));
+
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should()
+            .NotBeNull("an in-flight submission still holds its slot");
+
+        // It commits late; the slot is now stamped at routing time and holds for another minute.
+        pending.Reservation!.Commit();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should()
+            .NotBeNull("the routed order occupies the window from its acknowledgement");
+
+        time.Advance(TimeSpan.FromSeconds(61));
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should()
+            .BeNull("the committed slot expires a minute after routing");
+    }
+
+    [Fact]
+    public async Task Window_ExpiresCommittedSlotsAfterOneMinute()
+    {
+        var time = new StubTimeProvider(DateTimeOffset.Parse("2026-08-01T00:00:00Z"));
+        var sut = CreateSut(maxOrdersPerMinute: 1, time);
+
+        var first = await sut.EvaluateAndReserveAsync(CreateOrder());
+        first.Finding.Should().BeNull();
+        // Only committed slots age out, so the order has to route before the window can release it.
+        first.Reservation!.Commit();
+
         (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().NotBeNull();
 
         time.Advance(TimeSpan.FromSeconds(61));
