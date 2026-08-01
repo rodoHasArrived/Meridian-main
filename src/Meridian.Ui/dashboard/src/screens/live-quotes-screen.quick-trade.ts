@@ -247,7 +247,10 @@ export function useQuickTradeTicket(
           ...current,
           phase: "submitted" as const,
           message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
-          details: [],
+          // Warning-severity breaches do not block the order, but they describe exposure the
+          // operator now holds. The main trading ticket surfaces them; without this the Live
+          // Quotes path routes and reports only "accepted".
+          details: result.riskWarnings ?? [],
           orderId: result.orderId,
           validationVisible: false,
           acknowledged: false
@@ -536,10 +539,28 @@ function buildQuickTicketStatus(
       role: "status",
       tone: "success",
       message: ticket.message,
-      details: [],
+      details: ticket.details,
       showSuccessIcon: true,
       showErrorIcon: false,
       actions: [buildQuickTicketReadinessAction("accepted", activeSymbol, ticket.orderId)]
+    };
+  }
+
+  // Parked has to render its own message. It is neither success nor failure, and falling
+  // through to the generic ticket guidance hides the one instruction that matters — the
+  // order is live in the approval queue and must not be resubmitted, because each new
+  // submission mints a fresh client order id and can leave several approvals releasable.
+  // role="alert" because an operator who misses this creates duplicate live orders.
+  if (ticket.phase === "parked" && ticket.message) {
+    return {
+      id: "quick-ticket-status",
+      role: "alert",
+      tone: "default",
+      message: ticket.message,
+      details: ticket.details,
+      showSuccessIcon: false,
+      showErrorIcon: false,
+      actions: []
     };
   }
 
