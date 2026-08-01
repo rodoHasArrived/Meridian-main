@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -112,6 +113,54 @@ def test_rules(promtool: str, findings: list[str]) -> None:
             "promtool test rules failed:\n"
             + (result.stdout or "").strip()
             + (result.stderr or "").strip()
+        )
+
+    check_every_alert_has_a_firing_test(findings)
+
+
+def check_every_alert_has_a_firing_test(findings: list[str]) -> None:
+    """Fail when a deployed alert has no positive `exp_alerts` case.
+
+    A green `promtool test rules` only means the cases present passed; it says nothing about
+    the rules nobody wrote a case for. Three of the eleven alerts here had no firing scenario
+    at all while the run reported success, so "every rule is proven to fire" was a claim the
+    tooling did not support. This makes the claim enforceable: adding an alert without a
+    firing test fails the gate.
+
+    A rule deliberately held silent (its instrumentation is not wired yet) is exempt by naming
+    it in DISABLED_ALERTS below, so the exemption is explicit rather than an omission.
+    """
+    alert_names = {
+        match.group(1)
+        for match in re.finditer(r"^\s*-\s*alert:\s*(\S+)\s*$", RULES_FILE.read_text(encoding="utf-8"), re.MULTILINE)
+    }
+
+    # Alerts intentionally kept silent until their writer lands. Each is guarded in the rule
+    # file so it cannot fire, so a firing test would be impossible to write honestly.
+    disabled = {"MeridianDataFreshnessViolation"}
+
+    test_text = RULES_TEST_FILE.read_text(encoding="utf-8")
+    # A positive case is an `alertname:` whose `exp_alerts:` is not the empty list.
+    proven: set[str] = set()
+    for match in re.finditer(r"alertname:\s*(\S+)\s*\n\s*exp_alerts:\s*(\[\s*\]|\S?)", test_text):
+        if match.group(2) != "[]":
+            proven.add(match.group(1))
+
+    missing = sorted(alert_names - proven - disabled)
+    if missing:
+        findings.append(
+            f"{len(missing)} alert(s) have no positive firing test in "
+            f"{RULES_TEST_FILE.relative_to(REPO_ROOT)}: {', '.join(missing)}. "
+            "A green promtool run only exercises the cases present, so an untested rule is "
+            "indistinguishable from a working one. Add a scenario, or name the rule in "
+            "DISABLED_ALERTS if it is deliberately held silent."
+        )
+
+    stale = sorted(disabled - alert_names)
+    if stale:
+        findings.append(
+            f"DISABLED_ALERTS names {', '.join(stale)}, which no longer exists in "
+            f"{RULES_FILE.relative_to(REPO_ROOT)}. Remove the stale exemption."
         )
 
 

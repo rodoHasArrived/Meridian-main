@@ -144,13 +144,34 @@ tests:
     name: MeridianNoEventsPublished does not page a freshly started process
     input_series:
       # Never published. A ten-minute increase is already zero one minute in, so
-      # without the `> 0` guard this pages every start-up.
+      # an unguarded rule pages every start-up.
+      - series: "mdc_events_published_total"
+        values: "0+0x30"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: MeridianNoEventsPublished
+        exp_alerts: []
+
+  - interval: 1m
+    name: MeridianNoEventsPublished reports a cold start that never publishes
+    input_series:
+      # A process whose provider is broken from the first second never publishes. Guarding on
+      # a prior publication suppressed this permanently — the exact outage the rule is for.
       - series: "mdc_events_published_total"
         values: "0+0x30"
     alert_rule_test:
       - eval_time: 15m
         alertname: MeridianNoEventsPublished
-        exp_alerts: []
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "No events published in 10 minutes"
+              description: "The event pipeline has not published any events for 10 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#no-events"
+              probable_causes: "All providers disconnected, market closed (check TradingCalendar), subscription failure, network outage"
+              immediate_mitigation: "1. Check market hours first — outside session hours this is expected. 2. Check /api/providers/status for connection state. 3. Test provider connectivity."
 
   - interval: 1m
     name: MeridianNoEventsPublished fires on a stalled feed
@@ -249,3 +270,106 @@ tests:
               runbook_url: "docs/operators/operator-runbook.md#high-drop-rate"
               probable_causes: "Storage sink blocking (slow disk I/O), pipeline queue at capacity, too many subscriptions for processing capacity"
               immediate_mitigation: "1. Check /api/backpressure for queue utilization. 2. Monitor disk I/O latency. 3. Consider reducing symbol subscriptions. 4. Check EventPipeline channel capacity."
+
+  # --- Coverage for the remaining deployed alerts -----------------------------
+  # validate-monitoring-deployment.py fails if any non-disabled alert lacks a
+  # positive case here. A green promtool run only exercises the cases present,
+  # so an untested rule is indistinguishable from a working one.
+  - interval: 1m
+    name: MeridianUnhealthy fires on a sustained high drop rate
+    input_series:
+      - series: "mdc_drop_rate_percent"
+        values: "9+0x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianUnhealthy
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "Meridian reports unhealthy"
+              description: "More than 5% of events have been dropped for 2 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#unhealthy-status"
+              probable_causes: "Provider disconnected, storage write failures, pipeline backpressure, dependency timeout"
+              immediate_mitigation: "1. Check /health/detailed for specific failing checks. 2. Review recent error logs. 3. Verify provider connectivity."
+
+  - interval: 1m
+    name: MeridianPipelineBackpressure fires on a sustained absolute drop rate
+    input_series:
+      # 20 drops/sec: 1200 per minute, comfortably over the 10/sec threshold.
+      - series: "mdc_events_dropped_total"
+        values: "0+1200x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianPipelineBackpressure
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "Pipeline shedding load (20 events/sec dropped)"
+              description: "More than 10 events/sec have been dropped for 2 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#pipeline-backpressure"
+              probable_causes: "Consumer slower than producer, storage write latency, burst of market data events"
+              immediate_mitigation: "1. Check storage write latency metrics. 2. Verify disk health. 3. Consider pausing non-critical subscriptions."
+
+  - interval: 1m
+    name: MeridianPipelineBackpressure stays silent on a light drop rate
+    input_series:
+      # 1 drop/sec is under the threshold; a percentage-based rule would miss the
+      # distinction this one exists to make.
+      - series: "mdc_events_dropped_total"
+        values: "0+60x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianPipelineBackpressure
+        exp_alerts: []
+
+  - interval: 1m
+    name: MeridianHighProviderLatency fires above the SLO critical threshold
+    input_series:
+      - series: "mdc_average_latency_microseconds"
+        values: "6000+0x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianHighProviderLatency
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P3
+            exp_annotations:
+              summary: "High event processing latency"
+              description: "Mean event processing latency exceeds 5000 microseconds."
+              runbook_url: "docs/operators/operator-runbook.md#high-latency"
+              probable_causes: "Provider under load, network congestion, DNS resolution delays, WebSocket reconnection overhead"
+              immediate_mitigation: "1. Check provider latency trends at /api/providers/latency. 2. Consider switching to backup provider. 3. Verify network path quality."
+
+  - interval: 1m
+    name: MeridianLowDataQuality fires below the SLO critical threshold
+    input_series:
+      - series: "mdc_validation_pass_rate_percent"
+        values: "70+0x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: MeridianLowDataQuality
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P3
+            exp_annotations:
+              summary: "Low data quality score (70%)"
+              description: "The validation pass rate is 70%, below the 80% threshold."
+              runbook_url: "docs/operators/operator-runbook.md#low-data-quality"
+              probable_causes: "Data gaps from provider outage, stale quotes, sequence errors, bad tick data from provider"
+              immediate_mitigation: "1. Read mdc_validation_rejected_total by error_type. 2. Check /api/quality/gaps for gap analysis. 3. Compare across providers at /api/quality/comparison/{symbol} for an affected symbol. 4. Consider triggering gap-fill backfill."
+
+  - interval: 1m
+    name: MeridianLowDataQuality stays silent on a healthy pass rate
+    input_series:
+      - series: "mdc_validation_pass_rate_percent"
+        values: "99+0x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: MeridianLowDataQuality
+        exp_alerts: []

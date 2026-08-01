@@ -44,18 +44,35 @@ These apply to the supported local-workstation topology defined in
 [ADR-019](../adr/019-production-support-matrix-and-deployment-posture.md), recovered as one unit
 by `build/scripts/recovery/invoke-production-recovery.ps1`.
 
-| Objective | Commitment | Measured by |
+| Objective | Commitment | Status |
 | --- | --- | --- |
-| RPO (Recovery Point Objective) | 1 hour — at most one hour of committed work may be lost. | The `rpo_seconds` field of the recovery drill receipt, checked against `-MaximumRpoSeconds` (default 3600). |
-| RTO (Recovery Time Objective) | 2 hours — from declared loss to a verified, reconciled, operator-accepted restore. | The `rto_seconds` field of the recovery drill receipt, checked against `-MaximumRtoSeconds` (default 7200). |
+| RPO (Recovery Point Objective) | 1 hour — at most one hour of committed work may be lost. | **Stated, not yet measured.** See below. |
+| RTO (Recovery Time Objective) | 2 hours — from declared loss to a verified, reconciled, operator-accepted restore. | **Stated, not yet measured.** See below. |
 
-These are the values `build/scripts/recovery/invoke-production-recovery.ps1` actually enforces: it
-fails the drill when the measured backup window or restore time exceeds them. Change the script
-and this table together — a looser number here would mark a run compliant that the drill rejects.
+### What the drill measures today, and what it does not
 
-Both values are measured, not asserted: the recovery drill writes a dated receipt and the
-`Production Certification` workflow uploads it. A drill that does not produce a receipt does not
-count as a drill. Recovery procedure lives in
+`invoke-production-recovery.ps1` writes `measuredRpoSeconds` and `measuredRtoSeconds` into its
+receipt and fails the drill when they exceed `-MaximumRpoSeconds` (default 3600) or
+`-MaximumRtoSeconds` (default 7200). Those field names are aspirational: in Drill mode the script
+computes
+
+- `measuredRpoSeconds` as `backupCompleted - operationStarted` — how long taking a **fresh** backup
+  took, not the age of the last recoverable point;
+- `measuredRtoSeconds` as `restored - backupCompleted` — how long `Invoke-Restore` took, starting
+  after that new backup and stopping the moment the call returns.
+
+Neither figure includes detection, decision, reconciliation, or operator acceptance, and the RPO
+figure cannot express data loss at all because the backup it times is taken during the drill. A
+fast backup and a fast restore therefore certify these thresholds without demonstrating either
+objective. Read a passing drill as **"backup and restore complete within budget"** — a necessary
+condition for the objectives above, and a useful regression guard, but not evidence of them.
+
+Closing this needs the script to record the timestamp of the last recoverable point before the
+simulated loss, and to run the clock from declared loss through operator acceptance. Until then
+these two rows stay open in `PRD-111`, and no drill receipt should be cited as RPO/RTO evidence.
+
+The drill does produce a dated receipt that the `Production Certification` workflow uploads, and a
+run that produces no receipt does not count as a drill. Recovery procedure lives in
 [Failover and Recovery](./failover-and-recovery.md).
 
 ## Ingestion Plane

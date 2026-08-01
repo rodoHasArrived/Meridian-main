@@ -297,15 +297,30 @@ public sealed class StatusEndpointHandlers
     /// the prometheus-net default registry.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// <see cref="GetPrometheusMetrics"/> emits ten hand-written series and nothing else, so the
     /// 81 <c>Metrics.Create*</c> declarations across <c>PrometheusMetrics</c>,
     /// <c>WriteAheadLog</c>, and the Lean integration types were declared, incremented at runtime,
     /// and never scraped. Alerts and dashboards naming them could not fire regardless of system
-    /// state. Appending the registry keeps every legacy series byte-identical for existing
-    /// consumers while making the declared instruments reachable.
+    /// state.
+    /// </para>
+    /// <para>
+    /// Two things make appending the registry correct rather than merely additive. First, the
+    /// snapshot-backed instruments are refreshed here, on the scrape: <c>PrometheusMetricsUpdater</c>
+    /// is constructed only by tests, so nothing in the host ever called
+    /// <c>UpdateFromSnapshot</c> and every gauge it feeds sat at its initial zero — served but
+    /// never written, which reads identically to a healthy system. Collect-on-scrape makes the
+    /// values current exactly when they are read and needs no background timer or lifecycle.
+    /// Second, the legacy block no longer emits the two families the registry also registers;
+    /// concatenating both produced a duplicate <c>HELP</c> line, which is a text-format parse
+    /// error that makes Prometheus reject the entire scrape.
+    /// </para>
     /// </remarks>
     public async Task<string> GetPrometheusMetricsAsync(CancellationToken cancellationToken = default)
     {
+        // Pull current values into the registry before collecting it.
+        PrometheusMetrics.UpdateFromSnapshot();
+
         var legacy = GetPrometheusMetrics();
 
         using var buffer = new MemoryStream();
@@ -331,6 +346,13 @@ public sealed class StatusEndpointHandlers
     {
         var m = _metricsProvider();
         var sb = new StringBuilder();
+
+        // mdc_events_per_second and mdc_historical_bars_per_second are deliberately absent:
+        // PrometheusMetrics registers both families in the default registry, and emitting them
+        // here too produced a second HELP line for the same name, which is a text-format parse
+        // error that makes Prometheus reject the whole scrape. The registry copies carry the
+        // same names and, since GetPrometheusMetricsAsync refreshes them on the scrape, the
+        // same values — so nothing scraping those two series sees a change.
 
         sb.AppendLine("# HELP mdc_published Total events published");
         sb.AppendLine("# TYPE mdc_published counter");
@@ -360,17 +382,9 @@ public sealed class StatusEndpointHandlers
         sb.AppendLine("# TYPE mdc_historical_bars counter");
         sb.AppendLine($"mdc_historical_bars {m.HistoricalBars}");
 
-        sb.AppendLine("# HELP mdc_events_per_second Current event rate");
-        sb.AppendLine("# TYPE mdc_events_per_second gauge");
-        sb.AppendLine($"mdc_events_per_second {m.EventsPerSecond:F4}");
-
         sb.AppendLine("# HELP mdc_drop_rate Drop rate percent");
         sb.AppendLine("# TYPE mdc_drop_rate gauge");
         sb.AppendLine($"mdc_drop_rate {m.DropRate:F4}");
-
-        sb.AppendLine("# HELP mdc_historical_bars_per_second Historical bar rate");
-        sb.AppendLine("# TYPE mdc_historical_bars_per_second gauge");
-        sb.AppendLine($"mdc_historical_bars_per_second {m.HistoricalBarsPerSecond:F4}");
 
         return sb.ToString();
     }

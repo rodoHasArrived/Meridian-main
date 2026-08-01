@@ -93,12 +93,23 @@ groups:
       # its range, so the pending timer only started five minutes after the stall and the alert
       # fired at roughly fifteen.
       #
-      # The `> 0` guard keeps a freshly started process from paging immediately: with only two
-      # post-start samples and no publications, a ten-minute increase is already zero one
-      # minute in. Requiring the process to have published at least once means this reports a
-      # stalled feed rather than an empty window that has not had time to fill.
+      # A freshly started process must not page immediately: with only two post-start samples
+      # and no publications, a ten-minute increase is already zero one minute in. The guard is
+      # on the series' own age, not on a prior publication. `mdc_events_published_total offset
+      # 10m` resolves only once the series has existed for ten minutes, so this fires once the
+      # window is real and empty.
+      #
+      # Guarding on `mdc_events_published_total > 0` instead — requiring a prior publication —
+      # was wrong in the opposite direction: a process that starts with a broken provider and
+      # never publishes its first event would have been suppressed permanently, which is
+      # precisely the outage this rule exists to report.
+      #
+      # KNOWN GAP: no market-session signal is exported, so this still pages during closed
+      # sessions once the window is real. SLO-DC-002 scopes the objective to market hours and
+      # the annotation tells the responder to check session state first, but the rule cannot
+      # enforce it until a session gauge exists. Tracked with PRD-111.
       - alert: MeridianNoEventsPublished
-        expr: increase(mdc_events_published_total[10m]) == 0 and mdc_events_published_total > 0
+        expr: increase(mdc_events_published_total[10m]) == 0 and (mdc_events_published_total offset 10m) >= 0
         for: 1m
         labels:
           severity: warning
