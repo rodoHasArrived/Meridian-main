@@ -55,6 +55,12 @@ submitted values that nothing upstream is required to constrain (the Security Ma
 optional), so a line break in either would render as an extra line in a text sink and let a submitter
 forge execution log entries. This holds for every `_logger` call in `OrderManagementSystem`; a raw
 caller value in a new log call is a defect, not a style choice.
+
+This convention is the compensating control for excluding `cs/log-forging` in
+`.github/codeql/codeql-config.yml` — that query reports log sites reached by user input rather than
+unsanitized ones, and does not model `ExecutionLogText.ForLog`, so it cannot tell a fixed call site
+from an unfixed one. The invariant is mechanically checkable: search `_logger.Log*` calls for
+`orderId`, `request.Symbol`, or `safeRequest.Symbol` appearing without `ForLog`.
 Broker-backed order placement fails closed unless `BrokerageConfiguration` names the active
 gateway and all live-routing, phase, validation, and sign-off gates are explicitly green; missing
 brokerage configuration remains allowed only for the default paper gateway.

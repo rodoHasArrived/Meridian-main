@@ -841,6 +841,8 @@ Meridian-main
 │   │   ├── simulated-user-panel-agent.md
 │   │   ├── software-engineer-agent-v1.agent.md
 │   │   └── test-writer-agent.md
+│   ├── codeql
+│   │   └── codeql-config.yml
 │   ├── instructions
 │   │   ├── csharp.instructions.md
 │   │   ├── docs.instructions.md
