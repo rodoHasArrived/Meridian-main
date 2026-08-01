@@ -20,6 +20,7 @@ EXCLUDE_DIRS = {
     ".vs",
     ".vscode",
     "__pycache__",
+    ".pytest_cache",
     "artifacts",
     "bin",
     "dist",
