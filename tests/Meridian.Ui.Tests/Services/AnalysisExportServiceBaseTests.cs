@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Meridian.Ui.Tests.Services;
 
+[Collection("ApiClientService singleton serial")]
 public sealed class AnalysisExportServiceTests
 {
     [Fact]
