@@ -42,8 +42,15 @@ line break would otherwise render as a second log line that reads like a risk de
 Rules that consume finite capacity (the order-rate window) implement `IReservingRiskRule` and
 reserve atomically during evaluation. The validator releases those reservations if evaluation
 throws or is cancelled, and otherwise transfers them to the caller, which commits only once the
-order is actually routed. Each rule is bounded by a timeout, and a rule that throws yields a
-`Critical` `RISK_RULE_EVALUATION_FAILED` violation so the gate fails closed.
+order is actually routed. A rule that throws yields a `Critical` `RISK_RULE_EVALUATION_FAILED`
+violation so the gate fails closed.
+
+The per-rule timeout bounds *asynchronous* evaluation only. It does not bound `TryEvaluate`, nor any
+synchronous work a rule performs before returning its `Task`: both run on the calling thread, and a
+synchronous call cannot be abandoned, so bounding them would leak the blocked thread while still
+hanging the submission. The contract is therefore that rules do not block — they either declare
+`HasSyncFastPath` because they need no I/O, or they return promptly and wait inside the task, where
+the timeout applies.
 
 ## Diagrams
 

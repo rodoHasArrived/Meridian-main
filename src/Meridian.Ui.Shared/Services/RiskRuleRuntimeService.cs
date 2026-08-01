@@ -419,7 +419,10 @@ public sealed class RiskRuleRuntimeService
             ? probe()
             : auditEntries.Count(entry => entry.OccurredAt >= cutoff && ConsumedRateCapacity(entry));
 
-        var breached = recentOrderCount > maxOrdersPerMinute;
+        // At the ceiling, not past it. The throttle rejects on `count >= maxOrdersPerMinute`, so a
+        // strictly-greater test here reported "Observe, not breached" during the whole window in
+        // which the gate was already turning orders away.
+        var breached = recentOrderCount >= maxOrdersPerMinute;
         var state = breached
             ? "Constrained"
             : recentOrderCount >= (int)Math.Ceiling(maxOrdersPerMinute * 0.8m) ? "Observe" : "Healthy";

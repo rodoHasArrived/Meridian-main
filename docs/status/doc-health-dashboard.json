@@ -1,6 +1,6 @@
 {
   "total_files": 639,
-  "total_lines": 117314,
+  "total_lines": 117321,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -5244,7 +5244,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 80,
+      "line_count": 87,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

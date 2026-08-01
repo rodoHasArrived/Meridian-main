@@ -205,7 +205,7 @@ public sealed class CompositeRiskValidatorTests
         var validator = Build(
             new StubThrowingRollbackRule("faulty") { Priority = 1 },
             healthy,
-            new StubRiskRule("blocker", Finding("BLOCKED", "blocked")) { Priority = 3 });
+            new StubRiskRule("blocker", Finding("BLOCKED", "blocked"), priority: 3));
 
         var outcome = await validator.ValidateOrderAsync(CreateOrder());
 
