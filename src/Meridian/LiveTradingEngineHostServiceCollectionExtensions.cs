@@ -78,7 +78,8 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
             sp.GetRequiredService<ILoggerFactory>(),
             sp.GetService<StrategyLifecycleManager>(),
             sp.GetService<ExecutionAuditTrailService>(),
-            sp.GetService<BrokerageConfiguration>()));
+            sp.GetService<BrokerageConfiguration>(),
+            sp.GetService<Meridian.Execution.Services.PortfolioRegistry>()));
         services.TryAddSingleton<IPromotedRunLauncher>(static sp => sp.GetRequiredService<LiveTradingEngine>());
         services.AddHostedService<LiveTradingEngineHostedService>();
 

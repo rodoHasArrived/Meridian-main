@@ -12,6 +12,7 @@ namespace Meridian.Ui.Tests.Services;
 /// <summary>
 /// Tests for <see cref="ApiClientService"/> HTTP communication logic.
 /// </summary>
+[Collection("ApiClientService singleton serial")]
 public sealed class ApiClientServiceTests
 {
     private readonly Mock<HttpMessageHandler> _httpHandlerMock;

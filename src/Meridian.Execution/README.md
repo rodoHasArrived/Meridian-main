@@ -109,6 +109,20 @@ rejects traversal, rooted, reserved, and ambiguous path segments, refuses existi
 links/reparse points, and ignores retained metadata whose session identity does not match its
 directory before reading or appending session evidence.
 
+Orders that breach an `Escalate`-severity risk rule are parked rather than rejected:
+`RiskEscalationQueueService` durably retains the exact submitted request, and `PlaceOrderAsync`
+returns `RequiresApproval` with the escalation id instead of a failure, so callers must treat a
+park as accepted-not-routed rather than prompting a retry — each retry mints a new client order id
+and can leave several approvals releasable for one intended order. A park reserves its client order
+id until the escalation resolves, and that reservation also keeps the order out of terminal-order
+retention trimming so it stays cancellable while an approval can still route it. Approvals are
+one-shot tokens carried in `riskEscalationId` metadata, matched against a full request fingerprint
+including `ClientOrderId`; a release that the gateway refuses re-arms the approval and its id
+reservation, while withdrawing an escalation also retires any approvals linked through that
+metadata chain. Broker-native notional metadata (`notional`, `alpaca:notional`) is honoured only
+for gateways implementing `INotionalOrderSizingGateway`; on any other gateway the order is refused
+rather than measured at a size the broker will not route.
+
 ## Diagrams
 
 See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.

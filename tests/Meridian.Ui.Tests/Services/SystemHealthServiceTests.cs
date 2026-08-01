@@ -6,6 +6,7 @@ namespace Meridian.Ui.Tests.Services;
 /// <summary>
 /// Tests for <see cref="SystemHealthService"/> functionality.
 /// </summary>
+[Collection("ApiClientService singleton serial")]
 public sealed class SystemHealthServiceTests
 {
     [Fact]
