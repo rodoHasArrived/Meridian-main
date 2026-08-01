@@ -77,7 +77,14 @@ live in `Meridian.Risk`.**
 - A durable pre-trade decision journal, written through the existing WAL-backed
   `ExecutionAuditTrailService`.
 - Surfacing the F# `RiskDecision` model (`Approve | Reject | Escalate`) that already exists and is
-  currently unreachable from C#.
+  currently unreachable from C#. **Scope limit:** the F# `Escalate` case is surfaced as a
+  *distinguishable record*, not as a different admission outcome. `PositionLimitRule` and
+  `DrawdownCircuitBreaker` both carry `Error` severity, and severity alone decides admission, so an
+  interop `escalate` still resolves to `Rejected` — as it does today. What changes is that the
+  violation carries a distinct code (`..._ESCALATED`) instead of being flattened into a generic
+  rejection, so the distinction survives into the journal and the operator surface. Making those
+  rules genuinely admit-and-escalate would mean re-declaring them at a non-blocking severity, which
+  is a risk-policy decision and is out of scope here.
 - An additive `GET /api/risk/decisions` read surface plus the dashboard panel that consumes it.
 
 **Out of scope**
@@ -518,6 +525,15 @@ widen the migration well past the factory-only change Decision 2 promises.
 ```csharp
 namespace Meridian.Execution;
 
+/// <summary>
+/// What <see cref="IRiskValidator.ValidateOrderAsync"/> returns. Decision 8 requires reservation
+/// ownership to transfer to the OMS on a normal return, so the contract has to carry the handles —
+/// describing the transfer in prose while returning a bare result leaves the OMS nothing to settle.
+/// </summary>
+public sealed record RiskValidationOutcome(
+    RiskValidationResult Result,
+    IReadOnlyList<IRiskReservation> Reservations);
+
 public sealed record RiskValidationResult
 {
     public required RiskDecisionKind Decision { get; init; }
@@ -599,8 +615,21 @@ public sealed record RiskDecisionJournalEntry(
     string? Actor,
     string? RunId,
     string? CorrelationId,
+    string? BrokerName,
+    string? SessionId,
     DateTimeOffset OccurredAt);
 ```
+
+`BrokerName` and `SessionId` are not optional extras. Decision 5 names both as context the OMS
+already holds, `ExecutionAuditEntry` has a dedicated broker field, and a terminal client-order id
+can be reused — so without them an admitted warning or escalation cannot be tied back to the route
+that produced it. The canonical decision record should not discard attribution that is sitting in
+scope at the call site.
+
+`IRiskValidator.ValidateOrderAsync` returns `Task<RiskValidationOutcome>`, not
+`Task<RiskValidationResult>`. That is a change to an existing interface and belongs in the breaking
+-change table: the sole implementation is `CompositeRiskValidator` and the sole caller is the OMS,
+so migration is two files, but the signature does change.
 
 ### REST surface (additive)
 
@@ -611,9 +640,14 @@ Extends `src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs`, which today maps `/
 `orderId` is an exact-match filter, so a caller holding the id returned by a submission can read
 back that decision deterministically even under concurrent submissions for the same symbol.
 
-`journalCompleteness` reports the effective `JournalCleanApprovals` setting. Without it the panel
-cannot honestly describe its own history: it would either claim completeness it does not have or
-warn about a gap that is not there. The read surface must state which.
+`journalCompleteness` describes coverage over the *queried range*, not the current setting.
+`RiskJournalOptions` is read through `IOptionsMonitor`, so `JournalCleanApprovals` can flip at
+runtime: reporting the live flag would claim `cleanApprovalsRecorded: true` over a window whose
+earlier records were written under the old policy and never persisted clean approvals at all. The
+block therefore carries `cleanApprovalsRecordedSince` — the timestamp the current policy took
+effect — and the panel states coverage from that boundary rather than implying it holds for the
+whole horizon. When the flag has never been enabled the field is null and the panel says clean
+approvals are not recorded.
 
 ```
 GET /api/risk/decisions?take=100&symbol=AAPL&decision=Rejected&orderId=ord-8823
@@ -729,11 +763,18 @@ nothing and the OMS has no handles to roll back. Repeated cancelled submissions 
 the throttle window and block later orders.
 
 **The validator owns reservation cleanup until a successful handoff.** Wrap evaluation in a
-`try`/`catch`: on any exception, including `OperationCanceledException`, roll back every reservation
-taken so far and then rethrow. Ownership transfers to the OMS only when `ValidateOrderAsync` returns
-normally. This is the one piece of settlement that stays in the validator, and it is not in tension
-with Decision 8 — the validator handles failures *before* the handoff, the OMS handles everything
-after.
+`try`/`catch`: on any exception, roll back every reservation taken so far. Ownership transfers to
+the OMS only when `ValidateOrderAsync` returns normally. This is the one piece of settlement that
+stays in the validator, and it is not in tension with Decision 8 — the validator handles failures
+*before* the handoff, the OMS handles everything after.
+
+**Not every `OperationCanceledException` is caller cancellation.** An async rule with its own
+timeout or internal token can throw one while `ct` is still live. Rethrowing it as cancellation
+would let that rule's failure escape the gate entirely, skipping the fail-closed
+`RISK_RULE_EVALUATION_FAILED` result and its audit record — the order would be neither admitted with
+a recorded decision nor explicitly rejected. Rethrow only when `ct.IsCancellationRequested`; treat
+any other `OperationCanceledException` as an evaluation failure and block, exactly like any other
+throwing rule.
 
 ### `OrderRateThrottle` (modified)
 
@@ -796,18 +837,32 @@ catalogue — the engine work here only has to make it expressible.
 At `OrderManagementSystem.cs:303`, pass the structured data the method already accepts:
 
 ```csharp
-var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
+var outcome = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
+var riskResult = outcome.Result;
 if (!riskResult.IsApproved)
 {
+    foreach (var reservation in outcome.Reservations)  // NEW — nothing was routed
+    {
+        reservation.Rollback();
+    }
+
     return await RejectOrderAsync(
         orderId, safeRequest, actor, brokerName, runId, correlationId,
         riskResult.RejectReason, sessionId, ct,
         rejectionSource: "risk validator",
         reasonCode: riskResult.RejectCode ?? "RISK_REJECTED",          // NEW
-        metadata: BuildRiskRejectedAuditMetadata(riskResult))          // NEW
+        metadata: BuildRiskRejectedAuditMetadata(riskResult),          // NEW
+        riskSummary: new RiskDecisionSummary(                          // NEW
+            riskResult.Decision, riskResult.Violations))
         .ConfigureAwait(false);
 }
 ```
+
+`RejectOrderAsync` gains a `riskSummary` parameter and sets it on the failed `OrderResult` it
+builds. Without that, `OrderResult.RiskDecisionSummary` is populated only on the admitted path and
+the order ticket cannot render the red aggregate and violation list on the case that matters most —
+a rejection. The parameter is optional and defaults to null, so the other four gates that call
+`RejectOrderAsync` are unaffected.
 
 `BuildRiskRejectedAuditMetadata` mirrors the existing
 `BuildOrderRejectedByControlAuditMetadata` (line 273) and
@@ -1011,8 +1066,9 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 - [ ] Convert `OrderRateThrottle` to `IReservingRiskRule`: keep purge → count → reserve inside the
       existing lock; add commit/rollback
 - [ ] Surface `DecisionKind` from the F# interop in `PositionLimitRule` and
-      `DrawdownCircuitBreaker` — map `"escalate"` to `RequiresAcknowledgement` and stop discarding
-      `Reasons` beyond the first
+      `DrawdownCircuitBreaker` — map `"escalate"` to a distinct `..._ESCALATED` violation code
+      (still blocking, since both rules are `Error` severity — see the scope limit above) and stop
+      discarding `Reasons` beyond the first
 - [ ] Update `CompositeRiskValidatorTests`, `EnforcedRiskValidatorCompositionTests`,
       `RiskIntegrationTests`
 - [ ] Write the unit tests listed above
