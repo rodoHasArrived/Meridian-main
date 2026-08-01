@@ -259,12 +259,12 @@ public sealed class StatusHttpServer : IAsyncDisposable
     /// <summary>
     /// Prometheus metrics endpoint using shared handlers.
     /// </summary>
-    private Task WriteMetricsAsync(HttpListenerResponse resp)
+    private async Task WriteMetricsAsync(HttpListenerResponse resp)
     {
         resp.ContentType = "text/plain; version=0.0.4";
-        var content = _handlers.GetPrometheusMetrics();
+        var content = await _handlers.GetPrometheusMetricsAsync().ConfigureAwait(false);
         var bytes = Encoding.UTF8.GetBytes(content);
-        return resp.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+        await resp.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
     }
 
     /// <summary>

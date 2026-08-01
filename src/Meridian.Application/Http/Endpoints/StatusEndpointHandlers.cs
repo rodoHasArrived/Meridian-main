@@ -293,8 +293,40 @@ public sealed class StatusEndpointHandlers
     }
 
     /// <summary>
-    /// Gets Prometheus metrics in text format.
+    /// Gets Prometheus metrics in text format, covering both the legacy hand-written series and
+    /// the prometheus-net default registry.
     /// </summary>
+    /// <remarks>
+    /// <see cref="GetPrometheusMetrics"/> emits ten hand-written series and nothing else, so the
+    /// 81 <c>Metrics.Create*</c> declarations across <c>PrometheusMetrics</c>,
+    /// <c>WriteAheadLog</c>, and the Lean integration types were declared, incremented at runtime,
+    /// and never scraped. Alerts and dashboards naming them could not fire regardless of system
+    /// state. Appending the registry keeps every legacy series byte-identical for existing
+    /// consumers while making the declared instruments reachable.
+    /// </remarks>
+    public async Task<string> GetPrometheusMetricsAsync(CancellationToken cancellationToken = default)
+    {
+        var legacy = GetPrometheusMetrics();
+
+        using var buffer = new MemoryStream();
+        await Prometheus.Metrics.DefaultRegistry
+            .CollectAndExportAsTextAsync(buffer, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (buffer.Length == 0)
+            return legacy;
+
+        return legacy + Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length);
+    }
+
+    /// <summary>
+    /// Gets the legacy hand-written Prometheus series in text format.
+    /// </summary>
+    /// <remarks>
+    /// Retained so the ten original series keep their exact names and formatting for anything
+    /// already scraping them. New instrumentation belongs in the prometheus-net registry, which
+    /// <see cref="GetPrometheusMetricsAsync"/> appends.
+    /// </remarks>
     public string GetPrometheusMetrics()
     {
         var m = _metricsProvider();
