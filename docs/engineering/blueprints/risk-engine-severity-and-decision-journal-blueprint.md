@@ -371,8 +371,16 @@ public enum RiskRuleSeverity
 /// <param name="ObservedValue">What the rule measured, when expressible as a number.</param>
 /// <param name="LimitValue">What the rule measured against, when expressible as a number.</param>
 /// <param name="RequiresAcknowledgement">
-/// Requests escalation rather than plain admission. Escalation is a separate axis from severity —
-/// a finding may be low-severity yet still need a human to acknowledge it before routing.
+/// Marks the decision <see cref="RiskDecisionKind.Escalated"/> instead of
+/// <see cref="RiskDecisionKind.ApprovedWithWarnings"/>. Escalation is a separate axis from
+/// severity: a finding may be low-severity yet still warrant a human looking at it.
+/// <para>
+/// <b>This does not hold the order.</b> <c>Escalated</c> is an admitting decision — the OMS routes
+/// on <c>IsApproved</c>, true for every decision except <c>Rejected</c> — so the flag records that
+/// acknowledgement is wanted and surfaces it afterwards. It does not gate, queue, or await
+/// anything. A rule that needs an order stopped must declare a blocking severity; that is the only
+/// lever that prevents routing. See Open Question 1.
+/// </para>
 /// Ignored when the resolved severity blocks, since a blocked order is never admitted.
 /// </param>
 public sealed record RiskFinding(
@@ -466,8 +474,10 @@ public interface IReservingRiskRule : IRiskRule
 {
     /// <summary>
     /// Atomically evaluates and, when the rule is satisfied, reserves the capacity this order
-    /// would consume. The reservation is non-null whenever capacity was taken and must be
-    /// settled by the validator on every path.
+    /// would consume. The reservation is non-null whenever capacity was taken, and must be settled
+    /// exactly once on every path by whoever owns it at the time: the validator until it returns an
+    /// admitting result, the OMS afterwards. The rule itself never settles. See the ownership table
+    /// in the component contract.
     /// </summary>
     /// <remarks>
     /// An implementation that has taken capacity must not let an exception escape before returning
@@ -555,7 +565,35 @@ namespace Meridian.Execution;
 /// </summary>
 public sealed record RiskValidationOutcome(
     RiskValidationResult Result,
-    IReadOnlyList<IRiskReservation> Reservations);
+    IReadOnlyList<IRiskReservation> Reservations)
+{
+    /// <summary>
+    /// Snapshotted at construction. IReadOnlyList is a read-only view, not an immutable collection,
+    /// so a validator reusing its working list would otherwise have the OMS settle whatever the list
+    /// held by the time the order reached the gateway.
+    /// </summary>
+    public IReadOnlyList<IRiskReservation> Reservations { get; } =
+        Reservations?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(Reservations));
+
+    /// <summary>Commits every reservation. Call once the order has actually been routed.</summary>
+    public void CommitReservations() => SettleAll(static r => r.Commit());
+
+    /// <summary>Rolls back every reservation — blocked, or failed before the venue.</summary>
+    public void RollbackReservations() => SettleAll(static r => r.Rollback());
+
+    /// <summary>
+    /// Settles every handle even if one throws, then reports the failures together. Stopping at the
+    /// first would strand every later reservation as pending — capacity consumed by an order that
+    /// already reached its terminal state. A settlement callback is host-contributed, so it cannot
+    /// be assumed total.
+    /// <para>
+    /// The OMS must catch this: the gateway's answer is the truth about the order and reservation
+    /// bookkeeping is not, so a settlement failure must not turn an accepted order into a rejected
+    /// or ambiguous one.
+    /// </para>
+    /// </summary>
+    private void SettleAll(Action<IRiskReservation> settle) { /* aggregate failures, then throw */ }
+}
 
 public sealed record RiskValidationResult
 {
