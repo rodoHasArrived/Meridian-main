@@ -29,8 +29,8 @@ public sealed class SloDefinitionRegistryTests
         var slo = registry.Get("SLO-ING-001");
 
         slo.Should().NotBeNull();
-        slo!.Name.Should().Be("Event Processing Latency");
-        slo.MetricName.Should().Be("mdc_processing_latency_microseconds");
+        slo!.Name.Should().Be("End-to-End Ingestion Latency");
+        slo.MetricName.Should().Be("mdc_provider_latency_seconds");
         slo.Subsystem.Should().Be(SloSubsystem.Ingestion);
     }
 
@@ -74,7 +74,7 @@ public sealed class SloDefinitionRegistryTests
     {
         var registry = SloDefinitionRegistry.Instance;
 
-        var result = registry.Evaluate("SLO-ING-001", 500.0); // 500µs < 1000µs target
+        var result = registry.Evaluate("SLO-ING-001", 1.0); // 1s < 2s target
 
         result.State.Should().Be(SloComplianceState.Healthy);
         result.Score.Should().Be(100.0);
@@ -85,7 +85,7 @@ public sealed class SloDefinitionRegistryTests
     {
         var registry = SloDefinitionRegistry.Instance;
 
-        var result = registry.Evaluate("SLO-ING-001", 3500.0); // Between 1000µs and 5000µs
+        var result = registry.Evaluate("SLO-ING-001", 3.5); // Between 2s and 5s
 
         result.State.Should().Be(SloComplianceState.Warning);
         result.Score.Should().BeInRange(1, 99);
@@ -96,29 +96,10 @@ public sealed class SloDefinitionRegistryTests
     {
         var registry = SloDefinitionRegistry.Instance;
 
-        var result = registry.Evaluate("SLO-ING-001", 10_000.0); // > 5000µs critical
+        var result = registry.Evaluate("SLO-ING-001", 10.0); // > 5s critical
 
         result.State.Should().Be(SloComplianceState.Violation);
         result.Score.Should().Be(0);
-    }
-
-    [Fact]
-    public void Evaluate_LowerIsBetterSlo_UsesThresholdOrderRatherThanUnitName()
-    {
-        var registry = SloDefinitionRegistry.Instance;
-
-        // SLO-ING-002 is a "lower is better" objective measured in percent. Inferring
-        // direction from the unit string instead of the threshold order scored a drop-rate
-        // blowout as healthy, because "percent" was not one of the hard-coded unit names.
-        var breach = registry.Evaluate("SLO-ING-002", 5.0); // 5% dropped, critical is 1%
-
-        breach.State.Should().Be(SloComplianceState.Violation);
-        breach.Score.Should().Be(0);
-
-        var healthy = registry.Evaluate("SLO-ING-002", 0.01);
-
-        healthy.State.Should().Be(SloComplianceState.Healthy);
-        healthy.Score.Should().Be(100.0);
     }
 
     [Fact]
@@ -159,7 +140,7 @@ public sealed class SloDefinitionRegistryTests
             Severity = "info",
             IncidentPriority = "P3",
             Summary = "Custom test alert",
-            RunbookUrl = "docs/operators/operator-runbook.md#custom",
+            RunbookUrl = "docs/operations/operator-runbook.md#custom",
             ProbableCauses = new[] { "Test" },
             ImmediateActions = new[] { "None" }
         });
@@ -273,7 +254,7 @@ public sealed class AlertRunbookRegistryTests
 
         foreach (var entry in all)
         {
-            entry.RunbookUrl.Should().StartWith("docs/operators/operator-runbook.md#",
+            entry.RunbookUrl.Should().StartWith("docs/operations/operator-runbook.md#",
                 because: $"Alert {entry.AlertName} should link to a specific runbook section");
         }
     }

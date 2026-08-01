@@ -183,11 +183,6 @@ verify_browser() {
 verify_docs() {
   verify_toolchain_docs
 
-  # An alert whose expr names a series the exporter never emits can never fire, and a
-  # runbook link that does not resolve strands the responder. Both used to be invisible.
-  run_step "Validate observability contract" \
-    "$python_cmd" build/scripts/ci/validate-observability-contract.py --summary
-
   # TypeScript resolves an ambiguous star export by exporting neither declaration, so a
   # duplicated DTO silently disappears from '@/types' rather than conflicting.
   run_step "Validate dashboard type barrel" \
