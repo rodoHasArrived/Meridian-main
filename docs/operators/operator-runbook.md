@@ -70,22 +70,30 @@ recurring fault, not a transient one — capture the diagnostics bundle before t
 
 ## Unhealthy Status
 
-Alert: `MeridianUnhealthy` — severity warning, priority P2.
+Alert: `MeridianUnhealthy` — severity warning, priority P2, objective
+[SLO-ING-002](./service-level-objectives.md#slo-ing-002).
 
-The process is up and scraping, but its composite freshness score has fallen below half. This is a
-degradation, not an outage.
+The process is up and scraping, but it is discarding more than 5% of events — well past the 1%
+critical threshold that [High drop rate](#high-drop-rate) pages on. This is a degradation, not an
+outage, but it is losing data.
 
-**Probable causes:** provider disconnected; storage write failures; pipeline backpressure;
-dependency timeout.
+This alert reads `mdc_drop_rate_percent`, not a composite health score: the SLA gauges have no
+writer, so a score-based trigger would fire permanently. See
+[Objectives awaiting instrumentation](./service-level-objectives.md#objectives-awaiting-instrumentation).
+
+**Probable causes:** storage sink blocking; pipeline backpressure; a provider burst exceeding
+processing capacity; dependency timeout.
 
 **Immediate actions**
 
-1. `GET /health/detailed` and identify which specific checks are failing.
-2. Review recent error logs for the failing check's subsystem.
-3. Verify provider connectivity before assuming a local fault.
+1. `GET /api/backpressure` and read the queue utilization — the drop rate is a consequence.
+2. `GET /health/detailed` and identify which specific checks are failing.
+3. Review recent error logs for the failing check's subsystem.
+4. Verify provider connectivity before assuming a local fault.
 
-**Resolved when:** every check in `/health/detailed` reports healthy and the freshness score
-recovers above its threshold.
+**Resolved when:** the drop rate returns below 1% **and** the window in which events were dropped
+has been backfilled. Follow [High drop rate](#high-drop-rate) for the backfill step; a recovered
+rate alone still leaves a hole in the record.
 
 ## High Drop Rate
 

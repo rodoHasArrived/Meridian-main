@@ -168,6 +168,48 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertIn("held for review", reasons)
 
+    def test_ignores_a_skip_written_in_a_line_comment(self):
+        # Broadening discovery to raw text would inventory documentation as a real skip and
+        # fail the gate until somebody added a bogus register entry.
+        (self.fixture.tests_dir / "DocumentedTests.cs").write_text(
+            'public sealed class T {\n    // Example: Skip = "not a real skip";\n    void M() {}\n}\n',
+            encoding="utf-8",
+        )
+
+        self.assertEqual(len(self.fixture.sites()), 1)
+
+    def test_ignores_a_skip_written_in_a_block_comment(self):
+        (self.fixture.tests_dir / "BlockDocumentedTests.cs").write_text(
+            'public sealed class T {\n    /* Skip = "not a real skip"; */\n    void M() {}\n}\n',
+            encoding="utf-8",
+        )
+
+        self.assertEqual(len(self.fixture.sites()), 1)
+
+    def test_ignores_a_skip_inside_a_string_literal(self):
+        # Parser and source-generator tests embed C# as fixture text.
+        (self.fixture.tests_dir / "FixtureTests.cs").write_text(
+            'public sealed class T {\n    const string Source = "[Fact(Skip = \\"inside a fixture\\")]";\n}\n',
+            encoding="utf-8",
+        )
+
+        self.assertEqual(len(self.fixture.sites()), 1)
+
+    def test_ignores_a_skip_inside_a_verbatim_string_literal(self):
+        (self.fixture.tests_dir / "VerbatimFixtureTests.cs").write_text(
+            'public sealed class T {\n    const string Source = @"Skip = ""inside a verbatim fixture"";";\n}\n',
+            encoding="utf-8",
+        )
+
+        self.assertEqual(len(self.fixture.sites()), 1)
+
+    def test_does_not_match_an_identifier_ending_in_skip(self):
+        (self.fixture.tests_dir / "IdentifierTests.cs").write_text(
+            "public sealed class T { void M() { var shouldSkip = true; } }\n", encoding="utf-8"
+        )
+
+        self.assertEqual(len(self.fixture.sites()), 1)
+
     def test_ignores_build_output(self):
         obj_dir = self.fixture.tests_dir / "obj" / "Release"
         obj_dir.mkdir(parents=True)

@@ -1,6 +1,6 @@
 {
   "total_files": 640,
-  "total_lines": 116670,
+  "total_lines": 116678,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2724,7 +2724,7 @@
     },
     {
       "path": "docs/operators/operator-runbook.md",
-      "line_count": 317,
+      "line_count": 325,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

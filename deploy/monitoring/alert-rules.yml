@@ -88,9 +88,13 @@ groups:
           immediate_mitigation: "1. Check storage write latency metrics. 2. Verify disk health. 3. Consider pausing non-critical subscriptions."
 
       # No events published during the alert window.
+      # `increase(...[10m]) == 0` with a short `for` measures the ten minutes SLO-DC-002
+      # declares. Pairing a 5m rate with `for: 10m` did not: the rate stays non-zero until the
+      # last increment leaves its range, so the pending timer only started five minutes after
+      # the stall and the alert fired at roughly fifteen.
       - alert: MeridianNoEventsPublished
-        expr: rate(mdc_events_published_total[5m]) == 0
-        for: 10m
+        expr: increase(mdc_events_published_total[10m]) == 0
+        for: 1m
         labels:
           severity: warning
           incident_priority: P2

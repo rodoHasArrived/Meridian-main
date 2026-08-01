@@ -52,6 +52,7 @@ REQUIRED_FIELDS = ("path", "reason", "owner", "category", "tracking", "review_by
 # environment-gated skips built from a variable were never inventoried and the gate reported
 # every skip owned while unowned conditional skips ran in CI.
 SKIP_KEYWORD = re.compile(r"\bSkip\s*=\s*")
+IDENTIFIER_CHAR = re.compile(r"[A-Za-z0-9_]")
 STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 PURE_LITERAL_EXPRESSION = re.compile(
     r"""^ \s* " (?: [^"\\] | \\. )* "
@@ -87,6 +88,67 @@ def join_literals(literal_text: str) -> str:
     # Unescape the sequences that actually appear in skip reasons; leaving them encoded would
     # make the register text differ from what the test runner reports.
     return joined.replace('\\"', '"').replace("\\\\", "\\").replace("\\n", "\n").replace("\\t", "\t")
+
+
+def find_skip_positions(text: str) -> list[int]:
+    """Return offsets just past each `Skip =` that appears in real code.
+
+    Broadening discovery to every textual occurrence would inventory documentation such as
+    `// Example: Skip = "reason";` and fixture strings used by parser tests as though they were
+    real skipped tests, failing the gate until somebody added a bogus register entry. This walks
+    the source instead, stepping over comments and string literals so only assignments in code
+    are reported.
+    """
+    positions: list[int] = []
+    i = 0
+    length = len(text)
+    while i < length:
+        ch = text[i]
+        if ch == '"':
+            verbatim = i > 0 and text[i - 1] == "@"
+            i += 1
+            while i < length:
+                if verbatim:
+                    if text[i] == '"':
+                        if i + 1 < length and text[i + 1] == '"':
+                            i += 2
+                            continue
+                        break
+                else:
+                    if text[i] == "\\":
+                        i += 2
+                        continue
+                    if text[i] == '"':
+                        break
+                i += 1
+            i += 1
+            continue
+        if ch == "'":
+            # Character literal; a lone apostrophe inside one must not open a string.
+            i += 1
+            while i < length and text[i] != "'":
+                i += 2 if text[i] == "\\" else 1
+            i += 1
+            continue
+        if ch == "/" and i + 1 < length and text[i + 1] == "/":
+            while i < length and text[i] != "\n":
+                i += 1
+            continue
+        if ch == "/" and i + 1 < length and text[i + 1] == "*":
+            i += 2
+            while i + 1 < length and not (text[i] == "*" and text[i + 1] == "/"):
+                i += 1
+            i += 2
+            continue
+        if ch == "S" and text.startswith("Skip", i):
+            before_is_identifier = i > 0 and IDENTIFIER_CHAR.match(text[i - 1]) is not None
+            match = SKIP_KEYWORD.match(text, i)
+            if match and not before_is_identifier:
+                positions.append(match.end())
+                i = match.end()
+                continue
+        i += 1
+    return positions
 
 
 def read_expression(text: str, start: int) -> str | None:
@@ -155,11 +217,11 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
             if "Skip" not in text:
                 continue
             relative = path.relative_to(repo_root).as_posix()
-            for match in SKIP_KEYWORD.finditer(text):
-                expression = read_expression(text, match.end())
+            for position in find_skip_positions(text):
+                expression = read_expression(text, position)
                 if expression is None or not expression.strip():
                     continue
-                line = text.count("\n", 0, match.start()) + 1
+                line = text.count("\n", 0, position) + 1
                 # A pure literal registers under the exact text the runner reports. Anything
                 # interpolated or computed has no statically-known reason, so it registers
                 # under its normalised source instead — still exact, still forcing re-review

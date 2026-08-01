@@ -67,13 +67,14 @@ public sealed class AlertRunbookRegistry
             AlertName = "MeridianUnhealthy",
             Severity = "warning",
             IncidentPriority = "P2",
-            Summary = "Meridian reports unhealthy",
+            Summary = "Meridian is shedding a material share of events",
             RunbookUrl = "docs/operators/operator-runbook.md#unhealthy-status",
+            SloId = "SLO-ING-002",
             ProbableCauses = new[]
             {
-                "Provider disconnected",
-                "Storage write failures",
+                "Storage sink blocking",
                 "Pipeline backpressure",
+                "Provider burst exceeding processing capacity",
                 "Dependency timeout"
             },
             ImmediateActions = new[]
@@ -224,7 +225,7 @@ public sealed class AlertRunbookRegistry
                 "Check WAL integrity",
                 "Review storage error logs for root cause"
             },
-            RollbackCriteria = "Write error rate drops to 0 for 5 consecutive minutes"
+            RollbackCriteria = "The affected window is reconciled and a subsequent restart recovers with zero corrupted records"
         });
 
         Register(new AlertRunbookEntry
