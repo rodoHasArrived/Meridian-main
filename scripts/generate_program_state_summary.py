@@ -21,7 +21,11 @@ PROGRAM_STATE_DATA = "docs/roadmap/data/program-state.yml"
 ROADMAP_ITEMS_DATA = "docs/roadmap/data/roadmap-items.yml"
 DEFAULT_JSON_OUT = "docs/status/program-state-summary.json"
 DEFAULT_MD_OUT = "docs/status/program-state-summary.md"
-SUMMARY_SCHEMA_VERSION = "program-state-summary/v2"
+# v3 orders rows by wave then rank via the shared roadmap sort key. Changing the ordering of a
+# generated output is a semantic change, which docs/roadmap/schema-versioning.md classifies as
+# major; this generator carries no separate renderer version, so the summary schema version is
+# the one consumers have to distinguish v2 lexicographic ordering from v3 wave/rank ordering.
+SUMMARY_SCHEMA_VERSION = "program-state-summary/v3"
 
 
 def _as_list(value: Any) -> list[Any]:
