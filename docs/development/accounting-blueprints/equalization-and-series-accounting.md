@@ -794,7 +794,12 @@ public sealed record SeriesFeeInput(
     string SeriesId,
     IncentiveFeeContext Context,                // hurdle, catch-up, reset mode, period fraction
     IncentiveFeeStateRecord PriorState,         // that series' live HWM/LCF scope
-    decimal UnitsOutstanding);                  // scale-in/scale-out basis (§6.1)
+    // TWO counts, matching IncentiveFeeSeriesInput (incentive-fee §6.2). §6.1 prices a
+    // full-redemption fee on the POSITIVE pre-redemption units, then reads the post-redemption
+    // count to decide closure. Passing 0 makes the fee basis unusable; passing the prior units
+    // leaves Crystallize unable to tell a full close from a partial redemption.
+    decimal UnitsOutstandingBeforeRedemption,   // scale-in/scale-out basis (§6.1); > 0
+    decimal UnitsOutstandingAfterRedemption);   // 0 ⇒ full close: scope goes Closed, no divide-back
 
 ```
 

@@ -1062,8 +1062,12 @@ create table if not exists __SCHEMA__.incentive_fee_state_snapshots (
     created_at timestamptz not null
 );
 
-create unique index if not exists ux_incentive_fee_state_snapshots_state_period
-    on __SCHEMA__.incentive_fee_state_snapshots (state_record_id, period_id);
+-- Keyed by (state, period, AS-OF) — not (state, period). The accrual idempotency key carries an
+-- as-of segment precisely so a period can accrue more than once (§8.1 Fork H delta / reversal);
+-- a one-snapshot-per-period index would abort that second commit on the snapshot insert and
+-- silently defeat the intra-period revision the key exists to enable.
+create unique index if not exists ux_incentive_fee_state_snapshots_state_period_asof
+    on __SCHEMA__.incentive_fee_state_snapshots (state_record_id, period_id, as_of_date);
 
 create index if not exists ix_incentive_fee_state_snapshots_state_asof
     on __SCHEMA__.incentive_fee_state_snapshots (state_record_id, as_of_date desc);
@@ -1289,7 +1293,10 @@ public sealed record IncentiveFeeAccrualPreviewRequest(
     Guid LedgerBookId, string PeriodId, DateOnly AsOfDate,
     decimal BeginningNav, decimal EndingNavBeforeFees,
     // Required under FundLevel: the scale-in/scale-out multiplier for the per-share HWM (§6.2).
-    decimal FundUnitsOutstanding,
+    // TWO counts for the same reason as the series inputs — a fund can wind down to zero units on
+    // a crystallization date, which prices on the pre-redemption count and then closes the scope.
+    decimal FundUnitsOutstandingBeforeRedemption,
+    decimal FundUnitsOutstandingAfterRedemption,
     // Required under FundLevel when HurdleBasis == ContributedCapital (§5.1).
     decimal FundContributedCapital,
     // Required under InvestorSeries; empty under FundLevel. Mirrors IncentiveFeePeriodRequest
@@ -1426,7 +1433,13 @@ public const string LedgerIncentiveFeeTransitionModel = "/api/ledger/incentive-f
 >     string TargetAccountingModel,               // FundLevel | InvestorSeries
 >     // Moving TO InvestorSeries: the full target registry, not just scope seeds. Each entry carries
 >     // its definition (issue date, price, currency, lead flag) AND the holdings to issue, so the
->     // conversion is expressible. Σ issued units must equal the book's current units — asserted.
+> // conversion is expressible.
+> //
+> // The assertion is AGGREGATE FAIR VALUE, not raw units. A target series issued at 100 while the
+> // book's NAV/share is 125.28 needs 1.2528 target shares per source share, so requiring
+> // (sum of issued units) == (current units) would pass while the reclassification journal and the
+> // holdings disagree on value. Assert instead, within RoundCurrency tolerance:
+> //     sum(issued units x series issue price) == current units x NavPerShareAtValuation
 >     IReadOnlyList<SeriesConversionDto>? TargetSeries,   // Contracts-owned; see the layering note
 >     decimal? OpeningHighWaterMarkPerShare,      // required when moving TO FundLevel
 >     DateOnly ValuationDate,                     // the NAV date the conversion ratio is struck on
@@ -1437,8 +1450,21 @@ public const string LedgerIncentiveFeeTransitionModel = "/api/ledger/incentive-f
 >     // Contracts→Ledger violation the layering rule forbids. The application layer resolves this
 >     // id to the domain command at the boundary.
 >     Guid ReclassificationApprovalId,
+>     // Expected versions for EVERY row this command overwrites. Resolving the approval and running
+>     // one transaction prevents partial writes, but not atomically applying a STALE conversion over
+>     // ownership that moved between approval and submit -- holdings, policies, or scopes can all
+>     // change in that window. Each is checked inside the transaction; any mismatch rejects the
+>     // whole transition rather than converting from a snapshot that no longer describes the book.
+>     long ExpectedIncentivePolicyVersion,
+>     long ExpectedEqualizationPolicyVersion,
+>     IReadOnlyList<ScopeVersionDto> ExpectedScopeVersions,      // one per scope being closed
+>     IReadOnlyList<SeriesVersionDto> ExpectedSeriesVersions,    // registry + holdings being replaced
 >     string TransitionBasisNote,
 >     bool AcknowledgeScopeRewrite);
+>
+> public sealed record ScopeVersionDto(string? SeriesId, long ExpectedVersion);
+> public sealed record SeriesVersionDto(
+>     string SeriesId, long ExpectedRegistryVersion, long ExpectedHoldingsVersion);
 >
 > // Contracts-owned mirrors. This payload lives in Meridian.Contracts, which has NO project
 > // references (register: DTO layering), so it cannot name Meridian.Ledger's FundSeriesDefinition

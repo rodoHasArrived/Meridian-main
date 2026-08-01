@@ -1,6 +1,6 @@
 {
   "total_files": 638,
-  "total_lines": 117510,
+  "total_lines": 117541,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1690,7 +1690,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/equalization-and-series-accounting.md",
-      "line_count": 1356,
+      "line_count": 1361,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1698,7 +1698,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/incentive-fee-mechanics.md",
-      "line_count": 1687,
+      "line_count": 1713,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
