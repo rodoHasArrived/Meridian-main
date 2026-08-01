@@ -46,8 +46,12 @@ by `build/scripts/recovery/invoke-production-recovery.ps1`.
 
 | Objective | Commitment | Measured by |
 | --- | --- | --- |
-| RPO (Recovery Point Objective) | 24 hours — at most one scheduled backup interval of committed work may be lost. | The `rpo_seconds` field of the recovery drill receipt. |
-| RTO (Recovery Time Objective) | 4 hours — from declared loss to a verified, reconciled, operator-accepted restore. | The `rto_seconds` field of the recovery drill receipt. |
+| RPO (Recovery Point Objective) | 1 hour — at most one hour of committed work may be lost. | The `rpo_seconds` field of the recovery drill receipt, checked against `-MaximumRpoSeconds` (default 3600). |
+| RTO (Recovery Time Objective) | 2 hours — from declared loss to a verified, reconciled, operator-accepted restore. | The `rto_seconds` field of the recovery drill receipt, checked against `-MaximumRtoSeconds` (default 7200). |
+
+These are the values `build/scripts/recovery/invoke-production-recovery.ps1` actually enforces: it
+fails the drill when the measured backup window or restore time exceeds them. Change the script
+and this table together — a looser number here would mark a run compliant that the drill rejects.
 
 Both values are measured, not asserted: the recovery drill writes a dated receipt and the
 `Production Certification` workflow uploads it. A drill that does not produce a receipt does not

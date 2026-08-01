@@ -183,7 +183,7 @@ groups:
           description: "The validation pass rate is {{ $value }}%, below the 80% threshold."
           runbook_url: "docs/operators/operator-runbook.md#low-data-quality"
           probable_causes: "Data gaps from provider outage, stale quotes, sequence errors, bad tick data from provider"
-          immediate_mitigation: "1. Read mdc_validation_rejected_total by error_type. 2. Check /api/quality/gaps for gap analysis. 3. Compare across providers at /api/quality/comparison. 4. Consider triggering gap-fill backfill."
+          immediate_mitigation: "1. Read mdc_validation_rejected_total by error_type. 2. Check /api/quality/gaps for gap analysis. 3. Compare across providers at /api/quality/comparison/{symbol} for an affected symbol. 4. Consider triggering gap-fill backfill."
 
   - name: mdc_sla
     rules:

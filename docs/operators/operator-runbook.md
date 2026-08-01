@@ -55,12 +55,20 @@ comes from Prometheus' own `up` series.
 **Probable causes:** process crashed; host unreachable; port blocked by firewall; killed by the
 OS out-of-memory reaper.
 
-**Immediate actions**
+**Immediate actions** — supported local-workstation topology
+([ADR-019](../adr/019-production-support-matrix-and-deployment-posture.md)):
 
-1. Check process state: `systemctl status meridian`.
-2. Read the exit reason: `journalctl -u meridian -n 200`.
+1. Check the per-user lifecycle supervisor state and the most recent lifecycle receipts under
+   `%LOCALAPPDATA%\Meridian\service\receipts` — a receipt records why the last transition ended.
+2. Read `%LOCALAPPDATA%\Meridian\service\logs\lifecycle-supervisor.log` for the exit reason.
 3. Check disk space and memory — an exhausted data root and an OOM kill both present as a crash.
-4. Restart the service if it crashed, then watch the first two minutes of logs for a repeat.
+4. Restart through the supervisor, then watch the first two minutes of the log for a repeat.
+
+See the [Lifecycle Control Plane reference](../reference/lifecycle-control-plane.md) for the
+supervisor commands, receipt locations, and state model.
+
+On an experimental container or systemd deployment — outside the supported envelope — the
+equivalent first two steps are `systemctl status meridian` and `journalctl -u meridian -n 200`.
 
 **Resolved when:** the health endpoint returns 200 within 30 seconds of restart and stays up for
 one full scrape interval.

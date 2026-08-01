@@ -42,8 +42,11 @@ STANDALONE_MODULES = {
 }
 
 BARREL_EXPORT = re.compile(r'^\s*export\s+\*\s+from\s+"\./types/(?P<module>[^"]+)"\s*;?\s*$', re.MULTILINE)
+# Leading whitespace is permitted: exports nested inside a `declare module` or namespace block
+# are still exports. Requiring column zero silently skipped 11 declarations in workstation-3.ts
+# alone, so duplicating any of them elsewhere would still have reported zero duplicates.
 DECLARATION = re.compile(
-    r"^export\s+(?:declare\s+)?(?:abstract\s+)?"
+    r"^[ \t]*export\s+(?:declare\s+)?(?:abstract\s+)?"
     r"(?:type|interface|enum|const\s+enum|const|let|var|function|class)\s+"
     r"(?P<name>[A-Za-z_$][\w$]*)",
     re.MULTILINE,

@@ -87,6 +87,23 @@ class DashboardTypeBarrelTests(unittest.TestCase):
 
         self.assertEqual(problems, [])
 
+    def test_detects_a_duplicate_among_indented_declarations(self):
+        # Exports nested in a `declare module` block are still exports; requiring column zero
+        # hid 11 real declarations and any duplicate of them.
+        self.fixture.write_module(
+            "workstation-1",
+            ["declare module 'external' {", "  export interface NestedDto { id: string; }", "}"],
+        )
+        self.fixture.write_module(
+            "workstation-2",
+            ["declare module 'other' {", "  export interface NestedDto { id: string; }", "}"],
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+        self.assertTrue(any("NestedDto" in p for p in problems), msg=problems)
+
     def test_recognises_every_exported_declaration_form(self):
         self.fixture.write_module(
             "workstation-2",

@@ -101,4 +101,4 @@ docker-monitoring: ## Start with Prometheus and Grafana (requires GF_SECURITY_AD
 	docker compose -f deploy/docker/docker-compose.yml -f deploy/docker/docker-compose.monitoring.yml up -d
 	@echo "$(GREEN)Monitoring stack started!$(NC)"
 	@echo "  Prometheus: http://localhost:9090"
-	@echo "  Grafana:    http://localhost:3000 (admin/admin)"
+	@echo "  Grafana:    http://localhost:3000 (sign in with $$GF_SECURITY_ADMIN_USER)"
