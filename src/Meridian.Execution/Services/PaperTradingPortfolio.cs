@@ -169,7 +169,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         {
             lock (_lock)
             {
-                var netted = new Dictionary<string, (long qty, decimal costBasis, decimal unrealised, decimal realised)>(
+                // Carry the unrounded quantity beside the whole-share one: position limits and
+                // ownership attribution are decimal, and truncating here let a 0.9-share
+                // holding read as 0 against a share cap.
+                var netted = new Dictionary<string, (long qty, decimal exactQty, decimal costBasis, decimal unrealised, decimal realised)>(
                     StringComparer.OrdinalIgnoreCase);
 
                 foreach (var account in _accounts.Values)
@@ -180,6 +183,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                         {
                             netted[pos.Symbol] = (
                                 existing.qty + (long)pos.Quantity,
+                                existing.exactQty + pos.Quantity,
                                 existing.costBasis, // keep first account's cost basis for simplicity
                                 existing.unrealised + pos.UnrealisedPnl,
                                 existing.realised + account.RealisedPnl);
@@ -188,6 +192,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                         {
                             netted[pos.Symbol] = (
                                 (long)pos.Quantity,
+                                pos.Quantity,
                                 pos.CostBasis,
                                 pos.UnrealisedPnl,
                                 account.RealisedPnl);
@@ -197,7 +202,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
                 return netted.ToDictionary(
                     static kv => kv.Key,
-                    static kv => (IPosition)new ExecutionPosition(kv.Key, kv.Value.qty, kv.Value.costBasis, kv.Value.unrealised, kv.Value.realised),
+                    static kv => (IPosition)new ExecutionPosition(kv.Key, kv.Value.qty, kv.Value.costBasis, kv.Value.unrealised, kv.Value.realised)
+                    {
+                        ExactQuantity = kv.Value.exactQty
+                    },
                     StringComparer.OrdinalIgnoreCase);
             }
         }

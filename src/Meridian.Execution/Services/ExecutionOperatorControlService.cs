@@ -465,7 +465,11 @@ public sealed class ExecutionOperatorControlService
                 var normalizedSymbol = request.Symbol.Trim().ToUpperInvariant();
                 if (portfolioState?.Positions.TryGetValue(normalizedSymbol, out var existingPosition) == true)
                 {
-                    currentQuantity = existingPosition.Quantity;
+                    // Unrounded: IPosition.Quantity is whole shares, and the order delta
+                    // below is decimal. Fractional and broker-native notional fills are real,
+                    // so rounding the held side lets a 0.9-share position plus a 0.2-share
+                    // buy read as 0.2 against a 1-share cap and approve a 1.1-share position.
+                    currentQuantity = existingPosition.ExactQuantity;
                 }
 
                 var signedDelta = request.Side == OrderSide.Buy ? request.Quantity : -request.Quantity;
