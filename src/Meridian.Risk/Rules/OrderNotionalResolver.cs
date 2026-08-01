@@ -6,9 +6,15 @@ namespace Meridian.Risk.Rules;
 /// Resolves the notional of an order for portfolio-aware rules: explicit limit price when
 /// present, otherwise the symbol's reference price from the exposure snapshot. Returns
 /// <see langword="null"/> when no price reference exists (e.g. a market order in a symbol
-/// the portfolio has never held), in which case notional-based rules approve rather than
-/// guessing a price.
+/// the portfolio has never held).
 /// </summary>
+/// <remarks>
+/// A null result is not permission to route. Every rule with a configured ceiling calls
+/// <see cref="DescribeUnmeasurable"/> and refuses the order, because an unmeasured order
+/// consumes none of the limit and still executes at whatever the market gives it. Callers
+/// adding a new notional-based rule must fail closed the same way rather than treating null
+/// as "no breach found".
+/// </remarks>
 internal static class OrderNotionalResolver
 {
     /// <summary>

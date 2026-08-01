@@ -9,8 +9,12 @@ namespace Meridian.Risk.Rules;
 /// Gates per-order notional. Above the hard ceiling the order is rejected; at or above the
 /// escalation band (but under the ceiling) the F# policy returns an escalate decision and
 /// <see cref="CompositeRiskValidator"/> parks the order for governed approval instead of
-/// routing it. Orders with no resolvable price reference approve — the rule never guesses
-/// a price. <see langword="null"/> thresholds disable the corresponding band.
+/// routing it. With either threshold configured, an order the resolver cannot value is
+/// REJECTED, not approved: an unmeasured order consumes no limit and still routes at
+/// whatever the market gives it, so a ceiling it sails past is not a ceiling. The rejection
+/// is reported as unmeasurable rather than as a breach, so a pricing gap does not trip the
+/// circuit breaker. <see langword="null"/> thresholds disable the corresponding band, and an
+/// entirely unconfigured rule approves without measuring anything.
 /// </summary>
 public sealed class OrderNotionalRule : IRiskRule
 {
