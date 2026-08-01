@@ -1,11 +1,11 @@
 {
   "total_files": 638,
-  "total_lines": 117255,
+  "total_lines": 117321,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 183.8,
+  "average_lines": 183.9,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1690,7 +1690,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/equalization-and-series-accounting.md",
-      "line_count": 1304,
+      "line_count": 1319,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1698,7 +1698,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/incentive-fee-mechanics.md",
-      "line_count": 1495,
+      "line_count": 1546,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -439,7 +439,7 @@ public static class IncentiveFeeCalculator
         fee = RoundCurrency(fee);
         var endingAfterFee = ctx.EndingNavBeforeIncentiveFee - fee;
 
-        // ⚠️ ROLL-FORWARD IS UNRESOLVED FOR ANY LCF-BEARING MODE — see O-6. The two lines below are
+        // ⚠️ ROLL-FORWARD IS UNRESOLVED FOR ANY LCF-BEARING MODE — see O-7. The two lines below are
         // correct ONLY for ResetMode.HighWaterMark, where PriorLossCarryforward is 0 by invariant
         // and grossExcess above reduces to (EndingNav - PriorHighWaterMark). Do not implement
         // ResetMode.LossCarryforward or ResetMode.Both from this sketch.
@@ -459,7 +459,7 @@ public static class IncentiveFeeCalculator
 > — permanently blocking fees. Measuring the drawdown against the HWM alone makes it stable at `10`
 > and returns it to `0` on recovery to `100`. Test 31 pins the flat-NAV case.
 
-> 🛑 **OPEN QUESTION O-6 (widened) — the loss-carryforward semantics are UNRESOLVED. Implement
+> 🛑 **OPEN QUESTION O-7 — the loss-carryforward semantics are UNRESOLVED. Implement
 > `ResetMode.HighWaterMark` only. `LossCarryforward` and `Both` are blocked pending a
 > fund-accounting decision, and the calculator sketch above is not a specification for them.**
 >
@@ -491,7 +491,7 @@ public static class IncentiveFeeCalculator
 > Until those are answered, `Compute`'s roll-forward is specified for `HighWaterMark` alone
 > (`PriorLossCarryforward == 0` by invariant, `grossExcess` reduces to `EndingNav − PriorHighWaterMark`).
 > The `ResetMode` field stays on the context because the answer will need it, and the enablement
-> validation rejects `LossCarryforward`/`Both` policies with a "blocked on O-6" error rather than
+> validation rejects `LossCarryforward`/`Both` policies with a "blocked on O-7" error rather than
 > computing something plausible. Tests 27 and 31 cover only the `HighWaterMark` path; there are
 > deliberately no LCF-mode golden vectors, because inventing them would re-create exactly the false
 > confidence this note exists to prevent.
@@ -602,8 +602,9 @@ public sealed record IncentiveFeeStateSnapshotRecord(
     Guid StateRecordId,
     string PeriodId,
     DateOnly AsOfDate,
-    decimal HighWaterMarkBefore,
-    decimal HighWaterMarkAfter,
+    decimal HighWaterMarkPerShareBefore,
+    decimal HighWaterMarkPerShareAfter,
+    decimal UnitsOutstanding,           // the divisor used for this period; makes the row self-describing
     decimal LossCarryforwardPerShareBefore,
     decimal LossCarryforwardPerShareAfter,
     decimal AccruedFeeDelta,            // signed; negative == reversal
@@ -781,8 +782,25 @@ Task<IncentiveFeeStateRecord> CreateSeriesWithStateAsync(FundSeriesDefinition se
 /// Takes ledgerBookId explicitly: series ids are unique only WITHIN a book (fund_series is keyed
 /// (ledger_book_id, series_id)), and SeriesConsolidation carries only from/to series ids. Two books
 /// both using "series-1" would otherwise be indistinguishable to the adapter.
+///
+/// ONE transaction covers ALL of it, because a consolidation is not just a state flip:
+///   1. durably append the approved reclassification journal (transaction-scoped, as above),
+///   2. set the absorbed fund_series row to Consolidated,
+///   3. cancel the absorbed series' holdings and issue the equivalent lead-series holdings,
+///   4. write the fund_series_consolidations history row,
+///   5. set the absorbed incentive_fee_state scope to Consolidated, leaving the lead scope's HWM
+///      untouched (equalization §6.2),
+/// each under its optimistic-concurrency guard. An earlier draft passed only the consolidation
+/// record and left §11's reclassification to a separate draft service, so a rejection or crash
+/// could leave the journal, holdings, registry, and HWM scope describing four different ownerships.
 /// </summary>
-Task ConsolidateSeriesStateAsync(Guid ledgerBookId, SeriesConsolidation consolidation, CancellationToken ct = default)
+Task ConsolidateSeriesAsync(
+    Guid ledgerBookId,
+    SeriesConsolidation consolidation,
+    IncentiveFeePostingCommand reclassification,   // the APPROVED value-preserving posting (equalization §11)
+    long expectedFromScopeVersion,
+    long expectedLeadScopeVersion,
+    CancellationToken ct = default)
     => Task.FromException(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>
@@ -1015,8 +1033,9 @@ create table if not exists __SCHEMA__.incentive_fee_state_snapshots (
     state_record_id uuid not null references __SCHEMA__.incentive_fee_state(state_record_id) on delete cascade,
     period_id text not null,
     as_of_date date not null,
-    high_water_mark_before numeric(38, 12) not null,
-    high_water_mark_after numeric(38, 12) not null,
+    high_water_mark_per_share_before numeric(38, 12) not null,
+    high_water_mark_per_share_after numeric(38, 12) not null,
+    units_outstanding numeric(38, 12) not null,   -- divisor for this period; snapshot is self-describing
     loss_carryforward_per_share_before numeric(38, 12) not null,
     loss_carryforward_per_share_after numeric(38, 12) not null,
     accrued_fee_delta numeric(38, 12) not null,       -- signed; negative == reversal
@@ -1133,10 +1152,16 @@ The governed lifecycle is untouched: `AutomatedJournalApproval` still enforces
 > **Do not post through `AutomatedJournalApproval.PostTo(ledger, …)`.** An earlier draft of this
 > sequence did, and it is the wrong seam twice over:
 >
-> - **It is not durable.** `PostTo` mutates the in-memory `Ledger`. The shipped durable path is
->   `DurableAutomatedJournalPoster.PostAsync` (`src/Meridian.Storage/Ledger/`), which implements
->   `IAutomatedJournalPostingTarget` and appends through the governed journal store. A blueprint
->   that names `PostTo` in a production commit path violates the repo's durability guardrail.
+> - **It is not durable.** `PostTo` mutates the in-memory `Ledger`. A blueprint that names it in a
+>   production commit path violates the repo's durability guardrail.
+> - **`DurableAutomatedJournalPoster.PostAsync` is durable but NOT transaction-shareable.** It
+>   delegates to `DurableLedgerPostingTarget`, whose store call opens and commits its **own**
+>   transaction before returning — so calling it from inside this port still leaves a window where
+>   the journal is committed and the scope rows are not. Use the transaction-scoped seam instead:
+>   `ITransactionalLedgerJournalStore` (`src/Meridian.Storage/Ledger/ILedgerJournalStore.cs`) with
+>   `AppendAsync(connection, transaction, entry, ct)`, the same overload the atomic tax-lot path
+>   already uses. The port owns the connection and transaction; the journal append and every scope
+>   write share it.
 > - **It cannot be atomic with the state write.** Posting and `SaveIncentiveFeeStateAsync` were two
 >   operations, so a process exit between them leaves the journal posted and the protected level
 >   un-advanced — the next period then re-earns fee on ground already charged for, and the snapshot
@@ -1274,7 +1299,7 @@ public const string LedgerIncentiveFeeEnable         = "/api/ledger/incentive-fe
 - `POST LedgerIncentiveFeeEnable` — `IncentiveFeeEnablementRequest`. **This is the only surface that
   can supply an opening HWM**, so a book cannot be enabled without one. Rejects
   `AcknowledgeOpeningLevel = false` with 422, validates the equalization pairing below, and
-  **rejects any policy whose `ResetMode` is `LossCarryforward` or `Both` with a "blocked on O-6"
+  **rejects any policy whose `ResetMode` is `LossCarryforward` or `Both` with a "blocked on O-7"
   422** — those semantics are unresolved (§5.1) and must not be computed speculatively.
   Idempotent; returns the live scope(s). `POST LedgerIncentiveFeePolicies` deliberately does **not**
   accept an opening HWM — a policy edit must never silently reset a protected level that has already
@@ -1289,17 +1314,33 @@ public const string LedgerIncentiveFeeEnable         = "/api/ledger/incentive-fe
 > | `AccountingModel` | Enablement does |
 > |---|---|
 > | `FundLevel` | `EnsureFundLevelStateAsync` with `OpeningHighWaterMarkPerShare`. `OpeningSeries` must be empty (422 otherwise). |
-> | `InvestorSeries` | For each entry in `OpeningSeries`: create the scope via `CreateSeriesWithStateAsync` if the series has no live scope, or verify the existing one and leave it untouched. `OpeningHighWaterMarkPerShare` must be null (422 otherwise). Every series in `fund_series` with no live scope must appear, or the call is rejected — a partially-enabled book is the same defect as an unenabled one. |
+> | `InvestorSeries` | **Validate the whole roster first, then seed every missing scope in ONE batch transaction.** Every series in `fund_series` with no live scope must appear in `OpeningSeries`, or the call is rejected before anything is written. `OpeningHighWaterMarkPerShare` must be null (422 otherwise). |
+>
+> **Enablement is one transaction, not a loop of `CreateSeriesWithStateAsync` calls.** Per-series
+> calls commit individually, so a failure or process exit partway through leaves earlier series
+> seeded and later ones not — precisely the partially-enabled book this gate exists to prevent, and
+> with durable side effects from a request that returned an error. Validate the roster against
+> `fund_series`, then write all scopes plus all enablement-evidence rows together; either the book is
+> enabled or nothing changed.
 >
 > Both branches are idempotent and both write the enablement record below. Test 28 covers the
 > Method B branch and the two shape rejections.
 
 > **Pairing validation — Fork G and `EqualizationMethod` are not independently writable.**
-> The HWM contract (§4) requires `FundLevel` ↔ Method A and `InvestorSeries` ↔ Method B, but the
-> two settings live in different tables (`incentive_fee_policy.accounting_model` and
-> `fund_equalization_policy.equalization_method`), so nothing structurally stops a caller writing
-> `SeriesOfShares` + `FundLevel` — which computes one fund fee where per-series fees are owed — or
-> `Equalisation` + `InvestorSeries`, which demands a series roster that does not exist.
+> The HWM contract (§4) constrains which pairs are legal, but the two settings live in different
+> tables (`incentive_fee_policy.accounting_model` and `fund_equalization_policy.equalization_method`),
+> so nothing structurally stops an illegal one being written. The complete matrix:
+>
+> | `EqualizationMethod` | `AccountingModel` | Valid? |
+> |---|---|---|
+> | `None` | `FundLevel` | ✅ **Yes** — a fund with no equalization keeps today's single fund HWM. This is the back-compatible default (equalization §4.1) and must not be forced to adopt Method A. |
+> | `Equalisation` (Method A) | `FundLevel` | ✅ Yes — one fund fee, reallocated across lots. |
+> | `SeriesOfShares` (Method B) | `InvestorSeries` | ✅ Yes — one scope per series. |
+> | `None` or `Equalisation` | `InvestorSeries` | ❌ Demands a series roster that does not exist. |
+> | `SeriesOfShares` | `FundLevel` | ❌ Computes one fund fee where per-series fees are owed. |
+>
+> An earlier draft of this rule recognised only the two middle rows, which left an existing
+> `None` + `FundLevel` book — the ordinary case — with no legal combination at all.
 >
 > Both `POST LedgerIncentiveFeeEnable` and `POST LedgerIncentiveFeePolicies` therefore **read the
 > counterpart policy and reject a mismatched pair with 422**, naming both values. Changing one side
@@ -1346,7 +1387,7 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
    catch-up (band 10, cap 20), CarryFee 0.
 4. `Compute_HardHurdle_ChargesOnlyAboveHurdle` — hurdle 80 ⇒ fee 10.00, CatchUpFee 0.
 5. `Compute_HurdleNotCleared_ReturnsZero` — grossExcess 130, hurdle 150 ⇒ fee 0, HurdleCleared false.
-6. `Compute_BelowHighWaterMark_ChargesNothingAndGrowsLcf` — ending < HWM ⇒ fee 0, `CandidateLossCarryforward`
+6. 🛑 **DEFERRED — blocked on O-7.** `Compute_BelowHighWaterMark_ChargesNothingAndGrowsLcf` — ending < HWM ⇒ fee 0, `CandidateLossCarryforward`
    equals the shortfall.
 7. `Compute_PartialPeriodFraction_ScalesHurdle` — annual 8%, PeriodFraction 0.25 ⇒ hurdle uses 2% of basis.
 8. `Compute_CompoundedHurdle_DiffersFromSimple` — same annual rate, `HurdleCompounding.Compounded` vs
@@ -1357,7 +1398,8 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
 **State roll-forward — `IncentiveFeeStateRollerTests`:**
 11. `Roll_AccrualPeriod_AdvancesAccruedNotHwm`.
 12. `Roll_CrystallizationPeriod_LocksFeeAndAdvancesHwm`.
-13. `Roll_NavRecovery_ReducesLossCarryforward` and `Roll_HwmResetMode_ZeroesLcfOnCrystallization`.
+13. `Roll_HwmResetMode_ZeroesLcfOnCrystallization` only. 🛑 `Roll_NavRecovery_ReducesLossCarryforward`
+    is **DEFERRED — blocked on O-7**: it asserts an amortisation rule that question has to decide.
 14. `Roll_AccrualDecrease_ProducesNegativeDelta` (Fork H reversal).
 
 **Calendar — `CrystallizationCalendarTests`:**
@@ -1399,7 +1441,7 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
 28. `Enable_InvestorSeriesBook_CreatesPerSeriesScopesAndNoFundLevelRow` — plus the two shape
     rejections (fund-level opening on a Method B book, series roster on a Method A book) and the
     partially-enabled rejection when a live series has no scope.
-29. `Roll_PartialRedemption_ScalesLossCarryforwardWithUnits` — the remaining holders' per-share loss
+29. 🛑 **DEFERRED — blocked on O-7.** `Roll_PartialRedemption_ScalesLossCarryforwardWithUnits` — the remaining holders' per-share loss
     shield is unchanged by a redemption that halves units; the unscaled-total regression would leave
     them carrying the pre-redemption shield and delay fees.
 30. `Enable_PersistsOpeningBasisNoteAndActor` — the enablement row is written in the same
@@ -1416,7 +1458,7 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
 
 36. `Enable_LossCarryforwardOrBothMode_RejectsWithO6Blocked` — the enablement gate refuses an
     LCF-bearing policy rather than computing one. There are deliberately **no** LCF-mode golden
-    vectors until O-6 is answered (§5.1).
+    vectors until O-7 is answered (§5.1).
 37. `Commit_MultiSeries_AdvancesEverySeriesState` — N series crystallizing produce N advanced state
     rows in one transaction; a stale `expectedVersion` on any one aborts the whole commit and
     advances none.
@@ -1440,10 +1482,11 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
    `HurdleTerms` record (with guards) in `src/Meridian.Ledger`. Mirror the enums needed by DTOs into
    `src/Meridian.Contracts/Ledger`.
 2. **Calculator** — add `IncentiveFeeContext`, `IncentiveFeeResult`, and `IncentiveFeeCalculator.Compute`
-   (Section 5.1). Unit-test first (tests 1-10).
+   (Section 5.1). Unit-test first (tests 1-10, **excluding test 6 — blocked on O-7**).
 3. **Calendar** — add `IncentiveCrystallizationSchedule` + `CrystallizationCalendar` (tests 15-16).
 4. **State model + roller** — add `IncentiveFeeStateRecord`, `IncentiveFeeStateSnapshotRecord`,
-   `IncentiveResetMode` handling, and `IncentiveFeeStateRoller.Roll` (tests 11-14).
+   `IncentiveResetMode` handling — `HighWaterMark` only, the other two modes are blocked on O-7 —
+   and `IncentiveFeeStateRoller.Roll` (tests 11-14, with test 13's LCF-amortisation half deferred).
 5. **Policy aggregate** — add `IncentiveFeePolicy` (+ `LegacyDefault`) and `IncentiveFeePolicyRecord`.
 6. **Refactor to shared calculator** — route `PartnershipInvestorAccountingProjector.Project` (new policy
    overload; legacy overload builds `HurdleTerms.NoHurdle`) and `FeeScheduleAccrualEventProducer.Produce`
@@ -1492,4 +1535,12 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
   crystallization calendar, or stay period-by-period as today? This blueprint leaves management fee unchanged.
 - **O-6 (partial-period hurdle for redemptions):** For `OnRedemptionOnly`/`CrystallizeOnRedemption`, confirm
   the day-count basis (ACT/365 vs 30/360) used by `PeriodFractionSinceLastCrystallization`.
+- **O-7 (loss-carryforward semantics) — BLOCKING, see §5.1.** Three questions, none answered:
+  (a) under `ResetMode.Both`, is the protected level `HWM` or `HWM + LCF`?
+  (b) under `ResetMode.LossCarryforward`, what is the carried balance a function of, given that the
+      mode disables the HWM the current recurrence measures against?
+  (c) does the carried balance amortise against gains above the protected level, or only reset at
+      crystallization?
+  Until answered, `ResetMode.HighWaterMark` is the only implementable mode, enablement rejects the
+  other two, and no LCF golden vectors exist.
 ```

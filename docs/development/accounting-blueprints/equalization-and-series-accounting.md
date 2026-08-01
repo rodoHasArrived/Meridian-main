@@ -372,7 +372,10 @@ post-crystallisation NAV (`redemptionStyle = ShareIssuance`, default) or as cash
 returned:
 
 ```
-creditReturned = f × Max(0, Min(GAV_cryst, GAV_d) − HWM) × shares      // bounded, ≤ equalizationCredit
+// NO-HURDLE SPECIAL CASE ONLY. The operative rule is the calculator's accrued fee at the bounded
+// level, not this expression — see the policy note in §5.1.
+creditReturned = accruedFeeAt(Min(GAV_cryst, GAV_d)) × shares          // bounded, ≤ equalizationCredit
+             //  = f × Max(0, Min(GAV_cryst, GAV_d) − HWM) × shares    when no hurdle/catch-up applies
 ```
 
 ### 5.2 Case 2 — subscription **below** the HWM (`GAV_d < HWM`)
@@ -383,8 +386,12 @@ performance *for them*, on which the manager is owed a fee. Equalise with a **Co
 Equalisation Debit**. At each crystallisation:
 
 ```
+// NO-HURDLE SPECIAL CASE ONLY, same as §5.1: size the fee from IncentiveFeeCalculator over the
+// recovery range, not from the bare rate. An implementer using `f ×` under a hurdle or catch-up
+// policy will disagree with the fund fee and break the §11 reconciliation invariant.
 recoveryPerShare              = Max(0, Min(GAV_cryst, HWM) − GAV_d)
-contingentRedemptionPerShare  = f × recoveryPerShare
+contingentRedemptionPerShare  = accruedFeeOver(recoveryPerShare)
+                             // = f × recoveryPerShare    when no hurdle/catch-up applies
 contingentRedemption          = contingentRedemptionPerShare × shares
 ```
 
@@ -835,10 +842,13 @@ public interface IFundSeriesStore
 >
 > Two symmetric operations complete the lifecycle, for the same reason:
 >
-> - **Consolidation** (§6.2) → `ConsolidateSeriesStateAsync(consolidation)` records the
->   consolidation *and* sets the absorbed scope's `Status = Consolidated` in one transaction.
->   `RecordConsolidationAsync` alone would leave the absorbed scope indistinguishable from a live
->   one, and `ListIncentiveFeeStatesAsync` would keep returning it as an active fee context.
+> - **Consolidation** (§6.2) → `ConsolidateSeriesAsync(ledgerBookId, consolidation, reclassification, …)`
+>   does the whole thing in one transaction: durably appends the **approved §11 reclassification
+>   journal**, sets the absorbed `fund_series` row to `Consolidated`, cancels its holdings and issues
+>   the lead-series equivalents, writes the consolidation-history row, and sets the absorbed scope to
+>   `Consolidated` — each under its concurrency guard. Splitting the journal out to a separate draft
+>   service (as an earlier draft did) lets a rejection or crash leave the journal, holdings, registry,
+>   and HWM scope describing four different ownerships.
 > - **Full redemption on a crystallization date** → `CloseScopeAsync(stateRecordId, seriesId, …)`
 >   closes the HWM scope **and** the `fund_series` registry row in one transaction — it takes the
 >   series key for exactly that reason. Closing them separately would leave an `Open` series with no
@@ -1178,7 +1188,12 @@ projectors.
 - **`Project_AbovePeakSubscriber_ReturnsCreditAtCrystallization_WhenStillAbove`** — full `400`
   returned; net worth reconciles.
 - **`Project_AbovePeakSubscriber_ReturnsPartialCredit_WhenFundFellBelowEntry`** — bounded
-  `creditReturned = f × Max(0, Min(GAV_cryst, GAV_d) − HWM) × shares`.
+  `creditReturned` equals the calculator's accrued fee at `Min(GAV_cryst, GAV_d)` × shares. The
+  golden numbers below assume the **no-hurdle** policy, where that reduces to
+  `f × Max(0, Min(GAV_cryst, GAV_d) − HWM) × shares`.
+- **`Project_WithHardHurdle_CreditMatchesCalculatorNotFlatRate`** — the same vector with an 8% hard
+  hurdle produces the calculator's `2.40`/share, not `4.00`, and §11 still reconciles. This is the
+  regression that the flat expressions above would silently reintroduce.
 - **`Project_BelowHwmSubscriber_LeviesContingentRedemption_OnRecoveryToHwm`** — the §5.3 R vector:
   `contingentRedemption.Should().Be(200.00m)`; retained value `9,800`.
 - **`Project_BelowHwmSubscriber_NoRedemption_WhenNoRecovery`** — recovery `≤ 0` ⇒ `0`.
@@ -1253,7 +1268,7 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
    `__SCHEMA__`); implement `IFundSeriesStore` + a Postgres adapter in `Meridian.Storage.Ledger`.
    **In the same step**, implement the three transactional ports from incentive-fee §6.1 —
    `CreateSeriesWithStateAsync` (registry row + seeded `incentive_fee_state` row in one
-   transaction), `ConsolidateSeriesStateAsync`, and `CloseScopeAsync` — and hydrate
+   transaction), `ConsolidateSeriesAsync`, and `CloseScopeAsync` — and hydrate
    `HWM_s` from `incentive_fee_state` on load (§7.3 note). Shipping `IFundSeriesStore` on its own
    leaves every new series without a durable HWM.
 7. **Application service** — `IEqualizationProjectionService` /

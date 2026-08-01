@@ -150,7 +150,7 @@ inferred. Current recorded contract:
   **Scope lifecycle.** `incentive_fee_state` carries a `status` (`Live` / `Closed` /
   `Consolidated`); only `Live` scopes are hydrated, and the unique key is partial on it. Opening,
   consolidating, and closing a scope are **single transactional adapter operations**
-  (`CreateSeriesWithStateAsync`, `ConsolidateSeriesStateAsync`, `CloseScopeAsync`), not
+  (`CreateSeriesWithStateAsync`, `ConsolidateSeriesAsync`, `CloseScopeAsync`), not
   sequences a caller composes — two store calls cannot give all-or-nothing, and a crash between them
   leaves a series with no protected level.
 
