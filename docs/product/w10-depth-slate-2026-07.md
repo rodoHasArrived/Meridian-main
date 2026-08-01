@@ -205,6 +205,12 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   subject-addressed route family, which is the seam to extend rather than duplicate.
 - The provenance service currently substring-matches a full break-queue scan and scrapes provider
   detail out of delimited key-value strings; that fragility should not be carried forward.
+- **Related-case lookup matches on text, not identity.** It scans the tenant and company queue and
+  substring-matches break ID, routing text, explainability text, account name, and symbol, without
+  enforcing the report's fund, ledger book, period, or an exact evidence identifier. Two funds with
+  overlapping account names or symbols in one tenant can therefore attach each other's cases to an
+  amount, and the passport would present unrelated support as proof. Wiring the service unchanged
+  reproduces that; exact scope matching and collision tests are prerequisites.
 
 ### `W10-RECON-002` — clustering and bulk resolution
 
@@ -322,6 +328,13 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   immutable predicate its match kind enforces.
 - A competing reconciliation vocabulary exists in the functional calculation projects; do not grow a
   second matching model there.
+- **Promotion is a straight-through lane, and the charter governs those.** Section 21 permits moving
+  from per-item to per-policy approval only under all of: deterministic rules rather than model
+  output, a human-approved versioned policy defining the eligible class with materiality caps, full
+  retained evidence and audit events that stay reversible through governed correction, sampling
+  review and a kill switch, and material or high-risk classes remaining per-item. A promotion gate
+  built on sample size and precision alone omits most of that — and an over-broad rule could suppress
+  a material break before the independent-approval control ever runs.
 
 ### `W10-PERF-001` — return measurement
 
@@ -339,6 +352,13 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   explicitly documented and labeled approximation.
 - The extended internal rate of return kernel is internal to the backtesting assembly and unreachable
   from the ledger and financial-operations lanes.
+- **That kernel does not detect multiple roots.** Newton-Raphson runs from a fixed 0.10 guess and
+  returns the first rate it converges to; the bisection fallback searches one bracket and returns
+  `NaN` when the endpoints share a sign. A cash-flow series with several sign changes — contribution,
+  distribution, later recall — can admit more than one valid rate, and the kernel returns whichever
+  one it happens to reach, with nothing marking the result ambiguous. Non-convergence and
+  multiple-root detection, a declared convention, and golden cases for non-conventional series are
+  prerequisites for reporting a money-weighted return.
 - **Capital-account activity is partitioned by currency.** The projection builder groups subledger
   entries by capital account, investor, *and* currency, so an investor transacting in two currencies
   has two activity rows. Summing their nominal amounts into one cash-flow series produces a figure

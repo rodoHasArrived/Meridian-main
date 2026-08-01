@@ -94,7 +94,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 
 ### Exit Criteria
 
-- Recurring schedules and their posting history survive a restart, and the runner fails closed when durable state is unavailable.
+- Recurring schedules, their posting history, the template versions occurrences materialize from, and the period-lock state they honor all survive a restart, and the runner fails closed when any of that durable state is unavailable rather than treating a locked period as open.
 - A due occurrence becomes a draft for human approval and never posts on its own, and a repeated run cannot produce a duplicate posting.
 - A recurring draft cannot reach approval without retained source evidence, and that evidence stays attached through posting.
 - Occurrences blocked by a locked period name the lock owner and the governed reopen path rather than failing silently.
@@ -162,7 +162,7 @@ Rank 10 of the 2026-07 W10 depth slate and one of its four new-capability rows, 
 - The existing brokerage performance seam is extended or explicitly superseded with the reason recorded, and no parallel performance API is introduced beside it.
 - Reported returns are correct across periods containing external capital flows, and any convention approximation is documented and labeled on the figure.
 - A return spanning more than one currency is either reported per currency or translated into one declared presentation currency at each flow's and the terminal value's as-of rate; nominal amounts in different currencies are never summed.
-- Returns resting on activity the ledger has not posted, or on incomplete inputs including a missing translation rate, render as labeled pro-forma or review-required rather than as the reported return, and every figure names its convention, period, currency, and completeness.
+- Returns resting on activity the ledger has not posted, or on incomplete inputs including a missing translation rate, render as labeled pro-forma or review-required rather than as the reported return, and every figure names its convention, period, currency, and completeness. A money-weighted return that fails to converge, or whose cash-flow series admits more than one rate, is review-required under a declared convention rather than a single reported number.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the brokerage-seam disposition, the shared kernel, the operator surface, and golden-file tests of the return kernels against worked examples.
 
 ### Source Modules
@@ -194,7 +194,7 @@ Rank 3 of the 2026-07 W10 depth slate and the platform bet the rest of the slate
 
 - Any amount an operator sees can open its provenance from the surface it appears on, through one shared component rather than a per-screen variant.
 - Provenance is served through the existing subject-addressed evidence surface rather than a parallel endpoint family beside it.
-- The passport reflects retained evidence rather than inferring from surface labels.
+- The passport reflects retained evidence linked by stable subject and evidence identifiers scoped to the fund, ledger book, and period it belongs to, rather than inferring from surface labels or matching on names, symbols, and prose.
 - Missing or stale provenance renders as review-required or blocked rather than an empty view that reads as proven.
 - This item feeds W5X-OEG-001 rather than duplicating it, and states its WPF slice or an explicit deferral.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the evidence subject, the shared drawer, the browser surface, and the missing-evidence tests.
@@ -269,6 +269,7 @@ Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than c
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
+- `SRC-WPF`
 
 ## W10-RECON-003 - Unified tolerance model and what-if replay workbench
 | Field | Value |
@@ -317,7 +318,7 @@ Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes toda
 
 ### Exit Criteria
 
-- A manual match teaches a candidate rule that never acts until an operator promotes it.
+- A manual match teaches a candidate rule that never acts until an operator promotes it, and a promoted rule runs only inside the straight-through conditions the design charter requires - a human-approved versioned policy defining the eligible class with materiality caps, full retained evidence that stays reversible through governed correction, sampling review and a kill switch, and material or high-risk breaks still resolved per item.
 - Promotion requires adjudicated outcomes meeting a stated sample size and precision bound, and a raw hit count is never sufficient on its own.
 - A promoted rule retains every immutable identity predicate its match kind enforces - record kind, instrument, and currency - so it can never match across a boundary the underlying matcher keeps separate.
 - Every match a learned rule produces names that rule and its promoting operator in retained evidence that survives a restart.
