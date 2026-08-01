@@ -8,6 +8,18 @@ name: "Meridian CodeQL configuration"
 # that cannot distinguish a fixed defect from an unfixed one on this codebase, plus
 # a named compensating control. Silencing a query that still carries signal is not
 # in scope.
+#
+# That second requirement is not decoration. An earlier revision of this file also
+# excluded `cs/cleartext-storage-of-sensitive-information`, which fires here as a
+# name heuristic on the return value of
+# `ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys` — the method that
+# *removes* broker-account and override keys — and reports the ticker, the client
+# order id, an `OrderSide` and a decimal quantity as sensitive storage. The false
+# positives were real, but no compensating control existed for that query, so the
+# exclusion would also have silenced a genuine cleartext credential or token write
+# anywhere else in the repository. Those alerts are dismissed individually in code
+# scanning instead, which keeps the query live. Filtering a query with no backing
+# control trades a specific, verified annoyance for an unbounded blind spot.
 query-filters:
   # cs/log-forging — excluded because the query counts log sites reached by user
   # input, not unsanitized ones, and does not model this repository's sanitizer.
@@ -43,20 +55,3 @@ query-filters:
   # forging is reported anywhere outside the execution path the invariant covers.
   - exclude:
       id: cs/log-forging
-
-  # cs/cleartext-storage-of-sensitive-information — excluded because its sensitive
-  # source here is a *sanitizer's* return value, selected by method name.
-  #
-  # `ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys` strips broker
-  # account, manual override, and live-readiness evidence keys from order metadata.
-  # The query flags its result as sensitive because the name contains "Account" and
-  # "Keys", then reports anything derived from the cleaned request. What actually
-  # reaches the sinks is the ticker symbol, the client order id, and — in the widest
-  # case — `OrderSide` and `OrderRequest.Quantity`, an enum and a decimal.
-  #
-  # No credential, account identifier, or override reference is logged on any
-  # flagged line. The finding is a name heuristic firing on the very method that
-  # removes the sensitive fields, so it will recur on any code handling a sanitized
-  # order request and carries no signal for this repository.
-  - exclude:
-      id: cs/cleartext-storage-of-sensitive-information
