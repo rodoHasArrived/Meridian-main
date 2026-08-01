@@ -804,7 +804,19 @@ Task ConsolidateSeriesAsync(
     => Task.FromException(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>
-/// Close a scope that redeemed to zero units on a crystallization date, in ONE transaction:
+/// Close a scope that redeemed to zero units, in ONE transaction.
+///
+/// ⚠️ WHEN THE CLOSE CRYSTALLIZES A FEE, DO NOT CALL THIS SEPARATELY. A full redemption on a
+/// crystallization date posts a fee AND closes the scope; those are one economic event. This
+/// operation carries neither the period snapshot nor the approved posting that
+/// ICommitIncentiveFeePeriod commits, so calling both leaves two transactions and two failure
+/// windows: the fee journal and audit snapshot can commit while a zero-unit series stays live, or
+/// ownership can close before its fee is posted. Pass the close through the period command instead
+/// — IncentiveFeeScopeCommit carries a ClosesScope flag and the series key, so the fee posting,
+/// snapshot, state advance, registry close, and holdings cancellation share one transaction.
+///
+/// Use this standalone operation ONLY for a non-fee-bearing close (a scope redeeming to zero off a
+/// crystallization date, where there is no fee to post). It then does, in ONE transaction:
 /// sets the HWM scope's Status to Closed AND — under Method B — marks the matching fund_series row
 /// Closed with its holdings zeroed. Takes the series key, not just the state id, precisely so the
 /// registry and the HWM state cannot diverge: closing them through two calls reopens the crash
@@ -1112,9 +1124,18 @@ the existing `PerformanceFee`/`UpdatedHighWaterMark`.
 **`FeeScheduleAccrualEventProducer.Produce`** — replace the mirrored lines 239-241 with the same
 `IncentiveFeeCalculator.Compute` call, loading `HurdleTerms`/rate from the policy instead of a bare
 `PerformanceFeeRate`. The idempotency keys extend to include the crystallization boundary so intra-period
-re-accruals are distinguishable: `perf-fee|{fundId}|{scopeId}|{periodId}` for accrual and
+re-accruals are distinguishable: `perf-fee|{fundId}|{scopeId}|{periodId}|{asOfDate}` for accrual and
 `incentive-crystallize|{fundId}|{scopeId}|{crystallizationDate}` for crystallization, where
 `{scopeId}` is the series id under `InvestorSeries` and the literal `fund` under `FundLevel`.
+
+> **The accrual key carries `{asOfDate}` because a period can accrue more than once.** NAV moves
+> within a period, and Fork H requires a delta or a downward reversal when it does — a genuinely
+> *different* posting for the same fund, scope, and period. With a period-only key that revision
+> collides with the retained entry and the equivalence preflight (§8.2) correctly classifies it as a
+> **conflict**, so it is rejected rather than posted and the fee liability stays at its earlier
+> amount. Keying on the as-of date makes each revision its own idempotent unit while an exact retry
+> of the *same* as-of remains a stable no-op. Crystallization needs no such segment: it happens once
+> per crystallization date by definition.
 
 > **The scope segment is load-bearing under Method B.** An `InvestorSeries` outcome contains one
 > journal event *per series*. With the fund-only key every series after the first looks like a
@@ -1198,7 +1219,11 @@ The governed lifecycle is untouched: `AutomatedJournalApproval` still enforces
 >     AutomatedJournalApproval Approval, AutomatedJournalPostingContext PostingContext);
 >
 > public sealed record IncentiveFeeScopeCommit(
->     IncentiveFeeStateRecord State, IncentiveFeeStateSnapshotRecord Snapshot, long ExpectedVersion);
+>     IncentiveFeeStateRecord State, IncentiveFeeStateSnapshotRecord Snapshot, long ExpectedVersion,
+>     // Set when this period's crystallization also closes the scope (full redemption on a
+>     // crystallization date). The fee posting, snapshot, state advance, registry close, and
+>     // holdings cancellation then share ONE transaction — see CloseScopeAsync's warning.
+>     bool ClosesScope = false, string? SeriesId = null);
 >
 > Task CommitAsync(
 >     IReadOnlyList<IncentiveFeePostingCommand> postings,    // approval + its posting context
@@ -1320,6 +1345,19 @@ public const string LedgerIncentiveFeeTransitionModel = "/api/ledger/incentive-f
   `AcknowledgeOpeningLevel = false` with 422, validates the equalization pairing below, and
   **rejects any policy whose `ResetMode` is `LossCarryforward` or `Both` with a "blocked on O-7"
   422** — those semantics are unresolved (§5.1) and must not be computed speculatively.
+
+> **The O-7 rejection belongs on every path that can make such a policy effective, not just
+> enablement.** An already-enabled book receives new terms through `POST LedgerIncentiveFeePolicies`
+> — no enablement request runs — so an enable-only gate lets a `LossCarryforward` or `Both` policy
+> become effective and reach `Compute`, whose semantics this blueprint marks unresolved. Reject at
+> **all three**:
+>
+> 1. `POST LedgerIncentiveFeePolicies` — the policy aggregate validates `ResetMode` and refuses the
+>    two blocked modes on upsert, effective-dated rows included.
+> 2. `POST LedgerIncentiveFeeEnable` and the §9.2 transition — as already stated.
+> 3. `EvaluatePeriodAsync` — fails closed on a blocked mode reaching evaluation by any other route
+>    (a pre-existing row, a manual repair, a future write path), alongside its existing pairing
+>    re-check. Defence in depth: the guard that matters is the one nearest the arithmetic.
   Idempotent; returns the live scope(s). `POST LedgerIncentiveFeePolicies` deliberately does **not**
   accept an opening HWM — a policy edit must never silently reset a protected level that has already
   advanced.
@@ -1383,17 +1421,27 @@ public const string LedgerIncentiveFeeTransitionModel = "/api/ledger/incentive-f
 >     // Moving TO InvestorSeries: the full target registry, not just scope seeds. Each entry carries
 >     // its definition (issue date, price, currency, lead flag) AND the holdings to issue, so the
 >     // conversion is expressible. Σ issued units must equal the book's current units — asserted.
->     IReadOnlyList<SeriesConversionDto>? TargetSeries,
+>     IReadOnlyList<SeriesConversionDto>? TargetSeries,   // Contracts-owned; see the layering note
 >     decimal? OpeningHighWaterMarkPerShare,      // required when moving TO FundLevel
 >     // The APPROVED value-preserving reclassification for the ownership change (equalization §11).
 >     IncentiveFeePostingCommand Reclassification,
 >     string TransitionBasisNote,
 >     bool AcknowledgeScopeRewrite);
 >
+> // Contracts-owned mirrors. This payload lives in Meridian.Contracts, which has NO project
+> // references (register: DTO layering), so it cannot name Meridian.Ledger's FundSeriesDefinition
+> // or SeriesHolding — an earlier draft of this record did exactly that, which is the very
+> // violation this blueprint documents. The application layer maps these to the domain records.
 > public sealed record SeriesConversionDto(
->     FundSeriesDefinition Definition,
+>     FundSeriesDefinitionDto Definition,
 >     decimal OpeningHighWaterMarkPerShare,
->     IReadOnlyList<SeriesHolding> Holdings);     // per-investor units in the new series
+>     IReadOnlyList<SeriesHoldingDto> Holdings);  // per-investor units in the new series
+>
+> public sealed record FundSeriesDefinitionDto(
+>     string SeriesId, DateOnly IssueDate, decimal IssuePrice,
+>     bool IsLead, string Status, string Currency);
+>
+> public sealed record SeriesHoldingDto(string SeriesId, string InvestorId, decimal Shares);
 > ```
 >
 > `POST /api/ledger/incentive-fee/transition-accounting-model` validates the **target** pair against

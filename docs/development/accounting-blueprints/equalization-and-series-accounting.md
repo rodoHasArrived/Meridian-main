@@ -615,6 +615,11 @@ public sealed record InvestorSubscriptionLot
         decimal grossNavPerShareAtEntry,     // GAV_d
         decimal netNavPerShareAtEntry,       // NAV_d
         decimal peakPerShareAtEntry,         // HWM at entry
+        // This lot's OWN fee context: PeriodFraction runs from THIS subscription date to the
+        // crystallization, and under a contributed-capital hurdle the basis is this lot's capital.
+        // Required — the fund-level context on EqualizationPeriodInput cannot substitute (see the
+        // note above the record).
+        IncentiveFeeContext feeContext,
         string currency)
     {
         if (string.IsNullOrWhiteSpace(investorId))
@@ -657,14 +662,9 @@ public sealed record InvestorSubscriptionLot
 public sealed record EqualizationPeriodInput(
     PartnershipInvestorAllocationInput Allocation,   // reuses existing fund-level fee/HWM inputs
     EqualizationMethod Method,
-    // The COMPLETE effective fee context, not just the policy. IncentiveFeeCalculator.Compute
-    // reads ContributedCapital, PriorLossCarryforward and PeriodFraction as well as the policy,
-    // and none of them exist on PartnershipInvestorAllocationInput or the lot records — so passing
-    // the policy alone still leaves the projector unable to call the calculator for a
-    // contributed-capital hurdle or a loss-carryforward policy, which is exactly what §5.1 now
-    // requires it to do. Carry the whole context (or the scope id it is deterministically loaded
-    // from) so no implementer has to invent a value.
-    IncentiveFeeContext IncentiveFeeContext,
+    // Fund-level context for the period total. NOT sufficient on its own for the lot math — see
+    // the per-lot contexts on InvestorSubscriptionLot below.
+    IncentiveFeeContext FundContext,
     decimal FundHighWaterMarkPerShare,               // HWM per share at period start
     decimal GrossNavPerShareEnd,                     // GAV at crystallization
     IReadOnlyList<InvestorSubscriptionLot> Lots,
@@ -831,9 +831,12 @@ public interface IFundSeriesStore
 > transaction**, not a sequence the caller composes:
 >
 > ```csharp
-> // incentive-fee §6.1. Both rows commit or neither does.
+> // incentive-fee §6.1 — canonical signature, quoted in full. Both rows commit or neither does,
+> // and the append-only enablement-evidence row is written in the SAME transaction, which is why
+> // the operator's basis note and identity are parameters rather than an afterthought.
 > Task<IncentiveFeeStateRecord> CreateSeriesWithStateAsync(
->     FundSeriesDefinition series, IncentiveFeeStateRecord seedState, CancellationToken ct = default);
+>     FundSeriesDefinition series, IncentiveFeeStateRecord seedState,
+>     string openingBasisNote, string acknowledgedBy, CancellationToken ct = default);
 > ```
 >
 > The seed state is `series_id = series.SeriesId`,

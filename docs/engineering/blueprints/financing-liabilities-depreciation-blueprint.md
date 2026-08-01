@@ -702,9 +702,12 @@ PR3 Borrowings.
 **What remains in this phase:** every persistence and operator-facing slice. There is no fixed-asset
 DTO contract, no `IFixedAssetRegisterStore` or its migration, no posted-through watermark, no
 `FixedAssetDepreciationService`, no route in `UiApiRoutes`, no `types.ts` DTO, and no
-accounting-screen read model. Depreciation can be *computed* today; it cannot yet be *stored,
-posted through the governed draft path, or operated*. The repo/borrowing halves of Phase 1 also
-remain.
+accounting-screen read model. **The governed draft seam itself is shipped** —
+`FixedAssetDepreciationDraftBuilder.BuildDraft` returns an `AutomatedJournalDraft` and
+`BuildDraft_ProducesSubmittableApproval` verifies it enters `AutomatedJournalApproval` as
+`Submitted`. What is missing is the orchestration *around* it. So depreciation is computable and
+draftable today; it is not yet **stored** or **operated**, and it is *unorchestrated* rather than
+unpostable. The repo/borrowing halves of Phase 1 also remain.
 
 ### Phase 3: Repo engine (PR2)
 
