@@ -871,9 +871,16 @@ public interface IFundSeriesStore
   `HighWaterMark = HWM_s × units_s` — the projector works in total-NAV terms, so the per-share
   `HWM_s` must be scaled in and the returned candidate scaled back out (§6.1). This means
   **per-series HWM is real persisted state** — one `incentive_fee_state` row per series, keyed by
-  `series_id` (incentive-fee blueprint §7.2) — and each series advances its own HWM through the
-  existing `updatedHighWaterMark = Math.Max(...)` line. Roll-up then collapses consolidated series
-  onto the lead series' HWM row.
+  `series_id` (incentive-fee blueprint §7.2).
+
+  **Do not advance the series HWM through the existing `updatedHighWaterMark = Math.Max(...)` line.**
+  That line sits on the legacy projector path, which takes only a bare performance-fee rate and a
+  HWM — it cannot apply a hurdle, a catch-up, or a loss carryforward. A series on any such policy
+  would get a different fee *and* a different protected level from what the incentive-fee blueprint
+  specifies, while both documents require the two slices to land together. Each series runs the
+  **policy-aware** path instead: `IncentiveFeeCalculator.Compute` with that series' own context,
+  then `IncentiveFeeStateRoller.Roll` to advance its scope. Roll-up then collapses consolidated
+  series onto the lead series' HWM row.
 
 The choice therefore determines the *scope* of the HWM, not its home: Method A keeps a single
 fund-scoped row, Method B one row per series. Both live in the same table. This is the core reason

@@ -438,11 +438,13 @@ public static class IncentiveFeeCalculator
 
         fee = RoundCurrency(fee);
         var endingAfterFee = ctx.EndingNavBeforeIncentiveFee - fee;
+
+        // ⚠️ ROLL-FORWARD IS UNRESOLVED FOR ANY LCF-BEARING MODE — see O-6. The two lines below are
+        // correct ONLY for ResetMode.HighWaterMark, where PriorLossCarryforward is 0 by invariant
+        // and grossExcess above reduces to (EndingNav - PriorHighWaterMark). Do not implement
+        // ResetMode.LossCarryforward or ResetMode.Both from this sketch.
         var candidateHwm = Math.Max(ctx.PriorHighWaterMark, endingAfterFee);
-        // LCF is the drawdown below the HIGH-WATER MARK — not below (HWM + prior LCF). Measuring it
-        // against a level that already contains it compounds: see the note under this block.
-        var shortfall = Math.Max(0m, ctx.PriorHighWaterMark - ctx.EndingNavBeforeIncentiveFee);
-        var candidateLcf = RoundCurrency(shortfall);
+        var candidateLcf = RoundCurrency(Math.Max(0m, ctx.PriorHighWaterMark - ctx.EndingNavBeforeIncentiveFee));
 
         return new IncentiveFeeResult(fee, hurdleAmount, feeable, RoundCurrency(catchUpFee),
             RoundCurrency(carryFee), grossExcess, cleared, candidateHwm, candidateLcf);
@@ -457,33 +459,42 @@ public static class IncentiveFeeCalculator
 > — permanently blocking fees. Measuring the drawdown against the HWM alone makes it stable at `10`
 > and returns it to `0` on recovery to `100`. Test 31 pins the flat-NAV case.
 
-> **`ResetMode` must reach the calculator — it is now on `IncentiveFeeContext`.** An earlier draft
-> described the modes in prose while `Compute` unconditionally evaluated
-> `EndingNav − PriorHighWaterMark − PriorLossCarryforward` and always advanced a candidate HWM. A
-> `LossCarryforward` policy — where the LCF is supposed to replace the HWM — therefore got **both**
-> protections and understated fees. `Compute` branches on the mode:
+> 🛑 **OPEN QUESTION O-6 (widened) — the loss-carryforward semantics are UNRESOLVED. Implement
+> `ResetMode.HighWaterMark` only. `LossCarryforward` and `Both` are blocked pending a
+> fund-accounting decision, and the calculator sketch above is not a specification for them.**
 >
-> | `ResetMode` | Protected level | HWM roll-forward |
-> |---|---|---|
-> | `HighWaterMark` | `PriorHighWaterMark` (LCF must be `0`) | advances |
-> | `LossCarryforward` | `PriorLossCarryforward` only; the HWM is **not** a protection | frozen |
-> | `Both` | see O-6 below — **unresolved** | advances |
+> This section has been wrong three times in three consecutive revisions, each in a different way,
+> and the honest record of that is more useful than a fourth attempt:
 >
-> The unused quantity is held at `0` by an explicit invariant rather than left to carry a stale
-> value, so a policy change cannot silently reactivate a protection the fund no longer has.
+> 1. **Compounding.** `shortfall = Max(0, PriorHWM + PriorLCF − EndingNav)` measured the carried loss
+>    against a protected level that already contained it, so a NAV flat at `90` against a `100` HWM
+>    grew the shield `10 → 20 → 30 → 40` forever.
+> 2. **Prose without code.** `ResetMode` was added to `IncentiveFeeContext` and described as
+>    branching the calculation, but `Compute` never read it — so a `LossCarryforward` policy still
+>    applied both protections.
+> 3. **A shield that cannot form.** Pinning the unused HWM to `0` under `LossCarryforward` makes
+>    `Max(0, PriorHWM − EndingNav)` identically `0` for any non-negative NAV, so a fall from `100` to
+>    `90` creates no carryforward at all and the recovery is charged immediately.
 >
-> ⚠️ **OPEN QUESTION O-6 — under `Both`, is the protected level `HWM`, or `HWM + LCF`? Needs a
-> fund-accounting decision; do not implement `ResetMode.Both` until it is answered.**
+> Each fix was locally reasonable and produced a new defect, because the underlying question was
+> never answered. **What must be decided first, by someone with fund-accounting authority:**
 >
-> The additive reading is coherent for a fund whose terms require recouping a prior loss *in addition
-> to* regaining the high-water mark, and it is stricter than a plain HWM. But it is a policy choice,
-> not a derivation: if LCF is the drawdown below the HWM (as now computed), adding it to the HWM
-> double-counts the same loss — a fund that falls to `90` and recovers to `105` is above its `100`
-> high-water mark yet still pays nothing until `110`. Whether that is the intended term or an
-> artefact of the formula is exactly the kind of question this blueprint should not answer on its
-> own. Resolving O-6 may require the recurrence to *amortise* the carried loss against gains above
-> the HWM rather than recompute it as a drawdown. Fixing the compounding above does not settle it,
-> and neither does the mode branching: the other two modes are unambiguous, `Both` is not.
+> - Under `Both`, is the protected level `HWM`, or `HWM + LCF`? The additive reading is a real fund
+>   term (recoup the loss *in addition to* regaining the mark), but if LCF is defined as the drawdown
+>   below the HWM then adding them double-counts one loss: a fund falling to `90` and recovering to
+>   `105` is above its `100` mark yet pays nothing until `110`.
+> - Under `LossCarryforward`, what is the carried balance a function *of*? It cannot be a drawdown
+>   below a HWM that the mode disables. Candidates: the period loss accumulated and amortised against
+>   later gains, or a separate loss account with its own recoupment rule. These give different fees.
+> - Does the carried balance amortise against gains, or only reset at crystallization?
+>
+> Until those are answered, `Compute`'s roll-forward is specified for `HighWaterMark` alone
+> (`PriorLossCarryforward == 0` by invariant, `grossExcess` reduces to `EndingNav − PriorHighWaterMark`).
+> The `ResetMode` field stays on the context because the answer will need it, and the enablement
+> validation rejects `LossCarryforward`/`Both` policies with a "blocked on O-6" error rather than
+> computing something plausible. Tests 27 and 31 cover only the `HighWaterMark` path; there are
+> deliberately no LCF-mode golden vectors, because inventing them would re-create exactly the false
+> confidence this note exists to prevent.
 
 **Worked examples** (using the existing test's numbers: BeginningNav 1000, ending-before-incentive after
 a 20 management fee = 1180, prior HWM 1050 ⇒ `grossExcess = 1180 − 1050 = 130`, carry `c = 0.20`; annual
@@ -1135,14 +1146,27 @@ The governed lifecycle is untouched: `AutomatedJournalApproval` still enforces
 > post and the state/snapshot writes together — the same shape as the series lifecycle ports (§6.1):
 >
 > ```csharp
+> // An approval alone cannot be posted: DurableAutomatedJournalPoster.PostAsync requires an
+> // AutomatedJournalPostingContext (periodId, actor, occurredAtUtc, reason, evidenceLinks,
+> // ledgerBookId, expectedPeriodVersion, ...). None of that is recoverable from the approval, and
+> // expectedPeriodVersion guards the ACCOUNTING PERIOD row — a different row from the scope's
+> // ExpectedVersion below. Pair them explicitly so no implementer has to invent concurrency data.
+> public sealed record IncentiveFeePostingCommand(
+>     AutomatedJournalApproval Approval, AutomatedJournalPostingContext PostingContext);
+>
 > public sealed record IncentiveFeeScopeCommit(
 >     IncentiveFeeStateRecord State, IncentiveFeeStateSnapshotRecord Snapshot, long ExpectedVersion);
 >
 > Task CommitAsync(
->     IReadOnlyList<AutomatedJournalApproval> approvals,
+>     IReadOnlyList<IncentiveFeePostingCommand> postings,    // approval + its posting context
 >     IReadOnlyList<IncentiveFeeScopeCommit> scopeCommits,   // ONE PER SCOPE, all in one transaction
 >     CancellationToken ct = default);
 > ```
+>
+> **Two independent concurrency guards.** `AutomatedJournalPostingContext.ExpectedPeriodVersion`
+> protects the accounting period; `IncentiveFeeScopeCommit.ExpectedVersion` protects that scope's
+> HWM row. Both are checked inside the one transaction, and either being stale aborts the whole
+> commit — they are not interchangeable and neither can be derived from the other.
 >
 > **The plural matters.** A `scopeCommits` collection is not cosmetic: an `InvestorSeries`
 > crystallization advances one HWM/LCF row *per series*, each with its own `expectedVersion`. A port
@@ -1249,7 +1273,9 @@ public const string LedgerIncentiveFeeEnable         = "/api/ledger/incentive-fe
   Post + state roll-forward); requires actor + evidence, consistent with the other governed ledger POSTs.
 - `POST LedgerIncentiveFeeEnable` — `IncentiveFeeEnablementRequest`. **This is the only surface that
   can supply an opening HWM**, so a book cannot be enabled without one. Rejects
-  `AcknowledgeOpeningLevel = false` with 422, and validates the equalization pairing below.
+  `AcknowledgeOpeningLevel = false` with 422, validates the equalization pairing below, and
+  **rejects any policy whose `ResetMode` is `LossCarryforward` or `Both` with a "blocked on O-6"
+  422** — those semantics are unresolved (§5.1) and must not be computed speculatively.
   Idempotent; returns the live scope(s). `POST LedgerIncentiveFeePolicies` deliberately does **not**
   accept an opening HWM — a policy edit must never silently reset a protected level that has already
   advanced.
@@ -1388,8 +1414,9 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
 34. `Consolidate_SameSeriesIdInTwoBooks_TouchesOnlyTheTargetBook`.
 35. `GetLiveIncentiveFeeState_AfterReopen_ReturnsReplacementNotHistorical`.
 
-36. `Compute_LossCarryforwardMode_UsesLcfNotHwm` — a `LossCarryforward` policy applies the LCF
-    alone, does not advance a candidate HWM, and charges more than the both-protections regression.
+36. `Enable_LossCarryforwardOrBothMode_RejectsWithO6Blocked` — the enablement gate refuses an
+    LCF-bearing policy rather than computing one. There are deliberately **no** LCF-mode golden
+    vectors until O-6 is answered (§5.1).
 37. `Commit_MultiSeries_AdvancesEverySeriesState` — N series crystallizing produce N advanced state
     rows in one transaction; a stale `expectedVersion` on any one aborts the whole commit and
     advances none.

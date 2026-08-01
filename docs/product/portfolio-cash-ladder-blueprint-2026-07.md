@@ -640,6 +640,24 @@ unmastered position).
 **Suggested PR sequence:** PR1 contracts + engine + stores + unit tests · PR2 endpoints +
 registration + endpoint tests · PR3 dashboard screen + tests + doc index updates.
 
+> **A compute-on-request slice already shipped — under different names than this checklist uses.**
+> Every box below is unticked, but the delivered code covers much of Phases 1–5. Read the checklist
+> as *target state*, and check each item against these before building anything:
+>
+> | This blueprint proposes | Shipped as |
+> |---|---|
+> | `PortfolioForecastingDtos` / `IPortfolioCashLadderService` | `PortfolioCashLadderReadService` (`src/Meridian.Ui.Shared/Services/`) + its DTOs |
+> | `CashLadderShockEngine` | `PortfolioCashLadderEngine` |
+> | `PortfolioForecastingEndpoints` (5 routes) | `PortfolioCashLadderEndpoints`; `UiApiRoutes.PortfolioCashLadder` and `…Scenarios` |
+> | `portfolio-cash-ladder-screen.tsx` / `.view-model.ts` | `cash-ladder-screen.tsx` / `.view-model.ts` (+ `.view-model.test.ts`), with `portfolio-cash-ladder.types.ts` and `.api.ts` |
+> | Phase 5 tests | `PortfolioCashLadderEngineTests`, `PortfolioCashLadderReadServiceTests` (`tests/Meridian.Tests/AssetOperations/`) |
+>
+> **Genuinely remaining:** persisted runs (`PortfolioCashLadderRunStore`, `CashLadderScenarioFileStore`),
+> per-currency views, structured sourcing (`LedgerPortfolioHoldingsSource` and Open Questions 1–2),
+> and the fund-account scope the read service currently reports as a decision blocker. The boxes are
+> left unticked rather than guessed at, because the shipped surface is a rename *and* a rescope of
+> what is written below — someone should tick them against the code, not against this table.
+
 ### Phase 1: Contracts (1d)
 - [ ] Add `Meridian.Contracts/PortfolioForecasting/PortfolioForecastingDtos.cs` (all DTOs + enums above)
 - [ ] Add `IPortfolioCashLadderService`, `IPortfolioHoldingsSource`, `ICashLadderScenarioStore`, `CashLadderShockKinds`
