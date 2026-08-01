@@ -128,6 +128,13 @@ groups:
       # resubscription is only probing, and SLO-PC-001 treats every value at or above its
       # critical threshold of 1 as a violation. Equality would silence the alert during
       # recovery and leave a flapping provider unmonitored.
+      #
+      # AWAITING INSTRUMENTATION: every mutation of ResubscriptionMetrics.CurrentCircuitState is
+      # inside AutoResubscribePolicy, and no production code constructs or registers that class,
+      # so the snapshot this gauge is fed from is permanently Closed. The rule is correct and
+      # cannot fire until the active resubscription path is wired. Unlike the SLA rules it needs
+      # no `> 0` guard — a permanently-zero gauge is silent, not falsely firing — but it is not
+      # yet coverage. Tracked with PRD-111.
       - alert: MeridianProviderDisconnected
         expr: mdc_circuit_breaker_state >= 1
         for: 2m

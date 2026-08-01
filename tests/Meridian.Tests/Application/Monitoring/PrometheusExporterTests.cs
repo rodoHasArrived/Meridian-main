@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Meridian.Application.UI;
 using Meridian.Contracts.Domain.Models;
@@ -117,6 +118,30 @@ public sealed class PrometheusExporterTests
         // The families the updater feeds must be present, having been refreshed by the call.
         exposition.Should().Contain("mdc_events_published_total");
         exposition.Should().Contain("mdc_drop_rate_percent");
+    }
+
+    [Fact]
+    public async Task GetPrometheusMetricsAsync_SurvivesBothWalCollectorRegistrations()
+    {
+        // WriteAheadLog and PrometheusMetrics each register mdc_wal_recovery_events_total and
+        // mdc_wal_recovery_duration_seconds, with different help text in each. In the UI host
+        // both initialise — EventPipeline.RecoverAsync touches WriteAheadLog, and the scrape
+        // now touches PrometheusMetrics — so if prometheus-net rejects a conflicting
+        // re-registration, /metrics throws instead of exporting anything.
+        RuntimeHelpers.RunClassConstructor(typeof(Meridian.Storage.Archival.WriteAheadLog).TypeHandle);
+        RuntimeHelpers.RunClassConstructor(typeof(Meridian.Application.Monitoring.PrometheusMetrics).TypeHandle);
+
+        var act = async () => await CreateHandlers().GetPrometheusMetricsAsync();
+
+        await act.Should().NotThrowAsync(
+            because: "both WAL collector sets initialise in the host, and a rejected registration "
+                   + "would take the whole exposition down");
+
+        var exposition = await CreateHandlers().GetPrometheusMetricsAsync();
+        exposition.Split('\n')
+            .Where(line => line.StartsWith("# HELP ", StringComparison.Ordinal))
+            .Select(line => line.Split(' ', 4)[2])
+            .Should().OnlyHaveUniqueItems();
     }
 
     [Fact]
