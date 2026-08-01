@@ -1184,6 +1184,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             CreatedAt = DateTimeOffset.UtcNow,
             LastUpdatedAt = DateTimeOffset.UtcNow,
             StrategyId = request.StrategyId,
+            // Fund scope survives a rejection. A parked order's tracked state is built here,
+            // and cancelling one withdraws its governed approval — an action authorized
+            // against this field. Dropping it left the scope check with nothing to compare
+            // and reopened the cross-fund cancel it was added to close.
+            FundAccountId = request.FundAccountId,
             AverageFillPrice = null,
             FilledQuantity = 0m
         };

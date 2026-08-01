@@ -1715,6 +1715,50 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     [Fact]
+    public async Task ParkedOrder_RetainsItsFundScopeForAuthorizationChecks()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var fundAccountId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "parked-scoped-1",
+            FundAccountId = fundAccountId
+        });
+
+        placed.RequiresApproval.Should().BeTrue();
+
+        // Cancelling a parked order withdraws its governed approval, and the cancel endpoint
+        // authorizes that against the tracked state's fund scope. If the parked state drops
+        // the field, that check has nothing to compare and silently permits a cross-fund
+        // withdrawal — so the scope must survive the park, not just the submission.
+        oms.GetOrder("parked-scoped-1")!.FundAccountId.Should().Be(
+            fundAccountId,
+            "the parked state is what the cancel authorization reads");
+    }
+
+    [Fact]
     public async Task ParkedOrder_SurvivesTerminalOrderRetentionTrimming()
     {
         var queue = new RiskEscalationQueueService(
