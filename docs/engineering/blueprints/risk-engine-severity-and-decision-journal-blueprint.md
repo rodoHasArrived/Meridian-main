@@ -400,7 +400,13 @@ public sealed record RiskViolation(
     /// True when this violation is one that blocks. Derived from <see cref="Severity"/>, so it
     /// cannot disagree with the validator's own admission logic.
     /// </summary>
-    public bool IsBlocking => Severity is RiskRuleSeverity.Error or RiskRuleSeverity.Critical;
+    /// <summary>
+    /// Stated as "not explicitly non-blocking" rather than "Error or Critical". A C# enum holds any
+    /// value of its underlying type — a cast or a numeric deserialization of this public SDK
+    /// contract is enough — and on a fail-closed gate an unrecognised severity must block rather
+    /// than be admitted with warnings.
+    /// </summary>
+    public bool IsBlocking => Severity is not (RiskRuleSeverity.Info or RiskRuleSeverity.Warning);
 }
 
 /// <summary>Compact decision summary returned to the submitter on <see cref="OrderResult"/>.</summary>
@@ -1108,8 +1114,15 @@ unit tests.
 | `CommitAsync_KeepsReservedCapacity` | Committed reservation stays consumed |
 | `ConcurrentEvaluations_NeverExceedCeiling` | N parallel evaluations at the boundary reserve at most the ceiling — the race the reservation model exists to prevent |
 | `Rollback_ReturnsCapacity` | Blocked order frees its slot |
-| `EvaluateAsync_AtEightyPercentOfCeiling_AnnotatesWithoutBlocking` | The near-limit warning |
 | `EvaluateAsync_AtCeiling_Blocks` | Existing behaviour preserved |
+| `PendingReservation_DoesNotExpireWithTheWindow` | An in-flight submission holds its slot past the window length; expiring it would free capacity while the order is still live |
+| `CurrentUsage_CountsPendingAndCommittedSlots` | The number the status surface reads matches what the rule will compare against the ceiling |
+
+The near-limit warning is **not** tested here. `OrderRateThrottle` has a fixed `Error` severity and
+fires only at the ceiling; the 80% annotation belongs to the separate `OrderRateNearLimitRule`
+deferred to `W9-SAFETY-007` (see the component design above). A test asserting that this rule
+annotates at 80% could only pass by weakening the blocking throttle or by building the deferred rule
+inside PR 1.
 
 ### Unit — `RiskDecisionJournal`
 
@@ -1151,8 +1164,10 @@ unit tests.
 
 **Estimated effort:** Medium — 6–8 working days for one developer.
 **Suggested branch:** `codex/risk-engine-severity-and-journal`
-**Suggested PR sequence:** three PRs, each independently green. PR 1 and PR 2 are behaviour-visible;
-splitting them keeps the diff reviewable and lets the throttle fix land early.
+**Suggested PR sequence:** four PRs, each independently green. PR 1 and PR 2 are behaviour-visible;
+splitting them keeps the diff reviewable and lets the throttle fix land early. PR 4 is not optional
+polish — `AGENTS.md` (L123-126) makes the browser and desktop workstations co-equal lanes, so
+shipping PR 3 alone would open exactly the parity gap the UI design section says must not open.
 
 ### PR 1 — Outcome types and evaluate-all (Foundation)
 
@@ -1208,6 +1223,16 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 
 ### PR 3 — Read surface
 
+> **Scope note (Open Question 6, decided).** The endpoint reads through to the WAL/archive rather
+> than serving from `ExecutionAuditTrailService`'s trimmed in-memory collection. This is the largest
+> single piece of the sequence — larger than the rest of PR 3 combined — and it qualifies
+> Decision 5's "no new store" premise: no new *store* is introduced, but a new *read path over the
+> existing durable one* is. Budget it accordingly and treat the retained-window fallback as the
+> degraded mode, not the design. The `journalCompleteness` block still describes coverage over the
+> queried range, since the WAL's own retention remains finite.
+
+- [ ] Build the WAL/archive-backed decision query: read beyond `InMemoryRetention`, honour the
+      archive layout, and keep the existing atomic/WAL durability patterns intact
 - [ ] Add `GET /api/risk/decisions` to `RiskEndpoints.cs` under both route groups
 - [ ] Add DTOs to the source-generated JSON context (ADR-014)
 - [ ] Build the order-ticket violation panel and the decision-history panel in
@@ -1216,6 +1241,22 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 - [ ] Extend `OrderResult` with `RiskDecisionSummary` and update the TypeScript submit contract so
       the order ticket can render findings on the admitted path
 - [ ] Endpoint test alongside `RiskEndpointTests`; dashboard view-model tests
+
+### PR 4 — WPF parity
+
+Consumes the same shared contracts PR 3 exposes; no new read model, no forked product state.
+
+- [ ] Render the violation set on the WPF order ticket from `OrderResult.RiskDecision`, matching the
+      browser ticket's severity grouping and acknowledgement affordance
+- [ ] Add the decision-history surface over `GET /api/risk/decisions`, including the
+      `journalCompleteness` footnote — a desktop operator must not see a completeness claim the
+      browser qualifies
+- [ ] Route both through `Meridian.Ui.Services`/`Meridian.Ui.Shared` rather than calling the
+      endpoint from view models directly
+- [ ] View-model tests in `tests/Meridian.Wpf.Tests`, including the escalated and
+      rejected-with-multiple-violations cases
+- [ ] Cross-check against `docs/development/wpf-web-ui-alignment-plan.md` (`W8-WPF-PARITY-001`) and
+      record the surface there
 
 ### Wrap-up (final PR)
 
@@ -1234,10 +1275,10 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 | --- | --- | --- | --- |
 | 1 | Should `Escalated` block until an operator acknowledges, or admit-and-record as designed here? | Product | Admit-and-record is the assumption. If escalation must block, it needs an approval store and a resume path — materially larger scope. |
 | 2 | `RiskInterop.Aggregate` and F# `RiskEvaluation.aggregate` stay uncalled after this work. Wire them later, or archive them? | Implementer + Architecture | Leaving unreferenced domain code invites a future contributor to assume it is live. Decide explicitly. |
-| 3 | Should `RiskRuleRuntimeService`'s `EvaluateDrawdownGuardrail` return a structured violation rather than `RiskValidationResult.Rejected(string)`? | Implementer | Until migrated it produces `Unattributed` violations, so the dashboard cannot attribute drawdown breaches to the rule. Recommend folding into PR 1. |
+| 3 | ~~Should `RiskRuleRuntimeService`'s `EvaluateDrawdownGuardrail` return a structured violation?~~ **Resolved in PR 1** — it returns `RiskFinding?`, so drawdown breaches are attributed to the rule rather than surfacing as `Unattributed`. | Implementer | — |
 | 4 | Retention for journal entries — does the execution WAL already prune, and is that policy right for risk evidence? | Ops | Unbounded growth on a high-throughput host if `JournalCleanApprovals` is enabled without retention. |
 | 5 | Does the OMS have a `FundAccountId` in scope at the risk call site for per-fund journal filtering? | Implementer | Affects whether `/api/risk/decisions` can filter by fund in PR 3 or needs a follow-up. |
-| 6 | **How far back must `/api/risk/decisions` see?** `ExecutionAuditTrailService` serves queries from a collection trimmed to `InMemoryRetention` (default 1,000 entries), so the endpoint answers "recently" and not "on Tuesday". Options: (a) scope the feature to recent retained decisions and say so in the UI; (b) raise the retention for this host; (c) build a WAL/archive-backed query path. | **Product + Ops** | (a) is free but weakens the evidence claim that motivates the journal. (c) is a materially larger build and undercuts Decision 5's "no new store" premise. This must be decided before PR 3 is scoped. |
+| 6 | ~~**How far back must `/api/risk/decisions` see?**~~ **Decided: (c) — a WAL/archive-backed query path.** `ExecutionAuditTrailService` serves queries from a collection trimmed to `InMemoryRetention` (default 1,000 entries), which would have made the endpoint answer "recently" rather than "on Tuesday". See the scope note below. | **Product + Ops** | Resolved. |
 
 ## Risks
 

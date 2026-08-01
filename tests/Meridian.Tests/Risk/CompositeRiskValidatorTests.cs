@@ -274,6 +274,36 @@ public sealed class CompositeRiskValidatorTests
             .Should().ContainInOrder("MIDDLE", "LATE");
     }
 
+    /// <summary>
+    /// A timeout the timer refuses would otherwise throw from <c>CancelAfter</c> before the
+    /// fail-closed handler is entered, and the OMS calls the validator outside its own submission
+    /// handler — so every order would come back as an unstructured exception rather than a risk
+    /// decision. A gate that cannot be configured correctly should not start.
+    /// </summary>
+    [Theory]
+    [InlineData(-2)]
+    [InlineData(-1000)]
+    public void Constructor_WithATimeoutBelowInfinite_Throws(int milliseconds)
+    {
+        var act = () => new CompositeRiskValidator(
+            [],
+            NullLogger<CompositeRiskValidator>.Instance,
+            TimeSpan.FromMilliseconds(milliseconds));
+
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("perRuleTimeout");
+    }
+
+    [Fact]
+    public void Constructor_WithInfiniteTimeout_IsAccepted()
+    {
+        var act = () => new CompositeRiskValidator(
+            [],
+            NullLogger<CompositeRiskValidator>.Instance,
+            Timeout.InfiniteTimeSpan);
+
+        act.Should().NotThrow("infinite is the documented way to disable the bound");
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
         // The release runs on a continuation of the abandoned task, so it is not observable the

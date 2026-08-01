@@ -57,6 +57,22 @@ public sealed class CompositeRiskValidator : IRiskValidator
             .ToList()
             .AsReadOnly() ?? throw new ArgumentNullException(nameof(rules));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // Rejected here so a bad composition fails at startup rather than per order.
+        // CreateTimeoutSource runs before EvaluateRuleAsync's fail-closed handler, so a value
+        // CancelAfter refuses would throw ArgumentOutOfRangeException outside it — and the OMS calls
+        // the validator outside its own submission handler, so every order would come back as an
+        // unstructured exception instead of a risk decision. A misconfigured gate should be
+        // impossible to start, not silently fatal on the first trade.
+        if (perRuleTimeout != Timeout.InfiniteTimeSpan &&
+            (perRuleTimeout < TimeSpan.Zero || perRuleTimeout.TotalMilliseconds > int.MaxValue))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(perRuleTimeout),
+                perRuleTimeout,
+                $"Per-rule timeout must be non-negative and at most {int.MaxValue} ms, or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)} to disable.");
+        }
+
         _perRuleTimeout = perRuleTimeout;
     }
 

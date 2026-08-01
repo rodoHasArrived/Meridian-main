@@ -1,11 +1,11 @@
 {
   "total_files": 639,
-  "total_lines": 118939,
+  "total_lines": 118980,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 186.1,
+  "average_lines": 186.2,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2162,7 +2162,7 @@
     },
     {
       "path": "docs/engineering/blueprints/risk-engine-severity-and-decision-journal-blueprint.md",
-      "line_count": 1265,
+      "line_count": 1306,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
