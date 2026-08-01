@@ -110,18 +110,25 @@ public sealed class CompositeRiskValidatorTests
         outcome.Result.RejectReason.Should().NotBeNullOrWhiteSpace();
     }
 
+    /// <summary>
+    /// Cancelling before the call would exit at the first <c>ThrowIfCancellationRequested</c>
+    /// before any rule ran, leaving the partial-reservation cleanup path untested and the
+    /// assertion vacuously true. Cancellation has to happen while a later rule is mid-evaluation,
+    /// after an earlier rule has already taken capacity.
+    /// </summary>
     [Fact]
-    public async Task ValidateOrderAsync_WhenCallerCancels_PropagatesAndReleasesReservations()
+    public async Task ValidateOrderAsync_WhenCancelledAfterReserving_ReleasesPartialReservations()
     {
-        var reserving = new StubReservingRule("throttle");
-        var validator = Build(reserving, new StubRiskRule("late") { Throw = new OperationCanceledException() });
         using var cts = new CancellationTokenSource();
-        await cts.CancelAsync();
+        var reserving = new StubReservingRule("throttle") { Priority = 0 };
+        var canceller = new StubRiskRule("late", priority: 1) { CancelDuringEvaluation = cts };
+        var validator = Build(reserving, canceller);
 
         var act = async () => await validator.ValidateOrderAsync(CreateOrder(), cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
-        reserving.Reservations.Should().OnlyContain(r => r.RolledBack);
+        reserving.Reservations.Should().ContainSingle()
+            .Which.RolledBack.Should().BeTrue("capacity taken before cancellation must be released");
     }
 
     [Fact]
@@ -191,6 +198,9 @@ public sealed class CompositeRiskValidatorTests
 
         public Exception? Throw { get; init; }
 
+        /// <summary>Cancels mid-evaluation so earlier rules have already reserved capacity.</summary>
+        public CancellationTokenSource? CancelDuringEvaluation { get; init; }
+
         public int EvaluateCalls { get; private set; }
 
         public int SyncEvaluateCalls { get; private set; }
@@ -204,6 +214,12 @@ public sealed class CompositeRiskValidatorTests
         public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
         {
             EvaluateCalls++;
+            if (CancelDuringEvaluation is not null)
+            {
+                CancelDuringEvaluation.Cancel();
+                ct.ThrowIfCancellationRequested();
+            }
+
             if (Throw is not null)
             {
                 throw Throw;
@@ -216,6 +232,8 @@ public sealed class CompositeRiskValidatorTests
     private sealed class StubReservingRule(string ruleName) : IReservingRiskRule
     {
         public string RuleName => ruleName;
+
+        public int Priority { get; init; }
 
         public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
 

@@ -27,8 +27,18 @@ This layer owns risk decision logic and reusable rules. It should stay independe
 ## Important workflows
 
 Use this module for pre-trade checks, limits, safety gates, and execution-control evidence.
-Composite risk validation runs rules by priority, uses synchronous fast paths when a rule exposes
-one, and stops at the first rejection so attribution and latency stay predictable on the order path.
+
+Composite risk validation runs every rule by priority and aggregates all findings, rather than
+stopping at the first rejection: an order breaching several limits reports all of them. Each rule's
+declared `Severity` decides admission — `Info` and `Warning` annotate and admit, `Error` and
+`Critical` block — so a rule cannot contradict its own severity. A rule reports a `RiskFinding`
+describing what it measured; it never chooses the outcome.
+
+Rules that consume finite capacity (the order-rate window) implement `IReservingRiskRule` and
+reserve atomically during evaluation. The validator releases those reservations if evaluation
+throws or is cancelled, and otherwise transfers them to the caller, which commits only once the
+order is actually routed. Each rule is bounded by a timeout, and a rule that throws yields a
+`Critical` `RISK_RULE_EVALUATION_FAILED` violation so the gate fails closed.
 
 ## Diagrams
 

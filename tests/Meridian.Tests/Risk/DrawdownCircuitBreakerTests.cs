@@ -76,7 +76,6 @@ public sealed class DrawdownCircuitBreakerTests
         var result = await sut.EvaluateAsync(CreateOrder());
 
         result.Should().BeNull();
-        result!.Message.Should().BeNull();
     }
 
     [Fact]
@@ -158,6 +157,7 @@ public sealed class DrawdownCircuitBreakerTests
 
         var result = await sut.EvaluateAsync(CreateOrder());
 
-        result.IsApproved.Should().Be(shouldApprove);
+        // A satisfied rule returns no finding; a breach returns one.
+        (result is null).Should().Be(shouldApprove);
     }
 }

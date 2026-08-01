@@ -384,9 +384,19 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
 
-            // The order is routed. This is the admission boundary Decision 8 names, and the only
-            // place reserved risk capacity is kept rather than released.
-            riskOutcome?.CommitReservations();
+            // The admission boundary. SubmitOrderAsync returns normally with OrderStatus.Rejected
+            // for cases like a market order with no reference price or a resting-id collision, so
+            // acceptance has to be judged from the report rather than from the absence of a throw.
+            // Committing on a rejected report would consume rate capacity for an order that never
+            // reached the venue, and repeated rejections would exhaust the window.
+            if (report.OrderStatus is OrderStatus.Rejected)
+            {
+                riskOutcome?.RollbackReservations();
+            }
+            else
+            {
+                riskOutcome?.CommitReservations();
+            }
 
             // Merge against the latest tracked state: the async report pump may already
             // have applied a fill for this order before the submit ack is processed here.
@@ -1760,12 +1770,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
 
             if (violation.ObservedValue is { } observed)
             {
-                metadata[prefix + "observed"] = observed.ToString("R", CultureInfo.InvariantCulture);
+                metadata[prefix + "observed"] = observed.ToString("G29", CultureInfo.InvariantCulture);
             }
 
             if (violation.LimitValue is { } limit)
             {
-                metadata[prefix + "limit"] = limit.ToString("R", CultureInfo.InvariantCulture);
+                metadata[prefix + "limit"] = limit.ToString("G29", CultureInfo.InvariantCulture);
             }
         }
 

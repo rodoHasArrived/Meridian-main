@@ -114,20 +114,25 @@ public sealed class CompositeRiskValidator : IRiskValidator
         List<IRiskReservation> reservations,
         CancellationToken ct)
     {
-        if (rule.HasSyncFastPath)
-        {
-            return rule.TryEvaluate(request);
-        }
-
         using var timeoutCts = CreateTimeoutSource(ct);
         var effectiveToken = timeoutCts?.Token ?? ct;
 
         try
         {
+            // The synchronous fast path runs inside this handler, not before it. The production
+            // DrawdownGuardrailRule uses it, and a failure reading portfolio state must become a
+            // structured risk rejection rather than an unstructured submission failure.
+            if (rule.HasSyncFastPath)
+            {
+                return rule.TryEvaluate(request);
+            }
+
             if (rule is IReservingRiskRule reserving)
             {
-                var reservationResult = await reserving
-                    .EvaluateAndReserveAsync(request, effectiveToken)
+                var reservationResult = await WithHardTimeoutAsync(
+                        reserving.EvaluateAndReserveAsync(request, effectiveToken),
+                        reservations,
+                        ct)
                     .ConfigureAwait(false);
 
                 if (reservationResult.Reservation is { } reservation)
@@ -138,7 +143,10 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 return reservationResult.Finding;
             }
 
-            return await rule.EvaluateAsync(request, effectiveToken).ConfigureAwait(false);
+            return await WithHardTimeoutAsync(
+                    rule.EvaluateAsync(request, effectiveToken),
+                    ct)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -161,6 +169,62 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 Code: EvaluationFailedCode,
                 Message: $"Risk rule '{rule.RuleName}' could not be evaluated: {ex.GetType().Name}.");
         }
+    }
+
+    /// <summary>
+    /// Bounds an evaluation that may ignore its cancellation token. Passing a token that is
+    /// cancelled after a delay only helps for rules that observe it; a rule that never completes
+    /// would otherwise hang the pre-trade gate for callers that supply no deadline of their own.
+    /// </summary>
+    private async Task<T> WithHardTimeoutAsync<T>(Task<T> evaluation, CancellationToken ct)
+    {
+        if (_perRuleTimeout == Timeout.InfiniteTimeSpan)
+        {
+            return await evaluation.ConfigureAwait(false);
+        }
+
+        var completed = await Task.WhenAny(evaluation, Task.Delay(_perRuleTimeout, ct)).ConfigureAwait(false);
+        if (!ReferenceEquals(completed, evaluation))
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new TimeoutException(
+                $"Risk rule evaluation exceeded {_perRuleTimeout}.");
+        }
+
+        return await evaluation.ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// As <see cref="WithHardTimeoutAsync{T}(Task{T}, CancellationToken)"/>, but for a reserving
+    /// rule: an abandoned evaluation that completes later may still have taken capacity, so its
+    /// reservation is released rather than leaked.
+    /// </summary>
+    private async Task<RiskRuleReservationResult> WithHardTimeoutAsync(
+        Task<RiskRuleReservationResult> evaluation,
+        List<IRiskReservation> reservations,
+        CancellationToken ct)
+    {
+        if (_perRuleTimeout == Timeout.InfiniteTimeSpan)
+        {
+            return await evaluation.ConfigureAwait(false);
+        }
+
+        var completed = await Task.WhenAny(evaluation, Task.Delay(_perRuleTimeout, ct)).ConfigureAwait(false);
+        if (!ReferenceEquals(completed, evaluation))
+        {
+            // Do not await the abandoned evaluation, but do not leak whatever it reserved either.
+            _ = evaluation.ContinueWith(
+                static task => task.Result.Reservation?.Rollback(),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+
+            ct.ThrowIfCancellationRequested();
+            throw new TimeoutException(
+                $"Risk rule evaluation exceeded {_perRuleTimeout}.");
+        }
+
+        return await evaluation.ConfigureAwait(false);
     }
 
     private CancellationTokenSource? CreateTimeoutSource(CancellationToken ct)

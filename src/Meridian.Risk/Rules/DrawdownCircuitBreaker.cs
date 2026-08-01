@@ -56,10 +56,17 @@ public sealed class DrawdownCircuitBreaker : IRiskRule
             var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
             _logger.LogWarning("Circuit breaker triggered for {Symbol}: {Reason}", request.Symbol, reason);
 
+            // Report the drawdown percentage, not the portfolio's currency value: observed and
+            // limit have to be in the same units or the recorded evidence reads as though a
+            // breach were within limits (85,000 "against" a limit of 10).
+            var drawdownPercent = _initialCapital > 0m
+                ? ((_initialCapital - portfolioValue) / _initialCapital) * 100m
+                : (decimal?)null;
+
             return Task.FromResult<RiskFinding?>(new RiskFinding(
                 Code: escalated ? "DRAWDOWN_CIRCUIT_BREAKER_ESCALATED" : "DRAWDOWN_CIRCUIT_BREAKER_TRIPPED",
                 Message: reason,
-                ObservedValue: portfolioValue,
+                ObservedValue: drawdownPercent,
                 LimitValue: _maxDrawdownPercent,
                 RequiresAcknowledgement: escalated));
         }

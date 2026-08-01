@@ -129,7 +129,7 @@ public sealed class EnforcedRiskValidatorCompositionTests
 
         var result = await rule.EvaluateAsync(CreateBuyOrder());
 
-        result.IsApproved.Should().BeTrue("a null limit means no position limit is configured");
+        result.Should().BeNull("a null limit means no position limit is configured");
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public sealed class EnforcedRiskValidatorCompositionTests
 
         var result = await rule.EvaluateAsync(CreateBuyOrder(quantity: 10m));
 
-        result.IsApproved.Should().BeFalse();
+        result.Should().NotBeNull();
     }
 
     [Fact]

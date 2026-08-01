@@ -77,10 +77,18 @@ public sealed class PositionLimitRule : IRiskRule
             var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
             _logger.LogWarning("Position limit rule rejected order for {Symbol}: {Reason}", request.Symbol, reason);
 
+            // Report the projected position the rule actually evaluated, not the current one.
+            // A long 50 followed by a sell of 200 is rejected at -150 against a limit of 100;
+            // recording 50 would make the evidence look like it was inside the limit.
+            var currentQuantity = currentPosition?.Quantity ?? 0m;
+            var signedOrderQuantity = request.Side == OrderSide.Sell
+                ? -request.Quantity
+                : request.Quantity;
+
             return Task.FromResult<RiskFinding?>(new RiskFinding(
                 Code: escalated ? "POSITION_LIMIT_ESCALATED" : "POSITION_LIMIT_EXCEEDED",
                 Message: reason,
-                ObservedValue: currentPosition?.Quantity ?? 0m,
+                ObservedValue: currentQuantity + signedOrderQuantity,
                 LimitValue: maxPositionSize.Value,
                 RequiresAcknowledgement: escalated));
         }
