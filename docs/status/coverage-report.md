@@ -5,10 +5,10 @@
 
 ## Overall Coverage
 
-**3808 / 8614** items documented (**44.2%**) &mdash; Grade: **D**
+**3816 / 8614** items documented (**44.3%**) &mdash; Grade: **D**
 
 ```text
-[=========-----------] 44.2%
+[=========-----------] 44.3%
 ```
 
 ## Coverage by Category
@@ -16,7 +16,7 @@
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
 | Public Classes / Interfaces | 3682 | 8142 | 45.2% | D |
-| API Endpoints | 112 | 319 | 35.1% | F |
+| API Endpoints | 120 | 319 | 37.6% | F |
 | Configuration Options | 3 | 142 | 2.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
@@ -79,7 +79,7 @@
 | `DualPathPipelineStopStatus` | `src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:16` |
 | ... and 4410 more | |
 
-### API Endpoints (207 undocumented)
+### API Endpoints (199 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -133,7 +133,7 @@
 | `/{loanId:guid}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:720` |
 | `/{loanId:guid}/restructures` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:750` |
 | `/{loanId:guid}/amortization/discount-premium` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:780` |
-| ... and 157 more | |
+| ... and 149 more | |
 
 ### Configuration Options (139 undocumented)
 
@@ -194,7 +194,7 @@
 ## Recommendations
 
 1. **Public Classes / Interfaces**: 4460 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 207 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+2. **API Endpoints**: 199 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 139 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
