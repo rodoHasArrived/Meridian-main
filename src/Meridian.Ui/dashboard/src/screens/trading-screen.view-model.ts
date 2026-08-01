@@ -3336,6 +3336,20 @@ export function useOrderTicketViewModel({
     }));
   }, []);
 
+  // The post-submit refresh must never rewrite the submission outcome. By the time it runs
+  // the server has already accepted or durably parked the order, so a failed refresh is a
+  // stale-screen problem, not a submission failure. Letting it fall into the submit catch
+  // replaced "parked for governed approval — do not resubmit" with a generic error, and an
+  // operator acting on that retries and creates a second independently releasable order.
+  const refreshAfterSettledOutcome = useCallback(async () => {
+    try {
+      await onOrderAccepted?.();
+    } catch {
+      // Intentionally swallowed: the order's fate is already decided and displayed. The
+      // surfaces this refreshes carry their own loading and error state.
+    }
+  }, [onOrderAccepted]);
+
   const submitOrderTicket = useCallback(async () => {
     if (phase === "submitting" || submittingRef.current) {
       return;
@@ -3376,7 +3390,7 @@ export function useOrderTicketViewModel({
         setOpen(false);
         setAcknowledged(false);
         setForm(emptyOrderTicketForm);
-        await onOrderAccepted?.();
+        await refreshAfterSettledOutcome();
         return;
       }
 
@@ -3392,7 +3406,7 @@ export function useOrderTicketViewModel({
         setOpen(false);
         setAcknowledged(false);
         setForm(emptyOrderTicketForm);
-        await onOrderAccepted?.();
+        await refreshAfterSettledOutcome();
         return;
       }
 
@@ -3404,7 +3418,7 @@ export function useOrderTicketViewModel({
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, onOrderAccepted, phase, services]);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services]);
 
   return {
     ...state,
