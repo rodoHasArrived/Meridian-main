@@ -8,10 +8,10 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 969 |
-| Valid | 553 |
+| Total code blocks | 971 |
+| Valid | 554 |
 | Invalid | 0 |
-| Skipped | 416 |
+| Skipped | 417 |
 
 ## Summary by Language
 
@@ -21,7 +21,7 @@
 | `bash` | 156 | 156 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 304 | 304 | 0 | 0 |
+| `csharp` | 305 | 305 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 62 | 62 | 0 | 0 |
@@ -33,7 +33,7 @@
 | `mermaid` | 36 | 0 | 0 | 36 |
 | `powershell` | 84 | 0 | 0 | 84 |
 | `python` | 3 | 3 | 0 | 0 |
-| `sql` | 6 | 0 | 0 | 6 |
+| `sql` | 7 | 0 | 0 | 7 |
 | `text` | 63 | 0 | 0 | 63 |
 | `toml` | 31 | 0 | 0 | 31 |
 | `ts` | 8 | 0 | 0 | 8 |
@@ -89,7 +89,7 @@ No invalid code examples found.
 | `docs/architecture/storage-design.md` | 77 |
 | `docs/development/accounting-blueprints/commitment-and-capital-call-engine.md` | 21 |
 | `docs/development/accounting-blueprints/equalization-and-series-accounting.md` | 15 |
-| `docs/development/accounting-blueprints/incentive-fee-mechanics.md` | 12 |
+| `docs/development/accounting-blueprints/incentive-fee-mechanics.md` | 13 |
 | `docs/development/adding-custom-rules.md` | 6 |
 | `docs/development/build-observability.md` | 3 |
 | `docs/development/central-package-management.md` | 9 |
