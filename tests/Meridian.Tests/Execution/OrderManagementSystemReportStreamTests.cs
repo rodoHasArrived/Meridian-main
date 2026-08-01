@@ -138,16 +138,19 @@ public sealed class OrderManagementSystemReportStreamTests
         await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
             "the completion report must reach tracked order state");
 
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10,
-            because: "cumulative reports must apply as increments (5 + 5), never summed (5 + 10)");
-        portfolio.Cash.Should().Be(100_000m - 1_500m);
-
+        // Reading both published fills is the portfolio barrier: each increment is applied before
+        // its report is published, so observing the second one means both have landed. Order
+        // status is not a barrier - see WaitForPublishedFillAsync.
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var first = await oms.ExecutionReports.ReadAsync(readCts.Token);
         var second = await oms.ExecutionReports.ReadAsync(readCts.Token);
         first.FilledQuantity.Should().Be(5m);
         second.FilledQuantity.Should().Be(5m,
             because: "published fills must carry the increment, not the cumulative quantity");
+
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10,
+            because: "cumulative reports must apply as increments (5 + 5), never summed (5 + 10)");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
     }
 
     [Fact]
@@ -182,14 +185,16 @@ public sealed class OrderManagementSystemReportStreamTests
         var order = oms.GetOrder(result.OrderId)!;
         order.FilledQuantity.Should().Be(10m,
             because: "streamed cumulative fill quantities must be capped to the original order quantity");
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
-            because: "portfolio side effects may only apply the remaining authorized quantity");
-        portfolio.Cash.Should().Be(100_000m - 1_500m);
 
+        // The published fill is the portfolio barrier - see WaitForPublishedFillAsync.
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
         published.FilledQuantity.Should().Be(10m,
             because: "downstream consumers must receive the validated fill delta, not the oversized broker value");
+
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
+            because: "portfolio side effects may only apply the remaining authorized quantity");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
     }
 
     [Fact]
@@ -231,13 +236,15 @@ public sealed class OrderManagementSystemReportStreamTests
         order.Quantity.Should().Be(30m);
         order.FilledQuantity.Should().Be(30m,
             because: "fills must be capped to the broker-accepted amended quantity, not the original request");
-        portfolio.Positions["AAPL"].Quantity.Should().Be(30L);
-        portfolio.Cash.Should().Be(100_000m - 4_500m);
 
+        // The published fill is the portfolio barrier - see WaitForPublishedFillAsync.
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
         published.FilledQuantity.Should().Be(30m,
             because: "downstream consumers must receive the full authorized amended fill increment");
+
+        portfolio.Positions["AAPL"].Quantity.Should().Be(30L);
+        portfolio.Cash.Should().Be(100_000m - 4_500m);
     }
 
     [Fact]
