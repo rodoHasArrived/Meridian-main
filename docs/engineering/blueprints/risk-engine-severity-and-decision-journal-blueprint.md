@@ -784,9 +784,21 @@ JSON context rather than reflection-based serialization.
 - Order violations for presentation: severity descending, then rule priority ascending.
 - Return reservations to the caller for settlement at the routing boundary (see Decision 8).
 
-The validator does **not** journal and does **not** settle reservations itself. Both belong to the
-OMS, which owns the order id and the true admission boundary. Keeping them here would reintroduce
-the missing-order-id and double-write defects that Decision 5 exists to prevent.
+The validator does **not** journal. That belongs to the OMS, which owns the order id and the true
+admission boundary; keeping it here would reintroduce the missing-order-id and double-write defects
+that Decision 5 exists to prevent.
+
+Reservations split by ownership rather than by component, and the line is the handoff:
+
+| Phase | Owner | Action |
+| --- | --- | --- |
+| During evaluation, before returning | Validator | **Rolls back** on any exception, on cancellation, and when the aggregate rejects. Nothing has been transferred, so cleanup is still the validator's. |
+| After a normal, admitting return | OMS | **Settles** — commits once the gateway accepts, rolls back on a rejected report or any earlier failure, commits on an ambiguous throw (Decision 8). |
+
+The validator therefore never commits, and the OMS never sees a reservation from an evaluation that
+did not admit. Getting either half wrong has a specific cost: a validator that commits consumes
+capacity for orders that later fail id registration, journaling, or submission; a validator that
+returns without rolling back on a rejection leaks capacity the OMS was never handed.
 
 **Dependencies (constructor-injected)**
 
@@ -857,7 +869,10 @@ throwing rule.
 ### `OrderRateThrottle` (modified)
 
 **Change:** `EvaluateAsync` becomes pure — it reads the window and reports, but no longer enqueues.
-The class implements `IReservingRiskRule`: purge → count → *reserve* stay inside the existing lock, and the reservation is committed or rolled back by the validator.
+The class implements `IReservingRiskRule`: purge → count → *reserve* stay inside the existing lock,
+and the reservation is handed back for settlement under the split in the component contract above —
+rolled back by the validator if the evaluation never admits, otherwise settled by the OMS at the
+routing boundary. The rule itself settles nothing.
 
 **Behavioural note worth calling out in the PR:** this is a *correctness improvement independent of
 the rest of the blueprint*. Today the throttle counts orders that a later gate rejected only because
@@ -971,10 +986,12 @@ decision. `/api/risk/decisions` must filter on the discriminator, not the action
    catalogue to show what an admitted-with-warnings decision looks like; nothing implemented today
    produces one.
 4. Precedence resolves `ApprovedWithWarnings`.
-5. The throttle's reservation is committed; the window keeps the order.
+5. The throttle's reservation is **transferred**, not committed — the validator hands it to the OMS
+   on a normal admitting return.
 6. `RiskDecisionJournal.RecordAsync` writes an `ExecutionAuditEntry` (the decision carries a
    violation, so it journals regardless of `JournalCleanApprovals`).
-7. `IsApproved` is true → the OMS routes the order normally.
+7. `IsApproved` is true → the OMS routes the order, and commits the reservation once the gateway
+   accepts it. The window keeps the order only from that point.
 8. The dashboard's risk panel shows an amber annotation against the order.
 
 **This path is impossible today** — step 3's `Annotate` would be a hard rejection.
@@ -987,11 +1004,20 @@ decision. `/api/risk/decisions` must filter on the discriminator, not the action
    `W9-SAFETY-007`, see above). Both evaluated.
 4. Precedence resolves `Rejected`; violations ordered `[POSITION_LIMIT_EXCEEDED (Error),
    ORDER_RATE_NEAR_LIMIT (Warning)]`.
-5. Commit phase **skipped** — the throttle does not record a blocked order.
-6. Journal writes both violations.
-7. `RejectOrderAsync` records `reasonCode: "POSITION_LIMIT_EXCEEDED"` with both violations in
+5. Commit phase **skipped** — the throttle does not record a blocked order; the validator rolls the
+   reservation back before returning.
+6. `RejectOrderAsync` records `reasonCode: "POSITION_LIMIT_EXCEEDED"` with both violations in
    metadata, and returns the failed `OrderResult`.
-8. The operator sees both findings, not just the position limit.
+7. The operator sees both findings, not just the position limit.
+
+**No separate journal write on this path.** `RiskDecisionJournal` is invoked only for *admitted*
+decisions — as the flow diagram above shows. The `Order`/`OrderRejected` entry that
+`RejectOrderAsync` already appends **is** the journal record for a rejection: it carries the same
+violation metadata, and it has the order id, the actor, and the correlation id that the journal
+would otherwise have to reconstruct. Writing both would produce two audit records for one decision,
+which breaks Decision 5's one-record contract and makes `/api/risk/decisions` return the same
+rejection twice. The read surface in PR 3 therefore unions admitted journal entries with existing
+rejection entries rather than reading a single dedicated action.
 
 ### Rule throws
 
@@ -999,8 +1025,9 @@ decision. `/api/risk/decisions` must filter on the discriminator, not the action
 4. The validator catches it, logs at `Error`, synthesises
    `Block(RISK_RULE_EVALUATION_FAILED, rule: PositionLimit)`.
 5. Aggregate resolves `Rejected` — fail closed.
-6. Journal and rejection path proceed as above, with the failure visible as a violation rather than
-   as an exception that either escapes the gate or silently admits the order.
+6. The rejection path proceeds as above — one `OrderRejected` entry, no separate journal write —
+   with the failure visible as a violation rather than as an exception that either escapes the gate
+   or silently admits the order.
 
 ---
 

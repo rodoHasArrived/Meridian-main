@@ -61,9 +61,21 @@ public enum RiskDecisionKind
 /// <param name="ObservedValue">What the rule measured, when expressible as a number.</param>
 /// <param name="LimitValue">What the rule measured against, when expressible as a number.</param>
 /// <param name="RequiresAcknowledgement">
-/// Requests escalation rather than plain admission. Escalation is a separate axis from severity: a
-/// finding may be low-severity yet still need a human to acknowledge it before routing. Ignored
-/// when the declaring rule's severity blocks, because a blocked order is never admitted.
+/// Marks the decision <see cref="RiskDecisionKind.Escalated"/> instead of
+/// <see cref="RiskDecisionKind.ApprovedWithWarnings"/>. Escalation is a separate axis from severity:
+/// a finding may be low-severity yet still warrant a human looking at it.
+/// <para>
+/// <b>This does not hold the order.</b> <c>Escalated</c> is an admitting decision — the OMS routes
+/// on <c>IsApproved</c>, which is true for every decision except
+/// <see cref="RiskDecisionKind.Rejected"/> — so the flag records that acknowledgement is wanted and
+/// surfaces it to the operator afterwards. It does not gate, queue, or await anything. A rule that
+/// needs an order stopped must declare a blocking <see cref="RiskRuleSeverity"/>; that is the only
+/// lever that prevents routing.
+/// </para>
+/// <para>
+/// Ignored when the declaring rule's severity blocks, since a blocked order is never admitted and
+/// there is nothing to acknowledge.
+/// </para>
 /// </param>
 public sealed record RiskFinding(
     string Code,

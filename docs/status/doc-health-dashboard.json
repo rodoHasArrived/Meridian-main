@@ -1,6 +1,6 @@
 {
   "total_files": 639,
-  "total_lines": 118899,
+  "total_lines": 118939,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2162,7 +2162,7 @@
     },
     {
       "path": "docs/engineering/blueprints/risk-engine-severity-and-decision-journal-blueprint.md",
-      "line_count": 1238,
+      "line_count": 1265,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5282,7 +5282,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2106,
+      "line_count": 2119,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
