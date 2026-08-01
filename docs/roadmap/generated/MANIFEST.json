@@ -1,7 +1,7 @@
 {
   "generator": {
     "name": "build/scripts/docs/render-roadmap-docs.py",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "inputs": [
     {
@@ -22,7 +22,7 @@
     },
     {
       "path": "docs/roadmap/data/roadmap-items.yml",
-      "sha256": "b9ad0616b7fc060c1d2966115a533ec4ad75f7e126ad0bde5d9a2735f4eefd95"
+      "sha256": "1212ad7ef5a4d827aeb1eb0f8dfc6cecfa3b8dd31b14af97efaea2bf38b328c0"
     },
     {
       "path": "docs/roadmap/data/stage-gates.yml",
@@ -32,15 +32,15 @@
   "outputs": [
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "sha256": "dccb26838a6025400f251ccfe7fa1f4d20032e7cce46d6a8563973ee438bbcb8"
+      "sha256": "1ee6c32864af0495d9157550e985e797f42c7443c2cd3c4693adcec14d6ecfe8"
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "85db1224ed6fb92fe89fecd41eb3b69eeb9f49ccc6935f465ba0fe8963e2728c"
+      "sha256": "8db06116e6160f869500f0deb51cb237e5d66923a73a1d5a2486f5d0a3cc01a3"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "sha256": "dccb26838a6025400f251ccfe7fa1f4d20032e7cce46d6a8563973ee438bbcb8"
+      "sha256": "1ee6c32864af0495d9157550e985e797f42c7443c2cd3c4693adcec14d6ecfe8"
     }
   ],
   "schema": {

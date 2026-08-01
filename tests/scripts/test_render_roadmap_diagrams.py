@@ -28,19 +28,20 @@ items:
 """
 
 
-def _item(identifier: str, wave: str) -> str:
-    return (
+def _item(identifier: str, wave: str, sequence: int | None = None) -> str:
+    block = (
         f"  - id: {identifier}\n"
         f"    title: {identifier}\n"
         f"    wave: {wave}\n"
-        "    status: planned\n"
-        "    health: green\n"
     )
+    if sequence is not None:
+        block += f"    sequence: {sequence}\n"
+    return block + "    status: planned\n    health: green\n"
 
 
-def _registry(*entries: tuple[str, str]) -> str:
+def _registry(*entries: tuple[str, str] | tuple[str, str, int]) -> str:
     header = 'schema:\n  id: meridian.roadmap-items\n  version: "1.0.0"\nitems:\n'
-    return header + "".join(_item(identifier, wave) for identifier, wave in entries)
+    return header + "".join(_item(*entry) for entry in entries)
 
 
 class RenderRoadmapDiagramsTests(unittest.TestCase):
@@ -114,6 +115,48 @@ class RenderRoadmapDiagramsTests(unittest.TestCase):
         )
         self.assertEqual(
             ["W5_ACCT_001", "W5X_CONNECT_001", "W6_BTSTUDIO_001"],
+            self._node_order(diagram),
+        )
+
+    def test_explicit_sequence_orders_a_wave_that_numbers_per_area(self) -> None:
+        # W10 numbers per area, so every identifier ends in 001 and the trailing number carries no
+        # rank. Without an explicit sequence the tie falls through to an alphabetical area sort,
+        # which put rank-11 CONSOL first and drew an edge from it into rank-5 JRNL.
+        diagram = self._render(
+            _registry(
+                ("W10-CONSOL-001", "W10", 11),
+                ("W10-JRNL-001", "W10", 5),
+                ("W10-MARK-001", "W10", 1),
+                ("W10-PROV-001", "W10", 3),
+            )
+        )
+        self.assertEqual(
+            ["W10_MARK_001", "W10_PROV_001", "W10_JRNL_001", "W10_CONSOL_001"],
+            self._node_order(diagram),
+        )
+
+    def test_explicit_sequence_overrides_the_identifier_suffix(self) -> None:
+        diagram = self._render(
+            _registry(
+                ("W9-ASSET-010", "W9", 1),
+                ("W9-TRUTH-001", "W9", 2),
+            )
+        )
+        self.assertEqual(["W9_ASSET_010", "W9_TRUTH_001"], self._node_order(diagram))
+
+    def test_items_without_sequence_still_order_by_identifier_suffix(self) -> None:
+        # The field is optional, so waves that already encode rank in the suffix keep working and
+        # a wave may not be uniformly annotated. An unannotated item sorts on its suffix against
+        # an annotated neighbour's declared rank.
+        diagram = self._render(
+            _registry(
+                ("W9-ASSET-010", "W9"),
+                ("W9-DEMO-002", "W9", 20),
+                ("W9-TRUTH-001", "W9"),
+            )
+        )
+        self.assertEqual(
+            ["W9_TRUTH_001", "W9_ASSET_010", "W9_DEMO_002"],
             self._node_order(diagram),
         )
 

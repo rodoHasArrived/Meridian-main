@@ -5,6 +5,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+# Renderer major version. `docs/roadmap/schema-versioning.md` classifies a change in generated
+# output semantics as major-or-renderer-major; 2.0.0 marks the switch from lexical identifier
+# order to shared wave-then-rank order, so an audit can tell which contract produced an artifact.
+ROADMAP_RENDERER_VERSION = "2.0.0"
+
 from common import (
     build_arg_parser,
     generated_header,
@@ -12,6 +17,7 @@ from common import (
     markdown_table,
     repo_path,
     repo_root,
+    roadmap_item_sort_key,
     write_manifest,
     write_text_if_changed,
 )
@@ -26,7 +32,7 @@ def load_roadmap(root: Path) -> tuple[dict, dict, list[Path]]:
 
 
 def render_summary(root: Path, program: dict, roadmap: dict, inputs: list[Path]) -> str:
-    items = sorted(roadmap.get("items", []), key=lambda item: item.get("id", ""))
+    items = sorted(roadmap.get("items", []), key=roadmap_item_sort_key)
     schema_versions = [
         f"{program.get('schema', {}).get('id')}@{program.get('schema', {}).get('version')}",
         f"{roadmap.get('schema', {}).get('id')}@{roadmap.get('schema', {}).get('version')}",
@@ -43,7 +49,7 @@ def render_summary(root: Path, program: dict, roadmap: dict, inputs: list[Path])
         for item in items
     ]
     return (
-        generated_header("build/scripts/docs/render-roadmap-docs.py", schema_versions, [repo_path(path, root) for path in inputs])
+        generated_header("build/scripts/docs/render-roadmap-docs.py", schema_versions, [repo_path(path, root) for path in inputs], ROADMAP_RENDERER_VERSION)
         + "\n# Roadmap Summary\n\n"
         + f"Snapshot date: {program.get('program', {}).get('snapshot_date', '-')}\n\n"
         + markdown_table(["ID", "Title", "Status", "Health", "Priority", "Owner lane"], rows)
@@ -52,10 +58,10 @@ def render_summary(root: Path, program: dict, roadmap: dict, inputs: list[Path])
 
 
 def render_register(root: Path, program: dict, roadmap: dict, inputs: list[Path]) -> str:
-    items = sorted(roadmap.get("items", []), key=lambda item: item.get("id", ""))
+    items = sorted(roadmap.get("items", []), key=roadmap_item_sort_key)
     schema_versions = [f"{roadmap.get('schema', {}).get('id')}@{roadmap.get('schema', {}).get('version')}"]
     parts = [
-        generated_header("build/scripts/docs/render-roadmap-docs.py", schema_versions, [repo_path(path, root) for path in inputs]),
+        generated_header("build/scripts/docs/render-roadmap-docs.py", schema_versions, [repo_path(path, root) for path in inputs], ROADMAP_RENDERER_VERSION),
         "\n# Roadmap Register\n",
         f"\nSnapshot date: {program.get('program', {}).get('snapshot_date', '-')}\n",
     ]
@@ -103,7 +109,7 @@ def main() -> int:
         write_text_if_changed(outputs[1], render_register(root, program, roadmap, inputs)),
         write_text_if_changed(outputs[2], render_summary(root, program, roadmap, inputs)),
     ]
-    manifest_changed = write_manifest(output_dir / "MANIFEST.json", "build/scripts/docs/render-roadmap-docs.py", inputs, outputs, root)
+    manifest_changed = write_manifest(output_dir / "MANIFEST.json", "build/scripts/docs/render-roadmap-docs.py", inputs, outputs, root, ROADMAP_RENDERER_VERSION)
     if args.summary:
         print(f"roadmap docs rendered: {sum(1 for item in changed if item) + int(manifest_changed)} file(s) changed")
     return 0

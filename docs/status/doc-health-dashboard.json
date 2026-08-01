@@ -1,11 +1,11 @@
 {
   "total_files": 637,
-  "total_lines": 115250,
-  "orphaned_count": 258,
+  "total_lines": 115268,
+  "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 218,
-  "average_lines": 180.9,
+  "average_lines": 181.0,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -231,7 +231,6 @@
     "docs/roadmap/generated-doc-policy.md",
     "docs/roadmap/roadmap-governance.md",
     "docs/roadmap/roadmap-item-template.md",
-    "docs/roadmap/schema-versioning.md",
     "docs/roadmap/status-taxonomy.md",
     "docs/security/buyer-packet/architecture-summary.md",
     "docs/security/buyer-packet/control-mapping.md",
@@ -3325,7 +3324,7 @@
     },
     {
       "path": "docs/roadmap/roadmap-item-template.md",
-      "line_count": 28,
+      "line_count": 46,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

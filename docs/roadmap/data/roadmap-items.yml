@@ -1,7 +1,7 @@
 schema:
   id: meridian.roadmap-items
-  version: "1.0.0"
-  minimum_renderer_version: "1.0.0"
+  version: "1.1.0"
+  minimum_renderer_version: "2.0.0"
 
 registry:
   id: roadmap-items
