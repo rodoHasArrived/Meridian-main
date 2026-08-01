@@ -136,6 +136,7 @@ Rank 1 of the 2026-07 W10 depth slate. Valuation freshness is not enforced by de
 
 - `SRC-LEDGER`
 - `SRC-APP`
+- `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
@@ -225,8 +226,8 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 - A break keeps one identity across runs even when its amount, tolerance, or as-of date changes.
 - A break that clears and later recurs is recognizable as the same lineage while remaining a distinct occurrence, so a recurrence neither inherits the age of the original nor overwrites the interval during which it was clear.
 - The queue shows what is new, what remains open and for how long, and what cleared since the prior run, without hiding open work behind a default filter.
-- Break age derived from that identity drives escalation before an SLA is missed.
-- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the lineage identity, the diff projection, the queue surface, and the identity-stability tests.
+- Break age derived from that identity drives escalation before an SLA is missed, measured against the business and holiday calendars the SLA policy names rather than a weekends-only approximation.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the lineage identity, the diff projection, the queue surfaces on both workstation lanes, and the identity-stability and calendar-boundary tests.
 
 ### Source Modules
 
@@ -235,6 +236,7 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
+- `SRC-WPF`
 
 ## W10-RECON-002 - Break clustering and bulk-resolution activation
 | Field | Value |
@@ -264,6 +266,8 @@ Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than c
 
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-STRATEGIES`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 
 ## W10-RECON-003 - Unified tolerance model and what-if replay workbench
@@ -315,7 +319,7 @@ Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes toda
 
 - A manual match teaches a candidate rule that never acts until an operator promotes it.
 - Promotion requires adjudicated outcomes meeting a stated sample size and precision bound, and a raw hit count is never sufficient on its own.
-- A promoted rule can never match across a record kind or currency the underlying matcher keeps separate.
+- A promoted rule retains every immutable identity predicate its match kind enforces - record kind, instrument, and currency - so it can never match across a boundary the underlying matcher keeps separate.
 - Every match a learned rule produces names that rule and its promoting operator in retained evidence that survives a restart.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the candidate capture, the promotion gate, the engine seam, and the attribution tests.
 

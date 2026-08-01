@@ -165,6 +165,10 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 - **A mark dated after the valuation date is currently treated as fresh.** The assessment computes a
   negative age, clamps it to zero, and returns fresh; a test pins that behavior. A fail-closed policy
   that only blocks *old* marks still admits prices that were not observable as of the valuation.
+- The shared position read models carry no mark observation date or age. The fund portfolio position,
+  the portfolio position summary, and the workstation trading position row all live in the shared
+  contracts and none exposes freshness; the trading row carries a mark price with no date attached.
+  Without extending those contracts, each client would infer freshness independently or omit it.
 
 ### `W10-RECON-001` — break identity
 
@@ -173,7 +177,15 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   as-of date, and the accounting period — so a one-cent move produces a different break.
 - A single-hop, caller-supplied re-key hook already acknowledges the instability, but it is a patch,
   not a lineage chain.
-- The SLA policy declares a holiday-calendar field that is never read; the calendar is weekend-only.
+- **The SLA policy declares calendars the calculator never reads.** `BusinessCalendarId` and
+  `HolidayCalendarIds` sit on the policy contract, while the calculator inspects only `DayOfWeek` and
+  skips Saturday and Sunday. A break detected around a market holiday is escalated early and banded
+  at the wrong business age, so lineage-derived age needs calendar resolution and holiday-boundary
+  tests, not just a stable identity.
+- The desktop lane consumes the same queue: the WPF fund reconciliation workbench service loads the
+  same break-queue item collection and maps it into the Fund Ledger queue. Lineage and occurrence
+  fields added for the browser alone would leave the two co-equal lanes with different queue
+  semantics.
 - The queue carries a single break identifier and nothing distinguishing a lineage from an occurrence
   of it. Adding lineage alone leaves a cleared-then-recurring break able to reopen its original item
   and keep the original SLA age, or to overwrite the interval during which it was clear. Lineage and
@@ -299,8 +311,12 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 - The matching engine is sealed with a hard-coded stage ladder and no stage abstraction, so an ordered
   stage collection must be introduced.
 - The matcher deliberately separates position, cash, and transaction matching and enforces currency
-  and instrument identity as prerequisites. A learned rule generalized without those predicates could
-  let a reviewed pattern in one currency suppress an unrelated break in another.
+  and instrument identity as prerequisites. Position matching requires `SecurityId` on both exact and
+  tolerance tiers, and transaction matching compares `SecurityId` *instead of* currency whenever
+  either side is security-backed. So instrument is an identity predicate in its own right, not a
+  subcase of currency: a rule generalized on counterparty, description, account, sign, and a numeric
+  tolerance could match an unrelated security in the same account. A promoted rule has to retain every
+  immutable predicate its match kind enforces.
 - A competing reconciliation vocabulary exists in the functional calculation projects; do not grow a
   second matching model there.
 
