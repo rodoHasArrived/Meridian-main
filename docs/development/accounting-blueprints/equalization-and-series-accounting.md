@@ -632,6 +632,7 @@ public sealed record InvestorSubscriptionLot
             throw new ArgumentOutOfRangeException(nameof(grossNavPerShareAtEntry), "Per-share values cannot be negative.");
         if (string.IsNullOrWhiteSpace(currency))
             throw new ArgumentException("Currency must not be null or whitespace.", nameof(currency));
+        ArgumentNullException.ThrowIfNull(feeContext);
 
         InvestorId = investorId.Trim();
         SubscriptionId = subscriptionId.Trim();
@@ -640,6 +641,7 @@ public sealed record InvestorSubscriptionLot
         GrossNavPerShareAtEntry = grossNavPerShareAtEntry;
         NetNavPerShareAtEntry = netNavPerShareAtEntry;
         PeakPerShareAtEntry = peakPerShareAtEntry;
+        FeeContext = feeContext;
         Currency = currency.Trim();
     }
 
@@ -651,6 +653,10 @@ public sealed record InvestorSubscriptionLot
     public decimal NetNavPerShareAtEntry { get; }
     public decimal PeakPerShareAtEntry { get; }
     public string Currency { get; }
+
+    /// <summary>This lot's own dated fee context — see the note above the record. Never substitute
+    /// the period-level FundContext: PeriodFraction runs from THIS SubscriptionDate.</summary>
+    public IncentiveFeeContext FeeContext { get; }
 
     public EqualizationZone Zone =>
         GrossNavPerShareAtEntry > PeakPerShareAtEntry ? EqualizationZone.AbovePeak
@@ -767,13 +773,29 @@ public static class EqualizationProjector
 
 public static class SeriesAccountingProjector
 {
-    /// <summary>Method B: per-series fee + roll-up into the lead series for one crystallization.</summary>
+    /// <summary>
+    /// Method B: per-series fee + roll-up into the lead series for one crystallization.
+    ///
+    /// Takes a per-series IncentiveFeeContext, NOT bare PartnershipInvestorAllocationInput values.
+    /// This projector is pure: it cannot derive hurdle, catch-up, contributed-capital basis, reset
+    /// mode, or period fraction from allocation inputs, so an interface carrying only those forces
+    /// every implementation back onto the flat-rate legacy calculation — producing wrong fees and
+    /// wrong HWMs for any series on such a policy, which is exactly what §9 forbids.
+    /// </summary>
     public static SeriesCrystallizationProjection Crystallize(
         IReadOnlyList<FundSeriesDefinition> series,
         IReadOnlyList<SeriesHolding> holdings,
-        IReadOnlyList<PartnershipInvestorAllocationInput> perSeriesInputs,
+        IReadOnlyList<SeriesFeeInput> perSeriesInputs,      // context + prior state, per series
         DateOnly effectiveDate);
 }
+
+/// <summary>One series' complete policy-aware fee inputs for a crystallization.</summary>
+public sealed record SeriesFeeInput(
+    string SeriesId,
+    IncentiveFeeContext Context,                // hurdle, catch-up, reset mode, period fraction
+    IncentiveFeeStateRecord PriorState,         // that series' live HWM/LCF scope
+    decimal UnitsOutstanding);                  // scale-in/scale-out basis (§6.1)
+
 ```
 
 ### 8.2 Application service (governed orchestration)

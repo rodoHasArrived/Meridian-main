@@ -677,8 +677,12 @@ PR3 Borrowings.
 
 ### Phase 1: Foundation (all PRs)
 
-- [ ] Append the new `LedgerAccounts` factory methods plus XML docs.
-- [ ] Append the `AutomatedJournalEventKind` members.
+- [x] `LedgerAccounts.AccumulatedDepreciationFor` / `DepreciationExpenseFor` — **shipped with
+      Phase 2; do not rebuild.**
+- [ ] Append the *repo/borrowing* `LedgerAccounts` factory methods plus XML docs.
+- [x] `AutomatedJournalEventKind.DepreciationPosted` — **already on the enum; do not re-append.**
+- [ ] Append the three remaining members: `RepoInterestAccrued`, `BorrowingInterestAccrued`,
+      `DebtIssuanceCostAmortized`.
 - [ ] Add `FinancingOptions` plus the `appsettings` section plus DI registration via
       `AddOptions<FinancingOptions>().BindConfiguration(FinancingOptions.SectionName)` (not manual
       `Configure`) so `IOptionsMonitor` hot-reload works.

@@ -963,14 +963,14 @@ New suites under `tests/Meridian.Tests/FinancialOperations/PrivateCapital/` and
 
 ## 10. Implementation checklist (ordered, code-ready)
 
-1. **Enums + domain records** — add `src/Meridian.Ledger/PrivateCapitalCommitments.cs`
+1. ✅ **SHIPPED — do not rebuild.** **Enums + domain records** — `src/Meridian.Ledger/PrivateCapitalCommitments.cs`
    (`CommitmentStatus`, `DrawdownInstallmentStatus`, `DistributionRecallability`,
    `DefaultInterestConvention`, `InvestorCommitment`, `DrawdownSchedule`, `DrawdownInstallment`,
    `CommitmentRollForward`, `CommitmentRollForwardStep`, `RecallableDistributionEvent`,
    `CapitalCallDefault`, `DefaultInterestAccrual`). Money `decimal`, dates `DateOnly`.
-2. **Interest math** — `DefaultInterestCalculator.ComputeSimpleInterest(...)` + `Thirty360Days(...)`,
+2. ✅ **SHIPPED — do not rebuild.** **Interest math** — `DefaultInterestCalculator.ComputeSimpleInterest(...)` + `Thirty360Days(...)`,
    pure, unit-tested first (§9.3).
-3. **Roll-forward calculator** — `CommitmentRollForwardCalculator.Build(...)` in
+3. ✅ **SHIPPED — do not rebuild.** **Roll-forward calculator** — `CommitmentRollForwardCalculator.Build(...)` in
    `src/Meridian.FinancialOperations/PrivateCapital/`, folding
    `PrivateCapitalActivityProjectionDto.FundEvents` + commitments; emit invariant-breach validation
    issues.
@@ -980,7 +980,11 @@ New suites under `tests/Meridian.Tests/FinancialOperations/PrivateCapital/` and
    `DrawdownInstallmentId`, `Recallability` (optional trailing); thread into
    `PrivateCapitalActivityProjectionBuilder` and stamp `commitmentId` / `drawdownInstallmentId` /
    `recallable` tags; add optional fields to `PrivateCapitalFundEventDto`.
-6. **Draft factory** — `ICapitalCallDraftFactory` (`BuildCapitalCallDraft`,
+6. **Draft factory — PARTIALLY SHIPPED.** ✅ Draft *construction* (`CapitalCallDraftFactory`,
+   `CapitalCallPlanBuilder`, `CapitalCallScheduleDraftBuilder`) is in source; do not rebuild it.
+   ⬜ Still open: approval, durable posting, projection-driven installment transition, and funding
+   orchestration — §7.2 steps 2–5, which no service performs today.
+   Original text: `ICapitalCallDraftFactory` (`BuildCapitalCallDraft`,
    `BuildDefaultInterestDraft`) producing balanced `AutomatedJournalDraft`s with all Critical-gate
    metadata; post via `AutomatedJournalApproval` + `LockedAccountingPeriodBook.EnsureCanPost`.
 7. **Wire DTOs** — `PrivateCapitalCommitmentDtos.cs` (`CommitmentRollForwardDto`,

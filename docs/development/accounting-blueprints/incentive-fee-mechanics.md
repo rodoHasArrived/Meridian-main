@@ -871,7 +871,12 @@ that must carry each series' **own NAV basis**, not just its key:
 /// reproduce it.</summary>
 public sealed record IncentiveFeeSeriesInput(
     string SeriesId,
-    decimal UnitsOutstanding,               // scale-in/scale-out basis (equalization §6.1)
+    // TWO unit counts, not one. §5.4 prices a redemption-date fee on the POSITIVE pre-redemption
+    // units, then uses the post-redemption count to decide whether the scope closes. A single
+    // value cannot do both: pass 0 and the fee basis is unusable; pass the prior units and the
+    // evaluator cannot tell a full close from a partial redemption.
+    decimal UnitsOutstandingBeforeRedemption,   // the pricing basis; > 0
+    decimal UnitsOutstandingAfterRedemption,    // 0 ⇒ full close, scope goes Closed, no divide-back
     decimal BeginningNavPerShare,
     decimal EndingNavPerShareBeforeFees,    // gross, before this period's accrual
     // Required when HurdleBasis == ContributedCapital: IncentiveFeeCalculator reads
@@ -1162,7 +1167,7 @@ IIncentiveFeeStateService.CommitAsync
   ├─ AutomatedJournalApproval.Submit(draft, actor, now, reason)              (Draft→Submitted; refuses unbalanced)
   ├─ .Approve(actor, now, reason, evidenceLinks)                             (requires evidence)
   └─ ICommitIncentiveFeePeriod.CommitAsync(approvals, scopeCommits)   // scopeCommits: one (state, snapshot, expectedVersion) PER SCOPE
-        ├─ DurableAutomatedJournalPoster.PostAsync(approval, ...)            (Approved→Posted; appends via the governed journal store)
+        ├─ ITransactionalLedgerJournalStore.AppendAsync(conn, txn, entry, ct)  (Approved→Posted; SHARES this port's transaction — NOT DurableAutomatedJournalPoster, which commits its own; see below)
         └─ incentive_fee_state upsert + snapshot insert                      (same transaction, sets snapshot.SourceJournalEntryId)
 ```
 
@@ -1275,7 +1280,8 @@ public sealed record IncentiveFeeStateDto(
     DateOnly? LastCrystallizedDate, decimal CumulativeCrystallizedFee, decimal AccruedFeeBalance);
 
 public sealed record IncentiveFeeSeriesInputDto(
-    string SeriesId, decimal UnitsOutstanding,
+    string SeriesId,
+    decimal UnitsOutstandingBeforeRedemption, decimal UnitsOutstandingAfterRedemption,
     decimal BeginningNavPerShare, decimal EndingNavPerShareBeforeFees,
     decimal ContributedCapital, bool IsRedemption = false);
 
@@ -1423,8 +1429,14 @@ public const string LedgerIncentiveFeeTransitionModel = "/api/ledger/incentive-f
 >     // conversion is expressible. Σ issued units must equal the book's current units — asserted.
 >     IReadOnlyList<SeriesConversionDto>? TargetSeries,   // Contracts-owned; see the layering note
 >     decimal? OpeningHighWaterMarkPerShare,      // required when moving TO FundLevel
->     // The APPROVED value-preserving reclassification for the ownership change (equalization §11).
->     IncentiveFeePostingCommand Reclassification,
+>     DateOnly ValuationDate,                     // the NAV date the conversion ratio is struck on
+>     decimal NavPerShareAtValuation,             // source-side NAV/share; ratio = this / issue price
+>     // The APPROVED reclassification, referenced by ID — NOT the domain command. Contracts is a
+>     // leaf, and IncentiveFeePostingCommand's fields (AutomatedJournalApproval,
+>     // AutomatedJournalPostingContext) both live in Meridian.Ledger, so embedding it is the same
+>     // Contracts→Ledger violation the layering rule forbids. The application layer resolves this
+>     // id to the domain command at the boundary.
+>     Guid ReclassificationApprovalId,
 >     string TransitionBasisNote,
 >     bool AcknowledgeScopeRewrite);
 >
