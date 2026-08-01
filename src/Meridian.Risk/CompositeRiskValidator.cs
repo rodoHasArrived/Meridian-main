@@ -78,7 +78,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     violations.Add(ToViolation(rule, finding));
                 }
             }
-        }
+
             // Cancellation during the final rule would otherwise go unnoticed: the loop's check
             // runs before each rule, so a rule that reserves and then returns just after the token
             // is cancelled has no later check to catch it. Without this, a cancelled submission
