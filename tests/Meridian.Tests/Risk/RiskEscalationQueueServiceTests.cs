@@ -48,6 +48,45 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Consume_BySubmitterOfTheParkedOrder_IsRefused()
+    {
+        var queue = CreateQueue();
+        var entry = queue.Park(CreateOrder(), "escalated", actor: "trader-alice");
+
+        // Approved without releasing: the entry stays armed, and Alice already learned this
+        // escalation id from her own parked response. Resubmitting the order with the token
+        // must not let her route it — that is the approval endpoint's self-submitter check
+        // reached by a cheaper path.
+        queue.Approve(entry.EscalationId, actor: "risk-desk", reason: "cleared with PM").Should().NotBeNull();
+
+        var selfRelease = WithApprovalToken(CreateOrder(), entry.EscalationId) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId,
+                ["actor"] = "trader-alice"
+            }
+        };
+
+        queue.TryConsumeApproval(selfRelease).Should().BeNull("the submitter cannot release their own order");
+        queue.TryGet(entry.EscalationId)!.Status.Should().Be(
+            RiskEscalationStatus.Approved,
+            "a refused release leaves the decision armed for someone authorized to act on it");
+
+        // Another operator carrying the same token still releases it.
+        var peerRelease = WithApprovalToken(CreateOrder(), entry.EscalationId) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId,
+                ["actor"] = "trader-bob"
+            }
+        };
+
+        queue.TryConsumeApproval(peerRelease).Should().NotBeNull();
+    }
+
+    [Fact]
     public void ApproveThenConsume_ReleasesExactlyOnce()
     {
         var queue = CreateQueue();

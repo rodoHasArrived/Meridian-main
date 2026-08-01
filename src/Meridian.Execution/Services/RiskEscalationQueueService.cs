@@ -396,6 +396,23 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
             string? releaseActor = null;
             request.Metadata?.TryGetValue("actor", out releaseActor);
+
+            // Segregation of duties applies to the release, not just the decision. An
+            // approval recorded without releasing leaves the entry armed, and the submitter
+            // already learned its escalation id from their own parked response — so they can
+            // resubmit the order carrying that token and route it themselves, bypassing the
+            // approval endpoint's self-submitter check. The token proves a decision was
+            // granted; it does not make the holder eligible to act on it.
+            if (!string.IsNullOrWhiteSpace(releaseActor) &&
+                !string.IsNullOrWhiteSpace(entry.Actor) &&
+                string.Equals(releaseActor.Trim(), entry.Actor.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning(
+                    "Governed approval {EscalationId} rejected: the order's own submitter cannot release it",
+                    entry.EscalationId);
+                return null;
+            }
+
             var released = entry with
             {
                 Status = RiskEscalationStatus.Released,
