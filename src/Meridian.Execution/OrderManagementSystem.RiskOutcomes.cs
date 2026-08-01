@@ -112,7 +112,8 @@ public sealed partial class OrderManagementSystem
             OrderState = parkedState,
             RequiresApproval = true,
             EscalationId = riskResult.EscalationId,
-            RiskWarnings = riskResult.Warnings.Count > 0 ? riskResult.Warnings : null
+            RiskWarnings = riskResult.Warnings.Count > 0 ? riskResult.Warnings : null,
+            RiskDecision = riskResult.ToSummary()
         };
     }
 
@@ -551,10 +552,17 @@ public sealed partial class OrderManagementSystem
     /// to hand back to the caller, or the speculative <paramref name="Reservation"/> that
     /// publishes the amended size to concurrent placements while the amendment routes.
     /// </summary>
+    /// <param name="RiskDecision">
+    /// The approved amendment's risk decision, carrying any capacity a stateful rule reserved to
+    /// admit it. Null when no validator ran or the amendment was refused — a refusal releases its
+    /// own capacity before returning, so only an approved amendment hands anything to the caller,
+    /// which settles it once the gateway has answered.
+    /// </param>
     private readonly record struct AmendmentGateResult(
         OrderState? Reservation,
         string? Refusal,
-        IReadOnlyList<string>? Warnings);
+        IReadOnlyList<string>? Warnings,
+        RiskValidationResult? RiskDecision = null);
 
     /// <summary>
     /// Revalidates a risk-increasing amendment and reserves the amended exposure under the
@@ -571,6 +579,11 @@ public sealed partial class OrderManagementSystem
         IReadOnlyList<string>? warnings = null;
         string? consumedApprovalId = null;
 
+        // An amendment revalidation goes through the same reserving rules a placement does, so it
+        // takes real capacity. Discarding the result would hold that slot for the process's
+        // lifetime and eventually block every later order.
+        RiskValidationResult? amendmentDecision = null;
+
         await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -579,12 +592,16 @@ public sealed partial class OrderManagementSystem
                 var amendedRisk = await _riskValidator.ValidateOrderAsync(amendmentProbe, ct).ConfigureAwait(false);
                 warnings = amendedRisk.Warnings.Count > 0 ? amendedRisk.Warnings : null;
                 consumedApprovalId = amendedRisk.ConsumedApprovalId;
+                amendmentDecision = amendedRisk;
 
                 if (!amendedRisk.IsApproved)
                 {
                     // An amendment is never parked: the original order stays live and the
                     // caller is told the increase was refused. Any approval token consumed
                     // by this evaluation is re-armed because nothing changed.
+                    // Refused: nothing routes, so release the capacity now rather than handing an
+                    // unsettleable handle to a caller whose only outcome is a refusal.
+                    SettleRiskReservations(amendmentDecision, commit: false, orderId);
                     RestoreConsumedApprovals(consumedApprovalId, "an amendment refused by risk validation");
                     var refusal = amendedRisk.RequiresApproval
                         ? $"Modification requires governed approval and was not applied: {amendedRisk.RejectReason}"
@@ -605,8 +622,14 @@ public sealed partial class OrderManagementSystem
             };
             if (_orders.TryUpdate(orderId, reservation, state))
             {
-                return new AmendmentGateResult(reservation, null, warnings);
+                return new AmendmentGateResult(reservation, null, warnings, amendmentDecision);
             }
+        }
+        catch
+        {
+            // Cancelled or faulted before the amendment could be published: nothing routed.
+            SettleRiskReservations(amendmentDecision, commit: false, orderId);
+            throw;
         }
         finally
         {
@@ -616,6 +639,8 @@ public sealed partial class OrderManagementSystem
         // The order moved underneath the gate, so the amended exposure was never published.
         // Routing the amendment anyway would raise the broker-side size while every
         // concurrent placement still measured the smaller order, so refuse it instead.
+        // The amendment lost the race and never published its exposure, so nothing can route.
+        SettleRiskReservations(amendmentDecision, commit: false, orderId);
         RestoreConsumedApprovals(consumedApprovalId, "an amendment whose exposure could not be reserved");
         _logger.LogWarning(
             "Order {OrderId} amendment was not applied: the order changed while its amended exposure was being reserved",

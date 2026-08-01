@@ -138,6 +138,26 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 }
             }
 
+            // Critical side effects run over the whole evaluated set, before any outcome is
+            // selected. The desk-wide halt belongs to the breach, not to whichever rule happens to
+            // own the returned rejection: an earlier-priority Error rule must not swallow it.
+            foreach (var (rule, result) in evaluated)
+            {
+                if (result.IsApproved || result.IsUnmeasurable || result.RequiresApproval)
+                {
+                    continue;
+                }
+
+                if (rule.Severity == RiskRuleSeverity.Critical && !IsEvaluationFailure(result))
+                {
+                    _logger.LogError(
+                        "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
+                        rule.RuleName);
+                    await TripCircuitBreakerAsync(rule, reason: DescribeRefusal(rule, result), ct)
+                        .ConfigureAwait(false);
+                }
+            }
+
             foreach (var (rule, result) in evaluated)
             {
                 if (result.Warnings.Count > 0)
@@ -150,9 +170,26 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     continue;
                 }
 
-                var reason = string.IsNullOrWhiteSpace(result.RejectReason)
-                    ? $"Rejected by risk rule '{rule.RuleName}'."
-                    : result.RejectReason;
+                var reason = DescribeRefusal(rule, result);
+
+                // P1: a rule that could not run has established nothing, whatever severity it
+                // declares. Applying the declared severity here would let an Info or Warning rule
+                // that threw or timed out fall into the annotate-and-continue case and admit the
+                // order — routing precisely when one of its configured checks did not happen. The
+                // refusal blocks, but stays unmeasurable so it cannot halt the desk.
+                if (IsEvaluationFailure(result))
+                {
+                    _logger.LogError(
+                        "Risk rule {RuleName} ({Severity}) could not be evaluated; the order is refused",
+                        rule.RuleName,
+                        rule.Severity);
+                    return Block(RestoreOnFailure(
+                        WithWarnings(RiskValidationResult.Unmeasurable(reason) with
+                        {
+                            Code = EvaluationFailedCode,
+                        }, warnings),
+                        releasedEntries));
+                }
 
                 // A rule can escalate explicitly via its result; otherwise its declared
                 // severity decides the outcome of the failure.
@@ -201,11 +238,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
                             WithWarnings(RiskValidationResult.Unmeasurable(reason), warnings),
                             releasedEntries));
 
+                    // The breaker was already tripped in the side-effect pass above, which runs
+                    // over every rule so an earlier rejection cannot skip it.
                     case RiskRuleSeverity.Critical:
-                        _logger.LogError(
-                            "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
-                            rule.RuleName);
-                        await TripCircuitBreakerAsync(rule, reason, ct).ConfigureAwait(false);
                         return Block(RestoreOnFailure(
                             WithWarnings(RiskValidationResult.Rejected(reason), warnings),
                             releasedEntries));
@@ -270,6 +305,19 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// Stable code recorded when a rule itself fails, rather than reporting a breach.
     /// </summary>
     public const string EvaluationFailedCode = "RISK_RULE_EVALUATION_FAILED";
+
+    /// <summary>
+    /// True when the rule could not be evaluated at all — it threw, or it overran the per-rule
+    /// ceiling. Distinct from a rule that ran and refused the order: nothing was measured, so the
+    /// declared severity says nothing about what the outcome should be.
+    /// </summary>
+    private static bool IsEvaluationFailure(RiskValidationResult result) =>
+        string.Equals(result.Code, EvaluationFailedCode, StringComparison.Ordinal);
+
+    private static string DescribeRefusal(IRiskRule rule, RiskValidationResult result) =>
+        string.IsNullOrWhiteSpace(result.RejectReason)
+            ? $"Rejected by risk rule '{rule.RuleName}'."
+            : result.RejectReason;
 
     /// <summary>
     /// Runs one rule under the per-rule timeout, taking its reservation when it has one, and

@@ -71,6 +71,32 @@ public sealed class CompositeRiskValidatorTests
             .Which.Code.Should().Be(CompositeRiskValidator.EvaluationFailedCode);
     }
 
+    /// <summary>
+    /// A rule that could not run has established nothing, whatever severity it declares. Applying
+    /// the declared severity would let a failed Info or Warning check fall into annotate-and-admit
+    /// and route the order precisely when one of its configured checks did not happen.
+    /// </summary>
+    [Theory]
+    [InlineData(RiskRuleSeverity.Info)]
+    [InlineData(RiskRuleSeverity.Warning)]
+    public async Task ValidateOrderAsync_WhenANonBlockingRuleFaults_StillRefusesTheOrder(
+        RiskRuleSeverity severity)
+    {
+        var faulting = new ThrowingRiskRule("advisory", new InvalidOperationException("feed down"))
+        {
+            Severity = severity,
+        };
+        var validator = new CompositeRiskValidator(
+            [faulting],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse("a check that did not run cannot admit an order");
+        result.Code.Should().Be(CompositeRiskValidator.EvaluationFailedCode);
+        result.IsUnmeasurable.Should().BeTrue("no breach was measured, so the desk must not halt");
+    }
+
     [Fact]
     public async Task ValidateOrderAsync_WhenBlockedAfterReserving_ReleasesTheReservation()
     {
@@ -825,6 +851,8 @@ public sealed class CompositeRiskValidatorTests
     private sealed class ThrowingRiskRule(string ruleName, Exception failure) : IRiskRule
     {
         public string RuleName => ruleName;
+
+        public RiskRuleSeverity Severity { get; init; } = RiskRuleSeverity.Error;
 
         public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
             throw failure;

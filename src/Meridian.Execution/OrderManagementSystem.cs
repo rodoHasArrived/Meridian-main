@@ -368,6 +368,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             if (_riskValidator is not null)
             {
                 var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
+                riskDecision = riskResult;
                 if (!riskResult.IsApproved)
                 {
                     // A parked escalation is not a rejection: the order awaits a governed
@@ -399,12 +400,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         ct,
                         rejectionSource: "risk validator",
                         metadata: BuildRiskWarningsAuditMetadata(riskResult.Warnings),
-                        riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null)
+                        riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null,
+                        riskDecision: riskResult.ToSummary())
                         .ConfigureAwait(false);
                 }
 
                 consumedApprovalId = riskResult.ConsumedApprovalId;
-                riskDecision = riskResult;
 
                 // Non-blocking flags (warning-severity breaches, observe bands) must survive
                 // an approved order: carry them on the result and retain them durably.
@@ -814,6 +815,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // it upward. Validation and the amended reservation run under the same gate as a
         // placement so a concurrent order cannot slip past the increased exposure.
         OrderState? speculativeReservation = null;
+        RiskValidationResult? amendmentDecision = null;
+        var amendmentDispatchAttempted = false;
         IReadOnlyList<string>? amendmentWarnings = null;
         if (IsRiskIncreasing(state, modification))
         {
@@ -842,11 +845,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             }
 
             speculativeReservation = gate.Reservation;
+            amendmentDecision = gate.RiskDecision;
         }
 
         ExecutionReport report;
         try
         {
+            amendmentDispatchAttempted = true;
             report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
         }
         catch
@@ -854,12 +859,19 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // The gateway never accepted the amendment: the speculative reservation must
             // not outlive the attempt, or the order table and every exposure snapshot
             // would keep reserving a size the broker does not hold.
+            //
+            // The rate slot follows the placement path's rule rather than the state
+            // reservation's: a modify that threw after dispatch may still have reached the venue,
+            // so it is committed. Over-counting a rate window is the safe direction.
+            SettleRiskReservations(amendmentDecision, commit: amendmentDispatchAttempted, orderId);
             RollBackSpeculativeReservation(orderId, speculativeReservation, state);
             throw;
         }
 
         if (report.OrderStatus is OrderStatus.Rejected)
         {
+            // The broker refused the amendment outright, so nothing routed.
+            SettleRiskReservations(amendmentDecision, commit: false, orderId);
             RollBackSpeculativeReservation(orderId, speculativeReservation, state);
             // Do not apply a rejected modify to order state: ApplyReport would let the terminal
             // Rejected overwrite a completed Filled/Cancelled order, and returning Success would
@@ -882,6 +894,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 ErrorMessage = report.RejectReason ?? "Modify request rejected"
             };
         }
+
+        // The amendment reached the venue and was accepted, so its capacity is spent.
+        SettleRiskReservations(amendmentDecision, commit: true, orderId);
 
         // The gateway report stream is not an authorization channel. Only this locally
         // initiated modification may change the quantity cap, and it may do so only to
@@ -1814,7 +1829,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         string rejectionSource,
         string? reasonCode = null,
         IReadOnlyDictionary<string, string>? metadata = null,
-        IReadOnlyList<string>? riskWarnings = null)
+        IReadOnlyList<string>? riskWarnings = null,
+        RiskDecisionSummary? riskDecision = null)
     {
         var rejectedState = CreateRejectedState(orderId, request, message);
         // TryAdd, not the indexer: gate rejections run before the order id is registered, so an
@@ -1846,7 +1862,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             OrderId = orderId,
             ErrorMessage = message,
             OrderState = rejectedState,
-            RiskWarnings = riskWarnings
+            RiskWarnings = riskWarnings,
+            RiskDecision = riskDecision
         };
     }
 
