@@ -67,7 +67,12 @@ public sealed class CompositeRiskValidator : IRiskValidator
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var violations = new List<RiskViolation>();
+        // Priority is carried from the rule that produced each finding rather than recovered later
+        // from RuleName. A name is a display label and nothing enforces its uniqueness: with two
+        // rules sharing one, a name lookup returns the first match's priority, so a low-priority
+        // rule's violation could sort ahead of a higher-priority one and be reported as the reason
+        // the order was rejected.
+        var violations = new List<(RiskViolation Violation, int Priority)>();
         var reservations = new List<IRiskReservation>();
 
         try
@@ -78,7 +83,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 var violation = await EvaluateRuleAsync(rule, request, reservations, ct).ConfigureAwait(false);
                 if (violation is not null)
                 {
-                    violations.Add(violation);
+                    violations.Add((violation, rule.Priority));
                 }
             }
 
@@ -96,9 +101,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
             throw;
         }
 
+        // OrderBy is stable, so rules of equal severity and priority stay in registration order.
         var ordered = violations
-            .OrderByDescending(static violation => violation.Severity)
-            .ThenBy(violation => RulePriority(violation.RuleName))
+            .OrderByDescending(static entry => entry.Violation.Severity)
+            .ThenBy(static entry => entry.Priority)
+            .Select(static entry => entry.Violation)
             .ToList();
 
         var result = RiskValidationResult.FromViolations(ordered);
@@ -297,19 +304,6 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 ObservedValue: finding.ObservedValue,
                 LimitValue: finding.LimitValue,
                 RequiresAcknowledgement: finding.RequiresAcknowledgement);
-
-    private int RulePriority(string ruleName)
-    {
-        for (var i = 0; i < _rules.Count; i++)
-        {
-            if (string.Equals(_rules[i].RuleName, ruleName, StringComparison.Ordinal))
-            {
-                return _rules[i].Priority;
-            }
-        }
-
-        return int.MaxValue;
-    }
 
     /// <summary>
     /// Releases every reservation taken so far, continuing past any that fails.

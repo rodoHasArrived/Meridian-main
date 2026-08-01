@@ -463,12 +463,25 @@ public interface IReservingRiskRule : IRiskRule
     /// would consume. The reservation is non-null whenever capacity was taken and must be
     /// settled by the validator on every path.
     /// </summary>
-    Task<(RiskFinding? Finding, IRiskReservation? Reservation)> EvaluateAndReserveAsync(
+    /// <remarks>
+    /// An implementation that has taken capacity must not let an exception escape before returning
+    /// it. The handle reaches the validator only through the returned result, so a task that faults
+    /// or cancels after reserving strands the capacity where nothing can release it.
+    /// </remarks>
+    Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
         OrderRequest request,
         CancellationToken ct = default);
 }
 
+/// <summary>Outcome of an atomic evaluate-and-reserve step.</summary>
+public readonly record struct RiskRuleReservationResult(
+    RiskFinding? Finding,
+    IRiskReservation? Reservation);
+
 ```
+
+A named result type rather than a tuple: this is a public extension point, and a tuple's element
+names are not part of the signature a host rule has to match.
 
 `IRiskReservation` lives in `Meridian.Execution.Sdk`, not here: the OMS receives these handles and
 settles them at the routing boundary (Decision 8), so `Meridian.Execution` has to see the type.
@@ -540,10 +553,26 @@ public sealed record RiskValidationOutcome(
 
 public sealed record RiskValidationResult
 {
-    public required RiskDecisionKind Decision { get; init; }
+    /// <summary>
+    /// Construction is factory-only, and both members are get-only. The decision has to follow from
+    /// the violations — that is the point of severity-driven evaluation — but a public initializer
+    /// would let any caller pair <c>Approved</c> with a blocking violation, and the OMS routes on
+    /// <c>IsApproved</c>. The decision is a constructor argument rather than an initialiser because
+    /// the default <c>RiskDecisionKind</c> is <c>Approved</c>, so a factory that forgot to set it
+    /// would fail open.
+    /// </summary>
+    private RiskValidationResult(RiskDecisionKind decision, IReadOnlyList<RiskViolation> violations)
+    {
+        Decision = decision;
+        // Wrapped here rather than in each factory, so one added later cannot forget. A snapshot
+        // left as an array is castable back to RiskViolation[] and writable through that cast.
+        Violations = violations.ToList().AsReadOnly();
+    }
+
+    public RiskDecisionKind Decision { get; }
 
     /// <summary>Every finding, ordered by severity descending, then rule priority ascending.</summary>
-    public IReadOnlyList<RiskViolation> Violations { get; init; } = [];
+    public IReadOnlyList<RiskViolation> Violations { get; }
 
     /// <summary>Preserved for existing callers. True for every decision except <see cref="RiskDecisionKind.Rejected"/>.</summary>
     public bool IsApproved => Decision != RiskDecisionKind.Rejected;
@@ -565,13 +594,35 @@ public sealed record RiskValidationResult
 
     // Retained factories — all 24 existing construction sites use these.
     public static RiskValidationResult Approved() =>
-        new() { Decision = RiskDecisionKind.Approved };
+        new(RiskDecisionKind.Approved, []);
 
-    public static RiskValidationResult Rejected(string reason) => new()
+    public static RiskValidationResult Rejected(string reason) =>
+        new(
+            RiskDecisionKind.Rejected,
+            [new RiskViolation("Unattributed", RiskRuleSeverity.Error, "RISK_REJECTED", reason)]);
+
+    /// <summary>Blocking severity wins; otherwise an acknowledgement request escalates.</summary>
+    public static RiskValidationResult FromViolations(IReadOnlyList<RiskViolation> violations)
     {
-        Decision = RiskDecisionKind.Rejected,
-        Violations = [new RiskViolation("Unattributed", RiskRuleSeverity.Error, "RISK_REJECTED", reason)]
-    };
+        ArgumentNullException.ThrowIfNull(violations);
+
+        // Snapshot before deriving: IReadOnlyList is a read-only view, not an immutable collection,
+        // so a caller holding the underlying list could otherwise add a blocking violation after an
+        // empty set produced Approved.
+        var snapshot = violations.ToList();
+        if (snapshot.Count == 0)
+        {
+            return Approved();
+        }
+
+        var decision = snapshot.Any(static v => v.IsBlocking)
+            ? RiskDecisionKind.Rejected
+            : snapshot.Any(static v => v.RequiresAcknowledgement)
+                ? RiskDecisionKind.Escalated
+                : RiskDecisionKind.ApprovedWithWarnings;
+
+        return new RiskValidationResult(decision, snapshot);
+    }
 }
 ```
 

@@ -251,6 +251,29 @@ public sealed class CompositeRiskValidatorTests
             .Which.Severity.Should().Be(RiskRuleSeverity.Warning);
     }
 
+    /// <summary>
+    /// Nothing enforces that rule names are unique, so ordering must not recover priority by name.
+    /// Here the earlier rule sharing the duplicated name produces no finding, and recovering by name
+    /// would hand its priority to the late duplicate — sorting it ahead of the genuinely
+    /// higher-priority rule and reporting the wrong violation as the rejection reason.
+    /// </summary>
+    [Fact]
+    public async Task ValidateOrderAsync_WithDuplicateRuleNames_AttributesTheRejectionToPriority()
+    {
+        var validator = Build(
+            new StubRiskRule("Shared", priority: 1),
+            new StubRiskRule("Middle", Finding("MIDDLE", "middle blocked"), priority: 5),
+            new StubRiskRule("Shared", Finding("LATE", "late blocked"), priority: 10));
+
+        var outcome = await validator.ValidateOrderAsync(CreateOrder());
+
+        outcome.Result.RejectCode.Should().Be(
+            "MIDDLE",
+            "priority 5 outranks priority 10 regardless of which rule shares a name");
+        outcome.Result.Violations.Select(violation => violation.Code)
+            .Should().ContainInOrder("MIDDLE", "LATE");
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
         // The release runs on a continuation of the abandoned task, so it is not observable the
