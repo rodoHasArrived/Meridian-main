@@ -1,12 +1,12 @@
 {
-  "total_files": 641,
-  "total_lines": 118335,
+  "total_files": 640,
+  "total_lines": 118327,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 184.6,
-  "health_score": 80,
+  "average_lines": 184.9,
+  "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -803,14 +803,6 @@
     {
       "path": ".agents/skills/meridian-test-writer/SKILL.md",
       "line_count": 328,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".pytest_cache/README.md",
-      "line_count": 8,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
