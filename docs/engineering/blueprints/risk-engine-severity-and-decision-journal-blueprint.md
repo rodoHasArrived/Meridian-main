@@ -282,6 +282,26 @@ asynchronously and offers no deterministic read-back for the submission that jus
 are unaffected, but the browser workstation's TypeScript submit contract must be extended in the
 same PR as the panel that consumes it.
 
+**Decision 8 — Reservations settle at the routing boundary, not the validation boundary.**
+
+*Rationale:* Decision 4 gives stateful rules reserve/commit semantics so a blocked order does not
+consume throttle capacity. But committing as soon as the validator returns is still wrong: passing
+the risk gate is not the same as being routed. Between the two, the OMS can still fail to register
+the client-order id, the audit write can fail or be cancelled, or the gateway submission can be
+rejected. In each case no order reaches the venue, yet its slot stays counted for the rest of the
+window — the same over-counting Decision 4 exists to prevent, moved one step later.
+
+*Consequences:* `ValidateOrderAsync` returns the reservations alongside the result, and the **OMS**
+settles them: commit once the gateway has accepted the order, roll back on every earlier failure
+path. The `finally` that guarantees settlement therefore lives in the OMS, not the validator. The
+"routed orders exactly" claim this blueprint makes for the throttle is only true with the commit at
+this boundary.
+
+*Cost:* `IRiskValidator.ValidateOrderAsync`'s return type has to carry the reservations, which
+widens the interface change beyond what Decision 2's compatibility argument covers. `IsApproved` and
+`RejectReason` still behave identically for the 107 existing read sites; only the OMS call site
+learns about reservations.
+
 ---
 
 ## Interface and API Contracts
@@ -346,7 +366,8 @@ public sealed record RiskViolation(
     string Code,
     string Message,
     decimal? ObservedValue = null,
-    decimal? LimitValue = null)
+    decimal? LimitValue = null,
+    bool RequiresAcknowledgement = false)
 {
     /// <summary>
     /// True when this violation is one that blocks. Derived from <see cref="Severity"/>, so it
@@ -437,8 +458,12 @@ public interface IRiskReservation
 
 ### Modified type — `RiskValidationResult` (`Meridian.Execution`)
 
+`RiskDecisionKind` is declared in `Meridian.Execution.Sdk` alongside the other shared risk
+contracts, because `RiskDecisionSummary` (also in the SDK) references it and the SDK cannot
+reference `Meridian.Execution`.
+
 ```csharp
-namespace Meridian.Execution;
+namespace Meridian.Execution.Sdk;
 
 public enum RiskDecisionKind
 {
@@ -498,7 +523,7 @@ public sealed record RiskValidationResult
 ### New service — `RiskDecisionJournal`
 
 ```csharp
-namespace Meridian.Risk.Journal;
+namespace Meridian.Execution.Journal;
 
 public sealed class RiskJournalOptions
 {
@@ -512,8 +537,14 @@ public sealed class RiskJournalOptions
 }
 
 /// <summary>
-/// Records pre-trade risk decisions to the durable execution audit trail so that
-/// "why was this order blocked on Tuesday?" is a query rather than a log grep.
+/// Records pre-trade risk decisions to the execution audit trail.
+/// <para>
+/// <b>Read-back is bounded by retention, not by durability.</b> The WAL keeps every entry, but
+/// <c>ExecutionAuditTrailService</c>'s query methods serve an in-memory collection trimmed to
+/// <c>ExecutionAuditTrailOptions.InMemoryRetention</c> (default 1,000 entries), including after
+/// replay. So <c>GET /api/risk/decisions</c> answers "what happened recently", not "why was this
+/// order blocked on Tuesday" — see Open Question 6 for the scope decision this forces.
+/// </para>
 /// </summary>
 public interface IRiskDecisionJournal
 {
@@ -562,10 +593,13 @@ GET /api/risk/decisions?take=100&symbol=AAPL&decision=Rejected&orderId=ord-8823
       "decision": "Rejected",
       "occurredAt": "2026-08-01T14:22:07Z",
       "actor": "operator:jd",
+      "violationCount": 2,
+      "violationsTruncated": false,
       "violations": [
         {
           "ruleName": "PositionLimit",
           "severity": "Error",
+          "requiresAcknowledgement": false,
           "code": "POSITION_LIMIT_EXCEEDED",
           "message": "Position would reach 1,240 shares against a 1,000 share limit.",
           "observedValue": 1240,
@@ -603,13 +637,15 @@ JSON context rather than reflection-based serialization.
 - Evaluate every registered rule against the order, in priority order.
 - Resolve the aggregate decision from the outcome set by severity precedence.
 - Order violations for presentation: severity descending, then rule priority ascending.
-- Settle every reservation in a `finally`: commit when admitted, roll back otherwise.
-- Hand the result to the journal.
+- Return reservations to the caller for settlement at the routing boundary (see Decision 8).
+
+The validator does **not** journal and does **not** settle reservations itself. Both belong to the
+OMS, which owns the order id and the true admission boundary. Keeping them here would reintroduce
+the missing-order-id and double-write defects that Decision 5 exists to prevent.
 
 **Dependencies (constructor-injected)**
 
 - `IEnumerable<IRiskRule> rules`
-- `IRiskDecisionJournal journal`
 - `ILogger<CompositeRiskValidator> logger`
 
 **Precedence resolution**
@@ -647,13 +683,20 @@ the rest of the blueprint*. Today the throttle counts orders that a later gate r
 short-circuiting happened to hide them; it already miscounts whenever the throttle itself is not the
 first rule to fail. After this change the window counts routed orders exactly.
 
-**Secondary opportunity:** with severity available, the throttle can report
-`ORDER_RATE_NEAR_LIMIT` as an `Annotate` at 80% of ceiling and `ORDER_RATE_EXCEEDED` as a `Block` at
-100% — two findings from one rule, which was unrepresentable before.
+**A graduated throttle needs two rules, not one.** An earlier draft of this blueprint claimed the
+throttle could annotate at 80% of ceiling and block at 100%. It cannot: `Severity` is fixed per rule
+and the validator derives admission from it alone, so `Warning` admits both thresholds and `Error`
+blocks both. That is the deliberate cost of making severity the single lever — one rule cannot
+express a graduated response.
+
+Ship it as two registrations over shared window state: `OrderRateNearLimitRule` (`Warning`, fires at
+80%) and `OrderRateThrottle` (`Error`, fires at 100%). Only the blocking rule reserves capacity; the
+warning rule is a pure read. This is deferred to `W9-SAFETY-007` with the rest of the rule
+catalogue — the engine work here only has to make it expressible.
 
 ### `RiskDecisionJournal`
 
-**Namespace:** `Meridian.Risk.Journal`
+**Namespace:** `Meridian.Execution.Journal`
 **Type:** `sealed class RiskDecisionJournal : IRiskDecisionJournal`
 **Lifetime:** Singleton
 
@@ -681,7 +724,8 @@ first rule to fail. After this change the window counts routed orders exactly.
   finding. The entry's own top-level `Message` field holds the aggregate summary, not the
   per-violation text. A write/read round-trip test is listed for exactly this reason.
 - Records `violation.count` alongside the entries, so a reader can tell a truncated set from a
-  complete one when the cap is hit.
+  complete one when the cap is hit. `/api/risk/decisions` surfaces this as `violationCount` plus
+  `violationsTruncated`; without them a consumer renders a truncated decision as complete.
 - Awaits the write. This is lifecycle-sensitive evidence; per the repository's execution guardrail,
   do not fire-and-forget it.
 
@@ -708,6 +752,12 @@ if (!riskResult.IsApproved)
 `BuildLiveOrderReadinessRejectedAuditMetadata` (line 246) helpers. The `reasonCode` follows the
 established SCREAMING_SNAKE convention already used by `OPERATOR_CONTROL_REJECTED` and
 `DUPLICATE_CLIENT_ORDER_ID`.
+
+**It must also stamp a discriminator: `metadata["decisionSource"] = "risk"`.** `OrderRejected` is
+the shared audit action for *every* gate — live-order readiness, operator controls, security master,
+duplicate client-order-id, and risk all funnel through `RejectOrderAsync`. A read projection that
+selects on `Action == "OrderRejected"` alone would report an unrelated gate failure as a risk
+decision. `/api/risk/decisions` must filter on the discriminator, not the action.
 
 ---
 
@@ -756,9 +806,22 @@ established SCREAMING_SNAKE convention already used by `OPERATOR_CONTROL_REJECTE
 
 ## UI Design
 
-**WPF:** N/A for this blueprint. The WPF lane's current focus is web-UI parity
-(`W8-WPF-PARITY-001`); the desktop risk surface should consume the same shared read model once the
-browser surface lands, rather than forking a parallel one.
+**WPF:** a tracked parity deliverable, not an omission. `AGENTS.md` (L123-126) makes the browser
+and desktop workstations co-equal active lanes and names closing parity gaps as the WPF lane's
+immediate focus (`W8-WPF-PARITY-001`), so shipping two new browser-only operator panels would open a
+fresh gap rather than close one.
+
+PR 4 adds the WPF consumers over the *same* shared read model — no forked state, no duplicated
+decision logic:
+
+- A pre-trade violation list on the order ticket, bound to the `RiskDecisionSummary` now carried on
+  `OrderResult`.
+- A decision-history panel bound to `GET /api/risk/decisions`.
+- View-model tests in `tests/Meridian.Wpf.Tests` mirroring the browser view-model tests.
+
+Sequencing it after PR 3 is deliberate — the shared contract should prove itself on one surface
+before the second consumes it — but it is in scope for this blueprint, not deferred to an untracked
+follow-up.
 
 **Browser workstation** — extends the Trading screen's existing risk state
 (`WorkstationTradingRiskState`, composed at `WorkstationEndpoints.cs:3613`).
@@ -896,8 +959,11 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 - [ ] Register in `WorkstationServiceCollectionExtensions` and inject into
       **`OrderManagementSystem`**, not the validator — it is the only component holding the
       generated order id and audit attribution
-- [ ] Add `BuildRiskRejectedAuditMetadata` to `OrderManagementSystem`; pass `reasonCode` and
-      `metadata` at line 303, and journal the admitted-with-findings path
+- [ ] Add `BuildRiskRejectedAuditMetadata` to `OrderManagementSystem` (including the
+      `decisionSource=risk` discriminator); pass `reasonCode` and `metadata` at line 303
+- [ ] Call the journal for **every** risk-approved result, clean ones included, and let
+      `RiskDecisionJournal` apply `JournalCleanApprovals`. Gating the call site instead would mean
+      enabling the flag changes nothing, because clean decisions would never reach the service
 - [ ] Bind `Risk:Journal` from host configuration, and add the section to **both** tracked config
       sources: `config/appsettings.sample.json` and the machine-validated
       `config/appsettings.schema.json`. There is no `config/appsettings.json` in the repository —
@@ -936,6 +1002,7 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 | 3 | Should `RiskRuleRuntimeService`'s `EvaluateDrawdownGuardrail` return a structured violation rather than `RiskValidationResult.Rejected(string)`? | Implementer | Until migrated it produces `Unattributed` violations, so the dashboard cannot attribute drawdown breaches to the rule. Recommend folding into PR 1. |
 | 4 | Retention for journal entries — does the execution WAL already prune, and is that policy right for risk evidence? | Ops | Unbounded growth on a high-throughput host if `JournalCleanApprovals` is enabled without retention. |
 | 5 | Does the OMS have a `FundAccountId` in scope at the risk call site for per-fund journal filtering? | Implementer | Affects whether `/api/risk/decisions` can filter by fund in PR 3 or needs a follow-up. |
+| 6 | **How far back must `/api/risk/decisions` see?** `ExecutionAuditTrailService` serves queries from a collection trimmed to `InMemoryRetention` (default 1,000 entries), so the endpoint answers "recently" and not "on Tuesday". Options: (a) scope the feature to recent retained decisions and say so in the UI; (b) raise the retention for this host; (c) build a WAL/archive-backed query path. | **Product + Ops** | (a) is free but weakens the evidence claim that motivates the journal. (c) is a materially larger build and undercuts Decision 5's "no new store" premise. This must be decided before PR 3 is scoped. |
 
 ## Risks
 
