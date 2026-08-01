@@ -1688,7 +1688,8 @@ Meridian-main
 │   ├── engineering
 │   │   ├── blueprints
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
-│   │   │   └── README.md
+│   │   │   ├── README.md
+│   │   │   └── w10-mark-001-fail-closed-marks.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── free-development-tools.md
 │   │   ├── live-trading-engine.md

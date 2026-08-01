@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.6,
+  "score_percent": 29.8,
   "endpoint_coverage_percent": 41.2,
-  "contract_coverage_percent": 12.2,
+  "contract_coverage_percent": 12.7,
   "summary": {
     "endpoint_count": 617,
     "documented_endpoint_count": 254,
     "undocumented_endpoint_count": 363,
     "workstation_contract_count": 902,
-    "documented_workstation_contract_count": 110,
-    "undocumented_workstation_contract_count": 792
+    "documented_workstation_contract_count": 115,
+    "undocumented_workstation_contract_count": 787
   },
   "endpoints": [
     {
@@ -4041,7 +4041,7 @@
     {
       "name": "ApprovalDecision",
       "source": "src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:30",
-      "documented": false
+      "documented": true
     },
     {
       "name": "FxConversionReference",
@@ -4106,7 +4106,7 @@
     {
       "name": "DailyValuationScheduleStateDto",
       "source": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:7",
-      "documented": false
+      "documented": true
     },
     {
       "name": "DailyValuationScheduleStatusDto",
@@ -4871,7 +4871,7 @@
     {
       "name": "FundPortfolioPosition",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:118",
-      "documented": false
+      "documented": true
     },
     {
       "name": "CashFinancingSummary",
@@ -7591,7 +7591,7 @@
     {
       "name": "TradingAcceptanceGateStatusDto",
       "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:30",
-      "documented": false
+      "documented": true
     },
     {
       "name": "PortfolioLedgerWorkflowStatusDto",
@@ -7921,7 +7921,7 @@
     {
       "name": "WorkstationTradingPositionRow",
       "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:326",
-      "documented": false
+      "documented": true
     },
     {
       "name": "WorkstationTradingOrderRow",

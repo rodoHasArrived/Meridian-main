@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 29.6% |
+| Weighted score | 29.8% |
 | Endpoint coverage | 41.2% |
-| Workstation contract coverage | 12.2% |
+| Workstation contract coverage | 12.7% |
 | Endpoints documented | 254 / 617 |
-| Workstation contracts documented | 110 / 902 |
+| Workstation contracts documented | 115 / 902 |
 
 ## Endpoint Coverage
 
@@ -647,7 +647,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `AccrualInputSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:177` |
 | `ActivationOutcomeDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:76` |
 | `AlpacaBrokerageConnectionRequestDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:103` |
-| `ApprovalDecision` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:30` |
+| `ApprovalDecision` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:30` |
 | `ApprovalPolicy` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:22` |
 | `ApprovalStep` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:21` |
 | `ApproveSecurityMasterOverrides` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:22` |
@@ -701,7 +701,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `CrossFundReportingConsolidationScopeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:313` |
 | `DailyValuationBatchLifecycleRequestDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:54` |
 | `DailyValuationBatchLifecycleResultDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:67` |
-| `DailyValuationScheduleStateDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:7` |
+| `DailyValuationScheduleStateDto` | Documented | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:7` |
 | `DailyValuationScheduleStatusDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:22` |
 | `DataUploadPreviewResultDto` | Documented | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:53` |
 | `DataUploadTemplateCatalogDto` | Gap | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:12` |
@@ -840,7 +840,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `FundOperationsTab` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:8` |
 | `FundOperationsWorkspaceDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:460` |
 | `FundOperationsWorkspaceQuery` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:96` |
-| `FundPortfolioPosition` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:118` |
+| `FundPortfolioPosition` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:118` |
 | `FundReconciliationItem` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:165` |
 | `FundReportAssetClassSectionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:493` |
 | `FundReportPackArtifactDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:551` |
@@ -1421,7 +1421,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `SyncValidationResult` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:16` |
 | `ThresholdBreachDto` | Gap | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:35` |
 | `TradingAcceptanceGateDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:106` |
-| `TradingAcceptanceGateStatusDto` | Gap | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:30` |
+| `TradingAcceptanceGateStatusDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:30` |
 | `TradingControlEvidenceDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:205` |
 | `TradingControlReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:221` |
 | `TradingExecutionReconciliationBreakDto` | Gap | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:118` |
@@ -1541,7 +1541,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `WorkstationTradingFillRow` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:353` |
 | `WorkstationTradingOrderRow` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:340` |
 | `WorkstationTradingPayload` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:394` |
-| `WorkstationTradingPositionRow` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:326` |
+| `WorkstationTradingPositionRow` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:326` |
 | `WorkstationTradingRiskState` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:366` |
 | `WorkstationWatchlist` | Documented | `src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:29` |
 | `WorkstationWorkspaceDefinition` | Gap | `src/Meridian.Contracts/Workstation/WorkstationWorkspaceCatalog.cs:6` |
@@ -1549,7 +1549,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 363 mapped endpoint gap(s).
-- Document or intentionally suppress 792 workstation contract gap(s).
+- Document or intentionally suppress 787 workstation contract gap(s).
 
 ---
 
