@@ -183,6 +183,11 @@ verify_browser() {
 verify_docs() {
   verify_toolchain_docs
 
+  # An alert whose expr names a series the exporter never emits can never fire, and a
+  # runbook link that does not resolve strands the responder. Both used to be invisible.
+  run_step "Validate observability contract" \
+    "$python_cmd" build/scripts/ci/validate-observability-contract.py --summary
+
   run_step "Validate status docs delivery claims" \
     bash -c '"$0" scripts/check_status_delivery_claims.py && "$0" -m unittest tests/scripts/test_check_status_delivery_claims.py' "$python_cmd"
 

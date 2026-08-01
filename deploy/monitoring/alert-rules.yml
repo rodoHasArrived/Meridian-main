@@ -5,16 +5,26 @@
 #   rule_files:
 #     - /etc/prometheus/alert-rules.yml
 #
-# Every high-severity alert includes:
+# Every alert includes:
 #   - Symptom summary and probable causes
 #   - Link to exact runbook section
 #   - Immediate mitigations and rollback criteria
+#
+# Every `expr` below must reference a series the exporter actually emits
+# (src/Meridian.Application/Monitoring/PrometheusMetrics.cs and the storage
+# counters in src/Meridian.Storage/Archival/WriteAheadLog.cs), and every
+# `runbook_url` must resolve to a heading in the active operator runbook.
+# `build/scripts/ci/validate-observability-contract.py` fails the build when
+# either stops being true: an alert on an unexported series is a permanently
+# absent alert, and a broken runbook link strands the responder.
 # =============================================================================
 
 groups:
   - name: mdc_health
     rules:
-      # Application is down or unreachable
+      # Application is down or unreachable.
+      # Measured by Prometheus' own `up` series: a dead process cannot export
+      # its own unavailability.
       - alert: MeridianDown
         expr: up{job="meridian"} == 0
         for: 1m
@@ -24,58 +34,59 @@ groups:
         annotations:
           summary: "Meridian is down"
           description: "The Meridian instance has been unreachable for more than 1 minute."
-          runbook_url: "docs/operations/operator-runbook.md#application-down"
+          runbook_url: "docs/operators/operator-runbook.md#application-down"
           probable_causes: "Process crashed, host unreachable, port blocked, OOM killed"
           immediate_mitigation: "1. Check process status (systemctl status meridian). 2. Check system logs (journalctl -u meridian). 3. Restart service if crashed. 4. Check disk space and memory."
           rollback_criteria: "Health endpoint returns 200 within 30 seconds of restart"
 
-      # Health endpoint returning unhealthy
+      # Composite freshness score collapsed while the process is still scraping.
       - alert: MeridianUnhealthy
-        expr: mdc_health_status == 0
+        expr: mdc_sla_freshness_score < 50
         for: 2m
         labels:
           severity: warning
           incident_priority: P2
         annotations:
           summary: "Meridian reports unhealthy"
-          description: "The health endpoint has been returning unhealthy for 2 minutes."
-          runbook_url: "docs/operations/operator-runbook.md#unhealthy-status"
+          description: "The composite data freshness score has been below 50 for 2 minutes."
+          runbook_url: "docs/operators/operator-runbook.md#unhealthy-status"
           probable_causes: "Provider disconnected, storage write failures, pipeline backpressure, dependency timeout"
           immediate_mitigation: "1. Check /health/detailed for specific failing checks. 2. Review recent error logs. 3. Verify provider connectivity."
 
   - name: mdc_pipeline
     rules:
-      # Pipeline drop rate exceeds threshold
+      # Proportional drop rate (gauge, 0-100) exceeds the SLO-ING-002 critical threshold.
       - alert: MeridianHighDropRate
-        expr: rate(mdc_pipeline_events_dropped_total[5m]) > 10
+        expr: mdc_drop_rate_percent > 1
         for: 5m
         labels:
           severity: warning
           incident_priority: P2
         annotations:
-          summary: "High pipeline event drop rate"
-          description: "More than 10 events/sec are being dropped over the last 5 minutes."
-          runbook_url: "docs/operations/operator-runbook.md#high-drop-rate"
+          summary: "High pipeline event drop rate ({{ $value }}%)"
+          description: "More than 1% of events have been dropped over the last 5 minutes."
+          runbook_url: "docs/operators/operator-runbook.md#high-drop-rate"
           probable_causes: "Storage sink blocking (slow disk I/O), pipeline queue at capacity, too many subscriptions for processing capacity"
           immediate_mitigation: "1. Check /api/backpressure for queue utilization. 2. Monitor disk I/O latency. 3. Consider reducing symbol subscriptions. 4. Check EventPipeline channel capacity."
 
-      # Pipeline queue near capacity
+      # Sustained absolute drops. A low percentage of a very high inbound rate
+      # still loses a large number of events, so this fires on the count.
       - alert: MeridianPipelineBackpressure
-        expr: mdc_pipeline_queue_utilization > 0.9
+        expr: rate(mdc_events_dropped_total[5m]) > 10
         for: 2m
         labels:
           severity: warning
           incident_priority: P2
         annotations:
-          summary: "Pipeline queue near capacity ({{ $value | humanizePercentage }})"
-          description: "The event pipeline queue utilization has exceeded 90% for 2 minutes."
-          runbook_url: "docs/operations/operator-runbook.md#pipeline-backpressure"
+          summary: "Pipeline shedding load ({{ $value }} events/sec dropped)"
+          description: "More than 10 events/sec have been dropped for 2 minutes."
+          runbook_url: "docs/operators/operator-runbook.md#pipeline-backpressure"
           probable_causes: "Consumer slower than producer, storage write latency, burst of market data events"
           immediate_mitigation: "1. Check storage write latency metrics. 2. Verify disk health. 3. Consider pausing non-critical subscriptions."
 
-      # No events published in 5 minutes during market hours
+      # No events published during the alert window.
       - alert: MeridianNoEventsPublished
-        expr: rate(mdc_pipeline_events_published_total[5m]) == 0
+        expr: rate(mdc_events_published_total[5m]) == 0
         for: 10m
         labels:
           severity: warning
@@ -83,98 +94,100 @@ groups:
         annotations:
           summary: "No events published in 10 minutes"
           description: "The event pipeline has not published any events for 10 minutes."
-          runbook_url: "docs/operations/operator-runbook.md#no-events"
+          runbook_url: "docs/operators/operator-runbook.md#no-events"
           probable_causes: "All providers disconnected, market closed (check TradingCalendar), subscription failure, network outage"
-          immediate_mitigation: "1. Check /api/providers/status for connection state. 2. Verify market hours via TradingCalendar. 3. Test provider connectivity."
+          immediate_mitigation: "1. Check market hours first — outside session hours this is expected. 2. Check /api/providers/status for connection state. 3. Test provider connectivity."
 
   - name: mdc_providers
     rules:
-      # Provider disconnected
+      # Global provider circuit breaker open (0=Closed, 1=Open, 2=HalfOpen).
       - alert: MeridianProviderDisconnected
-        expr: mdc_provider_connected == 0
+        expr: mdc_circuit_breaker_state == 1
         for: 2m
         labels:
           severity: warning
           incident_priority: P2
         annotations:
-          summary: "Provider {{ $labels.provider }} disconnected"
-          description: "Data provider {{ $labels.provider }} has been disconnected for 2 minutes."
-          runbook_url: "docs/operations/operator-runbook.md#provider-disconnected"
+          summary: "Provider circuit breaker open"
+          description: "The streaming provider circuit breaker has been open for 2 minutes; resubscription is backing off."
+          runbook_url: "docs/operators/operator-runbook.md#provider-disconnected"
           probable_causes: "API key expired/invalid, provider service outage, network connectivity issue, rate limit exceeded"
           immediate_mitigation: "1. Check provider status page. 2. Verify API credentials. 3. Check rate limit counters. 4. Trigger manual reconnect or failover."
+          rollback_criteria: "mdc_circuit_breaker_state returns to 0 and mdc_symbols_circuit_open reaches 0"
 
-      # High provider latency
+      # P99 event processing latency above the SLO-ING-001 critical threshold.
+      # The histogram is denominated in microseconds.
       - alert: MeridianHighProviderLatency
-        expr: mdc_provider_latency_seconds{quantile="0.99"} > 5
+        expr: histogram_quantile(0.99, rate(mdc_processing_latency_microseconds_bucket[5m])) > 5000
         for: 5m
         labels:
           severity: warning
           incident_priority: P3
         annotations:
-          summary: "High latency on provider {{ $labels.provider }}"
-          description: "P99 latency for {{ $labels.provider }} exceeds 5 seconds."
-          runbook_url: "docs/operations/operator-runbook.md#high-latency"
+          summary: "High event processing latency"
+          description: "P99 event processing latency exceeds 5000 microseconds."
+          runbook_url: "docs/operators/operator-runbook.md#high-latency"
           probable_causes: "Provider under load, network congestion, DNS resolution delays, WebSocket reconnection overhead"
           immediate_mitigation: "1. Check provider latency trends at /api/providers/latency. 2. Consider switching to backup provider. 3. Verify network path quality."
 
   - name: mdc_storage
     rules:
-      # Storage write errors
+      # Write-ahead log integrity failures. Committed data was not durably retained.
       - alert: MeridianStorageWriteErrors
-        expr: rate(mdc_storage_write_errors_total[5m]) > 0
+        expr: rate(mdc_wal_recovery_corrupted_records_total[5m]) > 0
         for: 5m
         labels:
           severity: critical
           incident_priority: P1
         annotations:
-          summary: "Storage write errors detected"
-          description: "Storage write errors occurring at {{ $value }} errors/sec."
-          runbook_url: "docs/operations/operator-runbook.md#storage-write-errors"
+          summary: "Storage write integrity errors detected"
+          description: "Corrupted write-ahead log records are being encountered at {{ $value }} records/sec."
+          runbook_url: "docs/operators/operator-runbook.md#storage-write-errors"
           probable_causes: "Disk full, filesystem permissions, I/O errors, WAL corruption, storage path misconfigured"
-          immediate_mitigation: "1. Check disk space immediately. 2. Verify storage path permissions. 3. Check WAL integrity. 4. Review storage error logs for root cause."
-          rollback_criteria: "Write error rate drops to 0 for 5 consecutive minutes"
+          immediate_mitigation: "1. Check disk space immediately. 2. Verify storage path permissions. 3. Capture the corrupted records before any repair. 4. Review storage error logs for root cause."
+          rollback_criteria: "Corrupted-record rate drops to 0 for 5 consecutive minutes and the affected window is reconciled"
 
-      # Data quality score below threshold
+      # Validation pass rate below the SLO-DC-001 critical threshold (gauge, 0-100).
       - alert: MeridianLowDataQuality
-        expr: mdc_data_quality_score < 0.8
+        expr: mdc_validation_pass_rate_percent < 80
         for: 15m
         labels:
           severity: warning
           incident_priority: P3
         annotations:
-          summary: "Low data quality score for {{ $labels.symbol }}"
-          description: "Data quality score for {{ $labels.symbol }} is {{ $value }}, below 0.8 threshold."
-          runbook_url: "docs/operations/operator-runbook.md#low-data-quality"
+          summary: "Low data quality score ({{ $value }}%)"
+          description: "The validation pass rate is {{ $value }}%, below the 80% threshold."
+          runbook_url: "docs/operators/operator-runbook.md#low-data-quality"
           probable_causes: "Data gaps from provider outage, stale quotes, sequence errors, bad tick data from provider"
-          immediate_mitigation: "1. Check /api/quality/gaps/{{ $labels.symbol }} for gap analysis. 2. Compare across providers at /api/quality/comparison/{{ $labels.symbol }}. 3. Consider triggering gap-fill backfill."
+          immediate_mitigation: "1. Read mdc_validation_rejected_total by error_type. 2. Check /api/quality/gaps for gap analysis. 3. Compare across providers at /api/quality/comparison. 4. Consider triggering gap-fill backfill."
 
   - name: mdc_sla
     rules:
-      # Data freshness SLA violation
+      # One or more symbols outside their freshness threshold.
       - alert: MeridianDataFreshnessViolation
-        expr: mdc_data_freshness_age_seconds > 300
+        expr: mdc_sla_violation_symbols > 0
         for: 5m
         labels:
           severity: critical
           incident_priority: P1
         annotations:
-          summary: "Data freshness SLA violation for {{ $labels.symbol }}"
-          description: "Data for {{ $labels.symbol }} has not been updated for {{ $value | humanizeDuration }}."
-          runbook_url: "docs/operations/operator-runbook.md#freshness-sla-violation"
+          summary: "Data freshness SLA violation ({{ $value }} symbols)"
+          description: "{{ $value }} symbol(s) have exceeded their data freshness threshold for 5 minutes."
+          runbook_url: "docs/operators/operator-runbook.md#freshness-sla-violation"
           probable_causes: "Provider stream stalled, subscription dropped, processing pipeline blocked"
-          immediate_mitigation: "1. Check provider connection status. 2. Verify subscription is active. 3. Check pipeline queue utilization. 4. Re-subscribe if needed."
-          rollback_criteria: "Freshness age drops below configured threshold for the symbol"
+          immediate_mitigation: "1. Check /api/sla/violations for affected symbols. 2. Check provider connection status. 3. Verify subscription is active. 4. Re-subscribe if needed."
+          rollback_criteria: "mdc_sla_violation_symbols returns to 0"
 
-      # Overall SLA compliance dropping
+      # Composite freshness score below the 95 compliance target.
       - alert: MeridianSlaComplianceLow
-        expr: mdc_sla_compliance_ratio < 0.95
+        expr: mdc_sla_freshness_score < 95
         for: 30m
         labels:
           severity: warning
           incident_priority: P2
         annotations:
           summary: "SLA compliance below 95%"
-          description: "Overall data freshness SLA compliance has dropped to {{ $value | humanizePercentage }}."
-          runbook_url: "docs/operations/operator-runbook.md#sla-compliance"
+          description: "The composite data freshness score has dropped to {{ $value }}."
+          runbook_url: "docs/operators/operator-runbook.md#sla-compliance"
           probable_causes: "Multiple provider degradations, systematic processing delays, infrastructure issues"
           immediate_mitigation: "1. Review /api/sla/violations for affected symbols. 2. Check /api/sla/metrics for trends. 3. Evaluate provider health across all active providers."

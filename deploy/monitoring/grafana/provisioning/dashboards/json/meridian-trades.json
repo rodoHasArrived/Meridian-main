@@ -144,10 +144,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 36 },
       "id": 30,
       "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "title": "Storage Write Errors (rate/s)",
+      "title": "Storage Write Integrity Errors (rate/s)",
       "type": "timeseries",
       "targets": [
-        { "expr": "rate(mdc_storage_write_errors_total[5m])", "legendFormat": "Write Errors", "refId": "A" }
+        { "expr": "rate(mdc_wal_recovery_corrupted_records_total[5m])", "legendFormat": "Corrupted WAL Records", "refId": "A" }
       ]
     },
     {
@@ -161,10 +161,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 36 },
       "id": 31,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "title": "Data Quality Score by Symbol",
+      "title": "Validation Pass Rate (%)",
       "type": "timeseries",
       "targets": [
-        { "expr": "mdc_data_quality_score", "legendFormat": "{{symbol}}", "refId": "A" }
+        { "expr": "mdc_validation_pass_rate_percent", "legendFormat": "Pass Rate", "refId": "A" },
+        { "expr": "sum by (error_type) (rate(mdc_validation_rejected_total[5m]))", "legendFormat": "{{error_type}}", "refId": "B" }
       ]
     }
   ],

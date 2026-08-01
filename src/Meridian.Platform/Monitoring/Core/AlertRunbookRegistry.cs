@@ -43,7 +43,7 @@ public sealed class AlertRunbookRegistry
             Severity = "critical",
             IncidentPriority = "P1",
             Summary = "Meridian is down",
-            RunbookUrl = "docs/operations/operator-runbook.md#application-down",
+            RunbookUrl = "docs/operators/operator-runbook.md#application-down",
             SloId = "SLO-AV-001",
             ProbableCauses = new[]
             {
@@ -68,7 +68,7 @@ public sealed class AlertRunbookRegistry
             Severity = "warning",
             IncidentPriority = "P2",
             Summary = "Meridian reports unhealthy",
-            RunbookUrl = "docs/operations/operator-runbook.md#unhealthy-status",
+            RunbookUrl = "docs/operators/operator-runbook.md#unhealthy-status",
             ProbableCauses = new[]
             {
                 "Provider disconnected",
@@ -91,7 +91,7 @@ public sealed class AlertRunbookRegistry
             Severity = "warning",
             IncidentPriority = "P2",
             Summary = "High pipeline event drop rate",
-            RunbookUrl = "docs/operations/operator-runbook.md#high-drop-rate",
+            RunbookUrl = "docs/operators/operator-runbook.md#high-drop-rate",
             SloId = "SLO-ING-002",
             ProbableCauses = new[]
             {
@@ -114,7 +114,7 @@ public sealed class AlertRunbookRegistry
             Severity = "warning",
             IncidentPriority = "P2",
             Summary = "Pipeline queue near capacity",
-            RunbookUrl = "docs/operations/operator-runbook.md#pipeline-backpressure",
+            RunbookUrl = "docs/operators/operator-runbook.md#pipeline-backpressure",
             ProbableCauses = new[]
             {
                 "Consumer slower than producer",
@@ -135,7 +135,7 @@ public sealed class AlertRunbookRegistry
             Severity = "warning",
             IncidentPriority = "P2",
             Summary = "No events published in 10 minutes",
-            RunbookUrl = "docs/operations/operator-runbook.md#no-events",
+            RunbookUrl = "docs/operators/operator-runbook.md#no-events",
             SloId = "SLO-DC-002",
             ProbableCauses = new[]
             {
@@ -159,7 +159,7 @@ public sealed class AlertRunbookRegistry
             Severity = "warning",
             IncidentPriority = "P2",
             Summary = "Data provider disconnected",
-            RunbookUrl = "docs/operations/operator-runbook.md#provider-disconnected",
+            RunbookUrl = "docs/operators/operator-runbook.md#provider-disconnected",
             SloId = "SLO-PC-001",
             ProbableCauses = new[]
             {
@@ -183,7 +183,7 @@ public sealed class AlertRunbookRegistry
             Severity = "warning",
             IncidentPriority = "P3",
             Summary = "High latency on data provider",
-            RunbookUrl = "docs/operations/operator-runbook.md#high-latency",
+            RunbookUrl = "docs/operators/operator-runbook.md#high-latency",
             SloId = "SLO-ING-001",
             ProbableCauses = new[]
             {
@@ -207,7 +207,7 @@ public sealed class AlertRunbookRegistry
             Severity = "critical",
             IncidentPriority = "P1",
             Summary = "Storage write errors detected",
-            RunbookUrl = "docs/operations/operator-runbook.md#storage-write-errors",
+            RunbookUrl = "docs/operators/operator-runbook.md#storage-write-errors",
             SloId = "SLO-ST-001",
             ProbableCauses = new[]
             {
@@ -233,7 +233,7 @@ public sealed class AlertRunbookRegistry
             Severity = "warning",
             IncidentPriority = "P3",
             Summary = "Low data quality score",
-            RunbookUrl = "docs/operations/operator-runbook.md#low-data-quality",
+            RunbookUrl = "docs/operators/operator-runbook.md#low-data-quality",
             SloId = "SLO-DC-001",
             ProbableCauses = new[]
             {
@@ -257,7 +257,7 @@ public sealed class AlertRunbookRegistry
             Severity = "critical",
             IncidentPriority = "P1",
             Summary = "Data freshness SLA violation",
-            RunbookUrl = "docs/operations/operator-runbook.md#freshness-sla-violation",
+            RunbookUrl = "docs/operators/operator-runbook.md#freshness-sla-violation",
             SloId = "SLO-DF-001",
             ProbableCauses = new[]
             {
@@ -281,7 +281,7 @@ public sealed class AlertRunbookRegistry
             Severity = "warning",
             IncidentPriority = "P2",
             Summary = "SLA compliance below 95%",
-            RunbookUrl = "docs/operations/operator-runbook.md#sla-compliance",
+            RunbookUrl = "docs/operators/operator-runbook.md#sla-compliance",
             ProbableCauses = new[]
             {
                 "Multiple provider degradations",

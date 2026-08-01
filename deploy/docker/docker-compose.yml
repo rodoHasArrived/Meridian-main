@@ -97,8 +97,12 @@ services:
       - grafana-data:/var/lib/grafana
       - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # Administrator credentials are required from the deploying environment and have no
+      # default. Compose fails to start the stack when either is unset, which is the
+      # intended behaviour: a monitoring console that ships a known password is a
+      # credentialled entry point into operational data.
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:?set GF_SECURITY_ADMIN_USER before starting the monitoring profile}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:?set GF_SECURITY_ADMIN_PASSWORD before starting the monitoring profile}
       - GF_USERS_ALLOW_SIGN_UP=false
     networks:
       - meridian-network
