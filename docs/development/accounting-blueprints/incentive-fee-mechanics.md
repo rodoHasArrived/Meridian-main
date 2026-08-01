@@ -539,7 +539,7 @@ public sealed record IncentiveFeeStateRecord(
     string? SeriesId,                   // null == fund-level series (Method A)
     decimal HighWaterMarkPerShare,      // PER SHARE in both methods — see the Fork G contract
     IncentiveFeeScopeStatus Status,     // Live | Closed | Consolidated — see below
-    decimal LossCarryforward,           // >= 0
+    decimal LossCarryforwardPerShare,   // >= 0; PER SHARE for the same reason as the HWM
     DateOnly? LastCrystallizedDate,
     decimal CumulativeCrystallizedFee,
     decimal AccruedFeeBalance,          // contingent liability not yet crystallized
@@ -556,8 +556,8 @@ public sealed record IncentiveFeeStateSnapshotRecord(
     DateOnly AsOfDate,
     decimal HighWaterMarkBefore,
     decimal HighWaterMarkAfter,
-    decimal LossCarryforwardBefore,
-    decimal LossCarryforwardAfter,
+    decimal LossCarryforwardPerShareBefore,
+    decimal LossCarryforwardPerShareAfter,
     decimal AccruedFeeDelta,            // signed; negative == reversal
     decimal CrystallizedFee,
     bool Crystallized,
@@ -580,12 +580,23 @@ Roll-forward rules (pure, in `IncentiveFeeStateRoller.Roll(prior, result, crysta
   This roller is the **only** writer of the HWM. Because `incentive_fee_state` is the single durable
   owner, no equalization-side code advances a HWM independently.
 
-  **Unit discipline — applies to every row, both methods.**
-  `result.CandidateHighWaterMark` comes out of `PartnershipInvestorAccountingProjector` in
-  **total-NAV terms**, but every row persists `HighWaterMarkPerShare`. Divide by the units
-  outstanding used for that period's `EndingNavBeforeFees` before writing, and multiply back when
-  hydrating the next period's input (equalization §6.1). Writing the total-NAV candidate straight
-  into the per-share column silently overstates every subsequent period's fee.
+  **Unit discipline — applies to every row, both methods, and to *both* carried quantities.**
+  `result.CandidateHighWaterMark` **and `result.CandidateLossCarryforward`** come out of
+  `PartnershipInvestorAccountingProjector` in **total-NAV terms**, but every row persists them
+  per share. Divide both by the units outstanding used for that period's `EndingNavBeforeFees`
+  before writing, and multiply both back when hydrating the next period's input (equalization
+  §6.1). Writing a total-NAV candidate straight into a per-share column silently distorts every
+  subsequent period's fee.
+
+  **LCF is per share for the same reason the HWM is, and the two must scale together.** The
+  calculator computes `grossExcess = Max(0, EndingNavBeforeIncentiveFee − PriorHighWaterMark −
+  PriorLossCarryforward)` — all three terms in one total-NAV expression. Scaling the HWM into that
+  expression while feeding an unscaled LCF total from a period with different units mixes the very
+  units this rule exists to separate. Concretely, after a partial redemption the remaining holders
+  would carry the *pre-redemption* loss shield, delaying fees past the intended recovery point;
+  after a subscription the shield would be diluted and fees would start early. Persisting
+  `LossCarryforwardPerShare` and scaling it on the same basis as the HWM keeps the shield
+  proportional to the holders it protects.
 
   **Zero units — full redemption on a crystallization date.** `CrystallizeOnRedemption` funds can
   crystallize a scope that redeems to zero units, where the divide-back is undefined. Handle it
@@ -696,7 +707,7 @@ Task<IReadOnlyList<IncentiveFeeStateRecord>> ListIncentiveFeeStatesAsync(Guid le
 /// without this, an existing book's first evaluation finds no row and would treat the protected
 /// level as zero, charging fee against the fund's entire NAV.
 /// </summary>
-Task<IncentiveFeeStateRecord> EnsureFundLevelStateAsync(Guid ledgerBookId, string fundProfileId, decimal openingHighWaterMarkPerShare, string policyId, string policyVersion, CancellationToken ct = default)
+Task<IncentiveFeeStateRecord> EnsureFundLevelStateAsync(Guid ledgerBookId, string fundProfileId, decimal openingHighWaterMarkPerShare, string openingBasisNote, string acknowledgedBy, string policyId, string policyVersion, CancellationToken ct = default)
     => Task.FromException<IncentiveFeeStateRecord>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>
@@ -705,7 +716,7 @@ Task<IncentiveFeeStateRecord> EnsureFundLevelStateAsync(Guid ledgerBookId, strin
 /// store calls cannot give that guarantee (a crash between them leaves exactly that).
 /// The adapter owns the transaction; callers never compose this from smaller operations.
 /// </summary>
-Task<IncentiveFeeStateRecord> CreateSeriesWithStateAsync(FundSeriesDefinition series, IncentiveFeeStateRecord seedState, CancellationToken ct = default)
+Task<IncentiveFeeStateRecord> CreateSeriesWithStateAsync(FundSeriesDefinition series, IncentiveFeeStateRecord seedState, string openingBasisNote, string acknowledgedBy, CancellationToken ct = default)
     => Task.FromException<IncentiveFeeStateRecord>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>
@@ -903,7 +914,7 @@ create table if not exists __SCHEMA__.incentive_fee_state (
     -- capital. Per-share is also what the equalization glossary means by HWM.
     high_water_mark_per_share numeric(38, 12) not null,
     status text not null default 'Live',               -- Live | Closed | Consolidated
-    loss_carryforward numeric(38, 12) not null default 0,
+    loss_carryforward_per_share numeric(38, 12) not null default 0,   -- PER SHARE, like the HWM
     last_crystallized_date date null,
     cumulative_crystallized_fee numeric(38, 12) not null default 0,
     accrued_fee_balance numeric(38, 12) not null default 0,
@@ -911,7 +922,7 @@ create table if not exists __SCHEMA__.incentive_fee_state (
     policy_version text not null,
     updated_at timestamptz not null,
     version bigint not null default 0,
-    constraint ck_incentive_fee_state_lcf check (loss_carryforward >= 0),
+    constraint ck_incentive_fee_state_lcf check (loss_carryforward_per_share >= 0),
     constraint ck_incentive_fee_state_hwm check (high_water_mark_per_share >= 0),
     -- The partial unique index below keys on status = 'Live'. Without this constraint any other
     -- string ('live', 'LIVE', a typo from a manual repair) silently falls outside both the index
@@ -941,8 +952,8 @@ create table if not exists __SCHEMA__.incentive_fee_state_snapshots (
     as_of_date date not null,
     high_water_mark_before numeric(38, 12) not null,
     high_water_mark_after numeric(38, 12) not null,
-    loss_carryforward_before numeric(38, 12) not null,
-    loss_carryforward_after numeric(38, 12) not null,
+    loss_carryforward_per_share_before numeric(38, 12) not null,
+    loss_carryforward_per_share_after numeric(38, 12) not null,
     accrued_fee_delta numeric(38, 12) not null,       -- signed; negative == reversal
     crystallized_fee numeric(38, 12) not null default 0,
     crystallized boolean not null default false,
@@ -961,6 +972,39 @@ create index if not exists ix_incentive_fee_state_snapshots_state_asof
 transaction** guarded by `version = expectedVersion` (increment on success), mirroring
 `SavePeriodAsync`'s optimistic-concurrency pattern so concurrent period runs cannot silently clobber the
 HWM series.
+
+### 7.3 `V_ledger_030` (same script) — enablement evidence
+
+The opening protected level is operator-asserted rather than derived, so it needs an audit record
+that outlives the state row it seeds. `incentive_fee_state` holds current state only, and its
+snapshots are per-period roll-forwards — neither has anywhere to put the operator's stated basis, so
+without this table `OpeningBasisNote` has no durable home and the promised evidence is lost.
+
+```sql
+create table if not exists __SCHEMA__.incentive_fee_enablements (
+    enablement_id uuid primary key,
+    ledger_book_id uuid not null references __SCHEMA__.ledger_books(ledger_book_id) on delete cascade,
+    fund_profile_id text not null,
+    policy_id text not null,
+    accounting_model text not null,                    -- FundLevel | InvestorSeries
+    series_id text null,                               -- null for the FundLevel scope; one row per series otherwise
+    opening_high_water_mark_per_share numeric(38, 12) not null,
+    opening_basis_note text not null,                  -- the operator's stated basis
+    acknowledged_by text not null,                     -- actor identity
+    acknowledged_at timestamptz not null,
+    state_record_id uuid not null references __SCHEMA__.incentive_fee_state(state_record_id),
+    constraint ck_incentive_fee_enablements_hwm check (opening_high_water_mark_per_share >= 0)
+);
+
+create index if not exists ix_incentive_fee_enablements_book
+    on __SCHEMA__.incentive_fee_enablements (ledger_book_id, acknowledged_at desc);
+```
+
+Written in the **same transaction** as the scope it seeds, by both enablement branches — one row per
+scope opened. Append-only: it is evidence, never edited. `EnsureFundLevelStateAsync` and
+`CreateSeriesWithStateAsync` therefore take the note and actor alongside the opening level, and the
+workbench (§9.3) surfaces "opened at X per share on <date> by <actor> — <basis>" beside the current
+HWM, so an auditor can see where a protected level came from without reading migration history.
 
 ---
 
@@ -1036,7 +1080,7 @@ public sealed record IncentiveFeePolicyDto(
 
 public sealed record IncentiveFeeStateDto(
     string FundProfileId, string? SeriesId,
-    decimal HighWaterMarkPerShare, string Status, decimal LossCarryforward,
+    decimal HighWaterMarkPerShare, string Status, decimal LossCarryforwardPerShare,
     DateOnly? LastCrystallizedDate, decimal CumulativeCrystallizedFee, decimal AccruedFeeBalance);
 
 public sealed record IncentiveFeeSeriesInputDto(
@@ -1055,16 +1099,25 @@ public sealed record IncentiveFeeAccrualPreviewRequest(
     bool IsRedemption = false);
 
 /// <summary>
-/// Enablement command: turns the engine on for a book and opens its fund-level HWM scope.
-/// Separate from the policy POST because the opening HWM is operator-confirmed input that exists
-/// nowhere in the schema (§7 enablement gate) — the policy shape alone cannot carry it, and the
-/// state DTO is read-only. Idempotent: re-sending returns the live scope unchanged.
+/// Enablement command: turns the engine on for a book and opens its HWM scope(s). Separate from the
+/// policy POST because the opening HWM is operator-confirmed input that exists nowhere in the schema
+/// (§7 enablement gate) — the policy shape alone cannot carry it, and the state DTO is read-only.
+/// Idempotent: re-sending returns the live scope(s) unchanged.
 /// </summary>
 public sealed record IncentiveFeeEnablementRequest(
     Guid LedgerBookId, string FundProfileId, string PolicyId,
-    decimal OpeningHighWaterMarkPerShare,   // last crystallised NAV/share, or current NAV/share
-    string OpeningBasisNote,                // operator's stated basis, retained as evidence
+    // FundLevel (Method A): exactly one opening level for the seriesId-null scope.
+    // Required when AccountingModel == FundLevel, must be null otherwise.
+    decimal? OpeningHighWaterMarkPerShare,
+    // InvestorSeries (Method B): one opening level per series. Required when
+    // AccountingModel == InvestorSeries, must be empty otherwise. There is NO fund-level scope
+    // under Method B — see the branching note below.
+    IReadOnlyList<IncentiveFeeSeriesOpeningDto>? OpeningSeries,
+    string OpeningBasisNote,                // operator's stated basis; persisted, see §7.3
     bool AcknowledgeOpeningLevel);          // explicit confirmation; the server rejects false
+
+public sealed record IncentiveFeeSeriesOpeningDto(
+    string SeriesId, decimal OpeningHighWaterMarkPerShare, decimal UnitsOutstanding);
 
 public sealed record IncentiveFeeAccrualPreviewResponse(
     decimal ManagementFee, decimal IncentiveFee, decimal HurdleAmount, decimal CatchUpFee, decimal CarryFee,
@@ -1092,12 +1145,26 @@ public const string LedgerIncentiveFeeEnable         = "/api/ledger/incentive-fe
 - `POST LedgerIncentiveFeeAccrualPreview` — pure `EvaluatePeriodAsync` preview (no posting).
 - `POST LedgerIncentiveFeeCrystallize` — governed `CommitAsync` for a crystallization date (Submit→Approve→
   Post + state roll-forward); requires actor + evidence, consistent with the other governed ledger POSTs.
-- `POST LedgerIncentiveFeeEnable` — `IncentiveFeeEnablementRequest` → `EnsureFundLevelStateAsync`.
-  **This is the only surface that can supply the opening HWM**, so a book cannot be enabled without
-  one. Rejects `AcknowledgeOpeningLevel = false` with 422, and validates the equalization pairing
-  below. Idempotent; returns the live scope. `POST LedgerIncentiveFeePolicies` deliberately does
-  **not** accept an opening HWM — a policy edit must never silently reset a protected level that
-  has already advanced.
+- `POST LedgerIncentiveFeeEnable` — `IncentiveFeeEnablementRequest`. **This is the only surface that
+  can supply an opening HWM**, so a book cannot be enabled without one. Rejects
+  `AcknowledgeOpeningLevel = false` with 422, and validates the equalization pairing below.
+  Idempotent; returns the live scope(s). `POST LedgerIncentiveFeePolicies` deliberately does **not**
+  accept an opening HWM — a policy edit must never silently reset a protected level that has already
+  advanced.
+
+> **Enablement branches on `AccountingModel`; it is not one call.** The HWM contract gives Method B
+> one scope *per series* and **no `series_id is null` row at all**, so calling
+> `EnsureFundLevelStateAsync` for an `InvestorSeries` book would create exactly the invalid
+> fund-level scope the contract forbids — and routing every book through it would otherwise leave
+> Method B books unable to enable.
+>
+> | `AccountingModel` | Enablement does |
+> |---|---|
+> | `FundLevel` | `EnsureFundLevelStateAsync` with `OpeningHighWaterMarkPerShare`. `OpeningSeries` must be empty (422 otherwise). |
+> | `InvestorSeries` | For each entry in `OpeningSeries`: create the scope via `CreateSeriesWithStateAsync` if the series has no live scope, or verify the existing one and leave it untouched. `OpeningHighWaterMarkPerShare` must be null (422 otherwise). Every series in `fund_series` with no live scope must appear, or the call is rejected — a partially-enabled book is the same defect as an unenabled one. |
+>
+> Both branches are idempotent and both write the enablement record below. Test 28 covers the
+> Method B branch and the two shape rejections.
 
 > **Pairing validation — Fork G and `EqualizationMethod` are not independently writable.**
 > The HWM contract (§4) requires `FundLevel` ↔ Method A and `InvestorSeries` ↔ Method B, but the
@@ -1110,7 +1177,7 @@ public const string LedgerIncentiveFeeEnable         = "/api/ledger/incentive-fe
 > counterpart policy and reject a mismatched pair with 422**, naming both values. Changing one side
 > is a single governed operation that writes both or neither; `EvaluatePeriodAsync` re-checks the
 > pairing and fails closed, because a mismatch persisted by any other path must not silently
-> produce wrong fees. Test 28 covers both rejection directions.
+> produce wrong fees. Test 26 covers both rejection directions.
 
 ### 9.3 UI surfaces
 
@@ -1193,18 +1260,26 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
     call after the HWM has advanced returns the live scope unchanged.
 25. `CloseScope_ClosesSeriesRegistryAndState_Atomically` — after a full redemption no `Open`
     `fund_series` row survives without a live HWM scope, and neither does the inverse.
-28. `SavePolicy_MismatchedEqualizationPairing_Rejects` — `SeriesOfShares` + `FundLevel` and
+26. `SavePolicy_MismatchedEqualizationPairing_Rejects` — `SeriesOfShares` + `FundLevel` and
     `Equalisation` + `InvestorSeries` are both rejected with 422, from either write side, and
     `EvaluatePeriodAsync` fails closed on a pair persisted by any other path.
-29. `Equalization_WithHardHurdle_CreditMatchesAccruedFee` — the §5.1 credit is the
+27. `Equalization_WithHardHurdle_CreditMatchesAccruedFee` — the §5.1 credit is the
     `IncentiveFeeCalculator` accrued fee, not `f × (GAV − HWM)`. At `GAV_d = 120`, `HWM = 100`,
     `f = 20%`, 8% hard hurdle: credit is `2.40`/share, not `4.00`, and the §11 fund-fee
     reconciliation still holds.
 
+28. `Enable_InvestorSeriesBook_CreatesPerSeriesScopesAndNoFundLevelRow` — plus the two shape
+    rejections (fund-level opening on a Method B book, series roster on a Method A book) and the
+    partially-enabled rejection when a live series has no scope.
+29. `Roll_PartialRedemption_ScalesLossCarryforwardWithUnits` — the remaining holders' per-share loss
+    shield is unchanged by a redemption that halves units; the unscaled-total regression would leave
+    them carrying the pre-redemption shield and delay fees.
+30. `Enable_PersistsOpeningBasisNoteAndActor` — the enablement row is written in the same
+    transaction as the scope and is readable beside the current HWM.
 **Store (Postgres integration, mirroring tax-lot store tests):**
-26. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and
+31. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and
     `..._SaveIncentiveFeeState_RejectsStaleVersion`.
-27. `PostgresLedgerJournalStore_IncentiveFeeState_RejectsUnknownStatus` — the
+32. `PostgresLedgerJournalStore_IncentiveFeeState_RejectsUnknownStatus` — the
     `ck_incentive_fee_state_status` domain constraint holds, so a malformed status cannot slip past
     the partial uniqueness index.
 

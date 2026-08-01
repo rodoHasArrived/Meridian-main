@@ -1,11 +1,11 @@
 {
   "total_files": 638,
-  "total_lines": 116993,
+  "total_lines": 117068,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 183.4,
+  "average_lines": 183.5,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1698,7 +1698,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/incentive-fee-mechanics.md",
-      "line_count": 1275,
+      "line_count": 1350,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
