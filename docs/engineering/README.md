@@ -42,7 +42,11 @@ Canonical ownership rule:
 ## Blueprints
 
 Code-ready technical designs for prioritized features live under
-[`blueprints/`](blueprints/README.md).
+[`blueprints/`](blueprints/README.md). That README is the **canonical register for every active
+blueprint in the repository**, wherever it is filed — engineering, `docs/development/accounting-blueprints/`,
+`docs/product/`, and `docs/plans/` — and it records the shared conventions (ledger migration
+ordinals, DDL precision, API route prefixes, enum extension, terminology) plus the cross-blueprint
+contracts that stop two independently-written designs from colliding.
 
 ## Build/Test/Run
 
