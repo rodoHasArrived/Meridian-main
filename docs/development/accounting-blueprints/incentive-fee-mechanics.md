@@ -1234,11 +1234,28 @@ The governed lifecycle is untouched: `AutomatedJournalApproval` still enforces
 >     // holdings cancellation then share ONE transaction — see CloseScopeAsync's warning.
 >     bool ClosesScope = false, string? SeriesId = null);
 >
-> Task CommitAsync(
+> // Returns the POSTED approvals — see the lifecycle note below; this is not a fire-and-forget Task.
+> Task<IReadOnlyList<AutomatedJournalApproval>> CommitAsync(
 >     IReadOnlyList<IncentiveFeePostingCommand> postings,    // approval + its posting context
 >     IReadOnlyList<IncentiveFeeScopeCommit> scopeCommits,   // ONE PER SCOPE, all in one transaction
 >     CancellationToken ct = default);
 > ```
+>
+> **The transactional append does not move the approval to `Posted` — you must.**
+> `DurableAutomatedJournalPoster.PostAsync` calls `AutomatedJournalApproval.MarkPosted` on the way
+> through (`AutomatedJournalApproval.cs:136`, reached from `PostTo` at `:125`).
+> `ITransactionalLedgerJournalStore.AppendAsync(connection, transaction, entry, ct)` takes only a
+> `LedgerJournalEntryWrite` and returns `Task` — it has no approval to transition. Swapping seams for
+> atomicity therefore drops the `Approved→Posted` transition exactly as it dropped idempotency, and
+> approvals would sit at `Approved` while their journals and fee state are durable, misleading both
+> retries and operator views.
+>
+> So: **append inside the transaction, `MarkPosted` after it commits**, and return the posted
+> approvals from `CommitAsync` so the caller persists them. A crash between commit and `MarkPosted`
+> is recoverable rather than corrupting — the §8.2 replay preflight finds the equivalent retained
+> journal and completes the transition on re-run, which is why the preflight checks the journal
+> *and* the scope rows. It cannot be folded into the transaction: approval state is not a row this
+> port owns.
 >
 > **Two independent concurrency guards.** `AutomatedJournalPostingContext.ExpectedPeriodVersion`
 > protects the accounting period; `IncentiveFeeScopeCommit.ExpectedVersion` protects that scope's
@@ -1450,7 +1467,13 @@ public const string LedgerIncentiveFeeTransitionModel = "/api/ledger/incentive-f
 >     // Contracts→Ledger violation the layering rule forbids. The application layer resolves this
 >     // id to the domain command at the boundary.
 >     Guid ReclassificationApprovalId,
->     // Expected versions for EVERY row this command overwrites. Resolving the approval and running
+>     // Expected versions for EVERY row this command overwrites. NOTE: only incentive_fee_state
+>     // ships a `version bigint` today — incentive_fee_policy has a *semantic* `policy_version text`
+>     // (which is not a concurrency token), and fund_equalization_policy, fund_series, and
+>     // fund_series_holdings have no version column at all. These guards are therefore
+>     // unimplementable until V_ledger_033/034/035 add `version bigint not null default 0` to each
+>     // and every write to those tables increments it in the same statement. That column addition is
+>     // part of this blueprint pair's persistence slice, not an assumed pre-existing facility. Resolving the approval and running
 >     // one transaction prevents partial writes, but not atomically applying a STALE conversion over
 >     // ownership that moved between approval and submit -- holdings, policies, or scopes can all
 >     // change in that window. Each is checked inside the transaction; any mismatch rejects the

@@ -846,6 +846,15 @@ public interface IFundSeriesStore
 }
 ```
 
+> **Rehydrating a lot: use the context factory, never the fund context.** The stored
+> `incentive_policy_id` / `incentive_policy_version` resolve the governing terms, and
+> `subscription_date` plus the crystallization date give the lot's own `PeriodFraction`;
+> `contributed_capital_at_entry` supplies the basis when `HurdleBasis.ContributedCapital` applies.
+> `IEqualizationLotStore` materialises lots through a single
+> `BuildLotFeeContext(storedLot, crystallizationDate)` factory so no call site reconstructs one
+> ad hoc — substituting the period-level `FundContext` is the specific defect this exists to
+> prevent, and it is silent rather than loud.
+>
 > **Opening a series must also open its HWM row — `IFundSeriesStore` alone is not enough.**
 > Because `fund_series` carries no HWM column (§9), persisting a `FundSeriesDefinition` does *not*
 > persist the series' protected level. If the workflow stops at `UpsertAsync`, the issue-price HWM
@@ -990,6 +999,7 @@ create table if not exists __SCHEMA__.fund_equalization_policy (
     tenant_id                 text null,
     created_at                timestamptz not null,
     updated_at                timestamptz not null,
+    version                   bigint not null default 0,   -- concurrency token; the transition guards read it
     primary key (ledger_book_id)
 );
 
@@ -1013,6 +1023,13 @@ create table if not exists __SCHEMA__.equalization_subscription_lots (
     peak_per_share_at_entry        numeric(38, 12) not null,
     currency                       text not null,
     zone                           text not null,               -- AtPeak | AbovePeak | BelowHighWaterMark
+    -- The lot's FeeContext is a REQUIRED constructor argument (§7.1) and cannot be recovered from
+    -- the entry fields above, so the inputs that determine it are persisted here. Without these a
+    -- reloaded lot either fails to hydrate or silently falls back to the fund context, which is
+    -- wrong under any partial-period or contributed-capital hurdle.
+    incentive_policy_id            text not null,               -- which terms governed this lot
+    incentive_policy_version       text not null,               -- the exact effective-dated version
+    contributed_capital_at_entry   numeric(38, 12) not null,    -- this lot's own hurdle basis
     tenant_id                      text null,
     created_at                     timestamptz not null,
     primary key (ledger_book_id, subscription_id)
@@ -1050,6 +1067,7 @@ create table if not exists __SCHEMA__.fund_series (
     -- No HWM column here by contract (§9): the series HWM lives in incentive_fee_state,
     -- one row per series keyed by series_id. Join, do not duplicate.
     is_lead                   boolean not null default false,
+    version                   bigint not null default 0,   -- concurrency token; the transition guards read it
     status                    text not null default 'Open',      -- Open | Crystallized | Consolidated | Closed
     currency                  text not null,
     tenant_id                 text null,
@@ -1066,6 +1084,14 @@ create table if not exists __SCHEMA__.fund_series (
 -- Partial on BOTH is_lead and a live status. Without the status predicate a lead series that
 -- fully redeems keeps the constraint slot (close sets status, not is_lead), so the next
 -- subscription cannot establish a new lead without a uniqueness violation.
+-- A Method B HWM scope must name a real series in the SAME book. Added here, in V035, because
+-- incentive_fee_state (V030) predates fund_series and cannot declare it at its own creation.
+-- Nullable by design: series_id IS NULL remains the Method A fund-level scope.
+alter table __SCHEMA__.incentive_fee_state
+    add constraint fk_incentive_fee_state_series
+    foreign key (ledger_book_id, series_id)
+    references __SCHEMA__.fund_series (ledger_book_id, series_id);
+
 create unique index if not exists ux_fund_series_lead
     on __SCHEMA__.fund_series (ledger_book_id)
     where is_lead and status in ('Open', 'Crystallized');
@@ -1075,6 +1101,7 @@ create table if not exists __SCHEMA__.fund_series_holdings (
     series_id       text not null,
     investor_id     text not null,
     shares          numeric(38, 12) not null,
+    version         bigint not null default 0,   -- concurrency token; the transition guards read it
     primary key (ledger_book_id, series_id, investor_id)
 );
 
