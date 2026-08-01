@@ -2,11 +2,22 @@
 
 This file is generated from `docs/roadmap/data/program-state.yml` and `docs/roadmap/data/roadmap-items.yml`.
 
-Snapshot date: 2026-07-28
+Snapshot date: 2026-07-31
 
 | ID | Wave | Title | Workspaces | Status | Health | Priority | Owner Lane | Evidence Posture | Last Reviewed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W1-DATA-001 | W1 | Provider trust gate and data confidence baseline | Data | done | green | critical | Data Confidence and Validation | complete | 2026-05-20 |
+| W10-CONSOL-001 | W10 | Intercompany elimination on consolidated ledger views | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-JRNL-001 | W10 | Durable recurring journal schedules and draft runner | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-MARK-001 | W10 | Fail-closed stale-mark policy and mark-age surfacing | Accounting; Portfolio | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-PERF-001 | W10 | Portfolio and investor return measurement | Portfolio; Reporting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-PROV-001 | W10 | Ledger-amount evidence subject and shared proof drawer | Accounting; Reporting; Portfolio | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-07-31 |
+| W10-RECON-001 | W10 | Durable break lineage identity and run-over-run break diff | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-RECON-002 | W10 | Break clustering and bulk-resolution activation | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-RECON-003 | W10 | Unified tolerance model and what-if replay workbench | Accounting; Settings | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-RECON-004 | W10 | Operator-taught match rules with promotion gate | Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-SEAM-001 | W10 | Unified close-readiness projection behind one shared contract | Accounting; Reporting | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-07-31 |
+| W10-TAX-001 | W10 | Tax character, wash-sale, and lot-relief operator surface | Accounting; Portfolio | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W2-PROMO-001 | W2 | Paper promotion evidence and operator acceptance | Strategy; Trading | done | green | high | Execution and Fund Accounts | complete | 2026-05-28 |
 | W2-TRD-001 | W2 | Paper trading cockpit reliability | Trading | done | green | critical | Execution and Fund Accounts | complete | 2026-05-28 |
 | W3-CONT-001 | W3 | Research to paper continuity | Strategy; Trading | done | green | high | Strategy Analytics | complete | 2026-05-28 |
