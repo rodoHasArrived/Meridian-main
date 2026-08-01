@@ -156,6 +156,57 @@ public sealed class ExecutionWriteEndpointsTests
         orderManager.CancelledOrderIds.Should().ContainSingle().Which.Should().Be("ord-live-001");
     }
 
+    [Fact]
+    public async Task CancelOrder_ForAnotherFundsOrder_IsForbidden()
+    {
+        // Cancelling a parked order durably withdraws its governed approval. The escalation
+        // routes only permit that within the caller's scoped authority over the owning fund,
+        // so reaching the same withdrawal by client order id must not bypass the check.
+        var ownedByAnotherFund = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        var callerScope = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        var orderState = CreateOrderState("ord-fund-b", "AAPL", 1m) with { FundAccountId = ownedByAnotherFund };
+        var orderManager = new RecordingOrderManager(orderState);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IOrderManager>(orderManager);
+            services.AddSingleton<IScopedAuthorizationService>(
+                _ => new SingleAccountScopedAuthorizationService(callerScope));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/ord-fund-b/cancel", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        orderManager.CancelledOrderIds.Should().BeEmpty("an unauthorized cancel must not reach the OMS");
+    }
+
+    private sealed class SingleAccountScopedAuthorizationService(Guid allowedAccountId) : IScopedAuthorizationService
+    {
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission required,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var isAllowed =
+                scopeKind == AccessScopeKindDto.Account &&
+                scopeId == allowedAccountId &&
+                (globalPermissions & required) == required;
+
+            return Task.FromResult(new ScopedAuthorizationDecisionDto(
+                IsAllowed: isAllowed,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: isAllowed ? "in scope" : "outside the caller's scoped accounts"));
+        }
+    }
+
     // ------------------------------------------------------------------ //
     //  POST /api/execution/orders/cancel-all                              //
     // ------------------------------------------------------------------ //
