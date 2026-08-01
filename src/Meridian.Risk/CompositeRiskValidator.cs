@@ -136,11 +136,22 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
         if (ordered.Count > 0)
         {
-            _logger.LogInformation(
-                "Pre-trade risk admitted order for {Symbol} as {Decision} with {ViolationCount} finding(s).",
-                ExecutionLogText.ForLog(request.Symbol),
-                result.Decision,
-                ordered.Count);
+            // Isolated because ownership has not transferred yet. This runs after the cleanup
+            // handler above has exited, so a throwing logger provider would leave the method
+            // without returning the outcome and without releasing anything — capacity consumed
+            // permanently by an order that was admitted. An admission note is never worth that.
+            try
+            {
+                _logger.LogInformation(
+                    "Pre-trade risk admitted order for {Symbol} as {Decision} with {ViolationCount} finding(s).",
+                    ExecutionLogText.ForLog(request.Symbol),
+                    result.Decision,
+                    ordered.Count);
+            }
+            catch (Exception ex)
+            {
+                TryLogSuppressed(ex, "admission");
+            }
         }
 
         return new RiskValidationOutcome(result, reservations);
@@ -285,8 +296,24 @@ public sealed class CompositeRiskValidator : IRiskValidator
         catch (Exception ex) when (ex is TimeoutException or OperationCanceledException)
         {
             // Do not await the abandoned evaluation, but do not leak whatever it reserved either.
+            //
+            // The rollback is guarded: this continuation is fire-and-forget, so a throwing
+            // Rollback would fault it unobserved, leave the slot pending indefinitely, and produce
+            // no diagnostic at all — the one leak with no trace back to a cause.
             _ = evaluation.ContinueWith(
-                static task => task.Result.Reservation?.Rollback(),
+                task =>
+                {
+                    try
+                    {
+                        task.Result.Reservation?.Rollback();
+                    }
+                    catch (Exception rollbackFailure)
+                    {
+                        TryLogSuppressed(
+                            rollbackFailure,
+                            "release of a reservation from an abandoned evaluation");
+                    }
+                },
                 CancellationToken.None,
                 TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously,
                 TaskScheduler.Default);
@@ -334,6 +361,23 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// cleanup exception would hide why the order was actually blocked.
     /// </para>
     /// </summary>
+    /// <summary>
+    /// Logs a failure that must not propagate, without assuming the logger itself works. Callers use
+    /// this on paths where throwing would cost more than the lost diagnostic — releasing capacity,
+    /// or returning a decision the caller is waiting for.
+    /// </summary>
+    private void TryLogSuppressed(Exception failure, string what)
+    {
+        try
+        {
+            _logger.LogError(failure, "Pre-trade risk: {What} failed and was suppressed.", what);
+        }
+        catch
+        {
+            // The logger is the thing that failed. Nothing further is available or worth risking.
+        }
+    }
+
     private void RollbackAll(List<IRiskReservation> reservations)
     {
         foreach (var reservation in reservations)
@@ -344,9 +388,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "A risk reservation could not be released; its capacity stays consumed until the window expires.");
+                // Guarded for the same reason the rollback is: this runs on the failure path, where
+                // a throwing logger would replace the outcome the caller is waiting for.
+                TryLogSuppressed(ex, "release of a reserved risk slot");
             }
         }
 

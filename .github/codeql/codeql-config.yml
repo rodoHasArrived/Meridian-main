@@ -25,11 +25,19 @@ query-filters:
   #   next genuine finding, which is the risk this exclusion addresses.
   #
   # Compensating control: `src/Meridian.Execution/README.md` states the convention
-  # as an invariant of the module — caller-supplied order text goes through
+  # as an invariant of the whole module — caller-supplied order text goes through
   # `ExecutionLogText.ForLog` before reaching a logger, and a raw value in a new
   # log call is a defect rather than a style choice. The invariant is mechanically
   # checkable: grep `_logger.Log*` calls for `orderId`, `request.Symbol`, or
   # `safeRequest.Symbol` appearing without `ForLog`.
+  #
+  # The invariant holds across `src/Meridian.Execution/` as a whole, not just the
+  # OMS. An earlier draft of this exclusion claimed coverage the code did not have:
+  # both paper gateways, the brokerage adapter, and the Security Master gate still
+  # logged the symbol and client order id raw — 15 call sites — so the exclusion
+  # would have hidden live defects rather than only future ones. Those were fixed
+  # before this filter was relied upon. Anything added to this module has to hold
+  # the same line, or this exclusion stops being honest.
   #
   # Revisit if CodeQL gains sanitizer modelling for this pattern, or if log
   # forging is reported anywhere outside the execution path the invariant covers.

@@ -410,16 +410,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
 
-            // The admission boundary. SubmitOrderAsync returns normally with OrderStatus.Rejected
-            // for cases like a market order with no reference price or a resting-id collision, so
-            // acceptance has to be judged from the report rather than from the absence of a throw.
-            // Committing on a rejected report would consume rate capacity for an order that never
-            // reached the venue, and repeated rejections would exhaust the window.
-            SettleReservations(
-                riskOutcome,
-                commit: report.OrderStatus is not OrderStatus.Rejected,
-                orderId);
-
             // Merge against the latest tracked state: the async report pump may already
             // have applied a fill for this order before the submit ack is processed here.
             var previousFilledQuantity = 0m;
@@ -435,6 +425,23 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     previousFilledQuantity = existing.FilledQuantity;
                     return ApplyReport(existing, report);
                 });
+
+            // The admission boundary. SubmitOrderAsync returns normally with OrderStatus.Rejected
+            // for cases like a market order with no reference price or a resting-id collision, so
+            // acceptance has to be judged from the report rather than from the absence of a throw.
+            // Committing on a rejected report would consume rate capacity for an order that never
+            // reached the venue, and repeated rejections would exhaust the window.
+            //
+            // Judged from the merged state rather than the raw acknowledgement, and after the merge
+            // rather than before it. The pump can apply a fill before a later rejected ack arrives —
+            // the race the merge above exists for — and ApplyReport preserves that terminal fill.
+            // Settling from the raw report would roll back an order that had already executed,
+            // putting it outside the rate window and letting the next submission exceed the
+            // ceiling. Any observed fill commits.
+            SettleReservations(
+                riskOutcome,
+                commit: updatedState.Status is not OrderStatus.Rejected || updatedState.FilledQuantity > 0m,
+                orderId);
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 ExecutionLogText.ForLog(orderId),

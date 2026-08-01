@@ -140,7 +140,7 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         _logger.LogInformation(
             "Paper order accepted: {ClientOrderId} {Quantity} {Symbol} @ {Type}",
-            orderId, request.Quantity, request.Symbol, request.Type);
+            ExecutionLogText.ForLog(orderId), request.Quantity, ExecutionLogText.ForLog(request.Symbol), request.Type);
 
         var ack = new OrderAcknowledgement(
             OrderId: orderId,
@@ -209,7 +209,7 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         if (cancelledRequest is not null)
         {
-            _logger.LogInformation("Paper order cancelled: {OrderId} {Symbol}", orderId, cancelledRequest.Symbol);
+            _logger.LogInformation("Paper order cancelled: {OrderId} {Symbol}", ExecutionLogText.ForLog(orderId), ExecutionLogText.ForLog(cancelledRequest.Symbol));
             var update = new OrderStatusUpdate(
                 OrderId: orderId,
                 ClientOrderId: orderId,
@@ -224,7 +224,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             {
                 _logger.LogWarning(
                     "Paper cancellation update for {OrderId} could not be queued because the update channel was unavailable.",
-                    orderId);
+                    ExecutionLogText.ForLog(orderId));
             }
         }
 
@@ -260,7 +260,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             // Emitting a Filled update here would contradict that terminal state.
             _logger.LogDebug(
                 "Paper fill skipped for {OrderId}: order is no longer working (cancelled or already filled).",
-                orderId);
+                ExecutionLogText.ForLog(orderId));
             return;
         }
 
@@ -283,7 +283,7 @@ public sealed class PaperTradingGateway : IOrderGateway
                 var rejectReason = PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol);
                 _logger.LogWarning(
                     "Paper order rejected: {ClientOrderId} {Symbol} — {RejectReason}",
-                    orderId, request.Symbol, rejectReason);
+                    ExecutionLogText.ForLog(orderId), ExecutionLogText.ForLog(request.Symbol), rejectReason);
 
                 var rejection = new OrderStatusUpdate(
                     OrderId: orderId,
@@ -299,7 +299,7 @@ public sealed class PaperTradingGateway : IOrderGateway
                 {
                     _logger.LogWarning(
                         "Paper rejection update for {OrderId} could not be queued because the update channel was unavailable.",
-                        orderId);
+                        ExecutionLogText.ForLog(orderId));
                 }
 
                 return;
@@ -328,12 +328,12 @@ public sealed class PaperTradingGateway : IOrderGateway
         {
             _logger.LogWarning(
                 "Paper fill update for {OrderId} could not be queued because the update channel was unavailable.",
-                orderId);
+                ExecutionLogText.ForLog(orderId));
         }
 
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
-            request.ClientOrderId, request.Quantity, request.Symbol, fillPrice);
+            request.ClientOrderId, request.Quantity, ExecutionLogText.ForLog(request.Symbol), fillPrice);
     }
 
     /// <summary>
@@ -428,7 +428,7 @@ public sealed class PaperTradingGateway : IOrderGateway
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Paper fill simulation failed for {OrderId}.", orderId);
+            _logger.LogError(ex, "Paper fill simulation failed for {OrderId}.", ExecutionLogText.ForLog(orderId));
         }
         finally
         {

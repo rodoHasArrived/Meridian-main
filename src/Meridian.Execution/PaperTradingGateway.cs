@@ -104,7 +104,7 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
                         .BuildNoReferencePriceRejectReason(request.Symbol);
                     _logger.LogWarning(
                         "Paper order rejected: {Symbol} {Side} {Quantity} — {RejectReason}",
-                        request.Symbol, request.Side, request.Quantity, rejectReason);
+                        ExecutionLogText.ForLog(request.Symbol), request.Side, request.Quantity, rejectReason);
 
                     return new ExecutionReport
                     {
@@ -140,7 +140,7 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
             };
 
             _logger.LogInformation("Paper fill: {Symbol} {Side} {Quantity} @ {Price}",
-                request.Symbol, request.Side, request.Quantity, report.FillPrice);
+                ExecutionLogText.ForLog(request.Symbol), request.Side, request.Quantity, report.FillPrice);
 
             return report;
         }

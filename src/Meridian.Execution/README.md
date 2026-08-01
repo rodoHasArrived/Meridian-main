@@ -53,8 +53,9 @@ and rejection reasons, which embed the symbol via rule text — is rendered thro
 `ExecutionLogText.ForLog` before it reaches a logger. `OrderRequest.ClientOrderId` and `Symbol` are
 submitted values that nothing upstream is required to constrain (the Security Master gate is
 optional), so a line break in either would render as an extra line in a text sink and let a submitter
-forge execution log entries. This holds for every `_logger` call in `OrderManagementSystem`; a raw
-caller value in a new log call is a defect, not a style choice.
+forge execution log entries. This holds for every `_logger` call in this module — the OMS, both paper gateways, the brokerage
+gateway adapter, and the Security Master gate; a raw caller value in a new log call is a defect, not
+a style choice.
 
 This convention is the compensating control for excluding `cs/log-forging` in
 `.github/codeql/codeql-config.yml` — that query reports log sites reached by user input rather than
