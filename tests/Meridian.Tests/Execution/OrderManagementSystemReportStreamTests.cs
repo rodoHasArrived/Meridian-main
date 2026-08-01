@@ -277,6 +277,9 @@ public sealed class OrderManagementSystemReportStreamTests
             "the oversized completion report reaches the tracked order");
 
         oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m);
+
+        await WaitForPublishedFillAsync(oms, result.OrderId);
+
         portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "the portfolio must only receive the originally authorized fill quantity");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
@@ -345,6 +348,26 @@ public sealed class OrderManagementSystemReportStreamTests
             Commission = 0m,
             Timestamp = DateTimeOffset.UtcNow,
         };
+
+    /// <summary>
+    /// Waits until the OMS has published the fill for <paramref name="orderId"/> on its observer
+    /// stream, which is the only barrier these tests have for the portfolio side effect.
+    /// <c>ProcessFillReportAsync</c> applies the fill to the portfolio and only then writes to the
+    /// execution-report channel, so observing the report happens-after the portfolio mutation.
+    /// Order status is not a barrier: the OMS mutates it before calling
+    /// <c>ProcessFillReportAsync</c> at all, so a test that waits on <c>Status == Filled</c> and
+    /// then reads <c>portfolio.Positions</c> is racing an unfinished fill.
+    /// </summary>
+    private static async Task WaitForPublishedFillAsync(OrderManagementSystem oms, string orderId)
+    {
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (true)
+        {
+            var report = await oms.ExecutionReports.ReadAsync(readCts.Token);
+            if (report.OrderId == orderId)
+                return;
+        }
+    }
 
     private static async Task WaitUntilAsync(Func<bool> condition, string because)
     {
