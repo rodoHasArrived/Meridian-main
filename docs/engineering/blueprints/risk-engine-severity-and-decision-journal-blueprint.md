@@ -11,13 +11,16 @@ collar rules) — this blueprint is the *engine* prerequisite, not the rule cata
 
 ## ⚠️ Breaking Change
 
-This blueprint changes three public surfaces in `Meridian.Risk` and `Meridian.Execution`.
+This blueprint changes four public surfaces across `Meridian.Execution.Sdk`, `Meridian.Risk`, and
+`Meridian.Execution`.
 
 | Surface | Change | Known consumers | Migration |
 | --- | --- | --- | --- |
-| `IRiskRule.EvaluateAsync` / `TryEvaluate` | Return `RiskRuleOutcome` instead of `RiskValidationResult` | 4 implementations: `DrawdownCircuitBreaker`, `OrderRateThrottle`, `PositionLimitRule` (`src/Meridian.Risk/Rules/`), `DrawdownGuardrailRule` (`src/Meridian.Ui.Shared/Services/`) | Mechanical: `RiskValidationResult.Approved()` → `RiskRuleOutcome.Pass()`; `RiskValidationResult.Rejected(r)` → `RiskRuleOutcome.Block(code, r, …)` |
+| `RiskRuleSeverity` | **Moves** from `Meridian.Risk` (`IRiskRule.cs:34`) to `Meridian.Execution.Sdk` | `IRiskRule`, `DrawdownGuardrailRule`, `CompositeRiskValidator` | Namespace-only; add a `using`. See "Assembly placement" below for why the move is mandatory |
+| `IRiskRule.EvaluateAsync` / `TryEvaluate` | Return `RiskFinding?` instead of `RiskValidationResult` (`null` = pass) | 4 implementations: `DrawdownCircuitBreaker`, `OrderRateThrottle`, `PositionLimitRule` (`src/Meridian.Risk/Rules/`), `DrawdownGuardrailRule` (`src/Meridian.Ui.Shared/Services/`) | `RiskValidationResult.Approved()` → `null`; `RiskValidationResult.Rejected(r)` → `new RiskFinding(code, r, …)`. The rule no longer chooses whether it blocks — see Decision 1 |
 | `CompositeRiskValidator.ValidateOrderAsync` | Evaluates all rules instead of returning on first failure | `OrderManagementSystem.cs:303` (sole call site, via `IRiskValidator`) | None required — the OMS reads `IsApproved`/`RejectReason`, which are preserved |
 | `RiskValidationResult` | Gains `Decision` and `Violations`; `IsApproved` and `RejectReason` become computed | 107 read sites; **zero** direct-initializer construction sites | None — verified that all 24 construction sites go through `Approved()` / `Rejected(string)`, both of which are retained |
+| `OrderResult` | Gains an optional `RiskDecisionSummary` | `Meridian.Execution.Sdk/Models.cs:169`; browser workstation submit path | Additive; existing readers unaffected. Required so the order ticket can render findings on the *admitted* path — see Decision 7 |
 
 **One existing test asserts the behaviour being removed:**
 `tests/Meridian.Tests/Risk/CompositeRiskValidatorTests.cs` →
@@ -26,6 +29,22 @@ assert the *replacement* guarantee (all rules evaluated, violations ordered by s
 priority). Do not delete it — invert it.
 
 No F# signature changes. No storage-format changes. No REST response removals (additive only).
+
+### Assembly placement (this constrains everything below)
+
+`Meridian.Risk` references `Meridian.Execution` (`Meridian.Risk.csproj:14`). `Meridian.Execution`
+does **not** reference `Meridian.Risk`, and must not — that would be a project cycle and would not
+compile.
+
+`RiskValidationResult` lives in `Meridian.Execution`. So every type it exposes must resolve from an
+assembly that both `Meridian.Execution` and `Meridian.Risk` can see. `Meridian.Execution.Sdk` is
+that assembly: it references only `Meridian.Contracts`, both projects already reference it, and it
+already owns `OrderRequest` and `OrderResult`.
+
+**All shared risk contracts therefore live in `Meridian.Execution.Sdk`:** `RiskRuleSeverity`,
+`RiskFinding`, `RiskViolation`, and `RiskDecisionKind`. `Meridian.Risk` keeps only the rule-facing
+surface (`IRiskRule`, `IReservingRiskRule`, `IRiskReservation`, `CompositeRiskValidator`, and the
+rule implementations).
 
 ---
 
@@ -62,8 +81,10 @@ No F# signature changes. No storage-format changes. No REST response removals (a
   as nullable and silently skips journaling when it is absent.
 - The rule set stays small (single-digit count) per order, so evaluating all rules is not a
   throughput concern on the paper/live order path. Revisit if the catalogue exceeds ~20 rules.
-- `Escalate` has no approval workflow behind it yet. This blueprint admits escalated orders with a
-  recorded violation; wiring escalation to an operator approval gate is follow-on work.
+- Escalation has no approval workflow behind it yet. A rule requests it via
+  `RiskFinding.RequiresAcknowledgement`; this blueprint admits such orders with a recorded
+  violation. Wiring escalation to a blocking operator approval gate is follow-on work — see Open
+  Question 1.
 
 ---
 
@@ -114,10 +135,10 @@ OrderManagementSystem.SubmitOrderAsync
                                                                         │
      ┌──────────────────────────────────────────────────────────────────┘
      │  CompositeRiskValidator                            [MODIFIED]
-     │    ├─ evaluate EVERY rule → RiskRuleOutcome        [NEW type]
+     │    ├─ evaluate EVERY rule → RiskFinding?           [NEW type]
      │    ├─ collect RiskViolation[]                      [NEW type]
      │    ├─ RiskDecisionPrecedence.Resolve(outcomes)     [NEW]
-     │    └─ commit phase: IRiskRuleStateCommit.OnAdmitted [NEW] ── solves the throttle problem
+     │    └─ settle reservations: IRiskReservation        [NEW] ── keeps the throttle atomic
      │
      └─► RiskValidationResult { Decision, Violations, IsApproved, RejectReason }  [EXTENDED]
               │
@@ -131,19 +152,31 @@ OrderManagementSystem.SubmitOrderAsync
 
 ### Design decisions
 
-**Decision 1 — Introduce `RiskRuleOutcome` for the per-rule result; extend `RiskValidationResult`
-for the aggregate.**
+**Decision 1 — A rule reports a `RiskFinding`; the validator decides what it means.**
 
 *Alternatives considered:* (a) extend `RiskValidationResult` and use it for both levels;
-(b) return `RiskDecisionDto` from F# directly.
+(b) return `RiskDecisionDto` from F# directly; (c) have the rule return an outcome kind
+(`Pass`/`Annotate`/`Escalate`/`Block`) alongside the finding.
 
 *Rationale:* A rule reports one finding; the validator reports a set. Conflating them is what
-produced today's "first failure is the whole answer" behaviour. Splitting the types makes the
-aggregate's job explicit. Option (b) leaks the interop DTO into every rule, including the three
-rules that never touch F#.
+produced today's "first failure is the whole answer" behaviour. Option (b) leaks the interop DTO
+into every rule, including the three that never touch F#.
 
-*Consequences:* Four rule implementations change signature (mechanical). `RiskValidationResult`'s
-read surface is preserved, so the OMS and all 107 read sites are untouched.
+Option (c) was the original shape of this blueprint and is **wrong**, for a reason worth recording:
+if the rule picks the outcome kind, severity is not actually decisional. A rule declaring
+`Severity = Warning` could still return `Block`, and an `Error` rule could annotate — the two would
+be free to contradict each other, which is the same class of bug as today's decorative severity,
+just relocated. It also admits nonsense states (`Block` with no violation, `Pass` with one) that the
+aggregate cannot faithfully summarise.
+
+So the rule returns `RiskFinding?` — `null` means "no finding", and a finding carries *what was
+measured*, never *what should happen about it*. The validator derives the outcome from
+`rule.Severity`. Severity becomes the single lever, by construction rather than by convention.
+
+*Consequences:* Four rule implementations change signature (mechanical). Escalation needs an
+explicit channel, since it is not a severity level — `RiskFinding.RequiresAcknowledgement` carries
+it. `RiskValidationResult`'s read surface is preserved, so the OMS and all 107 read sites are
+untouched. Invalid kind/violation combinations become unrepresentable.
 
 **Decision 2 — `RiskValidationResult` keeps `IsApproved` and `RejectReason` as computed members.**
 
@@ -171,7 +204,7 @@ which is a wider domain change than this blueprint should force. The C# side own
 *Consequences:* `RiskInterop.Aggregate` stays uncalled. Flag it in Open Questions rather than
 silently leaving dead code — either wire it later or archive it.
 
-**Decision 4 — Split evaluation from state commit.**
+**Decision 4 — Stateful rules reserve during evaluation and commit or roll back afterwards.**
 
 *Rationale:* This is the trap in "evaluate all rules." `OrderRateThrottle.EvaluateAsync`
 (`src/Meridian.Risk/Rules/OrderRateThrottle.cs`) **mutates state on the pass path** — it enqueues
@@ -180,19 +213,53 @@ a rule after a rejection never runs, so it never records. Evaluate-all would mak
 orders that were subsequently blocked by another rule, corrupting the rate window and causing
 spurious throttling after any rejection burst.
 
-*Consequences:* A new opt-in `IRiskRuleStateCommit` interface with `OnOrderAdmitted(OrderRequest)`.
-`OrderRateThrottle` moves its enqueue there. Rules that are pure (the other three) ignore it. The
-validator calls the commit phase only when the aggregate decision admits the order.
+*Alternatives considered:* a post-decision `OnOrderAdmitted(OrderRequest)` callback that re-does the
+enqueue. That was this blueprint's original shape and is **unsafe**: today the throttle holds one
+lock across purge → count → enqueue, so the ceiling check and the record are atomic. Splitting them
+into "read under lock" then "write under lock later" reintroduces a time-of-check/time-of-use race —
+N concurrent submissions can each observe room below the cap, all pass evaluation, and then all
+commit, overshooting the ceiling by up to N. The throttle's whole purpose is to be exact at the
+boundary, so this is not an acceptable trade.
 
-**Decision 5 — Journal through `ExecutionAuditTrailService`; no new store.**
+*Consequences:* Evaluation performs an atomic **reserve** under the rule's existing lock — the same
+purge → count → *reserve* sequence it does today, so capacity is consumed at check time and
+concurrent callers cannot double-spend it. The validator then commits the reservation when the
+aggregate admits the order, or rolls it back when it does not. Reservations are per-evaluation and
+must be released on every path, including exceptions and cancellation, or the throttle leaks
+capacity and eventually blocks everything. That makes the release path itself a first-class test
+target.
 
-*Rationale:* It is already WAL-backed (ADR-007), already carries `Reason`/`Scope`/`Metadata`, and is
-already the durable record for the two sibling gates. A parallel store would fragment execution
-evidence across two formats.
+**Decision 5 — The OMS owns journaling, not the validator.**
 
-*Consequences:* Violations serialize into the entry's
-`IReadOnlyDictionary<string, string> Metadata`. Rejections cost nothing extra (the write already
-happens). Admitted-order journaling is a *new* write on the hot path — see Decision 6.
+*Alternatives considered:* `CompositeRiskValidator` writes the journal entry directly (this
+blueprint's original shape).
+
+*Rationale:* Two independent reasons, both fatal to the original shape.
+
+First, the validator does not know the order id. `OrderManagementSystem.PlaceOrderAsync` computes
+`orderId = request.ClientOrderId ?? GenerateOrderId()` at line 160 and calls
+`ValidateOrderAsync(safeRequest, ct)` — the id is never passed in, and the browser submit path does
+not supply a `ClientOrderId`, so it is generated locally and exists only inside the OMS. A journal
+keyed on order id cannot be written from inside the validator without inventing a second context
+parameter.
+
+Second, it would double-write. `RejectOrderAsync` already writes an `Order`/`OrderRejected` audit
+entry for every rejection. A validator-side journal write would add a `Risk`/`PreTradeDecision`
+entry for the same event, giving audit consumers two records for one decision and contradicting this
+blueprint's own claim that rejections cost no extra write.
+
+*Consequences:* One canonical record per decision, written by the OMS, which already holds
+`orderId`, `actor`, `runId`, `correlationId`, `sessionId`, and `brokerName` (extracted at
+`OrderManagementSystem.cs:160-172`):
+
+| Decision | Record written | New write? |
+| --- | --- | --- |
+| `Rejected` | The existing `Order`/`OrderRejected` entry, now carrying `reasonCode` and the violation metadata | No |
+| `Escalated` / `ApprovedWithWarnings` | One `Risk`/`PreTradeDecision` entry | Yes |
+| `Approved` (clean) | One `Risk`/`PreTradeDecision` entry only when `JournalCleanApprovals` is set | Opt-in |
+
+`/api/risk/decisions` projects over both categories, so a reader sees every decision regardless of
+which record carries it.
 
 **Decision 6 — Journal every decision that carries a violation; gate clean approvals behind config.**
 
@@ -203,102 +270,168 @@ every admitted order on a high-throughput path buys little and costs on the hot 
 ≥1 violation — including `Warning`s that were admitted — is always journaled. Operators who need
 complete records flip one flag.
 
+**Decision 7 — `OrderResult` carries the decision back to the caller.**
+
+*Rationale:* The order ticket must render findings on the *admitted* path, and there is currently no
+route for them. The OMS discards `riskResult` once `IsApproved` is true, and `OrderResult`
+(`Meridian.Execution.Sdk/Models.cs:169`) exposes only `Success`, `OrderId`, `ErrorMessage`, and
+`OrderState`. The `/api/risk/decisions` history endpoint cannot substitute: it is written
+asynchronously and offers no deterministic read-back for the submission that just returned.
+
+*Consequences:* `OrderResult` gains an optional `RiskDecisionSummary`. Additive, so existing readers
+are unaffected, but the browser workstation's TypeScript submit contract must be extended in the
+same PR as the panel that consumes it.
+
 ---
 
 ## Interface and API Contracts
 
-### New types — `Meridian.Risk`
+### New types — `Meridian.Execution.Sdk`
+
+These live in the SDK, not in `Meridian.Risk`, because `RiskValidationResult` (in
+`Meridian.Execution`) exposes them and `Meridian.Execution` cannot reference `Meridian.Risk`. See
+"Assembly placement" above.
 
 ```csharp
-namespace Meridian.Risk;
+namespace Meridian.Execution.Sdk;
 
-/// <summary>How a single rule judged one order.</summary>
-public enum RiskOutcomeKind
+/// <summary>
+/// How seriously a rule treats its own findings. This is the single lever that decides
+/// admission: the validator maps it to an outcome, and no rule can override that mapping.
+/// Moved here from Meridian.Risk so both Meridian.Execution and Meridian.Risk can see it.
+/// </summary>
+public enum RiskRuleSeverity
 {
-    /// <summary>No finding. The rule is satisfied.</summary>
-    Pass,
+    /// <summary>Recorded and surfaced. Admits.</summary>
+    Info,
 
-    /// <summary>A finding the operator should see, but which does not block the order.</summary>
-    Annotate,
+    /// <summary>Recorded and surfaced more prominently. Admits.</summary>
+    Warning,
 
-    /// <summary>A finding that requires operator acknowledgement. Admitted, recorded, surfaced.</summary>
-    Escalate,
+    /// <summary>Blocks.</summary>
+    Error,
 
-    /// <summary>A finding that blocks the order.</summary>
-    Block
+    /// <summary>Blocks. Reserved for guardrails whose breach implies a halt.</summary>
+    Critical
 }
 
 /// <summary>
-/// A single rule finding, carrying enough structure for an operator to see what was
-/// measured against what limit — rather than a pre-formatted sentence.
+/// What a rule measured, and against what. A finding never states what should happen about
+/// it — that is <see cref="RiskRuleSeverity"/>'s job, resolved by the validator.
 /// </summary>
-/// <param name="RuleName">Matches <see cref="IRiskRule.RuleName"/>.</param>
-/// <param name="Severity">The declaring rule's <see cref="IRiskRule.Severity"/>.</param>
 /// <param name="Code">Stable SCREAMING_SNAKE identifier, e.g. <c>POSITION_LIMIT_EXCEEDED</c>.</param>
 /// <param name="Message">Human-readable summary for operator surfaces.</param>
 /// <param name="ObservedValue">What the rule measured, when expressible as a number.</param>
 /// <param name="LimitValue">What the rule measured against, when expressible as a number.</param>
+/// <param name="RequiresAcknowledgement">
+/// Requests escalation rather than plain admission. Escalation is a separate axis from severity —
+/// a finding may be low-severity yet still need a human to acknowledge it before routing.
+/// Ignored when the resolved severity blocks, since a blocked order is never admitted.
+/// </param>
+public sealed record RiskFinding(
+    string Code,
+    string Message,
+    decimal? ObservedValue = null,
+    decimal? LimitValue = null,
+    bool RequiresAcknowledgement = false);
+
+/// <summary>
+/// A finding attributed to the rule that raised it, as the validator records it.
+/// Constructed only by <c>CompositeRiskValidator</c>, which is what guarantees that
+/// <see cref="Severity"/> is the declaring rule's own and not a value a rule chose per-order.
+/// </summary>
 public sealed record RiskViolation(
     string RuleName,
     RiskRuleSeverity Severity,
     string Code,
     string Message,
     decimal? ObservedValue = null,
-    decimal? LimitValue = null);
-
-/// <summary>Result of evaluating one <see cref="IRiskRule"/> against one order.</summary>
-public sealed record RiskRuleOutcome
+    decimal? LimitValue = null)
 {
-    public required RiskOutcomeKind Kind { get; init; }
-
-    /// <summary>Null when <see cref="Kind"/> is <see cref="RiskOutcomeKind.Pass"/>.</summary>
-    public RiskViolation? Violation { get; init; }
-
-    public static RiskRuleOutcome Pass() => new() { Kind = RiskOutcomeKind.Pass };
-
-    public static RiskRuleOutcome Annotate(RiskViolation violation) =>
-        new() { Kind = RiskOutcomeKind.Annotate, Violation = violation };
-
-    public static RiskRuleOutcome Escalate(RiskViolation violation) =>
-        new() { Kind = RiskOutcomeKind.Escalate, Violation = violation };
-
-    public static RiskRuleOutcome Block(RiskViolation violation) =>
-        new() { Kind = RiskOutcomeKind.Block, Violation = violation };
+    /// <summary>
+    /// True when this violation is one that blocks. Derived from <see cref="Severity"/>, so it
+    /// cannot disagree with the validator's own admission logic.
+    /// </summary>
+    public bool IsBlocking => Severity is RiskRuleSeverity.Error or RiskRuleSeverity.Critical;
 }
+
+/// <summary>Compact decision summary returned to the submitter on <see cref="OrderResult"/>.</summary>
+public sealed record RiskDecisionSummary(
+    RiskDecisionKind Decision,
+    IReadOnlyList<RiskViolation> Violations);
 ```
+
+There is deliberately no rule-facing "outcome kind" type. A rule returns `RiskFinding?` and nothing
+else, so the states that an outcome kind would have made representable — blocking with no violation,
+passing with one, a `Warning` rule returning `Block` — cannot be constructed at all.
 
 ### Modified interface — `IRiskRule`
 
 ```csharp
+namespace Meridian.Risk;
+
 public interface IRiskRule
 {
     string RuleName { get; }
     int Priority => 0;
+
+    /// <summary>
+    /// How this rule's findings are treated. Fixed per rule, not per order — the validator
+    /// resolves admission from this value alone.
+    /// </summary>
     RiskRuleSeverity Severity => RiskRuleSeverity.Error;
 
     /// <summary>
-    /// Optional synchronous fast path. Return <see langword="null"/> to fall back to
-    /// <see cref="EvaluateAsync"/>. Must not mutate rule state — see
-    /// <see cref="IRiskRuleStateCommit"/>.
+    /// Evaluates one constraint. Returns <see langword="null"/> when the rule is satisfied.
+    /// Implementations must not mutate observable state directly; a rule that needs to consume
+    /// capacity implements <see cref="IReservingRiskRule"/> instead.
     /// </summary>
-    RiskRuleOutcome? TryEvaluate(OrderRequest request) => null;
+    Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default);
 
     /// <summary>
-    /// Evaluates one constraint. Implementations MUST be free of side effects: the validator
-    /// evaluates every rule before the admit/block decision is known, so a rule that records
-    /// state here would record orders that are subsequently blocked.
+    /// Optional synchronous fast path. Returning <see langword="null"/> is ambiguous with
+    /// "no finding", so a rule signals "no fast path" by not overriding this at all;
+    /// <see cref="HasSyncFastPath"/> tells the validator which is meant.
     /// </summary>
-    Task<RiskRuleOutcome> EvaluateAsync(OrderRequest request, CancellationToken ct = default);
+    RiskFinding? TryEvaluate(OrderRequest request) => null;
+
+    /// <summary>True when <see cref="TryEvaluate"/> is authoritative and the async path may be skipped.</summary>
+    bool HasSyncFastPath => false;
 }
 
 /// <summary>
-/// Implemented by rules that maintain state across orders (rate windows, burst counters).
-/// The validator invokes this only after the aggregate decision admits the order, so
-/// state reflects orders that were actually routed.
+/// Implemented by rules that consume finite capacity (rate windows, burst counters).
+/// <para>
+/// The reservation is taken <em>during</em> evaluation, under whatever lock the rule already
+/// holds, so the check and the consumption stay atomic exactly as they are today. The validator
+/// then settles it. Splitting check and consumption across two calls would let concurrent
+/// submissions each see room and all commit, overshooting the ceiling.
+/// </para>
 /// </summary>
-public interface IRiskRuleStateCommit
+public interface IReservingRiskRule : IRiskRule
 {
-    ValueTask OnOrderAdmittedAsync(OrderRequest request, CancellationToken ct = default);
+    /// <summary>
+    /// Atomically evaluates and, when the rule is satisfied, reserves the capacity this order
+    /// would consume. The reservation is non-null whenever capacity was taken and must be
+    /// settled by the validator on every path.
+    /// </summary>
+    Task<(RiskFinding? Finding, IRiskReservation? Reservation)> EvaluateAndReserveAsync(
+        OrderRequest request,
+        CancellationToken ct = default);
+}
+
+/// <summary>
+/// Capacity held for one in-flight evaluation. Exactly one of <see cref="Commit"/> or
+/// <see cref="Rollback"/> must be called; both are idempotent so the validator's finally-block
+/// can release unconditionally without double-settling.
+/// </summary>
+public interface IRiskReservation
+{
+    /// <summary>Keeps the reserved capacity — the order was admitted.</summary>
+    void Commit();
+
+    /// <summary>Returns the reserved capacity — the order was blocked, threw, or was cancelled.</summary>
+    void Rollback();
 }
 ```
 
@@ -332,15 +465,20 @@ public sealed record RiskValidationResult
     /// <summary>Preserved for existing callers. True for every decision except <see cref="RiskDecisionKind.Rejected"/>.</summary>
     public bool IsApproved => Decision != RiskDecisionKind.Rejected;
 
-    /// <summary>Preserved for existing callers. The highest-severity blocking violation's message.</summary>
-    public string? RejectReason => Decision == RiskDecisionKind.Rejected
-        ? Violations.FirstOrDefault()?.Message
+    /// <summary>
+    /// The violation that actually blocked the order: highest severity first, then lowest rule
+    /// priority. Selected by <see cref="IsBlocking"/> rather than by position, so a non-blocking
+    /// finding can never be reported as the rejection reason.
+    /// </summary>
+    public RiskViolation? BlockingViolation => Decision == RiskDecisionKind.Rejected
+        ? Violations.FirstOrDefault(static v => v.IsBlocking)
         : null;
 
-    /// <summary>Stable code of the highest-severity blocking violation, for audit attribution.</summary>
-    public string? RejectCode => Decision == RiskDecisionKind.Rejected
-        ? Violations.FirstOrDefault()?.Code
-        : null;
+    /// <summary>Preserved for existing callers. The blocking violation's message.</summary>
+    public string? RejectReason => BlockingViolation?.Message;
+
+    /// <summary>Stable code of the blocking violation, for audit attribution.</summary>
+    public string? RejectCode => BlockingViolation?.Code;
 
     // Retained factories — all 24 existing construction sites use these.
     public static RiskValidationResult Approved() =>
@@ -401,11 +539,22 @@ Extends `src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs`, which today maps `/
 `/rules/{ruleName}/status`, and `/rules/{ruleName}/config` under both `/api/risk` and
 `/api/v1/risk`. The new route follows the same dual-mapping.
 
+`orderId` is an exact-match filter, so a caller holding the id returned by a submission can read
+back that decision deterministically even under concurrent submissions for the same symbol.
+
+`journalCompleteness` reports the effective `JournalCleanApprovals` setting. Without it the panel
+cannot honestly describe its own history: it would either claim completeness it does not have or
+warn about a gap that is not there. The read surface must state which.
+
 ```
-GET /api/risk/decisions?take=100&symbol=AAPL&decision=Rejected
+GET /api/risk/decisions?take=100&symbol=AAPL&decision=Rejected&orderId=ord-8823
 
 200 Response:
 {
+  "journalCompleteness": {
+    "cleanApprovalsRecorded": false,
+    "note": "Decisions with no findings are not journaled under the current configuration."
+  },
   "decisions": [
     {
       "orderId": "ord-8823",
@@ -454,7 +603,7 @@ JSON context rather than reflection-based serialization.
 - Evaluate every registered rule against the order, in priority order.
 - Resolve the aggregate decision from the outcome set by severity precedence.
 - Order violations for presentation: severity descending, then rule priority ascending.
-- Invoke the commit phase on stateful rules when — and only when — the order is admitted.
+- Settle every reservation in a `finally`: commit when admitted, roll back otherwise.
 - Hand the result to the journal.
 
 **Dependencies (constructor-injected)**
@@ -491,7 +640,7 @@ not a gate that passed. `OperationCanceledException` propagates unchanged.
 ### `OrderRateThrottle` (modified)
 
 **Change:** `EvaluateAsync` becomes pure — it reads the window and reports, but no longer enqueues.
-The enqueue moves to `OnOrderAdmittedAsync`. The class gains `IRiskRuleStateCommit`.
+The class implements `IReservingRiskRule`: purge → count → *reserve* stay inside the existing lock, and the reservation is committed or rolled back by the validator.
 
 **Behavioural note worth calling out in the PR:** this is a *correctness improvement independent of
 the rest of the blueprint*. Today the throttle counts orders that a later gate rejected only because
@@ -522,9 +671,17 @@ first rule to fail. After this change the window counts routed orders exactly.
 - Maps to `ExecutionAuditEntry` with `Category: "Risk"`, `Action: "PreTradeDecision"`,
   `Outcome: Decision.ToString()`, `Reason: <highest-severity violation code>`.
 - Serialises violations into `Metadata` as flat keys — `violation.0.rule`, `violation.0.code`,
-  `violation.0.severity`, `violation.0.observed`, `violation.0.limit` — capped at
-  `MaxJournaledViolations`. Flat keys keep the entry queryable without a nested-JSON blob inside a
-  string dictionary.
+  `violation.0.severity`, `violation.0.message`, `violation.0.observed`, `violation.0.limit` —
+  capped at `MaxJournaledViolations`. Flat keys keep the entry queryable without a nested-JSON blob
+  inside a string dictionary.
+
+  **`message` is not optional.** The audit entry is the only place a journaled violation is
+  persisted — nothing else retains the `RiskViolation` objects — so omitting it would leave
+  `GET /api/risk/decisions` unable to render violation text for any decision with more than one
+  finding. The entry's own top-level `Message` field holds the aggregate summary, not the
+  per-violation text. A write/read round-trip test is listed for exactly this reason.
+- Records `violation.count` alongside the entries, so a reader can tell a truncated set from a
+  complete one when the cap is hit.
 - Awaits the write. This is lifecycle-sensitive evidence; per the repository's execution guardrail,
   do not fire-and-forget it.
 
@@ -562,9 +719,10 @@ established SCREAMING_SNAKE convention already used by `OPERATOR_CONTROL_REJECTE
    readiness, operator-control, and security-master gates.
 2. `CompositeRiskValidator.ValidateOrderAsync` evaluates all four rules.
 3. `DrawdownGuardrailRule` → `Pass`. `PositionLimitRule` → `Pass`.
-   `OrderRateThrottle` → `Annotate(ORDER_RATE_NEAR_LIMIT, observed 52, limit 60)`.
+   `OrderRateThrottle` → finding `ORDER_RATE_NEAR_LIMIT` (observed 52, limit 60); rule severity is
+   `Warning`, so the validator resolves it to an annotation and capacity is reserved.
 4. Precedence resolves `ApprovedWithWarnings`.
-5. `OnOrderAdmittedAsync` fires on `OrderRateThrottle`; the window records the order.
+5. The throttle's reservation is committed; the window keeps the order.
 6. `RiskDecisionJournal.RecordAsync` writes an `ExecutionAuditEntry` (the decision carries a
    violation, so it journals regardless of `JournalCleanApprovals`).
 7. `IsApproved` is true → the OMS routes the order normally.
@@ -576,7 +734,7 @@ established SCREAMING_SNAKE convention already used by `OPERATOR_CONTROL_REJECTE
 
 1–2. As above.
 3. `PositionLimitRule` → `Block(POSITION_LIMIT_EXCEEDED, observed 1240, limit 1000)`.
-   `OrderRateThrottle` → `Annotate(ORDER_RATE_NEAR_LIMIT)`. Both evaluated.
+   `OrderRateThrottle` → finding `ORDER_RATE_NEAR_LIMIT` (`Warning` → annotation). Both evaluated.
 4. Precedence resolves `Rejected`; violations ordered `[POSITION_LIMIT_EXCEEDED (Error),
    ORDER_RATE_NEAR_LIMIT (Warning)]`.
 5. Commit phase **skipped** — the throttle does not record a blocked order.
@@ -619,7 +777,9 @@ browser surface lands, rather than forking a parallel one.
 - Reverse-chronological list backed by `GET /api/risk/decisions`.
 - Default filter: non-clean decisions only, matching the journal's default write policy — the panel
   must not imply completeness it does not have. When `JournalCleanApprovals` is false, show a
-  one-line footnote saying clean approvals are not recorded.
+  one-line footnote saying clean approvals are not recorded. The panel reads this from the
+  response's `journalCompleteness` block rather than assuming a default, so it never misstates its
+  own coverage.
 - Row: timestamp, symbol, decision chip, top violation code, violation count.
 - Click expands the full violation set for that order.
 
@@ -655,7 +815,9 @@ unit tests.
 | Test | Verifies |
 | --- | --- |
 | `EvaluateAsync_DoesNotMutateWindow` | Repeated evaluation without commit does not consume the ceiling |
-| `OnOrderAdmittedAsync_RecordsOrderInWindow` | Commit records |
+| `CommitAsync_KeepsReservedCapacity` | Committed reservation stays consumed |
+| `ConcurrentEvaluations_NeverExceedCeiling` | N parallel evaluations at the boundary reserve at most the ceiling — the race the reservation model exists to prevent |
+| `Rollback_ReturnsCapacity` | Blocked order frees its slot |
 | `EvaluateAsync_AtEightyPercentOfCeiling_AnnotatesWithoutBlocking` | The near-limit warning |
 | `EvaluateAsync_AtCeiling_Blocks` | Existing behaviour preserved |
 
@@ -689,7 +851,8 @@ unit tests.
 ### Test infrastructure
 
 - `FakeRiskRule` — configurable outcome, priority, severity, invocation counter.
-- `FakeStatefulRiskRule` — implements `IRiskRuleStateCommit`, records commit calls.
+- `FakeReservingRiskRule` — implements `IReservingRiskRule`, records commit/rollback calls and
+  asserts each reservation is settled exactly once.
 - `RecordingRiskDecisionJournal` — captures entries in memory.
 
 ---
@@ -703,32 +866,44 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 
 ### PR 1 — Outcome types and evaluate-all (Foundation)
 
-- [ ] Add `RiskOutcomeKind`, `RiskViolation`, `RiskRuleOutcome` to `Meridian.Risk`
-- [ ] Add `IRiskRuleStateCommit`
-- [ ] Change `IRiskRule.EvaluateAsync` / `TryEvaluate` to return `RiskRuleOutcome`
-- [ ] Add `RiskDecisionKind`; extend `RiskValidationResult` with `Decision`, `Violations`,
+- [ ] **Move** `RiskRuleSeverity` from `Meridian.Risk/IRiskRule.cs` to `Meridian.Execution.Sdk`;
+      add `RiskFinding`, `RiskViolation` (with `IsBlocking`), `RiskDecisionKind`, and
+      `RiskDecisionSummary` there. Confirm `Meridian.Execution` still does not reference
+      `Meridian.Risk` — a cycle here does not compile
+- [ ] Add `IReservingRiskRule` and `IRiskReservation` to `Meridian.Risk`
+- [ ] Change `IRiskRule.EvaluateAsync` / `TryEvaluate` to return `RiskFinding?`; add
+      `HasSyncFastPath`
+- [ ] Extend `RiskValidationResult` with `Decision`, `Violations`, `BlockingViolation`,
       `RejectCode`; make `IsApproved` / `RejectReason` computed; retain both factories
 - [ ] Re-verify no object-initializer construction of `RiskValidationResult` has appeared
-- [ ] Rewrite `CompositeRiskValidator`: evaluate all, resolve precedence, order violations,
-      per-rule fail-closed catch, commit phase on admission
-- [ ] Migrate the four rules to `RiskRuleOutcome` with stable SCREAMING_SNAKE codes
-- [ ] Move `OrderRateThrottle`'s enqueue into `OnOrderAdmittedAsync`
+- [ ] Rewrite `CompositeRiskValidator`: evaluate all, map each rule's `Severity` to an outcome,
+      resolve precedence, order violations, per-rule fail-closed catch, settle reservations in a
+      `finally` so no path leaks capacity
+- [ ] Migrate the four rules to `RiskFinding?` with stable SCREAMING_SNAKE codes
+- [ ] Convert `OrderRateThrottle` to `IReservingRiskRule`: keep purge → count → reserve inside the
+      existing lock; add commit/rollback
 - [ ] Surface `DecisionKind` from the F# interop in `PositionLimitRule` and
-      `DrawdownCircuitBreaker` — map `"escalate"` to `RiskOutcomeKind.Escalate` and stop discarding
+      `DrawdownCircuitBreaker` — map `"escalate"` to `RequiresAcknowledgement` and stop discarding
       `Reasons` beyond the first
 - [ ] Update `CompositeRiskValidatorTests`, `EnforcedRiskValidatorCompositionTests`,
       `RiskIntegrationTests`
-- [ ] Write the 18 unit tests listed above
+- [ ] Write the unit tests listed above
 
 ### PR 2 — Decision journal
 
 - [ ] Add `RiskJournalOptions`, `IRiskDecisionJournal`, `RiskDecisionJournalEntry`,
       `RiskDecisionJournal`
-- [ ] Register in `WorkstationServiceCollectionExtensions` and inject into `CompositeRiskValidator`
+- [ ] Register in `WorkstationServiceCollectionExtensions` and inject into
+      **`OrderManagementSystem`**, not the validator — it is the only component holding the
+      generated order id and audit attribution
 - [ ] Add `BuildRiskRejectedAuditMetadata` to `OrderManagementSystem`; pass `reasonCode` and
-      `metadata` at line 303
-- [ ] Add the `Risk:Journal` section to `config/appsettings.json` with documented defaults
-- [ ] Write the 6 journal unit tests and 2 OMS integration tests
+      `metadata` at line 303, and journal the admitted-with-findings path
+- [ ] Bind `Risk:Journal` from host configuration, and add the section to **both** tracked config
+      sources: `config/appsettings.sample.json` and the machine-validated
+      `config/appsettings.schema.json`. There is no `config/appsettings.json` in the repository —
+      it is a runtime artifact, so editing it would leave the new section out of every source a
+      reader or validator actually sees
+- [ ] Write the journal unit tests and OMS integration tests, including the metadata round trip
 
 ### PR 3 — Read surface
 
@@ -736,7 +911,9 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 - [ ] Add DTOs to the source-generated JSON context (ADR-014)
 - [ ] Build the order-ticket violation panel and the decision-history panel in
       `src/Meridian.Ui/dashboard/`
-- [ ] Show the "clean approvals not recorded" footnote when the flag is off
+- [ ] Render the footnote from the response's `journalCompleteness` block
+- [ ] Extend `OrderResult` with `RiskDecisionSummary` and update the TypeScript submit contract so
+      the order ticket can render findings on the admitted path
 - [ ] Endpoint test alongside `RiskEndpointTests`; dashboard view-model tests
 
 ### Wrap-up (final PR)
@@ -764,7 +941,7 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
 
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
-| A rule currently relying on the short-circuit gains a side effect under evaluate-all | Medium | High | `IRiskRuleStateCommit` plus the explicit no-side-effects contract on `EvaluateAsync`; the "blocked does not commit" test is the regression guard |
+| A rule currently relying on the short-circuit gains a side effect under evaluate-all | Medium | High | `IReservingRiskRule` plus the explicit no-side-effects contract on `EvaluateAsync`; the "blocked does not commit" and concurrency tests are the regression guards |
 | `Warning`-severity findings silently admit orders that operators expected to be blocked | Medium | High | All four current rules declare `Error`/`Critical`, so nothing changes on day one. Any rule *downgraded* to `Warning` is a deliberate, reviewable decision |
 | Journal write latency on the order path | Low | Medium | Clean approvals off by default; rejection-path writes already happen today |
 | `RiskValidationResult` change breaks an unexamined consumer | Low | Medium | Verified zero initializer construction and preserved factories + read surface; re-verify at implementation time |
