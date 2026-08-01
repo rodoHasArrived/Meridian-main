@@ -154,7 +154,7 @@ Rank 1 of the 2026-07 W10 depth slate. Valuation freshness is not enforced by de
 
 ### Current Summary
 
-Rank 10 of the 2026-07 W10 depth slate and the one genuinely new capability in it. A brokerage-sourced single-period return already exists for a linked account, so this row must extend or deliberately supersede that seam rather than build beside it. What is absent is ledger-derived return measurement, time-weighted return, money-weighted return honoring cash-flow timing, and investor-level return over capital-account activity. It is sequenced last because it depends on the mark discipline in W10-MARK-001 and the proof drawer in W10-PROV-001 to be honest. Known source constraints, including the missing pricing series and residual value, are recorded in docs/product/w10-depth-slate-2026-07.md.
+Rank 10 of the 2026-07 W10 depth slate and one of its four new-capability rows, alongside W10-RECON-003, W10-RECON-004, and W10-CONSOL-001. A brokerage-sourced single-period return already exists for a linked account, so this row must extend or deliberately supersede that seam rather than build beside it. What is absent is ledger-derived return measurement, time-weighted return, money-weighted return honoring cash-flow timing, and investor-level return over capital-account activity. It is ranked this late because it depends on the mark discipline in W10-MARK-001 and the proof drawer in W10-PROV-001 to be honest. Known source constraints, including the missing pricing series and residual value, are recorded in docs/product/w10-depth-slate-2026-07.md.
 
 ### Exit Criteria
 

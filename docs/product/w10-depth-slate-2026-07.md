@@ -40,7 +40,8 @@ money-weighted, and investor-level return — so `W10-PERF-001` extends or super
 than building beside it.
 
 The ordering is truth and identity first, then the shared seam later rows depend on, then
-reconciliation economics, then accounting depth, then genuinely new capability last.
+reconciliation economics, then accounting depth, then the new surface that stands outside those arcs
+last.
 
 ## Ranked Slate
 
@@ -80,8 +81,10 @@ against.
 **Accounting depth fourth (ranks 5, 6), parallel.** Neither depends on the other. `W10-JRNL-001`
 has no dependencies at all and can start earlier if capacity allows; only its phase gate waits.
 
-**New capability last (ranks 10, 11).** These add rather than activate, and `W10-PERF-001` depends
-on rank 1's mark discipline to be honest about what it reports.
+**Standalone new surface last (ranks 10, 11).** Four rows carry the `new capability` kind — ranks 8
+through 11 — so this group is not the whole of it. Ranks 8 and 9 sequence inside the reconciliation
+arc above because they depend on clustering; ranks 10 and 11 are the two that stand outside every
+other arc, and `W10-PERF-001` depends on rank 1's mark discipline to be honest about what it reports.
 
 ## Posture Relative to Production Readiness
 
