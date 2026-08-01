@@ -663,6 +663,12 @@ effect — and the panel states coverage from that boundary rather than implying
 whole horizon. When the flag has never been enabled the field is null and the panel says clean
 approvals are not recorded.
 
+`cleanApprovalsRecordedSince` is part of the response, not just of the prose above: without it a
+client cannot tell complete coverage from partial coverage, and would present a window that predates
+the setting as though clean approvals had been recorded throughout. It is null when recording has
+never been enabled — the case shown below. Each record carries `correlationId` and `occurredAt` for
+the reused-order-id disambiguation described earlier.
+
 ```
 GET /api/risk/decisions?take=100&symbol=AAPL&decision=Rejected&orderId=ord-8823
 
@@ -670,11 +676,13 @@ GET /api/risk/decisions?take=100&symbol=AAPL&decision=Rejected&orderId=ord-8823
 {
   "journalCompleteness": {
     "cleanApprovalsRecorded": false,
+    "cleanApprovalsRecordedSince": null,
     "note": "Decisions with no findings are not journaled under the current configuration."
   },
   "decisions": [
     {
       "orderId": "ord-8823",
+      "correlationId": "corr-5f21",
       "symbol": "AAPL",
       "decision": "Rejected",
       "occurredAt": "2026-08-01T14:22:07Z",
@@ -1074,7 +1082,11 @@ splitting them keeps the diff reviewable and lets the throttle fix land early.
       add `RiskFinding`, `RiskViolation` (with `IsBlocking`), `RiskDecisionKind`, and
       `RiskDecisionSummary` there. Confirm `Meridian.Execution` still does not reference
       `Meridian.Risk` — a cycle here does not compile
-- [ ] Add `IReservingRiskRule` and `IRiskReservation` to `Meridian.Risk`
+- [ ] Add `IRiskReservation` to `Meridian.Execution.Sdk`, alongside the other contracts above, and
+      only `IReservingRiskRule` (plus `RiskRuleReservationResult`) to `Meridian.Risk`. Placing the
+      reservation interface in `Meridian.Risk` does not compile: `RiskValidationOutcome` lives in
+      `Meridian.Execution` and exposes it, while `Meridian.Risk` already references
+      `Meridian.Execution` — see the assembly-placement table above, which is authoritative
 - [ ] Change `IRiskRule.EvaluateAsync` / `TryEvaluate` to return `RiskFinding?`; add
       `HasSyncFastPath`
 - [ ] Extend `RiskValidationResult` with `Decision`, `Violations`, `BlockingViolation`,

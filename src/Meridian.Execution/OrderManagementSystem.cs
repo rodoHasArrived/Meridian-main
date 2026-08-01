@@ -320,7 +320,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
 
             if (!riskResult.IsApproved)
             {
-                riskOutcome.RollbackReservations();
+                SettleReservations(riskOutcome, commit: false, orderId);
                 return await RejectOrderAsync(
                     orderId,
                     safeRequest,
@@ -358,7 +358,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             // Lost a race with a concurrent submission that claimed the same client order id
             // after the guard above ran; the winner's state must survive untouched. Nothing is
             // routed on this path, so any reserved risk capacity has to go back.
-            riskOutcome?.RollbackReservations();
+            SettleReservations(riskOutcome, commit: false, orderId);
             return await RejectDuplicateClientOrderIdAsync(
                 orderId,
                 safeRequest,
@@ -399,14 +399,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             // acceptance has to be judged from the report rather than from the absence of a throw.
             // Committing on a rejected report would consume rate capacity for an order that never
             // reached the venue, and repeated rejections would exhaust the window.
-            if (report.OrderStatus is OrderStatus.Rejected)
-            {
-                riskOutcome?.RollbackReservations();
-            }
-            else
-            {
-                riskOutcome?.CommitReservations();
-            }
+            SettleReservations(
+                riskOutcome,
+                commit: report.OrderStatus is not OrderStatus.Rejected,
+                orderId);
 
             // Merge against the latest tracked state: the async report pump may already
             // have applied a fill for this order before the submit ack is processed here.
@@ -556,7 +552,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             // post-dispatch one would let the former release its slot. That needs the gateway to
             // report whether it dispatched, which belongs with the live-broker work rather than
             // here; until then this fails conservative.
-            riskOutcome?.CommitReservations();
+            SettleReservations(riskOutcome, commit: true, orderId);
 
             var rejectedState = orderState with
             {
@@ -1614,6 +1610,49 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
 
     private bool RequiresLiveOrderReadinessGate() =>
         _gatewayExecutionMode is ExecutionMode.Live;
+
+    /// <summary>
+    /// Settles the risk reservations for an order without letting a settlement failure change what
+    /// happened to the order.
+    /// <para>
+    /// The gateway's answer is the truth about the order; reservation bookkeeping is not. A
+    /// settlement callback is host-contributed and can throw, and
+    /// <see cref="RiskValidationOutcome"/> deliberately reports those failures rather than
+    /// swallowing them — but propagating one from inside the submission <see langword="try"/> would
+    /// drop an <em>accepted</em> order into the ambiguous-submission handler. That handler would
+    /// settle again and could then escape before the OMS records state, writes evidence, or
+    /// returns, leaving a live broker order represented as rejected and inviting the caller to
+    /// submit it twice. Capacity that could not be released expires with the window; a duplicate
+    /// live order does not.
+    /// </para>
+    /// </summary>
+    private void SettleReservations(RiskValidationOutcome? outcome, bool commit, string orderId)
+    {
+        if (outcome is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (commit)
+            {
+                outcome.CommitReservations();
+            }
+            else
+            {
+                outcome.RollbackReservations();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Risk reservations for order {OrderId} could not be settled ({Settlement}); the order outcome is unchanged.",
+                ExecutionLogText.ForLog(orderId),
+                commit ? "commit" : "rollback");
+        }
+    }
 
     private static IReadOnlyDictionary<string, string>? BuildOrderSubmittedAuditMetadata(
         ExecutionControlDecision? operatorControlDecision,
