@@ -182,8 +182,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             _logger.LogWarning(
                 "Order {OrderId} for {Symbol} contained server-owned broker routing metadata; routing keys were removed before gateway submission.",
-                orderId,
-                request.Symbol);
+                ExecutionLogText.ForLog(orderId),
+                ExecutionLogText.ForLog(request.Symbol));
         }
 
         // A duplicate client order id must never reach the state table or the gateway: every
@@ -437,7 +437,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 });
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
-                orderId, safeRequest.Symbol, safeRequest.Side, safeRequest.Quantity, updatedState.Status);
+                ExecutionLogText.ForLog(orderId),
+                ExecutionLogText.ForLog(safeRequest.Symbol),
+                safeRequest.Side,
+                safeRequest.Quantity,
+                updatedState.Status);
 
             // Once the broker has acknowledged a fill, its accounting handoff is authoritative.
             // Caller cancellation, paper-session persistence, or audit failures must never run
@@ -461,7 +465,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 _logger.LogError(
                     ex,
                     "Order {OrderId} was accepted by gateway {GatewayId}, but its paper-session order update could not be recorded",
-                    orderId,
+                    ExecutionLogText.ForLog(orderId),
                     _gateway.GatewayId);
             }
 
@@ -495,7 +499,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     _logger.LogError(
                         ex,
                         "Order {OrderId} was accepted by gateway {GatewayId}, but its submission audit could not be recorded",
-                        orderId,
+                        ExecutionLogText.ForLog(orderId),
                         _gateway.GatewayId);
                 }
             }
@@ -517,7 +521,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _logger.LogCritical(
                 ex,
                 "Order {OrderId} filled but accounting handoff failed; retained={HandoffRetained}",
-                orderId,
+                ExecutionLogText.ForLog(orderId),
                 ex.WasRetained);
             try
             {
@@ -536,7 +540,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 _logger.LogCritical(
                     auditFailure,
                     "Accounting handoff failure for order {OrderId} could not be appended to the execution audit trail",
-                    orderId);
+                    ExecutionLogText.ForLog(orderId));
             }
 
             return new OrderResult
@@ -552,7 +556,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, safeRequest.Symbol);
+            _logger.LogError(
+                ex,
+                "Failed to submit order {OrderId} for {Symbol}",
+                ExecutionLogText.ForLog(orderId),
+                ExecutionLogText.ForLog(safeRequest.Symbol));
 
             // A throw here is AMBIGUOUS: the order may or may not have reached the venue. IB can
             // complete PlaceOrderAsync and then time out awaiting acknowledgement; Alpaca can

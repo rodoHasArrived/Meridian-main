@@ -47,6 +47,14 @@ reservations rather than committing them. The OMS then settles at the routing bo
 
 Every path between the gate and the venue must settle exactly once; a leaked reservation
 permanently consumes capacity and eventually blocks every later order.
+
+**Logging convention in this module:** caller-supplied order text — the client order id, the symbol,
+and rejection reasons, which embed the symbol via rule text — is rendered through
+`ExecutionLogText.ForLog` before it reaches a logger. `OrderRequest.ClientOrderId` and `Symbol` are
+submitted values that nothing upstream is required to constrain (the Security Master gate is
+optional), so a line break in either would render as an extra line in a text sink and let a submitter
+forge execution log entries. This holds for every `_logger` call in `OrderManagementSystem`; a raw
+caller value in a new log call is a defect, not a style choice.
 Broker-backed order placement fails closed unless `BrokerageConfiguration` names the active
 gateway and all live-routing, phase, validation, and sign-off gates are explicitly green; missing
 brokerage configuration remains allowed only for the default paper gateway.
