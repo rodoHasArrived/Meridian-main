@@ -34,23 +34,45 @@ flowchart LR
   W7_LIVE_001 --> W8_UX_CONSOL_001
   W8_WPF_PARITY_001["W8-WPF-PARITY-001\nW8 - in_progress / on_track"]
   W8_UX_CONSOL_001 --> W8_WPF_PARITY_001
-  W9_ALPACA_004["W9-ALPACA-004\nW9 - planned / green"]
-  W8_WPF_PARITY_001 --> W9_ALPACA_004
-  W9_ASSET_010["W9-ASSET-010\nW9 - done / green"]
-  W9_ALPACA_004 --> W9_ASSET_010
+  W9_TRUTH_001["W9-TRUTH-001\nW9 - planned / green"]
+  W8_WPF_PARITY_001 --> W9_TRUTH_001
   W9_DEMO_002["W9-DEMO-002\nW9 - planned / green"]
-  W9_ASSET_010 --> W9_DEMO_002
+  W9_TRUTH_001 --> W9_DEMO_002
+  W9_PAPER_003["W9-PAPER-003\nW9 - planned / green"]
+  W9_DEMO_002 --> W9_PAPER_003
+  W9_ALPACA_004["W9-ALPACA-004\nW9 - planned / green"]
+  W9_PAPER_003 --> W9_ALPACA_004
+  W9_REPORT_005["W9-REPORT-005\nW9 - planned / green"]
+  W9_ALPACA_004 --> W9_REPORT_005
+  W9_NAV_006["W9-NAV-006\nW9 - planned / green"]
+  W9_REPORT_005 --> W9_NAV_006
+  W9_SAFETY_007["W9-SAFETY-007\nW9 - planned / green"]
+  W9_NAV_006 --> W9_SAFETY_007
   W9_GOV_008["W9-GOV-008\nW9 - planned / green"]
-  W9_DEMO_002 --> W9_GOV_008
+  W9_SAFETY_007 --> W9_GOV_008
   W9_INGEST_009["W9-INGEST-009\nW9 - planned / green"]
   W9_GOV_008 --> W9_INGEST_009
-  W9_NAV_006["W9-NAV-006\nW9 - planned / green"]
-  W9_INGEST_009 --> W9_NAV_006
-  W9_PAPER_003["W9-PAPER-003\nW9 - planned / green"]
-  W9_NAV_006 --> W9_PAPER_003
-  W9_REPORT_005["W9-REPORT-005\nW9 - planned / green"]
-  W9_PAPER_003 --> W9_REPORT_005
-  W9_SAFETY_007["W9-SAFETY-007\nW9 - planned / green"]
-  W9_REPORT_005 --> W9_SAFETY_007
-  W9_TRUTH_001["W9-TRUTH-001\nW9 - planned / green"]
-  W9_SAFETY_007 --> W9_TRUTH_001
+  W9_ASSET_010["W9-ASSET-010\nW9 - done / green"]
+  W9_INGEST_009 --> W9_ASSET_010
+  W10_MARK_001["W10-MARK-001\nW10 - planned / green"]
+  W9_ASSET_010 --> W10_MARK_001
+  W10_RECON_001["W10-RECON-001\nW10 - planned / green"]
+  W10_MARK_001 --> W10_RECON_001
+  W10_PROV_001["W10-PROV-001\nW10 - planned / green"]
+  W10_RECON_001 --> W10_PROV_001
+  W10_RECON_002["W10-RECON-002\nW10 - planned / green"]
+  W10_PROV_001 --> W10_RECON_002
+  W10_JRNL_001["W10-JRNL-001\nW10 - planned / green"]
+  W10_RECON_002 --> W10_JRNL_001
+  W10_TAX_001["W10-TAX-001\nW10 - planned / green"]
+  W10_JRNL_001 --> W10_TAX_001
+  W10_SEAM_001["W10-SEAM-001\nW10 - planned / green"]
+  W10_TAX_001 --> W10_SEAM_001
+  W10_RECON_003["W10-RECON-003\nW10 - planned / green"]
+  W10_SEAM_001 --> W10_RECON_003
+  W10_RECON_004["W10-RECON-004\nW10 - planned / green"]
+  W10_RECON_003 --> W10_RECON_004
+  W10_PERF_001["W10-PERF-001\nW10 - planned / green"]
+  W10_RECON_004 --> W10_PERF_001
+  W10_CONSOL_001["W10-CONSOL-001\nW10 - planned / green"]
+  W10_PERF_001 --> W10_CONSOL_001

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 import tempfile
@@ -27,13 +28,29 @@ items:
 """
 
 
+def _item(identifier: str, wave: str, sequence: int | None = None) -> str:
+    block = (
+        f"  - id: {identifier}\n"
+        f"    title: {identifier}\n"
+        f"    wave: {wave}\n"
+    )
+    if sequence is not None:
+        block += f"    sequence: {sequence}\n"
+    return block + "    status: planned\n    health: green\n"
+
+
+def _registry(*entries: tuple[str, str] | tuple[str, str, int]) -> str:
+    header = 'schema:\n  id: meridian.roadmap-items\n  version: "1.0.0"\nitems:\n'
+    return header + "".join(_item(*entry) for entry in entries)
+
+
 class RenderRoadmapDiagramsTests(unittest.TestCase):
-    def test_renderer_labels_nodes_with_registry_wave(self) -> None:
+    def _render(self, registry: str) -> str:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             data_dir = root / "docs" / "roadmap" / "data"
             data_dir.mkdir(parents=True)
-            (data_dir / "roadmap-items.yml").write_text(ROADMAP_ITEMS, encoding="utf-8")
+            (data_dir / "roadmap-items.yml").write_text(registry, encoding="utf-8")
 
             result = subprocess.run(
                 [sys.executable, str(SCRIPT_PATH), "--root", str(root), "--summary"],
@@ -43,9 +60,105 @@ class RenderRoadmapDiagramsTests(unittest.TestCase):
             )
 
             self.assertEqual(0, result.returncode, result.stderr)
-            diagram = (root / "docs" / "architecture" / "diagrams" / "meridian-development-roadmap.mmd").read_text(encoding="utf-8")
-            self.assertIn('W6_BTSTUDIO_001["W6-BTSTUDIO-001\\nW6 - planned / green"]', diagram)
-            self.assertIn('W7_LIVE_001["W7-LIVE-001\\nW7 - planned / green"]', diagram)
+            return (
+                root / "docs" / "architecture" / "diagrams" / "meridian-development-roadmap.mmd"
+            ).read_text(encoding="utf-8")
+
+    @staticmethod
+    def _node_order(diagram: str) -> list[str]:
+        return re.findall(r"^  ([A-Z0-9_]+)\[", diagram, flags=re.MULTILINE)
+
+    def test_renderer_labels_nodes_with_registry_wave(self) -> None:
+        diagram = self._render(ROADMAP_ITEMS)
+        self.assertIn('W6_BTSTUDIO_001["W6-BTSTUDIO-001\\nW6 - planned / green"]', diagram)
+        self.assertIn('W7_LIVE_001["W7-LIVE-001\\nW7 - planned / green"]', diagram)
+
+    def test_double_digit_wave_sorts_after_single_digit_waves(self) -> None:
+        # Lexicographic ordering placed "W10-" between "W1-" and "W2-", rendering a planned wave
+        # in the middle of delivered work and drawing an edge from it into an earlier wave.
+        diagram = self._render(
+            _registry(
+                ("W10-MARK-001", "W10"),
+                ("W2-TRD-001", "W2"),
+                ("W1-DATA-001", "W1"),
+                ("W9-TRUTH-001", "W9"),
+            )
+        )
+        self.assertEqual(
+            ["W1_DATA_001", "W2_TRD_001", "W9_TRUTH_001", "W10_MARK_001"],
+            self._node_order(diagram),
+        )
+
+    def test_items_order_by_sequence_within_a_wave_not_by_area(self) -> None:
+        # DEC-PRIORITY-SLATE-001 records that rank is carried in each W9 item's numeric suffix, so
+        # ordering alphabetically by area discards it.
+        diagram = self._render(
+            _registry(
+                ("W9-ASSET-010", "W9"),
+                ("W9-DEMO-002", "W9"),
+                ("W9-TRUTH-001", "W9"),
+                ("W9-ALPACA-004", "W9"),
+            )
+        )
+        self.assertEqual(
+            ["W9_TRUTH_001", "W9_DEMO_002", "W9_ALPACA_004", "W9_ASSET_010"],
+            self._node_order(diagram),
+        )
+
+    def test_lettered_wave_suffix_sorts_after_its_base_wave(self) -> None:
+        diagram = self._render(
+            _registry(
+                ("W5X-CONNECT-001", "W5X"),
+                ("W6-BTSTUDIO-001", "W6"),
+                ("W5-ACCT-001", "W5"),
+            )
+        )
+        self.assertEqual(
+            ["W5_ACCT_001", "W5X_CONNECT_001", "W6_BTSTUDIO_001"],
+            self._node_order(diagram),
+        )
+
+    def test_explicit_sequence_orders_a_wave_that_numbers_per_area(self) -> None:
+        # W10 numbers per area, so every identifier ends in 001 and the trailing number carries no
+        # rank. Without an explicit sequence the tie falls through to an alphabetical area sort,
+        # which put rank-11 CONSOL first and drew an edge from it into rank-5 JRNL.
+        diagram = self._render(
+            _registry(
+                ("W10-CONSOL-001", "W10", 11),
+                ("W10-JRNL-001", "W10", 5),
+                ("W10-MARK-001", "W10", 1),
+                ("W10-PROV-001", "W10", 3),
+            )
+        )
+        self.assertEqual(
+            ["W10_MARK_001", "W10_PROV_001", "W10_JRNL_001", "W10_CONSOL_001"],
+            self._node_order(diagram),
+        )
+
+    def test_explicit_sequence_overrides_the_identifier_suffix(self) -> None:
+        diagram = self._render(
+            _registry(
+                ("W9-ASSET-010", "W9", 1),
+                ("W9-TRUTH-001", "W9", 2),
+            )
+        )
+        self.assertEqual(["W9_ASSET_010", "W9_TRUTH_001"], self._node_order(diagram))
+
+    def test_items_without_sequence_still_order_by_identifier_suffix(self) -> None:
+        # The field is optional, so waves that already encode rank in the suffix keep working and
+        # a wave may not be uniformly annotated. An unannotated item sorts on its suffix against
+        # an annotated neighbour's declared rank.
+        diagram = self._render(
+            _registry(
+                ("W9-ASSET-010", "W9"),
+                ("W9-DEMO-002", "W9", 20),
+                ("W9-TRUTH-001", "W9"),
+            )
+        )
+        self.assertEqual(
+            ["W9_TRUTH_001", "W9_ASSET_010", "W9_DEMO_002"],
+            self._node_order(diagram),
+        )
 
 
 if __name__ == "__main__":

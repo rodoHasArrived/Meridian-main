@@ -2,7 +2,7 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-07-22
+**Reviewed:** 2026-07-31
 **Baseline:** current `main` history through `d3c472934`; production readiness remains blocked pending same-commit release evidence and required GitHub Actions checks
 **Previous production audit:** `f0ac384a2` on 2026-07-11
 **Sources:** [Meridian Design Document (Version 1.0)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
@@ -37,7 +37,7 @@ Priority meanings:
 | P1 (`PRD-100` through `PRD-114`) | 15 open | Required acceptance, operability, architecture, and product-envelope work remains. A row may move out only through an explicit support-matrix scope decision. |
 | P2 (`PRD-200` through `PRD-205`) | 6 open | Compatibility cleanup remains sequenced after the P0/P1 policy migrations it depends on. |
 | Active roadmap acceptance | 3 in progress | `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, and `W8-WPF-PARITY-001` remain active and are not production-certified by this tracker. Critical `W9-ASSET-010` closed on 2026-07-28 with `evidence_posture: complete`. |
-| Planned roadmap work | 1 planned | `W6-BTSTUDIO-001` remains planned and outside the v1 production envelope unless the signed support matrix includes it. The closed `W9-ASSET-010` row does not change the P0 release-certification gate. |
+| Planned roadmap work | 22 planned | `W6-BTSTUDIO-001` and `W5X-OEG-001`, the nine open rows of the ranked W9 first-order slate, and the eleven rows of the W10 depth slate are all planned and outside the v1 production envelope unless the signed support matrix includes them. Every one carries `planned_evidence` posture, so none is a completion claim. The closed `W9-ASSET-010` row does not change the P0 release-certification gate. |
 
 Working detail for the six evidence-gated rows — hosted-run diagnosis, minted evidence, and the
 explicit human action register (ADR sign-off, secrets/runner activation, operator review,

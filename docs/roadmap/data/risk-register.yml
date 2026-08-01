@@ -30,3 +30,11 @@ risks:
     related_roadmap_items:
       - W9-TRUTH-001
       - W9-DEMO-002
+  - id: RISK-STALE-MARK-001
+    title: Aged valuation inputs can price current outputs without disclosure
+    status: open
+    severity: high
+    owner_lane: Accounting and Ledger
+    mitigation: W10-MARK-001 makes the stale-price policy fail closed by default rather than accepting an unbounded mark age, consolidates the overlapping stale-price and mark-price-quality freshness controls into one owner, surfaces mark age wherever positions appear, and renders valuations resting on an aged or missing mark as review-required with the offending positions named.
+    related_roadmap_items:
+      - W10-MARK-001
