@@ -47,23 +47,43 @@ public sealed record RiskValidationOutcome(
         new(RiskValidationResult.Approved(), []);
 
     /// <summary>Commits every reservation. Call once the order has actually been routed.</summary>
-    public void CommitReservations()
-    {
-        foreach (var reservation in Reservations)
-        {
-            reservation.Commit();
-        }
-    }
+    public void CommitReservations() => SettleAll(static reservation => reservation.Commit());
 
     /// <summary>
     /// Rolls back every reservation. Call when the order was blocked, or failed anywhere between
     /// the risk gate and the venue.
     /// </summary>
-    public void RollbackReservations()
+    public void RollbackReservations() => SettleAll(static reservation => reservation.Rollback());
+
+    /// <summary>
+    /// Settles every reservation even if one throws, then reports the failures together.
+    /// <para>
+    /// Stopping at the first failure would strand every later reservation as pending — capacity
+    /// consumed by an order that has already reached its terminal state, which no other path will
+    /// release. A rule's settlement callback is host-contributed, so it cannot be assumed total.
+    /// </para>
+    /// </summary>
+    private void SettleAll(Action<IRiskReservation> settle)
     {
+        List<Exception>? failures = null;
+
         foreach (var reservation in Reservations)
         {
-            reservation.Rollback();
+            try
+            {
+                settle(reservation);
+            }
+            catch (Exception ex)
+            {
+                (failures ??= []).Add(ex);
+            }
+        }
+
+        if (failures is not null)
+        {
+            throw new AggregateException(
+                "One or more risk reservations could not be settled.",
+                failures);
         }
     }
 }

@@ -29,6 +29,24 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Important workflows
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
+
+The OMS owns settlement of pre-trade risk reservations. `IRiskValidator` returns a
+`RiskValidationOutcome` carrying any capacity a stateful rule took while evaluating (today, the
+order-rate window); passing the gate is not the same as routing, so the validator transfers those
+reservations rather than committing them. The OMS then settles at the routing boundary:
+
+- gateway returns an accepted report — commit;
+- gateway returns `OrderStatus.Rejected`, the order is rejected by risk or operator controls, or the
+  client order id is a duplicate — roll back, because nothing reached a venue;
+- gateway submission **throws** — commit. The dispatch is ambiguous and the order may still execute,
+  so a rate limiter has to over-count; under-counting would let a runaway algorithm bypass the
+  ceiling by producing ambiguous submissions. That path is audited with
+  `Reason = OrderManagementSystem.AmbiguousSubmissionReason`, the only `OrderRejected` entry that
+  keeps its slot, and is persisted with `CancellationToken.None` so a cancelled caller cannot erase
+  the record of capacity the throttle still holds.
+
+Every path between the gate and the venue must settle exactly once; a leaked reservation
+permanently consumes capacity and eventually blocks every later order.
 Broker-backed order placement fails closed unless `BrokerageConfiguration` names the active
 gateway and all live-routing, phase, validation, and sign-off gates are explicitly green; missing
 brokerage configuration remains allowed only for the default paper gateway.

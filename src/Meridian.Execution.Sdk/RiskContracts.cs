@@ -91,8 +91,14 @@ public sealed record RiskViolation(
     /// <summary>
     /// True when this violation is one that blocks. Derived from <see cref="Severity"/> so it can
     /// never disagree with the validator's own admission logic.
+    /// <para>
+    /// Stated as "not explicitly non-blocking" rather than "Error or Critical". A C# enum can hold
+    /// any value of its underlying type — a cast or a numeric deserialization in host code is
+    /// enough — and this is a public SDK contract on a fail-closed gate. Listing the blocking
+    /// severities would admit an unrecognised one with warnings; listing the safe ones rejects it.
+    /// </para>
     /// </summary>
-    public bool IsBlocking => Severity is RiskRuleSeverity.Error or RiskRuleSeverity.Critical;
+    public bool IsBlocking => Severity is not (RiskRuleSeverity.Info or RiskRuleSeverity.Warning);
 }
 
 /// <summary>

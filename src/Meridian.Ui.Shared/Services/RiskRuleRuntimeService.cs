@@ -87,6 +87,18 @@ public sealed class RiskRuleRuntimeService
     public int MaxOrdersPerMinute => GetMaxOrdersPerMinute();
 
     /// <summary>
+    /// Reads the live slot count from the enforced order-rate throttle. Set during composition, in
+    /// the same spirit as <c>DrawdownGuardrailRule</c> taking this service: the dashboard reports
+    /// the number the gate will actually enforce rather than a reconstruction of it.
+    /// <para>
+    /// Null when no throttle was composed, in which case the status falls back to counting audit
+    /// evidence. That fallback cannot see a reservation held by an in-flight submission, so it
+    /// under-reports precisely while an order is awaiting acknowledgement.
+    /// </para>
+    /// </summary>
+    public Func<int>? OrderRateUsageProbe { get; set; }
+
+    /// <summary>
     /// Evaluates the drawdown circuit breaker against the same live portfolio state and
     /// operator-tuned threshold this service reports on the dashboard, so the guardrail can
     /// never show "Healthy" while it silently fails to gate an order. Invoked by the enforced
@@ -396,15 +408,16 @@ public sealed class RiskRuleRuntimeService
     {
         var maxOrdersPerMinute = GetMaxOrdersPerMinute();
         var cutoff = asOf.AddMinutes(-1);
-        // This count has to mirror what the throttle actually holds, in both directions.
+        // Ask the throttle what it holds. Any count derived from audit history is a reconstruction
+        // and will disagree with the gate at the moments that matter: a slot is reserved before the
+        // submission is audited and released without an audit record of its own, so a projection
+        // reports capacity during exactly the window in which the throttle is blocking.
         //
-        // A gateway-rejected submission never routed and the OMS rolls its slot back, so counting
-        // it would report the window as constrained while the rule has full capacity. A submission
-        // that threw after dispatch is the opposite case: it is recorded as rejected, but the OMS
-        // deliberately commits its slot because the order may still have reached the venue, so
-        // skipping it would show room the throttle does not have.
-        var recentOrderCount = auditEntries.Count(entry =>
-            entry.OccurredAt >= cutoff && ConsumedRateCapacity(entry));
+        // The audit fallback below is for hosts that composed no throttle. It still has to reason
+        // about which submissions kept their slot, in both directions — see ConsumedRateCapacity.
+        var recentOrderCount = OrderRateUsageProbe is { } probe
+            ? probe()
+            : auditEntries.Count(entry => entry.OccurredAt >= cutoff && ConsumedRateCapacity(entry));
 
         var breached = recentOrderCount > maxOrdersPerMinute;
         var state = breached

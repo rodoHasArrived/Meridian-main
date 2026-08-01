@@ -102,6 +102,20 @@ public sealed class RiskValidationResultTests
         result.BlockingViolation.Should().BeNull();
     }
 
+    /// <summary>
+    /// An enum can hold a value outside its declared set, and this is a public SDK contract on a
+    /// fail-closed gate. An unrecognised severity has to block rather than be admitted.
+    /// </summary>
+    [Fact]
+    public void FromViolations_WithAnUndefinedSeverity_Rejects()
+    {
+        var result = RiskValidationResult.FromViolations([Violation((RiskRuleSeverity)99)]);
+
+        result.Decision.Should().Be(RiskDecisionKind.Rejected);
+        result.IsApproved.Should().BeFalse();
+        result.BlockingViolation.Should().NotBeNull();
+    }
+
     [Fact]
     public void FromViolations_Null_Throws()
     {
@@ -137,6 +151,56 @@ public sealed class RiskValidationResultTests
         result.BlockingViolation.Should().BeNull();
     }
 
+    /// <summary>
+    /// Stopping at the first failing callback would strand every later reservation as pending —
+    /// capacity consumed by an order that already reached its terminal state.
+    /// </summary>
+    [Fact]
+    public void CommitReservations_WhenOneCallbackThrows_StillSettlesTheRest()
+    {
+        var first = new ThrowingReservation();
+        var second = new RecordingReservation();
+        var outcome = new RiskValidationOutcome(
+            RiskValidationResult.Approved(),
+            [first, second]);
+
+        var act = outcome.CommitReservations;
+
+        act.Should().Throw<AggregateException>();
+        second.Committed.Should().BeTrue("a failing callback must not strand the reservations after it");
+    }
+
+    [Fact]
+    public void RollbackReservations_WhenOneCallbackThrows_StillSettlesTheRest()
+    {
+        var second = new RecordingReservation();
+        var outcome = new RiskValidationOutcome(
+            RiskValidationResult.Approved(),
+            [new ThrowingReservation(), second]);
+
+        var act = outcome.RollbackReservations;
+
+        act.Should().Throw<AggregateException>();
+        second.RolledBack.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Ownership transfers to the caller, so the outcome cannot keep looking at a list the
+    /// validator may reuse for its next evaluation.
+    /// </summary>
+    [Fact]
+    public void Reservations_AreSnapshotAtConstruction()
+    {
+        var working = new List<IRiskReservation> { new RecordingReservation() };
+        var outcome = new RiskValidationOutcome(RiskValidationResult.Approved(), working);
+
+        working.Clear();
+        working.Add(new ThrowingReservation());
+
+        outcome.Reservations.Should().HaveCount(1);
+        outcome.CommitReservations();
+    }
+
     [Fact]
     public void ToSummary_CarriesTheDecisionAndEveryViolation()
     {
@@ -146,5 +210,23 @@ public sealed class RiskValidationResultTests
 
         summary.Decision.Should().Be(RiskDecisionKind.Rejected);
         summary.Violations.Should().HaveCount(2, "the submitter sees every finding, not just the blocking one");
+    }
+
+    private sealed class RecordingReservation : IRiskReservation
+    {
+        public bool Committed { get; private set; }
+
+        public bool RolledBack { get; private set; }
+
+        public void Commit() => Committed = true;
+
+        public void Rollback() => RolledBack = true;
+    }
+
+    private sealed class ThrowingReservation : IRiskReservation
+    {
+        public void Commit() => throw new InvalidOperationException("commit failed");
+
+        public void Rollback() => throw new InvalidOperationException("rollback failed");
     }
 }

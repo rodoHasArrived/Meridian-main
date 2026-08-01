@@ -62,6 +62,30 @@ public sealed class OrderRateThrottle : IReservingRiskRule
     /// <inheritdoc />
     public string RuleName => "OrderRateThrottle";
 
+    /// <summary>
+    /// Slots currently held: routed orders still inside the window, plus every in-flight
+    /// submission holding a pending reservation.
+    /// <para>
+    /// This is what the rule will actually compare against the ceiling on the next evaluation, so a
+    /// status surface reading it can never disagree with the gate. Reconstructing the same number
+    /// from audit history cannot match it — a reservation is taken before any audit record exists
+    /// and released without one — so a projection would show capacity during the window between
+    /// submission and acknowledgement, exactly when the throttle is most likely to be blocking.
+    /// </para>
+    /// </summary>
+    public int CurrentUsage
+    {
+        get
+        {
+            var cutoff = _timeProvider.GetUtcNow().AddMinutes(-1);
+            lock (_sync)
+            {
+                _committed.RemoveAll(timestamp => timestamp < cutoff);
+                return _committed.Count + _pending.Count;
+            }
+        }
+    }
+
     /// <inheritdoc />
     public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
 

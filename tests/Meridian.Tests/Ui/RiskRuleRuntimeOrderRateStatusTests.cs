@@ -77,6 +77,28 @@ public sealed class RiskRuleRuntimeOrderRateStatusTests : IDisposable
         status.IsBreached.Should().BeFalse();
     }
 
+    /// <summary>
+    /// When a throttle is composed, the status reports what it holds rather than a reconstruction.
+    /// The audit history here says one slot; the live rule says three, because two submissions are
+    /// in flight and have no audit record yet. The gate's number wins.
+    /// </summary>
+    [Fact]
+    public async Task OrderRateStatus_PrefersTheLiveThrottleOverAuditHistory()
+    {
+        await using var audit = new ExecutionAuditTrailService(
+            Path.Combine(_root, "audit"),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        await audit.RecordAsync(SubmittedEntry(outcome: "Accepted"));
+
+        var service = BuildService(audit);
+        service.OrderRateUsageProbe = () => 3;
+
+        var status = await service.GetStatusAsync("OrderRateThrottle");
+
+        status!.CurrentValue.Should().Be("3 orders/minute");
+    }
+
     private RiskRuleRuntimeService BuildService(ExecutionAuditTrailService audit)
     {
         var services = new ServiceCollection()

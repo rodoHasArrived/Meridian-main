@@ -217,6 +217,32 @@ public sealed class OrderRateThrottleTests
         (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().BeNull();
     }
 
+    /// <summary>
+    /// The number a status surface reads. It has to include reservations still in flight, because
+    /// those are what the rule will compare against the ceiling on the next evaluation — and they
+    /// exist before any audit record of the submission does.
+    /// </summary>
+    [Fact]
+    public async Task CurrentUsage_CountsPendingAndCommittedSlots()
+    {
+        var time = new StubTimeProvider(DateTimeOffset.Parse("2026-08-01T00:00:00Z"));
+        var sut = CreateSut(maxOrdersPerMinute: 10, time);
+
+        sut.CurrentUsage.Should().Be(0);
+
+        var pending = await sut.EvaluateAndReserveAsync(CreateOrder());
+        sut.CurrentUsage.Should().Be(1, "an in-flight submission already holds its slot");
+
+        pending.Reservation!.Commit();
+        sut.CurrentUsage.Should().Be(1, "committing moves the slot, it does not add one");
+
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Reservation!.Rollback();
+        sut.CurrentUsage.Should().Be(1, "a rolled-back slot is released");
+
+        time.Advance(TimeSpan.FromSeconds(61));
+        sut.CurrentUsage.Should().Be(0, "committed slots age out of the window");
+    }
+
     private sealed class StubTimeProvider(DateTimeOffset start) : TimeProvider
     {
         private DateTimeOffset _now = start;

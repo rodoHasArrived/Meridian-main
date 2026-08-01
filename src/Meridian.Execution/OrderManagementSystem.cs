@@ -565,28 +565,47 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             };
             _orders[orderId] = rejectedState;
             TrimRetainedOrdersIfNeeded();
-            await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+
+            // This evidence must survive the cancellation that caused the failure. A common way to
+            // reach this catch is the caller's token being cancelled after dispatch, and persisting
+            // with that same token would drop the record of an order that may be live at the venue
+            // and whose rate slot was just committed. Same reasoning as the accounting-handoff
+            // failure path above.
+            await RecordSessionOrderUpdateAsync(sessionId, rejectedState, CancellationToken.None)
+                .ConfigureAwait(false);
 
             if (_auditTrail is not null)
             {
-                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                    AuditId: Guid.NewGuid().ToString("N"),
-                    Category: "Order",
-                    Action: "OrderRejected",
-                    Outcome: "Rejected",
-                    OccurredAt: DateTimeOffset.UtcNow,
-                    Actor: actor,
-                    BrokerName: brokerName,
-                    OrderId: orderId,
-                    RunId: runId,
-                    Symbol: safeRequest.Symbol,
-                    CorrelationId: correlationId,
-                    // Marks the one rejection path that still holds rate capacity. Every other
-                    // OrderRejected entry released its slot, so a read model reporting throttle
-                    // usage has to be able to tell this one apart or it will under-report and show
-                    // room the throttle does not have.
-                    Reason: AmbiguousSubmissionReason,
-                    Message: ex.Message), ct).ConfigureAwait(false);
+                try
+                {
+                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                        AuditId: Guid.NewGuid().ToString("N"),
+                        Category: "Order",
+                        Action: "OrderRejected",
+                        Outcome: "Rejected",
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        Actor: actor,
+                        BrokerName: brokerName,
+                        OrderId: orderId,
+                        RunId: runId,
+                        Symbol: safeRequest.Symbol,
+                        CorrelationId: correlationId,
+                        // Marks the one rejection path that still holds rate capacity. Every other
+                        // OrderRejected entry released its slot, so a read model reporting throttle
+                        // usage has to be able to tell this one apart or it will under-report and
+                        // show room the throttle does not have.
+                        Reason: AmbiguousSubmissionReason,
+                        Message: ex.Message), CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception auditException)
+                {
+                    // The submission failure is the caller's answer; losing the audit write must not
+                    // replace it with an unrelated exception.
+                    _logger.LogError(
+                        auditException,
+                        "Order {OrderId} failed ambiguously and its audit record could not be written",
+                        orderId);
+                }
             }
 
             return new OrderResult

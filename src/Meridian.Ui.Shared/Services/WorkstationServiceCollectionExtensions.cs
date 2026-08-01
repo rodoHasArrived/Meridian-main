@@ -360,12 +360,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
         {
             var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
+            var orderRateThrottle = new Meridian.Risk.Rules.OrderRateThrottle(
+                () => runtime.MaxOrdersPerMinute,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.OrderRateThrottle>>());
+
+            // Point the dashboard at the instance that enforces, so the reported rate is the number
+            // the gate will compare against the ceiling rather than a reconstruction from audit
+            // history that cannot see in-flight reservations.
+            runtime.OrderRateUsageProbe = () => orderRateThrottle.CurrentUsage;
+
             var rules = new List<Meridian.Risk.IRiskRule>
             {
                 new DrawdownGuardrailRule(runtime),
-                new Meridian.Risk.Rules.OrderRateThrottle(
-                    () => runtime.MaxOrdersPerMinute,
-                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.OrderRateThrottle>>()),
+                orderRateThrottle,
             };
 
             if (sp.GetService<Meridian.Execution.Sdk.IPositionTracker>() is { } positionTracker)
