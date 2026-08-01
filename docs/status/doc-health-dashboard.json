@@ -1,6 +1,6 @@
 {
   "total_files": 638,
-  "total_lines": 117366,
+  "total_lines": 117414,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1698,7 +1698,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/incentive-fee-mechanics.md",
-      "line_count": 1579,
+      "line_count": 1627,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

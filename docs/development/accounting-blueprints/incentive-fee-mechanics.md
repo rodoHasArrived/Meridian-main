@@ -1162,6 +1162,24 @@ The governed lifecycle is untouched: `AutomatedJournalApproval` still enforces
 >   `AppendAsync(connection, transaction, entry, ct)`, the same overload the atomic tax-lot path
 >   already uses. The port owns the connection and transaction; the journal append and every scope
 >   write share it.
+>
+>   ⚠️ **That overload is not idempotent — you must re-add the equivalence check yourself.**
+>   `DurableAutomatedJournalPoster` buys transaction-independence *and* safe replay: it "resolves an
+>   equivalent retained entry as a successful no-op append"
+>   (`DurableAutomatedJournalPoster.cs:122`, via `DurableLedgerPostingTarget.PostAsync`). The raw
+>   transactional overload inserts directly, so a retried crystallization whose response was lost
+>   hits the duplicate-journal constraint and **aborts the shared transaction** instead of returning
+>   the already-committed outcome — contradicting §8.3's safe-rerun guarantee. Trading up for
+>   atomicity silently traded away idempotency.
+>
+>   **Rule for every transaction-scoped port in this blueprint** (`ICommitIncentiveFeePeriod`,
+>   `CreateSeriesWithStateAsync`, `ConsolidateSeriesAsync`, `CloseScopeAsync`, and the §9.2
+>   accounting-model transition): before appending, **preflight the idempotency key inside the same
+>   transaction**. If a retained entry exists and is equivalent, treat the whole command as a
+>   completed replay — return the existing scope rows and snapshots without writing — rather than
+>   appending. If it exists and is *not* equivalent, fail loudly: that is a genuine conflict, not a
+>   retry. The scope rows and snapshots are what identify the replay as complete, so the preflight
+>   must check them together with the journal, not the journal alone.
 > - **It cannot be atomic with the state write.** Posting and `SaveIncentiveFeeStateAsync` were two
 >   operations, so a process exit between them leaves the journal posted and the protected level
 >   un-advanced — the next period then re-earns fee on ground already charged for, and the snapshot
@@ -1355,22 +1373,44 @@ public const string LedgerIncentiveFeeTransitionModel = "/api/ledger/incentive-f
 > is a single governed operation that writes both or neither" without defining one. So:
 >
 > ```csharp
+> // A transition is an OWNERSHIP conversion, not a settings edit: moving to InvestorSeries means
+> // the book's units stop being fund-level and become series-level. Policies and HWM scopes alone
+> // are not enough — see the mutation list below.
 > public sealed record AccountingModelTransitionRequest(
 >     Guid LedgerBookId,
 >     EqualizationMethodDto TargetEqualizationMethod,
 >     string TargetAccountingModel,               // FundLevel | InvestorSeries
->     IReadOnlyList<IncentiveFeeSeriesOpeningDto>? OpeningSeries,   // required when moving TO InvestorSeries
+>     // Moving TO InvestorSeries: the full target registry, not just scope seeds. Each entry carries
+>     // its definition (issue date, price, currency, lead flag) AND the holdings to issue, so the
+>     // conversion is expressible. Σ issued units must equal the book's current units — asserted.
+>     IReadOnlyList<SeriesConversionDto>? TargetSeries,
 >     decimal? OpeningHighWaterMarkPerShare,      // required when moving TO FundLevel
+>     // The APPROVED value-preserving reclassification for the ownership change (equalization §11).
+>     IncentiveFeePostingCommand Reclassification,
 >     string TransitionBasisNote,
 >     bool AcknowledgeScopeRewrite);
+>
+> public sealed record SeriesConversionDto(
+>     FundSeriesDefinition Definition,
+>     decimal OpeningHighWaterMarkPerShare,
+>     IReadOnlyList<SeriesHolding> Holdings);     // per-investor units in the new series
 > ```
 >
 > `POST /api/ledger/incentive-fee/transition-accounting-model` validates the **target** pair against
-> the matrix above, then in **one transaction** writes both policy rows, closes the scopes the old
-> model owned (`Status = Closed`), and opens the scopes the new one needs with their enablement
-> evidence. The intermediate mismatched state never exists on disk. A transition is a scope rewrite,
-> not a settings edit, which is why it takes an explicit acknowledgement and is not folded into
-> either policy POST.
+> the matrix above, then performs **all of it in one transaction** — the same five-mutation shape as
+> `ConsolidateSeriesAsync`, for the same reason:
+>
+> 1. durably append the approved reclassification journal (transaction-scoped, per §8.2),
+> 2. write both policy rows (`accounting_model` and `equalization_method`),
+> 3. create or retire the `fund_series` definitions the target model needs,
+> 4. cancel the outgoing holdings and issue the incoming ones, asserting unit conservation,
+> 5. close the scopes the old model owned and open the new ones with their enablement evidence.
+>
+> An earlier draft of this command did only steps 2 and 5. A book could then commit advertising
+> `SeriesOfShares` while its ownership was still fund-level and no series registry existed — leaving
+> fee evaluation with a policy that demands a series roster and nothing to build one from. The
+> intermediate mismatched state never exists on disk, and neither does an intermediate *ownership*
+> state. That is why this takes an explicit acknowledgement and is not folded into either policy POST.
 
 ### 9.3 UI surfaces
 
@@ -1485,9 +1525,17 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
     period produce N distinct keys and N ledger postings (the fund-only key posted exactly one).
 34. `Consolidate_SameSeriesIdInTwoBooks_TouchesOnlyTheTargetBook`.
 35. `GetLiveIncentiveFeeState_AfterReopen_ReturnsReplacementNotHistorical`.
-36. `TransitionAccountingModel_FundLevelToInvestorSeries_IsOneTransaction` — both policy rows, the
-    closed fund scope, and the opened series scopes land together; an injected failure leaves the
-    book entirely on its original pair, and no intermediate mismatched pair is ever observable.
+36. `TransitionAccountingModel_FundLevelToInvestorSeries_IsOneTransaction` — the reclassification
+    journal, both policy rows, the new `fund_series` definitions, the cancelled and issued holdings,
+    the closed fund scope, and the opened series scopes all land together. Asserts unit conservation
+    across the conversion, that an injected failure leaves the book entirely on its original pair
+    *and* its original ownership, and that no intermediate mismatched pair or ownership state is
+    observable.
+37. `TransactionalPorts_RetriedAfterLostResponse_AreCompletedReplays` — for each of
+    `ICommitIncentiveFeePeriod`, `CreateSeriesWithStateAsync`, `ConsolidateSeriesAsync`,
+    `CloseScopeAsync`, and the transition: re-issuing the command returns the existing rows without
+    writing, rather than aborting the shared transaction on the duplicate-journal constraint (§8.2
+    idempotency rule). A non-equivalent retained entry under the same key fails loudly instead.
 
 36. `Enable_LossCarryforwardOrBothMode_RejectsWithO6Blocked` — the enablement gate refuses an
     LCF-bearing policy rather than computing one. There are deliberately **no** LCF-mode golden
