@@ -463,7 +463,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             {
                 // Lost a race with a concurrent submission that claimed the same client order id
                 // after the guard above ran; the winner's state must survive untouched.
+                //
+                // Nothing from this submission routed, so both the reserved capacity and any
+                // governed release it consumed go back. Leaving the approval retired would
+                // permanently discard an operator decision over a race the submitter did not cause.
                 SettleRiskReservations(riskDecision, commit: false, orderId);
+                RestoreConsumedApprovals(consumedApprovalId, "a duplicate client order id race", orderId);
                 return await RejectDuplicateClientOrderIdAsync(
                     orderId,
                     safeRequest,
@@ -662,7 +667,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 Success = false,
                 OrderId = orderId,
                 ErrorMessage = ex.Message,
-                OrderState = filledState
+                OrderState = filledState,
+                RiskWarnings = riskWarnings,
+                RiskDecision = riskDecision?.ToSummary()
             };
         }
         catch (Exception ex)
@@ -713,7 +720,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 Success = false,
                 OrderId = orderId,
                 ErrorMessage = ex.Message,
-                OrderState = rejectedState
+                OrderState = rejectedState,
+                RiskWarnings = riskWarnings,
+                RiskDecision = riskDecision?.ToSummary()
             };
         }
     }
@@ -851,6 +860,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         ExecutionReport report;
         try
         {
+            ct.ThrowIfCancellationRequested();
             amendmentDispatchAttempted = true;
             report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
         }
@@ -863,7 +873,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // The rate slot follows the placement path's rule rather than the state
             // reservation's: a modify that threw after dispatch may still have reached the venue,
             // so it is committed. Over-counting a rate window is the safe direction.
-            SettleRiskReservations(amendmentDecision, commit: amendmentDispatchAttempted, orderId);
+            // Cancellation surfacing from the gateway before it mutated anything is not ambiguous:
+            // a gateway that checks the token on entry has dispatched nothing, so the slot is
+            // released. Only a non-cancellation fault after dispatch is genuinely ambiguous.
+            var amendmentMayHaveRouted = amendmentDispatchAttempted && !ct.IsCancellationRequested;
+            SettleRiskReservations(amendmentDecision, commit: amendmentMayHaveRouted, orderId);
             RollBackSpeculativeReservation(orderId, speculativeReservation, state);
             throw;
         }
@@ -1182,37 +1196,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
 
         return true;
-    }
-
-    private async Task<OrderResult> RejectDuplicateClientOrderIdAsync(
-        string orderId,
-        OrderRequest request,
-        string? actor,
-        string brokerName,
-        string? runId,
-        string? correlationId,
-        CancellationToken ct)
-    {
-        var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
-
-        await RecordOrderRejectionAsync(
-            orderId,
-            request,
-            actor,
-            brokerName,
-            runId,
-            correlationId,
-            message,
-            ct,
-            rejectionSource: "duplicate client order id guard",
-            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
-
-        return new OrderResult
-        {
-            Success = false,
-            OrderId = orderId,
-            ErrorMessage = message
-        };
     }
 
     private static OrderState CreateRejectedState(

@@ -946,4 +946,35 @@ public sealed partial class OrderManagementSystem
             }
         }
     }
+
+    private async Task<OrderResult> RejectDuplicateClientOrderIdAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        CancellationToken ct)
+    {
+        var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
+
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            message,
+            ct,
+            rejectionSource: "duplicate client order id guard",
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = message
+        };
+    }
 }

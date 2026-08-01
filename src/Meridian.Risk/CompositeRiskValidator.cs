@@ -136,6 +136,24 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 {
                     violations.Add(ToViolation(rule, result));
                 }
+                else if (result.Warnings.Count > 0)
+                {
+                    // An approved result still carrying warnings observed something worth
+                    // recording. Attribute each one to this rule at a non-blocking severity so the
+                    // structured set is complete without changing what the order does.
+                    foreach (var warning in result.Warnings)
+                    {
+                        violations.Add(new RiskViolation(
+                            RuleName: rule.RuleName,
+                            Severity: rule.Severity is RiskRuleSeverity.Info
+                                ? RiskRuleSeverity.Info
+                                : RiskRuleSeverity.Warning,
+                            Code: result.Code ?? "RISK_OBSERVED",
+                            Message: warning,
+                            ObservedValue: result.ObservedValue,
+                            LimitValue: result.LimitValue));
+                    }
+                }
             }
 
             // Critical side effects run over the whole evaluated set, before any outcome is
@@ -157,6 +175,14 @@ public sealed class CompositeRiskValidator : IRiskValidator
                         .ConfigureAwait(false);
                 }
             }
+
+            // Any blocking breach outranks an escalation, regardless of priority order. Parking an
+            // order that a later rule hard-rejects offers the operator a release that cannot work.
+            var hasBlockingBreach = evaluated.Any(static entry =>
+                !entry.Result.IsApproved
+                && !entry.Result.RequiresApproval
+                && (IsEvaluationFailure(entry.Result)
+                    || entry.Rule.Severity is RiskRuleSeverity.Error or RiskRuleSeverity.Critical));
 
             foreach (var (rule, result) in evaluated)
             {
@@ -193,7 +219,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
                 // A rule can escalate explicitly via its result; otherwise its declared
                 // severity decides the outcome of the failure.
-                if (result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
+                if ((result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
+                    && !hasBlockingBreach)
                 {
                     // A consumed approval satisfies only the escalation it was parked for;
                     // any other escalate-capable rule still parks its own approval. An
@@ -214,6 +241,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
                 switch (rule.Severity)
                 {
+                    // Reached only when a blocking breach elsewhere outranked this escalation.
+                    // The order is rejected on that breach; this rule contributes its finding.
+                    case RiskRuleSeverity.Escalate:
+                        continue;
+
                     case RiskRuleSeverity.Info:
                     case RiskRuleSeverity.Warning:
                         // Order details stay out of the log: the flag is carried on the result

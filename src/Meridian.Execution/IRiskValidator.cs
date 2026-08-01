@@ -28,7 +28,23 @@ public sealed record RiskValidationResult
     private readonly IReadOnlyList<RiskViolation> _violations = [];
     private readonly IReadOnlyList<IRiskReservation> _reservations = [];
 
-    public required bool IsApproved { get; init; }
+    private readonly bool _isApproved;
+
+    /// <summary>
+    /// True when the order may route.
+    /// <para>
+    /// Fails closed against its own violation set: a caller that asserts approval while carrying an
+    /// <see cref="RiskRuleSeverity.Error"/> or <see cref="RiskRuleSeverity.Critical"/> violation is
+    /// contradicting itself, and the OMS routes on this property. Deriving the conjunction rather
+    /// than trusting the flag makes that combination unrepresentable through any construction path,
+    /// including the object initializers and <c>with</c> expressions this type is built with.
+    /// </para>
+    /// </summary>
+    public required bool IsApproved
+    {
+        get => _isApproved && !_violations.Any(static violation => violation.IsBlocking);
+        init => _isApproved = value;
+    }
     public string? RejectReason { get; init; }
 
     /// <summary>
@@ -96,6 +112,13 @@ public sealed record RiskValidationResult
         get => _reservations;
         init => _reservations = Snapshot(value);
     }
+
+    /// <summary>
+    /// When the approval consumed a one-shot governed release token, its escalation id.
+    /// The OMS re-arms this approval if the gateway faults before the order routes, so a
+    /// transient submission failure never permanently retires an operator's decision.
+    /// </summary>
+    public string? ConsumedApprovalId { get; init; }
 
     /// <summary>
     /// When <see langword="true"/> the rule refused an order it could not measure rather than
