@@ -214,6 +214,43 @@ public sealed class CompositeRiskValidatorTests
             .BeTrue("a faulty rule must not strand another rule's capacity");
     }
 
+    /// <summary>
+    /// A rule that declares both must still reserve. Taking the sync fast path first would skip
+    /// <c>EvaluateAndReserveAsync</c> entirely, admitting concurrent orders without consuming any of
+    /// the finite capacity the rule exists to protect — and doing it silently.
+    /// </summary>
+    [Fact]
+    public async Task ValidateOrderAsync_WithAReservingRuleThatAlsoDeclaresASyncFastPath_StillReserves()
+    {
+        var rule = new StubReservingRule("both") { AlsoDeclaresSyncFastPath = true };
+
+        var outcome = await Build(rule).ValidateOrderAsync(CreateOrder());
+
+        rule.Reservations.Should().ContainSingle("the reserving path is the stronger contract");
+        outcome.Reservations.Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// The engine-failure code is public, so a rule may legitimately report it. Promoting on the
+    /// code would make it a second admission lever and let a Warning rule reject an order — the
+    /// contradiction between severity and outcome this design exists to remove.
+    /// </summary>
+    [Fact]
+    public async Task ValidateOrderAsync_WhenARuleReportsTheFailureCodeItself_KeepsItsDeclaredSeverity()
+    {
+        var validator = Build(new StubRiskRule(
+            "reporter",
+            Finding(CompositeRiskValidator.EvaluationFailedCode, "recoverable lookup issue"),
+            severity: RiskRuleSeverity.Warning));
+
+        var outcome = await validator.ValidateOrderAsync(CreateOrder());
+
+        outcome.Result.Decision.Should().Be(RiskDecisionKind.ApprovedWithWarnings);
+        outcome.Result.IsApproved.Should().BeTrue();
+        outcome.Result.Violations.Should().ContainSingle()
+            .Which.Severity.Should().Be(RiskRuleSeverity.Warning);
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
         // The release runs on a continuation of the abandoned task, so it is not observable the
@@ -294,6 +331,11 @@ public sealed class CompositeRiskValidatorTests
         public int Priority { get; init; }
 
         public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
+
+        /// <summary>The unsupported-looking combination the validator has to handle safely.</summary>
+        public bool AlsoDeclaresSyncFastPath { get; init; }
+
+        public bool HasSyncFastPath => AlsoDeclaresSyncFastPath;
 
         public List<StubReservation> Reservations { get; } = [];
 

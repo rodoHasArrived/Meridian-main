@@ -75,10 +75,10 @@ public sealed class CompositeRiskValidator : IRiskValidator
             foreach (var rule in _rules)
             {
                 ct.ThrowIfCancellationRequested();
-                var finding = await EvaluateRuleAsync(rule, request, reservations, ct).ConfigureAwait(false);
-                if (finding is not null)
+                var violation = await EvaluateRuleAsync(rule, request, reservations, ct).ConfigureAwait(false);
+                if (violation is not null)
                 {
-                    violations.Add(ToViolation(rule, finding));
+                    violations.Add(violation);
                 }
             }
 
@@ -123,7 +123,19 @@ public sealed class CompositeRiskValidator : IRiskValidator
         return new RiskValidationOutcome(result, reservations);
     }
 
-    private async Task<RiskFinding?> EvaluateRuleAsync(
+    /// <summary>
+    /// Evaluates one rule and attributes its finding, returning <see langword="null"/> when the rule
+    /// is satisfied.
+    /// <para>
+    /// This returns the <see cref="RiskViolation"/> rather than the finding so that an engine
+    /// failure can be constructed here, where it is known to be one. Inferring it downstream by
+    /// comparing against <see cref="EvaluationFailedCode"/> would make that public code a second
+    /// admission lever: a rule legitimately reporting it on an <see cref="RiskRuleSeverity.Info"/>
+    /// finding would be silently promoted to a rejection, which is exactly the severity-can-be-
+    /// contradicted problem this design removes.
+    /// </para>
+    /// </summary>
+    private async Task<RiskViolation?> EvaluateRuleAsync(
         IRiskRule rule,
         OrderRequest request,
         List<IRiskReservation> reservations,
@@ -134,19 +146,10 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
         try
         {
-            // The synchronous fast path runs inside this handler, not before it. The production
-            // DrawdownGuardrailRule uses it, and a failure reading portfolio state must become a
-            // structured risk rejection rather than an unstructured submission failure.
-            //
-            // It is deliberately NOT wrapped in the hard timeout: a synchronous call cannot be
-            // abandoned, so wrapping it would bound only the wait and leak the blocked thread while
-            // still hanging the submission. A rule opts into this path by declaring it needs no
-            // I/O, so blocking here is a contract violation rather than a case to time out.
-            if (rule.HasSyncFastPath)
-            {
-                return rule.TryEvaluate(request);
-            }
-
+            // Reserving is checked before the synchronous fast path. A rule that declares both would
+            // otherwise never reach EvaluateAndReserveAsync, silently admitting concurrent orders
+            // without consuming any of the finite capacity it exists to protect — the one failure
+            // here that is invisible rather than loud.
             if (rule is IReservingRiskRule reserving)
             {
                 var reservationResult = await WithHardTimeoutAsync(
@@ -159,13 +162,28 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     reservations.Add(reservation);
                 }
 
-                return reservationResult.Finding;
+                return ToViolation(rule, reservationResult.Finding);
             }
 
-            return await WithHardTimeoutAsync(
+            // The synchronous fast path runs inside this handler, not before it. The production
+            // DrawdownGuardrailRule uses it, and a failure reading portfolio state must become a
+            // structured risk rejection rather than an unstructured submission failure.
+            //
+            // It is deliberately NOT wrapped in the hard timeout: a synchronous call cannot be
+            // abandoned, so wrapping it would bound only the wait and leak the blocked thread while
+            // still hanging the submission. A rule opts into this path by declaring it needs no
+            // I/O, so blocking here is a contract violation rather than a case to time out.
+            if (rule.HasSyncFastPath)
+            {
+                return ToViolation(rule, rule.TryEvaluate(request));
+            }
+
+            var finding = await WithHardTimeoutAsync(
                     rule.EvaluateAsync(request, effectiveToken),
                     ct)
                 .ConfigureAwait(false);
+
+            return ToViolation(rule, finding);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -184,7 +202,12 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 rule.RuleName,
                 ExecutionLogText.ForLog(request.Symbol));
 
-            return new RiskFinding(
+            // Critical regardless of the rule's declared severity — the one exception, and it is an
+            // engine fault rather than a finding about the order. Preserving an Info or Warning
+            // rule's severity would admit the order after its gate failed.
+            return new RiskViolation(
+                RuleName: rule.RuleName,
+                Severity: RiskRuleSeverity.Critical,
                 Code: EvaluationFailedCode,
                 Message: $"Risk rule '{rule.RuleName}' could not be evaluated: {ex.GetType().Name}.");
         }
@@ -259,30 +282,21 @@ public sealed class CompositeRiskValidator : IRiskValidator
     }
 
     /// <summary>
-    /// Attributes a finding to its declaring rule.
-    /// <para>
-    /// An evaluation failure is the one case where the violation does not carry the rule's declared
-    /// severity. It is an engine fault rather than a finding about the order, and preserving an
-    /// <see cref="RiskRuleSeverity.Info"/> or <see cref="RiskRuleSeverity.Warning"/> rule's severity
-    /// would either admit the order after its gate failed, or produce a rejection whose blocking
-    /// violation, reason, and code are all null.
-    /// </para>
+    /// Attributes a finding to its declaring rule, carrying that rule's declared severity and
+    /// nothing else. The finding's own code never influences severity — engine failures are
+    /// constructed at the point of failure instead.
     /// </summary>
-    private static RiskViolation ToViolation(IRiskRule rule, RiskFinding finding)
-    {
-        var severity = finding.Code == EvaluationFailedCode
-            ? RiskRuleSeverity.Critical
-            : rule.Severity;
-
-        return new RiskViolation(
-            RuleName: rule.RuleName,
-            Severity: severity,
-            Code: finding.Code,
-            Message: finding.Message,
-            ObservedValue: finding.ObservedValue,
-            LimitValue: finding.LimitValue,
-            RequiresAcknowledgement: finding.RequiresAcknowledgement);
-    }
+    private static RiskViolation? ToViolation(IRiskRule rule, RiskFinding? finding) =>
+        finding is null
+            ? null
+            : new RiskViolation(
+                RuleName: rule.RuleName,
+                Severity: rule.Severity,
+                Code: finding.Code,
+                Message: finding.Message,
+                ObservedValue: finding.ObservedValue,
+                LimitValue: finding.LimitValue,
+                RequiresAcknowledgement: finding.RequiresAcknowledgement);
 
     private int RulePriority(string ruleName)
     {

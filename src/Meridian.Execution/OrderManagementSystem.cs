@@ -389,6 +389,17 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _orderSessionIds[orderId] = sessionId;
         }
 
+        // A token already cancelled here is the one cancellation that is provably pre-dispatch: the
+        // gateway has not been called, and gateways that check the token on entry would throw
+        // without sending anything. Releasing the slot now keeps the conservative commit below for
+        // genuinely ambiguous failures only. Checking and throwing before the try is deliberate —
+        // doing it inside would hand the cancellation to the ambiguous handler, which commits.
+        if (ct.IsCancellationRequested)
+        {
+            SettleReservations(riskOutcome, commit: false, orderId);
+            ct.ThrowIfCancellationRequested();
+        }
+
         try
         {
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
@@ -1668,12 +1679,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         string? reasonCode = null,
         IReadOnlyDictionary<string, string>? metadata = null)
     {
+        // Every caller-supplied field here: the client order id, the symbol, and — for a risk
+        // rejection — a reason that embeds the symbol via the rule text. The risk gate sanitizes
+        // its own line, but this one records the same rejection, so leaving it raw would keep the
+        // forged-line vector open one layer down.
         _logger.LogWarning(
             "Order {OrderId} for {Symbol} rejected by {RejectionSource}: {Reason}",
-            orderId,
-            request.Symbol,
+            ExecutionLogText.ForLog(orderId),
+            ExecutionLogText.ForLog(request.Symbol),
             rejectionSource,
-            message);
+            ExecutionLogText.ForLog(message));
 
         if (_auditTrail is null)
         {
