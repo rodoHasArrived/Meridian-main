@@ -996,9 +996,12 @@ create table if not exists __SCHEMA__.fund_series (
     primary key (ledger_book_id, series_id)
 );
 
+-- Partial on BOTH is_lead and a live status. Without the status predicate a lead series that
+-- fully redeems keeps the constraint slot (close sets status, not is_lead), so the next
+-- subscription cannot establish a new lead without a uniqueness violation.
 create unique index if not exists ux_fund_series_lead
     on __SCHEMA__.fund_series (ledger_book_id)
-    where is_lead;
+    where is_lead and status in ('Open', 'Crystallized');
 
 create table if not exists __SCHEMA__.fund_series_holdings (
     ledger_book_id  uuid not null references __SCHEMA__.ledger_books(ledger_book_id),

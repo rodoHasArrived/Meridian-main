@@ -1,11 +1,11 @@
 {
   "total_files": 638,
-  "total_lines": 117068,
+  "total_lines": 117161,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 183.5,
+  "average_lines": 183.6,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1682,7 +1682,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/commitment-and-capital-call-engine.md",
-      "line_count": 1024,
+      "line_count": 1029,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1690,7 +1690,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/equalization-and-series-accounting.md",
-      "line_count": 1286,
+      "line_count": 1289,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1698,7 +1698,7 @@
     },
     {
       "path": "docs/development/accounting-blueprints/incentive-fee-mechanics.md",
-      "line_count": 1350,
+      "line_count": 1435,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

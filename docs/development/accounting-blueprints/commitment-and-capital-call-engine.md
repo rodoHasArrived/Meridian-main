@@ -1,7 +1,8 @@
 # Blueprint: Commitment & Capital-Call Engine for Private Capital
 
-**Status:** Partially implemented — domain and governed-drafting layers shipped; persistence,
-endpoints, and the workbench read model remain design-only
+**Status:** Partially implemented — domain layer and capital-call draft *construction* shipped; the
+posting/orchestration layer that makes a call operable, plus persistence, endpoints, and the
+workbench read model, remain design-only
 **Owner:** Ledger / private-capital lane
 **Reviewed:** 2026-08-01
 
@@ -13,8 +14,8 @@ endpoints, and the workbench read model remain design-only
 
 ## Delivery state (2026-08-01)
 
-Already in source — treat §4.1–§4.5 and §7.2 as **built**, and verify against the live types rather
-than re-deriving them:
+Already in source — treat §4.1–§4.5 and **§7.2 step 1** as built, and verify against the live types
+rather than re-deriving them:
 
 - `src/Meridian.Ledger/PrivateCapitalCommitments.cs` — `CommitmentStatus`,
   `DrawdownInstallmentStatus`, `DistributionRecallability`, commitment and installment records
@@ -27,12 +28,16 @@ than re-deriving them:
   `Thirty360Days` day-count, and `Evaluate`, with `DefaultInterestCalculatorTests` covering them.
   Do not re-implement it from the §4.5 sketch.
 - `src/Meridian.Ledger/CapitalCallDraftFactory.cs`, `CapitalCallPlanBuilder.cs`,
-  `CapitalCallScheduleDraftBuilder.cs` — governed drafting (§7.2).
+  `CapitalCallScheduleDraftBuilder.cs` — **§7.2 step 1 only: draft *construction*.** These return
+  balanced `AutomatedJournalDraft`s and stop there. A repo-wide check finds them referenced only by
+  each other, `src/Meridian.Ledger/README.md`, and their tests — **no service consumes them**, so
+  §7.2 steps 2–5 (approval, durable posting, projection-driven installment transition, funding
+  orchestration) are **not** built. Capital calls are draftable today, not operable.
 - `AutomatedJournalEventKind.CapitalCallIssued` / `CapitalCallFunded` /
   `CapitalCallDefaultInterestAccrued` are already on the enum — **do not re-append them**.
 
-Still design-only: persistence and stores (§6), endpoints (§8.3), and the commitment workbench read
-model (§8.2, §8.4).
+Still design-only: **§7.2 steps 2–5 (the posting/orchestration layer that makes a call operable)**,
+persistence and stores (§6), endpoints (§8.3), and the commitment workbench read model (§8.2, §8.4).
 
 > **Shared-convention notice.** This blueprint shares the ledger migration sequence and the
 > `AutomatedJournalEventKind` enum with the

@@ -438,8 +438,9 @@ public static class IncentiveFeeCalculator
         fee = RoundCurrency(fee);
         var endingAfterFee = ctx.EndingNavBeforeIncentiveFee - fee;
         var candidateHwm = Math.Max(ctx.PriorHighWaterMark, endingAfterFee);
-        // LCF grows when NAV is below the protected level; shrinks as NAV recovers toward it.
-        var shortfall = Math.Max(0m, ctx.PriorHighWaterMark + ctx.PriorLossCarryforward - ctx.EndingNavBeforeIncentiveFee);
+        // LCF is the drawdown below the HIGH-WATER MARK — not below (HWM + prior LCF). Measuring it
+        // against a level that already contains it compounds: see the note under this block.
+        var shortfall = Math.Max(0m, ctx.PriorHighWaterMark - ctx.EndingNavBeforeIncentiveFee);
         var candidateLcf = RoundCurrency(shortfall);
 
         return new IncentiveFeeResult(fee, hurdleAmount, feeable, RoundCurrency(catchUpFee),
@@ -447,6 +448,32 @@ public static class IncentiveFeeCalculator
     }
 }
 ```
+
+> **Fixed defect — the LCF recurrence compounded.** An earlier draft computed
+> `shortfall = Max(0, PriorHighWaterMark + PriorLossCarryforward − EndingNav)`, measuring the loss
+> carryforward against a protected level that already *contained* it. With `HWM = 100` and NAV
+> sitting flat at `90`, the shield grew every period without any further loss — `10 → 20 → 30 → 40`
+> — permanently blocking fees. Measuring the drawdown against the HWM alone makes it stable at `10`
+> and returns it to `0` on recovery to `100`. Test 31 pins the flat-NAV case.
+
+> ⚠️ **OPEN QUESTION O-6 — is the protected level `HWM`, or `HWM + LCF`? Needs a fund-accounting
+> decision; do not implement `ResetMode.Both` until it is answered.**
+>
+> `grossExcess` above still uses `EndingNav − PriorHighWaterMark − PriorLossCarryforward`, i.e. it
+> treats the two as **additive**. That is coherent for a fund whose terms require recouping a prior
+> loss *in addition to* regaining the high-water mark, and it is stricter than a plain HWM. But it
+> is a policy choice, not a derivation, and the two reset modes read differently:
+>
+> - `ResetMode.HighWaterMark` — LCF is unused; the protected level is the HWM. Unambiguous.
+> - `ResetMode.LossCarryforward` — LCF is the mechanism *instead of* a HWM. Unambiguous.
+> - `ResetMode.Both` — **ambiguous**. If LCF is the drawdown below the HWM (as now computed), adding
+>   it to the HWM double-counts the same loss: a fund that falls to `90` and recovers to `105` is
+>   above its `100` high-water mark but still pays nothing until `110`. Whether that is the intended
+>   term or an artefact of the formula is exactly the kind of question this blueprint should not
+>   answer on its own.
+>
+> Resolving O-6 may require the recurrence to *amortise* the carried loss against gains above the
+> HWM rather than recompute it as a drawdown. Fixing the compounding above does not settle this.
 
 **Worked examples** (using the existing test's numbers: BeginningNav 1000, ending-before-incentive after
 a 20 management fee = 1180, prior HWM 1050 ⇒ `grossExcess = 1180 − 1050 = 130`, carry `c = 0.20`; annual
@@ -692,7 +719,12 @@ Task<IReadOnlyList<IncentiveFeePolicyRecord>> ListIncentiveFeePoliciesAsync(Guid
 // Keyed by SERIES, not investor (§4 Fork G HWM contract). seriesId == null selects the
 // fund-level row (Method A). Under Method B one investor may hold several series, so an
 // investor-keyed lookup would collapse distinct HWMs onto one row.
-Task<IncentiveFeeStateRecord?> GetIncentiveFeeStateAsync(Guid ledgerBookId, string? seriesId, CancellationToken ct = default)
+//
+// LIVE ONLY. The uniqueness index is partial on status = 'Live', which deliberately permits a
+// closed or consolidated row with the same (ledgerBookId, seriesId) to coexist with a live
+// replacement. Without the predicate this lookup could return several rows, or hydrate a
+// historical HWM after a scope reopened. Historical reads go through the snapshot table.
+Task<IncentiveFeeStateRecord?> GetLiveIncentiveFeeStateAsync(Guid ledgerBookId, string? seriesId, CancellationToken ct = default)
     => Task.FromException<IncentiveFeeStateRecord?>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>Live HWM scopes for a book (status = Live only): one row under Method A, one per series under Method B.</summary>
@@ -724,8 +756,12 @@ Task<IncentiveFeeStateRecord> CreateSeriesWithStateAsync(FundSeriesDefinition se
 /// consolidation, set the absorbed scope's Status to Consolidated, and (per equalization §6.2)
 /// leave the lead scope's HWM untouched. Prevents an orphaned scope that ListIncentiveFeeStatesAsync
 /// would still return as live.
+///
+/// Takes ledgerBookId explicitly: series ids are unique only WITHIN a book (fund_series is keyed
+/// (ledger_book_id, series_id)), and SeriesConsolidation carries only from/to series ids. Two books
+/// both using "series-1" would otherwise be indistinguishable to the adapter.
 /// </summary>
-Task ConsolidateSeriesStateAsync(SeriesConsolidation consolidation, CancellationToken ct = default)
+Task ConsolidateSeriesStateAsync(Guid ledgerBookId, SeriesConsolidation consolidation, CancellationToken ct = default)
     => Task.FromException(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>
@@ -786,7 +822,15 @@ public sealed record IncentiveFeeSeriesInput(
     string SeriesId,
     decimal UnitsOutstanding,               // scale-in/scale-out basis (equalization §6.1)
     decimal BeginningNavPerShare,
-    decimal EndingNavPerShareBeforeFees);   // gross, before this period's accrual
+    decimal EndingNavPerShareBeforeFees,    // gross, before this period's accrual
+    // Required when HurdleBasis == ContributedCapital: IncentiveFeeCalculator reads
+    // IncentiveFeeContext.ContributedCapital, and each series has its OWN basis — sharing a fund
+    // figure across series would size every series' hurdle off the wrong capital.
+    decimal ContributedCapital,
+    // Per-series, NOT global. One series redeeming off-cycle must not crystallize the others:
+    // a fund-wide flag makes CrystallizationCalendar.IsCrystallizationDate fire for every series,
+    // rolling unrelated HWMs and locking their accrued fees early.
+    bool IsRedemption = false);
 ```
 
 > **Why the roster cannot be `(SeriesId, units)` alone.** An earlier draft carried only units, on the
@@ -986,6 +1030,7 @@ create table if not exists __SCHEMA__.incentive_fee_enablements (
     ledger_book_id uuid not null references __SCHEMA__.ledger_books(ledger_book_id) on delete cascade,
     fund_profile_id text not null,
     policy_id text not null,
+    policy_version text not null,                      -- the EXACT terms in force at enablement
     accounting_model text not null,                    -- FundLevel | InvestorSeries
     series_id text null,                               -- null for the FundLevel scope; one row per series otherwise
     opening_high_water_mark_per_share numeric(38, 12) not null,
@@ -1003,8 +1048,11 @@ create index if not exists ix_incentive_fee_enablements_book
 Written in the **same transaction** as the scope it seeds, by both enablement branches — one row per
 scope opened. Append-only: it is evidence, never edited. `EnsureFundLevelStateAsync` and
 `CreateSeriesWithStateAsync` therefore take the note and actor alongside the opening level, and the
-workbench (§9.3) surfaces "opened at X per share on <date> by <actor> — <basis>" beside the current
-HWM, so an auditor can see where a protected level came from without reading migration history.
+workbench (§9.3) surfaces "opened at X per share on <date> by <actor> under policy <id>@<version>
+— <basis>" beside the current HWM, so an auditor can see where a protected level came from without
+reading migration history. `policy_version` is recorded because a `PolicyId` has several
+effective-dated versions and the state row's version moves on: without it the evidence cannot say
+which terms the operator was actually confirming against.
 
 ---
 
@@ -1024,8 +1072,15 @@ the existing `PerformanceFee`/`UpdatedHighWaterMark`.
 **`FeeScheduleAccrualEventProducer.Produce`** — replace the mirrored lines 239-241 with the same
 `IncentiveFeeCalculator.Compute` call, loading `HurdleTerms`/rate from the policy instead of a bare
 `PerformanceFeeRate`. The idempotency keys extend to include the crystallization boundary so intra-period
-re-accruals are distinguishable: `perf-fee|{fundId}|{periodId}` stays for accrual; crystallization uses
-`incentive-crystallize|{fundId}|{crystallizationDate}`.
+re-accruals are distinguishable: `perf-fee|{fundId}|{scopeId}|{periodId}` for accrual and
+`incentive-crystallize|{fundId}|{scopeId}|{crystallizationDate}` for crystallization, where
+`{scopeId}` is the series id under `InvestorSeries` and the literal `fund` under `FundLevel`.
+
+> **The scope segment is load-bearing under Method B.** An `InvestorSeries` outcome contains one
+> journal event *per series*. With the fund-only key every series after the first looks like a
+> duplicate to the durable posting guard, so exactly one series' fee reaches the ledger while all
+> the state rows advance — silent under-posting that reconciles nowhere. `{fundId}|fund|{periodId}`
+> under Method A is byte-stable across runs, so existing single-scope idempotency is unaffected.
 
 ### 8.2 End-to-end governed flow
 
@@ -1045,15 +1100,32 @@ IIncentiveFeeStateService.CommitAsync
   ├─ AutomatedJournalDraftProjector.Project(event) → AutomatedJournalDraft   (per event)
   ├─ AutomatedJournalApproval.Submit(draft, actor, now, reason)              (Draft→Submitted; refuses unbalanced)
   ├─ .Approve(actor, now, reason, evidenceLinks)                             (requires evidence)
-  ├─ .PostTo(ledger, actor, now, reason, evidenceLinks)                      (Approved→Posted; ledger.Post)
-  └─ store.SaveIncentiveFeeStateAsync(state, snapshot, expectedVersion)      (atomic roll-forward, sets snapshot.SourceJournalEntryId)
+  └─ ICommitIncentiveFeePeriod.CommitAsync(approvals, state, snapshot, expectedVersion)
+        ├─ DurableAutomatedJournalPoster.PostAsync(approval, ...)            (Approved→Posted; appends via the governed journal store)
+        └─ incentive_fee_state upsert + snapshot insert                      (same transaction, sets snapshot.SourceJournalEntryId)
 ```
 
 The governed lifecycle is untouched: `AutomatedJournalApproval` still enforces
 `Draft→Submitted→Approved→Posted` and evidence on approve/post via
-`LedgerGovernedLifecycle.PrepareTransition`. The only new invariant is that **state is committed only after
-the journal posts** and the snapshot records the posting `JournalEntryId`, so the HWM series and the ledger
-never disagree.
+`LedgerGovernedLifecycle.PrepareTransition`.
+
+> **Do not post through `AutomatedJournalApproval.PostTo(ledger, …)`.** An earlier draft of this
+> sequence did, and it is the wrong seam twice over:
+>
+> - **It is not durable.** `PostTo` mutates the in-memory `Ledger`. The shipped durable path is
+>   `DurableAutomatedJournalPoster.PostAsync` (`src/Meridian.Storage/Ledger/`), which implements
+>   `IAutomatedJournalPostingTarget` and appends through the governed journal store. A blueprint
+>   that names `PostTo` in a production commit path violates the repo's durability guardrail.
+> - **It cannot be atomic with the state write.** Posting and `SaveIncentiveFeeStateAsync` were two
+>   operations, so a process exit between them leaves the journal posted and the protected level
+>   un-advanced — the next period then re-earns fee on ground already charged for, and the snapshot
+>   trail has a gap exactly where the reconciliation would look.
+>
+> So the commit is **one transaction-capable port**, `ICommitIncentiveFeePeriod`, owning the durable
+> post and the state/snapshot write together — the same shape as the series lifecycle ports (§6.1).
+> Under `InvestorSeries` it takes *all* series' approvals, so a multi-series crystallization is one
+> atomic commit rather than one per series. The invariant is unchanged in intent — the HWM series and
+> the ledger never disagree — but it is now enforced by the transaction rather than by call ordering.
 
 ### 8.3 Ordering and idempotency
 
@@ -1085,13 +1157,16 @@ public sealed record IncentiveFeeStateDto(
 
 public sealed record IncentiveFeeSeriesInputDto(
     string SeriesId, decimal UnitsOutstanding,
-    decimal BeginningNavPerShare, decimal EndingNavPerShareBeforeFees);
+    decimal BeginningNavPerShare, decimal EndingNavPerShareBeforeFees,
+    decimal ContributedCapital, bool IsRedemption = false);
 
 public sealed record IncentiveFeeAccrualPreviewRequest(
     Guid LedgerBookId, string PeriodId, DateOnly AsOfDate,
     decimal BeginningNav, decimal EndingNavBeforeFees,
     // Required under FundLevel: the scale-in/scale-out multiplier for the per-share HWM (§6.2).
     decimal FundUnitsOutstanding,
+    // Required under FundLevel when HurdleBasis == ContributedCapital (§5.1).
+    decimal FundContributedCapital,
     // Required under InvestorSeries; empty under FundLevel. Mirrors IncentiveFeePeriodRequest
     // (§6.2) — the wire surface must expose per-series NAV or the preview cannot reproduce the
     // per-series fees the service computes.
@@ -1241,7 +1316,7 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
 17. `PartnershipInvestorAccountingProjector_WithNoHurdlePolicy_MatchesLegacyFeeAndHwm` (regression).
 18. `PartnershipInvestorAccountingProjector_WithSoftHurdleFullCatchUp_ProducesBalancedDraft` —
     `.IsBalanced.Should().BeTrue()`, expense/payable lines equal the computed fee.
-19. `IncentiveFeeStateService_AccrueThenCrystallize_PostsAndRollsForward` — Submit→Approve→PostTo path;
+19. `IncentiveFeeStateService_AccrueThenCrystallize_PostsAndRollsForward` — Submit→Approve→durable-post path;
     asserts `Ledger.GetBalance(LedgerAccounts.PerformanceFeePayableFor(fund))`, the rolled HWM, and the
     snapshot's `SourceJournalEntryId`.
 20. `FeeScheduleAccrualEventProducer_UsesSharedCalculator_MatchesProjector` — the producer and projector
@@ -1276,10 +1351,20 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
     them carrying the pre-redemption shield and delay fees.
 30. `Enable_PersistsOpeningBasisNoteAndActor` — the enablement row is written in the same
     transaction as the scope and is readable beside the current HWM.
+31. `Roll_FlatNavBelowHwm_DoesNotCompoundLossCarryforward` — HWM 100, NAV flat at 90 across four
+    periods: LCF stays 10, never 10→20→30→40. Recovery to 100 returns it to 0.
+32. `Commit_MultiSeriesCrystallization_IsOneDurableTransaction` — all series post through
+    `DurableAutomatedJournalPoster` and the state rows advance in the same transaction; a failure
+    injected between post and state write leaves neither applied.
+33. `IdempotencyKey_PerSeries_DoesNotSuppressSiblingSeries` — under `InvestorSeries`, N series in one
+    period produce N distinct keys and N ledger postings (the fund-only key posted exactly one).
+34. `Consolidate_SameSeriesIdInTwoBooks_TouchesOnlyTheTargetBook`.
+35. `GetLiveIncentiveFeeState_AfterReopen_ReturnsReplacementNotHistorical`.
+
 **Store (Postgres integration, mirroring tax-lot store tests):**
-31. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and
+36. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and
     `..._SaveIncentiveFeeState_RejectsStaleVersion`.
-32. `PostgresLedgerJournalStore_IncentiveFeeState_RejectsUnknownStatus` — the
+37. `PostgresLedgerJournalStore_IncentiveFeeState_RejectsUnknownStatus` — the
     `ck_incentive_fee_state_status` domain constraint holds, so a malformed status cannot slip past
     the partial uniqueness index.
 
@@ -1312,7 +1397,7 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
 10. **Postgres store** — implement the new methods in `PostgresLedgerJournalStore.cs` with tenant stamping
     and transactional roll-forward (`expectedVersion`); store tests 23.
 11. **Orchestration service** — implement `IIncentiveFeeStateService` (`EvaluatePeriodAsync` pure preview,
-    `CommitAsync` governed Submit→Approve→PostTo + `SaveIncentiveFeeStateAsync`); integration tests 18-22.
+    `CommitAsync` governed Submit→Approve→durable post + state write in one transaction); integration tests 18-22.
 12. **DTOs + routes + endpoints** — add DTOs to `Meridian.Contracts`, routes to `UiApiRoutes.cs`, and
     handlers to `LedgerEndpoints.cs`; register in the source-generated JSON context.
 13. **UI** — Fee Terms config panel + Incentive Fee Workbench in `src/Meridian.Ui/dashboard/` over the shared
