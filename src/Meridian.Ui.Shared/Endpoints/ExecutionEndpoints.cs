@@ -215,6 +215,23 @@ public static class ExecutionEndpoints
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            // Cancelling a parked order durably withdraws its governed approval, which the
+            // escalation routes only allow within the caller's scoped authority over the
+            // owning fund. Reaching the same withdrawal through a client order id must not
+            // be the cheaper path: without this, an operator holding ManageOrders for one
+            // fund could retire another fund's approval just by knowing its id.
+            if (oms.GetOrder(orderId)?.FundAccountId is { } scopedFundAccountId &&
+                !EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance) &&
+                !await EndpointAuthorization.HasScopedPermissionAsync(
+                    context,
+                    UserPermission.ManageOrders,
+                    AccessScopeKindDto.Account,
+                    scopedFundAccountId,
+                    context.RequestAborted).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var logger = GetLogger(context.RequestServices);
             var actionId = GenerateActionId();
             var result = await oms.CancelOrderAsync(orderId, context.RequestAborted).ConfigureAwait(false);
