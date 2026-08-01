@@ -292,6 +292,58 @@ class TestUnmeasuredBudgets:
         assert by_stage["DedupKey_CacheMiss"]["measured"] is False
         assert by_stage["NewlineScan_Avx2"]["status"] == "simd-excluded"
 
+    def test_evidence_counts_a_waived_budget_separately_from_a_measured_one(
+        self, budget_file, results_dir_violation
+    ):
+        # --allow-unmeasured suppresses the failure, not the coverage gap. Reporting the waived
+        # stage nowhere made unmeasured_count 0, so a release reviewer read a waiver as coverage.
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(results_dir_violation)
+        violations = vb.check_budgets(budgets, results)
+        unmeasured = vb.find_unmeasured_budgets(budgets, results, {"DedupKey_CacheMiss"})
+
+        evidence = vb.build_evidence(budgets, results, violations, unmeasured)
+
+        assert evidence["unmeasured_count"] == 0
+        assert evidence["waived_unmeasured_stages"] == ["DedupKey_CacheMiss"]
+        assert evidence["waived_unmeasured_count"] == 1
+        assert evidence["measured_count"] < evidence["budget_count"]
+
+    def test_summary_does_not_claim_full_coverage_when_a_budget_is_waived(self, budget_file, tmp_path):
+        # CacheHit measured and within its budget, CacheMiss absent but waived. The lane has no
+        # violation and no failing unmeasured budget, which is exactly when the old summary
+        # printed "All budgets measured and within limits" over a stage nothing measured.
+        results_dir = tmp_path / "results"
+        results_dir.mkdir()
+        (results_dir / "Meridian.Benchmarks.DeduplicationKeyBenchmarks-report-full.json").write_text(
+            json.dumps(
+                {
+                    "Benchmarks": [
+                        {
+                            "FullName": "Meridian.Benchmarks.DeduplicationKeyBenchmarks.IsDuplicate_CacheHit",
+                            "Statistics": {"Mean": 150.0},
+                            "Memory": {"BytesAllocatedPerOperation": 0},
+                        },
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(str(results_dir))
+        violations = vb.check_budgets(budgets, results)
+        unmeasured = vb.find_unmeasured_budgets(budgets, results, {"DedupKey_CacheMiss"})
+        waived = vb.find_waived_budgets(budgets, results, {"DedupKey_CacheMiss"})
+
+        summary = vb.render_summary(violations, budgets, results, unmeasured)
+
+        assert violations == []
+        assert unmeasured == []
+        assert waived == ["DedupKey_CacheMiss"]
+        assert "All budgets measured and within limits" not in summary
+        assert "waived with `--allow-unmeasured`" in summary
+
 
 class TestCheckBudgets:
     def test_no_violations_when_within_limits(self, budget_file, results_dir_clean):

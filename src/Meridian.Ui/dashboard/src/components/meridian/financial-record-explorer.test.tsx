@@ -154,6 +154,34 @@ describe("FinancialRecordExplorerShell", () => {
     expect(rows[rows.length - 1]).toHaveFocus();
   });
 
+  it("keeps cell links out of the tab sequence so the grid is one tab stop", async () => {
+    renderExplorer();
+
+    const link = screen.getByRole("link", { name: "Cash" });
+
+    // Leaving every anchor natively tabbable meant Tab still walked each link in each rendered
+    // row, so the roving row tabIndex bought nothing.
+    expect(link).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("reaches a row's links with ArrowRight and returns with Escape", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    act(() => rows[0].focus());
+    await user.keyboard("{ArrowRight}");
+
+    // Removing the links from the tab order would strand them without this path.
+    const link = screen.getByRole("link", { name: "Cash" });
+    expect(link).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    expect(rows[0]).toHaveFocus();
+  });
+
   it("lets a focused cell link handle its own Enter key", async () => {
     const user = userEvent.setup();
     renderExplorer();

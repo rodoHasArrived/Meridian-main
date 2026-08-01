@@ -53,6 +53,21 @@ REQUIRED_FIELDS = ("path", "reason", "owner", "category", "tracking", "review_by
 # every skip owned while unowned conditional skips ran in CI.
 SKIP_KEYWORD = re.compile(r"\bSkip\s*=\s*")
 IDENTIFIER_CHAR = re.compile(r"[A-Za-z0-9_]")
+
+# `Skip` is not a reserved word, so an ordinary DTO assignment such as
+# `new SearchOptions { Skip = 10 }` reads identically to an xUnit skip. Treating those as skips
+# made the required workflow lane demand a register entry for a pagination offset, so adding a
+# test for any type with a `Skip` property could block CI with no test disabled anywhere.
+# xUnit's Skip is a string, which separates the two: an expression that yields a string is a
+# candidate, a numeric/boolean/null literal never is.
+NON_STRING_LITERAL = re.compile(r"^\s*(?:[-+]?[0-9][\w.]*|true|false|null|None)\s*$")
+BARE_IDENTIFIER = re.compile(r"^\s*[A-Za-z_][\w.]*\s*$")
+# `Skip = reason;` inside a class deriving from FactAttribute/TheoryAttribute is a real skip with
+# no statically-known string. Accepting the bare-identifier form only in files that declare such a
+# type keeps DirectLendingDatabaseFactAttribute inventoried without re-admitting DTO assignments.
+XUNIT_ATTRIBUTE_BASE = re.compile(
+    r"(?::\s*|inherit\s+)(?:Xunit\.)?(?:Fact|Theory)(?:Attribute)?\b"
+)
 STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 PURE_LITERAL_EXPRESSION = re.compile(
     r"""^ \s* " (?: [^"\\] | \\. )* "
@@ -90,7 +105,7 @@ def join_literals(literal_text: str) -> str:
     return joined.replace('\\"', '"').replace("\\\\", "\\").replace("\\n", "\n").replace("\\t", "\t")
 
 
-def find_skip_positions(text: str) -> list[int]:
+def find_skip_positions(text: str, fsharp: bool = False) -> list[int]:
     """Return offsets just past each `Skip =` that appears in real code.
 
     Broadening discovery to every textual occurrence would inventory documentation such as
@@ -98,12 +113,34 @@ def find_skip_positions(text: str) -> list[int]:
     real skipped tests, failing the gate until somebody added a bogus register entry. This walks
     the source instead, stepping over comments and string literals so only assignments in code
     are reported.
+
+    *fsharp* enables F#'s nesting `(* ... *)` block comments. The scan covers `**/*.fs`, so
+    without this a documentation block containing an example `Skip = "reason"` was inventoried
+    as a real skipped test and failed the required workflow lane.
     """
     positions: list[int] = []
     i = 0
     length = len(text)
     while i < length:
         ch = text[i]
+        if fsharp and ch == "(" and i + 1 < length and text[i + 1] == "*":
+            # `(*)` is F#'s multiplication operator used as a function, not a comment opener.
+            if i + 2 < length and text[i + 2] == ")":
+                i += 3
+                continue
+            nesting = 1
+            i += 2
+            while i < length and nesting > 0:
+                if text.startswith("(*", i):
+                    nesting += 1
+                    i += 2
+                    continue
+                if text.startswith("*)", i):
+                    nesting -= 1
+                    i += 2
+                    continue
+                i += 1
+            continue
         if ch == '"':
             # A C# raw string literal opens with three or more quotes and closes with the same
             # count. Treating its quotes as ordinary boundaries let the scan resume inside the
@@ -228,6 +265,27 @@ def normalise_expression(expression: str) -> str:
     return WHITESPACE_RUN.sub(" ", expression).strip()
 
 
+def is_skip_expression(expression: str, declares_test_attribute: bool) -> bool:
+    """Return whether *expression* is a value xUnit would accept as a skip reason.
+
+    `Skip` is an ordinary property name, so a DTO initializer such as
+    `new SearchOptions { Skip = 10 }` is textually indistinguishable from a disabled test.
+    xUnit's Skip is a string; a numeric, boolean, or null value never is. A bare identifier is
+    ambiguous, so it counts only where a FactAttribute/TheoryAttribute subclass is declared —
+    the shape DirectLendingDatabaseFactAttribute uses.
+    """
+    candidate = expression.strip()
+    if not candidate or NON_STRING_LITERAL.match(candidate):
+        return False
+    if '"' in candidate:
+        return True
+    if BARE_IDENTIFIER.match(candidate):
+        return declares_test_attribute
+    # Anything else (a call, a conditional, a concatenation of identifiers) is only a skip in a
+    # file that declares a test attribute; elsewhere it is ordinary code assigning some Skip.
+    return declares_test_attribute
+
+
 def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
     """Return every skip declaration in the .NET/F# test projects, in stable order."""
     sites: list[SkipSite] = []
@@ -243,9 +301,12 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
             if "Skip" not in text:
                 continue
             relative = path.relative_to(repo_root).as_posix()
-            for position in find_skip_positions(text):
+            declares_test_attribute = XUNIT_ATTRIBUTE_BASE.search(text) is not None
+            for position in find_skip_positions(text, fsharp=path.suffix == ".fs"):
                 expression = read_expression(text, position)
                 if expression is None or not expression.strip():
+                    continue
+                if not is_skip_expression(expression, declares_test_attribute):
                     continue
                 line = text.count("\n", 0, position) + 1
                 # A pure literal registers under the exact text the runner reports. Anything

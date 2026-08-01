@@ -496,13 +496,36 @@ function ExplorerGrid({
     [rows]
   );
 
+  const rowLinks = useCallback(
+    (recordId: string) =>
+      Array.from(rowElements.current.get(recordId)?.querySelectorAll<HTMLAnchorElement>("a[href]") ?? []),
+    []
+  );
+
   const handleRowKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTableRowElement>, recordId: string, rowIndex: number) => {
-      // Only act on keys aimed at the row itself. A cell link is focusable, and its Enter
-      // keydown bubbles here: preventing default and selecting the record meant the browser
-      // never followed the link and the proof drawer opened instead. Mouse activation was
-      // unaffected because the anchor stops click propagation, so this only broke keyboard use.
-      if (event.target !== event.currentTarget) return;
+      // A cell link is focusable, so its own keydowns bubble to the row. Escape returns focus
+      // to the row, which is how a keyboard user leaves a link without tabbing forward through
+      // the rest of the grid.
+      if (event.target !== event.currentTarget) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          focusRow(rowIndex);
+        }
+        return;
+      }
+
+      // Links inside cells carry tabIndex={-1} so the grid keeps one tab stop, which means Tab
+      // can no longer reach them. ArrowRight enters the row's links instead — without this the
+      // record links become keyboard-unreachable, trading one accessibility defect for another.
+      if (event.key === "ArrowRight") {
+        const [first] = rowLinks(recordId);
+        if (first) {
+          event.preventDefault();
+          first.focus();
+          return;
+        }
+      }
 
       switch (event.key) {
         case "Enter":
@@ -529,7 +552,26 @@ function ExplorerGrid({
         default:
       }
     },
-    [focusRow, onSelect, rows.length]
+    [focusRow, onSelect, rowLinks, rows.length]
+  );
+
+  // ArrowLeft/ArrowRight move along a row's links and ArrowLeft from the first returns to the
+  // row, so the whole row stays navigable from the keyboard with the links out of the tab order.
+  const handleLinkKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLAnchorElement>, recordId: string, rowIndex: number) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const links = rowLinks(recordId);
+      const current = links.indexOf(event.currentTarget);
+      if (current < 0) return;
+      event.preventDefault();
+      const next = event.key === "ArrowRight" ? current + 1 : current - 1;
+      if (next < 0) {
+        focusRow(rowIndex);
+        return;
+      }
+      links[Math.min(next, links.length - 1)]?.focus();
+    },
+    [focusRow, rowLinks]
   );
 
   if (explorer.isBlocked || rows.length === 0) {
@@ -585,7 +627,17 @@ function ExplorerGrid({
                 return (
                   <td key={column.columnId} className={cn("px-3 py-2 align-top", column.isRightAligned ? "text-right font-mono" : "")}>
                     {cell?.linkHref ? (
-                      <a href={cell.linkHref} className="font-medium text-primary hover:underline" onClick={(event) => event.stopPropagation()}>
+                      // Out of the tab sequence so the grid really is one tab stop: leaving these
+                      // tabbable meant Tab still walked every link in every rendered row, which is
+                      // the cost the roving row tabIndex was meant to remove. Reachable with
+                      // ArrowRight from the row, and Escape returns.
+                      <a
+                        href={cell.linkHref}
+                        tabIndex={-1}
+                        className="font-medium text-primary hover:underline"
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => handleLinkKeyDown(event, row.recordId, rowIndex)}
+                      >
                         {cell.displayValue}
                       </a>
                     ) : (

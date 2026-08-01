@@ -128,14 +128,57 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertIn('$"skipped because {Variable}=true."', reasons)
 
-    def test_finds_variable_skip_assignment(self):
-        (self.fixture.tests_dir / "VariableTests.cs").write_text(
-            "public sealed class T { void M() { Skip = reason; } }\n", encoding="utf-8"
+    def test_finds_variable_skip_assignment_in_a_test_attribute(self):
+        # DirectLendingDatabaseFactAttribute assigns a computed reason to its own Skip property.
+        # There is no literal to record, but the tests it decorates really are disabled.
+        (self.fixture.tests_dir / "GatedFactAttribute.cs").write_text(
+            "public sealed class GatedFactAttribute : FactAttribute "
+            "{ public GatedFactAttribute(string reason) { Skip = reason; } }\n",
+            encoding="utf-8",
         )
 
         reasons = {site.reason for site in self.fixture.sites()}
 
         self.assertIn("reason", reasons)
+
+    def test_ignores_a_skip_property_on_an_ordinary_dto(self):
+        # `Skip` is not reserved. Counting every assignment made the gate demand a register entry
+        # for a pagination offset, so adding a test for any type with a Skip property blocked CI
+        # with no test disabled anywhere.
+        (self.fixture.tests_dir / "PagingTests.cs").write_text(
+            "public sealed class T { void M() { var q = new SearchOptions { Skip = 10, Take = 5 }; } }\n",
+            encoding="utf-8",
+        )
+
+        paths = {site.path for site in self.fixture.sites()}
+
+        self.assertNotIn("tests/Meridian.Tests/PagingTests.cs", paths)
+
+    def test_ignores_a_skip_example_inside_an_fsharp_block_comment(self):
+        # The scan covers **/*.fs, whose comment syntax is (* ... *) and nests. Without it a
+        # documentation example was inventoried as a real skipped test.
+        (self.fixture.tests_dir / "DocumentedTests.fs").write_text(
+            '(* Disable a case with (* nested *) [<Fact(Skip = "example reason")>] *)\n'
+            "let value = 1\n",
+            encoding="utf-8",
+        )
+
+        paths = {site.path for site in self.fixture.sites()}
+
+        self.assertNotIn("tests/Meridian.Tests/DocumentedTests.fs", paths)
+
+    def test_finds_a_real_fsharp_skip_outside_a_block_comment(self):
+        # The comment fix must not blind the scan to genuine F# skips.
+        (self.fixture.tests_dir / "GatedTests.fs").write_text(
+            "(* documentation *)\n"
+            '[<Fact(Skip = "F# case pending a decision.")>]\n'
+            "let ``disabled case`` () = ()\n",
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("F# case pending a decision.", reasons)
 
     def test_does_not_truncate_a_concatenation_at_an_interpolated_segment(self):
         # Recording only the leading literal would register a reason the runner never reports.

@@ -9176,6 +9176,7 @@ Meridian-main
 │   │   │   ├── AnalysisExportServiceBaseTests.cs
 │   │   │   ├── AnalysisExportWizardServiceTests.cs
 │   │   │   ├── ApiClientServiceTests.cs
+│   │   │   ├── ApiClientSingletonCollection.cs
 │   │   │   ├── ArchiveBrowserServiceTests.cs
 │   │   │   ├── AtomicPersistenceServiceTests.cs
 │   │   │   ├── BackendServiceManagerBaseTests.cs

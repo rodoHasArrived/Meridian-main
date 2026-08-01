@@ -123,12 +123,28 @@ public sealed class SftpCapabilityService : ISftpCapabilityService
         string? hostKeyFingerprint)
     {
         var issues = new List<string>();
-        var hasSftpUri = Uri.TryCreate(location, UriKind.Absolute, out var uri) &&
-            string.Equals(uri.Scheme, "sftp", StringComparison.OrdinalIgnoreCase);
+        // Delegate to the parser the transfer path actually uses rather than re-checking the
+        // scheme here. A scheme-only test accepted sftp://host/, sftp://user@host/drop, and URIs
+        // carrying a query or fragment, all of which SftpRemoteLocation.ParseRequired rejects the
+        // moment publishing starts — so readiness approved a destination that could never
+        // connect, which is the accepted-then-broken export this preflight exists to prevent.
+        // Sharing one implementation also stops the two rule sets from drifting apart.
+        var hasSftpUri = true;
+        string? locationIssue = null;
+        try
+        {
+            SftpRemoteLocation.ParseRequired(location, role);
+        }
+        catch (InvalidOperationException ex)
+        {
+            hasSftpUri = false;
+            locationIssue = ex.Message;
+        }
+
         if (!kindIsSftp)
             issues.Add(kindIssue);
-        if (!hasSftpUri)
-            issues.Add($"SFTP {role} location must be a full sftp:// URI.");
+        if (locationIssue is not null)
+            issues.Add(locationIssue);
         if (string.IsNullOrWhiteSpace(username))
             issues.Add("SFTP username is missing.");
         // Presence is not enough for an `env:` reference: EnvironmentSftpCredentialResolver

@@ -245,6 +245,29 @@ def find_unmeasured_budgets(
     )
 
 
+def find_waived_budgets(
+    budgets: dict[str, Budget],
+    results: list[BdnResult],
+    allow_unmeasured: set[str] | None = None,
+) -> list[str]:
+    """
+    Return the budgets that ``--allow-unmeasured`` waived and no result measured.
+
+    A waiver suppresses the failure, not the coverage gap. Reporting only *unmeasured* left the
+    waived stages out of every count and out of ``unmeasured_stages``, so the evidence file
+    recorded zero unmeasured budgets and the summary concluded that all budgets were measured —
+    letting a release reviewer read a waiver as a measurement.
+    """
+    allowed = allow_unmeasured or set()
+    return sorted(
+        stage_name
+        for stage_name, budget in budgets.items()
+        if not budget.requires_simd
+        and stage_name in allowed
+        and best_result_for(stage_name, results) is None
+    )
+
+
 def _stage_matches_method(stage_name: str, method_name: str) -> bool:
     """
     Return ``True`` if *stage_name* is considered to correspond to *method_name*.
@@ -303,6 +326,16 @@ def render_summary(
 
         lines.append(f"| `{stage_name}` | {budget.max_allocated_bytes_per_event} | {actual} | {status} |")
 
+    # Every non-SIMD budget with no result that is not already reported as unmeasured was
+    # waived with --allow-unmeasured.
+    waived = [
+        stage_name
+        for stage_name, budget in sorted(budgets.items())
+        if not budget.requires_simd
+        and stage_name not in unmeasured_set
+        and best_result_for(stage_name, results) is None
+    ]
+
     if violations:
         lines.append(f"\n**{len(violations)} violation(s) detected.**\n")
     if unmeasured_set:
@@ -311,8 +344,20 @@ def render_summary(
             "An unmeasured budget enforces nothing; run the benchmark or declare the stage with "
             "`--allow-unmeasured`.\n"
         )
+    if waived:
+        # A waiver is not a measurement. Saying "all budgets measured" while stages carry
+        # `--allow-unmeasured` would let waived coverage read as verified coverage.
+        lines.append(
+            f"\n**{len(waived)} budget(s) waived with `--allow-unmeasured` and still unmeasured:** "
+            + ", ".join(f"`{stage}`" for stage in waived)
+            + ".\n"
+        )
     if not violations and not unmeasured_set:
-        lines.append("\n**All budgets measured and within limits.** ✅\n")
+        lines.append(
+            "\n**All measured budgets within limits.** ✅\n"
+            if waived
+            else "\n**All budgets measured and within limits.** ✅\n"
+        )
 
     return "\n".join(lines)
 
@@ -352,12 +397,19 @@ def build_evidence(
             }
         )
 
+    waived = [s["stage_name"] for s in stages if s["status"] == "unmeasured-declared"]
+
     return {
         "benchmark_result_rows": len(results),
         "budget_count": len(budgets),
         "violation_count": len(violations),
         "unmeasured_count": len(unmeasured),
         "unmeasured_stages": unmeasured,
+        # A waived stage is unmeasured too; it just does not fail the lane. Counting it nowhere
+        # let a machine consumer read "unmeasured_count: 0" as full coverage.
+        "waived_unmeasured_count": len(waived),
+        "waived_unmeasured_stages": waived,
+        "measured_count": sum(1 for s in stages if s["measured"]),
         "stages": stages,
     }
 

@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from bisect import bisect_right
 from collections import defaultdict
 from pathlib import Path
 
@@ -42,12 +43,15 @@ STANDALONE_MODULES = {
 }
 
 BARREL_EXPORT = re.compile(r'^\s*export\s+\*\s+from\s+"\./types/(?P<module>[^"]+)"\s*;?\s*$', re.MULTILINE)
-# Leading whitespace is permitted: exports nested inside a `declare module` or namespace block
-# are still exports. Requiring column zero silently skipped 11 declarations in workstation-3.ts
-# alone, so duplicating any of them elsewhere would still have reported zero duplicates.
+# Leading whitespace is permitted because indentation alone does not mean nesting: 11 declarations
+# in workstation-3.ts sit at module scope carrying stray indentation from a removed wrapper, and
+# requiring column zero skipped every one of them, so duplicating any would still have reported
+# zero duplicates. Nesting is decided by brace depth instead (see declared_names) — only a
+# depth-zero declaration is what `export *` re-exports, so `export namespace N { export interface
+# Row {} }` contributes `N` and never `Row`.
 DECLARATION = re.compile(
     r"^[ \t]*export\s+(?:declare\s+)?(?:abstract\s+)?"
-    r"(?:type|interface|enum|const\s+enum|const|let|var|function|class)\s+"
+    r"(?:type|interface|enum|const\s+enum|const|let|var|function|class|namespace|module)\s+"
     r"(?P<name>[A-Za-z_$][\w$]*)",
     re.MULTILINE,
 )
@@ -117,7 +121,33 @@ def strip_comments_and_strings(text: str) -> str:
 
 
 def declared_names(module_path: Path) -> list[str]:
-    return DECLARATION.findall(strip_comments_and_strings(module_path.read_text(encoding="utf-8")))
+    """Return the names `export *` re-exports from *module_path*.
+
+    Only module-scope declarations qualify. A declaration inside `export namespace N { ... }`
+    or an ambient `declare module "x" { ... }` block is reachable as `N.Row`, never as a bare
+    `Row`, so counting it would let a legitimate top-level `Row` elsewhere read as an ambiguous
+    star export and block CI over a collision TypeScript never sees.
+    """
+    text = strip_comments_and_strings(module_path.read_text(encoding="utf-8"))
+
+    # Brace depth at the start of each line. Comments and string bodies are already blanked, so
+    # a brace surviving here is real syntax.
+    depth_at_line_start: list[int] = []
+    depth = 0
+    for line in text.split("\n"):
+        depth_at_line_start.append(depth)
+        depth += line.count("{") - line.count("}")
+
+    line_starts = [0]
+    for line in text.split("\n")[:-1]:
+        line_starts.append(line_starts[-1] + len(line) + 1)
+
+    names: list[str] = []
+    for match in DECLARATION.finditer(text):
+        line_index = bisect_right(line_starts, match.start()) - 1
+        if depth_at_line_start[line_index] == 0:
+            names.append(match.group("name"))
+    return names
 
 
 def discover_contract_modules(types_dir: Path) -> list[str]:
