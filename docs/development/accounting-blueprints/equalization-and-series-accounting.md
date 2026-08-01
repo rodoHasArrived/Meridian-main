@@ -865,9 +865,21 @@ public interface IFundSeriesStore
 
 **The engine is not replaced; it is layered.**
 
-- **Method A (per-investor equalisation, single fund HWM).** Call
-  `PartnershipInvestorAccountingProjector.Project(input.Allocation)` exactly as today to obtain the
-  single fund `PerformanceFee` and `UpdatedHighWaterMark`. Then `EqualizationProjector.Project`
+- **Method A (per-investor equalisation, single fund HWM).** Obtain the single fund
+  `PerformanceFee` and `UpdatedHighWaterMark` from the **policy-aware** path —
+  `IncentiveFeeCalculator.Compute` with the period's `IncentiveFeeContext`, then
+  `IncentiveFeeStateRoller.Roll` — **not** from `Project(input.Allocation)` alone.
+
+  > **Both halves must come from the same calculation.** `Project(input.Allocation)` is the legacy
+  > path: it takes a bare performance-fee rate and a HWM, so under a hurdle or catch-up it returns a
+  > different fund total than the calculator that now sizes the per-lot credits and debits (§5.1).
+  > Mixing them means the fund total uses the flat rate while the lot adjustments use the effective
+  > accrued fee — the §11 invariant
+  > `Σ NetEqualizationPerformanceFee (+ credits returned − debits) == FundPerformanceFee` then fails
+  > by construction, or the wrong total gets posted. Method B carries the same rule (§9 below); this
+  > is one rule for both methods, not a Method B special case.
+
+  Then `EqualizationProjector.Project`
   *reallocates* that fee across subscription lots via the §5 formulas: each lot's
   `NetEqualizationPerformanceFee` is the fund fee attributable to that lot after removing pre-entry
   gains (credit) or adding post-entry recovery fee (debit). The **invariant**

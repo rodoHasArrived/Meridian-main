@@ -1287,6 +1287,7 @@ public const string LedgerIncentiveFeeState          = "/api/ledger/incentive-fe
 public const string LedgerIncentiveFeeAccrualPreview = "/api/ledger/incentive-fee/accrual-preview";
 public const string LedgerIncentiveFeeCrystallize    = "/api/ledger/incentive-fee/crystallize";
 public const string LedgerIncentiveFeeEnable         = "/api/ledger/incentive-fee/enable";
+public const string LedgerIncentiveFeeTransitionModel = "/api/ledger/incentive-fee/transition-accounting-model";
 ```
 
 - `GET LedgerIncentiveFeePolicyByBook` — list effective-dated policies for a book.
@@ -1343,10 +1344,33 @@ public const string LedgerIncentiveFeeEnable         = "/api/ledger/incentive-fe
 > `None` + `FundLevel` book — the ordinary case — with no legal combination at all.
 >
 > Both `POST LedgerIncentiveFeeEnable` and `POST LedgerIncentiveFeePolicies` therefore **read the
-> counterpart policy and reject a mismatched pair with 422**, naming both values. Changing one side
-> is a single governed operation that writes both or neither; `EvaluatePeriodAsync` re-checks the
-> pairing and fails closed, because a mismatch persisted by any other path must not silently
-> produce wrong fees. Test 26 covers both rejection directions.
+> counterpart policy and reject a mismatched pair with 422**, naming both values.
+> `EvaluatePeriodAsync` re-checks the pairing and fails closed, because a mismatch persisted by any
+> other path must not silently produce wrong fees. Test 26 covers both rejection directions.
+>
+> **A transition needs its own command — the two single-sided endpoints cannot express one.** If
+> both write surfaces reject a mismatched counterpart, then moving a book from `None` + `FundLevel`
+> to `SeriesOfShares` + `InvestorSeries` has *no legal first write*: whichever side goes first
+> creates the very mismatch the other endpoint refuses. An earlier draft asserted "changing one side
+> is a single governed operation that writes both or neither" without defining one. So:
+>
+> ```csharp
+> public sealed record AccountingModelTransitionRequest(
+>     Guid LedgerBookId,
+>     EqualizationMethodDto TargetEqualizationMethod,
+>     string TargetAccountingModel,               // FundLevel | InvestorSeries
+>     IReadOnlyList<IncentiveFeeSeriesOpeningDto>? OpeningSeries,   // required when moving TO InvestorSeries
+>     decimal? OpeningHighWaterMarkPerShare,      // required when moving TO FundLevel
+>     string TransitionBasisNote,
+>     bool AcknowledgeScopeRewrite);
+> ```
+>
+> `POST /api/ledger/incentive-fee/transition-accounting-model` validates the **target** pair against
+> the matrix above, then in **one transaction** writes both policy rows, closes the scopes the old
+> model owned (`Status = Closed`), and opens the scopes the new one needs with their enablement
+> evidence. The intermediate mismatched state never exists on disk. A transition is a scope rewrite,
+> not a settings edit, which is why it takes an explicit acknowledgement and is not folded into
+> either policy POST.
 
 ### 9.3 UI surfaces
 
@@ -1446,15 +1470,24 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
     them carrying the pre-redemption shield and delay fees.
 30. `Enable_PersistsOpeningBasisNoteAndActor` — the enablement row is written in the same
     transaction as the scope and is readable beside the current HWM.
-31. `Roll_FlatNavBelowHwm_DoesNotCompoundLossCarryforward` — HWM 100, NAV flat at 90 across four
-    periods: LCF stays 10, never 10→20→30→40. Recovery to 100 returns it to 0.
-32. `Commit_MultiSeriesCrystallization_IsOneDurableTransaction` — all series post through
-    `DurableAutomatedJournalPoster` and the state rows advance in the same transaction; a failure
-    injected between post and state write leaves neither applied.
+31. 🛑 **DEFERRED — blocked on O-7.** `Roll_FlatNavBelowHwm_DoesNotCompoundLossCarryforward` — it
+    asserts a balance of 10 and amortisation to 0, which is precisely the formation-and-amortisation
+    rule O-7 has to decide. It also cannot be a `HighWaterMark`-mode test: §5.3 updates the LCF only
+    under `LossCarryforward`/`Both`, the two modes enablement now rejects. The compounding defect it
+    was written for is recorded in §5.1's failed-attempt list instead.
+32. `Commit_MultiSeriesCrystallization_IsOneDurableTransaction` — all series append through
+    **`ITransactionalLedgerJournalStore.AppendAsync(connection, transaction, …)`** and the state rows
+    advance on that same transaction; a failure injected between the appends and the state writes
+    rolls **both** back. The test must *not* route through `DurableAutomatedJournalPoster`: that
+    class commits its own transaction (§8.2), so the rollback assertion cannot hold through it and
+    an implementation written against this vector would land back on the non-atomic path.
 33. `IdempotencyKey_PerSeries_DoesNotSuppressSiblingSeries` — under `InvestorSeries`, N series in one
     period produce N distinct keys and N ledger postings (the fund-only key posted exactly one).
 34. `Consolidate_SameSeriesIdInTwoBooks_TouchesOnlyTheTargetBook`.
 35. `GetLiveIncentiveFeeState_AfterReopen_ReturnsReplacementNotHistorical`.
+36. `TransitionAccountingModel_FundLevelToInvestorSeries_IsOneTransaction` — both policy rows, the
+    closed fund scope, and the opened series scopes land together; an injected failure leaves the
+    book entirely on its original pair, and no intermediate mismatched pair is ever observable.
 
 36. `Enable_LossCarryforwardOrBothMode_RejectsWithO6Blocked` — the enablement gate refuses an
     LCF-bearing policy rather than computing one. There are deliberately **no** LCF-mode golden
