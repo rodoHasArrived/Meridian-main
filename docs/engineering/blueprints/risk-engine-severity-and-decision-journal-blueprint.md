@@ -246,11 +246,15 @@ boundary, so this is not an acceptable trade.
 
 *Consequences:* Evaluation performs an atomic **reserve** under the rule's existing lock — the same
 purge → count → *reserve* sequence it does today, so capacity is consumed at check time and
-concurrent callers cannot double-spend it. The validator then commits the reservation when the
-aggregate admits the order, or rolls it back when it does not. Reservations are per-evaluation and
-must be released on every path, including exceptions and cancellation, or the throttle leaks
-capacity and eventually blocks everything. That makes the release path itself a first-class test
-target.
+concurrent callers cannot double-spend it.
+
+The validator does **not** commit. It rolls the reservation back when the aggregate blocks the
+order, and otherwise transfers ownership to the OMS, which settles it at the routing boundary — see
+Decision 8. Committing on aggregate admission would consume capacity for orders that still fail
+client-order-id registration, journaling, or gateway submission, which is the behaviour the
+reservation model exists to avoid. Reservations are per-evaluation and must be released on every
+path, including exceptions and cancellation, or the throttle leaks capacity and eventually blocks
+everything. That makes the release path itself a first-class test target.
 
 **Decision 5 — The OMS owns journaling, not the validator.**
 

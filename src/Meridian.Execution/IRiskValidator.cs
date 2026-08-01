@@ -32,6 +32,16 @@ public sealed record RiskValidationOutcome(
     RiskValidationResult Result,
     IReadOnlyList<IRiskReservation> Reservations)
 {
+    /// <summary>
+    /// Snapshotted at construction. <see cref="IReadOnlyList{T}"/> is a read-only view, not an
+    /// immutable collection, so a validator that keeps reusing its working list would otherwise
+    /// have the OMS settle whatever that list held by the time the order reached the gateway —
+    /// leaking the reservations this evaluation actually took and settling another evaluation's in
+    /// their place.
+    /// </summary>
+    public IReadOnlyList<IRiskReservation> Reservations { get; } =
+        Reservations?.ToArray() ?? throw new ArgumentNullException(nameof(Reservations));
+
     /// <summary>An approving outcome that holds no reservations.</summary>
     public static RiskValidationOutcome Approved() =>
         new(RiskValidationResult.Approved(), []);

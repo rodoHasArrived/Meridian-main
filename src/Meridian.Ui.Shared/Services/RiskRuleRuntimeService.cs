@@ -396,14 +396,15 @@ public sealed class RiskRuleRuntimeService
     {
         var maxOrdersPerMinute = GetMaxOrdersPerMinute();
         var cutoff = asOf.AddMinutes(-1);
-        // A gateway-rejected submission never routed, and the OMS rolls its rate slot back, so the
-        // throttle does not count it. Counting it here would report the window as constrained while
-        // the rule has full capacity — a burst of gateway rejections would show a throttle that is
-        // not actually throttling. "Outcome" carries the order status the submission ended at.
+        // This count has to mirror what the throttle actually holds, in both directions.
+        //
+        // A gateway-rejected submission never routed and the OMS rolls its slot back, so counting
+        // it would report the window as constrained while the rule has full capacity. A submission
+        // that threw after dispatch is the opposite case: it is recorded as rejected, but the OMS
+        // deliberately commits its slot because the order may still have reached the venue, so
+        // skipping it would show room the throttle does not have.
         var recentOrderCount = auditEntries.Count(entry =>
-            entry.OccurredAt >= cutoff &&
-            string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(entry.Outcome, "Rejected", StringComparison.OrdinalIgnoreCase));
+            entry.OccurredAt >= cutoff && ConsumedRateCapacity(entry));
 
         var breached = recentOrderCount > maxOrdersPerMinute;
         var state = breached
@@ -434,6 +435,19 @@ public sealed class RiskRuleRuntimeService
             AsOf: asOf,
             RecentViolations: violations);
     }
+
+    /// <summary>
+    /// True when the audited submission left a slot consumed in the order-rate window: either it
+    /// routed, or it was ambiguous enough that the OMS committed its reservation conservatively.
+    /// </summary>
+    private static bool ConsumedRateCapacity(ExecutionAuditEntry entry) =>
+        string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase)
+            ? !string.Equals(entry.Outcome, "Rejected", StringComparison.OrdinalIgnoreCase)
+            : string.Equals(entry.Action, "OrderRejected", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(
+                    entry.Reason,
+                    OrderManagementSystem.AmbiguousSubmissionReason,
+                    StringComparison.OrdinalIgnoreCase);
 
     private static List<string> FindViolations(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,

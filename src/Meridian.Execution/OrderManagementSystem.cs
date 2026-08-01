@@ -21,6 +21,13 @@ namespace Meridian.Execution;
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
 public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDisposable
 {
+    /// <summary>
+    /// Audit reason for a submission that threw after dispatch may already have happened. The order
+    /// is recorded as rejected, but its rate reservation is deliberately committed, so read models
+    /// reporting throttle usage must count it.
+    /// </summary>
+    public const string AmbiguousSubmissionReason = "AmbiguousSubmission";
+
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
     private readonly IRiskValidator? _riskValidator;
@@ -574,6 +581,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                     RunId: runId,
                     Symbol: safeRequest.Symbol,
                     CorrelationId: correlationId,
+                    // Marks the one rejection path that still holds rate capacity. Every other
+                    // OrderRejected entry released its slot, so a read model reporting throttle
+                    // usage has to be able to tell this one apart or it will under-report and show
+                    // room the throttle does not have.
+                    Reason: AmbiguousSubmissionReason,
                     Message: ex.Message), ct).ConfigureAwait(false);
             }
 

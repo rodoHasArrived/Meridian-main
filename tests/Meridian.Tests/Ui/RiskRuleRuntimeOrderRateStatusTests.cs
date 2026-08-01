@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Execution;
 using Meridian.Execution.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,28 @@ public sealed class RiskRuleRuntimeOrderRateStatusTests : IDisposable
         status!.CurrentValue.Should().Be(
             "1 orders/minute",
             "only the accepted submission actually consumed a slot");
+    }
+
+    /// <summary>
+    /// A submission that threw after dispatch is recorded as rejected, but the OMS commits its
+    /// reservation because the order may still have reached the venue. Skipping it here would show
+    /// room the throttle does not have — the opposite error to counting a clean rejection.
+    /// </summary>
+    [Fact]
+    public async Task OrderRateStatus_CountsAmbiguousSubmissionsThatKeptTheirSlot()
+    {
+        await using var audit = new ExecutionAuditTrailService(
+            Path.Combine(_root, "audit"),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        await audit.RecordAsync(RejectedEntry(reason: OrderManagementSystem.AmbiguousSubmissionReason));
+        await audit.RecordAsync(RejectedEntry(reason: OrderManagementSystem.AmbiguousSubmissionReason));
+        // An ordinary rejection released its slot and must stay uncounted.
+        await audit.RecordAsync(RejectedEntry(reason: null));
+
+        var status = await BuildService(audit).GetStatusAsync("OrderRateThrottle");
+
+        status!.CurrentValue.Should().Be("2 orders/minute");
     }
 
     [Fact]
@@ -75,6 +98,15 @@ public sealed class RiskRuleRuntimeOrderRateStatusTests : IDisposable
         Outcome: outcome,
         OccurredAt: DateTimeOffset.UtcNow,
         Symbol: "AAPL");
+
+    private static ExecutionAuditEntry RejectedEntry(string? reason) => new(
+        AuditId: Guid.NewGuid().ToString("N"),
+        Category: "Order",
+        Action: "OrderRejected",
+        Outcome: "Rejected",
+        OccurredAt: DateTimeOffset.UtcNow,
+        Symbol: "AAPL",
+        Reason: reason);
 
     public void Dispose()
     {

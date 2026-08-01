@@ -60,6 +60,16 @@ public interface IReservingRiskRule : IRiskRule
     /// Atomically evaluates and, when the rule is satisfied, reserves the capacity this order
     /// would consume. The reservation is non-null whenever capacity was taken, and must be settled
     /// by the caller on every path.
+    /// <para>
+    /// <b>An implementation that has taken capacity must not let an exception escape before
+    /// returning it.</b> The handle reaches the validator only through the returned result, so a
+    /// task that faults or cancels after reserving strands the capacity where nothing can release
+    /// it — not the validator, which never saw it, and not the abandonment cleanup, which needs a
+    /// completed task to read the handle from. The leak is permanent, and repeated failures would
+    /// eventually block every order. Observe the token before reserving, not after; reserve and
+    /// return in one uninterruptible step, as <c>OrderRateThrottle</c> does under its lock; or
+    /// release the capacity in a <see langword="catch"/> before rethrowing.
+    /// </para>
     /// </summary>
     Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
         OrderRequest request,
