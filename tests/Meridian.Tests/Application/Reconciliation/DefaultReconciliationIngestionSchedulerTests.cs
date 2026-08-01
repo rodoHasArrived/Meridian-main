@@ -113,12 +113,18 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
     public async Task CaptureAsync_AdapterIgnoringCancellation_IsTerminalWithoutRetry()
     {
         var adapter = new StubbornAdapter(ReconciliationSourceType.Prime);
+        // The scheduler dispatches each attempt through Task.Run with the attempt's token. On a
+        // loaded runner the work item can sit queued past a 40ms timeout, and Task.Run given an
+        // already-cancelled token never invokes the delegate at all - leaving Attempts at 0 and
+        // the non-cooperative adapter this test is about never entered. The budget is widened so
+        // pool-dispatch latency cannot consume the whole window; the deadline still fires well
+        // inside the test.
         var scheduler = CreateScheduler(new ReconciliationIngestionOptions
         {
             MaxAttemptsPerSource = 5,
             RetryBaseDelay = TimeSpan.FromMilliseconds(1),
-            PerSourceTimeout = TimeSpan.FromMilliseconds(40),
-            CancellationGracePeriod = TimeSpan.FromMilliseconds(25)
+            PerSourceTimeout = TimeSpan.FromMilliseconds(500),
+            CancellationGracePeriod = TimeSpan.FromMilliseconds(250)
         });
 
         var act = async () => await scheduler.CaptureAsync([adapter], Request, CancellationToken.None);
@@ -217,13 +223,16 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
 
     private sealed class HangingAdapter(ReconciliationSourceType sourceType) : IReconciliationSourceAdapter
     {
+        private int _attempts;
+
         public ReconciliationSourceType SourceType { get; } = sourceType;
 
-        public int Attempts { get; private set; }
+        // Same cross-thread read as StubbornAdapter: the scheduler runs each attempt on the pool.
+        public int Attempts => Volatile.Read(ref _attempts);
 
         public async Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
         {
-            Attempts++;
+            Interlocked.Increment(ref _attempts);
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
             throw new InvalidOperationException("unreachable");
         }
@@ -233,13 +242,17 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
     // scheduler's hard deadline can end the attempt.
     private sealed class StubbornAdapter(ReconciliationSourceType sourceType) : IReconciliationSourceAdapter
     {
+        private int _attempts;
+
         public ReconciliationSourceType SourceType { get; } = sourceType;
 
-        public int Attempts { get; private set; }
+        // Written on a thread-pool thread and read from the test thread, so both sides need a
+        // barrier rather than a plain auto-property.
+        public int Attempts => Volatile.Read(ref _attempts);
 
         public async Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
         {
-            Attempts++;
+            Interlocked.Increment(ref _attempts);
             await Task.Delay(TimeSpan.FromSeconds(5), CancellationToken.None);
             throw new InvalidOperationException("unreachable");
         }
