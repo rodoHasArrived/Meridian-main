@@ -97,8 +97,8 @@ docker-clean: ## Remove Docker containers and images
 	docker compose -f deploy/docker/docker-compose.yml down -v
 	docker rmi $(DOCKER_IMAGE) 2>/dev/null || true
 
-docker-monitoring: ## Start with Prometheus and Grafana
-	docker compose -f deploy/docker/docker-compose.yml --profile monitoring up -d
+docker-monitoring: ## Start with Prometheus and Grafana (requires GF_SECURITY_ADMIN_USER/PASSWORD)
+	docker compose -f deploy/docker/docker-compose.yml -f deploy/docker/docker-compose.monitoring.yml up -d
 	@echo "$(GREEN)Monitoring stack started!$(NC)"
 	@echo "  Prometheus: http://localhost:9090"
 	@echo "  Grafana:    http://localhost:3000 (admin/admin)"

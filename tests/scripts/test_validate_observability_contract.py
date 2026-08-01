@@ -225,6 +225,55 @@ class ValidateObservabilityContractTests(unittest.TestCase):
 
         self.assertEqual(self.fixture.messages(), [])
 
+    def test_block_scalar_expression_is_validated(self):
+        # `expr: |` puts the PromQL on following indented lines; capturing only the marker
+        # would leave nothing to check, so an unexported series would pass the gate.
+        self.fixture.alerts.write_text(
+            """groups:
+  - name: mdc_pipeline
+    rules:
+      - alert: MeridianHighDropRate
+        expr: |
+          mdc_pipeline_queue_utilization > 0.9
+          or mdc_drop_rate_percent > 1
+        for: 5m
+        annotations:
+          summary: "High drop rate"
+          runbook_url: "docs/operators/operator-runbook.md#high-drop-rate"
+""",
+            encoding="utf-8",
+        )
+
+        messages = self.fixture.messages()
+
+        self.assertTrue(any("mdc_pipeline_queue_utilization" in m for m in messages), msg=messages)
+
+    def test_folded_block_scalar_expression_is_validated(self):
+        self.fixture.alerts.write_text(
+            """groups:
+  - name: mdc_pipeline
+    rules:
+      - alert: MeridianHighDropRate
+        expr: >
+          mdc_drop_rate_percent > 1
+        for: 5m
+        annotations:
+          summary: "High drop rate"
+          runbook_url: "docs/operators/operator-runbook.md#high-drop-rate"
+""",
+            encoding="utf-8",
+        )
+
+        self.assertEqual(self.fixture.messages(), [])
+
+    def test_unparsable_dashboard_fails(self):
+        # A truncated dashboard Grafana cannot load must not look like one with no PromQL.
+        self.fixture.dashboard.write_text('{"panels": [{"targets": [', encoding="utf-8")
+
+        messages = self.fixture.messages()
+
+        self.assertTrue(any("not valid JSON" in m for m in messages), msg=messages)
+
     def test_dashboard_on_unexported_metric_fails(self):
         self.fixture.dashboard.write_text(dashboard(expr="mdc_data_quality_score"), encoding="utf-8")
 

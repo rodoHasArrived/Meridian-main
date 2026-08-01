@@ -1252,6 +1252,7 @@ Meridian-main
 ├── deploy
 │   ├── docker
 │   │   ├── .dockerignore
+│   │   ├── docker-compose.monitoring.yml
 │   │   ├── docker-compose.override.yml
 │   │   ├── docker-compose.yml
 │   │   └── Dockerfile

@@ -215,7 +215,8 @@ def parse_alert_rules(path: Path) -> list[AlertRule]:
     """Parse alert names, expressions, and runbook links without requiring a YAML dependency."""
     rules: list[AlertRule] = []
     current: AlertRule | None = None
-    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for number, line in enumerate(lines, start=1):
         stripped = line.strip()
         if stripped.startswith("#"):
             continue
@@ -228,7 +229,22 @@ def parse_alert_rules(path: Path) -> list[AlertRule]:
             continue
         expr_match = ALERT_EXPR.match(line)
         if expr_match:
-            current.expressions.append((number, expr_match.group("expr")))
+            expression = expr_match.group("expr")
+            # A YAML block scalar (`expr: |` or `expr: >`) puts the PromQL on the following
+            # indented lines. Capturing only the marker would leave metric_tokens with nothing
+            # to inspect, so an alert on an unexported series would pass this gate.
+            if expression.rstrip() in {"|", ">", "|-", ">-", "|+", ">+"}:
+                indent = len(line) - len(line.lstrip())
+                block: list[str] = []
+                for continuation in lines[number:]:
+                    if not continuation.strip():
+                        block.append("")
+                        continue
+                    if len(continuation) - len(continuation.lstrip()) <= indent:
+                        break
+                    block.append(continuation.strip())
+                expression = " ".join(part for part in block if part)
+            current.expressions.append((number, expression))
             continue
         runbook_match = ALERT_RUNBOOK.match(line)
         if runbook_match:
@@ -236,12 +252,19 @@ def parse_alert_rules(path: Path) -> list[AlertRule]:
     return rules
 
 
-def parse_dashboard_expressions(path: Path) -> list[str]:
-    """Return every PromQL expression in a Grafana dashboard definition."""
+def parse_dashboard_expressions(path: Path) -> tuple[list[str], str | None]:
+    """Return every PromQL expression in a dashboard, plus a parse error when unreadable.
+
+    Returning an empty list for a truncated or malformed dashboard would make it
+    indistinguishable from a valid dashboard containing no PromQL, so a file Grafana cannot
+    load at deployment time would pass this gate.
+    """
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return []
+    except OSError as exc:
+        return [], f"dashboard could not be read: {exc}"
+    except json.JSONDecodeError as exc:
+        return [], f"dashboard is not valid JSON: {exc}"
 
     expressions: list[str] = []
 
@@ -257,7 +280,7 @@ def parse_dashboard_expressions(path: Path) -> list[str]:
                 walk(item)
 
     walk(payload)
-    return expressions
+    return expressions, None
 
 
 class SloDefinition:
@@ -389,7 +412,11 @@ def check_dashboards(root: Path, emitted: dict[str, str]) -> list[Finding]:
 
     for path in sorted(dashboard_root.rglob("*.json")):
         relative = path.relative_to(root).as_posix()
-        for expression in parse_dashboard_expressions(path):
+        expressions, parse_error = parse_dashboard_expressions(path)
+        if parse_error is not None:
+            findings.append(Finding("dashboards", relative, parse_error))
+            continue
+        for expression in expressions:
             for metric in metric_tokens(expression):
                 if not resolve_metric(metric, emitted):
                     findings.append(
