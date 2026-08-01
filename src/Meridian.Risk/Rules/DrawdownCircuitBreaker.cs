@@ -1,4 +1,3 @@
-using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -31,8 +30,14 @@ public sealed class DrawdownCircuitBreaker : IRiskRule
     public string RuleName => "DrawdownCircuitBreaker";
 
     /// <inheritdoc />
-    public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+    public RiskRuleSeverity Severity => RiskRuleSeverity.Critical;
+
+    /// <inheritdoc />
+    public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
         var portfolioValue = _positionTracker.GetPortfolioValue();
         var context = Interop.RiskInterop.CreateContext(
             request,
@@ -45,11 +50,20 @@ public sealed class DrawdownCircuitBreaker : IRiskRule
 
         if (!decision.Approved)
         {
-            var reason = decision.Reasons.FirstOrDefault() ?? "Drawdown circuit breaker triggered.";
+            var reason = decision.Reasons.Length > 0
+                ? string.Join(" ", decision.Reasons)
+                : "Drawdown circuit breaker triggered.";
+            var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
             _logger.LogWarning("Circuit breaker triggered for {Symbol}: {Reason}", request.Symbol, reason);
-            return Task.FromResult(RiskValidationResult.Rejected(reason));
+
+            return Task.FromResult<RiskFinding?>(new RiskFinding(
+                Code: escalated ? "DRAWDOWN_CIRCUIT_BREAKER_ESCALATED" : "DRAWDOWN_CIRCUIT_BREAKER_TRIPPED",
+                Message: reason,
+                ObservedValue: portfolioValue,
+                LimitValue: _maxDrawdownPercent,
+                RequiresAcknowledgement: escalated));
         }
 
-        return Task.FromResult(RiskValidationResult.Approved());
+        return Task.FromResult<RiskFinding?>(null);
     }
 }

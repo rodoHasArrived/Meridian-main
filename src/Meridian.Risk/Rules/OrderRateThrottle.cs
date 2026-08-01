@@ -1,5 +1,4 @@
-using System.Collections.Concurrent;
-using Meridian.Execution;
+using System.Globalization;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 
@@ -7,17 +6,27 @@ namespace Meridian.Risk.Rules;
 
 /// <summary>
 /// Throttles order submission rate to prevent runaway algorithms.
+/// <para>
+/// Capacity is consumed by <em>reservation</em> during evaluation rather than by enqueueing on the
+/// pass path. That keeps the purge → count → reserve sequence atomic under one lock, exactly as the
+/// original check-and-enqueue was, while letting the caller release the slot if the order is
+/// ultimately blocked by another rule or fails before reaching the venue. Counting an order that
+/// never routed would throttle later orders for no reason.
+/// </para>
 /// </summary>
-public sealed class OrderRateThrottle : IRiskRule
+public sealed class OrderRateThrottle : IReservingRiskRule
 {
-    private readonly ConcurrentQueue<DateTimeOffset> _recentOrders = new();
+    /// <summary>Code emitted when the ceiling is reached.</summary>
+    public const string RateExceededCode = "ORDER_RATE_EXCEEDED";
 
-    // Serializes the purge → count → enqueue sequence. Each ConcurrentQueue operation is
-    // individually thread-safe, but without this lock concurrent callers can all observe a
-    // count below the limit and then all enqueue, letting an order burst exceed the cap.
+    private readonly List<DateTimeOffset> _admitted = [];
+
+    // Serializes purge → count → reserve. Each step is cheap; the lock exists so concurrent
+    // callers cannot all observe room below the cap and all consume it.
     private readonly Lock _sync = new();
     private readonly Func<int> _maxOrdersPerMinute;
     private readonly ILogger<OrderRateThrottle> _logger;
+    private readonly TimeProvider _timeProvider;
 
     public OrderRateThrottle(int maxOrdersPerMinute, ILogger<OrderRateThrottle> logger)
         : this(() => maxOrdersPerMinute, logger)
@@ -25,46 +34,117 @@ public sealed class OrderRateThrottle : IRiskRule
     }
 
     /// <summary>
-    /// Creates a throttle whose ceiling is read per evaluation, so operator-tuned
-    /// (hot-reloaded) limits take effect without rebuilding the rule.
+    /// Creates a throttle whose ceiling is read per evaluation, so operator-tuned (hot-reloaded)
+    /// limits take effect without rebuilding the rule.
     /// </summary>
     public OrderRateThrottle(Func<int> maxOrdersPerMinute, ILogger<OrderRateThrottle> logger)
+        : this(maxOrdersPerMinute, logger, TimeProvider.System)
+    {
+    }
+
+    public OrderRateThrottle(
+        Func<int> maxOrdersPerMinute,
+        ILogger<OrderRateThrottle> logger,
+        TimeProvider timeProvider)
     {
         _maxOrdersPerMinute = maxOrdersPerMinute ?? throw new ArgumentNullException(nameof(maxOrdersPerMinute));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
     }
 
     /// <inheritdoc />
     public string RuleName => "OrderRateThrottle";
 
     /// <inheritdoc />
-    public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+    public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
+
+    /// <summary>
+    /// Not used: this rule reserves capacity, which must happen inside
+    /// <see cref="EvaluateAndReserveAsync"/> so the check and the consumption stay atomic.
+    /// </summary>
+    public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
-        var now = DateTimeOffset.UtcNow;
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(Evaluate(reserve: false).Finding);
+    }
+
+    /// <inheritdoc />
+    public Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
+        OrderRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(Evaluate(reserve: true));
+    }
+
+    private RiskRuleReservationResult Evaluate(bool reserve)
+    {
+        var now = _timeProvider.GetUtcNow();
         var cutoff = now.AddMinutes(-1);
         var maxOrdersPerMinute = _maxOrdersPerMinute();
 
         lock (_sync)
         {
-            // Purge old entries
-            while (_recentOrders.TryPeek(out var oldest) && oldest < cutoff)
-            {
-                _recentOrders.TryDequeue(out _);
-            }
+            _admitted.RemoveAll(timestamp => timestamp < cutoff);
 
-            var count = _recentOrders.Count;
+            var count = _admitted.Count;
             if (count >= maxOrdersPerMinute)
             {
-                _logger.LogWarning("Order rate throttle: {Count} orders in last minute exceeds limit {Limit}",
-                    count, maxOrdersPerMinute);
+                _logger.LogWarning(
+                    "Order rate throttle: {Count} orders in last minute reaches limit {Limit}",
+                    count,
+                    maxOrdersPerMinute);
 
-                return Task.FromResult(RiskValidationResult.Rejected(
-                    $"Order rate limit: {count} orders/min exceeds {maxOrdersPerMinute} limit"));
+                return new RiskRuleReservationResult(
+                    new RiskFinding(
+                        Code: RateExceededCode,
+                        Message: string.Create(
+                            CultureInfo.InvariantCulture,
+                            $"Order rate limit: {count} orders/min reaches the {maxOrdersPerMinute} order ceiling."),
+                        ObservedValue: count,
+                        LimitValue: maxOrdersPerMinute),
+                    Reservation: null);
             }
 
-            _recentOrders.Enqueue(now);
-        }
+            if (!reserve)
+            {
+                return new RiskRuleReservationResult(Finding: null, Reservation: null);
+            }
 
-        return Task.FromResult(RiskValidationResult.Approved());
+            _admitted.Add(now);
+            return new RiskRuleReservationResult(
+                Finding: null,
+                Reservation: new SlotReservation(this, now));
+        }
+    }
+
+    private void Release(DateTimeOffset stamp)
+    {
+        lock (_sync)
+        {
+            var index = _admitted.LastIndexOf(stamp);
+            if (index >= 0)
+            {
+                _admitted.RemoveAt(index);
+            }
+        }
+    }
+
+    /// <summary>One consumed slot in the rate window. Settling is idempotent.</summary>
+    private sealed class SlotReservation(OrderRateThrottle owner, DateTimeOffset stamp) : IRiskReservation
+    {
+        private int _settled;
+
+        public void Commit() => Interlocked.Exchange(ref _settled, 1);
+
+        public void Rollback()
+        {
+            if (Interlocked.Exchange(ref _settled, 1) == 0)
+            {
+                owner.Release(stamp);
+            }
+        }
     }
 }

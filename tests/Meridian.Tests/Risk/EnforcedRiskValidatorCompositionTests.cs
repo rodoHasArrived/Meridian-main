@@ -71,7 +71,7 @@ public sealed class EnforcedRiskValidatorCompositionTests
         var runtime = CreateRuntime(ServicesWithPortfolio(100_000m, -6_000m, 0m));
         var validator = CreateEnforcedValidator(runtime);
 
-        var result = await validator.ValidateOrderAsync(CreateBuyOrder());
+        var result = (await validator.ValidateOrderAsync(CreateBuyOrder())).Result;
 
         result.IsApproved.Should().BeFalse();
         result.RejectReason.Should().Contain("Drawdown circuit breaker");
@@ -87,10 +87,10 @@ public sealed class EnforcedRiskValidatorCompositionTests
             actor: "test");
         var validator = CreateEnforcedValidator(runtime);
 
-        (await validator.ValidateOrderAsync(CreateBuyOrder())).IsApproved.Should().BeTrue();
-        (await validator.ValidateOrderAsync(CreateBuyOrder())).IsApproved.Should().BeTrue();
+        (await validator.ValidateOrderAsync(CreateBuyOrder())).Result.IsApproved.Should().BeTrue();
+        (await validator.ValidateOrderAsync(CreateBuyOrder())).Result.IsApproved.Should().BeTrue();
 
-        var third = await validator.ValidateOrderAsync(CreateBuyOrder());
+        var third = (await validator.ValidateOrderAsync(CreateBuyOrder())).Result;
         third.IsApproved.Should().BeFalse();
         third.RejectReason.Should().Contain("Order rate limit");
     }
@@ -107,7 +107,7 @@ public sealed class EnforcedRiskValidatorCompositionTests
             actor: "test");
         var validator = CreateEnforcedValidator(runtime);
 
-        var result = await validator.ValidateOrderAsync(CreateBuyOrder());
+        var result = (await validator.ValidateOrderAsync(CreateBuyOrder())).Result;
 
         result.IsApproved.Should().BeFalse();
         result.RejectReason.Should().Contain("Drawdown circuit breaker");
@@ -157,12 +157,13 @@ public sealed class EnforcedRiskValidatorCompositionTests
         var runtime = CreateRuntime(ServicesWithPortfolio(100_000m, 2_000m, 0m));
         var extraRule = new Mock<IRiskRule>();
         extraRule.SetupGet(r => r.RuleName).Returns("HostRule");
+        extraRule.SetupGet(r => r.Severity).Returns(RiskRuleSeverity.Error);
         extraRule
             .Setup(r => r.EvaluateAsync(It.IsAny<OrderRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Meridian.Execution.RiskValidationResult.Rejected("host rule rejected"));
+            .ReturnsAsync(new RiskFinding("HOST_RULE_REJECTED", "host rule rejected"));
         var validator = CreateEnforcedValidator(runtime, extraRule.Object);
 
-        var result = await validator.ValidateOrderAsync(CreateBuyOrder());
+        var result = (await validator.ValidateOrderAsync(CreateBuyOrder())).Result;
 
         result.IsApproved.Should().BeFalse();
         result.RejectReason.Should().Contain("host rule rejected");

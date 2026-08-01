@@ -172,6 +172,14 @@ public sealed record OrderResult
     public required string OrderId { get; init; }
     public string? ErrorMessage { get; init; }
     public OrderState? OrderState { get; init; }
+
+    /// <summary>
+    /// Pre-trade risk findings for this submission, when the risk gate produced any. Populated on
+    /// both the admitted and the rejected path so an order ticket can render the decision without
+    /// a second query — the asynchronous decision history offers no deterministic read-back for
+    /// the submission that just returned.
+    /// </summary>
+    public RiskDecisionSummary? RiskDecision { get; init; }
 }
 
 /// <summary>Current state of an order tracked by the OMS.</summary>

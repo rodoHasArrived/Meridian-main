@@ -1,4 +1,3 @@
-using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -41,12 +40,18 @@ public sealed class PositionLimitRule : IRiskRule
     public string RuleName => "PositionLimit";
 
     /// <inheritdoc />
-    public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+    public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
+
+    /// <inheritdoc />
+    public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
         var maxPositionSize = _maxPositionSize();
         if (maxPositionSize is null)
         {
-            return Task.FromResult(RiskValidationResult.Approved());
+            return Task.FromResult<RiskFinding?>(null);
         }
 
         // The tracker contract returns an empty position for unknown symbols, but guard
@@ -63,11 +68,23 @@ public sealed class PositionLimitRule : IRiskRule
 
         if (!decision.Approved)
         {
-            var reason = decision.Reasons.FirstOrDefault() ?? "Position limit exceeded.";
+            // The interop returns an array of reasons and a decision kind. Keep both: joining the
+            // reasons stops the tail being silently dropped, and the kind distinguishes a policy
+            // rejection from one flagged for manual review.
+            var reason = decision.Reasons.Length > 0
+                ? string.Join(" ", decision.Reasons)
+                : "Position limit exceeded.";
+            var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
             _logger.LogWarning("Position limit rule rejected order for {Symbol}: {Reason}", request.Symbol, reason);
-            return Task.FromResult(RiskValidationResult.Rejected(reason));
+
+            return Task.FromResult<RiskFinding?>(new RiskFinding(
+                Code: escalated ? "POSITION_LIMIT_ESCALATED" : "POSITION_LIMIT_EXCEEDED",
+                Message: reason,
+                ObservedValue: currentPosition?.Quantity ?? 0m,
+                LimitValue: maxPositionSize.Value,
+                RequiresAcknowledgement: escalated));
         }
 
-        return Task.FromResult(RiskValidationResult.Approved());
+        return Task.FromResult<RiskFinding?>(null);
     }
 }

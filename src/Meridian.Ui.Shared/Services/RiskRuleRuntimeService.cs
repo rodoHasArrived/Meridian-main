@@ -91,20 +91,20 @@ public sealed class RiskRuleRuntimeService
     /// never show "Healthy" while it silently fails to gate an order. Invoked by the enforced
     /// pre-trade validator on every order.
     /// </summary>
-    public RiskValidationResult EvaluateDrawdownGuardrail()
+    public RiskFinding? EvaluateDrawdownGuardrail()
     {
         var portfolio = Resolve<IPortfolioState>();
         if (portfolio is null)
         {
             // Execution state not yet wired — the drawdown circuit breaker cannot trip.
-            return RiskValidationResult.Approved();
+            return null;
         }
 
         var portfolioValue = portfolio.PortfolioValue;
         if (portfolioValue <= 0m)
         {
             // No portfolio value to measure against, matching BuildDrawdownStatus's 0% baseline.
-            return RiskValidationResult.Approved();
+            return null;
         }
 
         var totalPnl = portfolio.RealisedPnl + portfolio.UnrealisedPnl;
@@ -116,10 +116,14 @@ public sealed class RiskRuleRuntimeService
             var reason =
                 $"Drawdown circuit breaker: {drawdownPercent.ToString("F2", CultureInfo.InvariantCulture)}% breached max {maxDrawdownPercent.ToString("F2", CultureInfo.InvariantCulture)}%.";
             _logger.LogWarning("Pre-trade risk rejection (drawdown): {Reason}", reason);
-            return RiskValidationResult.Rejected(reason);
+            return new RiskFinding(
+                Code: "DRAWDOWN_CIRCUIT_BREAKER_TRIPPED",
+                Message: reason,
+                ObservedValue: drawdownPercent,
+                LimitValue: -maxDrawdownPercent);
         }
 
-        return RiskValidationResult.Approved();
+        return null;
     }
 
     public async Task<IReadOnlyList<RiskRuleStatusDto>> GetAllStatusesAsync(CancellationToken ct = default)

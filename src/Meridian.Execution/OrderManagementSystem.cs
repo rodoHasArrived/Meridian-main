@@ -297,12 +297,23 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             }
         }
 
-        // Pre-trade risk check
+        // Pre-trade risk check.
+        //
+        // riskOutcome may hold capacity reserved by stateful rules (the order-rate window). Passing
+        // the gate is not the same as being routed, so those reservations stay held until the
+        // gateway accepts the order; every earlier exit rolls them back. Committing here instead
+        // would consume capacity for orders that never reach a venue.
+        RiskValidationOutcome? riskOutcome = null;
+        RiskDecisionSummary? riskDecision = null;
         if (_riskValidator is not null)
         {
-            var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
+            riskOutcome = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
+            var riskResult = riskOutcome.Result;
+            riskDecision = riskResult.Violations.Count > 0 ? riskResult.ToSummary() : null;
+
             if (!riskResult.IsApproved)
             {
+                riskOutcome.RollbackReservations();
                 return await RejectOrderAsync(
                     orderId,
                     safeRequest,
@@ -313,7 +324,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                     riskResult.RejectReason,
                     sessionId,
                     ct,
-                    rejectionSource: "risk validator")
+                    rejectionSource: "risk validator",
+                    reasonCode: riskResult.RejectCode ?? "RISK_REJECTED",
+                    metadata: BuildRiskRejectedAuditMetadata(riskResult),
+                    riskSummary: riskDecision)
                     .ConfigureAwait(false);
             }
         }
@@ -335,7 +349,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         if (!TryRegisterOrder(orderId, orderState))
         {
             // Lost a race with a concurrent submission that claimed the same client order id
-            // after the guard above ran; the winner's state must survive untouched.
+            // after the guard above ran; the winner's state must survive untouched. Nothing is
+            // routed on this path, so any reserved risk capacity has to go back.
+            riskOutcome?.RollbackReservations();
             return await RejectDuplicateClientOrderIdAsync(
                 orderId,
                 safeRequest,
@@ -367,6 +383,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         {
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
+
+            // The order is routed. This is the admission boundary Decision 8 names, and the only
+            // place reserved risk capacity is kept rather than released.
+            riskOutcome?.CommitReservations();
 
             // Merge against the latest tracked state: the async report pump may already
             // have applied a fill for this order before the submit ack is processed here.
@@ -453,7 +473,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 Success = report.OrderStatus is not OrderStatus.Rejected,
                 OrderId = orderId,
                 OrderState = updatedState,
-                ErrorMessage = report.RejectReason
+                ErrorMessage = report.RejectReason,
+                RiskDecision = riskDecision
             };
         }
         catch (AccountingHandoffException ex)
@@ -497,6 +518,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, safeRequest.Symbol);
+
+            // Submission threw, so the commit after SubmitOrderAsync never ran and the order never
+            // reached the venue. Settling is idempotent, so this is safe even if the throw came
+            // from further down after a successful route.
+            riskOutcome?.RollbackReservations();
 
             var rejectedState = orderState with
             {
@@ -1667,7 +1693,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         CancellationToken ct,
         string rejectionSource,
         string? reasonCode = null,
-        IReadOnlyDictionary<string, string>? metadata = null)
+        IReadOnlyDictionary<string, string>? metadata = null,
+        RiskDecisionSummary? riskSummary = null)
     {
         var rejectedState = CreateRejectedState(orderId, request, message);
         // TryAdd, not the indexer: gate rejections run before the order id is registered, so an
@@ -1698,8 +1725,51 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             Success = false,
             OrderId = orderId,
             ErrorMessage = message,
-            OrderState = rejectedState
+            OrderState = rejectedState,
+            RiskDecision = riskSummary
         };
+    }
+
+    /// <summary>
+    /// Flattens a risk decision into audit metadata. Numeric values use the invariant culture so a
+    /// WAL written under one locale still parses under another.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string> BuildRiskRejectedAuditMetadata(
+        RiskValidationResult result)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            // OrderRejected is the shared audit action for every gate, so the read projection needs
+            // a discriminator to tell risk decisions from readiness, operator-control,
+            // security-master, and duplicate-id rejections.
+            ["decisionSource"] = "risk",
+            ["decision"] = result.Decision.ToString(),
+            ["violation.count"] = result.Violations.Count.ToString(CultureInfo.InvariantCulture)
+        };
+
+        for (var i = 0; i < result.Violations.Count; i++)
+        {
+            var violation = result.Violations[i];
+            var prefix = string.Create(CultureInfo.InvariantCulture, $"violation.{i}.");
+            metadata[prefix + "rule"] = violation.RuleName;
+            metadata[prefix + "severity"] = violation.Severity.ToString();
+            metadata[prefix + "code"] = violation.Code;
+            metadata[prefix + "message"] = violation.Message;
+            metadata[prefix + "requiresAcknowledgement"] =
+                violation.RequiresAcknowledgement ? "true" : "false";
+
+            if (violation.ObservedValue is { } observed)
+            {
+                metadata[prefix + "observed"] = observed.ToString("R", CultureInfo.InvariantCulture);
+            }
+
+            if (violation.LimitValue is { } limit)
+            {
+                metadata[prefix + "limit"] = limit.ToString("R", CultureInfo.InvariantCulture);
+            }
+        }
+
+        return metadata;
     }
 
     private async Task RecordOrderRejectionAsync(

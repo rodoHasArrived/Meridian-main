@@ -1,4 +1,3 @@
-using Meridian.Execution;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Risk;
@@ -8,7 +7,7 @@ namespace Meridian.Risk;
 /// </summary>
 public interface IRiskRule
 {
-    /// <summary>Human-readable name for logging.</summary>
+    /// <summary>Human-readable name, used for attribution on violations and in logs.</summary>
     string RuleName { get; }
 
     /// <summary>
@@ -17,24 +16,62 @@ public interface IRiskRule
     int Priority => 0;
 
     /// <summary>
-    /// Severity used for logging and operator attribution when this rule rejects an order.
+    /// How this rule's findings are treated. Fixed per rule, not per order: the validator resolves
+    /// admission from this value alone, which is what makes severity decisional rather than
+    /// decorative.
     /// </summary>
     RiskRuleSeverity Severity => RiskRuleSeverity.Error;
 
     /// <summary>
-    /// Optional synchronous fast path for rules that do not need I/O or F# interop.
-    /// Return <see langword="null"/> to fall back to <see cref="EvaluateAsync"/>.
+    /// Evaluates one constraint. Returns <see langword="null"/> when the rule is satisfied.
+    /// <para>
+    /// Implementations must not mutate observable state here. The validator evaluates every rule
+    /// before the admit/block decision is known, so a rule that recorded state during evaluation
+    /// would record orders that a later rule subsequently blocked. A rule that needs to consume
+    /// finite capacity implements <see cref="IReservingRiskRule"/> instead.
+    /// </para>
     /// </summary>
-    RiskValidationResult? TryEvaluate(OrderRequest request) => null;
+    Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default);
 
-    /// <summary>Evaluates whether the order passes this risk rule.</summary>
-    Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default);
+    /// <summary>
+    /// Optional synchronous fast path for rules that need no I/O or F# interop. Only consulted
+    /// when <see cref="HasSyncFastPath"/> is <see langword="true"/>, because a
+    /// <see langword="null"/> return is otherwise ambiguous with "no finding".
+    /// </summary>
+    RiskFinding? TryEvaluate(OrderRequest request) => null;
+
+    /// <summary>
+    /// True when <see cref="TryEvaluate"/> is authoritative and the async path may be skipped.
+    /// </summary>
+    bool HasSyncFastPath => false;
 }
 
-public enum RiskRuleSeverity
+/// <summary>
+/// Implemented by rules that consume finite capacity across orders (rate windows, burst counters).
+/// <para>
+/// The reservation is taken <em>during</em> evaluation, under whatever lock the rule already holds,
+/// so the check and the consumption stay atomic. Splitting them across two calls would let
+/// concurrent submissions each observe room below the cap and all commit, overshooting it.
+/// </para>
+/// </summary>
+public interface IReservingRiskRule : IRiskRule
 {
-    Info,
-    Warning,
-    Error,
-    Critical
+    /// <summary>
+    /// Atomically evaluates and, when the rule is satisfied, reserves the capacity this order
+    /// would consume. The reservation is non-null whenever capacity was taken, and must be settled
+    /// by the caller on every path.
+    /// </summary>
+    Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
+        OrderRequest request,
+        CancellationToken ct = default);
 }
+
+/// <summary>Outcome of an atomic evaluate-and-reserve step.</summary>
+/// <param name="Finding">The rule's finding, or <see langword="null"/> when satisfied.</param>
+/// <param name="Reservation">
+/// Capacity held for this evaluation, or <see langword="null"/> when nothing was reserved
+/// (typically because the rule reported a finding instead).
+/// </param>
+public readonly record struct RiskRuleReservationResult(
+    RiskFinding? Finding,
+    IRiskReservation? Reservation);

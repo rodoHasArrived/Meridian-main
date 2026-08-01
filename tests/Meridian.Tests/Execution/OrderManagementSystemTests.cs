@@ -1171,7 +1171,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     {
         var riskValidator = Substitute.For<IRiskValidator>();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
-            .Returns(RiskValidationResult.Approved());
+            .Returns(RiskValidationOutcome.Approved());
         using var oms = new OrderManagementSystem(
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
@@ -1190,7 +1190,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         filledState!.Status.Should().Be(OrderStatus.Filled);
 
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
-            .Returns(RiskValidationResult.Rejected("limit breach"));
+            .Returns(new RiskValidationOutcome(RiskValidationResult.Rejected("limit breach"), []));
 
         var rejectedResult = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1211,7 +1211,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     {
         var riskValidator = Substitute.For<IRiskValidator>();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
-            .Returns(RiskValidationResult.Rejected("limit breach"));
+            .Returns(new RiskValidationOutcome(RiskValidationResult.Rejected("limit breach"), []));
         using var oms = new OrderManagementSystem(
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
