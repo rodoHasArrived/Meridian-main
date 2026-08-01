@@ -4347,6 +4347,7 @@ Meridian-main
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── BrokerageOrderPlacementGate.cs
 │   │   ├── BrokerageValidationEvaluator.cs
+│   │   ├── ExecutionLogText.cs
 │   │   ├── ExecutionOrderMetadataPolicy.cs
 │   │   ├── IBrokerageAccountSync.cs
 │   │   ├── IBrokerageGateway.cs
@@ -8331,6 +8332,7 @@ Meridian-main
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
+│   │   │   ├── ExecutionLogTextTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
