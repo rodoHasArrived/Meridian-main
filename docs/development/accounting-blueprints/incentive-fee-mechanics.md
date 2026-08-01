@@ -689,6 +689,17 @@ Task<IReadOnlyList<IncentiveFeeStateRecord>> ListIncentiveFeeStatesAsync(Guid le
     => Task.FromException<IReadOnlyList<IncentiveFeeStateRecord>>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>
+/// Method A: open the fund-level scope (seriesId == null) for a book that does not have one yet,
+/// seeded from the protected level the fund is already carrying. Idempotent — returns the existing
+/// live row if one is present, so enabling the engine twice cannot create a second scope or reset
+/// a HWM that has already advanced. Required because CreateSeriesWithStateAsync is Method B only:
+/// without this, an existing book's first evaluation finds no row and would treat the protected
+/// level as zero, charging fee against the fund's entire NAV.
+/// </summary>
+Task<IncentiveFeeStateRecord> EnsureFundLevelStateAsync(Guid ledgerBookId, string fundProfileId, decimal openingHighWaterMarkPerShare, string policyId, string policyVersion, CancellationToken ct = default)
+    => Task.FromException<IncentiveFeeStateRecord>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
+
+/// <summary>
 /// Method B: open a series and its HWM scope in ONE database transaction. Both rows commit or
 /// neither does — a series registered without its HWM scope is corrupt state, and two separate
 /// store calls cannot give that guarantee (a crash between them leaves exactly that).
@@ -706,8 +717,16 @@ Task<IncentiveFeeStateRecord> CreateSeriesWithStateAsync(FundSeriesDefinition se
 Task ConsolidateSeriesStateAsync(SeriesConsolidation consolidation, CancellationToken ct = default)
     => Task.FromException(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
-/// <summary>Close a scope that redeemed to zero units on a crystallization date (Status = Closed).</summary>
-Task CloseIncentiveFeeStateAsync(Guid stateRecordId, long expectedVersion, CancellationToken ct = default)
+/// <summary>
+/// Close a scope that redeemed to zero units on a crystallization date, in ONE transaction:
+/// sets the HWM scope's Status to Closed AND — under Method B — marks the matching fund_series row
+/// Closed with its holdings zeroed. Takes the series key, not just the state id, precisely so the
+/// registry and the HWM state cannot diverge: closing them through two calls reopens the crash
+/// window that CreateSeriesWithStateAsync exists to avoid, and would leave an Open series with no
+/// live HWM that no later load can hydrate. Pass seriesId = null to close a Method A fund scope
+/// (fund wind-down), where there is no registry row to touch.
+/// </summary>
+Task CloseScopeAsync(Guid stateRecordId, string? seriesId, long expectedVersion, CancellationToken ct = default)
     => Task.FromException(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>Persist rolled-forward state and its audit snapshot atomically; enforces optimistic Version.</summary>
@@ -737,12 +756,33 @@ public interface IIncentiveFeeStateService
 ```
 
 `IncentiveFeePeriodRequest` carries `LedgerBookId`, `FundProfileId`, `PeriodId`, `AsOfDate`,
-`BeginningNav`, `EndingNavBeforeIncentiveFee`, the **series roster** (for `InvestorSeries` — a list of
-`SeriesId` with that series' units outstanding, since the HWM is per-share and the projector needs
-total-NAV terms; see equalization §6.1), and an optional `IsRedemption` flag. It is deliberately *not*
-an investor roster: one investor may hold several series, and keying the evaluation by investor would
-collapse their distinct HWMs onto a single row. `IncentiveFeeAccrualOutcome` bundles the per-series `IncentiveFeeResult`, the
-resulting `AutomatedJournalEvent`s, and the candidate `IncentiveFeeStateRecord`/snapshot — so
+fund-level `BeginningNav` and `EndingNavBeforeIncentiveFee` (used under `FundLevel`), an optional
+`IsRedemption` flag, and — under `InvestorSeries` — a **series roster** that must carry each series'
+**own NAV basis**, not just its key:
+
+```csharp
+/// <summary>One series' complete fee inputs for a period. Each series is an independent fee
+/// context, so it brings its own NAV basis — the fund aggregate cannot be partitioned to
+/// reproduce it.</summary>
+public sealed record IncentiveFeeSeriesInput(
+    string SeriesId,
+    decimal UnitsOutstanding,               // scale-in/scale-out basis (equalization §6.1)
+    decimal BeginningNavPerShare,
+    decimal EndingNavPerShareBeforeFees);   // gross, before this period's accrual
+```
+
+> **Why the roster cannot be `(SeriesId, units)` alone.** An earlier draft carried only units, on the
+> assumption that the fund aggregate could be split by unit count. It cannot: series issued at
+> different dates have different beginning *and* ending NAV per share — that difference *is* the
+> mechanism Method B uses to charge each series only on its own gains — and equalization §13.2's
+> worked example has Series 1 and Series 2 at different levels on both sides. Splitting an aggregate
+> pro-rata by units would hand every series the same per-share performance and erase the distinction
+> the method exists for.
+
+It is deliberately *not* an investor roster: one investor may hold several series, and keying the
+evaluation by investor would collapse their distinct HWMs onto a single row.
+`IncentiveFeeAccrualOutcome` bundles the per-series `IncentiveFeeResult`, the resulting
+`AutomatedJournalEvent`s, and the candidate `IncentiveFeeStateRecord`/snapshot — so
 `EvaluatePeriodAsync` is a pure preview and `CommitAsync` is the governed side-effect.
 
 ### 6.3 New event kinds (ledger flow)
@@ -778,6 +818,29 @@ money precision, `timestamptz`, and `references __SCHEMA__.ledger_books(ledger_b
 The highest ordinal on disk is `V_ledger_028__wash_sale_activation.sql`; this blueprint's reserved
 range is **029–030** ([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)).
 Re-derive from disk at implementation time and update the register if another lane lands first.
+
+> **Enablement gate — the fund-level scope must exist before the first evaluation.**
+> Making `incentive_fee_state` the sole HWM owner creates a bootstrap problem for every book that
+> already exists: `CreateSeriesWithStateAsync` is Method B only, so nothing opens the
+> `series_id is null` row a Method A book needs, and an absent row would be read as "no protected
+> level" — charging fee against the fund's entire NAV on the first run.
+>
+> A migration cannot fix this, because **the HWM is not persisted anywhere today** — it is a
+> per-period constructor argument (`PartnershipInvestorAllocationInput.HighWaterMark`), so there is
+> no column to backfill from and any SQL seed would be inventing the number. The opening value is
+> genuinely external input. So:
+>
+> 1. `EnsureFundLevelStateAsync(bookId, fundProfileId, openingHighWaterMarkPerShare, …)` (§6.1) is
+>    called **once at enable time**, with the opening level supplied by the operator enabling the
+>    policy — the fund's last crystallised NAV/share, or its current NAV/share for a fund that has
+>    never crystallised. It is idempotent: an existing live scope is returned unchanged, so enabling
+>    twice can never reset a HWM that has already advanced.
+> 2. `EvaluatePeriodAsync` **fails closed**: a book whose policy is active with no live fund-level
+>    scope raises a configuration error naming the missing scope. It must not default to `0` —
+>    silently charging fee on the entire NAV is the worst available failure, and it is a plausible
+>    one, so the guard is explicit rather than assumed.
+> 3. The enablement UI (§10) makes the opening HWM a required, operator-confirmed field, not a
+>    silent default. Test 23 in §13 asserts the fail-closed path.
 
 ### 7.1 `V_ledger_029__incentive_fee_policy.sql`
 
@@ -842,7 +905,13 @@ create table if not exists __SCHEMA__.incentive_fee_state (
     updated_at timestamptz not null,
     version bigint not null default 0,
     constraint ck_incentive_fee_state_lcf check (loss_carryforward >= 0),
-    constraint ck_incentive_fee_state_hwm check (high_water_mark_per_share >= 0)
+    constraint ck_incentive_fee_state_hwm check (high_water_mark_per_share >= 0),
+    -- The partial unique index below keys on status = 'Live'. Without this constraint any other
+    -- string ('live', 'LIVE', a typo from a manual repair) silently falls outside both the index
+    -- and the live-scope query, letting a second live row exist for the same scope while the
+    -- malformed row stays durable. Constrain the domain before relying on it as a boundary.
+    constraint ck_incentive_fee_state_status
+        check (status in ('Live', 'Closed', 'Consolidated'))
 );
 
 -- One LIVE scope per (book, series); coalesce so the fund-level (null) series has a stable key.
@@ -851,6 +920,12 @@ create table if not exists __SCHEMA__.incentive_fee_state (
 create unique index if not exists ux_incentive_fee_state_book_series
     on __SCHEMA__.incentive_fee_state (ledger_book_id, coalesce(series_id, ''))
     where status = 'Live';
+
+-- NO fund-level backfill here, deliberately. There is nowhere to backfill *from*: the HWM is not
+-- persisted anywhere in today's schema (ledger_books has no protected-level column, and no table
+-- carries one) — it is passed into PartnershipInvestorAccountingProjector per period by the caller.
+-- A SQL seed would therefore have to invent a value, and the only available default, 0, means
+-- "charge fee on the fund's entire NAV". See the enablement gate below.
 
 create table if not exists __SCHEMA__.incentive_fee_state_snapshots (
     snapshot_id uuid primary key,
@@ -957,9 +1032,18 @@ public sealed record IncentiveFeeStateDto(
     decimal HighWaterMarkPerShare, string Status, decimal LossCarryforward,
     DateOnly? LastCrystallizedDate, decimal CumulativeCrystallizedFee, decimal AccruedFeeBalance);
 
+public sealed record IncentiveFeeSeriesInputDto(
+    string SeriesId, decimal UnitsOutstanding,
+    decimal BeginningNavPerShare, decimal EndingNavPerShareBeforeFees);
+
 public sealed record IncentiveFeeAccrualPreviewRequest(
     Guid LedgerBookId, string PeriodId, DateOnly AsOfDate,
-    decimal BeginningNav, decimal EndingNavBeforeFees, bool IsRedemption = false);
+    decimal BeginningNav, decimal EndingNavBeforeFees,
+    // Required under InvestorSeries; empty under FundLevel. Mirrors IncentiveFeePeriodRequest
+    // (§6.2) — the wire surface must expose per-series NAV or the preview cannot reproduce the
+    // per-series fees the service computes.
+    IReadOnlyList<IncentiveFeeSeriesInputDto>? Series = null,
+    bool IsRedemption = false);
 
 public sealed record IncentiveFeeAccrualPreviewResponse(
     decimal ManagementFee, decimal IncentiveFee, decimal HurdleAmount, decimal CatchUpFee, decimal CarryFee,
@@ -1060,9 +1144,21 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
     fees, including the case where both series belong to the same investor (the regression that an
     investor-keyed store would silently collapse).
 
+23. `EvaluatePeriod_NoFundLevelScope_FailsClosed` — a book with an active policy and no live
+    `series_id is null` scope raises a configuration error and posts nothing. Explicitly asserts the
+    fee is **not** computed against a zero HWM (§7 enablement gate); this is the regression that
+    would silently charge fee on the fund's entire NAV.
+24. `EnsureFundLevelState_CalledTwice_DoesNotResetAdvancedHwm` — idempotent enablement: a second
+    call after the HWM has advanced returns the live scope unchanged.
+25. `CloseScope_ClosesSeriesRegistryAndState_Atomically` — after a full redemption no `Open`
+    `fund_series` row survives without a live HWM scope, and neither does the inverse.
+
 **Store (Postgres integration, mirroring tax-lot store tests):**
-23. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and
+26. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and
     `..._SaveIncentiveFeeState_RejectsStaleVersion`.
+27. `PostgresLedgerJournalStore_IncentiveFeeState_RejectsUnknownStatus` — the
+    `ck_incentive_fee_state_status` domain constraint holds, so a malformed status cannot slip past
+    the partial uniqueness index.
 
 Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 --filter FullyQualifiedName~IncentiveFee`.

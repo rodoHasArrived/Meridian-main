@@ -467,7 +467,7 @@ automatic and exact.
 > **`units_s = 0` — full redemption on a crystallization date.** `CrystallizeOnRedemption` funds can
 > crystallize a scope that redeems out entirely, and the scale-out is undefined there. Do not divide:
 > compute the fee on the units outstanding **immediately before** the redemption, write no per-share
-> HWM, and close the scope (`CloseIncentiveFeeStateAsync`, `Status = Closed`). A later series for the
+> HWM, and close the scope (`CloseScopeAsync`, `Status = Closed`). A later series for the
 > same investor is a new scope seeded at its own issue price, not a revival. Incentive-fee §5.4
 > carries the same rule on the roller side.
 
@@ -816,8 +816,10 @@ public interface IFundSeriesStore
 >   consolidation *and* sets the absorbed scope's `Status = Consolidated` in one transaction.
 >   `RecordConsolidationAsync` alone would leave the absorbed scope indistinguishable from a live
 >   one, and `ListIncentiveFeeStatesAsync` would keep returning it as an active fee context.
-> - **Full redemption on a crystallization date** → `CloseIncentiveFeeStateAsync` sets
->   `Status = Closed`. See the zero-units rule in incentive-fee §5.4: the fee is computed on
+> - **Full redemption on a crystallization date** → `CloseScopeAsync(stateRecordId, seriesId, …)`
+>   closes the HWM scope **and** the `fund_series` registry row in one transaction — it takes the
+>   series key for exactly that reason. Closing them separately would leave an `Open` series with no
+>   live HWM. See the zero-units rule in incentive-fee §5.4: the fee is computed on
 >   pre-redemption units and no per-share HWM is written, because the divide-back is undefined at
 >   zero units.
 >
@@ -1213,7 +1215,7 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
    `__SCHEMA__`); implement `IFundSeriesStore` + a Postgres adapter in `Meridian.Storage.Ledger`.
    **In the same step**, implement the three transactional ports from incentive-fee §6.1 —
    `CreateSeriesWithStateAsync` (registry row + seeded `incentive_fee_state` row in one
-   transaction), `ConsolidateSeriesStateAsync`, and `CloseIncentiveFeeStateAsync` — and hydrate
+   transaction), `ConsolidateSeriesStateAsync`, and `CloseScopeAsync` — and hydrate
    `HWM_s` from `incentive_fee_state` on load (§7.3 note). Shipping `IFundSeriesStore` on its own
    leaves every new series without a durable HWM.
 7. **Application service** — `IEqualizationProjectionService` /

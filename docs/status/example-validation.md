@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 959 |
-| Valid | 546 |
+| Total code blocks | 960 |
+| Valid | 547 |
 | Invalid | 0 |
 | Skipped | 413 |
 
@@ -21,7 +21,7 @@
 | `bash` | 156 | 156 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 297 | 297 | 0 | 0 |
+| `csharp` | 298 | 298 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 62 | 62 | 0 | 0 |
@@ -89,7 +89,7 @@ No invalid code examples found.
 | `docs/architecture/storage-design.md` | 77 |
 | `docs/development/accounting-blueprints/commitment-and-capital-call-engine.md` | 21 |
 | `docs/development/accounting-blueprints/equalization-and-series-accounting.md` | 15 |
-| `docs/development/accounting-blueprints/incentive-fee-mechanics.md` | 12 |
+| `docs/development/accounting-blueprints/incentive-fee-mechanics.md` | 13 |
 | `docs/development/adding-custom-rules.md` | 6 |
 | `docs/development/build-observability.md` | 3 |
 | `docs/development/central-package-management.md` | 9 |

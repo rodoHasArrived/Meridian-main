@@ -24,7 +24,7 @@ one register. Add new blueprints here as well as to their lane index.
 | [Quote-stream fan-out](../../product/web-ui-stream-fan-out-blueprint-2026-07.md) | `docs/product/` | Workstation shell | **Implemented** — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
 | [Report-run status stream](../../product/web-ui-report-run-stream-blueprint-2026-07.md) | `docs/product/` | Workstation shell / reporting | **Implemented, one open divergence** — D1/D3 as designed; D2's shared SSE helper landed additively, so `WorkstationEndpoints.Stream.cs` still has a duplicate loop and `ResolveStreamSessionId` |
 | [Report Writer Debounced Live Auto-Preview](../../plans/report-writer-auto-preview-blueprint.md) | `docs/plans/` | Browser workstation | **Design** — `reporting-screen.report-writer-auto-preview.ts` does not exist in source |
-| [Security Master Passport Workbench](../../plans/security-master-passport-workbench.md) | `docs/plans/` | Data confidence / accounting | **Largely implemented** — Phases 1–4 shipped (governed-write DTOs, `ISecurityMasterConflictAuthorityPolicy`, `ISecurityMasterWorkbenchCommandService`, `WorkstationEndpoints.SecurityMasterWorkbench.cs`, `SecurityMasterWorkbenchOptions`, WPF `SecurityPassportEditorViewModel`). Open (`[~]`): browser `security-passport-editor.tsx`, `IRestatementCandidateResolver` follow-ons (repeated restatement, `IGovernedLedgerAdjustmentPoster`, durable security→report-line index), full lifecycle integration tests, ADR record |
+| [Security Master Passport Workbench](../../plans/security-master-passport-workbench.md) | `docs/plans/` | Data confidence / accounting | **Largely implemented** — Phases 1–4 shipped (governed-write DTOs, `ISecurityMasterConflictAuthorityPolicy`, `ISecurityMasterWorkbenchCommandService`, `WorkstationEndpoints.SecurityMasterWorkbench.cs`, `SecurityMasterWorkbenchOptions`, WPF `SecurityPassportEditorViewModel`). The browser editor also landed across three slices — `security-passport-editor.tsx` + `.view-model.ts`, the typed workbench client, source-conflict Accept/Override, and the `coverage-passport-drill-in.tsx` entry point — **do not rebuild it**. Open (`[~]`): the remaining Economics/Venues/History read tabs, `IRestatementCandidateResolver` follow-ons (repeated restatement, `IGovernedLedgerAdjustmentPoster`, durable security→report-line index), full lifecycle integration tests, ADR record |
 
 Delivery state is a documentation-coherence marker, not roadmap truth. Live status stays in the
 roadmap registry (`docs/roadmap/README.md`, `docs/roadmap/data/*.yml`).
@@ -150,7 +150,7 @@ inferred. Current recorded contract:
   **Scope lifecycle.** `incentive_fee_state` carries a `status` (`Live` / `Closed` /
   `Consolidated`); only `Live` scopes are hydrated, and the unique key is partial on it. Opening,
   consolidating, and closing a scope are **single transactional adapter operations**
-  (`CreateSeriesWithStateAsync`, `ConsolidateSeriesStateAsync`, `CloseIncentiveFeeStateAsync`), not
+  (`CreateSeriesWithStateAsync`, `ConsolidateSeriesStateAsync`, `CloseScopeAsync`), not
   sequences a caller composes — two store calls cannot give all-or-nothing, and a crash between them
   leaves a series with no protected level.
 
