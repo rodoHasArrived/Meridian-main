@@ -4,7 +4,7 @@ description: >
   Brainstorming and ideation specialist for Meridian. Generates high-value,
   implementable product and architecture ideas with implementation sketches,
   audience fit analysis, effort ratings, and concrete next steps.
-tools: ["read", "search", "edit", "mcp"]
+tools: Read, Glob, Grep, Edit, Write
 ---
 
 # Meridian — Brainstorming & Ideation Specialist

@@ -3,7 +3,7 @@ name: meridian-repo-navigation
 description: >
   Orientation specialist for Meridian. Quickly routes tasks to owning subsystem,
   key entrypoints, and authoritative documentation before implementation.
-tools: ["read", "search", "mcp"]
+tools: Read, Glob, Grep
 ---
 
 # Meridian — Repo Navigation Specialist

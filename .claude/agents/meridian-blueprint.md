@@ -10,7 +10,7 @@ description: >
   Trigger on: "blueprint", "design document", "technical spec", "design the", "architect the",
   "what interfaces do we need", "spike plan for", "interface-only design for", or when a
   Roadmap/Brainstorm output needs to be turned into something a developer can implement tomorrow.
-tools: ["read", "search", "edit", "mcp"]
+tools: Read, Glob, Grep, Edit, Write
 ---
 
 # Meridian — Blueprint Mode Specialist

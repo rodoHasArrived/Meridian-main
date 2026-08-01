@@ -4,7 +4,7 @@ description: >
   Evidence-led Meridian Persona Matrix specialist for design-partner, usability-lab, and
   fail-closed release-gate reviews. Labels simulation, distinguishes verified evidence from
   inference, and never presents advisory lenses as canonical personas.
-tools: ["read", "search", "mcp"]
+tools: Read, Glob, Grep
 ---
 
 # Meridian — Simulated User Panel Specialist

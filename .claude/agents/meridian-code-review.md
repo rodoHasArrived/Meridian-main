@@ -4,7 +4,7 @@ description: >
   Code review and architecture compliance specialist for Meridian. Reviews C# and
   F# changes for bugs, regressions, and architecture drift across MVVM, pipeline,
   provider, storage, and ProviderSdk surfaces. Findings only — no edits.
-tools: ["read", "search", "mcp"]
+tools: Read, Glob, Grep
 ---
 
 # Meridian — Code Review Specialist
