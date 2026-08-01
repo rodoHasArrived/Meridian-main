@@ -34,7 +34,17 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     table tracking which lanes have since shipped
   - [Portfolio Cash Ladder Blueprint (2026-07)](portfolio-cash-ladder-blueprint-2026-07.md) —
     code-ready design for the wave-8 portfolio cash-flow forecasting and liquidity ladder engine,
-    aggregating per-security projection runs into scenario-aware, per-currency cash ladders
+    aggregating per-security projection runs into scenario-aware, per-currency cash ladders; the
+    first vertical slice has landed and the persisted-run phases remain open
+  - [Quote-stream Fan-out Blueprint (2026-07)](web-ui-stream-fan-out-blueprint-2026-07.md) —
+    delivered design for event-driven SSE fan-out, per-session stream caps, and companion-pane
+    stream sharing (PRs A–C shipped)
+  - [Report-run Status Stream Blueprint (2026-07)](web-ui-report-run-stream-blueprint-2026-07.md) —
+    delivered design for the `report-run:<id>` stream and the generic `StreamBroadcaster<TPayload>`;
+    supersedes the fan-out blueprint's `workspace` / `inbox` topic proposal
+  - All blueprints across every lane are catalogued in the canonical
+    [blueprint register](../engineering/blueprints/README.md), which also records the shared
+    migration-ordinal, precision, route-prefix, and cross-blueprint contracts
   - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
     nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
     and sequencing

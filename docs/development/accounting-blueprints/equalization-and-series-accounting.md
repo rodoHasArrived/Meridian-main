@@ -1,11 +1,38 @@
 # Equalization / Series Accounting for Open-End & Commingled Funds
 
-**Status:** Blueprint (code-ready design; no source changed by this document)
-**Owner lane:** Ledger / FinancialOperations (fund operations)
+**Status:** Partially implemented — the single-NAV `EqualizationCalculator` shipped; lot-level
+Method A, Method B series accounting, persistence, and endpoints remain design-only
+**Owner:** Ledger / FinancialOperations (fund operations)
+**Reviewed:** 2026-08-01
+
 **Scope:** Mid-period subscriptions into open-end / commingled vehicles carrying a performance
 (incentive) fee with a high-water mark (HWM). Provides two industry-standard equalization
 mechanics, a recommended default, the concrete domain model, ledger integration, persistence,
 contracts, and a test plan.
+
+## Delivery state (2026-08-01)
+
+`src/Meridian.Ledger/EqualizationCalculator.cs` already ships the **single-NAV** form of the Method A
+math: `Compute(navPerUnit, highWaterNavPerUnit, subscriptionUnits, performanceFeeRate)` returns an
+`EqualizationAdjustment(EqualisationCredit, ContingentRedemption)` using the same
+`perfRate × |nav − highWater| × units` formulas as §5.1/§5.2. Build the lot-level projection (§5,
+§7.2) **on top of** that calculator rather than re-deriving the arithmetic; the per-lot projector's
+job is scoping, zone classification, and the fund-fee reconciliation invariant, not the per-unit
+math.
+
+Design-only: lot-level Method A projection (§5, §7.2), Method B series accounting (§6, §7.3),
+persistence (§10), contracts and endpoints (§12).
+
+> **Shared-convention notice.** This blueprint shares the ledger migration sequence, the
+> `AutomatedJournalEventKind` / `ManualJournalEntryTypeDto` enums, and the fund high-water mark with
+> the [incentive-fee](incentive-fee-mechanics.md) and
+> [commitment & capital-call](commitment-and-capital-call-engine.md) blueprints. Migration ordinals,
+> DDL precision, route prefixes, terminology, and the HWM-ownership contract are recorded in the
+> canonical [blueprint register](../../engineering/blueprints/README.md#shared-conventions).
+>
+> **Spelling:** this document uses UK spelling ("equalisation", "crystallisation") in prose. Code
+> identifiers, route segments, and column names use **US spelling** to match the shipped
+> `EqualizationCalculator` and the sibling incentive-fee blueprint's `Crystallize*` surface.
 
 ---
 
@@ -195,11 +222,13 @@ Design consequence: series are modeled as a **lightweight series registry keyed 
 ### 2.7 Migration convention
 
 `src/Meridian.Storage/Ledger/Migrations/` uses `V_ledger_###__snake_name.sql`. Latest on disk is
-`V_ledger_023__journal_as_of_indexes.sql`. Scripts are **idempotent and replayed on every startup
+`V_ledger_028__wash_sale_activation.sql`. Scripts are **idempotent and replayed on every startup
 (no version table)**: they use the `__SCHEMA__` placeholder, `create table if not exists`,
 `add column if not exists`, `create index if not exists`, and `is null`-guarded backfills
 (see `V_ledger_020__fund_scope_tenant_columns.sql`, `V_ledger_003__ledger_books.sql`). New scripts
-here start at **`V_ledger_024`** (confirm the next free ordinal at implementation time).
+here use this blueprint's reserved range **033–035**
+([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)); confirm the next
+free ordinal at implementation time.
 
 ---
 
@@ -706,15 +735,34 @@ The choice therefore determines *where the HWM lives*: Method A keeps the single
 `PartnershipInvestorAllocationInput.HighWaterMark`; Method B introduces per-series HWM rows. This is
 the core reason Method A is the lighter, recommended default.
 
+> **Cross-blueprint contract — HWM ownership (recorded 2026-08-01).** The
+> [incentive-fee blueprint](incentive-fee-mechanics.md) exposes the same choice as its **Fork G**
+> (`FundLevel` vs `InvestorSeries`) and defers to this section for where the HWM physically lives.
+> There is exactly one HWM store per fund:
+>
+> | Equalization method | Incentive-fee Fork G | Where the HWM lives |
+> |---|---|---|
+> | Method A (default) | `FundLevel` (default) | Single fund HWM in `PartnershipInvestorAllocationInput.HighWaterMark`. No per-investor HWM rows. |
+> | Method B | `InvestorSeries` | Per-series HWM in `fund_series.high_water_mark_per_share` (§10.3). |
+>
+> The incentive-fee blueprint's §5.3 durable state is **not** a competing per-investor HWM table: it
+> carries loss-carryforward, accrual, and crystallization history keyed by whichever scope the pair
+> above selects. If a fund adopts Method B, this blueprint's series accounting and the incentive-fee
+> blueprint's `InvestorSeries` fork must land as one slice — shipping either alone produces two HWM
+> sources of truth. Both documents record this contract; the canonical copy is the
+> [blueprint register](../../engineering/blueprints/README.md#cross-blueprint-contracts).
+
 ---
 
 ## 10. Persistence & migrations
 
 Follow the `V_ledger_###__name.sql` convention (§2.7): `__SCHEMA__` placeholder, idempotent,
-replay-safe, `is null`-guarded backfills. Next free ordinal is **`V_ledger_024`** (verify at
-implementation time).
+replay-safe, `is null`-guarded backfills. The highest ordinal on disk is
+`V_ledger_028__wash_sale_activation.sql`; this blueprint's reserved range is **033–035**
+([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)). Verify at
+implementation time and update the register if another lane lands first.
 
-### 10.1 `V_ledger_024__equalisation_policy.sql`
+### 10.1 `V_ledger_033__equalization_policy.sql`
 
 ```sql
 -- Equalisation policy per fund structure node (method + Method-A styling forks). Inert until the
@@ -735,7 +783,7 @@ create index if not exists ix_fund_equalisation_policy_fund
     on __SCHEMA__.fund_equalisation_policy (lower(trim(fund_profile_id)));
 ```
 
-### 10.2 `V_ledger_025__equalisation_subscription_lots.sql`
+### 10.2 `V_ledger_034__equalization_subscription_lots.sql`
 
 ```sql
 -- Method A: dated subscription tranches and their per-crystallisation equalisation adjustments.
@@ -745,10 +793,10 @@ create table if not exists __SCHEMA__.equalisation_subscription_lots (
     investor_id                    text not null,
     capital_account_id             text null,
     subscription_date              date not null,
-    shares                         numeric(28,10) not null,
-    gross_nav_per_share_at_entry   numeric(28,10) not null,
-    net_nav_per_share_at_entry     numeric(28,10) not null,
-    peak_per_share_at_entry        numeric(28,10) not null,
+    shares                         numeric(38, 12) not null,
+    gross_nav_per_share_at_entry   numeric(38, 12) not null,
+    net_nav_per_share_at_entry     numeric(38, 12) not null,
+    peak_per_share_at_entry        numeric(38, 12) not null,
     currency                       text not null,
     zone                           text not null,               -- AtPeak | AbovePeak | BelowHighWaterMark
     tenant_id                      text null,
@@ -763,10 +811,10 @@ create table if not exists __SCHEMA__.equalisation_adjustments (
     ledger_book_id                 uuid not null references __SCHEMA__.ledger_books(ledger_book_id),
     period_id                      uuid not null,
     subscription_id                text not null,
-    equalisation_credit_collected  numeric(20,2) not null default 0,
-    equalisation_credit_returned   numeric(20,2) not null default 0,
-    contingent_redemption          numeric(20,2) not null default 0,
-    net_equalisation_perf_fee      numeric(20,2) not null default 0,
+    equalisation_credit_collected  numeric(38, 12) not null default 0,
+    equalisation_credit_returned   numeric(38, 12) not null default 0,
+    contingent_redemption          numeric(38, 12) not null default 0,
+    net_equalisation_perf_fee      numeric(38, 12) not null default 0,
     journal_entry_id               uuid null,
     tenant_id                      text null,
     created_at                     timestamptz not null,
@@ -774,7 +822,7 @@ create table if not exists __SCHEMA__.equalisation_adjustments (
 );
 ```
 
-### 10.3 `V_ledger_026__fund_series.sql`
+### 10.3 `V_ledger_035__fund_series.sql`
 
 ```sql
 -- Method B: series registry, holdings, and consolidation history.
@@ -784,8 +832,8 @@ create table if not exists __SCHEMA__.fund_series (
     fund_profile_id           text not null,
     vehicle_id                text null,
     issue_date                date not null,
-    issue_price               numeric(28,10) not null,
-    high_water_mark_per_share numeric(28,10) not null,
+    issue_price               numeric(38, 12) not null,
+    high_water_mark_per_share numeric(38, 12) not null,
     is_lead                   boolean not null default false,
     status                    text not null default 'Open',      -- Open | Crystallised | Consolidated | Closed
     currency                  text not null,
@@ -803,7 +851,7 @@ create table if not exists __SCHEMA__.fund_series_holdings (
     ledger_book_id  uuid not null references __SCHEMA__.ledger_books(ledger_book_id),
     series_id       text not null,
     investor_id     text not null,
-    shares          numeric(28,10) not null,
+    shares          numeric(38, 12) not null,
     primary key (ledger_book_id, series_id, investor_id)
 );
 
@@ -812,7 +860,7 @@ create table if not exists __SCHEMA__.fund_series_consolidations (
     from_series_id    text not null,
     to_lead_series_id text not null,
     effective_date    date not null,
-    conversion_ratio  numeric(28,12) not null,
+    conversion_ratio  numeric(38, 12) not null,
     journal_entry_id  uuid null,
     tenant_id         text null,
     created_at        timestamptz not null,
@@ -820,8 +868,10 @@ create table if not exists __SCHEMA__.fund_series_consolidations (
 );
 ```
 
-**Rounding/precision note:** per-share and share-count columns use `numeric(28,10)`/`(28,12)` for
-conversion precision; **posted monetary** amounts use `numeric(20,2)`, matching the 2-dp
+**Rounding/precision note:** every column uses the ledger convention `numeric(38, 12)`
+([register](../../engineering/blueprints/README.md#ddl-precision)) — per-share, share-count, and
+monetary alike. Storage precision is *not* the rounding policy: posted monetary amounts are still
+rounded in C# to the 2-dp
 `RoundCurrency` policy. Never post an unrounded per-share figure.
 
 ---
@@ -897,12 +947,18 @@ source-generated JSON context (Critical Quality Guardrail: respect source-genera
 
 ### 12.2 Endpoints (`Meridian.Contracts/Api/UiApiRoutes.cs` + `Meridian.Application` handlers)
 
-- `GET  /api/accounting/equalisation/policy/{ledgerBookId}` → `EqualisationPolicyDto`.
-- `PUT  /api/accounting/equalisation/policy/{ledgerBookId}` (governed; approval-gated).
-- `POST /api/accounting/equalisation/crystallise/preview` → `EqualisationCrystallisationViewDto`
+Routes use the existing **`/api/ledger/...`** prefix — `UiApiRoutes` has no `/api/accounting/`
+prefix, and these sit beside the incentive-fee blueprint's `/api/ledger/incentive-fee/...` surface
+that shares their crystallization boundary
+([register](../../engineering/blueprints/README.md#api-route-prefixes)). Route segments use US
+spelling, matching the shipped `EqualizationCalculator`.
+
+- `GET  /api/ledger/equalization/policy/{ledgerBookId}` → `EqualisationPolicyDto`.
+- `PUT  /api/ledger/equalization/policy/{ledgerBookId}` (governed; approval-gated).
+- `POST /api/ledger/equalization/crystallize/preview` → `EqualisationCrystallisationViewDto`
   (dry-run: builds drafts, does not post; sets `DryRunCorrelationId` on the draft request).
-- `POST /api/accounting/equalisation/crystallise/submit` → submits governed drafts for approval.
-- `GET  /api/accounting/series/{ledgerBookId}` → `IReadOnlyList<FundSeriesDto>`.
+- `POST /api/ledger/equalization/crystallize/submit` → submits governed drafts for approval.
+- `GET  /api/ledger/equalization/series/{ledgerBookId}` → `IReadOnlyList<FundSeriesDto>`.
 
 ### 12.3 UI surfaces
 
@@ -968,7 +1024,7 @@ projectors.
   through a faked `IAccountingJournalDraftService` and returns `AllBalanced == true`;
   `IdempotencyKey` stable across re-runs (no duplicate drafts).
 - **`EqualisationPersistenceTests`** — round-trip `IFundSeriesStore`; migration replay is idempotent
-  (apply `V_ledger_024..026` twice, assert no error / no dup rows).
+  (apply `V_ledger_033..035` twice, assert no error / no dup rows).
 - **`EqualisationSubledgerProjectionTests`** — Method A adjustments appear in
   `PrivateCapitalCapitalAccountSubledgerBuilder.Build(...)` on the existing
   `CapitalAccountId|InvestorId|Currency` key without schema change.
@@ -1003,8 +1059,8 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
    `PartnershipInvestorAccountingProjector.Project` and `RoundCurrency`. Pure/static/deterministic.
 5. **Unit tests first-class** — author §13.1/§13.2 golden vectors against the projectors *before*
    wiring persistence (they need no DB).
-6. **Persistence** — add `V_ledger_024__equalisation_policy.sql`,
-   `V_ledger_025__equalisation_subscription_lots.sql`, `V_ledger_026__fund_series.sql` (idempotent,
+6. **Persistence** — add `V_ledger_033__equalization_policy.sql`,
+   `V_ledger_034__equalization_subscription_lots.sql`, `V_ledger_035__fund_series.sql` (idempotent,
    `__SCHEMA__`); implement `IFundSeriesStore` + a Postgres adapter in `Meridian.Storage.Ledger`.
 7. **Application service** — `IEqualisationProjectionService` /
    `EqualisationProjectionService` in `Meridian.FinancialOperations.Ledger`, dispatching on method

@@ -1,9 +1,20 @@
 # Blueprint: Full Incentive-Fee Mechanics (Hurdles, Crystallization, Stateful HWM & Loss-Carryforward)
 
-Status: Design (code-ready). Owner lane: `src/Meridian.Ledger` + `src/Meridian.Storage/Ledger` + `src/Meridian.Ui.Shared`.
+**Status:** Design (code-ready) — nothing from this blueprint is in source yet
+**Owner:** Ledger / fund-accounting lane (`src/Meridian.Ledger` + `src/Meridian.Storage/Ledger` + `src/Meridian.Ui.Shared`)
+**Reviewed:** 2026-08-01
+
 Scope: extend the existing partnership fee projectors from a single-shot, fund-level, "high-water-mark
 passed in per period" model into a **config-driven, durable, per-investor incentive-fee engine** that
 supports both US and European fund conventions.
+
+> **Shared-convention notice.** This blueprint shares the ledger migration sequence, the
+> `AutomatedJournalEventKind` enum, and the fund high-water mark with the
+> [equalization / series-accounting blueprint](equalization-and-series-accounting.md) and the
+> [commitment & capital-call blueprint](commitment-and-capital-call-engine.md). Migration ordinals,
+> DDL precision, route prefixes, and the HWM-ownership contract are recorded in the canonical
+> [blueprint register](../../engineering/blueprints/README.md#shared-conventions). Do not claim an
+> ordinal or a new route prefix without checking it.
 
 ---
 
@@ -143,8 +154,10 @@ running accrual — a policy fork, not a requirement.
 ### 2.5 Persistence conventions
 
 - Migrations live in `src/Meridian.Storage/Ledger/Migrations/` as `V_ledger_###__name.sql`. Highest
-  current number is **`V_ledger_023__journal_as_of_indexes.sql`** (note two files share `008`; keep new
-  numbers unique). Scripts use the `__SCHEMA__` placeholder, `create table if not exists`,
+  current number is **`V_ledger_028__wash_sale_activation.sql`** (note two files share `008`; keep new
+  numbers unique). This blueprint's reserved range is **029–030** — see the
+  [register](../../engineering/blueprints/README.md#ledger-migration-ordinals); re-derive the next
+  free ordinal from disk at implementation time. Scripts use the `__SCHEMA__` placeholder, `create table if not exists`,
   `create index/unique index if not exists`, `ck_`/`ix_`/`ux_` naming, `numeric(38, 12)` for
   money/quantity precision, `timestamptz`, and `references __SCHEMA__.ledger_books(ledger_book_id)
   on delete cascade` (see `V_ledger_009__tax_lot_persistence.sql`).
@@ -216,10 +229,27 @@ today's behavior for funds that do not opt in.
 
 ### Fork G — Accounting model (who owns the HWM)
 - Options: `FundLevel` (one HWM for the fund; fee computed once then profit split — today's behavior),
-  `InvestorSeries` (per-investor HWM/LCF; fee computed per investor against their own protected level).
+  `InvestorSeries` (per-series HWM/LCF; fee computed per series against its own protected level).
 - **RECOMMENDED default: `FundLevel`.** Regression-safe. `InvestorSeries` is the target for funds with
-  investors that subscribed at different NAVs/dates and is the reason the durable per-investor state in
-  Section 5.3 exists; a fund flips to it via config once equalization method is chosen (open question O-3).
+  investors that subscribed at different NAVs/dates and is the reason the durable state in
+  Section 5.3 exists; a fund flips to it via config once the equalization method is chosen (O-3).
+
+> **Cross-blueprint contract — HWM ownership (recorded 2026-08-01).** There is exactly one HWM store
+> per fund, and this fork does not create a second one. Fork G is the *selector*; the
+> [equalization / series-accounting blueprint](equalization-and-series-accounting.md) §9 is the
+> *authority* on where the HWM physically lives:
+>
+> | Fork G | Equalization method | Where the HWM lives |
+> |---|---|---|
+> | `FundLevel` (default) | Method A — equalisation credit/debit (default) | Single fund HWM, already in `PartnershipInvestorAllocationInput.HighWaterMark`. Equalisation *reallocates* the one fund fee across subscription lots; no per-investor HWM rows exist. |
+> | `InvestorSeries` | Method B — series of shares | Per-series HWM rows in `fund_series.high_water_mark_per_share` (equalization §10.3). The fee projector runs once per series. |
+>
+> Section 5.3's durable state therefore carries **loss-carryforward, accrual, and crystallization
+> history** keyed by the scope this fork selects (fund or series) — it is not a competing
+> per-investor HWM table. If Fork G is set to `InvestorSeries`, this blueprint and the equalization
+> blueprint's Method B must land as one slice; shipping either alone produces two HWM sources of
+> truth. Both documents record this contract; the canonical copy is the
+> [blueprint register](../../engineering/blueprints/README.md#cross-blueprint-contracts).
 
 ### Fork H — Downward accrual adjustments (NAV falls below prior accrual)
 - Options: `ReverseAccrual` (post a contra entry Dr Payable / Cr Expense), `ClampToZeroNoReversal`
@@ -645,9 +675,11 @@ current accrual path regresses.
 
 Follow `V_ledger_###__name.sql` with `__SCHEMA__`, `create table/index if not exists`, `numeric(38, 12)`
 money precision, `timestamptz`, and `references __SCHEMA__.ledger_books(ledger_book_id) on delete cascade`.
-Next free numbers after `V_ledger_023` are **024** and **025**.
+The highest ordinal on disk is `V_ledger_028__wash_sale_activation.sql`; this blueprint's reserved
+range is **029–030** ([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)).
+Re-derive from disk at implementation time and update the register if another lane lands first.
 
-### 7.1 `V_ledger_024__incentive_fee_policy.sql`
+### 7.1 `V_ledger_029__incentive_fee_policy.sql`
 
 ```sql
 create table if not exists __SCHEMA__.incentive_fee_policies (
@@ -656,11 +688,11 @@ create table if not exists __SCHEMA__.incentive_fee_policies (
     fund_profile_id text not null,
     policy_id text not null,
     policy_version text not null,
-    incentive_fee_rate numeric(18, 8) not null,
+    incentive_fee_rate numeric(38, 12) not null,
     hurdle_type text not null,                       -- 'None' | 'Soft' | 'Hard'
-    annual_hurdle_rate numeric(18, 8) not null default 0,
+    annual_hurdle_rate numeric(38, 12) not null default 0,
     hurdle_basis text not null default 'BeginningNav',
-    catch_up_rate numeric(18, 8) not null default 0,
+    catch_up_rate numeric(38, 12) not null default 0,
     hurdle_compounding text not null default 'Simple',
     crystallization_frequency text not null,         -- 'Monthly' | 'Quarterly' | 'SemiAnnual' | 'Annual' | 'OnRedemptionOnly'
     crystallization_anchor_date date not null,
@@ -687,7 +719,7 @@ create index if not exists ix_incentive_fee_policies_fund
     on __SCHEMA__.incentive_fee_policies (fund_profile_id, effective_date desc);
 ```
 
-### 7.2 `V_ledger_025__incentive_fee_state.sql`
+### 7.2 `V_ledger_030__incentive_fee_state.sql`
 
 ```sql
 create table if not exists __SCHEMA__.incentive_fee_state (
@@ -945,7 +977,8 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
    `AutomatedJournalEventKind` and `AutomatedJournalDraftProjector.ProjectLines`; optional
    `IncentiveFeeCrystallizedPayableFor` in `LedgerAccounts.cs`.
 8. **Store interface** — add the five default-throwing methods and row records to `ILedgerJournalStore.cs`.
-9. **Migrations** — add `V_ledger_024__incentive_fee_policy.sql` and `V_ledger_025__incentive_fee_state.sql`.
+9. **Migrations** — add `V_ledger_029__incentive_fee_policy.sql` and `V_ledger_030__incentive_fee_state.sql`
+   (reserved range; confirm against the highest ordinal on disk first).
 10. **Postgres store** — implement the new methods in `PostgresLedgerJournalStore.cs` with tenant stamping
     and transactional roll-forward (`expectedVersion`); store tests 23.
 11. **Orchestration service** — implement `IIncentiveFeeStateService` (`EvaluatePeriodAsync` pure preview,
@@ -970,9 +1003,13 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
 - **O-2 (hurdle-on-loss recovery interaction):** When both a hurdle and LCF are active, does the hurdle apply
   to profit measured above HWM, above HWM+LCF, or above contributed capital? The calculator nets LCF into
   `grossExcess`; PE preferred-return funds may want the hurdle on contributed capital instead.
-- **O-3 (equalization method for `InvestorSeries`):** Series-of-shares vs equalization-credit/contingent-
-  redemption accounting for investors subscribing mid-period. The durable per-investor state supports both,
-  but the mid-period subscription bookkeeping (equalization credit journals) is a separate slice.
+- **O-3 (equalization method for `InvestorSeries`) — answered by a sibling blueprint:** Series-of-shares vs
+  equalization-credit/contingent-redemption accounting for investors subscribing mid-period is designed in
+  [equalization-and-series-accounting.md](equalization-and-series-accounting.md), which recommends **Method A**
+  (equalisation credit/debit) as the default. Section 5.3's durable state supports both, but the mid-period
+  subscription bookkeeping (equalisation credit journals) is that blueprint's slice, not this one's. The
+  binding consequence for Fork G is recorded in the cross-blueprint contract above: Method A ⇒ `FundLevel`,
+  Method B ⇒ `InvestorSeries`. What remains open here is only the per-fund *choice*, not the mechanics.
 - **O-4 (effective-dated policy changes):** How are in-flight accruals treated when a policy's terms change
   mid-crystallization-window? Proposal: freeze the accrual window under the policy effective at the window
   start; new terms apply from the next window.

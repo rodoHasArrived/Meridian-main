@@ -1,11 +1,20 @@
 # Portfolio Cash Ladder — Blueprint (2026-07)
 
-> **Status:** In progress — first vertical slice landed 2026-07-05 (see "Delivered Slice" below);
-> the persisted-run/per-currency/structured-sourcing phases remain open (wave-8 candidate).
+**Status:** Partially implemented — first vertical slice landed 2026-07-05 (see "Delivered Slice"
+below); the persisted-run / per-currency / structured-sourcing phases remain open (wave-8 candidate)
+**Owner:** Portfolio forecasting lane
+**Reviewed:** 2026-08-01
+
 > **Source:** 2026-07-05 brainstorm session — "Portfolio Cash-Flow Forecasting & Liquidity Engine",
 > selected as the recommended next large-scale update.
 > **Depth mode:** full
 > **Prepared for:** implementation following completion of the `codex/instrument-type-depth` branch.
+> **Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+
+The `/api/portfolio/cash-ladder` routes below sit under the existing, shipped `/api/portfolio/...`
+prefix (`UiApiRoutes.PortfolioCashLadder`), so the remaining `runs` surface is additive — no new
+top-level prefix is introduced. See the
+[register's route-prefix convention](../engineering/blueprints/README.md#api-route-prefixes).
 
 ---
 

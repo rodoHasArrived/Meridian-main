@@ -1,10 +1,38 @@
 # Blueprint: Commitment & Capital-Call Engine for Private Capital
 
-> Status: Design (code-ready). Scope: new subsystem that layers investor **commitments**,
-> **drawdown schedules**, **uncalled-commitment roll-forward**, **recallable distributions**, and
-> **default / late-interest** handling on top of Meridian's existing private-capital ledger
-> projection and governed automated-journal pipeline. No mobile lane. Browser workstation is the
-> UI target (WPF parity follows the shared seam).
+**Status:** Partially implemented — domain and governed-drafting layers shipped; persistence,
+endpoints, and the workbench read model remain design-only
+**Owner:** Ledger / private-capital lane
+**Reviewed:** 2026-08-01
+
+> Scope: new subsystem that layers investor **commitments**, **drawdown schedules**,
+> **uncalled-commitment roll-forward**, **recallable distributions**, and **default / late-interest**
+> handling on top of Meridian's existing private-capital ledger projection and governed
+> automated-journal pipeline. No mobile lane. Browser workstation is the UI target (WPF parity
+> follows the shared seam).
+
+## Delivery state (2026-08-01)
+
+Already in source — treat §4.1–§4.4 and §7.2 as **built**, and verify against the live types rather
+than re-deriving them:
+
+- `src/Meridian.Ledger/PrivateCapitalCommitments.cs` — `CommitmentStatus`,
+  `DrawdownInstallmentStatus`, `DistributionRecallability`, commitment and installment records (§4.1–§4.3).
+- `src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs` — the
+  `net-called + uncalled + expired = total` invariant carrier (§4.4).
+- `src/Meridian.Ledger/CapitalCallDraftFactory.cs`, `CapitalCallPlanBuilder.cs`,
+  `CapitalCallScheduleDraftBuilder.cs` — governed drafting (§7.2).
+- `AutomatedJournalEventKind.CapitalCallIssued` / `CapitalCallFunded` /
+  `CapitalCallDefaultInterestAccrued` are already on the enum — **do not re-append them**.
+
+Still design-only: persistence and stores (§6), endpoints (§8.3), and the commitment workbench read
+model (§8.2, §8.4).
+
+> **Shared-convention notice.** This blueprint shares the ledger migration sequence and the
+> `AutomatedJournalEventKind` enum with the
+> [incentive-fee](incentive-fee-mechanics.md) and [equalization](equalization-and-series-accounting.md)
+> blueprints. Migration ordinals, DDL precision, and route prefixes are recorded in the canonical
+> [blueprint register](../../engineering/blueprints/README.md#shared-conventions).
 
 ---
 
@@ -189,10 +217,13 @@ public sealed record AutomatedJournalDraft(
 
 `src/Meridian.Storage/Ledger/Migrations/` uses ordered `V_ledger_###__name.sql` files with a
 `__SCHEMA__` placeholder, `create table if not exists`, `create index if not exists`, `constraint
-ck_...` checks and `unique(...)`. Highest existing is `V_ledger_023__journal_as_of_indexes.sql`, so
-the engine's first migration is **`V_ledger_024__private_capital_commitments.sql`**. (Fund-account
-master data under `src/Meridian.Storage/FundAccounts/Migrations/` uses the simpler `001_*.sql`
-convention; policy fork PF-6 covers store placement.)
+ck_...` checks and `unique(...)`. Highest existing is `V_ledger_028__wash_sale_activation.sql`; this
+blueprint's reserved range is **031–032**
+([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)), so the engine's
+first migration is **`V_ledger_031__private_capital_commitments.sql`**. Re-derive the next free
+ordinal from disk at implementation time. (Fund-account master data under
+`src/Meridian.Storage/FundAccounts/Migrations/` uses the simpler `001_*.sql` convention; policy fork
+PF-6 covers store placement.)
 
 ### 2.8 Endpoints
 
@@ -217,7 +248,7 @@ Registered in `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` with
 | **PF-3** | Default-interest rate source | fixed annual rate; reference (`Prime`/`SOFR`) + spread; tiered penalty schedule | **fixed annual rate on the commitment record** (`DefaultInterestRateAnnual`), with an optional reference+spread override | Avoids a market-data dependency for v1; reference+spread can be layered later without a schema change (nullable columns). |
 | **PF-4** | Interest compounding | simple; compounded daily; compounded monthly | **simple interest** to cure date | LPAs overwhelmingly specify simple interest on defaulted calls; compounding is opt-in per commitment. |
 | **PF-5** | Uncalled-commitment expiry at investment-period end | (a) expire uncalled (release obligation, `E += uncalled`); (b) retain uncalled (callable post-period for follow-ons/expenses); (c) roll forward to a successor vehicle | **(b) retain**, with an explicit governed `Expire` action that moves the residual to `Expired` only when an operator records period close | Auto-expiry silently destroys callable capital; keep it operator-driven and evidence-backed, consistent with the close-cockpit's governed posture. |
-| **PF-6** | Commitment master-data store location | (a) new tables in the Ledger schema (`V_ledger_024__...`); (b) new `src/Meridian.Storage/PrivateCapital/` store | **(a) Ledger schema** | Commitments are scoped by `fund_profile_id` + `ledger_book_id` + `investor_id`, exactly like the private-capital projection; co-locating keeps tenant/company scoping columns and migration tooling identical (see `V_ledger_019/020/021`). |
+| **PF-6** | Commitment master-data store location | (a) new tables in the Ledger schema (`V_ledger_031__...`); (b) new `src/Meridian.Storage/PrivateCapital/` store | **(a) Ledger schema** | Commitments are scoped by `fund_profile_id` + `ledger_book_id` + `investor_id`, exactly like the private-capital projection; co-locating keeps tenant/company scoping columns and migration tooling identical (see `V_ledger_019/020/021`). |
 | **PF-7** | Does the capital call post a subscription receivable, or fund on cash receipt? | (a) memo-only uncalled tracking (no GL until cash); (b) GAAP: DR Capital-Call Receivable / CR Contributed Capital at call, DR Cash / CR Receivable at funding | **(b) receivable posting** | The projector already recognizes the equity leg (`Contributed Capital`) as the capital-account impact; a receivable makes default/aging measurable and drives the default-interest base. |
 | **PF-8** | Default-interest credit destination | (a) fund income (CR Interest Income); (b) credited to non-defaulting partners' capital | **(a) fund income** for v1 | Simplest and always defensible; (b) is a re-allocation policy that belongs to a later allocation-engine blueprint. |
 
@@ -546,9 +577,11 @@ public interface ICommitmentWorkbenchService
 
 ## 6. Persistence & migrations
 
-New migration `src/Meridian.Storage/Ledger/Migrations/V_ledger_024__private_capital_commitments.sql`
-(next in sequence after `V_ledger_023`). Follows the `__SCHEMA__` / `create ... if not exists` /
-`constraint ck_*` / tenant-column conventions from the existing ledger migrations.
+New migration `src/Meridian.Storage/Ledger/Migrations/V_ledger_031__private_capital_commitments.sql`
+(reserved range 031–032; the highest ordinal on disk is `V_ledger_028`, so confirm the next free
+number before writing the file). Follows the `__SCHEMA__` / `create ... if not exists` /
+`constraint ck_*` / tenant-column conventions and the `numeric(38, 12)` precision used by the
+existing ledger migrations.
 
 ```sql
 create schema if not exists __SCHEMA__;
@@ -560,12 +593,12 @@ create table if not exists __SCHEMA__.investor_commitments (
     capital_account_id text not null,
     investor_id text not null,
     currency text not null,
-    total_commitment numeric(28,8) not null,
+    total_commitment numeric(38, 12) not null,
     commitment_date date not null,
     investment_period_end_date date null,
     status text not null,
-    recall_cap_percent numeric(9,6) not null default 1.0,
-    default_interest_rate_annual numeric(9,6) not null default 0,
+    recall_cap_percent numeric(38, 12) not null default 1.0,
+    default_interest_rate_annual numeric(38, 12) not null default 0,
     default_interest_convention text not null default 'Actual365Fixed',
     default_grace_days integer not null default 0,
     tenant_id text null,
@@ -590,8 +623,8 @@ create table if not exists __SCHEMA__.drawdown_installments (
     sequence integer not null,
     notice_date date not null,
     due_date date not null,
-    call_percent numeric(9,6) null,
-    call_amount numeric(28,8) null,
+    call_percent numeric(38, 12) null,
+    call_amount numeric(38, 12) null,
     status text not null,
     journal_entry_id uuid null,
     payment_intent_id text null,
@@ -611,11 +644,11 @@ create table if not exists __SCHEMA__.capital_call_defaults (
     default_id text primary key,
     commitment_id text not null references __SCHEMA__.investor_commitments(commitment_id) on delete cascade,
     installment_id text not null references __SCHEMA__.drawdown_installments(installment_id) on delete cascade,
-    defaulted_amount numeric(28,8) not null,
+    defaulted_amount numeric(38, 12) not null,
     due_date date not null,
     cured_date date null,
     status text not null,
-    accrued_interest numeric(28,8) not null default 0,
+    accrued_interest numeric(38, 12) not null default 0,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
     constraint ck_capital_call_defaults_amount check (defaulted_amount >= 0)
@@ -626,7 +659,7 @@ create index if not exists ix_capital_call_defaults_scope
 ```
 
 Notes:
-- Money is `numeric(28,8)` to match ledger precision; the C# layer keeps `decimal` and rounds to 2dp
+- Money is `numeric(38, 12)` to match ledger precision; the C# layer keeps `decimal` and rounds to 2dp
   for postings.
 - Recallable classification and commitment linkage on *movements* are **not** stored here — they
   ride the journal metadata tags (§7), so posted movements remain the single source of truth and the
@@ -930,7 +963,7 @@ New suites under `tests/Meridian.Tests/FinancialOperations/PrivateCapital/` and
    `src/Meridian.FinancialOperations/PrivateCapital/`, folding
    `PrivateCapitalActivityProjectionDto.FundEvents` + commitments; emit invariant-breach validation
    issues.
-4. **Migration** — `V_ledger_024__private_capital_commitments.sql` (§6) + `ICommitmentStore`
+4. **Migration** — `V_ledger_031__private_capital_commitments.sql` (§6) + `ICommitmentStore`
    implementation in `src/Meridian.Storage/Ledger/` with tenant/company scoping.
 5. **Metadata seam** — extend `TreasuryLedgerContextDto` with `CommitmentId`,
    `DrawdownInstallmentId`, `Recallability` (optional trailing); thread into

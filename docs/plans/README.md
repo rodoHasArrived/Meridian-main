@@ -40,6 +40,11 @@ The files still present here stay because they are active or consumed by tooling
   meridian-archive-organizer skill evaluation fixtures (`must_exist`).
 - [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md)
   — referenced by the meridian-simulated-user-panel skill evaluation manifests.
+- [report-writer-auto-preview-blueprint.md](report-writer-auto-preview-blueprint.md) — active,
+  unimplemented browser-workstation design; retained at this path because the 2026-07-13 brainstorm
+  ledger (`.claude/skills/meridian-brainstorm/brainstorm-history.jsonl`) records it as its
+  `document_updated` target. Indexed in the canonical
+  [blueprint register](../engineering/blueprints/README.md).
 
 ## Migration Rules
 

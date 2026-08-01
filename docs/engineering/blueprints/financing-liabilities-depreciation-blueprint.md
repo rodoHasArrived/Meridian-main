@@ -1,8 +1,30 @@
 # Blueprint — Repo Engine, Depreciation Schedule, and Borrower-Side Debt
 
-**Status:** draft
+**Status:** Partially implemented — the depreciation engine shipped; repo and borrower-side debt
+remain design-only
 **Owner:** Accounting and Ledger lane
-**Reviewed:** 2026-07-06
+**Reviewed:** 2026-08-01
+
+## Delivery state (2026-08-01)
+
+Engine 2 (**fixed-asset depreciation**) is in source. Treat its sections as built and verify against
+the live types rather than re-deriving them:
+
+- `src/Meridian.Ledger/DepreciationScheduleCalculator.cs` + `IDepreciationScheduleCalculator.cs`,
+  `DepreciationMethod.cs`, `DepreciationInput.cs`, `DepreciationPeriod.cs`,
+  `DepreciationProjection.cs`.
+- `src/Meridian.Ledger/FixedAssetDepreciationProjector.cs`, `FixedAssetDepreciationDraftBuilder.cs`.
+- `LedgerAccounts.AccumulatedDepreciationFor` / `DepreciationExpenseFor`.
+- **`AutomatedJournalEventKind.DepreciationPosted` is already on the enum — do not re-append it.**
+
+Engines 1 (**repo / reverse-repo**) and 3 (**borrower-side term debt**) are design-only: there is no
+`Meridian.Application.Financing` project, no repo or borrowing projector, and no
+`RepoInterestAccrued` / `BorrowingInterestAccrued` / `DebtIssuanceCostAmortized` enum member.
+Phase 2 of the implementation checklist is therefore complete; Phases 3–4 are not.
+
+> **Shared-convention notice.** This blueprint appends to the shared `AutomatedJournalEventKind`
+> enum and adds ledger routes. Ordinals, DDL precision, and route prefixes are recorded in the
+> canonical [blueprint register](README.md#shared-conventions).
 
 This blueprint translates three prioritized financing/accounting capabilities into code-ready
 technical designs that plug into Meridian's existing projector → ledger → approval pipeline:
@@ -201,7 +223,7 @@ public static LedgerAccount DebtIssuanceCostAmortizationFor(string borrowingId) 
 
 ```csharp
 /// <summary>Periodic fixed-asset depreciation charge.</summary>
-DepreciationPosted,
+DepreciationPosted,          // ALREADY SHIPPED — present on the enum; do not re-append
 /// <summary>Repo financing interest accrued for a period slice.</summary>
 RepoInterestAccrued,
 /// <summary>Borrowing interest accrued for a period slice.</summary>
@@ -209,6 +231,11 @@ BorrowingInterestAccrued,
 /// <summary>Debt issuance cost amortized for a period.</summary>
 DebtIssuanceCostAmortized,
 ```
+
+`DepreciationPosted` landed with the depreciation engine and sits before the capital-call members
+added by the [commitment & capital-call blueprint](../../development/accounting-blueprints/commitment-and-capital-call-engine.md).
+Append the three financing kinds **after** the current tail; the enum is append-only and shared
+across blueprints.
 
 > Only `DepreciationPosted` is wired through `AutomatedJournalDraftProjector` (governed path). The
 > repo/borrowing kinds are carried on events for classification/idempotency, but their lines are
@@ -400,21 +427,26 @@ source, matching the repo convention in
 
 ### REST surface — `Meridian.Ui.Shared/Endpoints/FinancingEndpoints.cs` (read-model + command intake)
 
+All routes sit under the existing **`/api/ledger/...`** prefix. `UiApiRoutes` has no
+`/api/financing/` or `/api/accounting/` prefix, and these surfaces are ledger subsidiary registers —
+siblings of `/api/ledger/private-capital/...`
+([register](README.md#api-route-prefixes)).
+
 ```
-POST /api/financing/repos                 -> open repo/reverse repo        (RepoAgreementTermsDto)
-POST /api/financing/repos/{id}/accrue     -> run daily accrual as-of date
-POST /api/financing/repos/{id}/close
-GET  /api/financing/repos/{id}            -> RepoAgreementDetailDto
+POST /api/ledger/financing/repos                 -> open repo/reverse repo   (RepoAgreementTermsDto)
+POST /api/ledger/financing/repos/{id}/accrue     -> run daily accrual as-of date
+POST /api/ledger/financing/repos/{id}/close
+GET  /api/ledger/financing/repos/{id}            -> RepoAgreementDetailDto
 
-POST /api/financing/borrowings            -> create facility
-POST /api/financing/borrowings/{id}/draw  -> { amount, asOf }
-POST /api/financing/borrowings/{id}/accrue-interest
-POST /api/financing/borrowings/{id}/repay -> { amount, asOf }
+POST /api/ledger/financing/borrowings            -> create facility
+POST /api/ledger/financing/borrowings/{id}/draw  -> { amount, asOf }
+POST /api/ledger/financing/borrowings/{id}/accrue-interest
+POST /api/ledger/financing/borrowings/{id}/repay -> { amount, asOf }
 
-GET  /api/accounting/fixed-assets                 -> register list
-POST /api/accounting/fixed-assets                 -> capitalize asset (FixedAssetRecordDto)
-GET  /api/accounting/fixed-assets/{id}/schedule   -> DepreciationPeriodDto[]
-POST /api/accounting/fixed-assets/depreciate      -> { periodEnd } -> submits governed draft(s)
+GET  /api/ledger/fixed-assets                 -> register list
+POST /api/ledger/fixed-assets                 -> capitalize asset (FixedAssetRecordDto)
+GET  /api/ledger/fixed-assets/{id}/schedule   -> DepreciationPeriodDto[]
+POST /api/ledger/fixed-assets/depreciate      -> { periodEnd } -> submits governed draft(s)
 ```
 
 ---
@@ -523,7 +555,7 @@ day-count kernel for `dcf` and floating all-in-rate resolution.
 
 ### Depreciation period run (governed path)
 
-1. Operator issues `POST /api/accounting/fixed-assets/depreciate { periodEnd }`.
+1. Operator issues `POST /api/ledger/fixed-assets/depreciate { periodEnd }`.
 2. `FixedAssetDepreciationService` loads the register and filters to assets that are in service, not
    fully depreciated, and not already posted through `periodEnd`.
 3. For each in-scope asset: `DepreciationScheduleCalculator.BuildSchedule` -> this period's amount
@@ -637,14 +669,18 @@ PR3 Borrowings.
       `AddOptions<FinancingOptions>().BindConfiguration(FinancingOptions.SectionName)` (not manual
       `Configure`) so `IOptionsMonitor` hot-reload works.
 
-### Phase 2: Depreciation (PR1)
+### Phase 2: Depreciation (PR1) — shipped
 
-- [ ] `FixedAssetRecordDto`, `DepreciationMethodDto`, `DepreciationPeriodDto` contracts.
-- [ ] `DepreciationScheduleCalculator` + `FixedAssetDepreciationProjector` +
+- [x] `FixedAssetRecordDto`, `DepreciationMethodDto`, `DepreciationPeriodDto` contracts.
+- [x] `DepreciationScheduleCalculator` + `FixedAssetDepreciationProjector` +
       `FixedAssetDepreciationDraftBuilder`.
-- [ ] `IFixedAssetRegisterStore` + Postgres impl + migration + posted-through watermark.
-- [ ] `FixedAssetDepreciationService`; wire the `DepreciationPosted` governed draft path.
-- [ ] Endpoints + `types.ts` DTOs + accounting-screen read model.
+- [x] `IFixedAssetRegisterStore` + Postgres impl + migration + posted-through watermark.
+- [x] `FixedAssetDepreciationService`; wire the `DepreciationPosted` governed draft path.
+- [x] Endpoints + `types.ts` DTOs + accounting-screen read model.
+
+The `AutomatedJournalEventKind.DepreciationPosted` member and the
+`AccumulatedDepreciationFor` / `DepreciationExpenseFor` account factories from Phase 1 landed with
+this phase; only the repo/borrowing halves of Phase 1 remain.
 
 ### Phase 3: Repo engine (PR2)
 
