@@ -13,9 +13,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 |---|---:|
 | Weighted score | 29.6% |
 | Endpoint coverage | 41.2% |
-| Workstation contract coverage | 12.1% |
+| Workstation contract coverage | 12.2% |
 | Endpoints documented | 254 / 617 |
-| Workstation contracts documented | 109 / 902 |
+| Workstation contracts documented | 110 / 902 |
 
 ## Endpoint Coverage
 
@@ -829,7 +829,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `FundLedgerDimensionSnapshot` | Gap | `src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:126` |
 | `FundLedgerQuery` | Gap | `src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:27` |
 | `FundLedgerReconciliationSnapshot` | Gap | `src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:135` |
-| `FundLedgerScope` | Gap | `src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:8` |
+| `FundLedgerScope` | Documented | `src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:8` |
 | `FundLedgerSliceDto` | Gap | `src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:75` |
 | `FundLedgerSnapshotBalanceLine` | Gap | `src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:114` |
 | `FundLedgerSummary` | Documented | `src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:90` |
@@ -1549,7 +1549,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 363 mapped endpoint gap(s).
-- Document or intentionally suppress 793 workstation contract gap(s).
+- Document or intentionally suppress 792 workstation contract gap(s).
 
 ---
 

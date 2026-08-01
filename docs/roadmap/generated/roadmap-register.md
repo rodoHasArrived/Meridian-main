@@ -64,7 +64,7 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 ### Exit Criteria
 
 - Consolidated views no longer double-count intercompany balances and state whether they are presenting gross or eliminated figures, and an eliminated figure reflects only approved and posted eliminations, with a proposed draft visible solely as a labeled preview.
-- Eliminations are proposed as reviewable drafts on the existing approval rail and never post automatically, and the treatment is driven by a rule on the existing policy seam with no parallel discriminator beside it.
+- Eliminations are proposed as reviewable drafts on the existing approval rail and never post automatically, driven by a rule on the existing policy seam with no parallel discriminator beside it. Approval fails closed when either source balance has moved since the draft was computed, and a posted elimination is corrected through a linked reversing or adjusting entry rather than replaced in place.
 - Rerunning the same perimeter and as-of date cannot produce a duplicate elimination for the same pair, and a pair is an exact reciprocal match on both the posting entity and its counterparty rather than the counterparty alone, with a missing or ambiguous dimension blocking the draft.
 - The consolidation perimeter is enforced from authoritative ownership data rather than asserted, and an entity outside scope is rejected rather than silently eliminated.
 - Balances are compared and eliminated in one declared consolidation currency translated at governed as-of rates, with translation differences retained separately and elimination blocked when a rate is unavailable, so a currency gap never reads as an intercompany mismatch. Balances that still do not agree between the two sides surface as their own reported break class rather than being netted away.
@@ -76,6 +76,7 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 - `SRC-LEDGER`
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
+- `SRC-WPF`
 
 ## W10-JRNL-001 - Durable recurring journal schedules and draft runner
 | Field | Value |
@@ -290,7 +291,7 @@ Rank 8 of the 2026-07 W10 depth slate and the largest row in the reconciliation 
 ### Exit Criteria
 
 - One tolerance model reaches the matching engine, so every tolerance an operator can configure is one the engine actually applies.
-- Tolerances can be scoped to the account, currency, and transaction type they belong to.
+- Tolerances can be scoped to the account, currency, and transaction type they belong to, and activating one is a governed policy change under the charter's straight-through conditions - versioned approval with materiality caps, retained evidence reversible through governed correction, sampling review and a kill switch - rather than an operator-local edit, with material or high-risk classes still resolved per item.
 - An operator can see the effect of a proposed tolerance change against retained runs before committing it, and what commits is the profile version the simulation previewed rather than whatever the profile has become since; drift returns the operator to a fresh preview, and the retained simulation is the justification for that exact committed profile.
 - A replayed result differs from the original run only because the tolerance differs, which requires both sides of that run to be retained as of it - the external statement population and the internal positions, cash, and ledger activity it was matched against - and replay determinism is proven before any simulation result reaches an operator.
 - Run-artifact retention reuses the existing stores rather than introducing a second artifact vocabulary and storage path.
@@ -330,7 +331,10 @@ Rank 9 of the 2026-07 W10 depth slate. Every manual match an operator makes toda
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-DOMAIN`
 - `SRC-STRATEGIES`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
+- `SRC-WPF`
 
 ## W10-SEAM-001 - Unified close-readiness projection behind one shared contract
 | Field | Value |

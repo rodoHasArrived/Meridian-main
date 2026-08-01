@@ -302,6 +302,11 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   intervening portfolio, cash, or ledger movement to the tolerance change. The internal side has to be
   retained immutably or version-addressed alongside the existing artifacts.
 - Match-kernel determinism is unverified and must be proven before any simulation result is shown.
+- **Committing a tolerance is a straight-through policy change, not an operator preference.** A
+  widened tolerance automatically suppresses future breaks, which is exactly the per-policy-approval
+  move the charter's section 21 governs. A successful preview establishes the effect, not the
+  authority: activation still needs versioned approval with materiality caps, retained reversible
+  evidence, sampling review, a kill switch, and per-item handling for material classes.
 - The tolerance profile already carries a version, but the file-backed provider is a static load-only
   class with no save, write, or compare-and-swap path. Adding an edit surface without a version
   boundary lets a preview taken against version N be retained as justification for a commit that
@@ -328,6 +333,10 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   immutable predicate its match kind enforces.
 - A competing reconciliation vocabulary exists in the functional calculation projects; do not grow a
   second matching model there.
+- The desktop lane performs manual matches too: `MatchSelectedReconciliationItemsAsync` resolves a
+  selected break through the shared reconciliation workbench service. Capture wired only to the
+  browser would teach rules from one lane's matches and discard the other's, so the shared contract
+  and endpoint owners are on the path as well as both clients.
 - **Promotion is a straight-through lane, and the charter governs those.** Section 21 permits moving
   from per-item to per-policy approval only under all of: deterministic rules rather than model
   output, a human-approved versioned policy defining the eligible class with materiality caps, full
@@ -392,6 +401,15 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   design module, not in Ledger. Implementation routed through Ledger, Contracts, and UI Shared alone
   can add consolidated-view logic without ever defining the elimination treatment on the authoritative
   policy path.
+- **The charter's ledger invariants bind this work directly.** Concurrency control requires writes
+  that depend on balance or approval state to use optimistic version checks and fail closed on stale
+  state; posted immutability requires corrections to go through reversing or adjusting journals linked
+  to the original record. So an elimination draft must carry expected versions for *both* reciprocal
+  sides at approval, and a corrected rerun must reverse and rebook rather than rely on the
+  same-perimeter idempotency key to overwrite an obsolete elimination.
+- The desktop lane builds its own consolidated trial balance through `FundLedgerScope.Consolidated`
+  in the WPF fund-ledger read service. Without routing that lane, WPF keeps presenting an unlabeled
+  consolidated view that cannot distinguish gross from eliminated figures.
 
 ## Known Risks at Adoption
 
