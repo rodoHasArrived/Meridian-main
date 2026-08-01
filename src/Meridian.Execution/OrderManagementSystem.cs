@@ -532,10 +532,21 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, safeRequest.Symbol);
 
-            // Submission threw, so the commit after SubmitOrderAsync never ran and the order never
-            // reached the venue. Settling is idempotent, so this is safe even if the throw came
-            // from further down after a successful route.
-            riskOutcome?.RollbackReservations();
+            // A throw here is AMBIGUOUS: the order may or may not have reached the venue. IB can
+            // complete PlaceOrderAsync and then time out awaiting acknowledgement; Alpaca can
+            // complete the POST and then have response deserialization cancelled. In both cases the
+            // broker may still execute.
+            //
+            // So this keeps the reserved capacity rather than returning it. For a rate limiter the
+            // safe failure direction is to over-count: over-counting delays legitimate orders,
+            // while under-counting lets a runaway algorithm bypass the ceiling by producing
+            // ambiguous submissions — which is the exact behaviour the control exists to stop.
+            //
+            // Distinguishing a pre-dispatch failure (connection refused, request validation) from a
+            // post-dispatch one would let the former release its slot. That needs the gateway to
+            // report whether it dispatched, which belongs with the live-broker work rather than
+            // here; until then this fails conservative.
+            riskOutcome?.CommitReservations();
 
             var rejectedState = orderState with
             {
