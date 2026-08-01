@@ -41,7 +41,12 @@ internal sealed class EtlFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<ISftpClientFactory, SftpClientFactory>();
         services.AddSingleton<IEtlSourceReader, LocalFileSourceReader>();
         services.AddSingleton<IEtlSourceReader, SftpFileSourceReader>();
-        services.AddSingleton<ISftpFilePublisher, SftpFilePublisher>();
+        // Resolved through DI so publishing uses the same credential resolver and capability
+        // gate as reading; the parameterless-adjacent constructor would silently fork them.
+        services.AddSingleton<ISftpFilePublisher>(sp => new SftpFilePublisher(
+            sp.GetRequiredService<ISftpClientFactory>(),
+            sp.GetRequiredService<ISftpCredentialResolver>(),
+            sp.GetRequiredService<ISftpCapabilityService>()));
         services.AddSingleton<IEtlExportService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<Meridian.Storage.StorageOptions>();

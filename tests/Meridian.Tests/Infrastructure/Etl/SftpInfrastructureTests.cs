@@ -144,7 +144,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
         var factory = new RecordingSftpClientFactory(new RecordingSftpClient());
-        var publisher = new SftpFilePublisher(factory);
+        var publisher = CreatePublisher(factory);
 
         var act = () => publisher.PublishAsync(CreateDestination(), localPath, cts.Token);
 
@@ -158,7 +158,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         var localPath = await CreateLocalFileAsync("extract.csv");
         var client = new RecordingSftpClient { ThrowOnUpload = true };
         var factory = new RecordingSftpClientFactory(client);
-        var publisher = new SftpFilePublisher(factory);
+        var publisher = CreatePublisher(factory);
 
         var act = () => publisher.PublishAsync(CreateDestination(), localPath);
 
@@ -173,7 +173,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     {
         var localPath = await CreateLocalFileAsync("extract.csv");
         var client = new RecordingSftpClient();
-        var publisher = new SftpFilePublisher(new RecordingSftpClientFactory(client));
+        var publisher = CreatePublisher(new RecordingSftpClientFactory(client));
         var destination = CreateDestination(overwriteIfExists: false);
 
         await publisher.PublishAsync(destination, localPath);
@@ -196,7 +196,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(outbound, "root.csv"), "root");
         await File.WriteAllTextAsync(Path.Combine(outbound, "nested", "child.csv"), "child");
         var client = new RecordingSftpClient();
-        var publisher = new SftpFilePublisher(new RecordingSftpClientFactory(client));
+        var publisher = CreatePublisher(new RecordingSftpClientFactory(client));
 
         await publisher.PublishAsync(CreateDestination(), outbound);
 
@@ -212,7 +212,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     {
         var localPath = await CreateLocalFileAsync("extract.csv");
         var client = new RecordingSftpClient { ThrowOnRename = true };
-        var publisher = new SftpFilePublisher(new RecordingSftpClientFactory(client));
+        var publisher = CreatePublisher(new RecordingSftpClientFactory(client));
 
         var act = () => publisher.PublishAsync(CreateDestination(), localPath);
 
@@ -301,6 +301,24 @@ public sealed class SftpInfrastructureTests : IDisposable
             ArchiveLocation = archiveLocation,
             ErrorLocation = errorLocation
         };
+
+    // These tests exercise transport mechanics against an injected client, so the capability
+    // gate is satisfied by construction; the build-time SFTP flag is covered separately in
+    // SftpCapabilityServiceTests.
+    private static SftpFilePublisher CreatePublisher(ISftpClientFactory factory)
+        => new(factory, new EnvironmentSftpCredentialResolver(), new ReadySftpCapabilityService());
+
+    private sealed class ReadySftpCapabilityService : ISftpCapabilityService
+    {
+        public bool RealSftpEnabled => true;
+
+        public SftpCapabilityStatus Evaluate(EtlSourceDefinition source) => Ready();
+
+        public SftpCapabilityStatus Evaluate(EtlDestinationDefinition destination) => Ready();
+
+        private static SftpCapabilityStatus Ready()
+            => new(true, true, true, true, true, true, true, []);
+    }
 
     private static EtlDestinationDefinition CreateDestination(bool overwriteIfExists = true)
         => new()

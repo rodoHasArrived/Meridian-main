@@ -188,6 +188,11 @@ verify_docs() {
   run_step "Validate observability contract" \
     "$python_cmd" build/scripts/ci/validate-observability-contract.py --summary
 
+  # TypeScript resolves an ambiguous star export by exporting neither declaration, so a
+  # duplicated DTO silently disappears from '@/types' rather than conflicting.
+  run_step "Validate dashboard type barrel" \
+    "$python_cmd" build/scripts/ci/check-dashboard-type-barrel.py --summary
+
   run_step "Validate status docs delivery claims" \
     bash -c '"$0" scripts/check_status_delivery_claims.py && "$0" -m unittest tests/scripts/test_check_status_delivery_claims.py' "$python_cmd"
 

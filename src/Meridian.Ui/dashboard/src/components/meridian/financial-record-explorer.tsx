@@ -1,5 +1,5 @@
 import { Filter, GitBranch, LayoutPanelTop, Link2, Save, Search, ShieldCheck } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerBody } from "@/components/ui/drawer";
@@ -463,6 +463,69 @@ function ExplorerGrid({
   selectedRecordId: string | null;
   onSelect: (recordId: string) => void;
 }) {
+  const rowElements = useRef(new Map<string, HTMLTableRowElement>());
+  const [activeRowIndex, setActiveRowIndex] = useState(0);
+
+  const registerRow = useCallback((recordId: string, element: HTMLTableRowElement | null) => {
+    if (element) {
+      rowElements.current.set(recordId, element);
+    } else {
+      rowElements.current.delete(recordId);
+    }
+  }, []);
+
+  // Filtering can shrink the row set under the active index, and an external selection
+  // (the explorer auto-selects a first record) should move the tab stop to that row so
+  // Tab lands where the operator is already looking.
+  const selectedIndex = rows.findIndex((row) => row.recordId === selectedRecordId);
+  useEffect(() => {
+    setActiveRowIndex((current) => {
+      if (selectedIndex >= 0) return selectedIndex;
+      if (rows.length === 0) return 0;
+      return Math.min(current, rows.length - 1);
+    });
+  }, [selectedIndex, rows.length]);
+
+  const focusRow = useCallback(
+    (index: number) => {
+      const target = rows[index];
+      if (!target) return;
+      setActiveRowIndex(index);
+      rowElements.current.get(target.recordId)?.focus();
+    },
+    [rows]
+  );
+
+  const handleRowKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTableRowElement>, recordId: string, rowIndex: number) => {
+      switch (event.key) {
+        case "Enter":
+        case " ":
+          event.preventDefault();
+          onSelect(recordId);
+          return;
+        case "ArrowDown":
+          event.preventDefault();
+          focusRow(Math.min(rowIndex + 1, rows.length - 1));
+          return;
+        case "ArrowUp":
+          event.preventDefault();
+          focusRow(Math.max(rowIndex - 1, 0));
+          return;
+        case "Home":
+          event.preventDefault();
+          focusRow(0);
+          return;
+        case "End":
+          event.preventDefault();
+          focusRow(rows.length - 1);
+          return;
+        default:
+      }
+    },
+    [focusRow, onSelect, rows.length]
+  );
+
   if (explorer.isBlocked || rows.length === 0) {
     return (
       <div className="rounded-md border border-border/70 bg-background/60 p-6 text-sm text-muted-foreground" role="status">
@@ -473,7 +536,15 @@ function ExplorerGrid({
 
   return (
     <div className="overflow-x-auto rounded-md border border-border/70">
-      <table className="min-w-full text-sm">
+      {/* role="grid" is what makes aria-selected meaningful on these rows: a plain table row
+          has no selection semantics, so assistive technology could not report which record
+          the operator had picked. It also commits the grid to roving tabindex below. */}
+      <table
+        role="grid"
+        aria-label={`${explorer.title} records`}
+        aria-rowcount={rows.length}
+        className="min-w-full text-sm"
+      >
         <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
           <tr>
             {columns.map((column) => (
@@ -482,22 +553,22 @@ function ExplorerGrid({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {rows.map((row, rowIndex) => (
             <tr
               key={row.recordId}
-              tabIndex={0}
-              aria-current={selectedRecordId === row.recordId}
+              ref={(element) => registerRow(row.recordId, element)}
+              // One tab stop for the whole grid. Making every row tabbable would put a
+              // hundred-record explorer a hundred Tab presses away from the next control.
+              tabIndex={rowIndex === activeRowIndex ? 0 : -1}
+              aria-selected={selectedRecordId === row.recordId}
+              aria-rowindex={rowIndex + 1}
               className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
+              onFocus={() => setActiveRowIndex(rowIndex)}
               onClick={(event) => {
                 event.currentTarget.focus();
                 onSelect(row.recordId);
               }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onSelect(row.recordId);
-                }
-              }}
+              onKeyDown={(event) => handleRowKeyDown(event, row.recordId, rowIndex)}
             >
               {columns.map((column) => {
                 const cell = row.cells.find((candidate) => candidate.columnId === column.columnId);
