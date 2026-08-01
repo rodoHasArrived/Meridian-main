@@ -13,9 +13,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 |---|---:|
 | Weighted score | 29.6% |
 | Endpoint coverage | 41.2% |
-| Workstation contract coverage | 12.2% |
+| Workstation contract coverage | 12.3% |
 | Endpoints documented | 254 / 617 |
-| Workstation contracts documented | 110 / 902 |
+| Workstation contracts documented | 111 / 902 |
 
 ## Endpoint Coverage
 
@@ -1542,14 +1542,14 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `WorkstationTradingOrderRow` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:340` |
 | `WorkstationTradingPayload` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:394` |
 | `WorkstationTradingPositionRow` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:326` |
-| `WorkstationTradingRiskState` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:366` |
+| `WorkstationTradingRiskState` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:366` |
 | `WorkstationWatchlist` | Documented | `src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:29` |
 | `WorkstationWorkspaceDefinition` | Gap | `src/Meridian.Contracts/Workstation/WorkstationWorkspaceCatalog.cs:6` |
 
 ## Follow-up Queue
 
 - Document or intentionally suppress 363 mapped endpoint gap(s).
-- Document or intentionally suppress 792 workstation contract gap(s).
+- Document or intentionally suppress 791 workstation contract gap(s).
 
 ---
 
