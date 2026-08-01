@@ -405,8 +405,18 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _orderSessionIds[orderId] = sessionId;
         }
 
+        // Set immediately before the gateway call and read by the catch below. A failure raised
+        // before this point cannot have reached a venue, so it releases its slot instead of
+        // committing conservatively. The earlier check before registration handles the common case
+        // without creating state; this closes the window between registration and dispatch, which a
+        // gateway that observes its token on entry would otherwise turn into a phantom ambiguity.
+        var dispatchAttempted = false;
+
         try
         {
+            ct.ThrowIfCancellationRequested();
+            dispatchAttempted = true;
+
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
 
@@ -583,14 +593,29 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // post-dispatch one would let the former release its slot. That needs the gateway to
             // report whether it dispatched, which belongs with the live-broker work rather than
             // here; until then this fails conservative.
-            SettleReservations(riskOutcome, commit: true, orderId);
+            SettleReservations(riskOutcome, commit: dispatchAttempted, orderId);
 
-            var rejectedState = orderState with
-            {
-                Status = OrderStatus.Rejected,
-                LastUpdatedAt = DateTimeOffset.UtcNow
-            };
-            _orders[orderId] = rejectedState;
+            // Merge rather than overwrite. `orderState` is the pre-submit snapshot, and the report
+            // pump may have applied a fill before the acknowledgement threw — the same race the
+            // success path merges for. Replacing the tracked state with a zero-filled Rejected
+            // built from the original request would erase a confirmed execution, make the client
+            // order id terminal and reusable, and contradict the accounting handoff the pump has
+            // already performed. An order that executed stays executed.
+            var rejectedState = _orders.AddOrUpdate(
+                orderId,
+                _ => orderState with
+                {
+                    Status = OrderStatus.Rejected,
+                    LastUpdatedAt = DateTimeOffset.UtcNow
+                },
+                (_, existing) => existing.FilledQuantity > 0m
+                    || existing.Status is OrderStatus.Filled or OrderStatus.PartiallyFilled
+                        ? existing
+                        : existing with
+                        {
+                            Status = OrderStatus.Rejected,
+                            LastUpdatedAt = DateTimeOffset.UtcNow
+                        });
             TrimRetainedOrdersIfNeeded();
 
             // This evidence must survive the cancellation that caused the failure. A common way to
@@ -1251,7 +1276,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             _logger.LogWarning(
                 "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
-                report.OrderId, report.ReportType, report.OrderStatus);
+                ExecutionLogText.ForLog(report.OrderId), report.ReportType, report.OrderStatus);
         }
 
         if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)

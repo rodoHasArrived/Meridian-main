@@ -261,15 +261,14 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// timer per rule per order on the pre-trade path.
     /// </para>
     /// </summary>
-    private async Task<T> WithHardTimeoutAsync<T>(Task<T> evaluation, CancellationToken ct)
-    {
-        if (_perRuleTimeout == Timeout.InfiniteTimeSpan)
-        {
-            return await evaluation.ConfigureAwait(false);
-        }
-
-        return await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
-    }
+    private async Task<T> WithHardTimeoutAsync<T>(Task<T> evaluation, CancellationToken ct) =>
+        // InfiniteTimeSpan disables the duration bound only, never caller cancellation. Awaiting the
+        // rule task bare would mean a rule that ignores its token could not be released by
+        // cancelling ValidateOrderAsync either, so the caller would hang on a rule the host had
+        // merely chosen not to time out.
+        _perRuleTimeout == Timeout.InfiniteTimeSpan
+            ? await evaluation.WaitAsync(ct).ConfigureAwait(false)
+            : await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
 
     /// <summary>
     /// As <see cref="WithHardTimeoutAsync{T}(Task{T}, CancellationToken)"/>, but for a reserving
@@ -280,14 +279,14 @@ public sealed class CompositeRiskValidator : IRiskValidator
         Task<RiskRuleReservationResult> evaluation,
         CancellationToken ct)
     {
-        if (_perRuleTimeout == Timeout.InfiniteTimeSpan)
-        {
-            return await evaluation.ConfigureAwait(false);
-        }
-
         try
         {
-            return await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
+            // As above: InfiniteTimeSpan removes the duration bound, not caller cancellation. And
+            // the abandonment cleanup below has to stay installed either way — a rule abandoned by
+            // cancellation can hand back a reservation just as one abandoned by timeout can.
+            return _perRuleTimeout == Timeout.InfiniteTimeSpan
+                ? await evaluation.WaitAsync(ct).ConfigureAwait(false)
+                : await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
         }
         // Both paths abandon the evaluation before it hands its reservation back. Cancellation
         // matters as much as timeout here: a rule that ignores its token still completes later, and

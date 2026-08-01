@@ -333,7 +333,7 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
-            request.ClientOrderId, request.Quantity, ExecutionLogText.ForLog(request.Symbol), fillPrice);
+            ExecutionLogText.ForLog(request.ClientOrderId), request.Quantity, ExecutionLogText.ForLog(request.Symbol), fillPrice);
     }
 
     /// <summary>

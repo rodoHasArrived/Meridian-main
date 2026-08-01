@@ -144,7 +144,7 @@ public sealed class PaperSessionPersistenceService
 
         _logger.LogInformation(
             "Created paper session {SessionId} for strategy {StrategyId} with {InitialCash:C} initial capital",
-            sessionId, request.StrategyId, request.InitialCash);
+            sessionId, ExecutionLogText.ForLog(request.StrategyId), request.InitialCash);
 
         return ToSummary(session);
     }

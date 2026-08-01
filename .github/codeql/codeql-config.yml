@@ -28,8 +28,8 @@ query-filters:
   # as an invariant of the whole module — caller-supplied order text goes through
   # `ExecutionLogText.ForLog` before reaching a logger, and a raw value in a new
   # log call is a defect rather than a style choice. The invariant is mechanically
-  # checkable: grep `_logger.Log*` calls for `orderId`, `request.Symbol`, or
-  # `safeRequest.Symbol` appearing without `ForLog`.
+  # checkable, and checked: `build/scripts/check-execution-log-sanitization.py`
+  # fails on any caller-supplied value reaching a logger unsanitized.
   #
   # The invariant holds across `src/Meridian.Execution/` as a whole, not just the
   # OMS. An earlier draft of this exclusion claimed coverage the code did not have:

@@ -38,12 +38,19 @@ reservations rather than committing them. The OMS then settles at the routing bo
 - gateway returns an accepted report — commit;
 - gateway returns `OrderStatus.Rejected`, the order is rejected by risk or operator controls, or the
   client order id is a duplicate — roll back, because nothing reached a venue;
-- gateway submission **throws** — commit. The dispatch is ambiguous and the order may still execute,
-  so a rate limiter has to over-count; under-counting would let a runaway algorithm bypass the
-  ceiling by producing ambiguous submissions. That path is audited with
+- gateway submission **throws after dispatch was attempted** — commit. The dispatch is ambiguous and
+  the order may still execute, so a rate limiter has to over-count; under-counting would let a
+  runaway algorithm bypass the ceiling by producing ambiguous submissions. That path is audited with
   `Reason = OrderManagementSystem.AmbiguousSubmissionReason`, the only `OrderRejected` entry that
   keeps its slot, and is persisted with `CancellationToken.None` so a cancelled caller cannot erase
-  the record of capacity the throttle still holds.
+  the record of capacity the throttle still holds;
+- submission fails **before** the gateway call — roll back. Cancellation observed at the dispatch
+  boundary is provably pre-dispatch, so it is not ambiguous and must not consume capacity.
+
+The ambiguous path merges rather than overwrites the tracked order state. The report pump can apply
+a fill before the acknowledgement throws, and replacing that with a rejected state built from the
+original request would erase a confirmed execution, make the client order id terminal and reusable,
+and contradict an accounting handoff that already happened. An order that executed stays executed.
 
 Every path between the gate and the venue must settle exactly once; a leaked reservation
 permanently consumes capacity and eventually blocks every later order.
@@ -60,8 +67,11 @@ a style choice.
 This convention is the compensating control for excluding `cs/log-forging` in
 `.github/codeql/codeql-config.yml` — that query reports log sites reached by user input rather than
 unsanitized ones, and does not model `ExecutionLogText.ForLog`, so it cannot tell a fixed call site
-from an unfixed one. The invariant is mechanically checkable: search `_logger.Log*` calls for
-`orderId`, `request.Symbol`, or `safeRequest.Symbol` appearing without `ForLog`.
+from an unfixed one. The invariant is enforced by `build/scripts/check-execution-log-sanitization.py`, which fails on any
+caller-supplied value reaching a logger unsanitized. Run it after touching logging in this module;
+`--list` prints the patterns it checks. A hand-written grep was declared clean twice during PR #2554
+and was wrong both times, because its pattern list was narrower than the code — the list belongs in
+review, not in someone's shell history.
 Broker-backed order placement fails closed unless `BrokerageConfiguration` names the active
 gateway and all live-routing, phase, validation, and sign-off gates are explicitly green; missing
 brokerage configuration remains allowed only for the default paper gateway.

@@ -141,7 +141,7 @@ internal sealed class BrokerageGatewayAdapter : IOrderGateway
 
         _logger.LogInformation(
             "{Broker} order submitted: {OrderId} {Side} {Quantity} {Symbol} — {Status}",
-            BrokerName, report.OrderId, request.Side, request.Quantity, ExecutionLogText.ForLog(request.Symbol), report.OrderStatus);
+            BrokerName, ExecutionLogText.ForLog(report.OrderId), request.Side, request.Quantity, ExecutionLogText.ForLog(request.Symbol), report.OrderStatus);
 
         return new OrderAcknowledgement(
             OrderId: report.OrderId,
