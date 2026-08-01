@@ -144,17 +144,24 @@ public sealed record RiskValidationResult
     {
         ArgumentNullException.ThrowIfNull(violations);
 
-        if (violations.Count == 0)
+        // Snapshot before deriving anything. IReadOnlyList is a read-only view, not an immutable
+        // collection, so a caller holding the underlying List could otherwise add a blocking
+        // violation after an empty set produced Approved — leaving IsApproved true over findings
+        // that should have rejected. Sealing construction is only half the invariant; this is the
+        // other half.
+        var snapshot = violations.ToArray();
+
+        if (snapshot.Length == 0)
         {
             return Approved();
         }
 
-        var decision = violations.Any(static violation => violation.IsBlocking)
+        var decision = snapshot.Any(static violation => violation.IsBlocking)
             ? RiskDecisionKind.Rejected
-            : violations.Any(static violation => violation.RequiresAcknowledgement)
+            : snapshot.Any(static violation => violation.RequiresAcknowledgement)
                 ? RiskDecisionKind.Escalated
                 : RiskDecisionKind.ApprovedWithWarnings;
 
-        return new RiskValidationResult(decision, violations);
+        return new RiskValidationResult(decision, snapshot);
     }
 }

@@ -83,6 +83,25 @@ public sealed class RiskValidationResultTests
         result.Violations.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Sealing construction only holds the invariant if the violations cannot change afterwards.
+    /// <see cref="IReadOnlyList{T}"/> is a read-only view, not an immutable collection, so a caller
+    /// keeping the underlying list could otherwise turn an approval into one carrying a blocking
+    /// finding — and the OMS routes on <c>IsApproved</c>.
+    /// </summary>
+    [Fact]
+    public void FromViolations_DoesNotAliasACallerMutableList()
+    {
+        var mutable = new List<RiskViolation> { Violation(RiskRuleSeverity.Warning) };
+
+        var result = RiskValidationResult.FromViolations(mutable);
+        mutable.Add(Violation(RiskRuleSeverity.Critical));
+
+        result.Decision.Should().Be(RiskDecisionKind.ApprovedWithWarnings);
+        result.Violations.Should().HaveCount(1, "the result snapshots what it judged");
+        result.BlockingViolation.Should().BeNull();
+    }
+
     [Fact]
     public void FromViolations_Null_Throws()
     {

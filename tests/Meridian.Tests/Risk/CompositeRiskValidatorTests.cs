@@ -166,6 +166,44 @@ public sealed class CompositeRiskValidatorTests
         outcome.Result.Violations.Should().ContainSingle(v => v.Code == "S");
     }
 
+    /// <summary>
+    /// A rule that ignores its token is abandoned mid-evaluation, so the validator never receives
+    /// the reservation it eventually takes. Nothing downstream can release a handle it was never
+    /// given, so the release has to be arranged before abandoning the evaluation — otherwise the
+    /// slot is consumed forever and repeated cancellations starve the rule.
+    /// </summary>
+    [Fact]
+    public async Task ValidateOrderAsync_WhenCancelledWhileAReservingRuleIsInFlight_RollsBackItsLateReservation()
+    {
+        var evaluation = new TaskCompletionSource<RiskRuleReservationResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var reservation = new StubReservation();
+        var validator = Build(new StubDetachedReservingRule(evaluation.Task));
+
+        using var cts = new CancellationTokenSource();
+        var validation = validator.ValidateOrderAsync(CreateOrder(), cts.Token);
+
+        await cts.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => validation);
+
+        // Only now does the abandoned rule finish, holding capacity nobody is tracking.
+        evaluation.SetResult(new RiskRuleReservationResult(null, reservation));
+
+        await WaitUntilAsync(() => reservation.RolledBack);
+        reservation.RolledBack.Should().BeTrue("an abandoned evaluation must not keep its slot");
+        reservation.Committed.Should().BeFalse();
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        // The release runs on a continuation of the abandoned task, so it is not observable the
+        // instant the awaited call throws.
+        for (var attempt = 0; attempt < 200 && !condition(); attempt++)
+        {
+            await Task.Delay(10);
+        }
+    }
+
     private static CompositeRiskValidator Build(params IRiskRule[] rules) =>
         new(rules, NullLogger<CompositeRiskValidator>.Instance);
 
@@ -250,6 +288,27 @@ public sealed class CompositeRiskValidatorTests
             Reservations.Add(reservation);
             return Task.FromResult(new RiskRuleReservationResult(null, reservation));
         }
+    }
+
+    /// <summary>
+    /// A reserving rule that ignores its cancellation token and completes only when the test says
+    /// so — the contract violation the abandonment path exists to survive.
+    /// </summary>
+    private sealed class StubDetachedReservingRule(Task<RiskRuleReservationResult> evaluation)
+        : IReservingRiskRule
+    {
+        public string RuleName => "detached";
+
+        public int Priority => 0;
+
+        public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
+
+        public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult<RiskFinding?>(null);
+
+        public Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
+            OrderRequest request,
+            CancellationToken ct = default) => evaluation;
     }
 
     private sealed class StubReservation : IRiskReservation

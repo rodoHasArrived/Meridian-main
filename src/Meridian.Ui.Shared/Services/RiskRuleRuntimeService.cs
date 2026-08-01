@@ -396,9 +396,14 @@ public sealed class RiskRuleRuntimeService
     {
         var maxOrdersPerMinute = GetMaxOrdersPerMinute();
         var cutoff = asOf.AddMinutes(-1);
+        // A gateway-rejected submission never routed, and the OMS rolls its rate slot back, so the
+        // throttle does not count it. Counting it here would report the window as constrained while
+        // the rule has full capacity — a burst of gateway rejections would show a throttle that is
+        // not actually throttling. "Outcome" carries the order status the submission ended at.
         var recentOrderCount = auditEntries.Count(entry =>
             entry.OccurredAt >= cutoff &&
-            string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase));
+            string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(entry.Outcome, "Rejected", StringComparison.OrdinalIgnoreCase));
 
         var breached = recentOrderCount > maxOrdersPerMinute;
         var state = breached

@@ -229,7 +229,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
         {
             return await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
         }
-        catch (TimeoutException)
+        // Both paths abandon the evaluation before it hands its reservation back. Cancellation
+        // matters as much as timeout here: a rule that ignores its token still completes later, and
+        // the outer handler cannot release a reservation it was never given. Leaking one
+        // permanently consumes capacity, so repeated cancellations would starve the rule.
+        catch (Exception ex) when (ex is TimeoutException or OperationCanceledException)
         {
             // Do not await the abandoned evaluation, but do not leak whatever it reserved either.
             _ = evaluation.ContinueWith(

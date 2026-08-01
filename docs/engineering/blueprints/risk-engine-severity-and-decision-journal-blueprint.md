@@ -638,7 +638,17 @@ Extends `src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs`, which today maps `/
 `/api/v1/risk`. The new route follows the same dual-mapping.
 
 `orderId` is an exact-match filter, so a caller holding the id returned by a submission can read
-back that decision deterministically even under concurrent submissions for the same symbol.
+back that decision even under concurrent submissions for the same symbol.
+
+That is not sufficient on its own. `OrderManagementSystem` deliberately permits a client order id to
+be reused once the previous order reached a terminal state, so an exact-match filter can return the
+decisions of both the old and the new submission and the caller cannot tell which is theirs. The
+journal already captures `CorrelationId`, `BrokerName`, and `SessionId`; the response must expose
+`correlationId` and `occurredAt` per record, and the route must accept an optional `correlationId`
+filter. A caller that supplied a correlation id reads back exactly its own decision; one that did
+not gets every decision for the id, newest first, and can disambiguate by timestamp. Filtering on
+`orderId` alone is only deterministic for ids that have never been reused, which the OMS does not
+guarantee.
 
 `journalCompleteness` describes coverage over the *queried range*, not the current setting.
 `RiskJournalOptions` is read through `IOptionsMonitor`, so `JournalCleanApprovals` can flip at
@@ -730,9 +740,14 @@ the missing-order-id and double-write defects that Decision 5 exists to prevent.
 | All `Pass` | `Approved` |
 
 A rule's declared `Severity` maps to its outcome kind when the rule reports a finding:
-`Info` → `Annotate`, `Warning` → `Annotate`, `Error` → `Block`, `Critical` → `Block`. A rule may
-override by returning `Escalate` explicitly. This is the single line that turns severity from a log
-field into a decision.
+`Info` → `Annotate`, `Warning` → `Annotate`, `Error` → `Block`, `Critical` → `Block`. This is the
+single line that turns severity from a log field into a decision.
+
+Escalation is subordinate to that mapping, not an override of it. A rule asks for sign-off by
+setting `RequiresAcknowledgement` on its finding, and the resolver honours it only when nothing
+blocks: a blocking severity in the same set still rejects. A rule cannot escalate its way past its
+own declared severity — allowing that would restore the contradiction this design exists to remove,
+and would put a rejected order in front of an operator as though sign-off could release it.
 
 **Error handling**
 

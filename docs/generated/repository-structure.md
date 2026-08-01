@@ -9065,6 +9065,7 @@ Meridian-main
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
+│   │   │   ├── RiskRuleRuntimeOrderRateStatusTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs
