@@ -90,12 +90,23 @@ live enum before claiming a member is new, and check sibling blueprints before c
 ordinal. Current tail of `ManualJournalEntryTypeDto` is `ClosingEntry = 15`; the equalization
 blueprint reserves `16–18`.
 
+The same applies to enums a blueprint might mistake for its own. `Meridian.Ledger.EqualizationMethod`
+already ships in `ShareClass.cs` (`None = 0`, `Equalisation = 1`) and gates the Method A path in
+`ShareClassUnitRegisterProjector`; the equalization blueprint appends `SeriesOfShares = 2` rather
+than redeclaring it. **Before writing `public enum X` in a blueprint, grep `src/` for `enum X`.**
+
 ### Terminology
 
 Use **US spelling in code identifiers, routes, and wire contracts** (`Crystallize`,
 `Equalization`). UK spelling in narrative prose is tolerated, but a blueprint must not let the two
 spellings reach an interface, a route segment, or a column name, because the incentive-fee and
 equalization engines share one crystallization boundary.
+
+**Check for a collision before normalising a name to US spelling.** A UK-spelled proposed identifier
+can become a duplicate of a *shipped* US-spelled type in the same namespace. This already bit the
+equalization blueprint once: its proposed lot-level `EqualisationAdjustment` normalised to
+`EqualizationAdjustment`, which `Meridian.Ledger` already defines in `EqualizationCalculator.cs`
+with an incompatible shape. It is now `EqualizationLotAdjustment`.
 
 This convention is **not yet uniformly true of source**, and a blueprint must not claim otherwise.
 The shipped type is `EqualizationCalculator` / `EqualizationAdjustment` (US), but its members are
@@ -116,6 +127,12 @@ inferred. Current recorded contract:
   terms; `InvestorSeries` + Method B ⇒ one row per series, `series_id` set,
   `high_water_mark_per_share` in per-share terms. The scope is a **series, never an investor**;
   per-investor HWM rows are not permitted under either method.
+
+  **Unit discipline.** The two HWM columns are in different units, and
+  `PartnershipInvestorAccountingProjector` works in total-NAV terms only. A series row's per-share
+  HWM must be multiplied by series units before the projector call and divided back before it is
+  persisted (equalization §6.1, incentive-fee §5.3). Passing a per-share HWM into a total-NAV
+  subtraction overstates the fee by roughly the unit count.
 
   Two things are explicitly *not* HWM owners, both of which an earlier draft of this contract got
   wrong. `PartnershipInvestorAllocationInput.HighWaterMark` is a `sealed record` constructor

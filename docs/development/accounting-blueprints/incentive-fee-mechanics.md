@@ -558,6 +558,13 @@ Roll-forward rules (pure, in `IncentiveFeeStateRoller.Roll(prior, result, crysta
   This roller is the **only** writer of the HWM. Because `incentive_fee_state` is the single durable
   owner, no equalization-side code advances a HWM independently.
 
+  **Unit discipline on series rows.** `result.CandidateHighWaterMark` comes out of
+  `PartnershipInvestorAccountingProjector` in **total-NAV terms**, but a series row persists
+  `HighWaterMarkPerShare`. Divide by the series units outstanding used for that period's
+  `EndingNavBeforeFees` before writing, and multiply back when hydrating the next period's input
+  (equalization §6.1). Writing the total-NAV candidate straight into the per-share column silently
+  overstates every subsequent period's fee.
+
 ### 5.4 The policy aggregate
 
 ```csharp
