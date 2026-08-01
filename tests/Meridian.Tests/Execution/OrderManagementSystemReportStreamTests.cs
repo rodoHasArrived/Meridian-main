@@ -229,8 +229,12 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 30m, fillPrice: 150m, orderQuantity: 30m));
 
-        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
-            "the streamed completion report must reach the amended tracked order");
+        // The tracked status flips before the fill reaches the portfolio, so wait on the
+        // effect this test asserts rather than racing the accounting handoff.
+        await WaitUntilAsync(
+            () => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled &&
+                portfolio.Positions.ContainsKey("AAPL"),
+            "the streamed completion report must reach the amended tracked order and the portfolio");
 
         var order = oms.GetOrder(result.OrderId)!;
         order.Quantity.Should().Be(30m);
@@ -280,8 +284,12 @@ public sealed class OrderManagementSystemReportStreamTests
 
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
-        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
-            "the oversized completion report reaches the tracked order");
+        // The tracked status flips before the fill reaches the portfolio, so wait on the
+        // effect this test asserts rather than racing the accounting handoff.
+        await WaitUntilAsync(
+            () => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled &&
+                portfolio.Positions.ContainsKey("AAPL"),
+            "the oversized completion report reaches the tracked order and the portfolio");
 
         oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m);
 

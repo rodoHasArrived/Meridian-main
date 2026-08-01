@@ -18,6 +18,13 @@ public sealed record ExecutionOperatorControlOptions(
         Path.Combine(AppContext.BaseDirectory, "data", "execution", "controls"));
 
     public string SnapshotPath => Path.Combine(RootDirectory, "controls.json");
+
+    /// <summary>
+    /// Marker recording a circuit-breaker trip that was demanded but could not be written
+    /// into the snapshot. It is independent of the snapshot on purpose: the snapshot write
+    /// is exactly what failed, so the halt needs somewhere else to survive a restart.
+    /// </summary>
+    public string PendingTripPath => Path.Combine(RootDirectory, "pending-circuit-breaker-trip.txt");
 }
 
 /// <summary>
@@ -137,6 +144,7 @@ public sealed class ExecutionOperatorControlService
         _auditTrail = auditTrail;
 
         LoadSnapshot();
+        ApplyPendingTripMarker();
 
         if (_defaultMaxPositionSize is null && brokerageConfiguration?.MaxPositionSize > 0m)
         {
@@ -187,6 +195,22 @@ public sealed class ExecutionOperatorControlService
             },
             shouldPersist: null,
             ct).ConfigureAwait(false);
+
+        // Immediately after the snapshot commit and before the audit write: an audit
+        // failure or a cancelled request must not leave a superseded marker on disk, or
+        // the next restart would reopen the breaker an operator just durably closed.
+        //
+        // Marker removal is part of the close decision, not bookkeeping after it. A marker
+        // that survives will reopen the breaker on the next restart, so reporting a
+        // successful close while it is still there would promise a state the next start
+        // silently revokes.
+        if (!ClearPendingTripMarker())
+        {
+            throw new InvalidOperationException(
+                $"The circuit breaker decision was persisted, but the pending-trip marker at "
+                + $"'{_options.PendingTripPath}' could not be removed; a restart would reopen the breaker. "
+                + "Remove the marker before relying on this state.");
+        }
 
         await RecordAuditAsync(
             isOpen ? "CircuitBreakerOpened" : "CircuitBreakerClosed",
@@ -441,7 +465,11 @@ public sealed class ExecutionOperatorControlService
                 var normalizedSymbol = request.Symbol.Trim().ToUpperInvariant();
                 if (portfolioState?.Positions.TryGetValue(normalizedSymbol, out var existingPosition) == true)
                 {
-                    currentQuantity = existingPosition.Quantity;
+                    // Unrounded: IPosition.Quantity is whole shares, and the order delta
+                    // below is decimal. Fractional and broker-native notional fills are real,
+                    // so rounding the held side lets a 0.9-share position plus a 0.2-share
+                    // buy read as 0.2 against a 1-share cap and approve a 1.1-share position.
+                    currentQuantity = existingPosition.ExactQuantity;
                 }
 
                 var signedDelta = request.Side == OrderSide.Buy ? request.Quantity : -request.Quantity;
@@ -520,6 +548,96 @@ public sealed class ExecutionOperatorControlService
         {
             _logger.LogError(ex, "Failed to load execution control snapshot from {Path}", _options.SnapshotPath);
             EnterFailClosedStateIfRequired("Execution control snapshot is unreadable or corrupt.");
+        }
+    }
+
+    /// <summary>
+    /// Durably records a circuit-breaker trip whose snapshot write failed, so a restart
+    /// before the retry succeeds still comes up halted. Best-effort by nature — the caller
+    /// already holds an in-memory fail-closed latch — but a snapshot write can fail for
+    /// reasons a small independent marker survives. Returns whether the marker landed.
+    /// </summary>
+    public async Task<bool> TryRecordPendingCircuitBreakerTripAsync(string? reason, CancellationToken ct = default)
+    {
+        try
+        {
+            Directory.CreateDirectory(_options.RootDirectory);
+            await AtomicFileWriter
+                .WriteAsync(
+                    _options.PendingTripPath,
+                    string.IsNullOrWhiteSpace(reason) ? "Critical risk rule demanded a halt." : reason,
+                    ct)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(
+                exception,
+                "A demanded circuit-breaker trip could not be durably recorded; the halt survives only in memory");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Opens the breaker at startup when a previous process recorded a trip it could not
+    /// persist. The snapshot on disk is still the stale pre-trip one, so without this the
+    /// halt would silently disappear across a restart.
+    /// </summary>
+    private void ApplyPendingTripMarker()
+    {
+        string reason;
+        try
+        {
+            if (!File.Exists(_options.PendingTripPath))
+            {
+                return;
+            }
+
+            reason = File.ReadAllText(_options.PendingTripPath).Trim();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // The marker exists but is unreadable: its very presence is the halt signal.
+            _logger.LogError(exception, "Pending circuit-breaker trip marker could not be read; halting anyway");
+            reason = string.Empty;
+        }
+
+        if (_circuitBreaker.IsOpen)
+        {
+            return;
+        }
+
+        _circuitBreaker = new ExecutionCircuitBreakerState(
+            IsOpen: true,
+            Reason: string.IsNullOrWhiteSpace(reason)
+                ? "A circuit-breaker trip from a previous process was never durably committed."
+                : reason,
+            ChangedBy: "risk-engine/pending-trip-recovery",
+            ChangedAt: DateTimeOffset.UtcNow);
+        _logger.LogCritical(
+            "Execution circuit breaker opened at startup: a previous process demanded a halt that never reached the snapshot");
+    }
+
+    /// <summary>
+    /// Clears the pending-trip marker once an explicit breaker decision has been durably
+    /// written — the snapshot is authoritative again, in either direction.
+    /// </summary>
+    private bool ClearPendingTripMarker()
+    {
+        try
+        {
+            if (File.Exists(_options.PendingTripPath))
+            {
+                File.Delete(_options.PendingTripPath);
+            }
+
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogError(exception, "Pending circuit-breaker trip marker could not be cleared");
+            return false;
         }
     }
 

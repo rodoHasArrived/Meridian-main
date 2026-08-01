@@ -57,6 +57,9 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(List<ExecutionManualOverride>))]
 // Operator control and audit trail types
 [JsonSerializable(typeof(ExecutionControlSnapshot))]
+// Governed-approval queue persistence
+[JsonSerializable(typeof(RiskEscalationSnapshot))]
+[JsonSerializable(typeof(OrderRequest))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
 {
 }
