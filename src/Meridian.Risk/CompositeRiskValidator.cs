@@ -297,11 +297,30 @@ public sealed class CompositeRiskValidator : IRiskValidator
         return int.MaxValue;
     }
 
-    private static void RollbackAll(List<IRiskReservation> reservations)
+    /// <summary>
+    /// Releases every reservation taken so far, continuing past any that fails.
+    /// <para>
+    /// Two reasons this neither stops nor throws. Stopping would leave a faulty rule's neighbours
+    /// pending, so one bad callback would permanently consume another rule's capacity. And this runs
+    /// on the failure path — inside the cancellation/evaluation-failure handler, and before a
+    /// rejection returns — where the original outcome is the caller's answer; replacing it with a
+    /// cleanup exception would hide why the order was actually blocked.
+    /// </para>
+    /// </summary>
+    private void RollbackAll(List<IRiskReservation> reservations)
     {
         foreach (var reservation in reservations)
         {
-            reservation.Rollback();
+            try
+            {
+                reservation.Rollback();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "A risk reservation could not be released; its capacity stays consumed until the window expires.");
+            }
         }
 
         reservations.Clear();

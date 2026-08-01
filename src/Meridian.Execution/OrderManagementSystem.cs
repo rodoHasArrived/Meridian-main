@@ -601,10 +601,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 {
                     // The submission failure is the caller's answer; losing the audit write must not
                     // replace it with an unrelated exception.
+                    // orderId is request.ClientOrderId when the caller supplied one, so it carries
+                    // the same log-forging exposure as the symbol on the risk path.
                     _logger.LogError(
                         auditException,
                         "Order {OrderId} failed ambiguously and its audit record could not be written",
-                        orderId);
+                        ExecutionLogText.ForLog(orderId));
                 }
             }
 

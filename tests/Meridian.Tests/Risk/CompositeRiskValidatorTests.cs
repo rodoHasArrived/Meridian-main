@@ -194,6 +194,26 @@ public sealed class CompositeRiskValidatorTests
         reservation.Committed.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Cleanup runs on the failure path, so one faulty rule must neither strand its neighbours'
+    /// capacity nor replace the rejection the caller is actually waiting for.
+    /// </summary>
+    [Fact]
+    public async Task ValidateOrderAsync_WhenARollbackThrows_StillReleasesTheOthersAndReportsTheRejection()
+    {
+        var healthy = new StubReservingRule("healthy") { Priority = 2 };
+        var validator = Build(
+            new StubThrowingRollbackRule("faulty") { Priority = 1 },
+            healthy,
+            new StubRiskRule("blocker", Finding("BLOCKED", "blocked")) { Priority = 3 });
+
+        var outcome = await validator.ValidateOrderAsync(CreateOrder());
+
+        outcome.Result.RejectCode.Should().Be("BLOCKED", "a failed rollback must not mask the decision");
+        healthy.Reservations.Should().ContainSingle().Which.RolledBack.Should()
+            .BeTrue("a faulty rule must not strand another rule's capacity");
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
         // The release runs on a continuation of the abandoned task, so it is not observable the
@@ -309,6 +329,31 @@ public sealed class CompositeRiskValidatorTests
         public Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
             OrderRequest request,
             CancellationToken ct = default) => evaluation;
+    }
+
+    /// <summary>A reserving rule whose reservation refuses to be released.</summary>
+    private sealed class StubThrowingRollbackRule(string ruleName) : IReservingRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public int Priority { get; init; }
+
+        public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
+
+        public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult<RiskFinding?>(null);
+
+        public Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
+            OrderRequest request,
+            CancellationToken ct = default) =>
+            Task.FromResult(new RiskRuleReservationResult(null, new ThrowingReservation()));
+
+        private sealed class ThrowingReservation : IRiskReservation
+        {
+            public void Commit() => throw new InvalidOperationException("commit failed");
+
+            public void Rollback() => throw new InvalidOperationException("rollback failed");
+        }
     }
 
     private sealed class StubReservation : IRiskReservation
