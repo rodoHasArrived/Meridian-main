@@ -58,17 +58,40 @@ public sealed record RiskValidationOutcome(
     }
 }
 
-/// <summary>Result of a risk validation check.</summary>
+/// <summary>
+/// Result of a risk validation check.
+/// <para>
+/// Construction is factory-only, and both members are get-only so a <c>with</c> expression cannot
+/// reopen them either. The decision has to follow from the violations — that is the point of
+/// severity-driven evaluation — but a public initializer would let any caller, including a
+/// host-supplied <see cref="IRiskValidator"/>, pair <see cref="RiskDecisionKind.Approved"/> with a
+/// blocking violation. The OMS routes on <see cref="IsApproved"/>, so such a result would send an
+/// order carrying an <see cref="RiskRuleSeverity.Error"/> finding to the venue and record it as
+/// admitted.
+/// </para>
+/// </summary>
 public sealed record RiskValidationResult
 {
+    /// <summary>
+    /// Takes both values as arguments rather than initialisers so no decision-less instance exists
+    /// even briefly. The default <see cref="RiskDecisionKind"/> is
+    /// <see cref="RiskDecisionKind.Approved"/>, so an initialiser a later factory forgot to set
+    /// would fail open — the one direction a pre-trade gate must never fail.
+    /// </summary>
+    private RiskValidationResult(RiskDecisionKind decision, IReadOnlyList<RiskViolation> violations)
+    {
+        Decision = decision;
+        Violations = violations;
+    }
+
     /// <summary>The aggregate verdict.</summary>
-    public required RiskDecisionKind Decision { get; init; }
+    public RiskDecisionKind Decision { get; }
 
     /// <summary>
     /// Every finding, ordered by severity descending, then by the declaring rule's priority
     /// ascending.
     /// </summary>
-    public IReadOnlyList<RiskViolation> Violations { get; init; } = [];
+    public IReadOnlyList<RiskViolation> Violations { get; }
 
     /// <summary>
     /// True for every decision except <see cref="RiskDecisionKind.Rejected"/>. Preserved for
@@ -96,24 +119,22 @@ public sealed record RiskValidationResult
 
     /// <summary>An approval with no findings.</summary>
     public static RiskValidationResult Approved() =>
-        new() { Decision = RiskDecisionKind.Approved };
+        new(RiskDecisionKind.Approved, []);
 
     /// <summary>
     /// A rejection with a bare reason. Synthesises an unattributed violation so callers that have
     /// not yet migrated to structured findings keep working.
     /// </summary>
-    public static RiskValidationResult Rejected(string reason) => new()
-    {
-        Decision = RiskDecisionKind.Rejected,
-        Violations =
-        [
-            new RiskViolation(
-                RuleName: "Unattributed",
-                Severity: RiskRuleSeverity.Error,
-                Code: "RISK_REJECTED",
-                Message: reason)
-        ]
-    };
+    public static RiskValidationResult Rejected(string reason) =>
+        new(
+            RiskDecisionKind.Rejected,
+            [
+                new RiskViolation(
+                    RuleName: "Unattributed",
+                    Severity: RiskRuleSeverity.Error,
+                    Code: "RISK_REJECTED",
+                    Message: reason)
+            ]);
 
     /// <summary>
     /// Builds an aggregate from an ordered violation set. Blocking severity wins; otherwise an
@@ -134,6 +155,6 @@ public sealed record RiskValidationResult
                 ? RiskDecisionKind.Escalated
                 : RiskDecisionKind.ApprovedWithWarnings;
 
-        return new RiskValidationResult { Decision = decision, Violations = violations };
+        return new RiskValidationResult(decision, violations);
     }
 }

@@ -151,7 +151,6 @@ public sealed class CompositeRiskValidator : IRiskValidator
             {
                 var reservationResult = await WithHardTimeoutAsync(
                         reserving.EvaluateAndReserveAsync(request, effectiveToken),
-                        reservations,
                         ct)
                     .ConfigureAwait(false);
 
@@ -195,6 +194,12 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// Bounds an evaluation that may ignore its cancellation token. Passing a token that is
     /// cancelled after a delay only helps for rules that observe it; a rule that never completes
     /// would otherwise hang the pre-trade gate for callers that supply no deadline of their own.
+    /// <para>
+    /// <c>Task.WaitAsync</c> tears its timer down as soon as the evaluation completes. A hand-rolled
+    /// <c>WhenAny(evaluation, Task.Delay(...))</c> leaves the losing delay scheduled for the full
+    /// timeout, so a rejected burst — which still evaluates every rule — would accumulate one live
+    /// timer per rule per order on the pre-trade path.
+    /// </para>
     /// </summary>
     private async Task<T> WithHardTimeoutAsync<T>(Task<T> evaluation, CancellationToken ct)
     {
@@ -203,15 +208,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
             return await evaluation.ConfigureAwait(false);
         }
 
-        var completed = await Task.WhenAny(evaluation, Task.Delay(_perRuleTimeout, ct)).ConfigureAwait(false);
-        if (!ReferenceEquals(completed, evaluation))
-        {
-            ct.ThrowIfCancellationRequested();
-            throw new TimeoutException(
-                $"Risk rule evaluation exceeded {_perRuleTimeout}.");
-        }
-
-        return await evaluation.ConfigureAwait(false);
+        return await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -221,7 +218,6 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// </summary>
     private async Task<RiskRuleReservationResult> WithHardTimeoutAsync(
         Task<RiskRuleReservationResult> evaluation,
-        List<IRiskReservation> reservations,
         CancellationToken ct)
     {
         if (_perRuleTimeout == Timeout.InfiniteTimeSpan)
@@ -229,8 +225,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
             return await evaluation.ConfigureAwait(false);
         }
 
-        var completed = await Task.WhenAny(evaluation, Task.Delay(_perRuleTimeout, ct)).ConfigureAwait(false);
-        if (!ReferenceEquals(completed, evaluation))
+        try
+        {
+            return await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
         {
             // Do not await the abandoned evaluation, but do not leak whatever it reserved either.
             _ = evaluation.ContinueWith(
@@ -239,12 +238,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously,
                 TaskScheduler.Default);
 
-            ct.ThrowIfCancellationRequested();
-            throw new TimeoutException(
-                $"Risk rule evaluation exceeded {_perRuleTimeout}.");
+            throw;
         }
-
-        return await evaluation.ConfigureAwait(false);
     }
 
     private CancellationTokenSource? CreateTimeoutSource(CancellationToken ct)
