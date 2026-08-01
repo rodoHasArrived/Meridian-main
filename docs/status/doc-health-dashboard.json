@@ -1,11 +1,11 @@
 {
   "total_files": 637,
-  "total_lines": 115259,
+  "total_lines": 115267,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 218,
-  "average_lines": 180.9,
+  "average_lines": 181.0,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -3324,7 +3324,7 @@
     },
     {
       "path": "docs/roadmap/roadmap-item-template.md",
-      "line_count": 37,
+      "line_count": 45,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

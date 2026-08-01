@@ -32,15 +32,15 @@
   "outputs": [
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "sha256": "dccb26838a6025400f251ccfe7fa1f4d20032e7cce46d6a8563973ee438bbcb8"
+      "sha256": "09b7afc05741a8a6f4bbc866cf3d759e86a0a66b63e1338c934f663418dcfdcc"
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "85db1224ed6fb92fe89fecd41eb3b69eeb9f49ccc6935f465ba0fe8963e2728c"
+      "sha256": "0c0f17181c69f61ad3ab9fbff6c4b9f68fd9a4abf37040e4c2a04a7b1250a40b"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "sha256": "dccb26838a6025400f251ccfe7fa1f4d20032e7cce46d6a8563973ee438bbcb8"
+      "sha256": "09b7afc05741a8a6f4bbc866cf3d759e86a0a66b63e1338c934f663418dcfdcc"
     }
   ],
   "schema": {

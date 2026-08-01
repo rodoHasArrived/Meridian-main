@@ -30,8 +30,16 @@ Checklist items should name implementation evidence, validation commands, and us
 
 ## Ordering within a wave
 
-Generated views order a wave by `sequence` when items declare it, and otherwise by the identifier's
-trailing number. Set `sequence` whenever a wave's adopted order is not the order its identifiers
-imply — for example a wave that numbers per area, where every row ends in `001` and the trailing
-number carries no rank. Adding it to any item in a wave is a minor schema change; see
-[schema-versioning.md](schema-versioning.md).
+Every generated roadmap view — the Mermaid diagram, `ROADMAP_SUMMARY.md`, and `roadmap-register.md`
+— shares one ordering: wave first, then rank within the wave. Rank comes from `sequence` when an
+item declares it, and otherwise from the identifier's trailing number.
+
+Set `sequence` whenever a wave's adopted order is not the order its identifiers imply — for example
+a wave that numbers per area, where every row ends in `001` and the trailing number carries no rank.
+Setting it on a row is an ordinary data update. `sequence` must be an integer of 1 or greater;
+validation rejects anything else rather than letting a generated view order itself against the
+adopted rank.
+
+The optional field was introduced as a single minor schema change, and the registry's declared
+`schema.version` was bumped once when the first row started using it. Neither happens again per row;
+see [schema-versioning.md](schema-versioning.md).

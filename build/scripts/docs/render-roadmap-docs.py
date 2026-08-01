@@ -12,6 +12,7 @@ from common import (
     markdown_table,
     repo_path,
     repo_root,
+    roadmap_item_sort_key,
     write_manifest,
     write_text_if_changed,
 )
@@ -26,7 +27,7 @@ def load_roadmap(root: Path) -> tuple[dict, dict, list[Path]]:
 
 
 def render_summary(root: Path, program: dict, roadmap: dict, inputs: list[Path]) -> str:
-    items = sorted(roadmap.get("items", []), key=lambda item: item.get("id", ""))
+    items = sorted(roadmap.get("items", []), key=roadmap_item_sort_key)
     schema_versions = [
         f"{program.get('schema', {}).get('id')}@{program.get('schema', {}).get('version')}",
         f"{roadmap.get('schema', {}).get('id')}@{roadmap.get('schema', {}).get('version')}",
@@ -52,7 +53,7 @@ def render_summary(root: Path, program: dict, roadmap: dict, inputs: list[Path])
 
 
 def render_register(root: Path, program: dict, roadmap: dict, inputs: list[Path]) -> str:
-    items = sorted(roadmap.get("items", []), key=lambda item: item.get("id", ""))
+    items = sorted(roadmap.get("items", []), key=roadmap_item_sort_key)
     schema_versions = [f"{roadmap.get('schema', {}).get('id')}@{roadmap.get('schema', {}).get('version')}"]
     parts = [
         generated_header("build/scripts/docs/render-roadmap-docs.py", schema_versions, [repo_path(path, root) for path in inputs]),
