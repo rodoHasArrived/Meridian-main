@@ -17,8 +17,15 @@ namespace Meridian.Execution.Sdk;
 public interface INotionalOrderSizingGateway
 {
     /// <summary>
-    /// Whether this gateway routes the broker-native notional metadata amount in place of
-    /// <see cref="OrderRequest.Quantity"/>.
+    /// Whether this gateway will route the broker-native notional metadata amount in place
+    /// of <see cref="OrderRequest.Quantity"/> <em>for this order</em>.
     /// </summary>
-    bool SupportsNotionalOrderSizing { get; }
+    /// <remarks>
+    /// Per-request, not per-gateway: an adapter can honour notional sizing for one asset
+    /// class and route quantity for another. Alpaca does exactly that — it sends the dollar
+    /// amount for equities but clears it and restores face-value quantity for fixed income,
+    /// so a blanket capability would have the rails measure a treasury order at its metadata
+    /// dollars while the broker receives thousands of face-value units.
+    /// </remarks>
+    bool RoutesNotionalMetadata(OrderRequest request);
 }

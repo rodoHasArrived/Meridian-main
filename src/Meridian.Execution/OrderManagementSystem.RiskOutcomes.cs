@@ -182,8 +182,8 @@ public sealed partial class OrderManagementSystem
     /// 100,000 shares. Refusing beats measuring one size and routing another.
     /// </summary>
     private bool CarriesUnroutableNotionalMetadata(OrderRequest request) =>
-        !_gatewayRoutesNotionalMetadata &&
-        BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null;
+        BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null &&
+        _notionalSizingGateway?.RoutesNotionalMetadata(request) is not true;
 
     private static string UnroutableNotionalMetadataReason(string brokerName) =>
         $"Broker-native notional sizing metadata is not supported by {brokerName}; this gateway "

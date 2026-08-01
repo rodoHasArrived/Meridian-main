@@ -173,6 +173,44 @@ public sealed class OrderManagementSystemTests : IDisposable
     }
 
     [Fact]
+    public async Task PlaceOrderAsync_WhenTheGatewayRoutesQuantityForThisAssetClass_RejectsNotionalMetadata()
+    {
+        // The capability is per order, not per gateway. Alpaca honours notional sizing for
+        // equities but clears it and routes face-value quantity for fixed income, so a
+        // treasury order carrying notional metadata must be refused even though the same
+        // gateway routes it for equities.
+        var gateway = new AssetClassAwareNotionalGateway("alpaca");
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "T-BILL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 5_000m,
+            LimitPrice = 100m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "1",
+                ["asset_class"] = "treasury"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("notional");
+    }
+
+    /// <summary>Routes notional dollars except for fixed income, mirroring Alpaca.</summary>
+    private sealed class AssetClassAwareNotionalGateway(string gatewayId)
+        : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway
+    {
+        public bool RoutesNotionalMetadata(OrderRequest request) =>
+            !(request.Metadata is not null &&
+              request.Metadata.TryGetValue("asset_class", out var assetClass) &&
+              assetClass is "treasury" or "corporate");
+    }
+
+    [Fact]
     public async Task PlaceOrderAsync_OnGatewayThatRoutesQuantity_AllowsOrdersWithoutNotionalMetadata()
     {
         using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
@@ -939,7 +977,7 @@ public sealed class OrderManagementSystemTests : IDisposable
     private sealed class NotionalSizingPaperExecutionGateway(string gatewayId)
         : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway
     {
-        public bool SupportsNotionalOrderSizing => true;
+        public bool RoutesNotionalMetadata(OrderRequest request) => true;
     }
 
     private sealed class TypedPaperExecutionGateway(string gatewayId)

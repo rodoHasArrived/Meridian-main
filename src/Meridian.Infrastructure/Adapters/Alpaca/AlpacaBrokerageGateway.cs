@@ -44,11 +44,21 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 {
     /// <inheritdoc />
     /// <remarks>
-    /// Alpaca is the one adapter that reads the notional metadata keys and sends the dollar
-    /// amount as the order's size; see the <c>payload.Notional</c> assignment in
-    /// <c>BuildOrderPayload</c>.
+    /// Alpaca reads the notional metadata keys and sends the dollar amount as the order's
+    /// size — see the <c>payload.Notional</c> assignment in <c>BuildOrderPayload</c> — but
+    /// not for fixed income: the same builder clears <c>Notional</c> and restores face-value
+    /// <c>Qty</c> for treasury and corporate. Reporting support for those would have the
+    /// rails measure the metadata dollars while the broker receives the face value.
     /// </remarks>
-    public bool SupportsNotionalOrderSizing => true;
+    public bool RoutesNotionalMetadata(OrderRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return !IsFixedIncomeAssetClass(
+            ReadMetadataString(request.Metadata, out var assetClass, "asset_class", "assetClass", "alpaca:asset_class")
+                ? NormalizeAssetClass(assetClass)
+                : null);
+    }
 
     private const int AccountActivityPageSize = 100;
 

@@ -35,7 +35,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly OrderManagementSystemOptions _options;
     private readonly ExecutionMode _gatewayExecutionMode;
-    private readonly bool _gatewayRoutesNotionalMetadata;
+    private readonly INotionalOrderSizingGateway? _notionalSizingGateway;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
@@ -141,11 +141,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
             : BrokerageOrderPlacementGate.ResolveExecutionMode(brokerageConfiguration, gateway.GatewayId);
-        // Only a gateway that advertises native notional sizing routes the metadata dollars.
-        // Everything else routes Quantity, so measuring those orders at the metadata amount
-        // would hand the rails a number the broker never sees.
-        _gatewayRoutesNotionalMetadata =
-            gateway is INotionalOrderSizingGateway { SupportsNotionalOrderSizing: true };
+        // Only a gateway that advertises native notional sizing routes the metadata dollars,
+        // and it advertises that per order: an adapter can honour it for one asset class and
+        // route quantity for another. Everything else routes Quantity, so measuring those
+        // orders at the metadata amount hands the rails a number the broker never sees.
+        _notionalSizingGateway = gateway as INotionalOrderSizingGateway;
         // ExecutionReports is a best-effort observer stream: order state, session fill history,
         // and the durable accounting handoff own correctness. The previous FullMode.Wait made a
         // slow (or absent — there is no production reader today) subscriber block WriteAsync on
