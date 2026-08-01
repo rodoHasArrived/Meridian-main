@@ -55,12 +55,36 @@ DECLARATION = re.compile(
     r"(?P<name>[A-Za-z_$][\w$]*)",
     re.MULTILINE,
 )
+# `export { LedgerRowDto } from "../contracts"` and `export { A, B as C }` publish names from the
+# module just as a declaration does, so they collide under the barrel's `export *` in exactly the
+# same way. Matching only declarations meant a re-exported duplicate silently vanished from
+# '@/types' while the gate reported zero duplicates.
+NAMED_REEXPORT = re.compile(r"^[ \t]*export\s+type\s*\{(?P<names>[^}]*)\}|^[ \t]*export\s*\{(?P<plain>[^}]*)\}", re.MULTILINE)
+# Inside the braces: `Name`, `Name as Alias`, `type Name`, `default as Name`. The published name
+# is the alias when present, otherwise the name itself.
+REEXPORT_SPECIFIER = re.compile(r"(?:type\s+)?(?P<name>[A-Za-z_$][\w$]*)(?:\s+as\s+(?P<alias>[A-Za-z_$][\w$]*))?")
 
 
 def read_barrel_modules(barrel_path: Path) -> list[str]:
     if not barrel_path.is_file():
         raise FileNotFoundError(f"type barrel not found: {barrel_path}")
     return BARREL_EXPORT.findall(barrel_path.read_text(encoding="utf-8"))
+
+
+def _starts_regex_literal(emitted: list[str]) -> bool:
+    """Return whether a `/` at this point opens a regex literal rather than dividing.
+
+    JavaScript needs the parser state to answer this exactly; the standard heuristic is that a
+    regex can only begin where a value can, i.e. after an operator, an opening bracket, or a
+    statement boundary. Contract modules are types and constants, so the heuristic is ample —
+    and it is only used to blank the literal out, never to interpret it.
+    """
+    for ch in reversed(emitted):
+        if ch in " \t\r\n":
+            continue
+        # `/` after `/` or `*` is a comment opener, handled by the caller before this runs.
+        return ch in "(,=:[!&|?{};+-*%~^<>"
+    return True  # start of file
 
 
 def strip_comments_and_strings(text: str) -> str:
@@ -115,6 +139,36 @@ def strip_comments_and_strings(text: str) -> str:
             out.append("  ")
             i += 2
             continue
+        if ch == "/" and _starts_regex_literal(out):
+            # A regex literal can hold an unmatched brace (/\{/), and declared_names infers
+            # nesting from brace depth. One such literal at module scope would raise the depth
+            # for the rest of the file, dropping every later export from the comparison — the
+            # gate would then report zero duplicates no matter what was duplicated.
+            out.append(" ")
+            i += 1
+            in_class = False
+            while i < length:
+                if text[i] == "\\":
+                    out.append("  ")
+                    i += 2
+                    continue
+                if text[i] == "\n":
+                    # An unterminated regex cannot span lines; treat this as a division sign
+                    # after all and resume normal scanning.
+                    out.append("\n")
+                    i += 1
+                    break
+                if text[i] == "[":
+                    in_class = True
+                elif text[i] == "]":
+                    in_class = False
+                elif text[i] == "/" and not in_class:
+                    out.append(" ")
+                    i += 1
+                    break
+                out.append(" ")
+                i += 1
+            continue
         out.append(ch)
         i += 1
     return "".join(out)
@@ -142,11 +196,24 @@ def declared_names(module_path: Path) -> list[str]:
     for line in text.split("\n")[:-1]:
         line_starts.append(line_starts[-1] + len(line) + 1)
 
+    def at_module_scope(offset: int) -> bool:
+        return depth_at_line_start[bisect_right(line_starts, offset) - 1] == 0
+
     names: list[str] = []
     for match in DECLARATION.finditer(text):
-        line_index = bisect_right(line_starts, match.start()) - 1
-        if depth_at_line_start[line_index] == 0:
+        if at_module_scope(match.start()):
             names.append(match.group("name"))
+
+    for match in NAMED_REEXPORT.finditer(text):
+        if not at_module_scope(match.start()):
+            continue
+        body = match.group("names") if match.group("names") is not None else match.group("plain")
+        for specifier in REEXPORT_SPECIFIER.finditer(body or ""):
+            published = specifier.group("alias") or specifier.group("name")
+            # `export { default as X }` publishes X; a bare `default` publishes nothing here.
+            if published != "default":
+                names.append(published)
+
     return names
 
 

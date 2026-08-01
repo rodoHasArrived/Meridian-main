@@ -45,8 +45,12 @@ public sealed class EnvironmentSftpCredentialResolver : ISftpCredentialResolver
             throw new InvalidOperationException($"SFTP {role} secretRef is required.");
 
         var trimmed = secretRef.Trim();
+        // Trim the variable name the same way readiness does. `env: MERIDIAN_SFTP_PASSWORD`
+        // reads naturally in YAML, and Evaluate accepts it, but passing the leading space to
+        // GetEnvironmentVariable looked up a different name and failed after the destination
+        // had already been reported ready — an accepted-then-broken export.
         var password = trimmed.StartsWith("env:", StringComparison.OrdinalIgnoreCase)
-            ? Environment.GetEnvironmentVariable(trimmed[4..])
+            ? Environment.GetEnvironmentVariable(trimmed[4..].Trim())
             : trimmed;
 
         if (string.IsNullOrEmpty(password))

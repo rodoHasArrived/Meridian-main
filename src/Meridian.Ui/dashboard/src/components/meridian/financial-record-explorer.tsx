@@ -1,5 +1,5 @@
 import { Filter, GitBranch, LayoutPanelTop, Link2, Save, Search, ShieldCheck } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerBody } from "@/components/ui/drawer";
@@ -464,6 +464,7 @@ function ExplorerGrid({
   onSelect: (recordId: string) => void;
 }) {
   const rowElements = useRef(new Map<string, HTMLTableRowElement>());
+  const keyboardHelpId = useId();
   const [activeRowIndex, setActiveRowIndex] = useState(0);
 
   const registerRow = useCallback((recordId: string, element: HTMLTableRowElement | null) => {
@@ -591,9 +592,19 @@ function ExplorerGrid({
           Numbering data rows from 1 would make the first record claim the header's position
           and announce every row one place too early. Matches ExplorerDenseGrid in
           components/meridian/ui-kit-primitives.tsx. */}
+      {/* Taking the cell links out of the tab order is only half the job: a keyboard or
+          screen-reader user has no way to discover the replacement gesture, so without this
+          the proof links are unreachable in practice. The instructions are announced when
+          focus enters the grid. */}
+      <p id={keyboardHelpId} className="sr-only">
+        Use the up and down arrow keys to move between records, Enter or Space to open the
+        selected record&apos;s proof detail, Right Arrow to move into the record&apos;s links,
+        Left and Right Arrow to move between them, and Escape to return to the record.
+      </p>
       <table
         role="grid"
         aria-label={`${explorer.title} records`}
+        aria-describedby={keyboardHelpId}
         aria-rowcount={rows.length + 1}
         className="min-w-full text-sm"
       >

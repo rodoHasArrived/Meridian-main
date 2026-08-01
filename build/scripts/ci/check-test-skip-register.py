@@ -105,6 +105,18 @@ def join_literals(literal_text: str) -> str:
     return joined.replace('\\"', '"').replace("\\\\", "\\").replace("\\n", "\n").replace("\\t", "\t")
 
 
+def _is_char_literal(text: str, index: int) -> bool:
+    """Return whether the apostrophe at *index* opens an F# character literal.
+
+    A char literal is 'c', '\\n', or '\\u0041' — always a closing apostrophe within a few
+    characters. A type variable ('T, 'TResult) or a primed identifier (value') has none.
+    """
+    rest = text[index + 1 : index + 12]
+    if rest.startswith("\\"):
+        return "'" in rest[1:]
+    return len(rest) >= 2 and rest[1] == "'"
+
+
 def find_skip_positions(text: str, fsharp: bool = False) -> list[int]:
     """Return offsets just past each `Skip =` that appears in real code.
 
@@ -174,6 +186,14 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[int]:
             i += 1
             continue
         if ch == "'":
+            # In F# an apostrophe also introduces a type variable ('T) and may end an
+            # identifier (value'), neither of which closes. Consuming to the next apostrophe
+            # there swallowed everything up to the following one — including a real
+            # `Skip = ...` — and the gate then reported complete coverage over an
+            # unregistered skipped test. Only a genuine short char literal is consumed.
+            if fsharp and not _is_char_literal(text, i):
+                i += 1
+                continue
             # Character literal; a lone apostrophe inside one must not open a string.
             i += 1
             while i < length and text[i] != "'":

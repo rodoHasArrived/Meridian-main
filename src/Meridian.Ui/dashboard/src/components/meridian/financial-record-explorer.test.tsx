@@ -164,6 +164,20 @@ describe("FinancialRecordExplorerShell", () => {
     expect(link).toHaveAttribute("tabindex", "-1");
   });
 
+  it("announces how to reach links that were removed from the tab order", async () => {
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const describedBy = grid.getAttribute("aria-describedby");
+    expect(describedBy).toBeTruthy();
+
+    // Removing the links from Tab is only half the job: without an announced replacement
+    // gesture a keyboard or screen-reader user cannot reach the proof links at all.
+    const help = document.getElementById(describedBy as string);
+    expect(help).toHaveTextContent(/Right Arrow to move into the record's links/i);
+    expect(help).toHaveTextContent(/Escape to return/i);
+  });
+
   it("reaches a row's links with ArrowRight and returns with Escape", async () => {
     const user = userEvent.setup();
     renderExplorer();

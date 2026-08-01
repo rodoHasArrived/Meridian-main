@@ -135,6 +135,60 @@ class DashboardTypeBarrelTests(unittest.TestCase):
         self.assertEqual(counts["duplicates"], 0)
         self.assertEqual(problems, [])
 
+    def test_detects_a_duplicate_published_by_a_named_re_export(self):
+        # `export { X } from "..."` publishes X exactly as a declaration does, so it collides
+        # under the barrel's `export *` the same way. Matching only declarations meant the
+        # ambiguous name vanished from '@/types' while the gate reported zero duplicates.
+        self.fixture.write_module(
+            "workstation-1",
+            ['export { LedgerRowDto } from "../contracts";'],
+        )
+        self.fixture.write_module(
+            "workstation-2",
+            ["export interface LedgerRowDto { id: string; }"],
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+        self.assertTrue(any("LedgerRowDto" in p for p in problems), msg=problems)
+
+    def test_counts_the_alias_of_a_renamed_re_export(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ['export { InternalRow as LedgerRowDto } from "../contracts";'],
+        )
+        self.fixture.write_module(
+            "workstation-2",
+            ["export interface LedgerRowDto { id: string; }"],
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        # The alias is what '@/types' publishes, so the alias is what can collide.
+        self.assertEqual(counts["duplicates"], 1)
+        self.assertTrue(any("LedgerRowDto" in p for p in problems), msg=problems)
+
+    def test_a_regex_literal_brace_does_not_hide_later_declarations(self):
+        # declared_names infers nesting from brace depth. An unmatched brace inside a regex
+        # literal would raise the depth for the rest of the file, dropping every later export
+        # so the gate reported zero duplicates no matter what was duplicated.
+        self.fixture.write_module(
+            "workstation-1",
+            [
+                "export const BRACE = /\\{/;",
+                "export interface LedgerRowDto { id: string; }",
+            ],
+        )
+        self.fixture.write_module(
+            "workstation-2",
+            ["export interface LedgerRowDto { id: string; }"],
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1, msg=problems)
+
     def test_ignores_a_declaration_inside_a_line_comment(self):
         self.fixture.write_module(
             "workstation-2",

@@ -167,6 +167,34 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertNotIn("tests/Meridian.Tests/DocumentedTests.fs", paths)
 
+    def test_an_fsharp_type_variable_does_not_hide_a_later_skip(self):
+        # 'T is a generic type parameter, not a character literal. Consuming to the next
+        # apostrophe swallowed the real Skip below it and the gate reported full coverage
+        # over an unregistered skipped test.
+        (self.fixture.tests_dir / "GenericTests.fs").write_text(
+            "let identity<'T> (value: 'T) : 'T = value\n"
+            '[<Fact(Skip = "F# generic case pending a decision.")>]\n'
+            "let ``disabled generic case`` () = ()\n",
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("F# generic case pending a decision.", reasons)
+
+    def test_an_fsharp_character_literal_is_still_skipped_over(self):
+        (self.fixture.tests_dir / "CharTests.fs").write_text(
+            "let separator = ';'\n"
+            "let newline = '\\n'\n"
+            '[<Fact(Skip = "F# char case pending a decision.")>]\n'
+            "let ``disabled char case`` () = ()\n",
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("F# char case pending a decision.", reasons)
+
     def test_finds_a_real_fsharp_skip_outside_a_block_comment(self):
         # The comment fix must not blind the scan to genuine F# skips.
         (self.fixture.tests_dir / "GatedTests.fs").write_text(

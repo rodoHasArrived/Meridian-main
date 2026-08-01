@@ -112,6 +112,33 @@ public sealed class SftpCapabilityServiceTests
     }
 
     [Fact]
+    public async Task ResolveAsync_TrimsTheEnvironmentVariableNameLikeReadinessDoes()
+    {
+        const string variable = "MERIDIAN_TEST_SFTP_SPACED";
+        Environment.SetEnvironmentVariable(variable, "spaced-secret");
+        try
+        {
+            var resolver = new EnvironmentSftpCredentialResolver();
+            var service = new SftpCapabilityService();
+
+            // `env: VAR` reads naturally in YAML and readiness accepts it, but passing the
+            // leading space to GetEnvironmentVariable looked up a different name and failed
+            // after the destination had already been reported ready.
+            var destination = CompleteDestination(secretRef: $"env: {variable}");
+
+            service.Evaluate(destination).HasSecretRef.Should().BeTrue();
+
+            var material = await resolver.ResolveAsync(destination, CancellationToken.None);
+
+            material.Password.Should().Be("spaced-secret");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+    }
+
+    [Fact]
     public void Evaluate_Destination_WithAnEmptyEnvReference_IsNotReady()
     {
         var service = new SftpCapabilityService();
