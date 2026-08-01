@@ -116,6 +116,58 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertIn(SkipRegisterFixture.CONCATENATED_REASON, reasons)
 
+    def test_finds_interpolated_skip_reason(self):
+        # An interpolated reason has no statically-known string, but the skip is just as real;
+        # matching only plain literals left environment-gated skips entirely uninventoried.
+        (self.fixture.tests_dir / "InterpolatedTests.cs").write_text(
+            'public sealed class T { void M() { Skip = $"skipped because {Variable}=true."; } }\n',
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn('$"skipped because {Variable}=true."', reasons)
+
+    def test_finds_variable_skip_assignment(self):
+        (self.fixture.tests_dir / "VariableTests.cs").write_text(
+            "public sealed class T { void M() { Skip = reason; } }\n", encoding="utf-8"
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("reason", reasons)
+
+    def test_does_not_truncate_a_concatenation_at_an_interpolated_segment(self):
+        # Recording only the leading literal would register a reason the runner never reports.
+        (self.fixture.tests_dir / "MixedTests.cs").write_text(
+            'public sealed class T { void M() { Skip = "first part. " + $"set {Variable} to run."; } }\n',
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn('"first part. " + $"set {Variable} to run."', reasons)
+
+    def test_reason_containing_a_semicolon_is_not_cut_short(self):
+        (self.fixture.tests_dir / "SemicolonTests.cs").write_text(
+            'public sealed class T { void M() { Skip = "blocked; pending review"; } }\n',
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("blocked; pending review", reasons)
+
+    def test_attribute_skip_alongside_another_named_argument(self):
+        (self.fixture.tests_dir / "MultiArgTests.cs").write_text(
+            '[Fact(Skip = "held for review", DisplayName = "example")]\npublic void M() {}\n',
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("held for review", reasons)
+
     def test_ignores_build_output(self):
         obj_dir = self.fixture.tests_dir / "obj" / "Release"
         obj_dir.mkdir(parents=True)

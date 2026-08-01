@@ -91,9 +91,13 @@ describe("FinancialRecordExplorerShell", () => {
     // technology has no selection concept to report.
     rows.forEach((row, index) => {
       expect(row).toHaveAttribute("aria-selected");
-      expect(row).toHaveAttribute("aria-rowindex", String(index + 1));
+      // The header occupies row 1, so the first record is row 2.
+      expect(row).toHaveAttribute("aria-rowindex", String(index + 2));
     });
-    expect(grid).toHaveAttribute("aria-rowcount", String(rows.length));
+    expect(grid).toHaveAttribute("aria-rowcount", String(rows.length + 1));
+
+    const header = within(grid).getAllByRole("row").find((row) => !row.hasAttribute("aria-selected"));
+    expect(header).toHaveAttribute("aria-rowindex", "1");
   });
 
   it("keeps one tab stop for the whole grid", () => {

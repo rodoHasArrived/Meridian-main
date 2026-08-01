@@ -43,17 +43,23 @@ DEFAULT_TESTS_DIR = REPO_ROOT / "tests"
 VALID_CATEGORIES = {"environment-gated", "quarantined"}
 REQUIRED_FIELDS = ("path", "reason", "owner", "category", "tracking", "review_by")
 
-# `Skip = "..."`, including C# compile-time concatenation across lines:
-#     Skip = "first part " +
-#            "second part";
-SKIP_ASSIGNMENT = re.compile(
-    r"""Skip \s* = \s*
-        (?P<literal> " (?: [^"\\] | \\. )* "
-          (?: \s* \+ \s* " (?: [^"\\] | \\. )* " )* )
+# Every `Skip = <expression>` in a test project, in any of the forms xUnit accepts:
+#     [Fact(Skip = "plain literal")]
+#     Skip = "first part " + "second part";        (compile-time concatenation)
+#     Skip = $"...{DisableDockerVariable}=true.";  (interpolated)
+#     Skip = reason;                               (variable or method result)
+# Matching only plain literals silently ignored the interpolated and variable forms, so
+# environment-gated skips built from a variable were never inventoried and the gate reported
+# every skip owned while unowned conditional skips ran in CI.
+SKIP_KEYWORD = re.compile(r"\bSkip\s*=\s*")
+STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
+PURE_LITERAL_EXPRESSION = re.compile(
+    r"""^ \s* " (?: [^"\\] | \\. )* "
+        (?: \s* \+ \s* " (?: [^"\\] | \\. )* " )* \s* $
     """,
     re.VERBOSE,
 )
-STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
+WHITESPACE_RUN = re.compile(r"\s+")
 
 
 class GateFailure(Exception):
@@ -83,6 +89,57 @@ def join_literals(literal_text: str) -> str:
     return joined.replace('\\"', '"').replace("\\\\", "\\").replace("\\n", "\n").replace("\\t", "\t")
 
 
+def read_expression(text: str, start: int) -> str | None:
+    """Return the source of the assignment expression beginning at *start*.
+
+    Consumes to the terminating `;` for a statement assignment, or to the closing `)` of the
+    enclosing attribute for `[Fact(Skip = "...")]`, tracking string literals so a `;` or `)`
+    inside a reason does not end the scan early.
+    """
+    depth = 0
+    i = start
+    length = len(text)
+    while i < length:
+        ch = text[i]
+        if ch == '"':
+            verbatim = i > 0 and text[i - 1] == "@"
+            i += 1
+            while i < length:
+                if verbatim:
+                    if text[i] == '"':
+                        if i + 1 < length and text[i + 1] == '"':
+                            i += 2
+                            continue
+                        break
+                else:
+                    if text[i] == "\\":
+                        i += 2
+                        continue
+                    if text[i] == '"':
+                        break
+                i += 1
+            i += 1
+            continue
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            if depth == 0:
+                return text[start:i]
+            depth -= 1
+        elif ch == ";" and depth == 0:
+            return text[start:i]
+        elif ch == "," and depth == 0:
+            # Another named argument in the same attribute ends this expression.
+            return text[start:i]
+        i += 1
+    return None
+
+
+def normalise_expression(expression: str) -> str:
+    """Collapse an expression's source to a stable single-line form."""
+    return WHITESPACE_RUN.sub(" ", expression).strip()
+
+
 def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
     """Return every skip declaration in the .NET/F# test projects, in stable order."""
     sites: list[SkipSite] = []
@@ -98,9 +155,21 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
             if "Skip" not in text:
                 continue
             relative = path.relative_to(repo_root).as_posix()
-            for match in SKIP_ASSIGNMENT.finditer(text):
+            for match in SKIP_KEYWORD.finditer(text):
+                expression = read_expression(text, match.end())
+                if expression is None or not expression.strip():
+                    continue
                 line = text.count("\n", 0, match.start()) + 1
-                sites.append(SkipSite(relative, line, join_literals(match.group("literal"))))
+                # A pure literal registers under the exact text the runner reports. Anything
+                # interpolated or computed has no statically-known reason, so it registers
+                # under its normalised source instead — still exact, still forcing re-review
+                # when it changes, and no longer invisible.
+                reason = (
+                    join_literals(expression)
+                    if PURE_LITERAL_EXPRESSION.match(expression)
+                    else normalise_expression(expression)
+                )
+                sites.append(SkipSite(relative, line, reason))
     return sites
 
 

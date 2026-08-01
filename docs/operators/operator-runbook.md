@@ -203,8 +203,10 @@ misconfigured.
 **Do not** truncate or delete the WAL to clear the alert. That destroys the record of what failed
 to persist. Follow [Failover and Recovery](./failover-and-recovery.md) instead.
 
-**Resolved when:** the corrupted-record counter stops increasing for 5 consecutive minutes **and**
-the affected window has been reconciled.
+**Resolved when:** the affected window has been reconciled **and** a subsequent restart completes
+recovery with zero corrupted records. The alert reads the counter total, not a rate, so it stays
+firing for the life of the process that found the damage — it will not go quiet on its own while
+the corruption is still unreconciled.
 
 ## Low Data Quality
 
@@ -221,8 +223,9 @@ data from the provider.
 1. Read the rejection breakdown by error type before acting — a single malformed field and a broad
    schema drift look identical in the aggregate.
 2. `GET /api/quality/gaps` for gap analysis.
-3. `GET /api/quality/comparison` to compare across providers and establish whether the fault is
-   provider-specific.
+3. `GET /api/quality/comparison/{symbol}` to compare across providers for an affected symbol and
+   establish whether the fault is provider-specific. The symbol segment is required; the route
+   does not exist without it.
 4. Trigger a gap-fill backfill if the cause was an outage.
 
 ## Freshness SLA Violation

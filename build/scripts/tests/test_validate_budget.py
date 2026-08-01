@@ -152,6 +152,81 @@ class TestLoadBdnResults:
             vb.load_bdn_results(str(d))
         assert exc.value.code == 2
 
+    def test_entry_without_statistics_is_not_treated_as_measured(self, tmp_path):
+        # A failed or incomplete BenchmarkDotNet entry carries no Mean/allocation. Defaulting
+        # those to zero would present it as an instantaneous, zero-allocation success that
+        # satisfies every budget.
+        d = tmp_path / "results"
+        d.mkdir()
+        (d / "Partial-report-full.json").write_text(
+            json.dumps(
+                {
+                    "Benchmarks": [
+                        {"FullName": "Meridian.Benchmarks.X.IsDuplicate_CacheHit"},
+                        {
+                            "FullName": "Meridian.Benchmarks.X.ComputeKey_CacheMiss",
+                            "Statistics": {"Mean": 600.0},
+                            "Memory": {"BytesAllocatedPerOperation": 128},
+                        },
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        results = vb.load_bdn_results(str(d))
+
+        assert [r.method_name for r in results] == ["Meridian.Benchmarks.X.ComputeKey_CacheMiss"]
+
+    def test_entry_missing_only_allocation_is_not_treated_as_measured(self, tmp_path):
+        d = tmp_path / "results"
+        d.mkdir()
+        (d / "Partial-report-full.json").write_text(
+            json.dumps(
+                {
+                    "Benchmarks": [
+                        {
+                            "FullName": "Meridian.Benchmarks.X.IsDuplicate_CacheHit",
+                            "Statistics": {"Mean": 150.0},
+                        },
+                        {
+                            "FullName": "Meridian.Benchmarks.X.ComputeKey_CacheMiss",
+                            "Statistics": {"Mean": 600.0},
+                            "Memory": {"BytesAllocatedPerOperation": 128},
+                        },
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        results = vb.load_bdn_results(str(d))
+
+        assert [r.method_name for r in results] == ["Meridian.Benchmarks.X.ComputeKey_CacheMiss"]
+
+    def test_incomplete_entry_makes_its_budget_unmeasured(self, budget_file, tmp_path):
+        d = tmp_path / "results"
+        d.mkdir()
+        (d / "Partial-report-full.json").write_text(
+            json.dumps(
+                {
+                    "Benchmarks": [
+                        {"FullName": "Meridian.Benchmarks.X.IsDuplicate_CacheHit"},
+                        {
+                            "FullName": "Meridian.Benchmarks.X.ComputeKey_CacheMiss",
+                            "Statistics": {"Mean": 600.0},
+                            "Memory": {"BytesAllocatedPerOperation": 128},
+                        },
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(str(d))
+
+        assert vb.find_unmeasured_budgets(budgets, results) == ["DedupKey_CacheHit"]
+
 
 class TestUnmeasuredBudgets:
     def test_all_budgets_measured_reports_none(self, budget_file, results_dir_clean):

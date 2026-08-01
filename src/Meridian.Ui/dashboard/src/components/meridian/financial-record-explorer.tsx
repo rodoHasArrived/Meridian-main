@@ -539,14 +539,18 @@ function ExplorerGrid({
       {/* role="grid" is what makes aria-selected meaningful on these rows: a plain table row
           has no selection semantics, so assistive technology could not report which record
           the operator had picked. It also commits the grid to roving tabindex below. */}
+      {/* The header is a grid row too, so the count includes it and data rows start at 2.
+          Numbering data rows from 1 would make the first record claim the header's position
+          and announce every row one place too early. Matches ExplorerDenseGrid in
+          components/meridian/ui-kit-primitives.tsx. */}
       <table
         role="grid"
         aria-label={`${explorer.title} records`}
-        aria-rowcount={rows.length}
+        aria-rowcount={rows.length + 1}
         className="min-w-full text-sm"
       >
         <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-          <tr>
+          <tr aria-rowindex={1}>
             {columns.map((column) => (
               <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{column.header}</th>
             ))}
@@ -561,7 +565,7 @@ function ExplorerGrid({
               // hundred-record explorer a hundred Tab presses away from the next control.
               tabIndex={rowIndex === activeRowIndex ? 0 : -1}
               aria-selected={selectedRecordId === row.recordId}
-              aria-rowindex={rowIndex + 1}
+              aria-rowindex={rowIndex + 2}
               className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
               onFocus={() => setActiveRowIndex(rowIndex)}
               onClick={(event) => {

@@ -39,16 +39,19 @@ groups:
           immediate_mitigation: "1. Check process status (systemctl status meridian). 2. Check system logs (journalctl -u meridian). 3. Restart service if crashed. 4. Check disk space and memory."
           rollback_criteria: "Health endpoint returns 200 within 30 seconds of restart"
 
-      # Composite freshness score collapsed while the process is still scraping.
+      # Sustained proportional loss while the process is still scraping.
+      # NOT mdc_sla_freshness_score: nothing calls PrometheusMetrics.UpdateSlaMetrics, so that
+      # gauge sits at its default 0 and a `< 50` threshold would fire permanently on a healthy
+      # instance. See "Objectives awaiting instrumentation" in the SLO document.
       - alert: MeridianUnhealthy
-        expr: mdc_sla_freshness_score < 50
+        expr: mdc_drop_rate_percent > 5
         for: 2m
         labels:
           severity: warning
           incident_priority: P2
         annotations:
           summary: "Meridian reports unhealthy"
-          description: "The composite data freshness score has been below 50 for 2 minutes."
+          description: "More than 5% of events have been dropped for 2 minutes."
           runbook_url: "docs/operators/operator-runbook.md#unhealthy-status"
           probable_causes: "Provider disconnected, storage write failures, pipeline backpressure, dependency timeout"
           immediate_mitigation: "1. Check /health/detailed for specific failing checks. 2. Review recent error logs. 3. Verify provider connectivity."
@@ -100,9 +103,13 @@ groups:
 
   - name: mdc_providers
     rules:
-      # Global provider circuit breaker open (0=Closed, 1=Open, 2=HalfOpen).
+      # Global provider circuit breaker not closed (0=Closed, 1=Open, 2=HalfOpen).
+      # `>= 1` rather than `== 1`: half-open still means the provider is unusable and
+      # resubscription is only probing, and SLO-PC-001 treats every value at or above its
+      # critical threshold of 1 as a violation. Equality would silence the alert during
+      # recovery and leave a flapping provider unmonitored.
       - alert: MeridianProviderDisconnected
-        expr: mdc_circuit_breaker_state == 1
+        expr: mdc_circuit_breaker_state >= 1
         for: 2m
         labels:
           severity: warning
@@ -115,17 +122,20 @@ groups:
           immediate_mitigation: "1. Check provider status page. 2. Verify API credentials. 3. Check rate limit counters. 4. Trigger manual reconnect or failover."
           rollback_criteria: "mdc_circuit_breaker_state returns to 0 and mdc_symbols_circuit_open reaches 0"
 
-      # P99 event processing latency above the SLO-ING-001 critical threshold.
-      # The histogram is denominated in microseconds.
+      # Mean event processing latency above the SLO-ING-001 critical threshold, in microseconds.
+      # NOT the mdc_processing_latency_microseconds histogram: PrometheusMetrics.RecordProcessingLatency
+      # has no caller on the event path, so its buckets never fill and a quantile expression could
+      # never cross the threshold. mdc_average_latency_microseconds is written every tick by
+      # UpdateFromSnapshot. See "Objectives awaiting instrumentation" in the SLO document.
       - alert: MeridianHighProviderLatency
-        expr: histogram_quantile(0.99, rate(mdc_processing_latency_microseconds_bucket[5m])) > 5000
+        expr: mdc_average_latency_microseconds > 5000
         for: 5m
         labels:
           severity: warning
           incident_priority: P3
         annotations:
           summary: "High event processing latency"
-          description: "P99 event processing latency exceeds 5000 microseconds."
+          description: "Mean event processing latency exceeds 5000 microseconds."
           runbook_url: "docs/operators/operator-runbook.md#high-latency"
           probable_causes: "Provider under load, network congestion, DNS resolution delays, WebSocket reconnection overhead"
           immediate_mitigation: "1. Check provider latency trends at /api/providers/latency. 2. Consider switching to backup provider. 3. Verify network path quality."
@@ -133,19 +143,24 @@ groups:
   - name: mdc_storage
     rules:
       # Write-ahead log integrity failures. Committed data was not durably retained.
+      # This counter is only advanced by WriteAheadLog.RecoverAsync at startup, so a
+      # `rate()` window would go quiet minutes after recovery and clear a P1 integrity
+      # alert while the corruption was still unreconciled. The total is the persistent
+      # condition: it stays above zero for the life of the process that found the damage,
+      # and returns to zero only after a restart whose recovery pass is clean.
       - alert: MeridianStorageWriteErrors
-        expr: rate(mdc_wal_recovery_corrupted_records_total[5m]) > 0
-        for: 5m
+        expr: mdc_wal_recovery_corrupted_records_total > 0
+        for: 1m
         labels:
           severity: critical
           incident_priority: P1
         annotations:
           summary: "Storage write integrity errors detected"
-          description: "Corrupted write-ahead log records are being encountered at {{ $value }} records/sec."
+          description: "Recovery encountered {{ $value }} corrupted write-ahead log record(s); committed data was not durably retained."
           runbook_url: "docs/operators/operator-runbook.md#storage-write-errors"
           probable_causes: "Disk full, filesystem permissions, I/O errors, WAL corruption, storage path misconfigured"
           immediate_mitigation: "1. Check disk space immediately. 2. Verify storage path permissions. 3. Capture the corrupted records before any repair. 4. Review storage error logs for root cause."
-          rollback_criteria: "Corrupted-record rate drops to 0 for 5 consecutive minutes and the affected window is reconciled"
+          rollback_criteria: "The affected window is reconciled and a subsequent restart recovers with zero corrupted records"
 
       # Validation pass rate below the SLO-DC-001 critical threshold (gauge, 0-100).
       - alert: MeridianLowDataQuality
@@ -164,8 +179,13 @@ groups:
   - name: mdc_sla
     rules:
       # One or more symbols outside their freshness threshold.
+      # DISABLED PENDING INSTRUMENTATION: nothing calls PrometheusMetrics.UpdateSlaMetrics or
+      # RecordSlaFreshness, so mdc_sla_violation_symbols is always 0 and this rule can never
+      # fire. Kept here, evaluated against a condition that is honestly always false, so the
+      # runbook and SLO linkage survive until DataFreshnessSlaMonitor is wired into the
+      # periodic exporter. Re-point at mdc_sla_violation_symbols > 0 at that time.
       - alert: MeridianDataFreshnessViolation
-        expr: mdc_sla_violation_symbols > 0
+        expr: mdc_sla_violation_symbols > 0 and mdc_sla_freshness_score > 0
         for: 5m
         labels:
           severity: critical
@@ -179,8 +199,11 @@ groups:
           rollback_criteria: "mdc_sla_violation_symbols returns to 0"
 
       # Composite freshness score below the 95 compliance target.
+      # DISABLED PENDING INSTRUMENTATION: mdc_sla_freshness_score has no writer, so a bare
+      # `< 95` fires permanently on a healthy instance. The `> 0` guard suppresses the rule
+      # until the SLA monitor is wired; remove the guard at that time.
       - alert: MeridianSlaComplianceLow
-        expr: mdc_sla_freshness_score < 95
+        expr: mdc_sla_freshness_score < 95 and mdc_sla_freshness_score > 0
         for: 30m
         labels:
           severity: warning

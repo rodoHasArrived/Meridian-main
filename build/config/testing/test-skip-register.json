@@ -1,10 +1,18 @@
 {
-  "$comment": "Owned inventory of every skipped test. A skip reports the same green as a pass, so each one must name an owner, a category, tracking, and a review-by date. Enforced by build/scripts/ci/check-test-skip-register.py; see PRD-112 in docs/product/implementation-todo-list.md.",
+  "$comment": "Owned inventory of every skipped test. A skip reports the same green as a pass, so each one must name an owner, a category, tracking, and a review-by date. Enforced by build/scripts/ci/check-test-skip-register.py; see PRD-112 in docs/product/implementation-todo-list.md. Skips whose reason is interpolated or computed register under the normalised source expression, because no exact runtime string exists to record.",
   "categories": {
     "environment-gated": "Cannot run in this environment (no Docker, no Windows DPAPI); runs in the lane that provides the dependency.",
     "quarantined": "Disabled pending a product or design decision. This is a coverage gap and must be re-reviewed by review_by."
   },
   "skips": [
+    {
+      "path": "tests/Meridian.DirectLending.Tests/DirectLendingDatabaseFactAttribute.cs",
+      "reason": "reason",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
     {
       "path": "tests/Meridian.LifecycleSupervisor.Tests/LifecycleSupervisorConfigurationTests.cs",
       "reason": "This assertion covers the fail-closed behavior when Windows DPAPI is unavailable.",
@@ -23,7 +31,15 @@
     },
     {
       "path": "tests/Meridian.Tests/AssetOperations/AssetOperationsMigrationRunnerTests.cs",
-      "reason": "Asset Operations PostgreSQL tests are skipped because Docker is unavailable. ",
+      "reason": "\"Asset Operations PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker or set {ConnectionStringVariable} to an external Postgres instance.\"",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/AssetOperations/AssetOperationsMigrationRunnerTests.cs",
+      "reason": "$\"Asset Operations PostgreSQL tests are skipped because {DisableDockerVariable}=true.\"",
       "owner": "Storage",
       "category": "environment-gated",
       "tracking": "PRD-016",
@@ -31,7 +47,15 @@
     },
     {
       "path": "tests/Meridian.Tests/SecurityMaster/SecurityMasterDatabaseFactAttribute.cs",
-      "reason": "Security Master PostgreSQL tests are skipped because Docker is unavailable. ",
+      "reason": "\"Security Master PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable} to an external Postgres instance, \" + $\"or set {DisableDockerVariable}=true to suppress this suite explicitly.\"",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/SecurityMaster/SecurityMasterDatabaseFactAttribute.cs",
+      "reason": "$\"Security Master PostgreSQL tests are skipped because {DisableDockerVariable}=true. \" + \"Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to an external Postgres instance, \" + \"or ensure Docker is available and unset that variable.\"",
       "owner": "Storage",
       "category": "environment-gated",
       "tracking": "PRD-016",
@@ -39,7 +63,15 @@
     },
     {
       "path": "tests/Meridian.Tests/Storage/FundAccounts/FundAccountDatabaseFactAttribute.cs",
-      "reason": "Fund-account PostgreSQL tests are skipped because Docker is unavailable. ",
+      "reason": "\"Fund-account PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable} to an external Postgres instance, \" + $\"or set {DisableDockerVariable}=true to suppress this suite explicitly.\"",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/FundAccounts/FundAccountDatabaseFactAttribute.cs",
+      "reason": "$\"Fund-account PostgreSQL tests are skipped because {DisableDockerVariable}=true. \" + $\"Set {ConnectionStringVariable} to an external Postgres instance, \" + \"or ensure Docker is available and unset that variable.\"",
       "owner": "Storage",
       "category": "environment-gated",
       "tracking": "PRD-016",
@@ -47,7 +79,15 @@
     },
     {
       "path": "tests/Meridian.Tests/Storage/LedgerDatabaseFactAttribute.cs",
-      "reason": "Ledger PostgreSQL tests are skipped because Docker is unavailable. ",
+      "reason": "\"Ledger PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable} to an external Postgres instance, \" + $\"or set {DisableDockerVariable}=true to suppress this suite explicitly.\"",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/LedgerDatabaseFactAttribute.cs",
+      "reason": "$\"Ledger PostgreSQL tests are skipped because {DisableDockerVariable}=true. \" + $\"Set {ConnectionStringVariable} to an external Postgres instance, \" + \"or ensure Docker is available and unset that variable.\"",
       "owner": "Storage",
       "category": "environment-gated",
       "tracking": "PRD-016",
@@ -55,7 +95,15 @@
     },
     {
       "path": "tests/Meridian.Tests/Storage/Reporting/ReportingArtifactStoreTests.cs",
-      "reason": "Reporting PostgreSQL tests are skipped because Docker is unavailable. ",
+      "reason": "\"Reporting PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable}, or set {DisableDockerVariable}=true.\"",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/Reporting/ReportingArtifactStoreTests.cs",
+      "reason": "$\"Reporting PostgreSQL tests are skipped because {DisableDockerVariable}=true.\"",
       "owner": "Storage",
       "category": "environment-gated",
       "tracking": "PRD-016",

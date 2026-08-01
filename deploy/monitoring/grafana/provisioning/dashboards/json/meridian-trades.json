@@ -144,10 +144,10 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 36 },
       "id": 30,
       "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "title": "Storage Write Integrity Errors (rate/s)",
+      "title": "Storage Write Integrity Errors (corrupted WAL records)",
       "type": "timeseries",
       "targets": [
-        { "expr": "rate(mdc_wal_recovery_corrupted_records_total[5m])", "legendFormat": "Corrupted WAL Records", "refId": "A" }
+        { "expr": "mdc_wal_recovery_corrupted_records_total", "legendFormat": "Corrupted WAL Records", "refId": "A" }
       ]
     },
     {

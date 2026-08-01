@@ -66,9 +66,16 @@ STUB_MARKER = re.compile(r"^\*\*Status:\*\*\s*archive-migration-stub\s*$", re.MU
 # Grafana admin credentials must come from the deploying environment. A literal value here
 # ships a known password with the repository.
 COMPOSE_SECRET_KEYS = ("GF_SECURITY_ADMIN_PASSWORD", "GF_SECURITY_ADMIN_USER")
+# Capture the whole YAML value, not the first whitespace-delimited token: the required form
+# carries a human-readable message (`${VAR:?set VAR before starting}`) that contains spaces.
 COMPOSE_SECRET_ASSIGNMENT = re.compile(
-    r"(?P<key>" + "|".join(COMPOSE_SECRET_KEYS) + r")\s*[=:]\s*(?P<value>\S*)",
+    r"(?P<key>" + "|".join(COMPOSE_SECRET_KEYS) + r")\s*[=:]\s*(?P<value>.*)$",
 )
+# `${VAR}` and the required forms `${VAR:?msg}` / `${VAR?msg}` cannot silently supply a value.
+# The default forms `${VAR:-admin}` / `${VAR-admin}` can: Compose starts with the default when
+# the variable is unset, so accepting anything beginning with `${` would let a known password
+# ship while this gate reported success.
+COMPOSE_ENV_REFERENCE = re.compile(r"^\$\{[A-Za-z_][A-Za-z0-9_]*(?::?\?[^}]*)?\}$")
 
 # Suffixes Prometheus derives from a base series rather than registering separately.
 DERIVED_SUFFIXES = {
@@ -105,6 +112,64 @@ def iter_source_files(root: Path) -> list[Path]:
     return sorted(p for p in (root / "src").rglob("*.cs") if "/obj/" not in p.as_posix() and "/bin/" not in p.as_posix())
 
 
+def strip_comments(text: str) -> str:
+    """Remove C# comments, preserving string literals and line structure.
+
+    A commented-out registration still matches the factory regex, so a metric deleted but
+    left behind as `// Metrics.CreateCounter("mdc_x", ...)` would keep every dependent alert
+    and SLO passing this gate while Prometheus exposed no such series — precisely the false
+    green the gate exists to prevent. Newlines are preserved so reported line numbers stay
+    correct.
+    """
+    out: list[str] = []
+    i = 0
+    length = len(text)
+    while i < length:
+        ch = text[i]
+        if ch == '"':
+            # Copy a string literal verbatim, including a verbatim (@"") or interpolated ($"") one.
+            verbatim = i > 0 and text[i - 1] == "@"
+            out.append(ch)
+            i += 1
+            while i < length:
+                if verbatim:
+                    if text[i] == '"':
+                        if i + 1 < length and text[i + 1] == '"':
+                            out.append(text[i : i + 2])
+                            i += 2
+                            continue
+                        out.append(text[i])
+                        i += 1
+                        break
+                else:
+                    if text[i] == "\\" and i + 1 < length:
+                        out.append(text[i : i + 2])
+                        i += 2
+                        continue
+                    if text[i] == '"':
+                        out.append(text[i])
+                        i += 1
+                        break
+                out.append(text[i])
+                i += 1
+            continue
+        if ch == "/" and i + 1 < length and text[i + 1] == "/":
+            while i < length and text[i] != "\n":
+                i += 1
+            continue
+        if ch == "/" and i + 1 < length and text[i + 1] == "*":
+            i += 2
+            while i + 1 < length and not (text[i] == "*" and text[i + 1] == "/"):
+                if text[i] == "\n":
+                    out.append("\n")
+                i += 1
+            i += 2
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
+
+
 def collect_emitted_metrics(root: Path) -> dict[str, str]:
     """Return every Prometheus metric the exporter registers, mapped to its instrument kind."""
     emitted: dict[str, str] = {}
@@ -115,7 +180,7 @@ def collect_emitted_metrics(root: Path) -> dict[str, str]:
             continue
         if "Create" not in text:
             continue
-        for match in METRIC_FACTORY.finditer(text):
+        for match in METRIC_FACTORY.finditer(strip_comments(text)):
             name = match.group("name")
             if not name.startswith(METRIC_PREFIX):
                 continue
@@ -484,13 +549,19 @@ def check_provisioning_secrets(root: Path) -> list[Finding]:
             if not match:
                 continue
             value = match.group("value").strip().strip("\"'")
-            if value.startswith("${") or not value:
+            if not value or COMPOSE_ENV_REFERENCE.match(value):
                 continue
+            detail = (
+                "supplies a default, so the stack starts with that value when the variable is unset"
+                if value.startswith("${")
+                else "is set to a literal value"
+            )
             findings.append(
                 Finding(
                     "provisioning",
                     f"{relative}:{number}",
-                    f"{match.group('key')} is set to a literal value; require it from the environment instead",
+                    f"{match.group('key')} {detail}; require it from the environment "
+                    "with ${VAR} or ${VAR:?message} instead",
                 )
             )
     return findings

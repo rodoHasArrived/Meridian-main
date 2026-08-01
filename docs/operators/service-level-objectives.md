@@ -28,8 +28,15 @@ are better (latency, drop rate, error counts); otherwise higher values are bette
 pass rate).
 
 The runtime mirror of this table is `SloDefinitionRegistry` in
-`src/Meridian.Platform/Monitoring/Core/SloDefinitionRegistry.cs`. The two must agree; the
-observability contract gate enforces that agreement on every build.
+`src/Meridian.Platform/Monitoring/Core/SloDefinitionRegistry.cs`, which is the authority when the
+two disagree.
+
+The observability contract gate checks the *linkage* between them — that each objective's metric
+is one the exporter emits, that its alert rule exists, and that its runbook and SLO-document
+anchors resolve. It does **not** compare the numeric target, critical threshold, unit, measurement
+window, or error budget in this table against the registry, so those values can drift without
+failing a build. Treat them as reviewed documentation, not machine-verified facts, and change both
+sides together.
 
 ## Recovery Objectives
 
@@ -174,6 +181,10 @@ The count of symbols currently outside threshold is exported separately as
 This objective has no error budget by design. A corrupted write-ahead log record means committed
 data was not durably retained, which is an integrity incident regardless of volume.
 
+The counter is advanced only by the startup recovery pass, so `MeridianStorageWriteErrors` alerts
+on the running total rather than a rate: a rate window would fall back to zero minutes after
+recovery and clear a P1 integrity alert while the damage was still unreconciled.
+
 ## Provider Connectivity Plane
 
 ### SLO-PC-001
@@ -190,8 +201,30 @@ data was not durably retained, which is an integrity incident regardless of volu
 | Runbook | [Provider disconnected](./operator-runbook.md#provider-disconnected) |
 
 An open breaker means resubscription has failed repeatedly and the client has stopped retrying at
-full rate. Per-symbol breaker counts are exported as `mdc_symbols_circuit_open`, and symbols held
-back by rate limiting as `mdc_symbols_in_cooldown`.
+full rate. Half-open (2) is also a violation: the provider is still unusable and resubscription is
+only probing, so `MeridianProviderDisconnected` fires on any value at or above the critical
+threshold rather than on equality with `Open`. Per-symbol breaker counts are exported as
+`mdc_symbols_circuit_open`, and symbols held back by rate limiting as `mdc_symbols_in_cooldown`.
+
+## Objectives Awaiting Instrumentation
+
+Three metrics are declared by the exporter but never written, so objectives and alerts that
+depend on them cannot report truthfully today. This is recorded here rather than hidden because a
+metric that exists but is never updated looks identical, to a validator, to one that works.
+
+| Metric | Writer | Consequence |
+| --- | --- | --- |
+| `mdc_sla_freshness_score`, `mdc_sla_violation_symbols`, and the other `mdc_sla_*` series | `PrometheusMetrics.UpdateSlaMetrics` has no caller | SLO-DF-001 and the composite compliance objective are unmonitored. `MeridianDataFreshnessViolation` and `MeridianSlaComplianceLow` carry a `> 0` guard that suppresses them rather than firing permanently against a default-zero gauge. |
+| `mdc_processing_latency_microseconds` | `PrometheusMetrics.RecordProcessingLatency` has no caller on the event path | The histogram's buckets never fill. SLO-ING-001 is alerted from `mdc_average_latency_microseconds`, a mean rather than the documented P99. |
+
+Closing this requires wiring `DataFreshnessSlaMonitor` into the periodic metrics exporter and
+recording per-event latency on the pipeline path. Until then, treat these two objectives as
+declared but not measured, and do not read a quiet alert as evidence of health.
+
+Two further objectives are measured over the wrong window: `mdc_drop_rate_percent` and
+`mdc_validation_pass_rate_percent` are computed from process-lifetime totals, not the rolling
+windows SLO-ING-002 and SLO-DC-001 declare, so a long clean history can mask a current burst and
+an early burst can hold an alert on after recovery.
 
 ## Error Budget Policy
 

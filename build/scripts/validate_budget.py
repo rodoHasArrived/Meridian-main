@@ -141,13 +141,24 @@ def load_bdn_results(results_dir: str) -> list[BdnResult]:
             stats = bench.get("Statistics") or {}
             memory = bench.get("Memory") or {}
 
-            mean_ns: float = stats.get("Mean", 0.0)
-            allocated_bytes: int = memory.get("BytesAllocatedPerOperation", 0)
+            # A benchmark that failed or did not complete still emits an entry, but without
+            # Statistics.Mean or Memory.BytesAllocatedPerOperation. Defaulting those to zero
+            # would present it as an instantaneous, zero-allocation success and let it satisfy
+            # any budget — the same false green an absent result set produces.
+            mean_ns = stats.get("Mean")
+            allocated_bytes = memory.get("BytesAllocatedPerOperation")
+            if not isinstance(mean_ns, (int, float)) or not isinstance(allocated_bytes, (int, float)):
+                print(
+                    f"[validate_budget] WARNING: '{method_name or jf.name}' has no mean/allocation "
+                    "statistics; treating it as unmeasured.",
+                    file=sys.stderr,
+                )
+                continue
 
             rows.append(BdnResult(
                 method_name=method_name,
-                mean_ns=mean_ns,
-                allocated_bytes=allocated_bytes,
+                mean_ns=float(mean_ns),
+                allocated_bytes=int(allocated_bytes),
             ))
 
     if not rows:

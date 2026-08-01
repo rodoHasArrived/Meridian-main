@@ -338,6 +338,68 @@ class ValidateObservabilityContractTests(unittest.TestCase):
 
         self.assertEqual(self.fixture.messages(), [])
 
+    def test_required_form_with_a_spaced_message_passes(self):
+        # The message contains spaces; a value regex that stops at whitespace would read only
+        # "${GF_SECURITY_ADMIN_PASSWORD:?set" and reject a correct declaration.
+        self.fixture.compose.write_text(
+            compose(admin_password="${GF_SECURITY_ADMIN_PASSWORD:?set it before starting the monitoring profile}"),
+            encoding="utf-8",
+        )
+
+        self.assertEqual(self.fixture.messages(), [])
+
+    def test_default_value_expansion_does_not_bypass_the_gate(self):
+        # Compose starts with "admin" whenever the variable is unset, so accepting anything
+        # beginning with "${" would ship a known password behind a passing gate.
+        self.fixture.compose.write_text(
+            compose(admin_password="${GF_SECURITY_ADMIN_PASSWORD:-admin}"), encoding="utf-8"
+        )
+
+        messages = self.fixture.messages()
+
+        self.assertTrue(any("supplies a default" in m for m in messages), msg=messages)
+
+    def test_dash_default_expansion_does_not_bypass_the_gate(self):
+        self.fixture.compose.write_text(
+            compose(admin_password="${GF_SECURITY_ADMIN_PASSWORD-admin}"), encoding="utf-8"
+        )
+
+        messages = self.fixture.messages()
+
+        self.assertTrue(any("supplies a default" in m for m in messages), msg=messages)
+
+    def test_commented_out_metric_registration_is_not_treated_as_emitted(self):
+        # Deleting a metric but leaving its declaration commented out would otherwise keep every
+        # dependent alert and SLO passing while Prometheus exposed no such series.
+        self.fixture.exporter.write_text(
+            EXPORTER_SOURCE
+            + '\n// private static readonly Gauge Gone = Prometheus.Metrics.CreateGauge("mdc_gone_gauge", "gone");\n',
+            encoding="utf-8",
+        )
+        self.fixture.alerts.write_text(alert_rules(expr="mdc_gone_gauge > 1"), encoding="utf-8")
+
+        messages = self.fixture.messages()
+
+        self.assertTrue(any("mdc_gone_gauge" in m and "never emits" in m for m in messages), msg=messages)
+
+    def test_block_commented_metric_registration_is_not_treated_as_emitted(self):
+        self.fixture.exporter.write_text(
+            EXPORTER_SOURCE
+            + '\n/* private static readonly Gauge Gone = Prometheus.Metrics.CreateGauge("mdc_block_gauge", "gone"); */\n',
+            encoding="utf-8",
+        )
+        self.fixture.alerts.write_text(alert_rules(expr="mdc_block_gauge > 1"), encoding="utf-8")
+
+        messages = self.fixture.messages()
+
+        self.assertTrue(any("mdc_block_gauge" in m and "never emits" in m for m in messages), msg=messages)
+
+    def test_a_metric_name_inside_a_string_literal_is_still_recognised(self):
+        # Comment stripping must not corrupt string literals: the metric name itself lives in one.
+        self.fixture.alerts.write_text(alert_rules(expr="mdc_drop_rate_percent > 1"), encoding="utf-8")
+
+        self.assertEqual(self.fixture.messages(), [])
+
     def test_commented_credential_is_not_a_finding(self):
         self.fixture.compose.write_text(
             "services:\n  grafana:\n    environment:\n      # - GF_SECURITY_ADMIN_PASSWORD=admin\n",
