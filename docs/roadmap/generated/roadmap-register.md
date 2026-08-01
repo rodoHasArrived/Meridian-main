@@ -65,9 +65,9 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 
 - Consolidated views no longer double-count intercompany balances and state whether they are presenting gross or eliminated figures, and an eliminated figure reflects only approved and posted eliminations, with a proposed draft visible solely as a labeled preview.
 - Eliminations are proposed as reviewable drafts on the existing approval rail and never post automatically, and the treatment is driven by a rule on the existing policy seam with no parallel discriminator beside it.
-- Rerunning the same perimeter and as-of date cannot produce a duplicate elimination for the same pair.
+- Rerunning the same perimeter and as-of date cannot produce a duplicate elimination for the same pair, and a pair is an exact reciprocal match on both the posting entity and its counterparty rather than the counterparty alone, with a missing or ambiguous dimension blocking the draft.
 - The consolidation perimeter is enforced from authoritative ownership data rather than asserted, and an entity outside scope is rejected rather than silently eliminated.
-- Intercompany balances that do not agree between the two sides surface as their own reported break class rather than being netted away.
+- Balances are compared and eliminated in one declared consolidation currency translated at governed as-of rates, with translation differences retained separately and elimination blocked when a rate is unavailable, so a currency gap never reads as an intercompany mismatch. Balances that still do not agree between the two sides surface as their own reported break class rather than being netted away.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the treatment rule, the perimeter enforcement, the elimination drafts, and the unmatched-intercompany tests.
 
 ### Source Modules
@@ -99,7 +99,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 - A recurring draft cannot reach approval without retained source evidence, and that evidence stays attached through posting.
 - Occurrences blocked by a locked period name the lock owner and the governed reopen path rather than failing silently.
 - The accounting draft queue shows what the calendar generated, what awaits approval, and what a period lock blocked.
-- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the durable store, the worker, the evidence gate, and the restart and idempotency tests.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the durable store, the worker, the evidence gate, the draft queue on both workstation lanes, and the restart and idempotency tests.
 
 ### Source Modules
 
@@ -107,6 +107,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 - `SRC-LEDGER`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
+- `SRC-WPF`
 
 ## W10-MARK-001 - Fail-closed stale-mark policy and mark-age surfacing
 | Field | Value |
@@ -126,9 +127,9 @@ Rank 1 of the 2026-07 W10 depth slate. Valuation freshness is not enforced by de
 ### Exit Criteria
 
 - A valuation cannot rest on a mark whose age or observation date falls outside policy, and the default posture blocks rather than accepts.
-- Freshness is governed by one policy owner rather than two independently configured controls.
+- Freshness is governed by one policy owner rather than two independently configured controls, and consolidation preserves every non-age gate the stricter control enforces today - minimum confidence, complete coverage, and a required observation date - rather than collapsing to age alone.
 - Valuations blocked on mark freshness render as review-required with the offending positions named, on both the browser and desktop workstations.
-- Mark age and observation date are visible wherever positions appear, and any override is dated, approved, and retained as evidence.
+- Mark age and observation date are visible wherever positions appear, and an override is bound to the position, mark observation, valuation date, and policy version it was approved for, expiring or requiring renewed review as the charter's override strategy requires, so it cannot become a standing bypass.
 - Enabling the new default is preceded by a preview of how many current valuations it would block.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the policy, both workstation surfaces, and the fail-closed tests.
 

@@ -55,8 +55,9 @@ The registry snapshot dated 2026-07-31 records Evidence Vault productization, st
 reconciliation onboarding, and WPF parity as the active productization targets, with the ranked W9
 first-order slate and the W10 depth slate accepted as planned priority order behind them. The
 accepted W1-W5, FREX, FINOPS, connector-library, and bounded W7 milestones remain bounded completion
-claims, not blanket production certification, and every W9 and W10 row is planned with
-planned-evidence posture rather than a completion claim.
+claims, not blanket production certification. Every W10 row and the nine open W9 rows carry
+planned-evidence posture rather than a completion claim; `W9-ASSET-010` is the one W9 row already
+closed with complete evidence.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,

@@ -1,6 +1,6 @@
 {
   "total_files": 638,
-  "total_lines": 116032,
+  "total_lines": 116034,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2933,7 +2933,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 259,
+      "line_count": 260,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3301,7 +3301,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 1191,
+      "line_count": 1192,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
