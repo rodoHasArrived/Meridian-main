@@ -1,11 +1,11 @@
 <!--
 generated: true
 generator: build/scripts/docs/render-roadmap-docs.py
-generator_version: 1.0.0
+generator_version: 2.0.0
 render_contract: meridian.generated-docs.v1
 schema_versions:
   - meridian.program-state@1.0.0
-  - meridian.roadmap-items@1.0.0
+  - meridian.roadmap-items@1.1.0
 inputs:
   - docs/roadmap/data/decision-log.yml
   - docs/roadmap/data/document-index.yml

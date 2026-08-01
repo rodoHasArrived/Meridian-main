@@ -75,6 +75,26 @@ class RoadmapSourceDocsTests(unittest.TestCase):
                     f"expected an invalid-sequence error for {declared!r}, got {[f.message for f in errors]}",
                 )
 
+    def test_wave_disagreeing_with_its_identifier_fails_registry_validation(self) -> None:
+        # The sort key parses the wave from the identifier while the diagram labels with the
+        # declared `wave`, so a mismatch would place an item among one wave's work while
+        # presenting it as another's.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = _registry_root(temp_dir, None)
+            items_path = root / "docs" / "roadmap" / "data" / "roadmap-items.yml"
+            text = items_path.read_text(encoding="utf-8")
+            items_path.write_text(
+                text.replace("  - id: W1-DATA-001\n    title: Provider trust gate and data confidence baseline\n    wave: W1\n",
+                             "  - id: W1-DATA-001\n    title: Provider trust gate and data confidence baseline\n    wave: W2\n", 1),
+                encoding="utf-8",
+            )
+            errors = [finding for finding in validate_roadmap.validate(root) if finding.severity == "error"]
+
+        self.assertTrue(
+            any("declares wave W2 but its identifier belongs to W1" in finding.message for finding in errors),
+            [finding.message for finding in errors],
+        )
+
     def test_generated_roadmap_views_share_one_ordering(self) -> None:
         # The diagram, summary, and register must not disagree about delivery sequence.
         items = [

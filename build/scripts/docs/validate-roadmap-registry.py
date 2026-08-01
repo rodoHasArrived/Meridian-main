@@ -134,6 +134,17 @@ def validate(root: Path) -> list[Finding]:
             # out-of-range or wrong-typed value would otherwise reach the renderers. They fall back
             # to the identifier suffix rather than fail, which would silently order a generated view
             # against its adopted rank. Reject it here, where the documented CI lane runs.
+            # Generated views sort on the wave parsed from the identifier but label with the
+            # declared `wave`. A disagreement would place an item among one wave's work while
+            # presenting it as another's, so the two must agree.
+            declared_wave = str(item.get("wave", ""))
+            identifier_wave = str(item.get("id", "")).split("-")[0]
+            if declared_wave and identifier_wave and declared_wave != identifier_wave:
+                findings.append(Finding(
+                    "error",
+                    repo_path(roadmap_path),
+                    f"{item_id} declares wave {declared_wave} but its identifier belongs to {identifier_wave}",
+                ))
             if "sequence" in item and not is_usable_sequence(item.get("sequence")):
                 findings.append(Finding(
                     "error",

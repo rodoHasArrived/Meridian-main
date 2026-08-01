@@ -299,14 +299,25 @@ def markdown_table(headers: Sequence[str], rows: Iterable[Sequence[Any]]) -> str
     return "\n".join(output)
 
 
-def generated_header(generator: str, schema_versions: Sequence[str], inputs: Sequence[str]) -> str:
+def generated_header(
+    generator: str,
+    schema_versions: Sequence[str],
+    inputs: Sequence[str],
+    generator_version: str = "1.0.0",
+) -> str:
+    """Emit the standard generated-doc header.
+
+    `generator_version` is per-generator: a generator that changes its output semantics bumps its
+    own version so an audit can tell which ordering or shape contract produced a committed artifact,
+    without disturbing every other generated doc.
+    """
     schema_lines = "\n".join(f"  - {item}" for item in schema_versions)
     input_lines = "\n".join(f"  - {normalize_path(item)}" for item in inputs)
     return (
         "<!--\n"
         "generated: true\n"
         f"generator: {normalize_path(generator)}\n"
-        "generator_version: 1.0.0\n"
+        f"generator_version: {generator_version}\n"
         f"render_contract: {GENERATOR_CONTRACT}\n"
         "schema_versions:\n"
         f"{schema_lines}\n"
@@ -317,13 +328,20 @@ def generated_header(generator: str, schema_versions: Sequence[str], inputs: Seq
     )
 
 
-def write_manifest(path: Path, generator: str, inputs: Sequence[Path], outputs: Sequence[Path], root: Path) -> bool:
+def write_manifest(
+    path: Path,
+    generator: str,
+    inputs: Sequence[Path],
+    outputs: Sequence[Path],
+    root: Path,
+    generator_version: str = "1.0.0",
+) -> bool:
     def sort_key(item: Path) -> str:
         return repo_path(item, root)
 
     payload = {
         "schema": {"id": "meridian.generated-manifest", "version": "1.0.0"},
-        "generator": {"name": normalize_path(generator), "version": "1.0.0"},
+        "generator": {"name": normalize_path(generator), "version": generator_version},
         "inputs": [{"path": repo_path(item, root), "sha256": sha256_manifest_file(item)} for item in sorted(inputs, key=sort_key)],
         "outputs": [{"path": repo_path(item, root), "sha256": sha256_manifest_file(item)} for item in sorted(outputs, key=sort_key) if item.exists()],
     }

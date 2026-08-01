@@ -40,6 +40,7 @@ Setting it on a row is an ordinary data update. `sequence` must be an integer of
 validation rejects anything else rather than letting a generated view order itself against the
 adopted rank.
 
-The optional field was introduced as a single minor schema change, and the registry's declared
-`schema.version` was bumped once when the first row started using it. Neither happens again per row;
-see [schema-versioning.md](schema-versioning.md).
+Introducing the optional field was a one-time minor schema change, so the registry now declares
+`meridian.roadmap-items@1.1.0` whether or not any row sets `sequence` — the contract changed the
+moment the property became accepted. Setting it on a row afterwards is an ordinary data update and
+bumps nothing. See [schema-versioning.md](schema-versioning.md).

@@ -1,6 +1,6 @@
 {
   "total_files": 637,
-  "total_lines": 115267,
+  "total_lines": 115268,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -3324,7 +3324,7 @@
     },
     {
       "path": "docs/roadmap/roadmap-item-template.md",
-      "line_count": 45,
+      "line_count": 46,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
