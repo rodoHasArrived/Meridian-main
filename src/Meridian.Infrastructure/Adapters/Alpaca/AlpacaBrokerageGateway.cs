@@ -40,8 +40,26 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync
+public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway
 {
+    /// <inheritdoc />
+    /// <remarks>
+    /// Alpaca reads the notional metadata keys and sends the dollar amount as the order's
+    /// size — see the <c>payload.Notional</c> assignment in <c>BuildOrderPayload</c> — but
+    /// not for fixed income: the same builder clears <c>Notional</c> and restores face-value
+    /// <c>Qty</c> for treasury and corporate. Reporting support for those would have the
+    /// rails measure the metadata dollars while the broker receives the face value.
+    /// </remarks>
+    public bool RoutesNotionalMetadata(OrderRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return !IsFixedIncomeAssetClass(
+            ReadMetadataString(request.Metadata, out var assetClass, "asset_class", "assetClass", "alpaca:asset_class")
+                ? NormalizeAssetClass(assetClass)
+                : null);
+    }
+
     private const int AccountActivityPageSize = 100;
 
     private const string PaperBaseUrl = "https://paper-api.alpaca.markets";

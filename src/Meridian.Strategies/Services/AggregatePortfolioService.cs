@@ -31,29 +31,52 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         var symbolCostBasis = new Dictionary<string, (decimal totalQty, decimal totalWeightedCost, decimal totalUnrealised)>(
             StringComparer.OrdinalIgnoreCase);
 
-        foreach (var (runId, portfolio) in entries)
+        // The registry is keyed by run id, but several runs can share one portfolio
+        // instance (the workstation host state is registered for the host and again for
+        // each run that trades it). Counting that instance once per key would multiply
+        // every position and, through the exposure snapshot, invent risk that does not exist.
+        //
+        // A shared instance is one book, so the run id labelling it is only meaningful when
+        // the position carries no owner of its own. Ordering the registry first makes that
+        // fallback label deterministic rather than dependent on dictionary enumeration
+        // order; fills that carried a fund are split out by owner below.
+        var seenPortfolios = new HashSet<Meridian.Execution.Models.IMultiAccountPortfolioState>(
+            ReferenceEqualityComparer.Instance);
+        foreach (var (runId, portfolio) in entries.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
         {
+            if (!seenPortfolios.Add(portfolio))
+            {
+                continue;
+            }
+
             foreach (var account in portfolio.Accounts)
             {
                 foreach (var (symbol, pos) in account.Positions)
                 {
-                    var contribution = new RunPositionContribution(
-                        runId, account.AccountId, pos.Quantity, pos.AverageCostBasis, pos.UnrealizedPnl);
-
                     if (!symbolMap.TryGetValue(symbol, out var list))
                     {
                         list = [];
                         symbolMap[symbol] = list;
                     }
 
-                    list.Add(contribution);
+                    // Split the position by the fund that actually owns each part. Fills
+                    // through a shared execution account all land under one account id, so
+                    // without this the contribution names a book rather than an owner —
+                    // and every consumer that scopes or nets by fund is guessing.
+                    foreach (var contribution in SplitByOwner(runId, account.AccountId, pos))
+                    {
+                        list.Add(contribution);
+                    }
 
                     if (!symbolCostBasis.TryGetValue(symbol, out var agg))
                         agg = (0m, 0m, 0m);
 
+                    // Unrounded, for the same reason the contributions are: a fractional
+                    // holding must not report a whole-share total that disagrees with the
+                    // per-fund split feeding the exposure rails.
                     symbolCostBasis[symbol] = (
-                        agg.totalQty + pos.Quantity,
-                        agg.totalWeightedCost + pos.Quantity * pos.AverageCostBasis,
+                        agg.totalQty + pos.ExactQuantity,
+                        agg.totalWeightedCost + pos.ExactQuantity * pos.AverageCostBasis,
                         agg.totalUnrealised + pos.UnrealizedPnl);
                 }
             }
@@ -111,8 +134,18 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         decimal net = 0m;
         decimal gross = 0m;
 
+        // Same reference deduplication the aggregate read uses: the host portfolio is
+        // registered under its own key and again under every active run id, so counting it
+        // once per key would report a single position two or three times over.
+        var seenPortfolios = new HashSet<Meridian.Execution.Models.IMultiAccountPortfolioState>(
+            ReferenceEqualityComparer.Instance);
         foreach (var portfolio in all.Values)
         {
+            if (!seenPortfolios.Add(portfolio))
+            {
+                continue;
+            }
+
             foreach (var account in portfolio.Accounts)
             {
                 if (account.Positions.TryGetValue(symbol, out var pos))
@@ -124,5 +157,60 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
         }
 
         return new NetSymbolPosition(symbol, net, gross);
+    }
+
+    /// <summary>
+    /// Projects one account position into per-owning-fund contributions. Quantity attributed
+    /// to a fund is emitted under that fund's account id; whatever is left over — legacy
+    /// fills, paper runs, anything placed without a fund scope — stays under the account's
+    /// own id and remains unattributable, which downstream scoping treats accordingly.
+    /// </summary>
+    private static IEnumerable<RunPositionContribution> SplitByOwner(
+        string runId,
+        string accountId,
+        Meridian.Execution.Sdk.IPosition position)
+    {
+        var owners = position.OwnerQuantities;
+        var multiplier = position.ContractMultiplier;
+        if (owners.Count == 0)
+        {
+            yield return new RunPositionContribution(
+                runId, accountId, position.ExactQuantity, position.AverageCostBasis, position.UnrealizedPnl, multiplier);
+            yield break;
+        }
+
+        var attributed = 0m;
+        foreach (var (owner, quantity) in owners)
+        {
+            if (quantity == 0m)
+            {
+                continue;
+            }
+
+            attributed += quantity;
+            yield return new RunPositionContribution(
+                runId,
+                owner,
+                quantity,
+                position.AverageCostBasis,
+                // Unrealised P&L splits pro rata on attributed quantity; it is a display
+                // figure here, while quantity is what every risk projection reads.
+                position.ExactQuantity == 0m ? 0m : position.UnrealizedPnl * (quantity / position.ExactQuantity),
+                multiplier);
+        }
+
+        // Against the unrounded aggregate: a rounded one turns a fractional holding into a
+        // phantom opposing contribution, which reads as zero net and double gross.
+        var residual = position.ExactQuantity - attributed;
+        if (residual != 0m)
+        {
+            yield return new RunPositionContribution(
+                runId,
+                accountId,
+                residual,
+                position.AverageCostBasis,
+                position.ExactQuantity == 0m ? 0m : position.UnrealizedPnl * (residual / position.ExactQuantity),
+                multiplier);
+        }
     }
 }

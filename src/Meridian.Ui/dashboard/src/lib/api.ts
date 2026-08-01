@@ -725,7 +725,7 @@ function buildReferenceDataApiErrorDetails(error: { path: string; status: number
   return details;
 }
 
-async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+export async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     signal: options.signal,
     headers: {
@@ -777,7 +777,7 @@ export function markDevelopmentFixtureUsage() {
   developmentFixtureUsage = true;
 }
 
-async function postJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
+export async function postJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "POST",
     signal: options.signal,

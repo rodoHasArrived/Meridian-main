@@ -1,3 +1,9 @@
+import {
+  buildOrderRequirementText,
+  buildOrderTicketAcknowledgementState,
+  buildOrderTicketStatusAnnouncement,
+  buildOrderTicketSubmitDisabledReason
+} from "./trading-screen.order-ticket-text";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
@@ -3153,7 +3159,7 @@ function capitalizeWord(value: string): string {
 }
 
 export type OrderTicketField = "symbol" | "side" | "type" | "quantity" | "limitPrice";
-export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "error";
+export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "parked" | "error";
 
 export interface OrderTicketServices {
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
@@ -3196,6 +3202,12 @@ export interface OrderTicketState {
   open: boolean;
   phase: OrderTicketPhase;
   orderId: string | null;
+  /** Governed-approval queue entry holding a parked order, when phase is "parked". */
+  escalationId: string | null;
+  /** Non-blocking risk warnings the rails raised for the last submitted order. */
+  riskWarnings: string[];
+  /** Operator-facing text for a parked order; null in every other phase. */
+  parkedText: string | null;
   errorText: string | null;
   validationError: string | null;
   invalidField: OrderTicketField | null;
@@ -3227,6 +3239,8 @@ export interface BuildOrderTicketStateOptions {
   phase: OrderTicketPhase;
   orderId: string | null;
   errorText: string | null;
+  escalationId?: string | null;
+  riskWarnings?: string[];
   acknowledged?: boolean;
 }
 
@@ -3258,14 +3272,16 @@ export function useOrderTicketViewModel({
   const [form, setForm] = useState<OrderSubmitRequest>(emptyOrderTicketForm);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<OrderTicketPhase>("idle");
+  const [escalationId, setEscalationId] = useState<string | null>(null);
+  const [riskWarnings, setRiskWarnings] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const submittingRef = useRef(false);
 
   const state = useMemo(
-    () => buildOrderTicketState({ form, open, phase, orderId, errorText, acknowledged }),
-    [acknowledged, errorText, form, open, orderId, phase]
+    () => buildOrderTicketState({ form, open, phase, orderId, errorText, escalationId, riskWarnings, acknowledged }),
+    [acknowledged, errorText, escalationId, form, open, orderId, phase, riskWarnings]
   );
 
   const preview = useMemo(
@@ -3320,6 +3336,20 @@ export function useOrderTicketViewModel({
     }));
   }, []);
 
+  // The post-submit refresh must never rewrite the submission outcome. By the time it runs
+  // the server has already accepted or durably parked the order, so a failed refresh is a
+  // stale-screen problem, not a submission failure. Letting it fall into the submit catch
+  // replaced "parked for governed approval — do not resubmit" with a generic error, and an
+  // operator acting on that retries and creates a second independently releasable order.
+  const refreshAfterSettledOutcome = useCallback(async () => {
+    try {
+      await onOrderAccepted?.();
+    } catch {
+      // Intentionally swallowed: the order's fate is already decided and displayed. The
+      // surfaces this refreshes carry their own loading and error state.
+    }
+  }, [onOrderAccepted]);
+
   const submitOrderTicket = useCallback(async () => {
     if (phase === "submitting" || submittingRef.current) {
       return;
@@ -3343,6 +3373,8 @@ export function useOrderTicketViewModel({
     submittingRef.current = true;
     setPhase("submitting");
     setOrderId(null);
+    setEscalationId(null);
+    setRiskWarnings([]);
     setErrorText(null);
 
     try {
@@ -3350,23 +3382,43 @@ export function useOrderTicketViewModel({
       if (result.success) {
         setPhase("submitted");
         setOrderId(result.orderId);
+        setEscalationId(null);
+        // Non-blocking warnings the rails raised while approving describe exposure the
+        // operator now holds. An unqualified success banner would drop them.
+        setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
         setAcknowledged(false);
         setForm(emptyOrderTicketForm);
-        await onOrderAccepted?.();
+        await refreshAfterSettledOutcome();
+        return;
+      }
+
+      if (result.requiresApproval) {
+        // Parked for governed approval: nothing routed, but a live queue entry can still
+        // execute this order. Treating it as a submission failure would tell the operator
+        // the opposite of what happened.
+        setPhase("parked");
+        setOrderId(result.orderId);
+        setEscalationId(result.escalationId ?? null);
+        setRiskWarnings(result.riskWarnings ?? []);
+        setErrorText(null);
+        setOpen(false);
+        setAcknowledged(false);
+        setForm(emptyOrderTicketForm);
+        await refreshAfterSettledOutcome();
         return;
       }
 
       setPhase("error");
-      setErrorText(result.reason ?? "Order failed.");
+      setErrorText(result.errorMessage ?? result.reason ?? "Order failed.");
     } catch (err) {
       setPhase("error");
       setErrorText(toErrorMessage(err, "Order submission failed."));
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, onOrderAccepted, phase, services]);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services]);
 
   return {
     ...state,
@@ -3387,12 +3439,18 @@ export function buildOrderTicketState({
   phase,
   orderId,
   errorText,
+  escalationId = null,
+  riskWarnings = [],
   acknowledged = false
 }: BuildOrderTicketStateOptions): OrderTicketState {
   const validationError = validateOrderTicketForm(form);
   const requiresLimitPrice = orderTypeRequiresPrice(form.type);
   const successText = phase === "submitted"
     ? `Order submitted${orderId ? ` - ${orderId}` : ""}.`
+    : null;
+  const parkedText = phase === "parked"
+    ? `Order parked for governed risk approval${escalationId ? ` - escalation ${escalationId}` : ""}. `
+      + "It routes only once the risk desk approves it."
     : null;
   const invalidField = getOrderTicketInvalidField(form);
   const requirementId = "order-ticket-requirements";
@@ -3405,6 +3463,9 @@ export function buildOrderTicketState({
     open,
     phase,
     orderId,
+    escalationId,
+    riskWarnings,
+    parkedText,
     errorText,
     validationError,
     invalidField,
@@ -3427,7 +3488,7 @@ export function buildOrderTicketState({
     acknowledgement,
     requirementText: buildOrderRequirementText(form, phase, validationError),
     successText,
-    statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId })
+    statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId, escalationId, riskWarnings })
   };
 }
 
@@ -3580,91 +3641,6 @@ function getOrderTicketInvalidField(form: OrderSubmitRequest): OrderTicketField 
   }
 
   return null;
-}
-
-function buildOrderRequirementText(
-  form: OrderSubmitRequest,
-  phase: OrderTicketPhase,
-  validationError: string | null
-): string {
-  if (phase === "submitting") {
-    return "Submitting order request to the execution layer.";
-  }
-
-  if (validationError) {
-    return validationError;
-  }
-
-  const symbol = normalizeOrderSymbol(form.symbol);
-  const priceText = orderTypeRequiresPrice(form.type) && form.limitPrice
-    ? ` at ${form.limitPrice}`
-    : "";
-  return `${form.side} ${form.quantity} ${symbol} ${form.type.toLowerCase()}${priceText}.`;
-}
-
-function buildOrderTicketAcknowledgementState(
-  acknowledged: boolean,
-  phase: OrderTicketPhase,
-  validationError: string | null
-): OrderTicketAcknowledgementState {
-  const disabledReason = phase === "submitting"
-    ? "Order submission is already running."
-    : validationError
-      ? "Complete valid order fields before acknowledging the preview."
-      : null;
-
-  return {
-    id: "order-ticket-review-acknowledgement",
-    label: "I reviewed the order preview and risk warnings",
-    description: "Submit stays locked until the preview, position impact, and risk warnings have been reviewed.",
-    checked: acknowledged,
-    disabled: disabledReason !== null,
-    disabledReason
-  };
-}
-
-function buildOrderTicketSubmitDisabledReason(
-  phase: OrderTicketPhase,
-  validationError: string | null,
-  acknowledgement: OrderTicketAcknowledgementState
-): string | null {
-  if (phase === "submitting") {
-    return "Order submission is already running.";
-  }
-
-  if (validationError) {
-    return validationError;
-  }
-
-  if (!acknowledgement.checked) {
-    return "Review the order preview and acknowledge before submitting.";
-  }
-
-  return null;
-}
-
-function buildOrderTicketStatusAnnouncement({
-  phase,
-  errorText,
-  orderId
-}: {
-  phase: OrderTicketPhase;
-  errorText: string | null;
-  orderId: string | null;
-}): string {
-  if (phase === "submitting") {
-    return "Submitting order request.";
-  }
-
-  if (errorText) {
-    return `Order submission failed: ${errorText}`;
-  }
-
-  if (phase === "submitted") {
-    return `Order submitted${orderId ? ` with id ${orderId}` : ""}.`;
-  }
-
-  return "";
 }
 
 function normalizeOrderSymbol(symbol: string): string {

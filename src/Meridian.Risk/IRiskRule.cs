@@ -31,10 +31,21 @@ public interface IRiskRule
     Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Severity attached to a rule's rejection, mapped to real outcomes by
+/// <see cref="CompositeRiskValidator"/>:
+/// <list type="bullet">
+/// <item><description><see cref="Info"/> / <see cref="Warning"/> — the order proceeds; the breach is surfaced as a warning flag.</description></item>
+/// <item><description><see cref="Error"/> — the order is rejected.</description></item>
+/// <item><description><see cref="Escalate"/> — the order is parked for governed approval instead of routed.</description></item>
+/// <item><description><see cref="Critical"/> — the order is rejected and the execution circuit breaker trips.</description></item>
+/// </list>
+/// </summary>
 public enum RiskRuleSeverity
 {
     Info,
     Warning,
     Error,
+    Escalate,
     Critical
 }

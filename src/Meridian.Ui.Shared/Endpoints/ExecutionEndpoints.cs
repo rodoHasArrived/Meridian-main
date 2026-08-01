@@ -184,12 +184,20 @@ public static class ExecutionEndpoints
 
             var result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
 
-            return result.Success
-                ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
-                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            // A parked order is not a rejection: nothing routed, but a live queue entry can
+            // still execute it once an operator approves. 202 keeps that distinguishable
+            // from the 400 a refusal returns, so a client cannot show "submission failed"
+            // for an order that is on its way to the desk.
+            return (result.Success, result.RequiresApproval) switch
+            {
+                (true, _) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created),
+                (false, true) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status202Accepted),
+                _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+            };
         })
         .WithName("SubmitOrder")
         .Produces<OrderResult>(201)
+        .Produces<OrderResult>(202)
         .Produces<OrderResult>(400)
         .Produces<OrderResult>(403)
         .Produces(429)
@@ -206,6 +214,23 @@ public static class ExecutionEndpoints
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            // Cancelling a parked order durably withdraws its governed approval, which the
+            // escalation routes only allow within the caller's scoped authority over the
+            // owning fund. Reaching the same withdrawal through a client order id must not
+            // be the cheaper path: without this, an operator holding ManageOrders for one
+            // fund could retire another fund's approval just by knowing its id.
+            if (oms.GetOrder(orderId)?.FundAccountId is { } scopedFundAccountId &&
+                !EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance) &&
+                !await EndpointAuthorization.HasScopedPermissionAsync(
+                    context,
+                    UserPermission.ManageOrders,
+                    AccessScopeKindDto.Account,
+                    scopedFundAccountId,
+                    context.RequestAborted).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
 
             var logger = GetLogger(context.RequestServices);
             var actionId = GenerateActionId();
@@ -1249,6 +1274,12 @@ public static class ExecutionEndpoints
 
         var result = await oms.PlaceOrderAsync(orderRequest, context.RequestAborted).ConfigureAwait(false);
 
+        // A parked order is not a rejection here either. Reporting one as Rejected invites
+        // the operator to retry, and every retry mints a fresh ClientOrderId — so a single
+        // close can become several parked close orders that all release on approval and
+        // take the position past flat, or reverse it.
+        var parked = !result.Success && result.RequiresApproval;
+
         if (result.Success)
         {
             logger.LogInformation(
@@ -1258,6 +1289,15 @@ public static class ExecutionEndpoints
                 position.PositionKey,
                 quantity,
                 result.OrderId);
+        }
+        else if (parked)
+        {
+            logger.LogInformation(
+                "Trading action {ActionId}: {Action} {PositionKey} qty {Quantity} — order parked for governed approval",
+                actionId,
+                actionName,
+                position.PositionKey,
+                quantity);
         }
         else
         {
@@ -1273,10 +1313,12 @@ public static class ExecutionEndpoints
             context,
             actionId,
             action: actionName,
-            outcome: result.Success ? "Accepted" : "Rejected",
+            outcome: result.Success ? "Accepted" : parked ? "PendingApproval" : "Rejected",
             message: result.Success
                 ? $"{successVerb} order for {position.ProductDescription} submitted."
-                : (result.ErrorMessage ?? $"{successVerb} order rejected for {position.ProductDescription}."),
+                : parked
+                    ? $"{successVerb} order for {position.ProductDescription} parked for governed approval."
+                    : (result.ErrorMessage ?? $"{successVerb} order rejected for {position.ProductDescription}."),
             orderId: result.OrderId,
             symbol: position.Symbol,
             metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -1290,16 +1332,25 @@ public static class ExecutionEndpoints
 
         var actionResult = new TradingActionResult(
             ActionId: actionId,
-            Status: result.Success ? "Accepted" : "Rejected",
+            Status: result.Success ? "Accepted" : parked ? "PendingApproval" : "Rejected",
             Message: result.Success
                 ? $"{successVerb} order for {position.ProductDescription} submitted (order {result.OrderId})."
-                : (result.ErrorMessage ?? $"{successVerb} order rejected."),
+                : parked
+                    ? $"{successVerb} order for {position.ProductDescription} is parked for governed approval; "
+                        + "an approver must release it. Do not resubmit."
+                    : (result.ErrorMessage ?? $"{successVerb} order rejected."),
             OccurredAt: DateTimeOffset.UtcNow,
             AuditId: auditEntry?.AuditId);
 
-        return result.Success
-            ? Results.Json(actionResult, jsonOptions)
-            : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        // 202 for a park, matching /orders/submit: the request was accepted but not routed.
+        // 400 would read as "this failed, try again", and each retry mints a new
+        // ClientOrderId, so the retries all park and can all release.
+        return (result.Success, parked) switch
+        {
+            (true, _) => Results.Json(actionResult, jsonOptions),
+            (false, true) => Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status202Accepted),
+            _ => Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+        };
     }
 
     private static ExecutionPositionDetailResponse MapBrokerPositionToDetail(BrokerPosition position)
