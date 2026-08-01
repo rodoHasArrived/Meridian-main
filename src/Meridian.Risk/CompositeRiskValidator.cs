@@ -130,7 +130,21 @@ public sealed class CompositeRiskValidator : IRiskValidator
         {
             // Nothing will be routed, so no reserved capacity should survive this call.
             RollbackAll(reservations);
-            LogRejection(request, result);
+
+            // Isolated for the same reason as the admission log below, and it matters more here:
+            // the rejection has already been derived, and the OMS calls the validator outside its
+            // own submission handler. A throwing logger provider would hand the submitter a
+            // logging exception instead of the rejection, and no rejection state or audit record
+            // would ever be written for an order the gate had decided to block.
+            try
+            {
+                LogRejection(request, result);
+            }
+            catch (Exception ex)
+            {
+                TryLogSuppressed(ex, "rejection");
+            }
+
             return new RiskValidationOutcome(result, []);
         }
 
@@ -183,7 +197,14 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // here that is invisible rather than loud.
             if (rule is IReservingRiskRule reserving)
             {
+                // Cancelled on the way out, not merely disposed. Disposing a
+                // CancellationTokenSource does not request cancellation, and WaitAsync can win the
+                // race against CancelAfter — readily so at a short or zero timeout — leaving a
+                // rule that correctly observes its token still waiting on I/O after validation has
+                // already returned a fail-closed result. Repeated orders would accumulate them.
                 using var reservingTimeout = CreateTimeoutSource(ct);
+                using var abandonReserving = AbandonOnExit(reservingTimeout);
+
                 var reservationResult = await WithHardTimeoutAsync(
                         reserving.EvaluateAndReserveAsync(request, reservingTimeout?.Token ?? ct),
                         ct)
@@ -215,6 +236,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
             }
 
             using var evaluationTimeout = CreateTimeoutSource(ct);
+            using var abandonEvaluation = AbandonOnExit(evaluationTimeout);
+
             var finding = await WithHardTimeoutAsync(
                     rule.EvaluateAsync(request, evaluationTimeout?.Token ?? ct),
                     ct)
@@ -318,6 +341,29 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 TaskScheduler.Default);
 
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Signals the rule's token when the evaluation is left behind, whether it timed out, was
+    /// cancelled, or threw. Declared after the source so that it disposes first — `using`
+    /// disposal runs in reverse declaration order — and cancellation is therefore requested while
+    /// the source is still alive.
+    /// </summary>
+    private static CancellationSignal AbandonOnExit(CancellationTokenSource? source) => new(source);
+
+    private readonly struct CancellationSignal(CancellationTokenSource? source) : IDisposable
+    {
+        public void Dispose()
+        {
+            try
+            {
+                source?.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already torn down; the rule's token is dead either way.
+            }
         }
     }
 

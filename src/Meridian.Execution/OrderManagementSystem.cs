@@ -646,7 +646,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         // OrderRejected entry released its slot, so a read model reporting throttle
                         // usage has to be able to tell this one apart or it will under-report and
                         // show room the throttle does not have.
-                        Reason: AmbiguousSubmissionReason,
+                        // Only when dispatch was actually attempted. A pre-dispatch failure rolled
+                        // its slot back a few lines above, so stamping the marker here would claim
+                        // the order may have routed and — via ConsumedRateCapacity in the audit
+                        // fallback — count a slot the throttle has already released.
+                        Reason: dispatchAttempted ? AmbiguousSubmissionReason : null,
                         Message: ex.Message), CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception auditException)
