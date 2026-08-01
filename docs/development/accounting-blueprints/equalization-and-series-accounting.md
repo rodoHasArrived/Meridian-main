@@ -676,6 +676,8 @@ public sealed record FundSeriesDefinition(
     string? VehicleId,
     DateOnly IssueDate,
     decimal IssuePrice,
+    // Seed value only — at issuance HWM_s == IssuePrice. This is NOT the durable HWM: the owner is
+    // incentive_fee_state (§9). Series creation must write that row; see the note below.
     decimal HighWaterMarkPerShare,
     bool IsLead,
     FundSeriesStatus Status,
@@ -775,6 +777,27 @@ public interface IFundSeriesStore
     Task<IReadOnlyList<SeriesHolding>> ListHoldingsAsync(string seriesId, CancellationToken ct = default);
 }
 ```
+
+> **Opening a series must also open its HWM row — `IFundSeriesStore` alone is not enough.**
+> Because `fund_series` carries no HWM column (§9), persisting a `FundSeriesDefinition` does *not*
+> persist the series' protected level. If the workflow stops at `UpsertAsync`, the issue-price HWM
+> exists only on the in-memory record and is gone after reload — the next crystallization then
+> hydrates no HWM and can charge performance fee on the **entire** series NAV rather than on gains
+> above the issue price.
+>
+> Series creation is therefore a **two-store transaction**, and the ordered checklist (§14 step 6)
+> implements both halves together:
+>
+> 1. `IFundSeriesStore.UpsertAsync(series)` — the series registry row.
+> 2. `SaveIncentiveFeeStateAsync` (incentive-fee §6.1) — a new `incentive_fee_state` row with
+>    `series_id = series.SeriesId`, `high_water_mark_per_share = series.IssuePrice`,
+>    `loss_carryforward = 0`, `accrued_fee_balance = 0`, `last_crystallized_date = null`.
+>
+> Both writes commit together or neither does; a series registered without its HWM row is a
+> corrupt state, not a recoverable one. Symmetrically, **consolidation** (§6.2) closes the absorbed
+> series' HWM row as part of `RecordConsolidationAsync` rather than leaving an orphan, and
+> **loading** a series for fee evaluation joins `incentive_fee_state` to obtain `HWM_s` — the value
+> on `FundSeriesDefinition` is a creation-time seed and must never be read as current state.
 
 ---
 
@@ -1005,8 +1028,21 @@ Rules:
 
 ### 12.1 DTOs (`Meridian.Contracts.Ledger`)
 
-- `EqualizationPolicyDto(Guid LedgerBookId, string FundProfileId, EqualizationMethod Method,
-  EqualizationCreditRedemptionStyle RedemptionStyle, BelowHwmEntryHandling BelowHwmHandling)`.
+> **Do not type these DTOs with the `Meridian.Ledger` enums.** `Meridian.Contracts` has **no**
+> `ProjectReference` at all — it is a leaf, and the graph runs `Meridian.Ledger` →
+> `Meridian.Core` → `Meridian.Contracts`. Referencing `Meridian.Ledger.EqualizationMethod` (or
+> `EqualizationCreditRedemptionStyle` / `BelowHwmEntryHandling`) from a Contracts DTO would need a
+> Contracts→Ledger reference and invert that graph. Serializing the shipped enum would also put its
+> grandfathered UK member `Equalisation` on the wire.
+>
+> So Contracts owns **its own** wire enums with US-spelled values, and the application service maps
+> at the boundary: `EqualizationMethodDto { None, EqualizationCreditDebit, SeriesOfShares }`,
+> `EqualizationCreditRedemptionStyleDto`, `BelowHwmEntryHandlingDto`. The mapping is the one place
+> `Equalisation` ↔ `EqualizationCreditDebit` is translated, which is also what keeps the
+> grandfathered spelling out of the public contract.
+
+- `EqualizationPolicyDto(Guid LedgerBookId, string FundProfileId, EqualizationMethodDto Method,
+  EqualizationCreditRedemptionStyleDto RedemptionStyle, BelowHwmEntryHandlingDto BelowHwmHandling)`.
 - `EqualizationLotAdjustmentDto(string InvestorId, string SubscriptionId, DateOnly SubscriptionDate,
   string Zone, decimal EqualizationCreditCollected, decimal EqualizationCreditReturned,
   decimal ContingentRedemption, decimal NetEqualizationPerformanceFee, string Currency)`.
@@ -1016,7 +1052,7 @@ Rules:
   column on `fund_series`.
 - `SeriesConsolidationDto(string FromSeriesId, string ToLeadSeriesId, DateOnly EffectiveDate,
   decimal ConversionRatio, IReadOnlyList<SeriesConsolidationHolderDto> Holders)`.
-- `EqualizationCrystallizationViewDto(Guid LedgerBookId, Guid PeriodId, EqualizationMethod Method,
+- `EqualizationCrystallizationViewDto(Guid LedgerBookId, Guid PeriodId, EqualizationMethodDto Method,
   decimal FundPerformanceFee, IReadOnlyList<EqualizationLotAdjustmentDto> Adjustments,
   IReadOnlyList<SeriesConsolidationDto> Consolidations, bool AllBalanced,
   IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues)`.
@@ -1143,6 +1179,10 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
 6. **Persistence** — add `V_ledger_033__equalization_policy.sql`,
    `V_ledger_034__equalization_subscription_lots.sql`, `V_ledger_035__fund_series.sql` (idempotent,
    `__SCHEMA__`); implement `IFundSeriesStore` + a Postgres adapter in `Meridian.Storage.Ledger`.
+   **In the same step**, wire series creation to write the matching `incentive_fee_state` row
+   (`series_id`, `high_water_mark_per_share = IssuePrice`) transactionally with the registry row,
+   close it on consolidation, and hydrate `HWM_s` from it on load (§7.3 note). Shipping
+   `IFundSeriesStore` on its own leaves every new series without a durable HWM.
 7. **Application service** — `IEqualizationProjectionService` /
    `EqualizationProjectionService` in `Meridian.FinancialOperations.Ledger`, dispatching on method
    and routing every posting set through `IAccountingJournalDraftService.BuildDraftAsync` with

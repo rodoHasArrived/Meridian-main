@@ -5,7 +5,7 @@
 **Reviewed:** 2026-08-01
 
 Scope: extend the existing partnership fee projectors from a single-shot, fund-level, "high-water-mark
-passed in per period" model into a **config-driven, durable, per-investor incentive-fee engine** that
+passed in per period" model into a **config-driven, durable, series-scoped incentive-fee engine** that
 supports both US and European fund conventions.
 
 > **Shared-convention notice.** This blueprint shares the ledger migration sequence, the
@@ -38,7 +38,8 @@ crystallization" fund are the same code path with different configuration:
 2. **Crystallization schedules** as first-class config — frequency (monthly / quarterly / semi-annual /
    annual / on-redemption) and anchor dates that decide when accrued fee locks and the HWM rolls
    forward.
-3. **Stateful per-investor HWM and loss-carryforward series**, persisted in the ledger schema and
+3. **Stateful series-scoped HWM and loss-carryforward series** (one scope under Method A, one per
+   share-series under Method B — never per investor), persisted in the ledger schema and
    rolled forward each period, replacing the pass-in-per-period HWM with durable state and an audited
    snapshot history.
 
@@ -495,7 +496,7 @@ Semantics: between crystallization dates the engine **accrues** (contingent liab
 on a crystallization date the accrued balance **locks**, the HWM rolls forward to the post-fee NAV, and
 (per Fork F) the LCF resets. `OnRedemptionOnly` funds crystallize only when `isRedemption` is true.
 
-### 5.3 Durable per-investor HWM + loss-carryforward series
+### 5.3 Durable series-scoped HWM + loss-carryforward series
 
 ```csharp
 namespace Meridian.Ledger;
@@ -635,8 +636,15 @@ Task<IReadOnlyList<IncentiveFeePolicyRecord>> ListIncentiveFeePoliciesAsync(Guid
     => Task.FromException<IReadOnlyList<IncentiveFeePolicyRecord>>(new NotSupportedException("This ledger journal store does not support incentive-fee policy persistence."));
 
 // --- Incentive-fee state series ---
-Task<IncentiveFeeStateRecord?> GetIncentiveFeeStateAsync(Guid ledgerBookId, string? investorId, CancellationToken ct = default)
+// Keyed by SERIES, not investor (§4 Fork G HWM contract). seriesId == null selects the
+// fund-level row (Method A). Under Method B one investor may hold several series, so an
+// investor-keyed lookup would collapse distinct HWMs onto one row.
+Task<IncentiveFeeStateRecord?> GetIncentiveFeeStateAsync(Guid ledgerBookId, string? seriesId, CancellationToken ct = default)
     => Task.FromException<IncentiveFeeStateRecord?>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
+
+/// <summary>All live HWM scopes for a book: one row under Method A, one per series under Method B.</summary>
+Task<IReadOnlyList<IncentiveFeeStateRecord>> ListIncentiveFeeStatesAsync(Guid ledgerBookId, CancellationToken ct = default)
+    => Task.FromException<IReadOnlyList<IncentiveFeeStateRecord>>(new NotSupportedException("This ledger journal store does not support incentive-fee state persistence."));
 
 /// <summary>Persist rolled-forward state and its audit snapshot atomically; enforces optimistic Version.</summary>
 Task<IncentiveFeeStateRecord> SaveIncentiveFeeStateAsync(IncentiveFeeStateRecord state, IncentiveFeeStateSnapshotRecord snapshot, long expectedVersion, CancellationToken ct = default)
@@ -665,8 +673,11 @@ public interface IIncentiveFeeStateService
 ```
 
 `IncentiveFeePeriodRequest` carries `LedgerBookId`, `FundProfileId`, `PeriodId`, `AsOfDate`,
-`BeginningNav`, `EndingNavBeforeIncentiveFee`, the investor roster (for `InvestorSeries`), and an optional
-`IsRedemption` flag. `IncentiveFeeAccrualOutcome` bundles the per-series `IncentiveFeeResult`, the
+`BeginningNav`, `EndingNavBeforeIncentiveFee`, the **series roster** (for `InvestorSeries` — a list of
+`SeriesId` with that series' units outstanding, since the HWM is per-share and the projector needs
+total-NAV terms; see equalization §6.1), and an optional `IsRedemption` flag. It is deliberately *not*
+an investor roster: one investor may hold several series, and keying the evaluation by investor would
+collapse their distinct HWMs onto a single row. `IncentiveFeeAccrualOutcome` bundles the per-series `IncentiveFeeResult`, the
 resulting `AutomatedJournalEvent`s, and the candidate `IncentiveFeeStateRecord`/snapshot — so
 `EvaluatePeriodAsync` is a pure preview and `CommitAsync` is the governed side-effect.
 
@@ -921,7 +932,7 @@ Stays inside the approved top-level nav (`Accounting`). Two additions under **Ac
 
 - **Fee Terms** (config panel): edit `IncentiveFeePolicy` — hurdle type/rate/basis, catch-up %, crystallization
   frequency + anchor, accounting model, reset mode. Inline preview using the accrual-preview endpoint.
-- **Incentive Fee Workbench**: per-investor (or fund-level) HWM and LCF series, accrued vs crystallized fee,
+- **Incentive Fee Workbench**: per-series (or fund-level) HWM and LCF series, accrued vs crystallized fee,
   the snapshot timeline, and a "preview next accrual/crystallization" action that renders the calculator's
   hurdle/catch-up/carry breakdown. Crystallization triggers the governed approve/post drawer used elsewhere
   in the ledger UI.
@@ -982,7 +993,9 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
     return identical fees for the same policy (guards the two copies from drifting).
 21. `IncentiveFeeStateService_RerunPeriod_IsIdempotent` — second run posts nothing new
     (idempotency key + `expectedVersion`).
-22. `InvestorSeries_ComputesFeePerInvestorHwm` — two investors with different prior HWMs get different fees.
+22. `InvestorSeries_ComputesFeePerSeriesHwm` — two *series* with different prior HWMs get different
+    fees, including the case where both series belong to the same investor (the regression that an
+    investor-keyed store would silently collapse).
 
 **Store (Postgres integration, mirroring tax-lot store tests):**
 23. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and

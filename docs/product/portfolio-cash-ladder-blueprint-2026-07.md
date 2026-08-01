@@ -56,9 +56,15 @@ of this blueprint.
 - Terms-driven sourcing only (no `ISecurityMasterCashFlowService` tier yet); unprojected
   positions surface as a count warning rather than per-security exclusion rows.
 - Holdings are sourced through an optional `IPortfolioHoldingsSource` seam (held security IDs +
-  real quantities); a ledger/custodian adapter is not wired yet, so when the seam is absent the
-  read service falls back to enumerating active Security Master subjects at unit quantity and
-  stamps an explicit overstatement warning into the ladder rather than doing so silently.
+  real quantities); a ledger/custodian adapter is not wired yet. When the seam is absent the read
+  service **fails closed**: `PortfolioCashLadderReadService.LoadPositionsAsync` returns an empty
+  position set with the notice *"No authoritative holdings source is registered; Security Master
+  subjects cannot substitute for held quantities"*, which is also raised as a **decision blocker**.
+  Operators in such a deployment see no projected security flows at all — not an overstated ladder.
+  (An earlier draft of this note described a unit-quantity fallback over active Security Master
+  subjects. That was rejected in implementation — the comment in source reads "Active Security
+  Master subjects at unit quantity are not a financial fact and are never used as a fallback" — and
+  the note is corrected here to match.)
 - Capital activity and an FX shock scenario shipped in the slice (the driving goal required
   them) even though this blueprint deferred both; the provider seam keeps investor-schedule
   data optional until the capital activity engine exists.

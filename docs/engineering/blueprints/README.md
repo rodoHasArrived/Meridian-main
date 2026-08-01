@@ -95,6 +95,17 @@ already ships in `ShareClass.cs` (`None = 0`, `Equalisation = 1`) and gates the 
 `ShareClassUnitRegisterProjector`; the equalization blueprint appends `SeriesOfShares = 2` rather
 than redeclaring it. **Before writing `public enum X` in a blueprint, grep `src/` for `enum X`.**
 
+### DTO layering
+
+`Meridian.Contracts` has **no `ProjectReference` at all** — it is a leaf, and the graph runs
+`Meridian.Ledger` → `Meridian.Core` → `Meridian.Contracts`. A DTO placed in
+`Meridian.Contracts.*` therefore cannot be typed with a domain enum or record from
+`Meridian.Ledger`; doing so needs a Contracts→Ledger reference and inverts the graph.
+
+Contracts owns its own wire types and the application service maps at the boundary. This is also
+what keeps a grandfathered domain spelling (below) off the public contract. Before writing a DTO
+signature in a blueprint, check which project each named type actually lives in.
+
 ### Terminology
 
 Use **US spelling in code identifiers, routes, and wire contracts** (`Crystallize`,
