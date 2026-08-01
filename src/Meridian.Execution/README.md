@@ -57,21 +57,22 @@ permanently consumes capacity and eventually blocks every later order.
 
 **Logging convention in this module:** caller-supplied order text — the client order id, the symbol,
 and rejection reasons, which embed the symbol via rule text — is rendered through
-`ExecutionLogText.ForLog` before it reaches a logger. `OrderRequest.ClientOrderId` and `Symbol` are
+`LogSanitizer.Sanitize` before it reaches a logger. `OrderRequest.ClientOrderId` and `Symbol` are
 submitted values that nothing upstream is required to constrain (the Security Master gate is
 optional), so a line break in either would render as an extra line in a text sink and let a submitter
-forge execution log entries. This holds for every `_logger` call in this module — the OMS, both paper gateways, the brokerage
-gateway adapter, and the Security Master gate; a raw caller value in a new log call is a defect, not
-a style choice.
+forge execution log entries. This holds for every `_logger` call in this module — the OMS, both paper
+gateways, the brokerage gateway adapter, and the Security Master gate — and in `Meridian.Risk`, whose
+rules log the same submitted values. A raw caller value in a new log call is a defect, not a style
+choice.
 
-This convention is the compensating control for excluding `cs/log-forging` in
-`.github/codeql/codeql-config.yml` — that query reports log sites reached by user input rather than
-unsanitized ones, and does not model `ExecutionLogText.ForLog`, so it cannot tell a fixed call site
-from an unfixed one. The invariant is enforced by `build/scripts/check-execution-log-sanitization.py`, which fails on any
-caller-supplied value reaching a logger unsanitized. Run it after touching logging in this module;
-`--list` prints the patterns it checks. A hand-written grep was declared clean twice during PR #2554
-and was wrong both times, because its pattern list was narrower than the code — the list belongs in
-review, not in someone's shell history.
+`LogSanitizer` neutralizes line endings through `String.Replace`, which CodeQL models as a barrier,
+so `cs/log-forging` recognizes a sanitized call site and no query filter is needed. The invariant is
+additionally enforced by `build/scripts/check-execution-log-sanitization.py`, which fails on any
+caller-supplied value reaching a logger unsanitized — it catches a *missing* sanitizer call, which is
+the direction the query cannot check, and it runs whether or not code scanning does. Run it after
+touching logging in this module; `--list` prints the patterns it checks. A hand-written grep was
+declared clean twice during PR #2554 and was wrong both times, because its pattern list was narrower
+than the code — the list belongs in review, not in someone's shell history.
 Broker-backed order placement fails closed unless `BrokerageConfiguration` names the active
 gateway and all live-routing, phase, validation, and sign-off gates are explicitly green; missing
 brokerage configuration remains allowed only for the default paper gateway.
@@ -151,6 +152,20 @@ Paper-session persistence resolves session identifiers through the Core rooted-p
 rejects traversal, rooted, reserved, and ambiguous path segments, refuses existing descendant
 links/reparse points, and ignores retained metadata whose session identity does not match its
 directory before reading or appending session evidence.
+
+Orders that breach an `Escalate`-severity risk rule are parked rather than rejected:
+`RiskEscalationQueueService` durably retains the exact submitted request, and `PlaceOrderAsync`
+returns `RequiresApproval` with the escalation id instead of a failure, so callers must treat a
+park as accepted-not-routed rather than prompting a retry — each retry mints a new client order id
+and can leave several approvals releasable for one intended order. A park reserves its client order
+id until the escalation resolves, and that reservation also keeps the order out of terminal-order
+retention trimming so it stays cancellable while an approval can still route it. Approvals are
+one-shot tokens carried in `riskEscalationId` metadata, matched against a full request fingerprint
+including `ClientOrderId`; a release that the gateway refuses re-arms the approval and its id
+reservation, while withdrawing an escalation also retires any approvals linked through that
+metadata chain. Broker-native notional metadata (`notional`, `alpaca:notional`) is honoured only
+for gateways implementing `INotionalOrderSizingGateway`; on any other gateway the order is refused
+rather than measured at a size the broker will not route.
 
 ## Diagrams
 

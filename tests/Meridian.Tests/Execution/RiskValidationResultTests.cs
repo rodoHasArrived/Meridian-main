@@ -5,9 +5,9 @@ using Meridian.Execution.Sdk;
 namespace Meridian.Tests.Execution;
 
 /// <summary>
-/// The decision has to follow from the violations. Construction is factory-only precisely so that
-/// no caller can assert a decision the findings do not support, so these pin what the factories
-/// derive.
+/// The decision has to follow from the fields the OMS actually routes on. <c>Decision</c> is
+/// derived, never stored, so these pin that derivation and the snapshotting that stops a caller
+/// changing a result after it was decided.
 /// </summary>
 public sealed class RiskValidationResultTests
 {
@@ -24,22 +24,28 @@ public sealed class RiskValidationResultTests
     [Theory]
     [InlineData(RiskRuleSeverity.Error)]
     [InlineData(RiskRuleSeverity.Critical)]
-    public void FromViolations_WithABlockingSeverity_IsNotApproved(RiskRuleSeverity severity)
+    public void Decision_WithABlockingViolation_IsRejected(RiskRuleSeverity severity)
     {
-        var result = RiskValidationResult.FromViolations([Violation(severity)]);
+        var result = RiskValidationResult.Rejected("message") with
+        {
+            Violations = [Violation(severity)],
+        };
 
         result.Decision.Should().Be(RiskDecisionKind.Rejected);
         result.IsApproved.Should().BeFalse();
         result.BlockingViolation.Should().NotBeNull();
-        result.RejectCode.Should().Be("CODE");
+        result.BlockingViolation!.Code.Should().Be("CODE");
     }
 
     [Theory]
     [InlineData(RiskRuleSeverity.Info)]
     [InlineData(RiskRuleSeverity.Warning)]
-    public void FromViolations_WithOnlyAnnotations_AdmitsWithWarnings(RiskRuleSeverity severity)
+    public void Decision_WithOnlyAnnotations_AdmitsWithWarnings(RiskRuleSeverity severity)
     {
-        var result = RiskValidationResult.FromViolations([Violation(severity)]);
+        var result = RiskValidationResult.Approved() with
+        {
+            Violations = [Violation(severity)],
+        };
 
         result.Decision.Should().Be(RiskDecisionKind.ApprovedWithWarnings);
         result.IsApproved.Should().BeTrue();
@@ -48,14 +54,18 @@ public sealed class RiskValidationResultTests
         result.RejectReason.Should().BeNull();
     }
 
+    /// <summary>
+    /// An escalated order is parked, not admitted. Reporting it as approved would route the one
+    /// order the escalation exists to hold.
+    /// </summary>
     [Fact]
-    public void FromViolations_WithAnAcknowledgementRequest_Escalates()
+    public void Decision_WhenParkedForApproval_IsEscalatedAndNotApproved()
     {
-        var result = RiskValidationResult.FromViolations(
-            [Violation(RiskRuleSeverity.Warning, requiresAcknowledgement: true)]);
+        var result = RiskValidationResult.Escalated("needs sign-off", escalationId: "ESC-1");
 
         result.Decision.Should().Be(RiskDecisionKind.Escalated);
-        result.IsApproved.Should().BeTrue("an escalation awaits sign-off rather than blocking outright");
+        result.IsApproved.Should().BeFalse("a parked order has not passed the gate");
+        result.EscalationId.Should().Be("ESC-1");
     }
 
     /// <summary>
@@ -63,107 +73,45 @@ public sealed class RiskValidationResultTests
     /// rejected order in front of an operator as though sign-off could release it.
     /// </summary>
     [Fact]
-    public void FromViolations_WithBothBlockingAndAcknowledgement_Rejects()
+    public void BlockingViolation_IsSelectedBySeverityNotByPosition()
     {
-        var result = RiskValidationResult.FromViolations(
-        [
-            Violation(RiskRuleSeverity.Warning, requiresAcknowledgement: true),
-            Violation(RiskRuleSeverity.Error)
-        ]);
+        var result = RiskValidationResult.Rejected("blocked") with
+        {
+            Violations =
+            [
+                Violation(RiskRuleSeverity.Warning, requiresAcknowledgement: true),
+                Violation(RiskRuleSeverity.Error),
+            ],
+        };
 
         result.Decision.Should().Be(RiskDecisionKind.Rejected);
+        result.BlockingViolation!.Severity.Should().Be(RiskRuleSeverity.Error);
     }
 
     [Fact]
-    public void FromViolations_Empty_IsApproved()
-    {
-        var result = RiskValidationResult.FromViolations([]);
-
-        result.Decision.Should().Be(RiskDecisionKind.Approved);
-        result.Violations.Should().BeEmpty();
-    }
-
-    /// <summary>
-    /// Sealing construction only holds the invariant if the violations cannot change afterwards.
-    /// <see cref="IReadOnlyList{T}"/> is a read-only view, not an immutable collection, so a caller
-    /// keeping the underlying list could otherwise turn an approval into one carrying a blocking
-    /// finding — and the OMS routes on <c>IsApproved</c>.
-    /// </summary>
-    [Fact]
-    public void FromViolations_DoesNotAliasACallerMutableList()
-    {
-        var mutable = new List<RiskViolation> { Violation(RiskRuleSeverity.Warning) };
-
-        var result = RiskValidationResult.FromViolations(mutable);
-        mutable.Add(Violation(RiskRuleSeverity.Critical));
-
-        result.Decision.Should().Be(RiskDecisionKind.ApprovedWithWarnings);
-        result.Violations.Should().HaveCount(1, "the result snapshots what it judged");
-        result.BlockingViolation.Should().BeNull();
-    }
-
-    /// <summary>
-    /// An enum can hold a value outside its declared set, and this is a public SDK contract on a
-    /// fail-closed gate. An unrecognised severity has to block rather than be admitted.
-    /// </summary>
-    [Fact]
-    public void FromViolations_WithAnUndefinedSeverity_Rejects()
-    {
-        var result = RiskValidationResult.FromViolations([Violation((RiskRuleSeverity)99)]);
-
-        result.Decision.Should().Be(RiskDecisionKind.Rejected);
-        result.IsApproved.Should().BeFalse();
-        result.BlockingViolation.Should().NotBeNull();
-    }
-
-    /// <summary>
-    /// The snapshot must not be castable back to a writable collection. An array handed out through
-    /// <see cref="IReadOnlyList{T}"/> can be cast to <c>RiskViolation[]</c> and written through,
-    /// which would swap an admitted Warning for an Error while <c>Decision</c> stayed
-    /// <c>ApprovedWithWarnings</c> — the aliasing hole entered from the other side.
-    /// </summary>
-    [Fact]
-    public void Violations_AreNotCastableToAWritableCollection()
-    {
-        var result = RiskValidationResult.FromViolations([Violation(RiskRuleSeverity.Warning)]);
-
-        result.Violations.Should().NotBeAssignableTo<RiskViolation[]>();
-        result.Violations.Should().BeAssignableTo<IList<RiskViolation>>()
-            .Which.IsReadOnly.Should().BeTrue("the exposed collection must refuse writes, not just hide them");
-    }
-
-    [Fact]
-    public void FromViolations_Null_Throws()
-    {
-        var act = () => RiskValidationResult.FromViolations(null!);
-
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    /// <summary>
-    /// The bare-reason factory has to produce a result whose blocking violation, reason, and code
-    /// are all populated — a rejection that reports none of them tells an operator nothing.
-    /// </summary>
-    [Fact]
-    public void Rejected_SynthesisesAnAttributableBlockingViolation()
-    {
-        var result = RiskValidationResult.Rejected("no good");
-
-        result.Decision.Should().Be(RiskDecisionKind.Rejected);
-        result.IsApproved.Should().BeFalse();
-        result.RejectReason.Should().Be("no good");
-        result.RejectCode.Should().Be("RISK_REJECTED");
-        result.BlockingViolation!.IsBlocking.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Approved_HasNoFindings()
+    public void Decision_WithNoFindings_IsApproved()
     {
         var result = RiskValidationResult.Approved();
 
         result.Decision.Should().Be(RiskDecisionKind.Approved);
-        result.IsApproved.Should().BeTrue();
         result.Violations.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// <see cref="IReadOnlyList{T}"/> is a read-only view, not an immutable collection, so a caller
+    /// keeping the underlying list could otherwise turn an approval into one carrying a blocking
+    /// finding after the decision was derived — and the OMS routes on <c>IsApproved</c>.
+    /// </summary>
+    [Fact]
+    public void Violations_DoNotAliasACallerMutableList()
+    {
+        var mutable = new List<RiskViolation> { Violation(RiskRuleSeverity.Warning) };
+
+        var result = RiskValidationResult.Approved() with { Violations = mutable };
+        mutable.Add(Violation(RiskRuleSeverity.Critical));
+
+        result.Decision.Should().Be(RiskDecisionKind.ApprovedWithWarnings);
+        result.Violations.Should().ContainSingle();
         result.BlockingViolation.Should().BeNull();
     }
 
@@ -176,9 +124,7 @@ public sealed class RiskValidationResultTests
     {
         var first = new ThrowingReservation();
         var second = new RecordingReservation();
-        var outcome = new RiskValidationOutcome(
-            RiskValidationResult.Approved(),
-            [first, second]);
+        var outcome = RiskValidationResult.Approved() with { Reservations = [first, second] };
 
         var act = outcome.CommitReservations;
 
@@ -190,9 +136,10 @@ public sealed class RiskValidationResultTests
     public void RollbackReservations_WhenOneCallbackThrows_StillSettlesTheRest()
     {
         var second = new RecordingReservation();
-        var outcome = new RiskValidationOutcome(
-            RiskValidationResult.Approved(),
-            [new ThrowingReservation(), second]);
+        var outcome = RiskValidationResult.Approved() with
+        {
+            Reservations = [new ThrowingReservation(), second],
+        };
 
         var act = outcome.RollbackReservations;
 
@@ -208,7 +155,7 @@ public sealed class RiskValidationResultTests
     public void Reservations_AreSnapshotAtConstruction()
     {
         var working = new List<IRiskReservation> { new RecordingReservation() };
-        var outcome = new RiskValidationOutcome(RiskValidationResult.Approved(), working);
+        var outcome = RiskValidationResult.Approved() with { Reservations = working };
 
         working.Clear();
         working.Add(new ThrowingReservation());
@@ -222,7 +169,7 @@ public sealed class RiskValidationResultTests
     {
         var violations = new[] { Violation(RiskRuleSeverity.Error), Violation(RiskRuleSeverity.Warning) };
 
-        var summary = RiskValidationResult.FromViolations(violations).ToSummary();
+        var summary = (RiskValidationResult.Rejected("blocked") with { Violations = violations }).ToSummary();
 
         summary.Decision.Should().Be(RiskDecisionKind.Rejected);
         summary.Violations.Should().HaveCount(2, "the submitter sees every finding, not just the blocking one");

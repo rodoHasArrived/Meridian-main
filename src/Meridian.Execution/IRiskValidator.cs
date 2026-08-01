@@ -10,68 +10,156 @@ public interface IRiskValidator
     /// <summary>
     /// Validates an order against risk rules.
     /// <para>
-    /// Returns the reservations any stateful rule took, so the caller can settle them at the
-    /// routing boundary. Passing the risk gate is not the same as being routed — client-order-id
-    /// registration, journaling, or gateway submission can still fail afterwards — so committing
-    /// inside the validator would consume capacity for orders that never reach a venue.
+    /// The returned result carries ownership of any capacity a stateful rule reserved while
+    /// reaching the decision, so the caller can settle it at the routing boundary. Passing the
+    /// risk gate is not the same as being routed — client-order-id registration, journaling, or
+    /// gateway submission can still fail afterwards — so committing inside the validator would
+    /// consume capacity for orders that never reach a venue. See
+    /// <see cref="RiskValidationResult.Reservations"/>.
     /// </para>
     /// </summary>
-    Task<RiskValidationOutcome> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default);
+    Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default);
 }
 
-/// <summary>
-/// What a validator returns: the decision, plus ownership of any capacity reserved while reaching
-/// it.
-/// </summary>
-/// <param name="Result">The aggregate decision and its violations.</param>
-/// <param name="Reservations">
-/// Reservations transferred to the caller. Empty when no rule reserved anything. The caller must
-/// commit these once the order is routed, or roll them back on any earlier failure.
-/// </param>
-public sealed record RiskValidationOutcome(
-    RiskValidationResult Result,
-    IReadOnlyList<IRiskReservation> Reservations)
+/// <summary>Result of a risk validation check.</summary>
+public sealed record RiskValidationResult
 {
+    private readonly IReadOnlyList<string> _warnings = [];
+    private readonly IReadOnlyList<RiskViolation> _violations = [];
+    private readonly IReadOnlyList<IRiskReservation> _reservations = [];
+
+    public required bool IsApproved { get; init; }
+    public string? RejectReason { get; init; }
+
     /// <summary>
-    /// Snapshotted at construction. <see cref="IReadOnlyList{T}"/> is a read-only view, not an
-    /// immutable collection, so a validator that keeps reusing its working list would otherwise
-    /// have the OMS settle whatever that list held by the time the order reached the gateway —
-    /// leaking the reservations this evaluation actually took and settling another evaluation's in
-    /// their place.
+    /// Stable SCREAMING_SNAKE identifier for the breach, e.g. <c>ORDER_NOTIONAL_EXCEEDED</c>.
+    /// Carried alongside <see cref="RejectReason"/> so audit and operator surfaces can attribute
+    /// a decision without parsing the rendered sentence.
     /// </summary>
-    public IReadOnlyList<IRiskReservation> Reservations { get; } =
-        Reservations?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(Reservations));
+    public string? Code { get; init; }
 
-    /// <summary>An approving outcome that holds no reservations.</summary>
-    public static RiskValidationOutcome Approved() =>
-        new(RiskValidationResult.Approved(), []);
+    /// <summary>What the rule measured, when expressible as a number.</summary>
+    public decimal? ObservedValue { get; init; }
 
-    /// <summary>Commits every reservation. Call once the order has actually been routed.</summary>
-    public void CommitReservations() => SettleAll(static reservation => reservation.Commit());
+    /// <summary>What the rule measured against, when expressible as a number.</summary>
+    public decimal? LimitValue { get; init; }
 
     /// <summary>
-    /// Rolls back every reservation. Call when the order was blocked, or failed anywhere between
-    /// the risk gate and the venue.
+    /// When <see langword="true"/> the order was not hard-rejected: it should be (or has been)
+    /// parked for governed operator approval instead of routed. <see cref="IsApproved"/> stays
+    /// <see langword="false"/> so callers that only check approval fail closed.
     /// </summary>
-    public void RollbackReservations() => SettleAll(static reservation => reservation.Rollback());
+    public bool RequiresApproval { get; init; }
 
     /// <summary>
-    /// Settles every reservation even if one throws, then reports the failures together.
+    /// Identifier of the parked escalation entry when the order was parked for governed approval.
+    /// </summary>
+    public string? EscalationId { get; init; }
+
+    /// <summary>
+    /// Non-blocking rule breaches surfaced alongside an approved (or rejected) order,
+    /// e.g. warning-severity rule failures or concentration observe-band notices.
+    /// </summary>
+    public IReadOnlyList<string> Warnings
+    {
+        get => _warnings;
+        init => _warnings = Snapshot(value);
+    }
+
+    /// <summary>
+    /// Every breach the evaluation recorded, attributed to the rule that raised it and ordered by
+    /// severity descending, then by the declaring rule's priority ascending.
     /// <para>
-    /// Stopping at the first failure would strand every later reservation as pending — capacity
-    /// consumed by an order that has already reached its terminal state, which no other path will
-    /// release. A rule's settlement callback is host-contributed, so it cannot be assumed total.
+    /// Structured counterpart to <see cref="Warnings"/>. A rule-level result carries at most its
+    /// own breach; the aggregate the validator returns carries every rule's. Populated on the
+    /// rejected path too, which is what lets an order ticket show all of an order's breaches
+    /// rather than only the first one that blocked.
     /// </para>
     /// </summary>
-    private void SettleAll(Action<IRiskReservation> settle)
+    public IReadOnlyList<RiskViolation> Violations
+    {
+        get => _violations;
+        init => _violations = Snapshot(value);
+    }
+
+    /// <summary>
+    /// Capacity a stateful rule reserved while reaching this decision, transferred to the caller.
+    /// Empty when no rule reserved anything.
+    /// <para>
+    /// The caller must settle these exactly once on every path — commit once the order is routed,
+    /// roll back on any earlier failure. A leaked reservation permanently consumes capacity and
+    /// eventually blocks every later order.
+    /// </para>
+    /// </summary>
+    public IReadOnlyList<IRiskReservation> Reservations
+    {
+        get => _reservations;
+        init => _reservations = Snapshot(value);
+    }
+
+    /// <summary>
+    /// When <see langword="true"/> the rule refused an order it could not measure rather than
+    /// measuring a breach. A Critical rule's breach halts the desk; its inability to price one
+    /// order must not, or a stale feed becomes a trading halt. The order is still rejected.
+    /// </summary>
+    public bool IsUnmeasurable { get; init; }
+
+    /// <summary>
+    /// The aggregate verdict, derived from <see cref="IsApproved"/>,
+    /// <see cref="RequiresApproval"/>, and whether any breach was recorded — never stored, so it
+    /// cannot drift from the fields the OMS actually routes on.
+    /// </summary>
+    public RiskDecisionKind Decision => !IsApproved
+        ? RequiresApproval ? RiskDecisionKind.Escalated : RiskDecisionKind.Rejected
+        : Violations.Count > 0 || Warnings.Count > 0
+            ? RiskDecisionKind.ApprovedWithWarnings
+            : RiskDecisionKind.Approved;
+
+    /// <summary>
+    /// The violation that actually blocked the order. Selected by
+    /// <see cref="RiskViolation.IsBlocking"/> rather than by position, so a non-blocking finding
+    /// that happens to sort first can never be reported as the rejection reason.
+    /// </summary>
+    public RiskViolation? BlockingViolation => IsApproved
+        ? null
+        : Violations.FirstOrDefault(static violation => violation.IsBlocking);
+
+    /// <summary>Compact form for transport back to the submitter.</summary>
+    public RiskDecisionSummary ToSummary() => new(Decision, Violations);
+
+    /// <summary>
+    /// Keeps every reserved slot — the order routed. Idempotent, so overlapping settlement paths
+    /// cannot double-count.
+    /// </summary>
+    public void CommitReservations() => SettleAll(commit: true);
+
+    /// <summary>
+    /// Returns every reserved slot — nothing reached a venue. Idempotent, so overlapping
+    /// settlement paths cannot double-release.
+    /// </summary>
+    public void RollbackReservations() => SettleAll(commit: false);
+
+    /// <summary>
+    /// Settles every reservation even if one throws, then reports the failures together. Stopping
+    /// at the first fault would strand the remaining slots, which is the leak this whole mechanism
+    /// exists to prevent.
+    /// </summary>
+    private void SettleAll(bool commit)
     {
         List<Exception>? failures = null;
 
-        foreach (var reservation in Reservations)
+        foreach (var reservation in _reservations)
         {
             try
             {
-                settle(reservation);
+                if (commit)
+                {
+                    reservation.Commit();
+                }
+                else
+                {
+                    reservation.Rollback();
+                }
             }
             catch (Exception ex)
             {
@@ -82,124 +170,39 @@ public sealed record RiskValidationOutcome(
         if (failures is not null)
         {
             throw new AggregateException(
-                "One or more risk reservations could not be settled.",
+                $"{failures.Count} risk reservation(s) failed to {(commit ? "commit" : "roll back")}.",
                 failures);
         }
     }
-}
-
-/// <summary>
-/// Result of a risk validation check.
-/// <para>
-/// Construction is factory-only, and both members are get-only so a <c>with</c> expression cannot
-/// reopen them either. The decision has to follow from the violations — that is the point of
-/// severity-driven evaluation — but a public initializer would let any caller, including a
-/// host-supplied <see cref="IRiskValidator"/>, pair <see cref="RiskDecisionKind.Approved"/> with a
-/// blocking violation. The OMS routes on <see cref="IsApproved"/>, so such a result would send an
-/// order carrying an <see cref="RiskRuleSeverity.Error"/> finding to the venue and record it as
-/// admitted.
-/// </para>
-/// </summary>
-public sealed record RiskValidationResult
-{
-    /// <summary>
-    /// Takes both values as arguments rather than initialisers so no decision-less instance exists
-    /// even briefly. The default <see cref="RiskDecisionKind"/> is
-    /// <see cref="RiskDecisionKind.Approved"/>, so an initialiser a later factory forgot to set
-    /// would fail open — the one direction a pre-trade gate must never fail.
-    /// </summary>
-    private RiskValidationResult(RiskDecisionKind decision, IReadOnlyList<RiskViolation> violations)
-    {
-        Decision = decision;
-
-        // Wrapped here rather than in each factory, so a factory added later cannot forget. An
-        // array or list exposed through IReadOnlyList can be cast back to its concrete type and
-        // written through, which would let a caller swap an admitted Warning for an Error after the
-        // decision was derived — the aliasing hole again, entered from the other side.
-        Violations = violations.ToList().AsReadOnly();
-    }
-
-    /// <summary>The aggregate verdict.</summary>
-    public RiskDecisionKind Decision { get; }
 
     /// <summary>
-    /// Every finding, ordered by severity descending, then by the declaring rule's priority
-    /// ascending.
+    /// Copies at construction. <see cref="IReadOnlyList{T}"/> is a read-only view, not an immutable
+    /// collection: an array or list handed in through it can be cast back to its concrete type and
+    /// written through. Without the copy a validator reusing a working list would have the OMS
+    /// settle whatever that list held by the time the order reached the gateway — leaking the
+    /// reservations this evaluation took and settling another evaluation's in their place.
     /// </summary>
-    public IReadOnlyList<RiskViolation> Violations { get; }
+    private static IReadOnlyList<T> Snapshot<T>(IReadOnlyList<T>? value) =>
+        value is null || value.Count == 0 ? [] : value.ToList().AsReadOnly();
 
-    /// <summary>
-    /// True for every decision except <see cref="RiskDecisionKind.Rejected"/>. Preserved for
-    /// existing callers.
-    /// </summary>
-    public bool IsApproved => Decision != RiskDecisionKind.Rejected;
+    public static RiskValidationResult Approved() => new() { IsApproved = true };
 
-    /// <summary>
-    /// The violation that actually blocked the order. Selected by
-    /// <see cref="RiskViolation.IsBlocking"/> rather than by position, so a non-blocking finding
-    /// that happens to sort first can never be reported as the rejection reason.
-    /// </summary>
-    public RiskViolation? BlockingViolation => Decision == RiskDecisionKind.Rejected
-        ? Violations.FirstOrDefault(static violation => violation.IsBlocking)
-        : null;
-
-    /// <summary>The blocking violation's message. Preserved for existing callers.</summary>
-    public string? RejectReason => BlockingViolation?.Message;
-
-    /// <summary>Stable code of the blocking violation, for audit attribution.</summary>
-    public string? RejectCode => BlockingViolation?.Code;
-
-    /// <summary>Compact form for transport back to the submitter.</summary>
-    public RiskDecisionSummary ToSummary() => new(Decision, Violations);
-
-    /// <summary>An approval with no findings.</summary>
-    public static RiskValidationResult Approved() =>
-        new(RiskDecisionKind.Approved, []);
-
-    /// <summary>
-    /// A rejection with a bare reason. Synthesises an unattributed violation so callers that have
-    /// not yet migrated to structured findings keep working.
-    /// </summary>
     public static RiskValidationResult Rejected(string reason) =>
-        new(
-            RiskDecisionKind.Rejected,
-            [
-                new RiskViolation(
-                    RuleName: "Unattributed",
-                    Severity: RiskRuleSeverity.Error,
-                    Code: "RISK_REJECTED",
-                    Message: reason)
-            ]);
+        new() { IsApproved = false, RejectReason = reason };
 
     /// <summary>
-    /// Builds an aggregate from an ordered violation set. Blocking severity wins; otherwise an
-    /// acknowledgement request escalates; otherwise the findings are annotations.
+    /// Rejects an order the rule could not value. Fails closed for this order without
+    /// asserting the ceiling was breached, so a Critical rule does not trip the circuit
+    /// breaker on a pricing gap.
     /// </summary>
-    public static RiskValidationResult FromViolations(IReadOnlyList<RiskViolation> violations)
-    {
-        ArgumentNullException.ThrowIfNull(violations);
+    public static RiskValidationResult Unmeasurable(string reason) =>
+        new() { IsApproved = false, RejectReason = reason, IsUnmeasurable = true };
 
-        // Snapshot before deriving anything. IReadOnlyList is a read-only view, not an immutable
-        // collection, so a caller holding the underlying List could otherwise add a blocking
-        // violation after an empty set produced Approved — leaving IsApproved true over findings
-        // that should have rejected. Sealing construction is only half the invariant; this is the
-        // other half.
-        //
-        // Local snapshot so the decision is derived from a set the caller can no longer touch; the
-        // constructor wraps it again for what the result exposes.
-        var snapshot = violations.ToList();
+    /// <summary>Approves the order while carrying non-blocking warning flags.</summary>
+    public static RiskValidationResult ApprovedWithWarnings(params string[] warnings) =>
+        new() { IsApproved = true, Warnings = warnings };
 
-        if (snapshot.Count == 0)
-        {
-            return Approved();
-        }
-
-        var decision = snapshot.Any(static violation => violation.IsBlocking)
-            ? RiskDecisionKind.Rejected
-            : snapshot.Any(static violation => violation.RequiresAcknowledgement)
-                ? RiskDecisionKind.Escalated
-                : RiskDecisionKind.ApprovedWithWarnings;
-
-        return new RiskValidationResult(decision, snapshot);
-    }
+    /// <summary>Marks the order for governed approval rather than hard rejection.</summary>
+    public static RiskValidationResult Escalated(string reason, string? escalationId = null) =>
+        new() { IsApproved = false, RequiresApproval = true, RejectReason = reason, EscalationId = escalationId };
 }

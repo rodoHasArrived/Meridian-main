@@ -174,11 +174,33 @@ public sealed record OrderResult
     public OrderState? OrderState { get; init; }
 
     /// <summary>
+    /// Non-blocking risk flags raised while the order was approved (e.g. concentration
+    /// observe-band or warning-severity rule breaches), surfaced so callers and operators
+    /// see them even though the order routed.
+    /// </summary>
+    public IReadOnlyList<string>? RiskWarnings { get; init; }
+
+    /// <summary>
+    /// True when the order did not route because a risk escalation parked it for governed
+    /// approval rather than rejecting it outright; <see cref="EscalationId"/> identifies
+    /// the approval-queue entry an operator can approve or deny.
+    /// </summary>
+    public bool RequiresApproval { get; init; }
+
+    /// <summary>Approval-queue entry id when <see cref="RequiresApproval"/> is true.</summary>
+    public string? EscalationId { get; init; }
+
+    /// <summary>
     /// Pre-trade risk findings for this submission, when the risk gate produced any. Populated on
     /// both the admitted and the rejected path so an order ticket can render the decision without
     /// a second query — the asynchronous decision history offers no deterministic read-back for
     /// the submission that just returned.
     /// </summary>
+    /// <remarks>
+    /// Structured counterpart to <see cref="RiskWarnings"/>: the same breaches carrying the rule
+    /// name, severity, and stable code rather than a rendered sentence. Both are populated because
+    /// <see cref="RiskWarnings"/> is already on the wire and rendered by shipped clients.
+    /// </remarks>
     public RiskDecisionSummary? RiskDecision { get; init; }
 }
 
@@ -198,6 +220,37 @@ public sealed record OrderState
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset? LastUpdatedAt { get; init; }
     public string? StrategyId { get; init; }
+
+    /// <summary>Accounting scope the order was submitted under, when fund-scoped.</summary>
+    public Guid? FundAccountId { get; init; }
+
+    /// <summary>
+    /// Broker-native routed notional when the order is sized in dollars rather than
+    /// quantity (see <see cref="BrokerNotionalMetadata"/>). Exposure reserves for working
+    /// orders must value these at the routed dollars, not quantity x price.
+    /// </summary>
+    public decimal? RoutedNotional { get; init; }
+
+    /// <summary>
+    /// Contract multiplier for a derivative order: the notional one unit of
+    /// <see cref="Quantity"/> represents. 1 for outright instruments, 100 for standard
+    /// equity option contracts. A working-order exposure reserve that ignores it holds back
+    /// a hundredth of what 100 contracts will actually execute.
+    /// </summary>
+    public decimal ContractMultiplier { get; init; } = 1m;
+
+    /// <summary>
+    /// Derivative identity of the working order, retained so its exposure reserve and any
+    /// amendment are valued the same way the pre-trade gate valued it.
+    /// </summary>
+    public OptionContractIdentity? OptionContract { get; init; }
+
+    /// <summary>
+    /// Legs of a working combination order. A spread's reserve is the sum of its legs'
+    /// absolute notionals, not its net package price — without the legs, a $1 net-debit
+    /// spread reserves $100 where the gate charged $1,900.
+    /// </summary>
+    public IReadOnlyList<OrderLeg>? Legs { get; init; }
 }
 
 /// <summary>Current position state for a symbol.</summary>

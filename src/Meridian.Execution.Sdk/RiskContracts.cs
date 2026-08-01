@@ -28,7 +28,16 @@ public enum RiskRuleSeverity
     /// <summary>Blocks the order.</summary>
     Error,
 
-    /// <summary>Blocks the order. Reserved for guardrails whose breach implies a halt.</summary>
+    /// <summary>
+    /// Blocks the order and parks it in the governed approval queue instead of rejecting it
+    /// outright. An operator can release the parked order with a one-shot approval token.
+    /// </summary>
+    Escalate,
+
+    /// <summary>
+    /// Blocks the order and trips the execution circuit breaker, halting all further routing
+    /// until an operator closes it. Reserved for guardrails whose breach implies a halt.
+    /// </summary>
     Critical
 }
 
@@ -42,7 +51,15 @@ public enum RiskDecisionKind
     /// <summary>Admitted; findings recorded for operator visibility.</summary>
     ApprovedWithWarnings,
 
-    /// <summary>Admitted; a finding asked for operator acknowledgement.</summary>
+    /// <summary>
+    /// <b>Not admitted.</b> The order was parked in the governed approval queue rather than
+    /// rejected outright, and routes only if an operator releases it.
+    /// <para>
+    /// Distinct from <see cref="Rejected"/> only in what an operator can do next — a parked order
+    /// is recoverable, a rejected one must be resubmitted. Both are non-routing outcomes, so any
+    /// caller deciding whether to send an order treats this exactly like a rejection.
+    /// </para>
+    /// </summary>
     Escalated,
 
     /// <summary>Blocked.</summary>
@@ -50,42 +67,7 @@ public enum RiskDecisionKind
 }
 
 /// <summary>
-/// What a rule measured, and against what.
-/// <para>
-/// A finding never states what should happen about it — that is <see cref="RiskRuleSeverity"/>'s
-/// job, resolved by the validator. Returning <see langword="null"/> from a rule means "no finding".
-/// </para>
-/// </summary>
-/// <param name="Code">Stable SCREAMING_SNAKE identifier, e.g. <c>POSITION_LIMIT_EXCEEDED</c>.</param>
-/// <param name="Message">Human-readable summary for operator surfaces.</param>
-/// <param name="ObservedValue">What the rule measured, when expressible as a number.</param>
-/// <param name="LimitValue">What the rule measured against, when expressible as a number.</param>
-/// <param name="RequiresAcknowledgement">
-/// Marks the decision <see cref="RiskDecisionKind.Escalated"/> instead of
-/// <see cref="RiskDecisionKind.ApprovedWithWarnings"/>. Escalation is a separate axis from severity:
-/// a finding may be low-severity yet still warrant a human looking at it.
-/// <para>
-/// <b>This does not hold the order.</b> <c>Escalated</c> is an admitting decision — the OMS routes
-/// on <c>IsApproved</c>, which is true for every decision except
-/// <see cref="RiskDecisionKind.Rejected"/> — so the flag records that acknowledgement is wanted and
-/// surfaces it to the operator afterwards. It does not gate, queue, or await anything. A rule that
-/// needs an order stopped must declare a blocking <see cref="RiskRuleSeverity"/>; that is the only
-/// lever that prevents routing.
-/// </para>
-/// <para>
-/// Ignored when the declaring rule's severity blocks, since a blocked order is never admitted and
-/// there is nothing to acknowledge.
-/// </para>
-/// </param>
-public sealed record RiskFinding(
-    string Code,
-    string Message,
-    decimal? ObservedValue = null,
-    decimal? LimitValue = null,
-    bool RequiresAcknowledgement = false);
-
-/// <summary>
-/// A finding attributed to the rule that raised it, as the validator records it.
+/// A breach attributed to the rule that raised it, as the validator records it.
 /// <para>
 /// Constructed by the validator, which is what guarantees <see cref="Severity"/> is the declaring
 /// rule's own and not a value chosen per order.

@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Risk;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -9,330 +11,785 @@ namespace Meridian.Tests.Risk;
 public sealed class CompositeRiskValidatorTests
 {
     [Fact]
-    public async Task ValidateOrderAsync_WithBlockingRule_ReturnsRejectedResult()
+    public async Task ValidateOrderAsync_WithRejectedRule_ReturnsRejectedResult()
     {
-        var validator = Build(
-            new StubRiskRule("first"),
-            new StubRiskRule("second", Finding("BLOCKED", "blocked")));
+        var validator = new CompositeRiskValidator(
+            new IRiskRule[]
+            {
+                new StubRiskRule("first", RiskValidationResult.Approved()),
+                new StubRiskRule("second", RiskValidationResult.Rejected("blocked")),
+            },
+            NullLogger<CompositeRiskValidator>.Instance);
 
-        var outcome = await validator.ValidateOrderAsync(CreateOrder());
+        var result = await validator.ValidateOrderAsync(CreateOrder());
 
-        outcome.Result.IsApproved.Should().BeFalse();
-        outcome.Result.Decision.Should().Be(RiskDecisionKind.Rejected);
-        outcome.Result.RejectReason.Should().Be("blocked");
-        outcome.Result.RejectCode.Should().Be("BLOCKED");
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Be("blocked");
     }
 
-    /// <summary>
-    /// Replaces the removed short-circuit test. The engine's whole purpose is that an order
-    /// breaching several limits reports all of them.
-    /// </summary>
     [Fact]
-    public async Task ValidateOrderAsync_WhenEarlyRuleBlocks_StillEvaluatesLaterRules()
+    public async Task ValidateOrderAsync_WhenPriorityRuleRejects_StillEvaluatesLaterRules()
     {
-        var first = new StubRiskRule("first", Finding("FIRST", "first failed"), priority: 0);
-        var second = new StubRiskRule("second", Finding("SECOND", "second failed"), priority: 1);
+        var first = new StubRiskRule("first", RiskValidationResult.Approved(), priority: 20);
+        var rejecting = new StubRiskRule("urgent", RiskValidationResult.Rejected("halted"), priority: 10);
+        var later = new StubRiskRule("later", RiskValidationResult.Rejected("also breached"), priority: 30);
+        var validator = new CompositeRiskValidator(
+            [first, rejecting, later],
+            NullLogger<CompositeRiskValidator>.Instance);
 
-        var outcome = await Build(first, second).ValidateOrderAsync(CreateOrder());
+        var result = await validator.ValidateOrderAsync(CreateOrder());
 
+        // The outcome is still the first blocking rule's — priority decides attribution.
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Be("halted");
+
+        // But every rule ran, so the submitter sees both breaches rather than fixing one,
+        // resubmitting, and being blocked by the next.
         first.EvaluateCalls.Should().Be(1);
-        second.EvaluateCalls.Should().Be(1);
-        outcome.Result.Violations.Should().HaveCount(2);
+        rejecting.EvaluateCalls.Should().Be(1);
+        later.EvaluateCalls.Should().Be(1, "every rule is evaluated before the decision is taken");
+
+        result.Violations.Select(violation => violation.RuleName)
+            .Should().BeEquivalentTo(["urgent", "later"]);
+        result.BlockingViolation!.RuleName.Should().Be("urgent");
     }
 
     [Fact]
-    public async Task ValidateOrderAsync_OrdersViolationsBySeverityThenPriority()
+    public async Task ValidateOrderAsync_WhenRuleThrows_FailsClosedWithoutTrippingTheBreaker()
     {
-        var outcome = await Build(
-                new StubRiskRule("warn", Finding("W", "w"), priority: 0, severity: RiskRuleSeverity.Warning),
-                new StubRiskRule("critical", Finding("C", "c"), priority: 9, severity: RiskRuleSeverity.Critical),
-                new StubRiskRule("error", Finding("E", "e"), priority: 5, severity: RiskRuleSeverity.Error))
-            .ValidateOrderAsync(CreateOrder());
+        var throwing = new ThrowingRiskRule("flaky", new InvalidOperationException("feed down"));
+        var validator = new CompositeRiskValidator(
+            [throwing],
+            NullLogger<CompositeRiskValidator>.Instance);
 
-        outcome.Result.Violations.Select(v => v.Code).Should().ContainInOrder("C", "E", "W");
-    }
+        var result = await validator.ValidateOrderAsync(CreateOrder());
 
-    [Theory]
-    [InlineData(RiskRuleSeverity.Info, RiskDecisionKind.ApprovedWithWarnings)]
-    [InlineData(RiskRuleSeverity.Warning, RiskDecisionKind.ApprovedWithWarnings)]
-    [InlineData(RiskRuleSeverity.Error, RiskDecisionKind.Rejected)]
-    [InlineData(RiskRuleSeverity.Critical, RiskDecisionKind.Rejected)]
-    public async Task ValidateOrderAsync_ResolvesDecisionFromDeclaredSeverity(
-        RiskRuleSeverity severity,
-        RiskDecisionKind expected)
-    {
-        var outcome = await Build(new StubRiskRule("rule", Finding("C", "m"), severity: severity))
-            .ValidateOrderAsync(CreateOrder());
-
-        outcome.Result.Decision.Should().Be(expected);
-        outcome.Result.IsApproved.Should().Be(expected != RiskDecisionKind.Rejected);
+        result.IsApproved.Should().BeFalse("a rule that threw established nothing, so the order is refused");
+        result.IsUnmeasurable.Should().BeTrue(
+            "no breach was measured, so this must not halt the desk the way a Critical breach does");
+        result.Violations.Should().ContainSingle()
+            .Which.Code.Should().Be(CompositeRiskValidator.EvaluationFailedCode);
     }
 
     [Fact]
-    public async Task ValidateOrderAsync_WithAcknowledgementRequestOnNonBlockingRule_Escalates()
+    public async Task ValidateOrderAsync_WhenBlockedAfterReserving_ReleasesTheReservation()
     {
-        var finding = new RiskFinding("ACK", "needs sign-off", RequiresAcknowledgement: true);
+        var reservation = new CountingReservation();
+        var reserving = new StubReservingRiskRule("rate", RiskValidationResult.Approved(), reservation, priority: 10);
+        var blocking = new StubRiskRule("limit", RiskValidationResult.Rejected("over limit"), priority: 20);
+        var validator = new CompositeRiskValidator(
+            [reserving, blocking],
+            NullLogger<CompositeRiskValidator>.Instance);
 
-        var outcome = await Build(new StubRiskRule("rule", finding, severity: RiskRuleSeverity.Warning))
-            .ValidateOrderAsync(CreateOrder());
+        var result = await validator.ValidateOrderAsync(CreateOrder());
 
-        outcome.Result.Decision.Should().Be(RiskDecisionKind.Escalated);
-        outcome.Result.IsApproved.Should().BeTrue();
+        result.IsApproved.Should().BeFalse();
+        result.Reservations.Should().BeEmpty("a blocked order transfers nothing to the caller");
+        reservation.Rollbacks.Should().Be(1, "capacity held for an order that never routes must be released");
+        reservation.Commits.Should().Be(0);
     }
 
     [Fact]
-    public async Task ValidateOrderAsync_RejectReasonSelectsBlockingViolationNotFirstViolation()
+    public async Task ValidateOrderAsync_WhenApproved_TransfersReservationsUnsettled()
     {
-        // A Critical acknowledgement-flagged finding sorts first, but the reject reason must come
-        // from a violation that actually blocks.
-        var outcome = await Build(
-                new StubRiskRule("warn", new RiskFinding("W", "warning", RequiresAcknowledgement: true),
-                    severity: RiskRuleSeverity.Warning),
-                new StubRiskRule("block", Finding("B", "the blocker"), severity: RiskRuleSeverity.Error))
-            .ValidateOrderAsync(CreateOrder());
+        var reservation = new CountingReservation();
+        var reserving = new StubReservingRiskRule("rate", RiskValidationResult.Approved(), reservation);
+        var validator = new CompositeRiskValidator(
+            [reserving],
+            NullLogger<CompositeRiskValidator>.Instance);
 
-        outcome.Result.Decision.Should().Be(RiskDecisionKind.Rejected);
-        outcome.Result.BlockingViolation!.Code.Should().Be("B");
-        outcome.Result.RejectReason.Should().Be("the blocker");
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeTrue();
+        result.Reservations.Should().ContainSingle();
+        reservation.Commits.Should().Be(0, "passing the gate is not the same as routing");
+        reservation.Rollbacks.Should().Be(0);
+
+        result.CommitReservations();
+        reservation.Commits.Should().Be(1);
     }
 
     [Fact]
-    public async Task ValidateOrderAsync_WhenRuleThrows_FailsClosedWithNonNullReason()
+    public async Task ValidateOrderAsync_WhenRuleExceedsPerRuleTimeout_FailsClosed()
     {
-        var outcome = await Build(
-                new StubRiskRule("boom", severity: RiskRuleSeverity.Info) { Throw = new InvalidOperationException("x") })
-            .ValidateOrderAsync(CreateOrder());
-
-        outcome.Result.Decision.Should().Be(RiskDecisionKind.Rejected);
-        // An Info rule that throws must still block, and must still produce an attributable reason.
-        outcome.Result.BlockingViolation.Should().NotBeNull();
-        outcome.Result.RejectCode.Should().Be(CompositeRiskValidator.EvaluationFailedCode);
-        outcome.Result.RejectReason.Should().NotBeNullOrWhiteSpace();
-    }
-
-    /// <summary>
-    /// Cancelling before the call would exit at the first <c>ThrowIfCancellationRequested</c>
-    /// before any rule ran, leaving the partial-reservation cleanup path untested and the
-    /// assertion vacuously true. Cancellation has to happen while a later rule is mid-evaluation,
-    /// after an earlier rule has already taken capacity.
-    /// </summary>
-    [Fact]
-    public async Task ValidateOrderAsync_WhenCancelledAfterReserving_ReleasesPartialReservations()
-    {
-        using var cts = new CancellationTokenSource();
-        var reserving = new StubReservingRule("throttle") { Priority = 0 };
-        var canceller = new StubRiskRule("late", priority: 1) { CancelDuringEvaluation = cts };
-        var validator = Build(reserving, canceller);
-
-        var act = async () => await validator.ValidateOrderAsync(CreateOrder(), cts.Token);
-
-        await act.Should().ThrowAsync<OperationCanceledException>();
-        reserving.Reservations.Should().ContainSingle()
-            .Which.RolledBack.Should().BeTrue("capacity taken before cancellation must be released");
-    }
-
-    [Fact]
-    public async Task ValidateOrderAsync_WhenAdmitted_TransfersReservationsUnsettled()
-    {
-        var reserving = new StubReservingRule("throttle");
-
-        var outcome = await Build(reserving).ValidateOrderAsync(CreateOrder());
-
-        outcome.Reservations.Should().HaveCount(1);
-        reserving.Reservations.Should().OnlyContain(r => !r.Committed && !r.RolledBack);
-    }
-
-    [Fact]
-    public async Task ValidateOrderAsync_WhenBlocked_RollsBackReservationsAndReturnsNone()
-    {
-        var reserving = new StubReservingRule("throttle");
-        var blocking = new StubRiskRule("block", Finding("B", "no"));
-
-        var outcome = await Build(reserving, blocking).ValidateOrderAsync(CreateOrder());
-
-        outcome.Reservations.Should().BeEmpty();
-        reserving.Reservations.Should().OnlyContain(r => r.RolledBack);
-    }
-
-    [Fact]
-    public async Task ValidateOrderAsync_WithSyncFastPath_DoesNotCallAsyncPath()
-    {
-        var rule = new StubRiskRule("sync", syncFinding: Finding("S", "sync")) { HasSync = true };
-
-        var outcome = await Build(rule).ValidateOrderAsync(CreateOrder());
-
-        rule.EvaluateCalls.Should().Be(0);
-        rule.SyncEvaluateCalls.Should().Be(1);
-        outcome.Result.Violations.Should().ContainSingle(v => v.Code == "S");
-    }
-
-    /// <summary>
-    /// A rule that ignores its token is abandoned mid-evaluation, so the validator never receives
-    /// the reservation it eventually takes. Nothing downstream can release a handle it was never
-    /// given, so the release has to be arranged before abandoning the evaluation — otherwise the
-    /// slot is consumed forever and repeated cancellations starve the rule.
-    /// </summary>
-    [Fact]
-    public async Task ValidateOrderAsync_WhenCancelledWhileAReservingRuleIsInFlight_RollsBackItsLateReservation()
-    {
-        var evaluation = new TaskCompletionSource<RiskRuleReservationResult>(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        var reservation = new StubReservation();
-        var validator = Build(new StubDetachedReservingRule(evaluation.Task));
-
-        using var cts = new CancellationTokenSource();
-        var validation = validator.ValidateOrderAsync(CreateOrder(), cts.Token);
-
-        await cts.CancelAsync();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => validation);
-
-        // Only now does the abandoned rule finish, holding capacity nobody is tracking.
-        evaluation.SetResult(new RiskRuleReservationResult(null, reservation));
-
-        await WaitUntilAsync(() => reservation.RolledBack);
-        reservation.RolledBack.Should().BeTrue("an abandoned evaluation must not keep its slot");
-        reservation.Committed.Should().BeFalse();
-    }
-
-    /// <summary>
-    /// Cleanup runs on the failure path, so one faulty rule must neither strand its neighbours'
-    /// capacity nor replace the rejection the caller is actually waiting for.
-    /// </summary>
-    [Fact]
-    public async Task ValidateOrderAsync_WhenARollbackThrows_StillReleasesTheOthersAndReportsTheRejection()
-    {
-        var healthy = new StubReservingRule("healthy") { Priority = 2 };
-        var validator = Build(
-            new StubThrowingRollbackRule("faulty") { Priority = 1 },
-            healthy,
-            new StubRiskRule("blocker", Finding("BLOCKED", "blocked"), priority: 3));
-
-        var outcome = await validator.ValidateOrderAsync(CreateOrder());
-
-        outcome.Result.RejectCode.Should().Be("BLOCKED", "a failed rollback must not mask the decision");
-        healthy.Reservations.Should().ContainSingle().Which.RolledBack.Should()
-            .BeTrue("a faulty rule must not strand another rule's capacity");
-    }
-
-    /// <summary>
-    /// A rule that declares both must still reserve. Taking the sync fast path first would skip
-    /// <c>EvaluateAndReserveAsync</c> entirely, admitting concurrent orders without consuming any of
-    /// the finite capacity the rule exists to protect — and doing it silently.
-    /// </summary>
-    [Fact]
-    public async Task ValidateOrderAsync_WithAReservingRuleThatAlsoDeclaresASyncFastPath_StillReserves()
-    {
-        var rule = new StubReservingRule("both") { AlsoDeclaresSyncFastPath = true };
-
-        var outcome = await Build(rule).ValidateOrderAsync(CreateOrder());
-
-        rule.Reservations.Should().ContainSingle("the reserving path is the stronger contract");
-        outcome.Reservations.Should().ContainSingle();
-    }
-
-    /// <summary>
-    /// The engine-failure code is public, so a rule may legitimately report it. Promoting on the
-    /// code would make it a second admission lever and let a Warning rule reject an order — the
-    /// contradiction between severity and outcome this design exists to remove.
-    /// </summary>
-    [Fact]
-    public async Task ValidateOrderAsync_WhenARuleReportsTheFailureCodeItself_KeepsItsDeclaredSeverity()
-    {
-        var validator = Build(new StubRiskRule(
-            "reporter",
-            Finding(CompositeRiskValidator.EvaluationFailedCode, "recoverable lookup issue"),
-            severity: RiskRuleSeverity.Warning));
-
-        var outcome = await validator.ValidateOrderAsync(CreateOrder());
-
-        outcome.Result.Decision.Should().Be(RiskDecisionKind.ApprovedWithWarnings);
-        outcome.Result.IsApproved.Should().BeTrue();
-        outcome.Result.Violations.Should().ContainSingle()
-            .Which.Severity.Should().Be(RiskRuleSeverity.Warning);
-    }
-
-    /// <summary>
-    /// Nothing enforces that rule names are unique, so ordering must not recover priority by name.
-    /// Here the earlier rule sharing the duplicated name produces no finding, and recovering by name
-    /// would hand its priority to the late duplicate — sorting it ahead of the genuinely
-    /// higher-priority rule and reporting the wrong violation as the rejection reason.
-    /// </summary>
-    [Fact]
-    public async Task ValidateOrderAsync_WithDuplicateRuleNames_AttributesTheRejectionToPriority()
-    {
-        var validator = Build(
-            new StubRiskRule("Shared", priority: 1),
-            new StubRiskRule("Middle", Finding("MIDDLE", "middle blocked"), priority: 5),
-            new StubRiskRule("Shared", Finding("LATE", "late blocked"), priority: 10));
-
-        var outcome = await validator.ValidateOrderAsync(CreateOrder());
-
-        outcome.Result.RejectCode.Should().Be(
-            "MIDDLE",
-            "priority 5 outranks priority 10 regardless of which rule shares a name");
-        outcome.Result.Violations.Select(violation => violation.Code)
-            .Should().ContainInOrder("MIDDLE", "LATE");
-    }
-
-    /// <summary>
-    /// A timeout the timer refuses would otherwise throw from <c>CancelAfter</c> before the
-    /// fail-closed handler is entered, and the OMS calls the validator outside its own submission
-    /// handler — so every order would come back as an unstructured exception rather than a risk
-    /// decision. A gate that cannot be configured correctly should not start.
-    /// </summary>
-    [Theory]
-    [InlineData(-2)]
-    [InlineData(-1000)]
-    public void Constructor_WithATimeoutBelowInfinite_Throws(int milliseconds)
-    {
-        var act = () => new CompositeRiskValidator(
-            [],
+        var stalled = new StallingRiskRule("stalled");
+        var validator = new CompositeRiskValidator(
+            [stalled],
             NullLogger<CompositeRiskValidator>.Instance,
-            TimeSpan.FromMilliseconds(milliseconds));
+            perRuleTimeout: TimeSpan.FromMilliseconds(50));
 
-        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("perRuleTimeout");
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse("a rule that never completes cannot establish the order is safe");
+        result.Violations.Should().ContainSingle()
+            .Which.Code.Should().Be(CompositeRiskValidator.EvaluationFailedCode);
     }
 
     [Fact]
-    public void Constructor_WithInfiniteTimeout_IsAccepted()
+    public async Task ValidateOrderAsync_WhenRuleHasSyncFastPath_DoesNotCallAsyncPath()
     {
-        var act = () => new CompositeRiskValidator(
-            [],
-            NullLogger<CompositeRiskValidator>.Instance,
-            Timeout.InfiniteTimeSpan);
+        var fastRule = new StubRiskRule(
+            "sync",
+            RiskValidationResult.Rejected("sync block"),
+            syncResult: RiskValidationResult.Rejected("sync block"));
+        var validator = new CompositeRiskValidator(
+            [fastRule],
+            NullLogger<CompositeRiskValidator>.Instance);
 
-        act.Should().NotThrow("infinite is the documented way to disable the bound");
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Be("sync block");
+        fastRule.SyncEvaluateCalls.Should().Be(1);
+        fastRule.EvaluateCalls.Should().Be(0);
     }
 
-    private static async Task WaitUntilAsync(Func<bool> condition)
+    [Fact]
+    public async Task ValidateOrderAsync_WarningSeverityFailure_ApprovesWithFlag()
     {
-        // The release runs on a continuation of the abandoned task, so it is not observable the
-        // instant the awaited call throws.
-        for (var attempt = 0; attempt < 200 && !condition(); attempt++)
+        var warningRule = new StubRiskRule(
+            "concentration-watch",
+            RiskValidationResult.Rejected("nearing cap"),
+            severity: RiskRuleSeverity.Warning);
+        var downstream = new StubRiskRule("downstream", RiskValidationResult.Approved());
+        var validator = new CompositeRiskValidator(
+            [warningRule, downstream],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeTrue("warning severity flags without blocking");
+        result.Warnings.Should().ContainSingle(warning => warning.Contains("concentration-watch"));
+        downstream.EvaluateCalls.Should().Be(1, "evaluation continues past a warning-severity failure");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ApprovedRuleWarnings_PropagateToFinalResult()
+    {
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("soft-band", RiskValidationResult.ApprovedWithWarnings("soft-band: approaching cap"))],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeTrue();
+        result.Warnings.Should().ContainSingle(warning => warning.Contains("approaching cap"));
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CriticalSeverityFailure_RejectsAndTripsCircuitBreaker()
+    {
+        var controls = CreateOperatorControls();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeTrue("Critical severity trips the execution circuit breaker");
+        controls.GetSnapshot().CircuitBreaker.Reason.Should().Contain("gross-exposure");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CriticalRuleCannotMeasureOrder_RejectsWithoutTrippingBreaker()
+    {
+        var controls = CreateOperatorControls();
+        var validator = new CompositeRiskValidator(
+            [
+                new StubRiskRule(
+                    "gross-exposure",
+                    RiskValidationResult.Unmeasurable("No current price is available for this order."),
+                    severity: RiskRuleSeverity.Critical)
+            ],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse("an order that cannot be valued still fails closed");
+        result.IsUnmeasurable.Should().BeTrue();
+        controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeFalse(
+            "a pricing gap establishes no breach, so one unpriceable order must not halt the desk");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CriticalSeverityWithBreakerAlreadyOpen_DoesNotRewriteBreakerState()
+    {
+        var controls = CreateOperatorControls();
+        await controls.SetCircuitBreakerAsync(true, "manual halt", "operator");
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        controls.GetSnapshot().CircuitBreaker.Reason.Should().Be("manual halt", "an already-open breaker keeps its original attribution");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CriticalSeverityWithoutControls_StillRejects()
+    {
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("gross-exposure", RiskValidationResult.Rejected("book over ceiling"), severity: RiskRuleSeverity.Critical)],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationWithQueue_ParksOrderForGovernedApproval()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        result.RequiresApproval.Should().BeTrue();
+        result.EscalationId.Should().NotBeNullOrWhiteSpace();
+        queue.GetPending().Should().ContainSingle(entry => entry.EscalationId == result.EscalationId);
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalateSeverityRule_ParksEvenWithPlainRejection()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("desk-review", RiskValidationResult.Rejected("needs desk review"), severity: RiskRuleSeverity.Escalate)],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.RequiresApproval.Should().BeTrue("Escalate severity converts a rejection into a governed-approval parking");
+        queue.GetPending().Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationWithoutQueue_FailsClosedAsRejection()
+    {
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder());
+
+        result.IsApproved.Should().BeFalse();
+        result.RequiresApproval.Should().BeFalse("without a queue the escalation degrades to a hard rejection");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ApprovedEscalation_ReleasesOrderThroughRemainingRules()
+    {
+        var queue = CreateQueue();
+        var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"));
+        var downstream = new StubRiskRule("downstream", RiskValidationResult.Approved());
+        var validator = new CompositeRiskValidator(
+            [escalating, downstream],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk", reason: "cleared");
+
+        var resubmission = CreateOrder() with
         {
-            await Task.Delay(10);
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var released = await validator.ValidateOrderAsync(resubmission);
+
+        released.IsApproved.Should().BeTrue();
+        released.Warnings.Should().ContainSingle(warning => warning.Contains("governed approval"));
+        downstream.EvaluateCalls.Should().BeGreaterThan(0, "later rules still run after an approval releases the escalation");
+
+        // The approval is one-shot: an identical third submission parks again.
+        var reparked = await validator.ValidateOrderAsync(resubmission);
+        reparked.RequiresApproval.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ApprovalRetiredEvenWhenRuleNoLongerEscalates()
+    {
+        // Park under a tight threshold, approve, then relax the threshold so the rule
+        // approves outright: the armed token must still be retired by the release it
+        // authorized, never surviving for replay after thresholds tighten again.
+        var queue = CreateQueue();
+        var escalating = new ThresholdStubRule("order-notional");
+        var validator = new CompositeRiskValidator(
+            [escalating],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        parked.RequiresApproval.Should().BeTrue();
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        escalating.Escalates = false;
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var released = await validator.ValidateOrderAsync(resubmission);
+
+        released.IsApproved.Should().BeTrue();
+        queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
+            RiskEscalationStatus.Released,
+            "the token is consumed up front, independent of whether the evaluation still escalates");
+
+        // Tighten again: the retired token cannot bypass a later identical order.
+        escalating.Escalates = true;
+        var replay = await validator.ValidateOrderAsync(resubmission);
+        replay.RequiresApproval.Should().BeTrue("a released token never authorizes a second order");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationRetainsSubmittingActorForSegregation()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var order = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "trade-desk-1"
+            }
+        };
+        var result = await validator.ValidateOrderAsync(order);
+
+        queue.TryGet(result.EscalationId!)!.Actor.Should().Be(
+            "trade-desk-1",
+            "the queue needs the initiator identity to refuse self-approval");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationRetainsTheExecutionRunId()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        // Live runs stamp their unique run id in metadata; StrategyId only names the
+        // reusable strategy definition shared by every run of it.
+        var order = CreateOrder() with
+        {
+            StrategyId = "mean-reversion",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["runId"] = "run-2026-07-28-a"
+            }
+        };
+        var result = await validator.ValidateOrderAsync(order);
+
+        queue.TryGet(result.EscalationId!)!.RunId.Should().Be(
+            "run-2026-07-28-a",
+            "queue audit correlation must identify the run, not the strategy definition");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationWithoutRunMetadata_FallsBackToStrategyId()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder() with { StrategyId = "manual-desk" });
+
+        queue.TryGet(result.EscalationId!)!.RunId.Should().Be("manual-desk");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ConsumedApproval_IsReportedOnTheApprovedResult()
+    {
+        var queue = CreateQueue();
+        var escalating = new ThresholdStubRule("order-notional");
+        var validator = new CompositeRiskValidator(
+            [escalating],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+        escalating.Escalates = false;
+
+        var released = await validator.ValidateOrderAsync(CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        });
+
+        released.IsApproved.Should().BeTrue();
+        released.ConsumedApprovalId.Should().Be(
+            parked.EscalationId,
+            "the OMS needs the consumed token to re-arm it if the gateway faults before routing");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ApprovalBypassesOnlyTheParkedRule()
+    {
+        // Token parked by rule A must not release an escalation from rule B.
+        var queue = CreateQueue();
+        var ruleA = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band A"));
+        var ruleB = new StubRiskRule("desk-review", RiskValidationResult.Escalated("band B"));
+        var validator = new CompositeRiskValidator(
+            [ruleA, ruleB],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var second = await validator.ValidateOrderAsync(resubmission);
+
+        second.RequiresApproval.Should().BeTrue("rule B requires its own governed approval");
+        queue.GetPending().Should().ContainSingle(entry => entry.RuleName == "desk-review");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_HardRejectionAfterConsumption_ReArmsTheApproval()
+    {
+        var queue = CreateQueue();
+        var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band"));
+        var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Rejected("position limit exceeded"));
+        var validator = new CompositeRiskValidator(
+            [escalating, hardStop],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var blocked = await validator.ValidateOrderAsync(resubmission);
+
+        blocked.IsApproved.Should().BeFalse();
+        queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
+            RiskEscalationStatus.Approved,
+            "no order routed, so the operator's approval stays retryable");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_RuleFaultAfterConsumption_ReArmsTheApproval()
+    {
+        var queue = CreateQueue();
+        var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band"));
+        var faulting = new FaultingRule("flaky-limit-feed");
+        var validator = new CompositeRiskValidator(
+            [escalating, faulting],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+
+        // The token is consumed up front; a later rule then faults out of validation.
+        var act = () => validator.ValidateOrderAsync(resubmission);
+        await act.Should().ThrowAsync<InvalidOperationException>();
+
+        queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
+            RiskEscalationStatus.Approved,
+            "an exceptional exit routed nothing, so the operator's approval must not stay retired");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ApprovedEscalation_DoesNotBypassLaterHardRules()
+    {
+        var queue = CreateQueue();
+        var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"));
+        var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Rejected("position limit exceeded"));
+        var validator = new CompositeRiskValidator(
+            [escalating, hardStop],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var released = await validator.ValidateOrderAsync(resubmission);
+
+        released.IsApproved.Should().BeFalse("a governed approval clears the escalation, never the hard limits");
+        released.RejectReason.Should().Contain("position limit");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WhenBreakerTripCannotPersist_FailsClosedUntilTripLands()
+    {
+        // A file squatting on the controls root makes every snapshot persist fail, so the
+        // critical trip cannot land durably and the validator must fail closed.
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"controls-blocked-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        File.WriteAllText(root, "blocks the controls directory");
+        try
+        {
+            var controls = new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(root),
+                NullLogger<ExecutionOperatorControlService>.Instance);
+            var critical = new StubRiskRule(
+                "gross-exposure",
+                RiskValidationResult.Rejected("book over ceiling"),
+                severity: RiskRuleSeverity.Critical);
+            var benign = new StubRiskRule("benign", RiskValidationResult.Approved(), priority: 100);
+            var validator = new CompositeRiskValidator(
+                [critical, benign],
+                NullLogger<CompositeRiskValidator>.Instance,
+                operatorControls: controls);
+
+            var tripping = await validator.ValidateOrderAsync(CreateOrder());
+            tripping.IsApproved.Should().BeFalse();
+            controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeFalse("the durable trip failed");
+
+            // While the trip is owed, every order — including ones no rule would block —
+            // is rejected: the promised global halt holds without the breaker.
+            var duringLatch = await validator.ValidateOrderAsync(CreateOrder());
+            duringLatch.IsApproved.Should().BeFalse();
+            duringLatch.RejectReason.Should().Contain("failing closed");
+
+            // Clearing the blockage lets the retry land: the breaker opens and the
+            // validator resumes normal evaluation (the breaker gate itself lives in the
+            // operator-controls check, not in this validator).
+            File.Delete(root);
+            var afterRecovery = await validator.ValidateOrderAsync(CreateOrder());
+            controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeTrue("the pending trip must land once persistence recovers");
+            controls.GetSnapshot().CircuitBreaker.Reason.Should().Contain("gross-exposure");
+            afterRecovery.RejectReason.Should().NotContain("failing closed", "the latch releases once the trip lands");
+        }
+        finally
+        {
+            if (File.Exists(root))
+            {
+                File.Delete(root);
+            }
         }
     }
 
-    private static CompositeRiskValidator Build(params IRiskRule[] rules) =>
-        new(rules, NullLogger<CompositeRiskValidator>.Instance);
+    [Fact]
+    public async Task ValidateOrderAsync_OrderBreachingTwoEscalationRules_RoutesOnceBothAreApproved()
+    {
+        var queue = CreateQueue();
+        var ruleA = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band A"));
+        var ruleB = new StubRiskRule("desk-review", RiskValidationResult.Escalated("band B"));
+        var validator = new CompositeRiskValidator(
+            [ruleA, ruleB],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
 
-    private static RiskFinding Finding(string code, string message) => new(code, message);
+        // Rule A parks first; approving it and resubmitting parks rule B.
+        var parkedA = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parkedA.EscalationId!, actor: "risk-desk");
+
+        var withA = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parkedA.EscalationId!
+            }
+        };
+        var parkedB = await validator.ValidateOrderAsync(withA);
+        parkedB.RequiresApproval.Should().BeTrue();
+        queue.Approve(parkedB.EscalationId!, actor: "risk-desk");
+
+        // Carrying BOTH decisions releases the order instead of alternating forever.
+        var withBoth = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] =
+                    RiskEscalationQueueService.JoinTokens([parkedA.EscalationId!, parkedB.EscalationId!])
+            }
+        };
+        var released = await validator.ValidateOrderAsync(withBoth);
+
+        released.IsApproved.Should().BeTrue("every escalation on the unchanged order has been approved");
+        released.ConsumedApprovalId.Should().Contain(parkedA.EscalationId!).And.Contain(parkedB.EscalationId!);
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CancelledDuringCriticalTrip_StillTripsTheBreaker()
+    {
+        var controls = CreateOperatorControls();
+        // The caller disconnects while the critical rule is being evaluated, i.e. exactly
+        // when the trip is about to persist. The halt is a system-wide promise, not part
+        // of that client's request, so it must still land.
+        using var caller = new CancellationTokenSource();
+        var critical = new CancellingCriticalRule("gross-exposure", caller);
+        var validator = new CompositeRiskValidator(
+            [critical],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder(), caller.Token);
+
+        result.IsApproved.Should().BeFalse();
+        controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeTrue(
+            "a cancelled request must not drop a critical circuit-breaker trip");
+        controls.GetSnapshot().CircuitBreaker.Reason.Should().Contain("gross-exposure");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EvaluationOnlyProbe_ReportsEscalationWithoutParking()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var probe = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.EvaluationOnlyMetadataKey] = "true"
+            }
+        };
+        var result = await validator.ValidateOrderAsync(probe);
+
+        result.RequiresApproval.Should().BeTrue("the caller still learns approval would be required");
+        result.EscalationId.Should().BeNull();
+        queue.GetPending().Should().BeEmpty(
+            "an amendment probe must not leave an entry no one could release");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_WhenParkingCannotPersist_FailsClosedAsRejection()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-validator-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.GetDirectoryName(root)!);
+        File.WriteAllText(root, "blocks the snapshot directory");
+        try
+        {
+            var queue = new RiskEscalationQueueService(
+                NullLogger<RiskEscalationQueueService>.Instance,
+                options: new RiskEscalationQueueOptions(Path.Combine(root, "escalations.json")));
+            var validator = new CompositeRiskValidator(
+                [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+                NullLogger<CompositeRiskValidator>.Instance,
+                escalationQueue: queue);
+
+            var result = await validator.ValidateOrderAsync(CreateOrder());
+
+            result.IsApproved.Should().BeFalse();
+            result.RequiresApproval.Should().BeFalse(
+                "an escalation that could not be parked must reject rather than promise an approval path");
+        }
+        finally
+        {
+            File.Delete(root);
+        }
+    }
+
+    private static RiskEscalationQueueService CreateQueue() => new(
+        NullLogger<RiskEscalationQueueService>.Instance,
+        options: new RiskEscalationQueueOptions(
+            Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+
+    private static ExecutionOperatorControlService CreateOperatorControls() => new(
+        new ExecutionOperatorControlOptions(
+            Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"controls-{Guid.NewGuid():N}")),
+        NullLogger<ExecutionOperatorControlService>.Instance);
 
     private static OrderRequest CreateOrder() => new()
     {
         Symbol = "AAPL",
         Side = OrderSide.Buy,
         Type = OrderType.Market,
-        Quantity = 10m
+        Quantity = 10m,
     };
+
+    /// <summary>
+    /// A Critical rule that cancels the caller's token as it evaluates, standing in for a
+    /// client disconnecting exactly while the breaker trip is being persisted.
+    /// </summary>
+    private sealed class CancellingCriticalRule(string ruleName, CancellationTokenSource caller) : IRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public RiskRuleSeverity Severity => RiskRuleSeverity.Critical;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            caller.Cancel();
+            return Task.FromResult(RiskValidationResult.Rejected("book over ceiling"));
+        }
+    }
+
+    private sealed class FaultingRule(string ruleName) : IRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            throw new InvalidOperationException("limit feed unavailable");
+    }
+
+    private sealed class ThresholdStubRule(string ruleName) : IRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public bool Escalates { get; set; } = true;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(Escalates
+                ? RiskValidationResult.Escalated("above governed band")
+                : RiskValidationResult.Approved());
+    }
 
     private sealed class StubRiskRule(
         string ruleName,
-        RiskFinding? finding = null,
+        RiskValidationResult result,
         int priority = 0,
-        RiskRuleSeverity severity = RiskRuleSeverity.Error,
-        RiskFinding? syncFinding = null) : IRiskRule
+        RiskValidationResult? syncResult = null,
+        RiskRuleSeverity severity = RiskRuleSeverity.Error) : IRiskRule
     {
         public string RuleName => ruleName;
 
@@ -340,125 +797,80 @@ public sealed class CompositeRiskValidatorTests
 
         public RiskRuleSeverity Severity => severity;
 
-        public bool HasSync { get; init; }
-
-        public bool HasSyncFastPath => HasSync;
-
-        public Exception? Throw { get; init; }
-
-        /// <summary>Cancels mid-evaluation so earlier rules have already reserved capacity.</summary>
-        public CancellationTokenSource? CancelDuringEvaluation { get; init; }
-
         public int EvaluateCalls { get; private set; }
 
         public int SyncEvaluateCalls { get; private set; }
 
-        public RiskFinding? TryEvaluate(OrderRequest request)
+        public RiskValidationResult? TryEvaluate(OrderRequest request)
         {
+            if (syncResult is null)
+            {
+                return null;
+            }
+
             SyncEvaluateCalls++;
-            return syncFinding;
+            return syncResult;
         }
 
-        public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(RecordAsyncResult());
+
+        private RiskValidationResult RecordAsyncResult()
         {
             EvaluateCalls++;
-            if (CancelDuringEvaluation is not null)
-            {
-                CancelDuringEvaluation.Cancel();
-                ct.ThrowIfCancellationRequested();
-            }
-
-            if (Throw is not null)
-            {
-                throw Throw;
-            }
-
-            return Task.FromResult(finding);
+            return result;
         }
     }
 
-    private sealed class StubReservingRule(string ruleName) : IReservingRiskRule
+    private sealed class ThrowingRiskRule(string ruleName, Exception failure) : IRiskRule
     {
         public string RuleName => ruleName;
 
-        public int Priority { get; init; }
-
-        public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
-
-        /// <summary>The unsupported-looking combination the validator has to handle safely.</summary>
-        public bool AlsoDeclaresSyncFastPath { get; init; }
-
-        public bool HasSyncFastPath => AlsoDeclaresSyncFastPath;
-
-        public List<StubReservation> Reservations { get; } = [];
-
-        public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
-            Task.FromResult<RiskFinding?>(null);
-
-        public Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
-            OrderRequest request,
-            CancellationToken ct = default)
-        {
-            var reservation = new StubReservation();
-            Reservations.Add(reservation);
-            return Task.FromResult(new RiskRuleReservationResult(null, reservation));
-        }
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            throw failure;
     }
 
     /// <summary>
-    /// A reserving rule that ignores its cancellation token and completes only when the test says
-    /// so — the contract violation the abandonment path exists to survive.
+    /// Never completes and deliberately ignores its cancellation token — the uncooperative rule the
+    /// per-rule ceiling exists for. Cancelling the token it was handed would not end this wait.
     /// </summary>
-    private sealed class StubDetachedReservingRule(Task<RiskRuleReservationResult> evaluation)
-        : IReservingRiskRule
-    {
-        public string RuleName => "detached";
-
-        public int Priority => 0;
-
-        public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
-
-        public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
-            Task.FromResult<RiskFinding?>(null);
-
-        public Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
-            OrderRequest request,
-            CancellationToken ct = default) => evaluation;
-    }
-
-    /// <summary>A reserving rule whose reservation refuses to be released.</summary>
-    private sealed class StubThrowingRollbackRule(string ruleName) : IReservingRiskRule
+    private sealed class StallingRiskRule(string ruleName) : IRiskRule
     {
         public string RuleName => ruleName;
 
-        public int Priority { get; init; }
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            new TaskCompletionSource<RiskValidationResult>(TaskCreationOptions.RunContinuationsAsynchronously).Task;
+    }
 
-        public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
+    private sealed class CountingReservation : IRiskReservation
+    {
+        public int Commits { get; private set; }
 
-        public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
-            Task.FromResult<RiskFinding?>(null);
+        public int Rollbacks { get; private set; }
+
+        public void Commit() => Commits++;
+
+        public void Rollback() => Rollbacks++;
+    }
+
+    private sealed class StubReservingRiskRule(
+        string ruleName,
+        RiskValidationResult result,
+        IRiskReservation? reservation,
+        int priority = 0) : IReservingRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public int Priority => priority;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(result);
 
         public Task<RiskRuleReservationResult> EvaluateAndReserveAsync(
             OrderRequest request,
             CancellationToken ct = default) =>
-            Task.FromResult(new RiskRuleReservationResult(null, new ThrowingReservation()));
-
-        private sealed class ThrowingReservation : IRiskReservation
-        {
-            public void Commit() => throw new InvalidOperationException("commit failed");
-
-            public void Rollback() => throw new InvalidOperationException("rollback failed");
-        }
-    }
-
-    private sealed class StubReservation : IRiskReservation
-    {
-        public bool Committed { get; private set; }
-
-        public bool RolledBack { get; private set; }
-
-        public void Commit() => Committed = true;
-
-        public void Rollback() => RolledBack = true;
+            Task.FromResult(new RiskRuleReservationResult(
+                result,
+                result.IsApproved ? reservation : null));
     }
 }

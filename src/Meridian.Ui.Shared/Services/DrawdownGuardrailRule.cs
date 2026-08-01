@@ -25,15 +25,10 @@ public sealed class DrawdownGuardrailRule : IRiskRule
     /// <inheritdoc />
     public RiskRuleSeverity Severity => RiskRuleSeverity.Critical;
 
-    /// <summary>
-    /// The guardrail reads in-memory portfolio state, so it needs neither I/O nor the async path.
-    /// </summary>
-    public bool HasSyncFastPath => true;
+    /// <inheritdoc />
+    public RiskValidationResult? TryEvaluate(OrderRequest request) => _runtime.EvaluateDrawdownGuardrail();
 
     /// <inheritdoc />
-    public RiskFinding? TryEvaluate(OrderRequest request) => _runtime.EvaluateDrawdownGuardrail();
-
-    /// <inheritdoc />
-    public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+    public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
         Task.FromResult(_runtime.EvaluateDrawdownGuardrail());
 }

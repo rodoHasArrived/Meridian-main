@@ -1,53 +1,54 @@
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Risk;
 
 /// <summary>
-/// Composite risk validator that runs every registered rule against an order and resolves one
-/// aggregate decision from their findings.
-/// <para>
-/// Two properties distinguish this from a first-failure gate. Every rule is evaluated, so the
-/// operator sees the complete violation set rather than whichever rule happened to run first. And
-/// each rule's declared <see cref="IRiskRule.Severity"/> — not anything the rule chooses per order —
-/// decides whether its finding blocks or merely annotates.
-/// </para>
+/// Composite risk validator that runs multiple risk rules in sequence, mapping each rule's
+/// severity to a real outcome:
+/// <list type="bullet">
+/// <item><description><see cref="RiskRuleSeverity.Info"/> / <see cref="RiskRuleSeverity.Warning"/> —
+/// the breach becomes a warning flag on the result and evaluation continues.</description></item>
+/// <item><description><see cref="RiskRuleSeverity.Error"/> — the order is rejected.</description></item>
+/// <item><description><see cref="RiskRuleSeverity.Escalate"/> (or a rule returning
+/// <see cref="RiskValidationResult.Escalated"/>) — the order is parked in the governed
+/// approval queue instead of routed; a valid one-shot approval token on the order releases
+/// it past the escalation.</description></item>
+/// <item><description><see cref="RiskRuleSeverity.Critical"/> — the order is rejected and the
+/// execution circuit breaker trips, halting all further routing until an operator closes it.</description></item>
+/// </list>
+/// Rules evaluate by priority; warning flags accumulate across rules and are carried on the
+/// final result whether approved or not.
 /// </summary>
 public sealed class CompositeRiskValidator : IRiskValidator
 {
-    /// <summary>Code used when a rule throws instead of returning a finding.</summary>
-    public const string EvaluationFailedCode = "RISK_RULE_EVALUATION_FAILED";
-
     private readonly IReadOnlyList<IRiskRule> _rules;
     private readonly ILogger<CompositeRiskValidator> _logger;
+    private readonly ExecutionOperatorControlService? _operatorControls;
+    private readonly RiskEscalationQueueService? _escalationQueue;
+
+    // Fail-closed latch: set when a critical rule demanded the circuit breaker but the
+    // durable trip failed. While latched, every order is rejected and the trip is retried,
+    // so the promised global halt holds even when control persistence is unavailable.
+    private volatile bool _breakerTripPending;
+    private string _breakerTripReason = string.Empty;
+
+    /// <summary>
+    /// Wall-clock ceiling on a single rule. A rule that never completes would otherwise hold the
+    /// pre-trade path open indefinitely, which is a trading outage rather than a risk decision.
+    /// </summary>
+    public static readonly TimeSpan DefaultPerRuleTimeout = TimeSpan.FromSeconds(5);
+
     private readonly TimeSpan _perRuleTimeout;
 
     public CompositeRiskValidator(
         IEnumerable<IRiskRule> rules,
-        ILogger<CompositeRiskValidator> logger)
-        : this(rules, logger, TimeSpan.FromSeconds(5))
-    {
-    }
-
-    /// <param name="perRuleTimeout">
-    /// Bounds a single <em>asynchronous</em> rule evaluation. A rule that never completes would
-    /// otherwise hang the pre-trade gate for callers that supply no deadline of their own. Pass
-    /// <see cref="Timeout.InfiniteTimeSpan"/> to disable.
-    /// <para>
-    /// This does <b>not</b> bound <see cref="IRiskRule.TryEvaluate"/>, nor any synchronous work a
-    /// rule performs before it returns its <see cref="Task"/>. Both run on the calling thread, and
-    /// a synchronous call cannot be abandoned — bounding them would need a thread hop on every
-    /// evaluation, which is not worth it on the pre-trade path, and would leak the blocked thread
-    /// anyway. The contract is therefore that rules do not block: they either declare
-    /// <see cref="IRiskRule.HasSyncFastPath"/> because they need no I/O, or they return a task
-    /// promptly and do their waiting inside it, where this timeout applies.
-    /// </para>
-    /// </param>
-    public CompositeRiskValidator(
-        IEnumerable<IRiskRule> rules,
         ILogger<CompositeRiskValidator> logger,
-        TimeSpan perRuleTimeout)
+        ExecutionOperatorControlService? operatorControls = null,
+        RiskEscalationQueueService? escalationQueue = null,
+        TimeSpan? perRuleTimeout = null)
     {
         _rules = rules?
             .Select(static (rule, index) => new { Rule = rule, Index = index })
@@ -57,314 +58,289 @@ public sealed class CompositeRiskValidator : IRiskValidator
             .ToList()
             .AsReadOnly() ?? throw new ArgumentNullException(nameof(rules));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _operatorControls = operatorControls;
+        _escalationQueue = escalationQueue;
 
-        // Rejected here so a bad composition fails at startup rather than per order.
-        // CreateTimeoutSource runs before EvaluateRuleAsync's fail-closed handler, so a value
-        // CancelAfter refuses would throw ArgumentOutOfRangeException outside it — and the OMS calls
-        // the validator outside its own submission handler, so every order would come back as an
-        // unstructured exception instead of a risk decision. A misconfigured gate should be
-        // impossible to start, not silently fatal on the first trade.
-        if (perRuleTimeout != Timeout.InfiniteTimeSpan &&
-            (perRuleTimeout < TimeSpan.Zero || perRuleTimeout.TotalMilliseconds > int.MaxValue))
+        _perRuleTimeout = perRuleTimeout ?? DefaultPerRuleTimeout;
+        if (_perRuleTimeout != Timeout.InfiniteTimeSpan)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(perRuleTimeout),
-                perRuleTimeout,
-                $"Per-rule timeout must be non-negative and at most {int.MaxValue} ms, or {nameof(Timeout)}.{nameof(Timeout.InfiniteTimeSpan)} to disable.");
+            ArgumentOutOfRangeException.ThrowIfLessThan(_perRuleTimeout, TimeSpan.Zero);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(
+                _perRuleTimeout.TotalMilliseconds,
+                int.MaxValue);
         }
-
-        _perRuleTimeout = perRuleTimeout;
     }
 
     /// <inheritdoc />
-    public async Task<RiskValidationOutcome> ValidateOrderAsync(
-        OrderRequest request,
-        CancellationToken ct = default)
+    public async Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        List<string>? warnings = null;
 
-        // Priority is carried from the rule that produced each finding rather than recovered later
-        // from RuleName. A name is a display label and nothing enforces its uniqueness: with two
-        // rules sharing one, a name lookup returns the first match's priority, so a low-priority
-        // rule's violation could sort ahead of a higher-priority one and be reported as the reason
-        // the order was rejected.
-        var violations = new List<(RiskViolation Violation, int Priority)>();
+        if (_breakerTripPending)
+        {
+            // A critical halt is owed but not yet durably applied: reject everything and
+            // keep retrying the trip until it lands.
+            await TryApplyPendingBreakerTripAsync(ct).ConfigureAwait(false);
+            if (_breakerTripPending)
+            {
+                return RiskValidationResult.Rejected(
+                    "Risk engine is failing closed: a critical halt is pending but the execution circuit breaker could not be opened.");
+            }
+
+            // The trip has just landed, but the operator-control gate that reads the breaker
+            // already ran for THIS order earlier in the pipeline and saw it closed. Letting
+            // validation continue would route exactly one order through the halt at the
+            // moment it became durable — the single order the halt was raised to stop.
+            return RiskValidationResult.Rejected(
+                "Execution circuit breaker opened by a pending critical halt; resubmit once an operator clears it.");
+        }
+
+        // Consume a carried governed-approval token up front, independent of whether the
+        // current evaluation still escalates: thresholds may have moved between parking
+        // and release, and an armed approval must always be retired by the release it
+        // authorized rather than surviving for replay against a later identical order.
+        // The consumed entry's rule identity scopes the bypass, and a rejection later in
+        // this evaluation re-arms the approval because no order routed.
+        var releasedEntries = _escalationQueue?.TryConsumeApprovals(request) ?? [];
+        foreach (var released in releasedEntries)
+        {
+            _logger.LogInformation(
+                "Governed approval {EscalationId} consumed for the escalation parked by rule {RuleName}",
+                released.EscalationId,
+                released.RuleName ?? "unknown");
+        }
+
+        if (releasedEntries.Count > 0)
+        {
+            (warnings ??= []).Add("Escalation released by governed approval.");
+        }
+
+        // Every rule is evaluated before any decision is taken, so an order breaching three limits
+        // reports three. Returning at the first blocking rule reported one and left the operator
+        // to resubmit, get blocked by the next rule, and repeat. Evaluation is side-effect free by
+        // contract (IRiskRule.EvaluateAsync), and the reservations that are not are settled below,
+        // so evaluating past a block cannot commit anything.
+        var evaluated = new List<(IRiskRule Rule, RiskValidationResult Result)>(_rules.Count);
         var reservations = new List<IRiskReservation>();
+        var violations = new List<RiskViolation>();
 
         try
         {
             foreach (var rule in _rules)
             {
                 ct.ThrowIfCancellationRequested();
-                var violation = await EvaluateRuleAsync(rule, request, reservations, ct).ConfigureAwait(false);
-                if (violation is not null)
+                var result = await EvaluateRuleAsync(rule, request, reservations, ct).ConfigureAwait(false);
+                evaluated.Add((rule, result));
+
+                if (!result.IsApproved)
                 {
-                    violations.Add((violation, rule.Priority));
+                    violations.Add(ToViolation(rule, result));
                 }
             }
 
-            // Cancellation during the final rule would otherwise go unnoticed: the loop's check
-            // runs before each rule, so a rule that reserves and then returns just after the token
-            // is cancelled has no later check to catch it. Without this, a cancelled submission
-            // transfers its reservation and the OMS conservatively commits it.
-            ct.ThrowIfCancellationRequested();
+            foreach (var (rule, result) in evaluated)
+            {
+                if (result.Warnings.Count > 0)
+                {
+                    (warnings ??= []).AddRange(result.Warnings);
+                }
+
+                if (result.IsApproved)
+                {
+                    continue;
+                }
+
+                var reason = string.IsNullOrWhiteSpace(result.RejectReason)
+                    ? $"Rejected by risk rule '{rule.RuleName}'."
+                    : result.RejectReason;
+
+                // A rule can escalate explicitly via its result; otherwise its declared
+                // severity decides the outcome of the failure.
+                if (result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
+                {
+                    // A consumed approval satisfies only the escalation it was parked for;
+                    // any other escalate-capable rule still parks its own approval. An
+                    // order breaching several such rules carries one token per decision.
+                    if (releasedEntries.Any(entry =>
+                            string.Equals(entry.RuleName, rule.RuleName, StringComparison.Ordinal)))
+                    {
+                        _logger.LogInformation(
+                            "Escalation from rule {RuleName} released by governed approval",
+                            rule.RuleName);
+                        continue;
+                    }
+
+                    return Block(RestoreOnFailure(
+                        Escalate(rule, request, reason, warnings),
+                        releasedEntries));
+                }
+
+                switch (rule.Severity)
+                {
+                    case RiskRuleSeverity.Info:
+                    case RiskRuleSeverity.Warning:
+                        // Order details stay out of the log: the flag is carried on the result
+                        // and the OMS audit trail retains full context.
+                        _logger.LogWarning(
+                            "Risk rule {RuleName} ({Severity}) flagged the order without blocking",
+                            rule.RuleName,
+                            rule.Severity);
+                        (warnings ??= []).Add($"{rule.RuleName}: {reason}");
+                        continue;
+
+                    // A Critical rule that could not value the order has established no
+                    // breach. Halting the desk on it would turn a stale feed or an
+                    // unpriceable symbol into a full trading outage that only an operator
+                    // can clear. Refuse this order and let the next one be measured.
+                    case RiskRuleSeverity.Critical when result.IsUnmeasurable:
+                        _logger.LogWarning(
+                            "Risk rule {RuleName} (Critical) rejected an order it could not measure; "
+                                + "the circuit breaker stays closed because no breach was established",
+                            rule.RuleName);
+                        return Block(RestoreOnFailure(
+                            WithWarnings(RiskValidationResult.Unmeasurable(reason), warnings),
+                            releasedEntries));
+
+                    case RiskRuleSeverity.Critical:
+                        _logger.LogError(
+                            "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
+                            rule.RuleName);
+                        await TripCircuitBreakerAsync(rule, reason, ct).ConfigureAwait(false);
+                        return Block(RestoreOnFailure(
+                            WithWarnings(RiskValidationResult.Rejected(reason), warnings),
+                            releasedEntries));
+
+                    default:
+                        _logger.LogWarning(
+                            "Risk rule {RuleName} ({Severity}) rejected the order",
+                            rule.RuleName,
+                            rule.Severity);
+                        return Block(RestoreOnFailure(
+                            WithWarnings(RiskValidationResult.Rejected(reason), warnings),
+                            releasedEntries));
+                }
+            }
+
+            var approved = WithWarnings(RiskValidationResult.Approved(), warnings) with
+            {
+                Violations = violations,
+
+                // Ownership of the reserved capacity moves to the caller here, and only here.
+                // Passing the gate is not the same as routing — client-order-id registration,
+                // journaling, or the gateway submit can still fail — so committing inside the
+                // validator would consume capacity for orders that never reach a venue.
+                Reservations = reservations,
+            };
+
+            // Surface the consumed approvals on the approved result so the OMS can re-arm
+            // them if the gateway subsequently faults before the order routes.
+            return releasedEntries.Count == 0
+                ? approved
+                : approved with
+                {
+                    ConsumedApprovalId = RiskEscalationQueueService.JoinTokens(
+                        releasedEntries.Select(static entry => entry.EscalationId))
+                };
         }
         catch
         {
-            // Ownership has not transferred yet, so cleanup is ours. A leaked reservation
-            // permanently consumes capacity and would eventually block every later order.
+            // Cancellation or a faulting rule exits validation without routing anything, so
+            // nothing may keep the capacity it reserved and the consumed approval must not stay
+            // retired: release both for retry, then let the exception continue unwinding.
+            //
+            // Rollback runs first. RestoreOnFault touches the escalation queue, and a queue that
+            // throws here would strand every reservation this evaluation took — a permanent
+            // capacity leak in exchange for a re-armable token.
             RollbackAll(reservations);
+            RestoreOnFault(releasedEntries);
             throw;
         }
 
-        // OrderBy is stable, so rules of equal severity and priority stay in registration order.
-        var ordered = violations
-            .OrderByDescending(static entry => entry.Violation.Severity)
-            .ThenBy(static entry => entry.Priority)
-            .Select(static entry => entry.Violation)
-            .ToList();
-
-        var result = RiskValidationResult.FromViolations(ordered);
-
-        if (!result.IsApproved)
+        // Single funnel for every non-routing decision: the order does not reach a venue, so the
+        // capacity is released here rather than at each of the four blocked returns, and the full
+        // violation set rides along so the submitter sees every breach and not only the first.
+        RiskValidationResult Block(RiskValidationResult result)
         {
-            // Nothing will be routed, so no reserved capacity should survive this call.
             RollbackAll(reservations);
-
-            // Isolated for the same reason as the admission log below, and it matters more here:
-            // the rejection has already been derived, and the OMS calls the validator outside its
-            // own submission handler. A throwing logger provider would hand the submitter a
-            // logging exception instead of the rejection, and no rejection state or audit record
-            // would ever be written for an order the gate had decided to block.
-            try
-            {
-                LogRejection(request, result);
-            }
-            catch (Exception ex)
-            {
-                TryLogSuppressed(ex, "rejection");
-            }
-
-            return new RiskValidationOutcome(result, []);
+            return result with { Violations = violations };
         }
-
-        if (ordered.Count > 0)
-        {
-            // Isolated because ownership has not transferred yet. This runs after the cleanup
-            // handler above has exited, so a throwing logger provider would leave the method
-            // without returning the outcome and without releasing anything — capacity consumed
-            // permanently by an order that was admitted. An admission note is never worth that.
-            try
-            {
-                _logger.LogInformation(
-                    "Pre-trade risk admitted order for {Symbol} as {Decision} with {ViolationCount} finding(s).",
-                    ExecutionLogText.ForLog(request.Symbol),
-                    result.Decision,
-                    ordered.Count);
-            }
-            catch (Exception ex)
-            {
-                TryLogSuppressed(ex, "admission");
-            }
-        }
-
-        return new RiskValidationOutcome(result, reservations);
     }
 
     /// <summary>
-    /// Evaluates one rule and attributes its finding, returning <see langword="null"/> when the rule
-    /// is satisfied.
+    /// Stable code recorded when a rule itself fails, rather than reporting a breach.
+    /// </summary>
+    public const string EvaluationFailedCode = "RISK_RULE_EVALUATION_FAILED";
+
+    /// <summary>
+    /// Runs one rule under the per-rule timeout, taking its reservation when it has one, and
+    /// converts any fault into a fail-closed rejection rather than letting it escape.
     /// <para>
-    /// This returns the <see cref="RiskViolation"/> rather than the finding so that an engine
-    /// failure can be constructed here, where it is known to be one. Inferring it downstream by
-    /// comparing against <see cref="EvaluationFailedCode"/> would make that public code a second
-    /// admission lever: a rule legitimately reporting it on an <see cref="RiskRuleSeverity.Info"/>
-    /// finding would be silently promoted to a rejection, which is exactly the severity-can-be-
-    /// contradicted problem this design removes.
+    /// A rule that throws has not established that the order is safe, so the order is refused.
+    /// The refusal is reported at <see cref="RiskRuleSeverity.Critical"/>-equivalent weight but as
+    /// <see cref="RiskValidationResult.Unmeasurable"/>: the rule established no breach, so this
+    /// must not trip the circuit breaker. A flaky rule would otherwise halt the whole desk.
     /// </para>
     /// </summary>
-    private async Task<RiskViolation?> EvaluateRuleAsync(
+    private async Task<RiskValidationResult> EvaluateRuleAsync(
         IRiskRule rule,
         OrderRequest request,
         List<IRiskReservation> reservations,
         CancellationToken ct)
     {
+        using var timeout = CreateTimeoutSource(ct);
+
         try
         {
-            // Reserving is checked before the synchronous fast path. A rule that declares both would
-            // otherwise never reach EvaluateAndReserveAsync, silently admitting concurrent orders
-            // without consuming any of the finite capacity it exists to protect — the one failure
-            // here that is invisible rather than loud.
+            // Checked before the sync fast path so a reserving rule cannot be bypassed by one.
             if (rule is IReservingRiskRule reserving)
             {
-                // Cancelled on the way out, not merely disposed. Disposing a
-                // CancellationTokenSource does not request cancellation, and WaitAsync can win the
-                // race against CancelAfter — readily so at a short or zero timeout — leaving a
-                // rule that correctly observes its token still waiting on I/O after validation has
-                // already returned a fail-closed result. Repeated orders would accumulate them.
-                using var reservingTimeout = CreateTimeoutSource(ct);
-                using var abandonReserving = AbandonOnExit(reservingTimeout);
-
-                var reservationResult = await WithHardTimeoutAsync(
-                        reserving.EvaluateAndReserveAsync(request, reservingTimeout?.Token ?? ct),
-                        ct)
+                var reserved = await Bound(reserving.EvaluateAndReserveAsync(request, timeout?.Token ?? ct))
                     .ConfigureAwait(false);
 
-                if (reservationResult.Reservation is { } reservation)
+                if (reserved.Reservation is not null)
                 {
-                    reservations.Add(reservation);
+                    reservations.Add(reserved.Reservation);
                 }
 
-                return ToViolation(rule, reservationResult.Finding);
+                return reserved.Result;
             }
 
-            // The synchronous fast path runs inside this handler, not before it. The production
-            // DrawdownGuardrailRule uses it, and a failure reading portfolio state must become a
-            // structured risk rejection rather than an unstructured submission failure.
-            //
-            // It is deliberately NOT wrapped in the hard timeout: a synchronous call cannot be
-            // abandoned, so wrapping it would bound only the wait and leak the blocked thread while
-            // still hanging the submission. A rule opts into this path by declaring it needs no
-            // I/O, so blocking here is a contract violation rather than a case to time out.
-            //
-            // No timeout source is built for it either. This branch runs on every order for every
-            // synchronous rule, and a linked CTS plus a scheduled CancelAfter is real per-order cost
-            // on the pre-trade path for a token nothing here observes.
-            if (rule.HasSyncFastPath)
+            var fastPath = rule.TryEvaluate(request);
+            if (fastPath is not null)
             {
-                return ToViolation(rule, rule.TryEvaluate(request));
+                return fastPath;
             }
 
-            using var evaluationTimeout = CreateTimeoutSource(ct);
-            using var abandonEvaluation = AbandonOnExit(evaluationTimeout);
-
-            var finding = await WithHardTimeoutAsync(
-                    rule.EvaluateAsync(request, evaluationTimeout?.Token ?? ct),
-                    ct)
-                .ConfigureAwait(false);
-
-            return ToViolation(rule, finding);
+            return await Bound(rule.EvaluateAsync(request, timeout?.Token ?? ct)).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            // Genuine caller cancellation. Propagate so the outer handler releases reservations.
+            // The caller gave up. That is not a risk decision — let it unwind so the reservations
+            // taken so far are rolled back by the outer handler.
             throw;
         }
         catch (Exception ex)
         {
-            // Everything else — including a rule's own timeout surfacing as
-            // OperationCanceledException while the caller's token is still live — is an evaluation
-            // failure. Treating it as cancellation would let the failure escape the gate entirely,
-            // leaving the order neither admitted with a recorded decision nor explicitly rejected.
-            _logger.LogError(
-                ex,
-                "Risk rule {RuleName} failed to evaluate order for {Symbol}; failing closed.",
-                rule.RuleName,
-                ExecutionLogText.ForLog(request.Symbol));
+            // Logging is guarded because a throwing logger provider here would replace the
+            // fail-closed rejection with a logging exception: the submitter would get an
+            // unstructured fault with no rejection state and no audit record, on the one path
+            // whose entire purpose is to refuse safely.
+            TryLogSuppressed(ex, $"risk rule '{rule.RuleName}' failed to evaluate");
 
-            // Critical regardless of the rule's declared severity — the one exception, and it is an
-            // engine fault rather than a finding about the order. Preserving an Info or Warning
-            // rule's severity would admit the order after its gate failed.
-            return new RiskViolation(
-                RuleName: rule.RuleName,
-                Severity: RiskRuleSeverity.Critical,
-                Code: EvaluationFailedCode,
-                Message: $"Risk rule '{rule.RuleName}' could not be evaluated: {ex.GetType().Name}.");
-        }
-    }
-
-    /// <summary>
-    /// Bounds an evaluation that may ignore its cancellation token. Passing a token that is
-    /// cancelled after a delay only helps for rules that observe it; a rule that never completes
-    /// would otherwise hang the pre-trade gate for callers that supply no deadline of their own.
-    /// <para>
-    /// <c>Task.WaitAsync</c> tears its timer down as soon as the evaluation completes. A hand-rolled
-    /// <c>WhenAny(evaluation, Task.Delay(...))</c> leaves the losing delay scheduled for the full
-    /// timeout, so a rejected burst — which still evaluates every rule — would accumulate one live
-    /// timer per rule per order on the pre-trade path.
-    /// </para>
-    /// </summary>
-    private async Task<T> WithHardTimeoutAsync<T>(Task<T> evaluation, CancellationToken ct) =>
-        // InfiniteTimeSpan disables the duration bound only, never caller cancellation. Awaiting the
-        // rule task bare would mean a rule that ignores its token could not be released by
-        // cancelling ValidateOrderAsync either, so the caller would hang on a rule the host had
-        // merely chosen not to time out.
-        _perRuleTimeout == Timeout.InfiniteTimeSpan
-            ? await evaluation.WaitAsync(ct).ConfigureAwait(false)
-            : await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
-
-    /// <summary>
-    /// As <see cref="WithHardTimeoutAsync{T}(Task{T}, CancellationToken)"/>, but for a reserving
-    /// rule: an abandoned evaluation that completes later may still have taken capacity, so its
-    /// reservation is released rather than leaked.
-    /// </summary>
-    private async Task<RiskRuleReservationResult> WithHardTimeoutAsync(
-        Task<RiskRuleReservationResult> evaluation,
-        CancellationToken ct)
-    {
-        try
-        {
-            // As above: InfiniteTimeSpan removes the duration bound, not caller cancellation. And
-            // the abandonment cleanup below has to stay installed either way — a rule abandoned by
-            // cancellation can hand back a reservation just as one abandoned by timeout can.
-            return _perRuleTimeout == Timeout.InfiniteTimeSpan
-                ? await evaluation.WaitAsync(ct).ConfigureAwait(false)
-                : await evaluation.WaitAsync(_perRuleTimeout, ct).ConfigureAwait(false);
-        }
-        // Both paths abandon the evaluation before it hands its reservation back. Cancellation
-        // matters as much as timeout here: a rule that ignores its token still completes later, and
-        // the outer handler cannot release a reservation it was never given. Leaking one
-        // permanently consumes capacity, so repeated cancellations would starve the rule.
-        catch (Exception ex) when (ex is TimeoutException or OperationCanceledException)
-        {
-            // Do not await the abandoned evaluation, but do not leak whatever it reserved either.
-            //
-            // The rollback is guarded: this continuation is fire-and-forget, so a throwing
-            // Rollback would fault it unobserved, leave the slot pending indefinitely, and produce
-            // no diagnostic at all — the one leak with no trace back to a cause.
-            _ = evaluation.ContinueWith(
-                task =>
-                {
-                    try
-                    {
-                        task.Result.Reservation?.Rollback();
-                    }
-                    catch (Exception rollbackFailure)
-                    {
-                        TryLogSuppressed(
-                            rollbackFailure,
-                            "release of a reservation from an abandoned evaluation");
-                    }
-                },
-                CancellationToken.None,
-                TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
-
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Signals the rule's token when the evaluation is left behind, whether it timed out, was
-    /// cancelled, or threw. Declared after the source so that it disposes first — `using`
-    /// disposal runs in reverse declaration order — and cancellation is therefore requested while
-    /// the source is still alive.
-    /// </summary>
-    private static CancellationSignal AbandonOnExit(CancellationTokenSource? source) => new(source);
-
-    private readonly struct CancellationSignal(CancellationTokenSource? source) : IDisposable
-    {
-        public void Dispose()
-        {
-            try
+            return RiskValidationResult.Unmeasurable(
+                $"Risk rule '{rule.RuleName}' failed to evaluate; the order is refused because it could not be checked.") with
             {
-                source?.Cancel();
-            }
-            catch (ObjectDisposedException)
-            {
-                // Already torn down; the rule's token is dead either way.
-            }
+                Code = EvaluationFailedCode,
+            };
         }
+
+        // The timeout is applied to the await, not only to the token handed to the rule. Cancelling
+        // the token asks a cooperative rule to stop; it does nothing about one that ignores the
+        // token or blocks inside its task, and that is exactly the rule this ceiling exists for.
+        // WaitAsync abandons the wait either way, so the gate always returns.
+        Task<T> Bound<T>(Task<T> evaluation) => _perRuleTimeout == Timeout.InfiniteTimeSpan
+            ? evaluation.WaitAsync(ct)
+            : evaluation.WaitAsync(_perRuleTimeout, ct);
     }
 
     private CancellationTokenSource? CreateTimeoutSource(CancellationToken ct)
@@ -380,49 +356,25 @@ public sealed class CompositeRiskValidator : IRiskValidator
     }
 
     /// <summary>
-    /// Attributes a finding to its declaring rule, carrying that rule's declared severity and
-    /// nothing else. The finding's own code never influences severity — engine failures are
-    /// constructed at the point of failure instead.
+    /// Attributes a rule's refusal to the rule that raised it. Severity comes from the declaring
+    /// rule, never from the result, which is what stops a rule contradicting its own severity.
     /// </summary>
-    private static RiskViolation? ToViolation(IRiskRule rule, RiskFinding? finding) =>
-        finding is null
-            ? null
-            : new RiskViolation(
-                RuleName: rule.RuleName,
-                Severity: rule.Severity,
-                Code: finding.Code,
-                Message: finding.Message,
-                ObservedValue: finding.ObservedValue,
-                LimitValue: finding.LimitValue,
-                RequiresAcknowledgement: finding.RequiresAcknowledgement);
+    private static RiskViolation ToViolation(IRiskRule rule, RiskValidationResult result) =>
+        new(
+            RuleName: rule.RuleName,
+            Severity: result.Code == EvaluationFailedCode ? RiskRuleSeverity.Error : rule.Severity,
+            Code: result.Code ?? "RISK_REJECTED",
+            Message: string.IsNullOrWhiteSpace(result.RejectReason)
+                ? $"Rejected by risk rule '{rule.RuleName}'."
+                : result.RejectReason,
+            ObservedValue: result.ObservedValue,
+            LimitValue: result.LimitValue,
+            RequiresAcknowledgement: result.RequiresApproval);
 
     /// <summary>
-    /// Releases every reservation taken so far, continuing past any that fails.
-    /// <para>
-    /// Two reasons this neither stops nor throws. Stopping would leave a faulty rule's neighbours
-    /// pending, so one bad callback would permanently consume another rule's capacity. And this runs
-    /// on the failure path — inside the cancellation/evaluation-failure handler, and before a
-    /// rejection returns — where the original outcome is the caller's answer; replacing it with a
-    /// cleanup exception would hide why the order was actually blocked.
-    /// </para>
+    /// Releases every reservation, attempting all of them even if one throws. Stopping at the
+    /// first fault would strand the rest, which is the leak this exists to prevent.
     /// </summary>
-    /// <summary>
-    /// Logs a failure that must not propagate, without assuming the logger itself works. Callers use
-    /// this on paths where throwing would cost more than the lost diagnostic — releasing capacity,
-    /// or returning a decision the caller is waiting for.
-    /// </summary>
-    private void TryLogSuppressed(Exception failure, string what)
-    {
-        try
-        {
-            _logger.LogError(failure, "Pre-trade risk: {What} failed and was suppressed.", what);
-        }
-        catch
-        {
-            // The logger is the thing that failed. Nothing further is available or worth risking.
-        }
-    }
-
     private void RollbackAll(List<IRiskReservation> reservations)
     {
         foreach (var reservation in reservations)
@@ -433,9 +385,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
             }
             catch (Exception ex)
             {
-                // Guarded for the same reason the rollback is: this runs on the failure path, where
-                // a throwing logger would replace the outcome the caller is waiting for.
-                TryLogSuppressed(ex, "release of a reserved risk slot");
+                TryLogSuppressed(ex, "risk reservation rollback");
             }
         }
 
@@ -443,20 +393,223 @@ public sealed class CompositeRiskValidator : IRiskValidator
     }
 
     /// <summary>
-    /// Records the rejection. Both the symbol and the blocking reason can carry caller-supplied
-    /// text — rules embed the symbol in their reason — so both are rendered through
-    /// <see cref="ExecutionLogText"/> rather than handed to the logger raw.
+    /// Reports a failure that must never replace the decision being returned. The logger call is
+    /// itself guarded, because the provider is exactly what may be broken.
     /// </summary>
-    private void LogRejection(OrderRequest request, RiskValidationResult result)
+    private void TryLogSuppressed(Exception failure, string what)
     {
-        var blocking = result.BlockingViolation;
-        _logger.LogWarning(
-            "Pre-trade risk rejected order for {Symbol}: {RuleName} ({Severity}) {Code} — {Reason}. {ViolationCount} finding(s) total.",
-            ExecutionLogText.ForLog(request.Symbol),
-            blocking?.RuleName,
-            blocking?.Severity,
-            blocking?.Code,
-            ExecutionLogText.ForLog(blocking?.Message),
-            result.Violations.Count);
+        try
+        {
+            _logger.LogError(failure, "Suppressed failure during {What}", what);
+        }
+        catch
+        {
+            // Nothing left to report with.
+        }
     }
+
+    /// <summary>
+    /// Re-arms a consumed approval after an exceptional validation exit (cancellation or
+    /// a faulting rule): the release routed nothing, so the operator's decision must not
+    /// be lost to the fault.
+    /// </summary>
+    private void RestoreOnFault(IReadOnlyList<RiskEscalationEntry> releasedEntries)
+    {
+        if (_escalationQueue is null)
+        {
+            return;
+        }
+
+        foreach (var released in releasedEntries)
+        {
+            if (_escalationQueue.TryRestoreApproval(released.EscalationId))
+            {
+                _logger.LogInformation(
+                    "Governed approval {EscalationId} re-armed: validation exited before routing",
+                    released.EscalationId);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Re-arms a consumed approval when this evaluation did not approve the order: the
+    /// release routed nothing, so the operator's decision stays retryable once the
+    /// blocking condition clears. A successful evaluation keeps the token retired.
+    /// </summary>
+    private RiskValidationResult RestoreOnFailure(
+        RiskValidationResult result,
+        IReadOnlyList<RiskEscalationEntry> releasedEntries)
+    {
+        if (result.IsApproved || _escalationQueue is null)
+        {
+            return result;
+        }
+
+        foreach (var released in releasedEntries)
+        {
+            if (_escalationQueue.TryRestoreApproval(released.EscalationId))
+            {
+                _logger.LogInformation(
+                    "Governed approval {EscalationId} re-armed: the release was blocked before routing",
+                    released.EscalationId);
+            }
+        }
+
+        return result;
+    }
+
+    private static bool IsEvaluationOnly(OrderRequest request) =>
+        request.Metadata is not null &&
+        request.Metadata.TryGetValue(RiskEscalationQueueService.EvaluationOnlyMetadataKey, out var flag) &&
+        bool.TryParse(flag, out var evaluationOnly) &&
+        evaluationOnly;
+
+    private RiskValidationResult Escalate(
+        IRiskRule rule,
+        OrderRequest request,
+        string reason,
+        List<string>? warnings)
+    {
+        if (IsEvaluationOnly(request))
+        {
+            // Decision only: report that governed approval would be required, without
+            // parking an entry no one could release.
+            _logger.LogInformation(
+                "Risk rule {RuleName} would escalate this evaluation; no queue entry parked (evaluation-only)",
+                rule.RuleName);
+            return WithWarnings(
+                RiskValidationResult.Escalated($"Would require governed approval: {reason}", escalationId: null),
+                warnings);
+        }
+
+        if (_escalationQueue is null)
+        {
+            // No governed approval queue in this composition: fail closed as a plain rejection.
+            _logger.LogWarning(
+                "Risk rule {RuleName} escalated the order but no approval queue is configured; rejecting",
+                rule.RuleName);
+            return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
+        }
+
+        // Retain the trusted submitting actor (stamped into metadata by the execution
+        // endpoint) so segregation-of-duties checks can refuse self-approval later.
+        string? actor = null;
+        request.Metadata?.TryGetValue("actor", out actor);
+        string? correlationId = null;
+        request.Metadata?.TryGetValue("correlationId", out correlationId);
+        // Live runs stamp their unique run id into metadata; StrategyId only names the
+        // reusable strategy definition, which would conflate every run of that strategy.
+        string? runId = null;
+        request.Metadata?.TryGetValue("runId", out runId);
+
+        RiskEscalationEntry entry;
+        try
+        {
+            entry = _escalationQueue.Park(
+                request,
+                reason,
+                ruleName: rule.RuleName,
+                actor: actor,
+                runId: string.IsNullOrWhiteSpace(runId) ? request.StrategyId : runId,
+                correlationId: correlationId);
+        }
+        catch (Exception exception)
+        {
+            // The queue refused to park durably. Fail closed as a plain rejection rather
+            // than reporting an escalation id no operator will ever find.
+            _logger.LogError(
+                exception,
+                "Risk rule {RuleName} escalated the order but it could not be parked durably; rejecting",
+                rule.RuleName);
+            return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
+        }
+        _logger.LogWarning(
+            "Risk rule {RuleName} parked the order for governed approval ({EscalationId})",
+            rule.RuleName,
+            entry.EscalationId);
+        return WithWarnings(
+            RiskValidationResult.Escalated(
+                $"Parked for governed approval ({entry.EscalationId}): {reason}",
+                entry.EscalationId),
+            warnings);
+    }
+
+    private async Task TripCircuitBreakerAsync(IRiskRule rule, string reason, CancellationToken ct)
+    {
+        if (_operatorControls is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_operatorControls.GetSnapshot().CircuitBreaker.IsOpen)
+            {
+                return;
+            }
+
+            // The halt is a system-wide promise, not part of this client's request: a
+            // caller disconnecting mid-persist must never silently drop it, so the trip
+            // runs on its own token.
+            await _operatorControls.SetCircuitBreakerAsync(
+                isOpen: true,
+                reason: $"Tripped by critical risk rule '{rule.RuleName}': {reason}",
+                changedBy: $"risk-engine/{rule.RuleName}",
+                ct: CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            // The order rejection stands regardless, and the halt promise must too: latch
+            // fail-closed so every subsequent order is rejected until the trip lands. This
+            // covers cancellation as well — the latch is recorded before the exception
+            // propagates, so an interrupted trip still halts routing.
+            _breakerTripReason = $"Tripped by critical risk rule '{rule.RuleName}': {reason}";
+            _breakerTripPending = true;
+            _logger.LogError(
+                exception,
+                "Failed to trip execution circuit breaker after critical risk rule {RuleName}; the risk engine is now failing closed until the trip succeeds",
+                rule.RuleName);
+
+            // The latch above lives only in this process. Record the demanded halt where a
+            // restart can find it, or a process recycle before the retry succeeds would
+            // reload the stale closed snapshot and resume routing under an unresolved
+            // critical breach.
+            await _operatorControls
+                .TryRecordPendingCircuitBreakerTripAsync(_breakerTripReason, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private async Task TryApplyPendingBreakerTripAsync(CancellationToken ct)
+    {
+        if (_operatorControls is null)
+        {
+            // No controls to trip: the latch itself is the halt.
+            return;
+        }
+
+        try
+        {
+            if (_operatorControls.GetSnapshot().CircuitBreaker.IsOpen)
+            {
+                _breakerTripPending = false;
+                return;
+            }
+
+            await _operatorControls.SetCircuitBreakerAsync(
+                isOpen: true,
+                reason: _breakerTripReason,
+                changedBy: "risk-engine/fail-closed-retry",
+                ct: CancellationToken.None).ConfigureAwait(false);
+            _breakerTripPending = false;
+            _logger.LogInformation("Pending critical circuit-breaker trip applied; fail-closed latch released");
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Retry of the pending circuit-breaker trip failed; the risk engine remains fail-closed");
+        }
+    }
+
+    private static RiskValidationResult WithWarnings(RiskValidationResult result, List<string>? warnings) =>
+        warnings is { Count: > 0 } ? result with { Warnings = warnings } : result;
 }

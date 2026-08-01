@@ -3,6 +3,7 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Ui.Tests.Services;
 
+[Collection("ApiClientService singleton serial")]
 public class TimeSeriesAlignmentServiceTests
 {
     private readonly TimeSeriesAlignmentService _service = TimeSeriesAlignmentService.Instance;

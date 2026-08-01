@@ -3,17 +3,18 @@
 
 Caller-supplied order text — the client order id, the symbol, the strategy id, and
 identifiers echoed back on gateway reports — must pass through
-``ExecutionLogText.ForLog`` before reaching a logger. ``OrderRequest.ClientOrderId``
+``LogSanitizer.Sanitize`` before reaching a logger. ``OrderRequest.ClientOrderId``
 and ``Symbol`` are submitted values that nothing upstream is required to constrain
 (the Security Master gate is optional), so a line break in either would render as an
 extra line in a text sink and let a submitter forge execution log entries.
 
-This exists because ``cs/log-forging`` is filtered in ``.github/codeql/codeql-config.yml``:
-that query reports log sites *reached by* user input rather than unsanitized ones and
-does not model the sanitizer, so it cannot tell a fixed call site from an unfixed one.
-This check is the compensating control the exclusion rests on. Twice during PR #2554 an
-ad-hoc grep was declared clean and was not, both times because the pattern list below
-was too narrow — keep it here, in review, rather than in anyone's head.
+``LogSanitizer.Sanitize`` neutralizes line endings through ``String.Replace``, which
+CodeQL models as a barrier, so ``cs/log-forging`` recognizes a sanitized call site and no
+query filter is needed. This check covers what the query does not: it fails on a *missing*
+sanitizer call in this module rather than on a reachable one, so a new raw log site is
+caught in review even where the query is not run. Twice during PR #2554 an ad-hoc grep was
+declared clean and was not, both times because the pattern list below was too narrow —
+keep it here, in review, rather than in anyone's head.
 
 Usage:
     python3 build/scripts/check-execution-log-sanitization.py [--list]
@@ -62,7 +63,7 @@ def findings(repo: pathlib.Path) -> list[tuple[str, int, str]]:
                     # Bare argument positions only: preceded by ( or , and followed by , or ).
                     for arg in re.finditer(r"(?<=[,(])\s*(" + pattern + r")\s*[,)]", block):
                         expression = arg.group(1)
-                        if f"ForLog({expression})" not in block:
+                        if f"Sanitize({expression})" not in block:
                             rel = path.relative_to(repo).as_posix()
                             found.append((rel, line, expression))
     return found
@@ -89,12 +90,11 @@ def main() -> int:
         print("Execution log sanitization: OK — no caller-supplied value reaches a logger unsanitized.")
         return 0
 
-    print("Execution log sanitization FAILED. Wrap each value in ExecutionLogText.ForLog(...):")
+    print("Execution log sanitization FAILED. Wrap each value in LogSanitizer.Sanitize(...):")
     for rel, line, expression in found:
         print(f"  {rel}:{line}  {expression}")
     print(
-        "\nSee src/Meridian.Execution/README.md for the invariant, and "
-        ".github/codeql/codeql-config.yml for why this check exists."
+        "\nSee src/Meridian.Execution/README.md for the invariant this enforces."
     )
     return 1
 

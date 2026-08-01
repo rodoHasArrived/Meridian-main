@@ -93,11 +93,11 @@ public sealed class OrderRateThrottle : IReservingRiskRule
     /// Not used: this rule reserves capacity, which must happen inside
     /// <see cref="EvaluateAndReserveAsync"/> so the check and the consumption stay atomic.
     /// </summary>
-    public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+    public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(Evaluate(reserve: false).Finding);
+        return Task.FromResult(Evaluate(reserve: false).Result);
     }
 
     /// <inheritdoc />
@@ -130,25 +130,27 @@ public sealed class OrderRateThrottle : IReservingRiskRule
                     maxOrdersPerMinute);
 
                 return new RiskRuleReservationResult(
-                    new RiskFinding(
-                        Code: RateExceededCode,
-                        Message: string.Create(
+                    RiskValidationResult.Rejected(
+                        string.Create(
                             CultureInfo.InvariantCulture,
-                            $"Order rate limit: {count} orders/min reaches the {maxOrdersPerMinute} order ceiling."),
-                        ObservedValue: count,
-                        LimitValue: maxOrdersPerMinute),
+                            $"Order rate limit: {count} orders/min reaches the {maxOrdersPerMinute} order ceiling.")) with
+                    {
+                        Code = RateExceededCode,
+                        ObservedValue = count,
+                        LimitValue = maxOrdersPerMinute,
+                    },
                     Reservation: null);
             }
 
             if (!reserve)
             {
-                return new RiskRuleReservationResult(Finding: null, Reservation: null);
+                return new RiskRuleReservationResult(RiskValidationResult.Approved(), Reservation: null);
             }
 
             var id = ++_nextReservationId;
             _pending.Add(id);
             return new RiskRuleReservationResult(
-                Finding: null,
+                RiskValidationResult.Approved(),
                 Reservation: new SlotReservation(this, id));
         }
     }

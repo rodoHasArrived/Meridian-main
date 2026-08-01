@@ -349,14 +349,52 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
+        // Cross-strategy portfolio aggregation: the registry tracks every active run's
+        // portfolio; the host paper portfolio is pre-registered so the aggregate surface
+        // (and the exposure feed below) reflects the workstation book even before
+        // strategy runs register their own portfolios.
+        services.TryAddSingleton<PortfolioRegistry>(sp =>
+        {
+            var registry = new PortfolioRegistry();
+            if (sp.GetService<Meridian.Execution.Models.IPortfolioState>() is
+                Meridian.Execution.Models.IMultiAccountPortfolioState hostPortfolio)
+            {
+                registry.Register("workstation-paper", hostPortfolio);
+            }
+
+            return registry;
+        });
+        services.TryAddSingleton<IAggregatePortfolioService, AggregatePortfolioService>();
+        // Exposure feed for the portfolio-aware rules: sourced from the same aggregation
+        // service the Portfolio workspace reports, so enforcement and display agree.
+        services.TryAddSingleton<Meridian.Risk.IPortfolioExposureProvider>(sp =>
+            new AggregatePortfolioExposureProvider(
+                sp.GetRequiredService<IAggregatePortfolioService>(),
+                sp.GetService<Meridian.Execution.Models.IPortfolioState>(),
+                sp.GetService<PortfolioRegistry>(),
+                sp.GetService<Meridian.Domain.Collectors.QuoteCollector>(),
+                sp.GetService<Meridian.Domain.Collectors.TradeDataCollector>(),
+                // Lazy accessor, not a constructor dependency: the OMS depends on the risk
+                // validator that consumes this provider, so resolving it eagerly would
+                // close a DI cycle. Working orders still reserve their exposure.
+                orderManagerAccessor: sp.GetService<Meridian.Execution.Sdk.IOrderManager>));
+        // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
+        // Queue transitions persist atomically so parked approvals survive restarts.
+        services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(
+            sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RiskEscalationQueueService>>(),
+            sp.GetService<ExecutionAuditTrailService>(),
+            sp.GetService<RiskEscalationQueueOptions>()));
         // Enforced pre-trade risk path: Meridian.Risk's CompositeRiskValidator is the
         // IRiskValidator the OMS invokes before routing an order, composed of the operator-tuned
         // guardrails (thresholds sourced live from RiskRuleRuntimeService and the operator
         // controls, so the dashboard and the enforcement can never disagree) plus any additional
         // IRiskRule registrations a host contributes. Rules run in registration order: drawdown
-        // circuit breaker, order-rate throttle, then the position-limit back-stop (position
+        // circuit breaker, order-rate throttle, the position-limit back-stop (position
         // limits are also enforced upstream by the operator-controls gate with its
-        // manual-override semantics).
+        // manual-override semantics), then the portfolio-aware gross-exposure,
+        // symbol-concentration, and order-notional rules fed from the aggregate portfolio.
+        // Severities map to real outcomes: Warning flags, Error rejects, Escalate parks the
+        // order in the governed-approval queue, Critical also trips the execution circuit breaker.
         services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
         {
             var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
@@ -375,19 +413,36 @@ public static class WorkstationServiceCollectionExtensions
                 orderRateThrottle,
             };
 
+            var operatorControls = sp.GetService<Meridian.Execution.Services.ExecutionOperatorControlService>();
             if (sp.GetService<Meridian.Execution.Sdk.IPositionTracker>() is { } positionTracker)
             {
-                var operatorControls = sp.GetService<Meridian.Execution.Services.ExecutionOperatorControlService>();
                 rules.Add(new Meridian.Risk.Rules.PositionLimitRule(
                     positionTracker,
                     () => operatorControls?.GetSnapshot().DefaultMaxPositionSize,
                     sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>()));
             }
 
+            var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();
+            rules.Add(new Meridian.Risk.Rules.GrossExposureRule(
+                exposureProvider,
+                () => runtime.MaxGrossExposure,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.GrossExposureRule>>()));
+            rules.Add(new Meridian.Risk.Rules.SymbolConcentrationRule(
+                exposureProvider,
+                () => runtime.MaxSymbolConcentrationPercent,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.SymbolConcentrationRule>>()));
+            rules.Add(new Meridian.Risk.Rules.OrderNotionalRule(
+                exposureProvider,
+                () => runtime.MaxOrderNotional,
+                () => runtime.EscalateOrderNotional,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.OrderNotionalRule>>()));
+
             rules.AddRange(sp.GetServices<Meridian.Risk.IRiskRule>());
             return new Meridian.Risk.CompositeRiskValidator(
                 rules,
-                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.CompositeRiskValidator>>());
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.CompositeRiskValidator>>(),
+                operatorControls,
+                sp.GetService<RiskEscalationQueueService>());
         });
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();

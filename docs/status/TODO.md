@@ -25,7 +25,7 @@ Total items: **230**
 | `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 854 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 176 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
-| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 273 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
+| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 274 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 100 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildInitialRunAuditNote(run), |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 588 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildRestatementDraftAuditNote(draftRun), |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 617 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildRestatementApprovalAuditNote(approvedRequest), |
@@ -88,14 +88,14 @@ Total items: **230**
 | `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 885 | `NOTE` | ❌ | note: "Promote ready rows", |
 | `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 895 | `NOTE` | ❌ | note: "Reviewed" |
 | `src/Meridian.Ui/dashboard/src/lib/daily-control-tower.test.ts` | 75 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 682 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 696 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1348 | `NOTE` | ❌ | note: "Board portal delivery." |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1354 | `NOTE` | ❌ | note: "Investor email-link delivery." |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1376 | `NOTE` | ❌ | note: "Board portal delivery.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1400 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1505 | `NOTE` | ❌ | note: "pricing-correction" |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 2191 | `NOTE` | ❌ | note: "Fixture handoff retained after identity review.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 674 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 688 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1340 | `NOTE` | ❌ | note: "Board portal delivery." |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1346 | `NOTE` | ❌ | note: "Investor email-link delivery." |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1368 | `NOTE` | ❌ | note: "Board portal delivery.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1392 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1497 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 2183 | `NOTE` | ❌ | note: "Fixture handoff retained after identity review.", |
 | `src/Meridian.Ui/dashboard/src/lib/notification-center/merge.test.ts` | 47 | `NOTE` | ❌ | note: null, |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 146 | `NOTE` | ❌ | note: alert.note |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 248 | `NOTE` | ❌ | note: draft.note?.trim() ? draft.note.trim() : null, |
@@ -198,7 +198,7 @@ Total items: **230**
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 429 | `NOTE` | ❌ | note: "Close evidence reviewed." |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 437 | `NOTE` | ❌ | note: "Published to investor portal." |
 | `src/Meridian.Ui/dashboard/src/types/reporting-governance.ts` | 124 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/types/workstation-3.ts` | 1057 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/types/workstation-3.ts` | 1066 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 683 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1039 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1133 | `NOTE` | ❌ | note: string \| null; |

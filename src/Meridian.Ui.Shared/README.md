@@ -2071,6 +2071,21 @@ for each held asset class, so a provider that supports positions generally but l
 asset-class or valuation-mark history records review-grade capability breaks before close
 readiness treats the evidence as clean.
 
+`RiskEndpoints` exposes the governed-approval queue for orders parked by an `Escalate`-severity
+rule. `/api/risk/escalations` filters fund-scoped entries to the caller's scoped `ManageOrders`
+authority; approve and deny both require a written rationale, which is retained with the decision,
+and a release re-checks the approver's scoped authority because it bypasses `/orders/submit`.
+Segregation of duties is enforced against the retained submitter. `/api/risk/rules` and
+`/api/risk/rules/{name}/status` require `ViewTrades`: rule status carries aggregate gross exposure
+across every registered portfolio and violation reasons that can name traded symbols, so they are
+trade reads rather than configuration reads. Order submission and the position close/upsize actions
+answer 202 with a `PendingApproval` outcome for a parked order rather than 400, so operators do not
+read a park as a failure and resubmit — each resubmission mints a new client order id.
+`AggregatePortfolioExposureProvider` feeds the portfolio-aware rules from the same aggregated
+cross-run positions the Portfolio workspace reports, valuing them at live marks only while those
+marks are fresh, reserving accepted-but-unfilled orders, and reporting option reference prices per
+contract while keeping the contract multiplier in exposure totals.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.

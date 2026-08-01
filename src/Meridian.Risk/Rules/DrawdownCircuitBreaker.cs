@@ -1,3 +1,4 @@
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -33,7 +34,7 @@ public sealed class DrawdownCircuitBreaker : IRiskRule
     public RiskRuleSeverity Severity => RiskRuleSeverity.Critical;
 
     /// <inheritdoc />
-    public Task<RiskFinding?> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+    public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
@@ -56,8 +57,8 @@ public sealed class DrawdownCircuitBreaker : IRiskRule
             var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
             _logger.LogWarning(
                 "Circuit breaker triggered for {Symbol}: {Reason}",
-                ExecutionLogText.ForLog(request.Symbol),
-                ExecutionLogText.ForLog(reason));
+                LogSanitizer.Sanitize(request.Symbol),
+                LogSanitizer.Sanitize(reason));
 
             // Report the drawdown percentage, not the portfolio's currency value: observed and
             // limit have to be in the same units or the recorded evidence reads as though a
@@ -66,14 +67,15 @@ public sealed class DrawdownCircuitBreaker : IRiskRule
                 ? ((_initialCapital - portfolioValue) / _initialCapital) * 100m
                 : (decimal?)null;
 
-            return Task.FromResult<RiskFinding?>(new RiskFinding(
-                Code: escalated ? "DRAWDOWN_CIRCUIT_BREAKER_ESCALATED" : "DRAWDOWN_CIRCUIT_BREAKER_TRIPPED",
-                Message: reason,
-                ObservedValue: drawdownPercent,
-                LimitValue: _maxDrawdownPercent,
-                RequiresAcknowledgement: escalated));
+            return Task.FromResult(RiskValidationResult.Rejected(reason) with
+            {
+                Code = escalated ? "DRAWDOWN_CIRCUIT_BREAKER_ESCALATED" : "DRAWDOWN_CIRCUIT_BREAKER_TRIPPED",
+                ObservedValue = drawdownPercent,
+                LimitValue = _maxDrawdownPercent,
+                RequiresApproval = escalated,
+            });
         }
 
-        return Task.FromResult<RiskFinding?>(null);
+        return Task.FromResult(RiskValidationResult.Approved());
     }
 }

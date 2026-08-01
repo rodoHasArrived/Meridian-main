@@ -1,0 +1,924 @@
+using System.Globalization;
+using Meridian.Execution.Events;
+using Meridian.Execution.Logging;
+using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
+using Microsoft.Extensions.Logging;
+
+namespace Meridian.Execution;
+
+/// <summary>
+/// Risk-outcome handling for the OMS pre-trade gate: the typed parked outcome for
+/// governed-approval escalations and the durable retention of non-blocking risk warning
+/// flags on both approved and rejected orders.
+/// </summary>
+public sealed partial class OrderManagementSystem
+{
+    /// <summary>
+    /// Terminal handling for an order a risk escalation parked for governed approval: the
+    /// order does not route, its tracked state mirrors a rejection (nothing is live at the
+    /// broker), but the audit action and typed result distinguish "awaiting approval" from
+    /// "rejected" so operators and downstream status surfaces do not count it as a breach.
+    /// </summary>
+    private async Task<OrderResult> ParkOrderForApprovalAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        RiskValidationResult riskResult,
+        string? sessionId,
+        CancellationToken ct)
+    {
+        var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason);
+
+        // The tracked state is terminal (nothing is working at the broker), but the client
+        // order id must not be reclaimable while the approval is live: another submission
+        // could take the id and later collide with the released order. Reserve it against
+        // the escalation so only that escalation's own release can reuse it.
+        if (riskResult.EscalationId is { } escalationId)
+        {
+            _parkedOrderIds[orderId] = escalationId;
+        }
+        if (_orders.TryAdd(orderId, parkedState))
+        {
+            TrimRetainedOrdersIfNeeded();
+        }
+
+        // The escalation is already committed to the governed queue and an operator can
+        // act on it, so post-park bookkeeping must never turn that committed outcome into
+        // a failed submission — the submitter would then never learn the order is parked
+        // while the queue entry stays releasable. Session persistence and the audit append
+        // are best-effort here; both failures are logged, not propagated.
+        try
+        {
+            await RecordSessionOrderUpdateAsync(sessionId, parkedState, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Order {OrderId} parked for approval, but its paper-session update could not be recorded",
+                LogSanitizer.Sanitize(orderId));
+        }
+
+        _logger.LogWarning(
+            "Order {OrderId} parked for governed risk approval ({EscalationId})",
+            LogSanitizer.Sanitize(orderId),
+            LogSanitizer.Sanitize(riskResult.EscalationId));
+
+        if (_auditTrail is not null)
+        {
+            var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["escalationId"] = riskResult.EscalationId ?? string.Empty
+            };
+            AppendRiskWarningsMetadata(metadata, riskResult.Warnings);
+
+            try
+            {
+                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                    AuditId: Guid.NewGuid().ToString("N"),
+                    Category: "Risk",
+                    Action: "OrderParkedForApproval",
+                    Outcome: "Parked",
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    Actor: actor,
+                    BrokerName: brokerName,
+                    OrderId: orderId,
+                    RunId: runId,
+                    Symbol: request.Symbol,
+                    CorrelationId: correlationId,
+                    Message: riskResult.RejectReason,
+                    Reason: "RISK_ESCALATION_PARKED",
+                    Scope: BuildOrderAuditScope(request, runId),
+                    Metadata: metadata), CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(
+                    exception,
+                    "Order {OrderId} parked for approval, but the parking audit entry could not be recorded",
+                    LogSanitizer.Sanitize(orderId));
+            }
+        }
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = riskResult.RejectReason,
+            OrderState = parkedState,
+            RequiresApproval = true,
+            EscalationId = riskResult.EscalationId,
+            RiskWarnings = riskResult.Warnings.Count > 0 ? riskResult.Warnings : null
+        };
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<OrderState> GetExposureReservingOrders()
+    {
+        var reserving = new List<OrderState>(GetOpenOrders());
+
+        // A fill flips the tracked order terminal before ProcessFillReportAsync applies it
+        // to the portfolio. Reports whose precise increment is not tracked yet reserve
+        // their whole reported fill; once tracked, the increment below supersedes them.
+        foreach (var pending in _pendingFillReservations.Values)
+        {
+            if (_fillProcessing.ContainsKey(pending) || pending.FilledQuantity <= 0m)
+            {
+                continue;
+            }
+
+            reserving.Add(BuildHandoffReservation(
+                pending.ClientOrderId ?? pending.OrderId,
+                pending.Symbol,
+                pending.Side,
+                pending.FilledQuantity,
+                pending.FillPrice,
+                pending.Timestamp));
+        }
+
+        // During that window the exposure exists at the broker but sits in neither book,
+        // so surface the un-applied increment as a reservation.
+        foreach (var progress in _fillProcessing.Values)
+        {
+            if (progress.PortfolioApplied)
+            {
+                continue;
+            }
+
+            var increment = progress.FillIncrement;
+            if (increment.FilledQuantity <= 0m)
+            {
+                continue;
+            }
+
+            reserving.Add(BuildHandoffReservation(
+                increment.ClientOrderId ?? increment.OrderId,
+                increment.Symbol,
+                increment.Side,
+                increment.FilledQuantity,
+                increment.FillPrice,
+                increment.Timestamp));
+        }
+
+        return reserving;
+    }
+
+    /// <summary>
+    /// Reservation standing in for a fill that has left the order book but not yet reached
+    /// the portfolio. It carries the tracked order's derivative sizing: without it a
+    /// 100-contract fill at $5 reserves $500 instead of $50,000 during precisely the window
+    /// this reservation exists to cover.
+    /// </summary>
+    /// <summary>
+    /// Whether the order carries broker-native notional sizing metadata that this gateway
+    /// will not route. Every rail that measures an order's economic size reads the routed
+    /// notional from that metadata, so on a gateway that routes <c>Quantity</c> instead,
+    /// <c>notional=1</c> on a 100,000-share order is measured as a one-dollar order by the
+    /// order-notional, gross-exposure, and concentration rules while the broker fills all
+    /// 100,000 shares. Refusing beats measuring one size and routing another.
+    /// </summary>
+    private bool CarriesUnroutableNotionalMetadata(OrderRequest request) =>
+        BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null &&
+        _notionalSizingGateway?.RoutesNotionalMetadata(request) is not true;
+
+    private static string UnroutableNotionalMetadataReason(string brokerName) =>
+        $"Broker-native notional sizing metadata is not supported by {brokerName}; this gateway "
+            + "routes order quantity. Remove the notional metadata and size the order in quantity.";
+
+    private OrderState BuildHandoffReservation(
+        string orderId,
+        string symbol,
+        OrderSide side,
+        decimal filledQuantity,
+        decimal? fillPrice,
+        DateTimeOffset timestamp)
+    {
+        _orders.TryGetValue(orderId, out var tracked);
+        return new OrderState
+        {
+            OrderId = orderId,
+            Symbol = symbol,
+            Side = side,
+            Type = OrderType.Market,
+            Quantity = filledQuantity,
+            LimitPrice = fillPrice,
+            Status = OrderStatus.PendingNew,
+            CreatedAt = timestamp,
+            ContractMultiplier = tracked?.ContractMultiplier ?? 1m,
+            OptionContract = tracked?.OptionContract,
+            Legs = tracked?.Legs
+        };
+    }
+
+    /// <summary>
+    /// Rebuilds the client-order-id reservations held by escalations that survived a
+    /// restart. The queue is durable but this map is not: without this, a resubmission
+    /// under a parked order's client order id would find the id free, route, and reach a
+    /// terminal state, after which the still-live escalation could be approved and route a
+    /// second execution under the same id — two orders sharing one order's audit history.
+    /// </summary>
+    private void RehydrateParkedOrderReservations()
+    {
+        if (_escalationQueue is null)
+        {
+            return;
+        }
+
+        var reclaimed = 0;
+        foreach (var entry in _escalationQueue.GetUnresolved())
+        {
+            if (entry.Request.ClientOrderId is not { Length: > 0 } clientOrderId)
+            {
+                continue;
+            }
+
+            if (_parkedOrderIds.TryAdd(clientOrderId, entry.EscalationId))
+            {
+                reclaimed++;
+            }
+        }
+
+        if (reclaimed > 0)
+        {
+            _logger.LogInformation(
+                "Reserved {Count} client order id(s) held by governed approvals that outlived the previous host",
+                reclaimed);
+        }
+    }
+
+    /// <summary>
+    /// Contract multiplier an order's fills carry: the notional one unit of quantity
+    /// represents. Equity options are 100 across every venue Meridian routes to, so an
+    /// option order with no adapter-stamped multiplier still measures as contracts rather
+    /// than shares. A multi-leg order takes the largest of its legs, which cannot
+    /// under-measure the position the fills open.
+    /// </summary>
+    private static decimal ResolveContractMultiplier(OrderRequest request)
+    {
+        const decimal defaultOptionMultiplier = 100m;
+
+        static decimal FromContract(OptionContractIdentity? contract)
+        {
+            if (contract is null)
+            {
+                return 1m;
+            }
+
+            return decimal.TryParse(
+                contract.Multiplier,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var parsed) && parsed > 0m
+                ? parsed
+                : defaultOptionMultiplier;
+        }
+
+        var multiplier = FromContract(request.OptionContract);
+        if (request.Legs is { Count: > 0 } legs)
+        {
+            foreach (var leg in legs)
+            {
+                multiplier = Math.Max(multiplier, FromContract(leg.OptionContract));
+            }
+        }
+
+        return multiplier;
+    }
+
+    /// <summary>
+    /// Frees the client-order-id reservation an escalation held, once its released order is
+    /// actually registered. From that point the tracked order guards the id itself, so the
+    /// reservation has nothing left to protect — but until then it must stand, because every
+    /// gate between the duplicate check and registration can still refuse the release while
+    /// the approval remains armed.
+    /// </summary>
+    private void ReleaseParkedOrderReservation(string orderId) => _parkedOrderIds.TryRemove(orderId, out _);
+
+    /// <inheritdoc />
+    public bool WasRiskApprovalDeclined(string orderId)
+    {
+        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId))
+        {
+            // Never parked, or the escalation's own release already reclaimed the id — in
+            // which case the order routed and the report stream owns it from here.
+            return false;
+        }
+
+        var entry = _escalationQueue?.TryGet(escalationId);
+        if (entry is not null && entry.Status is not RiskEscalationStatus.Denied)
+        {
+            return false;
+        }
+
+        // A denied escalation can never be released, so the reservation on this client
+        // order id is dead too; drop it here rather than waiting for the next placement
+        // to clear it lazily.
+        _parkedOrderIds.TryRemove(orderId, out _);
+        return true;
+    }
+
+    /// <summary>
+    /// Withdraws every live parked escalation, for an emergency cancel-all. A parked order
+    /// is tracked in a terminal state and so is absent from the open book, which means the
+    /// ordinary cancel-all sweep never reaches it — leaving escalations that can still be
+    /// released to the broker after cancellation reports completion.
+    /// </summary>
+    private async Task WithdrawAllParkedEscalationsAsync(CancellationToken ct)
+    {
+        var parkedOrderIds = _parkedOrderIds.Keys.ToArray();
+        if (parkedOrderIds.Length == 0)
+        {
+            return;
+        }
+
+        _logger.LogInformation(
+            "Cancel-all is withdrawing {ParkedCount} parked escalation(s)",
+            parkedOrderIds.Length);
+
+        foreach (var parkedOrderId in parkedOrderIds)
+        {
+            var withdrawn = await TryCancelParkedOrderAsync(parkedOrderId, ct).ConfigureAwait(false);
+            if (withdrawn is null or { Success: false })
+            {
+                _logger.LogError(
+                    "Cancel-all could not withdraw the governed escalation holding order {OrderId}; it remains releasable",
+                    LogSanitizer.Sanitize(parkedOrderId));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Cancels an order awaiting governed approval: the escalation is withdrawn so no
+    /// operator can later execute an order the submitter cancelled, and the cancellation
+    /// completes locally because no broker order exists. Returns null when the order is
+    /// not parked, leaving the ordinary gateway cancellation to run.
+    /// </summary>
+    private async Task<OrderResult?> TryCancelParkedOrderAsync(string orderId, CancellationToken ct)
+    {
+        if (TryWithdrawParkedEscalation(orderId) is not { } withdrawnState)
+        {
+            return null;
+        }
+
+        await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), withdrawnState, ct).ConfigureAwait(false);
+        await RecordOrderLifecycleAuditAsync(
+            action: "OrderCancelled",
+            outcome: OrderStatus.Cancelled.ToString(),
+            orderId: orderId,
+            state: withdrawnState,
+            report: null,
+            message: "Cancelled while awaiting governed approval; the escalation was withdrawn.",
+            ct: ct).ConfigureAwait(false);
+
+        return new OrderResult { Success = true, OrderId = orderId, OrderState = withdrawnState };
+    }
+
+    /// <summary>
+    /// Withdraws the governed-approval escalation holding <paramref name="orderId"/>, if
+    /// any, and marks the tracked order cancelled. Returns the cancelled state when the
+    /// order was parked (so the caller completes the cancellation locally), or null when
+    /// the order is not awaiting approval.
+    /// </summary>
+    private OrderState? TryWithdrawParkedEscalation(string orderId)
+    {
+        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId) || _escalationQueue is null)
+        {
+            return null;
+        }
+
+        var entry = _escalationQueue.TryGet(escalationId);
+        if (entry is null || entry.Status is not RiskEscalationStatus.PendingApproval and not RiskEscalationStatus.Approved)
+        {
+            // Already resolved: nothing to withdraw, and the id is free.
+            _parkedOrderIds.TryRemove(orderId, out _);
+            return null;
+        }
+
+        // Withdraw, not Deny: an operator may already have approved without releasing, and
+        // a plain denial only resolves pending entries. Fail closed on the result — if the
+        // entry survives, the escalation can still route, so this cancellation must not
+        // report success or drop the reservation that keeps its client order id.
+        if (_escalationQueue.Withdraw(
+                escalationId,
+                actor: "order-management-system",
+                reason: "The submitter cancelled the order while it awaited governed approval.") is null)
+        {
+            _logger.LogWarning(
+                "Order {OrderId} could not be cancelled: escalation {EscalationId} could not be withdrawn",
+                LogSanitizer.Sanitize(orderId),
+                escalationId);
+            return null;
+        }
+
+        _parkedOrderIds.TryRemove(orderId, out _);
+
+        if (!_orders.TryGetValue(orderId, out var state))
+        {
+            return null;
+        }
+
+        var cancelled = state with
+        {
+            Status = OrderStatus.Cancelled,
+            LastUpdatedAt = DateTimeOffset.UtcNow
+        };
+        _orders[orderId] = cancelled;
+        _logger.LogInformation(
+            "Order {OrderId} cancelled while parked; escalation {EscalationId} withdrawn",
+            LogSanitizer.Sanitize(orderId),
+            escalationId);
+        return cancelled;
+    }
+
+    /// <summary>
+    /// True when <paramref name="orderId"/> is reserved by a live escalation that
+    /// <paramref name="request"/> is not the authorized release for. The release carries the
+    /// escalation's approval token; anything else must not reclaim the id. A reservation
+    /// whose escalation is no longer actionable (denied, or already released) is cleared.
+    /// </summary>
+    private bool IsReservedByLiveEscalation(string orderId, OrderRequest request)
+    {
+        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId))
+        {
+            return false;
+        }
+
+        var entry = _escalationQueue?.TryGet(escalationId);
+        if (entry is null ||
+            entry.Status is RiskEscalationStatus.Denied or RiskEscalationStatus.Released)
+        {
+            _parkedOrderIds.TryRemove(orderId, out _);
+            return false;
+        }
+
+        // Only an APPROVED escalation's release may pass. The token is just the escalation
+        // id, which the submitter already received in their own parked response; honouring
+        // it while the entry is still pending would let them resubmit, and if the market or
+        // the configured threshold had since moved so the rule no longer escalates, the
+        // order would route with no operator decision behind it at all.
+        //
+        // The reservation is NOT dropped here. Several gates still stand between this check
+        // and the approval actually being consumed — placement, live readiness, operator
+        // controls, security master — and any of them can refuse the release while the
+        // approval stays armed. Freeing the id now would let a tokenless retry take it and
+        // execute, after which the original approval could still release a second order
+        // under the same id. ReleaseParkedOrderReservation clears it once the order is
+        // registered, and the live order itself guards the id from then on.
+        return entry.Status != RiskEscalationStatus.Approved ||
+            request.Metadata is null ||
+            !request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var tokens) ||
+            !RiskEscalationQueueService.SplitTokens(tokens).Contains(escalationId, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Re-arms every governed approval consumed by a validation whose order never routed.
+    /// The consumed value is a token set — an order can carry one approval per
+    /// escalation-capable rule — so each id is restored individually.
+    /// </summary>
+    /// <param name="rearmedOrderId">
+    /// Client order id to re-reserve alongside the approval, for a release submission that
+    /// did not route. Registration drops the parked reservation as soon as the order claims
+    /// its own id, so re-arming the approval without it leaves the approval releasable while
+    /// the submitter can no longer cancel it — the parked-order path cannot find the id —
+    /// and the now-terminal tracked state lets an unrelated submission reclaim that id.
+    /// Omitted for amendments: there the order is working rather than parked, so the
+    /// ordinary cancel path owns it and a parked reservation would wrongly intercept.
+    /// </param>
+    private void RestoreConsumedApprovals(string? consumedApprovalId, string cause, string? rearmedOrderId = null)
+    {
+        if (consumedApprovalId is null || _escalationQueue is null)
+        {
+            return;
+        }
+
+        foreach (var escalationId in RiskEscalationQueueService.SplitTokens(consumedApprovalId))
+        {
+            if (_escalationQueue.TryRestoreApproval(escalationId))
+            {
+                if (rearmedOrderId is not null)
+                {
+                    _parkedOrderIds[rearmedOrderId] = escalationId;
+                }
+
+                _logger.LogInformation(
+                    "Governed approval {EscalationId} re-armed after {Cause}",
+                    escalationId,
+                    cause);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Metadata keys only this OMS's internal amendment probe may set. The evaluation-only
+    /// flag suppresses governed-approval parking, and the incremental notional tells the
+    /// portfolio rules to charge less than the order's full size — a caller who could set
+    /// either would obtain a parked outcome with no queue entry behind it, or declare their
+    /// own order to add zero exposure and walk past the gross and concentration ceilings.
+    /// </summary>
+    private static readonly string[] InternalRiskMetadataKeys =
+    [
+        RiskEscalationQueueService.EvaluationOnlyMetadataKey,
+        RiskEscalationQueueService.IncrementalNotionalMetadataKey
+    ];
+
+    /// <summary>
+    /// Removes internal risk-probe metadata from a caller-supplied request, so only orders
+    /// this OMS builds itself can carry it.
+    /// </summary>
+    private static OrderRequest StripInternalRiskMetadata(OrderRequest request)
+    {
+        if (request.Metadata is null ||
+            !InternalRiskMetadataKeys.Any(request.Metadata.ContainsKey))
+        {
+            return request;
+        }
+
+        var sanitized = new Dictionary<string, string>(request.Metadata, StringComparer.OrdinalIgnoreCase);
+        foreach (var key in InternalRiskMetadataKeys)
+        {
+            sanitized.Remove(key);
+        }
+
+        return request with { Metadata = sanitized };
+    }
+
+    /// <summary>
+    /// Outcome of revalidating a risk-increasing amendment: either a <paramref name="Refusal"/>
+    /// to hand back to the caller, or the speculative <paramref name="Reservation"/> that
+    /// publishes the amended size to concurrent placements while the amendment routes.
+    /// </summary>
+    private readonly record struct AmendmentGateResult(
+        OrderState? Reservation,
+        string? Refusal,
+        IReadOnlyList<string>? Warnings);
+
+    /// <summary>
+    /// Revalidates a risk-increasing amendment and reserves the amended exposure under the
+    /// same pre-trade gate a placement uses, so a concurrent order cannot size itself against
+    /// the smaller pre-amendment order.
+    /// </summary>
+    private async Task<AmendmentGateResult> ReserveAmendedExposureAsync(
+        string orderId,
+        OrderState state,
+        OrderModification modification,
+        CancellationToken ct)
+    {
+        var amendmentProbe = BuildAmendmentProbe(state, modification);
+        IReadOnlyList<string>? warnings = null;
+        string? consumedApprovalId = null;
+
+        await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_riskValidator is not null)
+            {
+                var amendedRisk = await _riskValidator.ValidateOrderAsync(amendmentProbe, ct).ConfigureAwait(false);
+                warnings = amendedRisk.Warnings.Count > 0 ? amendedRisk.Warnings : null;
+                consumedApprovalId = amendedRisk.ConsumedApprovalId;
+
+                if (!amendedRisk.IsApproved)
+                {
+                    // An amendment is never parked: the original order stays live and the
+                    // caller is told the increase was refused. Any approval token consumed
+                    // by this evaluation is re-armed because nothing changed.
+                    RestoreConsumedApprovals(consumedApprovalId, "an amendment refused by risk validation");
+                    var refusal = amendedRisk.RequiresApproval
+                        ? $"Modification requires governed approval and was not applied: {amendedRisk.RejectReason}"
+                        : amendedRisk.RejectReason ?? "Modification rejected by risk validation.";
+                    return new AmendmentGateResult(null, refusal, warnings);
+                }
+            }
+
+            // Reserve the amended size before releasing the gate so a concurrent
+            // placement measures against the larger order, then route the amendment.
+            var reservation = state with
+            {
+                Quantity = modification.NewQuantity ?? state.Quantity,
+                LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
+                StopPrice = modification.NewStopPrice ?? state.StopPrice,
+                RoutedNotional = null,
+                LastUpdatedAt = DateTimeOffset.UtcNow
+            };
+            if (_orders.TryUpdate(orderId, reservation, state))
+            {
+                return new AmendmentGateResult(reservation, null, warnings);
+            }
+        }
+        finally
+        {
+            _preTradeReservationGate.Release();
+        }
+
+        // The order moved underneath the gate, so the amended exposure was never published.
+        // Routing the amendment anyway would raise the broker-side size while every
+        // concurrent placement still measured the smaller order, so refuse it instead.
+        RestoreConsumedApprovals(consumedApprovalId, "an amendment whose exposure could not be reserved");
+        _logger.LogWarning(
+            "Order {OrderId} amendment was not applied: the order changed while its amended exposure was being reserved",
+            LogSanitizer.Sanitize(orderId));
+
+        return new AmendmentGateResult(
+            null,
+            "Modification not applied: the order changed while its amended exposure was being reserved.",
+            warnings);
+    }
+
+    /// <summary>
+    /// Undoes the speculative amended reservation when the gateway never accepted the
+    /// modification, so the tracked order and every exposure snapshot fall back to the
+    /// size the broker actually holds.
+    /// </summary>
+    private void RollBackSpeculativeReservation(string orderId, OrderState? speculative, OrderState original)
+    {
+        if (speculative is null)
+        {
+            return;
+        }
+
+        if (!_orders.TryUpdate(orderId, original, speculative))
+        {
+            // A report already advanced the order past the speculative state; the report
+            // stream is authoritative from that point and must not be overwritten here.
+            _logger.LogWarning(
+                "Order {OrderId} amendment was refused, but its state had already advanced; leaving the tracked state to the report stream",
+                LogSanitizer.Sanitize(orderId));
+        }
+    }
+
+    /// <summary>
+    /// Measured value of an order state under the same model the enforced rules use: the
+    /// routed notional for dollar-sized orders, otherwise quantity times the order's own
+    /// price. Returns null when the state carries no price of its own (a market order),
+    /// where only the live mark — which the OMS does not hold — could measure it.
+    /// </summary>
+    private static decimal? MeasureOrderValue(
+        decimal quantity,
+        decimal? limitPrice,
+        decimal? stopPrice,
+        decimal? routedNotional,
+        decimal contractMultiplier = 1m)
+    {
+        if (routedNotional is { } notional && notional > 0m)
+        {
+            return notional;
+        }
+
+        var price = limitPrice ?? stopPrice;
+        if (price is not { } resolved || resolved <= 0m)
+        {
+            return null;
+        }
+
+        // A contract is not a share. Measuring an option amendment at quantity x premium
+        // would assess an increase from 10 to 100 contracts at $5 as a $450 increment
+        // instead of $45,000, and the per-order rule would see a $500 order.
+        return Math.Abs(quantity) * resolved * (contractMultiplier > 0m ? contractMultiplier : 1m);
+    }
+
+    /// <summary>
+    /// True when a modification could increase the order's measured exposure. This mirrors
+    /// the enforcement valuation (<c>OrderNotionalResolver</c>), which values an order at
+    /// the larger of its own price and the live mark: a higher price raises the measured
+    /// notional on either side, so a raised sell limit is risk-increasing too. Quantity
+    /// increases always qualify. When neither the current nor the amended order carries a
+    /// price, the amendment is treated as risk-increasing so the rules get to decide.
+    /// </summary>
+    private static bool IsRiskIncreasing(OrderState state, OrderModification modification)
+    {
+        if (modification.NewQuantity is { } newQuantity && Math.Abs(newQuantity) > Math.Abs(state.Quantity))
+        {
+            return true;
+        }
+
+        // Any price increase raises the measured notional under the enforcement model,
+        // regardless of side. A price decrease can only lower it (a marketable order is
+        // already valued at the mark), so it is never risk-increasing.
+        if (modification.NewLimitPrice is { } newLimit &&
+            newLimit > (state.LimitPrice ?? 0m))
+        {
+            return true;
+        }
+
+        return modification.NewStopPrice is { } newStop && newStop > (state.StopPrice ?? 0m);
+    }
+
+    /// <summary>
+    /// Reconstructs the order the gateway would hold after <paramref name="modification"/>,
+    /// so the pre-trade rules evaluate the proposed order rather than the original.
+    /// </summary>
+    private static OrderRequest BuildAmendedRequest(OrderState state, OrderModification modification) => new()
+    {
+        Symbol = state.Symbol,
+        Side = state.Side,
+        Type = state.Type,
+        Quantity = modification.NewQuantity ?? state.Quantity,
+        LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
+        StopPrice = modification.NewStopPrice ?? state.StopPrice,
+        ClientOrderId = state.OrderId,
+        StrategyId = state.StrategyId,
+        FundAccountId = state.FundAccountId,
+        // Without the derivative identity the rules re-value the amended order as shares,
+        // repeating the 1x mistake the multiplier above exists to prevent.
+        OptionContract = state.OptionContract,
+        Legs = state.Legs
+    };
+
+    /// <summary>
+    /// Builds the request the risk rules should evaluate for an amendment. The exposure
+    /// snapshot already reserves the working order at its current size, so evaluating the
+    /// full amended order would double-count it — raising a $1k working buy to $2k would
+    /// project $3k. When both sizes are measurable, this returns a probe carrying only the
+    /// incremental value, so snapshot + probe equals the post-amendment book.
+    /// <para>
+    /// The increment is only stamped when the order's own price is the price it will pay —
+    /// a buy limit. Everything else (any sell, a stop-market trigger, an unpriced order)
+    /// executes at the market, which the OMS cannot see, so an increment computed from the
+    /// order's own fields would understate it: raising a sell limited at $1 from 100 to 200
+    /// shares while the mark is $100 is a $10,000 increase, not $100. In those cases the
+    /// probe carries the whole amended order, which the rules price at the mark. That
+    /// double-counts the working order's existing reservation, but over-reserving can only
+    /// refuse an amendment, never admit one that breaches a ceiling.
+    /// </para>
+    /// </summary>
+    private static OrderRequest BuildAmendmentProbe(OrderState state, OrderModification modification)
+    {
+        var amended = BuildAmendedRequest(state, modification);
+        var probeMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [RiskEscalationQueueService.EvaluationOnlyMetadataKey] = "true"
+        };
+
+        var pricePaidIsCapped = state.Side == OrderSide.Buy
+            && state.LimitPrice is > 0m
+            && amended.LimitPrice is > 0m;
+        if (!pricePaidIsCapped)
+        {
+            return amended with { Metadata = probeMetadata };
+        }
+
+        var currentValue = MeasureOrderValue(
+            state.Quantity, state.LimitPrice, state.StopPrice, state.RoutedNotional, state.ContractMultiplier);
+        var amendedValue = MeasureOrderValue(
+            amended.Quantity, amended.LimitPrice, amended.StopPrice, routedNotional: null, state.ContractMultiplier);
+        if (currentValue is not { } current || amendedValue is not { } proposed || proposed <= current)
+        {
+            return amended with { Metadata = probeMetadata };
+        }
+
+        // Quantity stays the FULL amended quantity so the position-limit rule projects the
+        // real post-amendment position; only the notional-based rules read the incremental
+        // value, because the snapshot already reserves the working order's current size.
+        probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
+            (proposed - current).ToString("G29", CultureInfo.InvariantCulture);
+        return amended with { Metadata = probeMetadata };
+    }
+
+    private static IReadOnlyDictionary<string, string>? BuildRiskWarningsAuditMetadata(
+        IReadOnlyList<string> warnings)
+    {
+        if (warnings.Count == 0)
+        {
+            return null;
+        }
+
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        AppendRiskWarningsMetadata(metadata, warnings);
+        return metadata;
+    }
+
+    private static void AppendRiskWarningsMetadata(
+        IDictionary<string, string> metadata,
+        IReadOnlyList<string> warnings)
+    {
+        for (var i = 0; i < warnings.Count; i++)
+        {
+            metadata[$"warning{i + 1}"] = warnings[i];
+        }
+    }
+
+    private async Task RecordRiskWarningsAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        IReadOnlyList<string> warnings,
+        CancellationToken ct)
+    {
+        _logger.LogWarning(
+            "Order {OrderId} approved with {WarningCount} non-blocking risk flag(s)",
+            LogSanitizer.Sanitize(orderId),
+            warnings.Count);
+
+        if (_auditTrail is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            AppendRiskWarningsMetadata(metadata, warnings);
+
+            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Risk",
+                Action: "RiskWarningsFlagged",
+                Outcome: "Approved",
+                OccurredAt: DateTimeOffset.UtcNow,
+                Actor: actor,
+                BrokerName: brokerName,
+                OrderId: orderId,
+                RunId: runId,
+                Symbol: request.Symbol,
+                CorrelationId: correlationId,
+                Message: $"Order approved with {warnings.Count} non-blocking risk flag(s).",
+                Scope: BuildOrderAuditScope(request, runId),
+                Metadata: metadata), ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Order {OrderId} risk warnings could not be recorded to the audit trail",
+                LogSanitizer.Sanitize(orderId));
+        }
+    }
+
+    private sealed class FillProcessingProgress(
+        ExecutionReport fillIncrement,
+        decimal cumulativeFilledQuantity,
+        bool isTrackedOrder)
+    {
+        public SemaphoreSlim Gate { get; } = new(1, 1);
+        public ExecutionReport FillIncrement { get; } = fillIncrement;
+        public decimal CumulativeFilledQuantity { get; } = cumulativeFilledQuantity;
+        public bool IsTrackedOrder { get; } = isTrackedOrder;
+        public TradeExecutedEvent? TradeEvent { get; set; }
+        public decimal RealizedPnl { get; set; }
+        public decimal NewCash { get; set; }
+        public bool PortfolioApplied { get; set; }
+        public bool TradeEventPublished { get; set; }
+        public bool SessionRecorded { get; set; }
+        public bool ExecutionReportPublished { get; set; }
+        public volatile bool IsComplete;
+    }
+
+    /// <summary>
+    /// Settles the capacity the risk gate reserved for this order, exactly once, at the routing
+    /// boundary.
+    /// </summary>
+    /// <param name="decision">
+    /// The approved decision holding the reservations, or <see langword="null"/> when no validator
+    /// ran or the order never passed the gate. A non-approved decision has already released its own
+    /// capacity inside the validator, so there is nothing here to settle.
+    /// </param>
+    /// <param name="commit">
+    /// <see langword="true"/> when the order reached — or may have reached — a venue.
+    /// </param>
+    /// <remarks>
+    /// Never throws. Settlement runs on failure paths that are already unwinding, and a reservation
+    /// whose commit faults must not replace the outcome the caller is about to receive, nor stop the
+    /// remaining reservations from being settled.
+    /// </remarks>
+    private void SettleRiskReservations(RiskValidationResult? decision, bool commit, string orderId)
+    {
+        if (decision is null || decision.Reservations.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            if (commit)
+            {
+                decision.CommitReservations();
+            }
+            else
+            {
+                decision.RollbackReservations();
+            }
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                _logger.LogError(
+                    ex,
+                    "Risk reservations for order {OrderId} could not be settled ({Settlement})",
+                    LogSanitizer.Sanitize(orderId),
+                    commit ? "commit" : "rollback");
+            }
+            catch
+            {
+                // The logging provider is the thing that failed. Nothing left to report with,
+                // and the settlement outcome must not become the caller's exception.
+            }
+        }
+    }
+}

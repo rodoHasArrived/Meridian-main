@@ -1,3 +1,4 @@
+using Meridian.Execution.Logging;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Meridian.Contracts.SecurityMaster;
@@ -140,7 +141,7 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         _logger.LogInformation(
             "Paper order accepted: {ClientOrderId} {Quantity} {Symbol} @ {Type}",
-            ExecutionLogText.ForLog(orderId), request.Quantity, ExecutionLogText.ForLog(request.Symbol), request.Type);
+            LogSanitizer.Sanitize(orderId), request.Quantity, LogSanitizer.Sanitize(request.Symbol), request.Type);
 
         var ack = new OrderAcknowledgement(
             OrderId: orderId,
@@ -209,7 +210,7 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         if (cancelledRequest is not null)
         {
-            _logger.LogInformation("Paper order cancelled: {OrderId} {Symbol}", ExecutionLogText.ForLog(orderId), ExecutionLogText.ForLog(cancelledRequest.Symbol));
+            _logger.LogInformation("Paper order cancelled: {OrderId} {Symbol}", LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(cancelledRequest.Symbol));
             var update = new OrderStatusUpdate(
                 OrderId: orderId,
                 ClientOrderId: orderId,
@@ -224,7 +225,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             {
                 _logger.LogWarning(
                     "Paper cancellation update for {OrderId} could not be queued because the update channel was unavailable.",
-                    ExecutionLogText.ForLog(orderId));
+                    LogSanitizer.Sanitize(orderId));
             }
         }
 
@@ -260,7 +261,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             // Emitting a Filled update here would contradict that terminal state.
             _logger.LogDebug(
                 "Paper fill skipped for {OrderId}: order is no longer working (cancelled or already filled).",
-                ExecutionLogText.ForLog(orderId));
+                LogSanitizer.Sanitize(orderId));
             return;
         }
 
@@ -283,7 +284,7 @@ public sealed class PaperTradingGateway : IOrderGateway
                 var rejectReason = PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol);
                 _logger.LogWarning(
                     "Paper order rejected: {ClientOrderId} {Symbol} — {RejectReason}",
-                    ExecutionLogText.ForLog(orderId), ExecutionLogText.ForLog(request.Symbol), rejectReason);
+                    LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(request.Symbol), rejectReason);
 
                 var rejection = new OrderStatusUpdate(
                     OrderId: orderId,
@@ -299,7 +300,7 @@ public sealed class PaperTradingGateway : IOrderGateway
                 {
                     _logger.LogWarning(
                         "Paper rejection update for {OrderId} could not be queued because the update channel was unavailable.",
-                        ExecutionLogText.ForLog(orderId));
+                        LogSanitizer.Sanitize(orderId));
                 }
 
                 return;
@@ -328,12 +329,12 @@ public sealed class PaperTradingGateway : IOrderGateway
         {
             _logger.LogWarning(
                 "Paper fill update for {OrderId} could not be queued because the update channel was unavailable.",
-                ExecutionLogText.ForLog(orderId));
+                LogSanitizer.Sanitize(orderId));
         }
 
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
-            ExecutionLogText.ForLog(request.ClientOrderId), request.Quantity, ExecutionLogText.ForLog(request.Symbol), fillPrice);
+            LogSanitizer.Sanitize(request.ClientOrderId), request.Quantity, LogSanitizer.Sanitize(request.Symbol), fillPrice);
     }
 
     /// <summary>
@@ -428,7 +429,7 @@ public sealed class PaperTradingGateway : IOrderGateway
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Paper fill simulation failed for {OrderId}.", ExecutionLogText.ForLog(orderId));
+            _logger.LogError(ex, "Paper fill simulation failed for {OrderId}.", LogSanitizer.Sanitize(orderId));
         }
         finally
         {
