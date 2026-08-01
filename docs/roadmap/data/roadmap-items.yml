@@ -1015,6 +1015,7 @@ items:
   - id: W10-MARK-001
     title: Fail-closed stale-mark policy and mark-age surfacing
     wave: W10
+    sequence: 1
     stage_gates:
       - AccountingRecords
     workspace:
@@ -1047,6 +1048,7 @@ items:
   - id: W10-RECON-001
     title: Durable break lineage identity and run-over-run break diff
     wave: W10
+    sequence: 2
     stage_gates:
       - PortfolioLedgerReview
     workspace:
@@ -1077,6 +1079,7 @@ items:
   - id: W10-PROV-001
     title: Ledger-amount evidence subject and shared proof drawer
     wave: W10
+    sequence: 3
     stage_gates:
       - AccountingRecords
       - GovernedReportPack
@@ -1109,6 +1112,7 @@ items:
   - id: W10-RECON-002
     title: Break clustering and bulk-resolution activation
     wave: W10
+    sequence: 4
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -1141,6 +1145,7 @@ items:
   - id: W10-JRNL-001
     title: Durable recurring journal schedules and draft runner
     wave: W10
+    sequence: 5
     stage_gates:
       - AccountingRecords
     workspace:
@@ -1171,6 +1176,7 @@ items:
   - id: W10-TAX-001
     title: Tax character, wash-sale, and lot-relief operator surface
     wave: W10
+    sequence: 6
     stage_gates:
       - AccountingRecords
     workspace:
@@ -1201,6 +1207,7 @@ items:
   - id: W10-SEAM-001
     title: Unified close-readiness projection behind one shared contract
     wave: W10
+    sequence: 7
     stage_gates:
       - AccountingRecords
       - GovernedReportPack
@@ -1233,6 +1240,7 @@ items:
   - id: W10-RECON-003
     title: Unified tolerance model and what-if replay workbench
     wave: W10
+    sequence: 8
     stage_gates:
       - PortfolioLedgerReview
     workspace:
@@ -1262,6 +1270,7 @@ items:
   - id: W10-RECON-004
     title: Operator-taught match rules with promotion gate
     wave: W10
+    sequence: 9
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -1294,6 +1303,7 @@ items:
   - id: W10-PERF-001
     title: Portfolio and investor return measurement
     wave: W10
+    sequence: 10
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -1328,6 +1338,7 @@ items:
   - id: W10-CONSOL-001
     title: Intercompany elimination on consolidated ledger views
     wave: W10
+    sequence: 11
     stage_gates:
       - AccountingRecords
     workspace:
