@@ -37,7 +37,7 @@ Priority meanings:
 | P1 (`PRD-100` through `PRD-114`) | 1 closed; 4 substantially advanced; 10 open | `PRD-103` is closed in source with focused proof. `PRD-104`, `PRD-109`, `PRD-111`, and `PRD-112` have their code-side defects fixed and executable gates in place; each row names exactly what remains (operational drill artifacts, a benchmark lane on stable hosts, serialization parity, packaged SFTP). The other rows are untouched. A row may move out only through an explicit support-matrix scope decision. |
 | P2 (`PRD-200` through `PRD-205`) | 6 open | Compatibility cleanup remains sequenced after the P0/P1 policy migrations it depends on. |
 | Active roadmap acceptance | 3 in progress | `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, and `W8-WPF-PARITY-001` remain active and are not production-certified by this tracker. Critical `W9-ASSET-010` closed on 2026-07-28 with `evidence_posture: complete`. |
-| Planned roadmap work | 1 planned | `W6-BTSTUDIO-001` remains planned and outside the v1 production envelope unless the signed support matrix includes it. The closed `W9-ASSET-010` row does not change the P0 release-certification gate. |
+| Planned roadmap work | 22 planned | `W6-BTSTUDIO-001` and `W5X-OEG-001`, the nine open rows of the ranked W9 first-order slate, and the eleven rows of the W10 depth slate are all planned and outside the v1 production envelope unless the signed support matrix includes them. Every one carries `planned_evidence` posture, so none is a completion claim. The closed `W9-ASSET-010` row does not change the P0 release-certification gate. |
 
 Working detail for the six evidence-gated rows — hosted-run diagnosis, minted evidence, and the
 explicit human action register (ADR sign-off, secrets/runner activation, operator review,
