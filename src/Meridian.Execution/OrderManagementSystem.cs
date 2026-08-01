@@ -522,7 +522,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 Success = false,
                 OrderId = orderId,
                 ErrorMessage = ex.Message,
-                OrderState = filledState
+                OrderState = filledState,
+                // The risk gate ran before this failure, so its findings are still the truth about
+                // this submission and the caller was promised them.
+                RiskDecision = riskDecision
             };
         }
         catch (Exception ex)
@@ -565,7 +568,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 Success = false,
                 OrderId = orderId,
                 ErrorMessage = ex.Message,
-                OrderState = rejectedState
+                OrderState = rejectedState,
+                RiskDecision = riskDecision
             };
         }
     }
