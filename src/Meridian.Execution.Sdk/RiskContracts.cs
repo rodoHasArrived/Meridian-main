@@ -140,8 +140,17 @@ public interface IRiskReservation
     void Commit();
 
     /// <summary>
-    /// Returns the reserved capacity — the order was blocked, threw, was cancelled, or failed
-    /// somewhere downstream of the risk gate.
+    /// Returns the reserved capacity — the order was blocked, was cancelled before dispatch, or
+    /// definitively failed before reaching the venue.
+    /// <para>
+    /// <b>Not for an ambiguous submission failure.</b> When a gateway call throws after dispatch may
+    /// already have happened, the order may still execute, so the caller commits instead: for a rate
+    /// limiter the safe direction is to over-count. Under-counting would let a runaway algorithm
+    /// bypass the ceiling by producing ambiguous submissions, which is the behaviour the control
+    /// exists to stop. Roll back only when nothing can have reached the venue — a rejection, a
+    /// duplicate client order id, a gateway report of <c>Rejected</c>, or a cancellation observed
+    /// before the gateway was called.
+    /// </para>
     /// </summary>
     void Rollback();
 }

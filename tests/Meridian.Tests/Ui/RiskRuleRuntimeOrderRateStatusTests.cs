@@ -99,6 +99,48 @@ public sealed class RiskRuleRuntimeOrderRateStatusTests : IDisposable
         status!.CurrentValue.Should().Be("3 orders/minute");
     }
 
+    /// <summary>
+    /// Evaluate-all means one rejection can carry several findings, and only the highest-severity
+    /// one reaches the entry's top-level message. A rule whose breach is recorded only in the
+    /// per-violation metadata must still show as breached, or the panel reports "healthy" for a rule
+    /// that did in fact block.
+    /// </summary>
+    [Fact]
+    public async Task RuleStatus_SurfacesABreachRecordedOnlyInViolationMetadata()
+    {
+        await using var audit = new ExecutionAuditTrailService(
+            Path.Combine(_root, "audit"),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        // Headline is the drawdown breach; the position-limit finding survives only in metadata.
+        await audit.RecordAsync(new ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Order",
+            Action: "OrderRejected",
+            Outcome: "Rejected",
+            OccurredAt: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            Reason: "DRAWDOWN_CIRCUIT_BREAKER_TRIPPED",
+            Metadata: new Dictionary<string, string>
+            {
+                ["decisionSource"] = "risk",
+                ["violation.count"] = "2",
+                ["violation.0.rule"] = "DrawdownCircuitBreaker",
+                ["violation.0.code"] = "DRAWDOWN_CIRCUIT_BREAKER_TRIPPED",
+                ["violation.0.message"] = "Drawdown 12% exceeds 10% threshold.",
+                ["violation.1.rule"] = "PositionLimit",
+                ["violation.1.code"] = "POSITION_LIMIT_EXCEEDED",
+                ["violation.1.message"] = "Position would reach 1,240 against a 1,000 limit."
+            },
+            Message: "Drawdown 12% exceeds 10% threshold."));
+
+        var status = await BuildService(audit).GetStatusAsync("PositionLimit");
+
+        status.Should().NotBeNull();
+        status!.RecentViolations.Should().ContainSingle()
+            .Which.Should().Contain("1,240", "the panel shows the position finding, not the headline");
+    }
+
     private RiskRuleRuntimeService BuildService(ExecutionAuditTrailService audit)
     {
         var services = new ServiceCollection()

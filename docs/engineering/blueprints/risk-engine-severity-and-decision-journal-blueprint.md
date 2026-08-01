@@ -1138,8 +1138,9 @@ unit tests.
 | `ValidateOrderAsync_WithEscalateOutcome_AdmitsAndRecords` | `Decision == Escalated`, `IsApproved` true |
 | `ValidateOrderAsync_WhenRuleThrows_FailsClosedWithSynthesisedViolation` | `Rejected` + `RISK_RULE_EVALUATION_FAILED`; exception not rethrown |
 | `ValidateOrderAsync_WhenCancelled_PropagatesOperationCanceled` | Cancellation is not swallowed by the per-rule catch |
-| `ValidateOrderAsync_WhenAdmitted_InvokesStateCommitOnStatefulRules` | Commit phase fires |
-| `ValidateOrderAsync_WhenBlocked_DoesNotInvokeStateCommit` | The throttle-corruption regression |
+| `ValidateOrderAsync_WhenAdmitted_TransfersUnsettledReservations` | The outcome carries the handles and **neither** commits nor rolls back — asserting a commit here would consume capacity before duplicate-id registration, journaling, or the gateway had a say, which is the behaviour the reservation model removes. Commit is the OMS's, tested at its gateway-acceptance boundary |
+| `ValidateOrderAsync_WhenBlocked_RollsBackAndTransfersNothing` | The throttle-corruption regression: a rejected order frees its slot before returning, and the outcome carries no reservations |
+| `ValidateOrderAsync_WhenCancelledMidEvaluation_RollsBackWhatWasTaken` | Cleanup is the validator's until handoff |
 | `ValidateOrderAsync_WithSyncFastPath_DoesNotCallAsyncPath` | Preserved from the existing suite |
 | `RejectReason_WithMultipleViolations_ReturnsHighestSeverityMessage` | Legacy read-surface compatibility |
 | `IsApproved_ForEachDecisionKind_MatchesExpectedAdmission` | Compatibility across all four kinds |

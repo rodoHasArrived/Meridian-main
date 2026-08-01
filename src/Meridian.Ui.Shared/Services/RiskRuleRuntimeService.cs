@@ -465,20 +465,67 @@ public sealed class RiskRuleRuntimeService
                     OrderManagementSystem.AmbiguousSubmissionReason,
                     StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Recent breaches attributable to one rule.
+    /// <para>
+    /// Since the gate evaluates every rule rather than stopping at the first failure, one rejection
+    /// can carry several findings and only the highest-severity one reaches the entry's top-level
+    /// message. The rest live in the `violation.N.*` audit metadata, so matching on message and
+    /// reason alone would report "no recent breach" for a rule that did breach — it just was not the
+    /// one that produced the headline. Metadata is searched too, and a metadata hit reports that
+    /// violation's own message rather than the headline.
+    /// </para>
+    /// </summary>
     private static List<string> FindViolations(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         string actionHint,
         string textHint)
     {
         return auditEntries
-            .Where(entry =>
-                string.Equals(entry.Action, actionHint, StringComparison.OrdinalIgnoreCase) &&
-                ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                 (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false)))
+            .Where(entry => string.Equals(entry.Action, actionHint, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(static entry => entry.OccurredAt)
+            .Select(entry => DescribeViolation(entry, textHint))
+            .Where(static description => description is not null)
             .Take(5)
-            .Select(entry => entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.")
+            .Select(static description => description!)
             .ToList();
+    }
+
+    /// <summary>
+    /// Returns how this entry recorded a breach of the hinted rule, or null when it did not.
+    /// </summary>
+    private static string? DescribeViolation(ExecutionAuditEntry entry, string textHint)
+    {
+        if ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false))
+        {
+            return entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.";
+        }
+
+        if (entry.Metadata is not { Count: > 0 } metadata)
+        {
+            return null;
+        }
+
+        // Keys are violation.N.rule / .code / .message; match on the attribution fields and report
+        // the matched violation's own message so the panel shows the finding, not the headline.
+        foreach (var pair in metadata)
+        {
+            if (!pair.Key.StartsWith("violation.", StringComparison.Ordinal) ||
+                !(pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
+                  pair.Key.EndsWith(".code", StringComparison.Ordinal)) ||
+                !pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var prefix = pair.Key[..(pair.Key.LastIndexOf('.') + 1)];
+            return metadata.TryGetValue(prefix + "message", out var message) && !string.IsNullOrWhiteSpace(message)
+                ? message
+                : entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.";
+        }
+
+        return null;
     }
 
     private decimal GetMaxDrawdownPercent()

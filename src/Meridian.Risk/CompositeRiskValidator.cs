@@ -164,9 +164,6 @@ public sealed class CompositeRiskValidator : IRiskValidator
         List<IRiskReservation> reservations,
         CancellationToken ct)
     {
-        using var timeoutCts = CreateTimeoutSource(ct);
-        var effectiveToken = timeoutCts?.Token ?? ct;
-
         try
         {
             // Reserving is checked before the synchronous fast path. A rule that declares both would
@@ -175,8 +172,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // here that is invisible rather than loud.
             if (rule is IReservingRiskRule reserving)
             {
+                using var reservingTimeout = CreateTimeoutSource(ct);
                 var reservationResult = await WithHardTimeoutAsync(
-                        reserving.EvaluateAndReserveAsync(request, effectiveToken),
+                        reserving.EvaluateAndReserveAsync(request, reservingTimeout?.Token ?? ct),
                         ct)
                     .ConfigureAwait(false);
 
@@ -196,13 +194,18 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // abandoned, so wrapping it would bound only the wait and leak the blocked thread while
             // still hanging the submission. A rule opts into this path by declaring it needs no
             // I/O, so blocking here is a contract violation rather than a case to time out.
+            //
+            // No timeout source is built for it either. This branch runs on every order for every
+            // synchronous rule, and a linked CTS plus a scheduled CancelAfter is real per-order cost
+            // on the pre-trade path for a token nothing here observes.
             if (rule.HasSyncFastPath)
             {
                 return ToViolation(rule, rule.TryEvaluate(request));
             }
 
+            using var evaluationTimeout = CreateTimeoutSource(ct);
             var finding = await WithHardTimeoutAsync(
-                    rule.EvaluateAsync(request, effectiveToken),
+                    rule.EvaluateAsync(request, evaluationTimeout?.Token ?? ct),
                     ct)
                 .ConfigureAwait(false);
 
