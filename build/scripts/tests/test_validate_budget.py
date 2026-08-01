@@ -131,9 +131,91 @@ class TestLoadBdnResults:
         assert hit.allocated_bytes == 0
         assert hit.mean_ns == 150.0
 
-    def test_returns_empty_for_missing_dir(self, tmp_path):
-        results = vb.load_bdn_results(str(tmp_path / "no_such_dir"))
-        assert results == []
+    def test_missing_dir_exits_with_code_2(self, tmp_path):
+        # A harness that produced nothing must not be reported as a clean run.
+        with pytest.raises(SystemExit) as exc:
+            vb.load_bdn_results(str(tmp_path / "no_such_dir"))
+        assert exc.value.code == 2
+
+    def test_empty_results_dir_exits_with_code_2(self, tmp_path):
+        d = tmp_path / "results"
+        d.mkdir()
+        with pytest.raises(SystemExit) as exc:
+            vb.load_bdn_results(str(d))
+        assert exc.value.code == 2
+
+    def test_report_without_benchmarks_exits_with_code_2(self, tmp_path):
+        d = tmp_path / "results"
+        d.mkdir()
+        (d / "Empty-report-full.json").write_text(json.dumps({"Benchmarks": []}), encoding="utf-8")
+        with pytest.raises(SystemExit) as exc:
+            vb.load_bdn_results(str(d))
+        assert exc.value.code == 2
+
+
+class TestUnmeasuredBudgets:
+    def test_all_budgets_measured_reports_none(self, budget_file, results_dir_clean):
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(results_dir_clean)
+
+        assert vb.find_unmeasured_budgets(budgets, results) == []
+
+    def test_budget_without_a_matching_result_is_reported(self, budget_file, results_dir_violation):
+        # results_dir_violation only contains a CacheHit row, so CacheMiss is unmeasured.
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(results_dir_violation)
+
+        assert vb.find_unmeasured_budgets(budgets, results) == ["DedupKey_CacheMiss"]
+
+    def test_simd_budgets_are_not_reported_as_unmeasured(self, budget_file, results_dir_clean):
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(results_dir_clean)
+
+        assert "NewlineScan_Avx2" not in vb.find_unmeasured_budgets(budgets, results)
+
+    def test_declared_stage_is_not_reported(self, budget_file, results_dir_violation):
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(results_dir_violation)
+
+        unmeasured = vb.find_unmeasured_budgets(budgets, results, {"DedupKey_CacheMiss"})
+
+        assert unmeasured == []
+
+    def test_summary_marks_unmeasured_budgets(self, budget_file, results_dir_violation):
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(results_dir_violation)
+        violations = vb.check_budgets(budgets, results)
+        unmeasured = vb.find_unmeasured_budgets(budgets, results)
+
+        summary = vb.render_summary(violations, budgets, results, unmeasured)
+
+        assert "No benchmark measured this budget" in summary
+
+    def test_summary_shows_measured_value_for_passing_budget(self, budget_file, results_dir_clean):
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(results_dir_clean)
+        violations = vb.check_budgets(budgets, results)
+
+        summary = vb.render_summary(violations, budgets, results, [])
+
+        # DedupKey_CacheMiss measured 128 bytes against a 256-byte budget; the previous
+        # report printed an em dash for every passing row, hiding the headroom.
+        assert "| 128 |" in summary
+
+    def test_evidence_records_measured_and_unmeasured_stages(self, budget_file, results_dir_violation):
+        budgets = vb.load_budgets(budget_file)
+        results = vb.load_bdn_results(results_dir_violation)
+        violations = vb.check_budgets(budgets, results)
+        unmeasured = vb.find_unmeasured_budgets(budgets, results)
+
+        evidence = vb.build_evidence(budgets, results, violations, unmeasured)
+
+        assert evidence["unmeasured_stages"] == ["DedupKey_CacheMiss"]
+        by_stage = {stage["stage_name"]: stage for stage in evidence["stages"]}
+        assert by_stage["DedupKey_CacheHit"]["status"] == "violation"
+        assert by_stage["DedupKey_CacheHit"]["actual_allocated_bytes"] == 64
+        assert by_stage["DedupKey_CacheMiss"]["measured"] is False
+        assert by_stage["NewlineScan_Avx2"]["status"] == "simd-excluded"
 
 
 class TestCheckBudgets:
@@ -171,7 +253,7 @@ class TestRenderSummary:
         budgets = vb.load_budgets(budget_file)
         results = vb.load_bdn_results(results_dir_clean)
         violations = vb.check_budgets(budgets, results)
-        summary = vb.render_summary(violations, budgets)
+        summary = vb.render_summary(violations, budgets, results, [])
         assert "|" in summary
         assert "DedupKey_CacheHit" in summary
         assert "✅ Pass" in summary
@@ -180,7 +262,8 @@ class TestRenderSummary:
         budgets = vb.load_budgets(budget_file)
         results = vb.load_bdn_results(results_dir_violation)
         violations = vb.check_budgets(budgets, results)
-        summary = vb.render_summary(violations, budgets)
+        unmeasured = vb.find_unmeasured_budgets(budgets, results)
+        summary = vb.render_summary(violations, budgets, results, unmeasured)
         assert "❌" in summary
         assert "DedupKey_CacheHit" in summary
 
@@ -203,3 +286,57 @@ class TestExitCodes:
             "--fail-on-violation",
         ])
         assert vb.main() == 1
+
+    def test_exit_1_when_a_budget_is_unmeasured(self, budget_file, tmp_path, monkeypatch):
+        # A run that measured only the SIMD-excluded stage leaves both real budgets
+        # unmeasured. Before this gate that reported green.
+        results_dir = tmp_path / "partial"
+        results_dir.mkdir()
+        (results_dir / "Partial-report-full.json").write_text(
+            json.dumps(
+                {
+                    "Benchmarks": [
+                        {
+                            "FullName": "Meridian.Benchmarks.NewlineScanBenchmarks.NewlineScan_Avx2",
+                            "Statistics": {"Mean": 10.0},
+                            "Memory": {"BytesAllocatedPerOperation": 0},
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(sys, "argv", [
+            "validate_budget.py",
+            "--bdn-results", str(results_dir),
+            "--budget-json", budget_file,
+            "--fail-on-violation",
+        ])
+        assert vb.main() == 1
+
+    def test_exit_2_when_no_results_exist(self, budget_file, tmp_path, monkeypatch):
+        monkeypatch.setattr(sys, "argv", [
+            "validate_budget.py",
+            "--bdn-results", str(tmp_path / "never_ran"),
+            "--budget-json", budget_file,
+            "--fail-on-violation",
+        ])
+        with pytest.raises(SystemExit) as exc:
+            vb.main()
+        assert exc.value.code == 2
+
+    def test_json_output_is_written(self, budget_file, results_dir_clean, tmp_path, monkeypatch):
+        output = tmp_path / "evidence" / "budget.json"
+        monkeypatch.setattr(sys, "argv", [
+            "validate_budget.py",
+            "--bdn-results", results_dir_clean,
+            "--budget-json", budget_file,
+            "--fail-on-violation",
+            "--json-output", str(output),
+        ])
+        assert vb.main() == 0
+
+        evidence = json.loads(output.read_text(encoding="utf-8"))
+        assert evidence["violation_count"] == 0
+        assert evidence["unmeasured_count"] == 0
+        assert evidence["benchmark_result_rows"] == 2

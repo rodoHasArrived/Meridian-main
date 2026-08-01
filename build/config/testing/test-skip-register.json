@@ -1,0 +1,113 @@
+{
+  "$comment": "Owned inventory of every skipped test. A skip reports the same green as a pass, so each one must name an owner, a category, tracking, and a review-by date. Enforced by build/scripts/ci/check-test-skip-register.py; see PRD-112 in docs/product/implementation-todo-list.md.",
+  "categories": {
+    "environment-gated": "Cannot run in this environment (no Docker, no Windows DPAPI); runs in the lane that provides the dependency.",
+    "quarantined": "Disabled pending a product or design decision. This is a coverage gap and must be re-reviewed by review_by."
+  },
+  "skips": [
+    {
+      "path": "tests/Meridian.LifecycleSupervisor.Tests/LifecycleSupervisorConfigurationTests.cs",
+      "reason": "This assertion covers the fail-closed behavior when Windows DPAPI is unavailable.",
+      "owner": "Runtime Host",
+      "category": "environment-gated",
+      "tracking": "PRD-000",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.LifecycleSupervisor.Tests/LifecycleSupervisorConfigurationTests.cs",
+      "reason": "Windows current-user DPAPI is unavailable on this platform.",
+      "owner": "Runtime Host",
+      "category": "environment-gated",
+      "tracking": "PRD-000",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/AssetOperations/AssetOperationsMigrationRunnerTests.cs",
+      "reason": "Asset Operations PostgreSQL tests are skipped because Docker is unavailable. ",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/SecurityMaster/SecurityMasterDatabaseFactAttribute.cs",
+      "reason": "Security Master PostgreSQL tests are skipped because Docker is unavailable. ",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/FundAccounts/FundAccountDatabaseFactAttribute.cs",
+      "reason": "Fund-account PostgreSQL tests are skipped because Docker is unavailable. ",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/LedgerDatabaseFactAttribute.cs",
+      "reason": "Ledger PostgreSQL tests are skipped because Docker is unavailable. ",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/Reporting/ReportingArtifactStoreTests.cs",
+      "reason": "Reporting PostgreSQL tests are skipped because Docker is unavailable. ",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
+      "reason": "Quarantined pending re-adjudication (a3a01eff): asserts IAccountingReportPackageService.ListCalls==1, but auto-provenance-from-report-package was removed; dimension-scope provenance now derives from a dimensional certification artifact's ReportPackageProvenance lane. Needs a rewrite around the artifact contract.",
+      "owner": "Financial Operations",
+      "category": "quarantined",
+      "tracking": "W9-ASSET-010",
+      "review_by": "2026-11-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
+      "reason": "Quarantined pending re-adjudication (a3a01eff): asserts the removed string-token dimensional model (CompletedControlCount==2 and dimensions.reporting-* rollout-scope-mismatch derived from string links); under the structured-artifact contract a bound dimensional artifact yields >=3 and those string-derived issues no longer fire. Needs a rewrite around subset dimensional artifacts.",
+      "owner": "Financial Operations",
+      "category": "quarantined",
+      "tracking": "W9-ASSET-010",
+      "review_by": "2026-11-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
+      "reason": "Quarantined pending the asset-accounting tenant-admin migration (a3a01eff): a store-persisted tenant-admin profile caps at CompletedControlCount==2 because AccountingTenantAdministrationProfileDto has no artifact/retained-evidence fields and MergeTenantAdministrationProfile carries none. Re-enable once the tenant-admin DTO+merge carry artifacts+retained evidence (mirroring MergeProductionCertificationProfile).",
+      "owner": "Financial Operations",
+      "category": "quarantined",
+      "tracking": "W9-ASSET-010",
+      "review_by": "2026-11-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
+      "reason": "Quarantined pending the asset-accounting tenant-admin migration (a3a01eff): asserts TenantAdministration.CompletedControlCount==23, but AccountingTenantAdministrationProfileDto carries no certification-artifact/retained-evidence fields and HasLedgerBookScopedTenantAdministrationEvidence is a no-op stub, so book-scoped tenant-admin evidence no longer credits controls. Re-enable once the tenant-admin DTO+merge carry artifacts+retained evidence.",
+      "owner": "Financial Operations",
+      "category": "quarantined",
+      "tracking": "W9-ASSET-010",
+      "review_by": "2026-11-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
+      "reason": "Quarantined pending the asset-accounting tenant-admin migration (a3a01eff): the tenant-admin store accepts string per-control evidence and returns OK, but readiness cannot credit it (no artifact/retained-evidence path), so CompletedControlCount caps at 2 vs the expected 23. Re-enable once the tenant-admin DTO+merge carry artifacts+retained evidence.",
+      "owner": "Financial Operations",
+      "category": "quarantined",
+      "tracking": "W9-ASSET-010",
+      "review_by": "2026-11-01"
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs",
+      "reason": "Quarantined pending a product decision on the desktop evidence-capture path (a3a01eff): the WPF Configure VM supplies only string evidence URIs, but the hardened AccountingProductionCertificationProfileStore requires typed RetainedEvidenceIdentityDto bound to each certified artifact and forbids synthesizing it, so the save is rejected. Re-enable once the desktop path captures typed retained evidence (or the store accepts desktop string evidence).",
+      "owner": "WPF",
+      "category": "quarantined",
+      "tracking": "W9-ASSET-010",
+      "review_by": "2026-11-01"
+    }
+  ]
+}
