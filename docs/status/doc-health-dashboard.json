@@ -1,11 +1,11 @@
 {
-  "total_files": 638,
-  "total_lines": 116074,
+  "total_files": 641,
+  "total_lines": 116642,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 181.9,
+  "average_lines": 182.0,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -805,6 +805,14 @@
     {
       "path": ".agents/skills/meridian-test-writer/SKILL.md",
       "line_count": 328,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": ".pytest_cache/README.md",
+      "line_count": 8,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2572,7 +2580,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9627,
+      "line_count": 9637,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2660,7 +2668,7 @@
     },
     {
       "path": "docs/operations/operator-runbook.md",
-      "line_count": 18,
+      "line_count": 20,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2676,7 +2684,7 @@
     },
     {
       "path": "docs/operations/service-level-objectives.md",
-      "line_count": 13,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2717,6 +2725,14 @@
     {
       "path": "docs/operators/governed-reporting-operations.md",
       "line_count": 365,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/operator-runbook.md",
+      "line_count": 314,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2772,7 +2788,7 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 188,
+      "line_count": 192,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2781,6 +2797,14 @@
     {
       "path": "docs/operators/reconciliation-operations.md",
       "line_count": 90,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/service-level-objectives.md",
+      "line_count": 227,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2900,7 +2924,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 414,
+      "line_count": 415,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
