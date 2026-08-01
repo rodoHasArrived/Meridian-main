@@ -650,11 +650,14 @@ public sealed record InvestorSubscriptionLot
 public sealed record EqualizationPeriodInput(
     PartnershipInvestorAllocationInput Allocation,   // reuses existing fund-level fee/HWM inputs
     EqualizationMethod Method,
-    // The fund's EFFECTIVE incentive-fee terms (hurdle, catch-up, reset mode). Required: the
-    // per-subscriber credit is the accrued fee from IncentiveFeeCalculator, NOT f x (GAV - HWM),
-    // which overstates it whenever a hurdle or catch-up applies (§5.1). Without this the projector
-    // cannot compute a credit that reconciles to the fund fee (§11 invariant).
-    IncentiveFeePolicy IncentiveFeePolicy,
+    // The COMPLETE effective fee context, not just the policy. IncentiveFeeCalculator.Compute
+    // reads ContributedCapital, PriorLossCarryforward and PeriodFraction as well as the policy,
+    // and none of them exist on PartnershipInvestorAllocationInput or the lot records — so passing
+    // the policy alone still leaves the projector unable to call the calculator for a
+    // contributed-capital hurdle or a loss-carryforward policy, which is exactly what §5.1 now
+    // requires it to do. Carry the whole context (or the scope id it is deterministically loaded
+    // from) so no implementer has to invent a value.
+    IncentiveFeeContext IncentiveFeeContext,
     decimal FundHighWaterMarkPerShare,               // HWM per share at period start
     decimal GrossNavPerShareEnd,                     // GAV at crystallization
     IReadOnlyList<InvestorSubscriptionLot> Lots,
@@ -993,7 +996,12 @@ create table if not exists __SCHEMA__.fund_series (
     tenant_id                 text null,
     created_at                timestamptz not null,
     updated_at                timestamptz not null,
-    primary key (ledger_book_id, series_id)
+    primary key (ledger_book_id, series_id),
+    -- The lead index below is partial on status. Without this domain constraint any other value
+    -- ('open', a typo from a manual repair) falls outside the predicate, silently excluding the
+    -- existing lead and letting a second lead be inserted for the same book.
+    constraint ck_fund_series_status
+        check (status in ('Open', 'Crystallized', 'Consolidated', 'Closed'))
 );
 
 -- Partial on BOTH is_lead and a live status. Without the status predicate a lead series that

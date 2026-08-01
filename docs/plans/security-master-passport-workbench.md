@@ -1,8 +1,9 @@
 # Security Master Passport Workbench — Governed Write Blueprint
 
-**Status:** Largely implemented — Phases 1–4 shipped; browser passport editor, restatement
-follow-ons, full lifecycle integration tests, and the ADR record remain open (see the `[~]` items in
-the Implementation Checklist)
+**Status:** Largely implemented — Phases 1–4 shipped, **including the browser passport editor**
+(`security-passport-editor.tsx` + view model, launcher, coverage drill-through, and tests — do not
+rebuild it). Open: the remaining Economics/Venues/History read tabs, restatement follow-ons, full
+lifecycle integration tests, and the ADR record (see the `[~]` items in the Implementation Checklist)
 **Owner:** Data Confidence and Validation / Accounting and Ledger
 **Reviewed:** 2026-08-01
 **Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).

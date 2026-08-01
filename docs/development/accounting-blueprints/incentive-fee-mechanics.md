@@ -352,6 +352,7 @@ public sealed record IncentiveFeeContext(
     decimal EndingNavBeforeIncentiveFee,   // already net of management fee
     decimal PriorHighWaterMark,
     decimal PriorLossCarryforward,          // >= 0; unrecouped loss to earn back first
+    IncentiveResetMode ResetMode,           // REQUIRED: selects which protection(s) apply — see below
     decimal ContributedCapital,             // used only when HurdleBasis.ContributedCapital
     decimal IncentiveFeeRate,               // carry, e.g. 0.20
     HurdleTerms Hurdle,
@@ -456,24 +457,33 @@ public static class IncentiveFeeCalculator
 > — permanently blocking fees. Measuring the drawdown against the HWM alone makes it stable at `10`
 > and returns it to `0` on recovery to `100`. Test 31 pins the flat-NAV case.
 
-> ⚠️ **OPEN QUESTION O-6 — is the protected level `HWM`, or `HWM + LCF`? Needs a fund-accounting
-> decision; do not implement `ResetMode.Both` until it is answered.**
+> **`ResetMode` must reach the calculator — it is now on `IncentiveFeeContext`.** An earlier draft
+> described the modes in prose while `Compute` unconditionally evaluated
+> `EndingNav − PriorHighWaterMark − PriorLossCarryforward` and always advanced a candidate HWM. A
+> `LossCarryforward` policy — where the LCF is supposed to replace the HWM — therefore got **both**
+> protections and understated fees. `Compute` branches on the mode:
 >
-> `grossExcess` above still uses `EndingNav − PriorHighWaterMark − PriorLossCarryforward`, i.e. it
-> treats the two as **additive**. That is coherent for a fund whose terms require recouping a prior
-> loss *in addition to* regaining the high-water mark, and it is stricter than a plain HWM. But it
-> is a policy choice, not a derivation, and the two reset modes read differently:
+> | `ResetMode` | Protected level | HWM roll-forward |
+> |---|---|---|
+> | `HighWaterMark` | `PriorHighWaterMark` (LCF must be `0`) | advances |
+> | `LossCarryforward` | `PriorLossCarryforward` only; the HWM is **not** a protection | frozen |
+> | `Both` | see O-6 below — **unresolved** | advances |
 >
-> - `ResetMode.HighWaterMark` — LCF is unused; the protected level is the HWM. Unambiguous.
-> - `ResetMode.LossCarryforward` — LCF is the mechanism *instead of* a HWM. Unambiguous.
-> - `ResetMode.Both` — **ambiguous**. If LCF is the drawdown below the HWM (as now computed), adding
->   it to the HWM double-counts the same loss: a fund that falls to `90` and recovers to `105` is
->   above its `100` high-water mark but still pays nothing until `110`. Whether that is the intended
->   term or an artefact of the formula is exactly the kind of question this blueprint should not
->   answer on its own.
+> The unused quantity is held at `0` by an explicit invariant rather than left to carry a stale
+> value, so a policy change cannot silently reactivate a protection the fund no longer has.
 >
-> Resolving O-6 may require the recurrence to *amortise* the carried loss against gains above the
-> HWM rather than recompute it as a drawdown. Fixing the compounding above does not settle this.
+> ⚠️ **OPEN QUESTION O-6 — under `Both`, is the protected level `HWM`, or `HWM + LCF`? Needs a
+> fund-accounting decision; do not implement `ResetMode.Both` until it is answered.**
+>
+> The additive reading is coherent for a fund whose terms require recouping a prior loss *in addition
+> to* regaining the high-water mark, and it is stricter than a plain HWM. But it is a policy choice,
+> not a derivation: if LCF is the drawdown below the HWM (as now computed), adding it to the HWM
+> double-counts the same loss — a fund that falls to `90` and recovers to `105` is above its `100`
+> high-water mark yet still pays nothing until `110`. Whether that is the intended term or an
+> artefact of the formula is exactly the kind of question this blueprint should not answer on its
+> own. Resolving O-6 may require the recurrence to *amortise* the carried loss against gains above
+> the HWM rather than recompute it as a drawdown. Fixing the compounding above does not settle it,
+> and neither does the mode branching: the other two modes are unambiguous, `Both` is not.
 
 **Worked examples** (using the existing test's numbers: BeginningNav 1000, ending-before-incentive after
 a 20 management fee = 1180, prior HWM 1050 ⇒ `grossExcess = 1180 − 1050 = 130`, carry `c = 0.20`; annual
@@ -1100,7 +1110,7 @@ IIncentiveFeeStateService.CommitAsync
   ├─ AutomatedJournalDraftProjector.Project(event) → AutomatedJournalDraft   (per event)
   ├─ AutomatedJournalApproval.Submit(draft, actor, now, reason)              (Draft→Submitted; refuses unbalanced)
   ├─ .Approve(actor, now, reason, evidenceLinks)                             (requires evidence)
-  └─ ICommitIncentiveFeePeriod.CommitAsync(approvals, state, snapshot, expectedVersion)
+  └─ ICommitIncentiveFeePeriod.CommitAsync(approvals, scopeCommits)   // scopeCommits: one (state, snapshot, expectedVersion) PER SCOPE
         ├─ DurableAutomatedJournalPoster.PostAsync(approval, ...)            (Approved→Posted; appends via the governed journal store)
         └─ incentive_fee_state upsert + snapshot insert                      (same transaction, sets snapshot.SourceJournalEntryId)
 ```
@@ -1122,10 +1132,27 @@ The governed lifecycle is untouched: `AutomatedJournalApproval` still enforces
 >   trail has a gap exactly where the reconciliation would look.
 >
 > So the commit is **one transaction-capable port**, `ICommitIncentiveFeePeriod`, owning the durable
-> post and the state/snapshot write together — the same shape as the series lifecycle ports (§6.1).
-> Under `InvestorSeries` it takes *all* series' approvals, so a multi-series crystallization is one
-> atomic commit rather than one per series. The invariant is unchanged in intent — the HWM series and
-> the ledger never disagree — but it is now enforced by the transaction rather than by call ordering.
+> post and the state/snapshot writes together — the same shape as the series lifecycle ports (§6.1):
+>
+> ```csharp
+> public sealed record IncentiveFeeScopeCommit(
+>     IncentiveFeeStateRecord State, IncentiveFeeStateSnapshotRecord Snapshot, long ExpectedVersion);
+>
+> Task CommitAsync(
+>     IReadOnlyList<AutomatedJournalApproval> approvals,
+>     IReadOnlyList<IncentiveFeeScopeCommit> scopeCommits,   // ONE PER SCOPE, all in one transaction
+>     CancellationToken ct = default);
+> ```
+>
+> **The plural matters.** A `scopeCommits` collection is not cosmetic: an `InvestorSeries`
+> crystallization advances one HWM/LCF row *per series*, each with its own `expectedVersion`. A port
+> taking all the approvals but a single state would post every series' journal while advancing one
+> row — leaving the sibling series to earn fees again from stale protected levels, which is a worse
+> outcome than the non-atomic sequence it replaced. Every scope's optimistic-concurrency check is
+> evaluated inside the same transaction; any stale version aborts the whole commit.
+>
+> The invariant is unchanged in intent — the HWM series and the ledger never disagree — but it is now
+> enforced by the transaction rather than by call ordering.
 
 ### 8.3 Ordering and idempotency
 
@@ -1361,10 +1388,16 @@ Mirror `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs` style: `[Fact]` m
 34. `Consolidate_SameSeriesIdInTwoBooks_TouchesOnlyTheTargetBook`.
 35. `GetLiveIncentiveFeeState_AfterReopen_ReturnsReplacementNotHistorical`.
 
+36. `Compute_LossCarryforwardMode_UsesLcfNotHwm` — a `LossCarryforward` policy applies the LCF
+    alone, does not advance a candidate HWM, and charges more than the both-protections regression.
+37. `Commit_MultiSeries_AdvancesEverySeriesState` — N series crystallizing produce N advanced state
+    rows in one transaction; a stale `expectedVersion` on any one aborts the whole commit and
+    advances none.
+
 **Store (Postgres integration, mirroring tax-lot store tests):**
-36. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and
+38. `PostgresLedgerJournalStore_SaveAndGetIncentiveFeeState_RoundTrips` and
     `..._SaveIncentiveFeeState_RejectsStaleVersion`.
-37. `PostgresLedgerJournalStore_IncentiveFeeState_RejectsUnknownStatus` — the
+39. `PostgresLedgerJournalStore_IncentiveFeeState_RejectsUnknownStatus` — the
     `ck_incentive_fee_state_status` domain constraint holds, so a malformed status cannot slip past
     the partial uniqueness index.
 

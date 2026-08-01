@@ -338,17 +338,17 @@ public sealed record DepreciationProjection(
     public bool IsBalanced      => TotalDebits == TotalCredits;
 }
 
-/// <summary>Generates a period-by-period depreciation schedule for an asset.</summary>
-public interface IDepreciationScheduleCalculator
-{
-    // StraightLine and DecliningBalance produce a full forward schedule from the asset record alone.
-    // UnitsOfProduction is usage-driven: pass the projected (or actual) units for each period —
-    // when null, the calculator returns only the StraightLine/DecliningBalance schedule and reports
-    // that UnitsOfProduction requires per-period unit input (it cannot be projected forward blindly).
-    IReadOnlyList<DepreciationPeriodDto> BuildSchedule(
-        FixedAssetRecordDto asset,
-        IReadOnlyList<long>? projectedUnitsPerPeriod = null);
-}
+// DO NOT redeclare IDepreciationScheduleCalculator — it SHIPPED, with domain (not DTO) types:
+//
+//   IReadOnlyList<DepreciationPeriod> BuildSchedule(
+//       FixedAssetRecord asset, IReadOnlyList<long>? projectedUnitsPerPeriod = null);
+//
+// (src/Meridian.Ledger/IDepreciationScheduleCalculator.cs). Redeclaring it with Dto types either
+// duplicates the interface or replaces the signature and breaks its existing callers.
+//
+// The remaining DTO slice therefore MAPS INTO the shipped interface rather than redefining it:
+// the wire DTO is translated to FixedAssetRecord at the service boundary, and the returned
+// DepreciationPeriod list is projected back to DepreciationPeriodDto for the endpoint.
 public sealed record DepreciationPeriodDto(
     int PeriodIndex, DateOnly PeriodEnd,
     decimal OpeningNetBookValue, decimal DepreciationAmount, decimal ClosingNetBookValue);
