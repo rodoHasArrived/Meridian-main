@@ -44,6 +44,11 @@ manual override identifiers, asset class routing, and live-readiness evidence re
 server-owned metadata. Endpoint callers may name a run for validation, but retained live-readiness
 evidence must be supplied by server-side execution gates and is stripped before broker submission if
 a caller attempts to provide it.
+`ExecutionLogText.ForLog` renders caller-supplied order text — symbols, and rule reasons that embed
+them — for log output. Nothing upstream of the pre-trade gate is required to constrain a symbol
+(the Security Master gate is optional), so line breaks and other control characters are replaced
+and over-long values truncated before the value reaches a logger. It is a rendering concern only:
+the unaltered value still reaches the audit trail, where the serializer escapes it.
 
 ## Diagrams
 

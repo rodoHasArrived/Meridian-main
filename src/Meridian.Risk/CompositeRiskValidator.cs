@@ -115,7 +115,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
         {
             _logger.LogInformation(
                 "Pre-trade risk admitted order for {Symbol} as {Decision} with {ViolationCount} finding(s).",
-                request.Symbol,
+                ExecutionLogText.ForLog(request.Symbol),
                 result.Decision,
                 ordered.Count);
         }
@@ -183,7 +183,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 ex,
                 "Risk rule {RuleName} failed to evaluate order for {Symbol}; failing closed.",
                 rule.RuleName,
-                request.Symbol);
+                ExecutionLogText.ForLog(request.Symbol));
 
             return new RiskFinding(
                 Code: EvaluationFailedCode,
@@ -308,16 +308,21 @@ public sealed class CompositeRiskValidator : IRiskValidator
         reservations.Clear();
     }
 
+    /// <summary>
+    /// Records the rejection. Both the symbol and the blocking reason can carry caller-supplied
+    /// text — rules embed the symbol in their reason — so both are rendered through
+    /// <see cref="ExecutionLogText"/> rather than handed to the logger raw.
+    /// </summary>
     private void LogRejection(OrderRequest request, RiskValidationResult result)
     {
         var blocking = result.BlockingViolation;
         _logger.LogWarning(
             "Pre-trade risk rejected order for {Symbol}: {RuleName} ({Severity}) {Code} — {Reason}. {ViolationCount} finding(s) total.",
-            request.Symbol,
+            ExecutionLogText.ForLog(request.Symbol),
             blocking?.RuleName,
             blocking?.Severity,
             blocking?.Code,
-            blocking?.Message,
+            ExecutionLogText.ForLog(blocking?.Message),
             result.Violations.Count);
     }
 }

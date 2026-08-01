@@ -75,7 +75,10 @@ public sealed class PositionLimitRule : IRiskRule
                 ? string.Join(" ", decision.Reasons)
                 : "Position limit exceeded.";
             var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
-            _logger.LogWarning("Position limit rule rejected order for {Symbol}: {Reason}", request.Symbol, reason);
+            _logger.LogWarning(
+                "Position limit rule rejected order for {Symbol}: {Reason}",
+                ExecutionLogText.ForLog(request.Symbol),
+                ExecutionLogText.ForLog(reason));
 
             // Report the projected position the rule actually evaluated, not the current one.
             // A long 50 followed by a sell of 200 is rejected at -150 against a limit of 100;

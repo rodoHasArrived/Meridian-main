@@ -54,7 +54,10 @@ public sealed class DrawdownCircuitBreaker : IRiskRule
                 ? string.Join(" ", decision.Reasons)
                 : "Drawdown circuit breaker triggered.";
             var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
-            _logger.LogWarning("Circuit breaker triggered for {Symbol}: {Reason}", request.Symbol, reason);
+            _logger.LogWarning(
+                "Circuit breaker triggered for {Symbol}: {Reason}",
+                ExecutionLogText.ForLog(request.Symbol),
+                ExecutionLogText.ForLog(reason));
 
             // Report the drawdown percentage, not the portfolio's currency value: observed and
             // limit have to be in the same units or the recorded evidence reads as though a

@@ -34,6 +34,11 @@ declared `Severity` decides admission — `Info` and `Warning` annotate and admi
 `Critical` block — so a rule cannot contradict its own severity. A rule reports a `RiskFinding`
 describing what it measured; it never chooses the outcome.
 
+Risk decisions are log evidence, so the gate renders caller-supplied text through
+`ExecutionLogText.ForLog` before logging it. Both the symbol and a rule's reason can carry it — the
+F# position-limit rule embeds the symbol in its reason — and an unconstrained value containing a
+line break would otherwise render as a second log line that reads like a risk decision.
+
 Rules that consume finite capacity (the order-rate window) implement `IReservingRiskRule` and
 reserve atomically during evaluation. The validator releases those reservations if evaluation
 throws or is cancelled, and otherwise transfers them to the caller, which commits only once the
