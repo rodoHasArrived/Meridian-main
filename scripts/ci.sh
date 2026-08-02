@@ -188,6 +188,22 @@ verify_docs() {
   run_step "Validate dashboard type barrel" \
     "$python_cmd" build/scripts/ci/check-dashboard-type-barrel.py --summary
 
+  # An alert whose expr names a series the exporter never emits can never fire, and a
+  # runbook link that does not resolve strands the responder. Both used to be invisible.
+  run_step "Validate observability contract" \
+    "$python_cmd" build/scripts/ci/validate-observability-contract.py --summary
+
+  # The contract gate is static. It cannot tell whether a rule fires on the condition it
+  # claims, which is where every monitoring regression here has actually lived, so promtool
+  # runs the rule unit tests and `docker compose config` renders the deployed stacks.
+  # --allow-missing-tools keeps a local run useful; CI installs both and must not pass it.
+  local monitoring_tool_policy=()
+  if [[ -z "${GITHUB_ACTIONS:-}" ]]; then
+    monitoring_tool_policy+=(--allow-missing-tools)
+  fi
+  run_step "Validate monitoring deployment" \
+    "$python_cmd" build/scripts/ci/validate-monitoring-deployment.py --summary "${monitoring_tool_policy[@]}"
+
   run_step "Validate status docs delivery claims" \
     bash -c '"$0" scripts/check_status_delivery_claims.py && "$0" -m unittest tests/scripts/test_check_status_delivery_claims.py' "$python_cmd"
 
