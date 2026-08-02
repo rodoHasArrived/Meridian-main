@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**3809 / 8592** items documented (**44.3%**) &mdash; Grade: **D**
+**3811 / 8592** items documented (**44.4%**) &mdash; Grade: **D**
 
 ```text
-[=========-----------] 44.3%
+[=========-----------] 44.4%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 3683 | 8123 | 45.3% | D |
+| Public Classes / Interfaces | 3685 | 8123 | 45.4% | D |
 | API Endpoints | 112 | 316 | 35.4% | F |
 | Configuration Options | 3 | 142 | 2.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,13 +23,12 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4440 undocumented)
+### Public Classes / Interfaces (4438 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
 | `MarkToMarketPosition` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:11` |
 | `MarkPriceRejection` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:93` |
-| `MarkToMarketCarryingValueKey` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:115` |
 | `MarkToMarketCarryingValueRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:178` |
 | `IMarkToMarketCarryingValueSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:190` |
 | `DailyMarkToMarketRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:200` |
@@ -77,7 +76,8 @@
 | `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:523` |
 | `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543` |
 | `ScheduledBackfillType` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:187` |
-| ... and 4390 more | |
+| `BackfillSchedulePresets` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:213` |
+| ... and 4388 more | |
 
 ### API Endpoints (204 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4440 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4438 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 204 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 139 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
