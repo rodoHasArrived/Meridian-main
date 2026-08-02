@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Fail-closed inventory of every skipped test under an owned lane.
+"""Fail-closed inventory of every skipped .NET test under an owned lane.
+
+Scope: the C# and F# test projects under ``tests/``. Python suites under ``tests/scripts`` are
+**not** covered — the script runner reports its own skipped count, and those skips carry no owner,
+tracking reference, or review date through this register. Extending the inventory to them is
+tracked with ``PRD-112``; until then a green run here means "every .NET skip is owned", not
+"nothing is silently disabled".
 
 A skipped test reports the same green as a passing one. Left unregistered, skips accumulate
 silently: a test quarantined "temporarily" during a refactor keeps the suite green for years
@@ -68,6 +74,11 @@ BARE_IDENTIFIER = re.compile(r"^\s*[A-Za-z_][\w.]*\s*$")
 XUNIT_ATTRIBUTE_BASE = re.compile(
     r"(?::\s*|inherit\s+)(?:Xunit\.)?(?:Fact|Theory)(?:Attribute)?\b"
 )
+# `[<Fact(...)>]` in F# and `[Fact(...)]`/`[Theory(...)]`/`[DatabaseFact(...)]` in C#. Any
+# attribute whose name ends in Fact or Theory is an xUnit test attribute by convention, which is
+# how every custom gated attribute in this repository is named.
+ATTRIBUTE_OPENER = re.compile(r"\[\s*<?\s*(?P<name>[A-Za-z_][\w.]*)")
+XUNIT_TEST_ATTRIBUTE = re.compile(r"^(?:\w*\.)?\w*(?:Fact|Theory)(?:Attribute)?$")
 STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 PURE_LITERAL_EXPRESSION = re.compile(
     r"""^ \s* " (?: [^"\\] | \\. )* "
@@ -136,17 +147,23 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[tuple[int, bool
     as a real skipped test and failed the required workflow lane.
     """
     positions: list[tuple[int, bool]] = []
-    bracket_depth = 0
+    # The name opening each enclosing attribute list. `bracket_depth > 0` alone accepted
+    # `[UiOption(Skip = "cursor")]`, an ordinary attribute with a string property that happens to
+    # be called Skip, and made the gate demand a register entry for it. Only an xUnit test
+    # attribute can carry a real skip.
+    attribute_names: list[str] = []
     i = 0
     length = len(text)
     while i < length:
         ch = text[i]
         if ch == "[":
-            bracket_depth += 1
+            opener = ATTRIBUTE_OPENER.match(text, i)
+            attribute_names.append(opener.group("name") if opener else "")
             i += 1
             continue
         if ch == "]":
-            bracket_depth = max(0, bracket_depth - 1)
+            if attribute_names:
+                attribute_names.pop()
             i += 1
             continue
         if fsharp and ch == "(" and i + 1 < length and text[i + 1] == "*":
@@ -228,7 +245,10 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[tuple[int, bool
             before_is_identifier = i > 0 and IDENTIFIER_CHAR.match(text[i - 1]) is not None
             match = SKIP_KEYWORD.match(text, i)
             if match and not before_is_identifier:
-                positions.append((match.end(), bracket_depth > 0))
+                in_test_attribute = any(
+                    XUNIT_TEST_ATTRIBUTE.match(name) for name in attribute_names if name
+                )
+                positions.append((match.end(), in_test_attribute))
                 i = match.end()
                 continue
         i += 1

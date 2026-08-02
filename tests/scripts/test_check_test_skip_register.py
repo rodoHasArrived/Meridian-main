@@ -172,6 +172,37 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertIn("nameof(Disabled)", reasons)
 
+    def test_ignores_a_skip_property_on_a_non_test_attribute(self):
+        # Bracket depth alone accepted `[UiOption(Skip = "cursor")]` — an ordinary attribute with
+        # a string property that happens to be named Skip — and demanded a register entry for it.
+        # Being inside brackets is not being inside a test attribute.
+        (self.fixture.tests_dir / "OptionTests.cs").write_text(
+            "public sealed class T {\n"
+            '    [UiOption(Skip = "cursor")]\n'
+            "    public string Value { get; set; }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+
+        paths = {site.path for site in self.fixture.sites()}
+
+        self.assertNotIn("tests/Meridian.Tests/OptionTests.cs", paths)
+
+    def test_finds_a_skip_on_a_custom_fact_attribute(self):
+        # Custom gated attributes in this repository are all named *Fact/*Theory, so the
+        # convention is what distinguishes them from unrelated attributes.
+        (self.fixture.tests_dir / "GatedUseTests.cs").write_text(
+            "public sealed class T {\n"
+            '    [DatabaseFact(Skip = "Requires PostgreSQL.")]\n'
+            "    public void Disabled_Db() { }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("Requires PostgreSQL.", reasons)
+
     def test_ignores_a_skip_property_on_an_ordinary_dto(self):
         # `Skip` is not reserved. Counting every assignment made the gate demand a register entry
         # for a pagination offset, so adding a test for any type with a Skip property blocked CI
