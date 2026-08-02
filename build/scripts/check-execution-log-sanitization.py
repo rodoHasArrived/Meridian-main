@@ -16,6 +16,10 @@ caught in review even where the query is not run. Twice during PR #2554 an ad-ho
 declared clean and was not, both times because the pattern list below was too narrow —
 keep it here, in review, rather than in anyone's head.
 
+Runs as a required step in ``scripts/ci.sh`` ("Enforce execution log sanitization"),
+so a raw caller-controlled log argument fails the build rather than depending on
+someone remembering to run this by hand.
+
 Usage:
     python3 build/scripts/check-execution-log-sanitization.py [--list]
 

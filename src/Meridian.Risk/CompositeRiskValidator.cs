@@ -122,7 +122,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
         // so evaluating past a block cannot commit anything.
         var evaluated = new List<(IRiskRule Rule, RiskValidationResult Result)>(_rules.Count);
         var reservations = new List<IRiskReservation>();
-        var violations = new List<RiskViolation>();
+        // Priority rides alongside each violation rather than being recovered from RuleName later:
+        // two rules can share a name, and the ordering below is part of the public contract.
+        var violations = new List<(RiskViolation Violation, int Priority)>();
 
         try
         {
@@ -134,7 +136,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
                 if (!result.IsApproved)
                 {
-                    violations.Add(ToViolation(rule, result));
+                    violations.Add((ToViolation(rule, result), rule.Priority));
                 }
                 else if (result.Warnings.Count > 0)
                 {
@@ -143,7 +145,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     // structured set is complete without changing what the order does.
                     foreach (var warning in result.Warnings)
                     {
-                        violations.Add(new RiskViolation(
+                        violations.Add((new RiskViolation(
                             RuleName: rule.RuleName,
                             Severity: rule.Severity is RiskRuleSeverity.Info
                                 ? RiskRuleSeverity.Info
@@ -151,7 +153,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                             Code: result.Code ?? "RISK_OBSERVED",
                             Message: warning,
                             ObservedValue: result.ObservedValue,
-                            LimitValue: result.LimitValue));
+                            LimitValue: result.LimitValue), rule.Priority));
                     }
                 }
             }
@@ -161,11 +163,14 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // own the returned rejection: an earlier-priority Error rule must not swallow it.
             foreach (var (rule, result) in evaluated)
             {
-                if (result.IsApproved || result.IsUnmeasurable || result.RequiresApproval)
+                if (result.IsApproved || result.IsUnmeasurable)
                 {
                     continue;
                 }
 
+                // RequiresApproval is deliberately not consulted: a Critical rule cannot escalate
+                // past its own severity. Block-before-Escalate is the blueprint's precedence, and
+                // a halt that an operator could release by approving one order is not a halt.
                 if (rule.Severity == RiskRuleSeverity.Critical && !IsEvaluationFailure(result))
                 {
                     _logger.LogError(
@@ -180,9 +185,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // order that a later rule hard-rejects offers the operator a release that cannot work.
             var hasBlockingBreach = evaluated.Any(static entry =>
                 !entry.Result.IsApproved
-                && !entry.Result.RequiresApproval
                 && (IsEvaluationFailure(entry.Result)
-                    || entry.Rule.Severity is RiskRuleSeverity.Error or RiskRuleSeverity.Critical));
+                    // Critical is blocking whatever the result asks for; Error only when the rule
+                    // itself did not request escalation for this order.
+                    || entry.Rule.Severity is RiskRuleSeverity.Critical
+                    || (entry.Rule.Severity is RiskRuleSeverity.Error && !entry.Result.RequiresApproval)));
 
             foreach (var (rule, result) in evaluated)
             {
@@ -290,7 +297,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
             var approved = WithWarnings(RiskValidationResult.Approved(), warnings) with
             {
-                Violations = violations,
+                Violations = Ordered(),
 
                 // Ownership of the reserved capacity moves to the caller here, and only here.
                 // Passing the gate is not the same as routing — client-order-id registration,
@@ -329,8 +336,17 @@ public sealed class CompositeRiskValidator : IRiskValidator
         RiskValidationResult Block(RiskValidationResult result)
         {
             RollbackAll(reservations);
-            return result with { Violations = violations };
+            return result with { Violations = Ordered() };
         }
+
+        // Severity descending, then the declaring rule's priority ascending — the order
+        // RiskValidationResult.Violations documents, and the order BlockingViolation relies on to
+        // name the most severe breach rather than the earliest-evaluated one.
+        IReadOnlyList<RiskViolation> Ordered() => violations
+            .OrderByDescending(static entry => entry.Violation.Severity)
+            .ThenBy(static entry => entry.Priority)
+            .Select(static entry => entry.Violation)
+            .ToList();
     }
 
     /// <summary>

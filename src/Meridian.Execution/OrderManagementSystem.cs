@@ -371,6 +371,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 riskDecision = riskResult;
                 if (!riskResult.IsApproved)
                 {
+                    // Settled here rather than relying on CompositeRiskValidator releasing its own
+                    // capacity before returning. The public contract says a normal return transfers
+                    // ownership and the caller settles every path, so an alternate IRiskValidator
+                    // may hand back a rejected result still holding slots. Rolling back is safe
+                    // either way: settlement is idempotent, and the built-in validator returns an
+                    // empty set on this path.
+                    SettleRiskReservations(riskResult, commit: false, orderId);
+
                     // A parked escalation is not a rejection: the order awaits a governed
                     // approval decision, and the result says so in a typed way instead of
                     // hiding the queue entry inside a rejection string.

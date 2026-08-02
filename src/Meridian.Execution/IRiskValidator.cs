@@ -33,18 +33,24 @@ public sealed record RiskValidationResult
     /// <summary>
     /// True when the order may route.
     /// <para>
-    /// Fails closed against its own violation set: a caller that asserts approval while carrying an
-    /// <see cref="RiskRuleSeverity.Error"/> or <see cref="RiskRuleSeverity.Critical"/> violation is
-    /// contradicting itself, and the OMS routes on this property. Deriving the conjunction rather
-    /// than trusting the flag makes that combination unrepresentable through any construction path,
-    /// including the object initializers and <c>with</c> expressions this type is built with.
+    /// Fails closed against the rest of its own state. A caller that asserts approval while
+    /// carrying an <see cref="RiskRuleSeverity.Error"/> or <see cref="RiskRuleSeverity.Critical"/>
+    /// violation — or while asking for governed approval via <see cref="RequiresApproval"/> — is
+    /// contradicting itself, and the OMS routes on this property alone. Deriving the conjunction
+    /// rather than trusting the flag makes those combinations unrepresentable through every
+    /// construction path, including the object initializers and <c>with</c> expressions this type
+    /// is built with. Sealing construction behind factories would only cover the paths the
+    /// factories own.
     /// </para>
     /// </summary>
     public required bool IsApproved
     {
-        get => _isApproved && !_violations.Any(static violation => violation.IsBlocking);
+        get => _isApproved
+            && !RequiresApproval
+            && !_violations.Any(static violation => violation.IsBlocking);
         init => _isApproved = value;
     }
+
     public string? RejectReason { get; init; }
 
     /// <summary>
