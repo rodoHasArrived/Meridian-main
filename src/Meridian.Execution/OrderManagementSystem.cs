@@ -517,6 +517,18 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // reservation on it has nothing left to protect.
             ReleaseParkedOrderReservation(orderId);
         }
+        catch
+        {
+            // Everything between the gate approving and the gateway call is bookkeeping that can
+            // throw — warning retention, audit writes, a faulting logger provider. Without this,
+            // such a failure unwound releasing only the semaphore and left the reserved rate slot
+            // held for the process's lifetime, for an order that was never even registered.
+            //
+            // Rollback, not commit: nothing has reached the gateway at this point, so unlike the
+            // ambiguous post-dispatch case there is nothing to over-count for.
+            SettleRiskReservations(riskDecision, commit: false, orderId);
+            throw;
+        }
         finally
         {
             // The order is registered (or the submission has already returned), so its
@@ -1204,32 +1216,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
 
         return true;
-    }
-
-    private static OrderState CreateRejectedState(
-        string orderId,
-        OrderRequest request,
-        string? reason)
-    {
-        return new OrderState
-        {
-            OrderId = orderId,
-            Symbol = request.Symbol,
-            Side = request.Side,
-            Type = request.Type,
-            Quantity = request.Quantity,
-            LimitPrice = request.LimitPrice,
-            StopPrice = request.StopPrice,
-            Status = OrderStatus.Rejected,
-            CreatedAt = DateTimeOffset.UtcNow,
-            LastUpdatedAt = DateTimeOffset.UtcNow,
-            StrategyId = request.StrategyId,
-            // Fund scope survives a rejection: a parked order's state is built here, and
-            // cancelling one withdraws its approval — authorized against this field.
-            FundAccountId = request.FundAccountId,
-            AverageFillPrice = null,
-            FilledQuantity = 0m
-        };
     }
 
     private static bool IsTerminal(OrderStatus status) =>

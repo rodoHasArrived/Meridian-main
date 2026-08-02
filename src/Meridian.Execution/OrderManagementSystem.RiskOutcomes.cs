@@ -977,4 +977,30 @@ public sealed partial class OrderManagementSystem
             ErrorMessage = message
         };
     }
+
+    private static OrderState CreateRejectedState(
+        string orderId,
+        OrderRequest request,
+        string? reason)
+    {
+        return new OrderState
+        {
+            OrderId = orderId,
+            Symbol = request.Symbol,
+            Side = request.Side,
+            Type = request.Type,
+            Quantity = request.Quantity,
+            LimitPrice = request.LimitPrice,
+            StopPrice = request.StopPrice,
+            Status = OrderStatus.Rejected,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow,
+            StrategyId = request.StrategyId,
+            // Fund scope survives a rejection: a parked order's state is built here, and
+            // cancelling one withdraws its approval — authorized against this field.
+            FundAccountId = request.FundAccountId,
+            AverageFillPrice = null,
+            FilledQuantity = 0m
+        };
+    }
 }
