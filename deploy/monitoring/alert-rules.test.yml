@@ -1,0 +1,375 @@
+# =============================================================================
+# promtool unit tests for deploy/monitoring/alert-rules.yml
+# =============================================================================
+# Run with:
+#   promtool test rules deploy/monitoring/alert-rules.test.yml
+#
+# `promtool check rules` only proves the file parses. It says nothing about
+# whether a rule fires on the condition it claims, and every alert defect this
+# repository has hit was of that second kind: a rate() window that went quiet
+# while the fault persisted, an equality test that went silent during recovery,
+# and thresholds on gauges with no writer that fired permanently on a healthy
+# instance. These tests pin the firing behaviour itself.
+#
+# Negative cases matter as much as positive ones here — several rules exist to
+# stay silent until their instrumentation lands.
+# =============================================================================
+
+rule_files:
+  - alert-rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  # --- MeridianDown ----------------------------------------------------------
+  - interval: 1m
+    name: MeridianDown fires only after the process has been unreachable for a minute
+    input_series:
+      - series: 'up{job="meridian"}'
+        values: "0+0x10"
+    alert_rule_test:
+      - eval_time: 30s
+        alertname: MeridianDown
+        exp_alerts: []
+      - eval_time: 2m
+        alertname: MeridianDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              incident_priority: P1
+              job: meridian
+            exp_annotations:
+              summary: "Meridian is down"
+              description: "The Meridian instance has been unreachable for more than 1 minute."
+              runbook_url: "docs/operators/operator-runbook.md#application-down"
+              probable_causes: "Process crashed, host unreachable, port blocked, OOM killed"
+              immediate_mitigation: "1. Check process status (systemctl status meridian). 2. Check system logs (journalctl -u meridian). 3. Restart service if crashed. 4. Check disk space and memory."
+              rollback_criteria: "Health endpoint returns 200 within 30 seconds of restart"
+
+  - interval: 1m
+    name: MeridianDown stays silent while the process is scraping
+    input_series:
+      - series: 'up{job="meridian"}'
+        values: "1+0x10"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: MeridianDown
+        exp_alerts: []
+
+  # --- MeridianStorageWriteErrors -------------------------------------------
+  # WriteAheadLog advances this counter once, during RecoverAsync at startup. A
+  # rate() window would clear a P1 integrity alert minutes later while the
+  # corruption was still unreconciled, so the rule tests the absolute total and
+  # must keep firing for as long as the count stands.
+  - interval: 1m
+    name: MeridianStorageWriteErrors keeps firing while the corruption count stands
+    input_series:
+      - series: "mdc_wal_recovery_corrupted_records_total"
+        values: "3+0x60"
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: MeridianStorageWriteErrors
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              incident_priority: P1
+            exp_annotations:
+              summary: "Storage write integrity errors detected"
+              description: "Recovery encountered 3 corrupted write-ahead log record(s); committed data was not durably retained."
+              runbook_url: "docs/operators/operator-runbook.md#storage-write-errors"
+              probable_causes: "Disk full, filesystem permissions, I/O errors, WAL corruption, storage path misconfigured"
+              immediate_mitigation: "1. Check disk space immediately. 2. Verify storage path permissions. 3. Capture the corrupted records before any repair. 4. Review storage error logs for root cause."
+              rollback_criteria: "The affected window is reconciled and a subsequent restart recovers with zero corrupted records"
+      # Forty minutes later the count has not moved and neither has the fault.
+      - eval_time: 45m
+        alertname: MeridianStorageWriteErrors
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              incident_priority: P1
+            exp_annotations:
+              summary: "Storage write integrity errors detected"
+              description: "Recovery encountered 3 corrupted write-ahead log record(s); committed data was not durably retained."
+              runbook_url: "docs/operators/operator-runbook.md#storage-write-errors"
+              probable_causes: "Disk full, filesystem permissions, I/O errors, WAL corruption, storage path misconfigured"
+              immediate_mitigation: "1. Check disk space immediately. 2. Verify storage path permissions. 3. Capture the corrupted records before any repair. 4. Review storage error logs for root cause."
+              rollback_criteria: "The affected window is reconciled and a subsequent restart recovers with zero corrupted records"
+
+  - interval: 1m
+    name: MeridianStorageWriteErrors stays silent after a clean recovery
+    input_series:
+      - series: "mdc_wal_recovery_corrupted_records_total"
+        values: "0+0x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianStorageWriteErrors
+        exp_alerts: []
+
+  # --- MeridianProviderDisconnected -----------------------------------------
+  # 0=Closed, 1=Open, 2=HalfOpen. Half-open still means the provider is unusable
+  # and resubscription is only probing; an equality test would go silent exactly
+  # during recovery and leave a flapping provider unmonitored.
+  - interval: 1m
+    name: MeridianProviderDisconnected covers the half-open state
+    input_series:
+      - series: "mdc_circuit_breaker_state"
+        values: "2+0x10"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: MeridianProviderDisconnected
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "Provider circuit breaker open"
+              description: "The streaming provider circuit breaker has been open for 2 minutes; resubscription is backing off."
+              runbook_url: "docs/operators/operator-runbook.md#provider-disconnected"
+              probable_causes: "API key expired/invalid, provider service outage, network connectivity issue, rate limit exceeded"
+              immediate_mitigation: "1. Check provider status page. 2. Verify API credentials. 3. Check rate limit counters. 4. Trigger manual reconnect or failover."
+              rollback_criteria: "mdc_circuit_breaker_state returns to 0 and mdc_symbols_circuit_open reaches 0"
+
+  - interval: 1m
+    name: MeridianProviderDisconnected stays silent while the breaker is closed
+    input_series:
+      - series: "mdc_circuit_breaker_state"
+        values: "0+0x10"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: MeridianProviderDisconnected
+        exp_alerts: []
+
+  # --- MeridianNoEventsPublished --------------------------------------------
+  - interval: 1m
+    name: MeridianNoEventsPublished does not page a freshly started process
+    input_series:
+      # Never published. A ten-minute increase is already zero one minute in, so
+      # an unguarded rule pages every start-up.
+      - series: "mdc_events_published_total"
+        values: "0+0x30"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: MeridianNoEventsPublished
+        exp_alerts: []
+
+  - interval: 1m
+    name: MeridianNoEventsPublished reports a cold start that never publishes
+    input_series:
+      # A process whose provider is broken from the first second never publishes. Guarding on
+      # a prior publication suppressed this permanently — the exact outage the rule is for.
+      - series: "mdc_events_published_total"
+        values: "0+0x30"
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: MeridianNoEventsPublished
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "No events published in 10 minutes"
+              description: "The event pipeline has not published any events for 10 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#no-events"
+              probable_causes: "All providers disconnected, market closed (check TradingCalendar), subscription failure, network outage"
+              immediate_mitigation: "1. Check market hours first — outside session hours this is expected. 2. Check /api/providers/status for connection state. 3. Test provider connectivity."
+
+  - interval: 1m
+    name: MeridianNoEventsPublished fires on a stalled feed
+    input_series:
+      # Published steadily for ten minutes, then flat.
+      - series: "mdc_events_published_total"
+        values: "1+1x10 11+0x30"
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: MeridianNoEventsPublished
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: MeridianNoEventsPublished
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "No events published in 10 minutes"
+              description: "The event pipeline has not published any events for 10 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#no-events"
+              probable_causes: "All providers disconnected, market closed (check TradingCalendar), subscription failure, network outage"
+              immediate_mitigation: "1. Check market hours first — outside session hours this is expected. 2. Check /api/providers/status for connection state. 3. Test provider connectivity."
+
+  # --- Rules awaiting instrumentation ---------------------------------------
+  # Nothing calls PrometheusMetrics.UpdateSlaMetrics or RecordSlaFreshness, so
+  # these gauges sit at their default 0. A bare `< 95` would page permanently on
+  # a healthy instance. The `> 0` guards keep the runbook and SLO linkage in
+  # place while the rules stay honestly silent; these tests fail the moment a
+  # guard is removed without the writer being wired.
+  - interval: 1m
+    name: SLA rules stay silent while their gauges have no writer
+    input_series:
+      - series: "mdc_sla_freshness_score"
+        values: "0+0x60"
+      - series: "mdc_sla_violation_symbols"
+        values: "0+0x60"
+    alert_rule_test:
+      - eval_time: 45m
+        alertname: MeridianSlaComplianceLow
+        exp_alerts: []
+      - eval_time: 45m
+        alertname: MeridianDataFreshnessViolation
+        exp_alerts: []
+
+  - interval: 1m
+    name: MeridianSlaComplianceLow fires once the freshness score is written
+    input_series:
+      - series: "mdc_sla_freshness_score"
+        values: "80+0x60"
+    alert_rule_test:
+      - eval_time: 45m
+        alertname: MeridianSlaComplianceLow
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "SLA compliance below 95%"
+              description: "The composite data freshness score has dropped to 80."
+              runbook_url: "docs/operators/operator-runbook.md#sla-compliance"
+              probable_causes: "Multiple provider degradations, systematic processing delays, infrastructure issues"
+              immediate_mitigation: "1. Review /api/sla/violations for affected symbols. 2. Check /api/sla/metrics for trends. 3. Evaluate provider health across all active providers."
+
+  # --- Drop-rate rules -------------------------------------------------------
+  - interval: 1m
+    name: Drop-rate rules stay silent on a clean pipeline
+    input_series:
+      - series: "mdc_drop_rate_percent"
+        values: "0+0x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianHighDropRate
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: MeridianUnhealthy
+        exp_alerts: []
+
+  - interval: 1m
+    name: MeridianUnhealthy escalates above MeridianHighDropRate
+    input_series:
+      - series: "mdc_drop_rate_percent"
+        values: "9+0x30"
+    alert_rule_test:
+      # 9% crosses both the 1% warning and the 5% unhealthy threshold; the
+      # shorter `for` on MeridianUnhealthy means it is pending first.
+      - eval_time: 20m
+        alertname: MeridianHighDropRate
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "High pipeline event drop rate (9%)"
+              description: "More than 1% of events have been dropped over the last 5 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#high-drop-rate"
+              probable_causes: "Storage sink blocking (slow disk I/O), pipeline queue at capacity, too many subscriptions for processing capacity"
+              immediate_mitigation: "1. Check /api/backpressure for queue utilization. 2. Monitor disk I/O latency. 3. Consider reducing symbol subscriptions. 4. Check EventPipeline channel capacity."
+
+  # --- Coverage for the remaining deployed alerts -----------------------------
+  # validate-monitoring-deployment.py fails if any non-disabled alert lacks a
+  # positive case here. A green promtool run only exercises the cases present,
+  # so an untested rule is indistinguishable from a working one.
+  - interval: 1m
+    name: MeridianUnhealthy fires on a sustained high drop rate
+    input_series:
+      - series: "mdc_drop_rate_percent"
+        values: "9+0x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianUnhealthy
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "Meridian reports unhealthy"
+              description: "More than 5% of events have been dropped for 2 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#unhealthy-status"
+              probable_causes: "Provider disconnected, storage write failures, pipeline backpressure, dependency timeout"
+              immediate_mitigation: "1. Check /health/detailed for specific failing checks. 2. Review recent error logs. 3. Verify provider connectivity."
+
+  - interval: 1m
+    name: MeridianPipelineBackpressure fires on a sustained absolute drop rate
+    input_series:
+      # 20 drops/sec: 1200 per minute, comfortably over the 10/sec threshold.
+      - series: "mdc_events_dropped_total"
+        values: "0+1200x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianPipelineBackpressure
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "Pipeline shedding load (20 events/sec dropped)"
+              description: "More than 10 events/sec have been dropped for 2 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#pipeline-backpressure"
+              probable_causes: "Consumer slower than producer, storage write latency, burst of market data events"
+              immediate_mitigation: "1. Check storage write latency metrics. 2. Verify disk health. 3. Consider pausing non-critical subscriptions."
+
+  - interval: 1m
+    name: MeridianPipelineBackpressure stays silent on a light drop rate
+    input_series:
+      # 1 drop/sec is under the threshold; a percentage-based rule would miss the
+      # distinction this one exists to make.
+      - series: "mdc_events_dropped_total"
+        values: "0+60x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianPipelineBackpressure
+        exp_alerts: []
+
+  - interval: 1m
+    name: MeridianHighProviderLatency fires above the SLO critical threshold
+    input_series:
+      - series: "mdc_average_latency_microseconds"
+        values: "6000+0x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianHighProviderLatency
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P3
+            exp_annotations:
+              summary: "High event processing latency"
+              description: "Mean event processing latency exceeds 5000 microseconds."
+              runbook_url: "docs/operators/operator-runbook.md#high-latency"
+              probable_causes: "Provider under load, network congestion, DNS resolution delays, WebSocket reconnection overhead"
+              immediate_mitigation: "1. Check provider latency trends at /api/providers/latency. 2. Consider switching to backup provider. 3. Verify network path quality."
+
+  - interval: 1m
+    name: MeridianLowDataQuality fires below the SLO critical threshold
+    input_series:
+      - series: "mdc_validation_pass_rate_percent"
+        values: "70+0x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: MeridianLowDataQuality
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P3
+            exp_annotations:
+              summary: "Low data quality score (70%)"
+              description: "The validation pass rate is 70%, below the 80% threshold."
+              runbook_url: "docs/operators/operator-runbook.md#low-data-quality"
+              probable_causes: "Data gaps from provider outage, stale quotes, sequence errors, bad tick data from provider"
+              immediate_mitigation: "1. Read mdc_validation_rejected_total by error_type. 2. Check /api/quality/gaps for gap analysis. 3. Compare across providers at /api/quality/comparison/{symbol} for an affected symbol. 4. Consider triggering gap-fill backfill."
+
+  - interval: 1m
+    name: MeridianLowDataQuality stays silent on a healthy pass rate
+    input_series:
+      - series: "mdc_validation_pass_rate_percent"
+        values: "99+0x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: MeridianLowDataQuality
+        exp_alerts: []

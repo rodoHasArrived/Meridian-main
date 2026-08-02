@@ -1,12 +1,12 @@
 {
-  "total_files": 639,
-  "total_lines": 119181,
+  "total_files": 641,
+  "total_lines": 119811,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 186.5,
-  "health_score": 79,
+  "average_lines": 186.9,
+  "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2578,7 +2578,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9663,
+      "line_count": 9671,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2666,7 +2666,7 @@
     },
     {
       "path": "docs/operations/operator-runbook.md",
-      "line_count": 18,
+      "line_count": 20,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2682,7 +2682,7 @@
     },
     {
       "path": "docs/operations/service-level-objectives.md",
-      "line_count": 13,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2723,6 +2723,14 @@
     {
       "path": "docs/operators/governed-reporting-operations.md",
       "line_count": 365,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/operator-runbook.md",
+      "line_count": 333,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2778,7 +2786,7 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 188,
+      "line_count": 192,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2787,6 +2795,14 @@
     {
       "path": "docs/operators/reconciliation-operations.md",
       "line_count": 90,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/service-level-objectives.md",
+      "line_count": 281,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
