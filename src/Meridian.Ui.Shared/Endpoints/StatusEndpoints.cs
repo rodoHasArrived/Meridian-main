@@ -97,9 +97,9 @@ public static class StatusEndpoints
             .WithName("GetLivez").WithTags("Health").Produces(200);
 
         // Prometheus metrics
-        app.MapGet(UiApiRoutes.Metrics, () =>
+        app.MapGet(UiApiRoutes.Metrics, async (CancellationToken cancellationToken) =>
         {
-            var content = handlers.GetPrometheusMetrics();
+            var content = await handlers.GetPrometheusMetricsAsync(cancellationToken).ConfigureAwait(false);
             return Results.Content(content, "text/plain; version=0.0.4");
         })
         .WithName("GetMetrics")
