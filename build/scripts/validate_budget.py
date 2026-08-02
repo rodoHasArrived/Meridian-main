@@ -267,7 +267,25 @@ def best_result_for(
     *all_stage_names* supplies the sibling budgets to test ambiguity against; when omitted the
     ambiguity rule cannot apply and behaviour is unchanged.
     """
-    exact = [r for r in results if _normalise(stage_name) in _normalise(r.method_name)]
+    # An exact match is containment, so prefix-related siblings both match one result:
+    # `Bench.ParseTrade` contains both `Parse` and `Parse_Trade`, and crediting it to each let
+    # the never-executed `Parse` benchmark read as measured and slip past the unmeasured gate.
+    # The longest contained stage name is the one the result actually describes; a shorter
+    # sibling contained in the same method name has no claim on it.
+    mine = _normalise(stage_name)
+    siblings = (
+        [_normalise(s) for s in all_stage_names if s != stage_name]
+        if all_stage_names is not None
+        else []
+    )
+    exact = [
+        r for r in results
+        if mine in _normalise(r.method_name)
+        and not any(
+            len(sibling) > len(mine) and sibling in _normalise(r.method_name)
+            for sibling in siblings
+        )
+    ]
     if exact:
         return min(exact, key=lambda r: r.allocated_bytes)
 

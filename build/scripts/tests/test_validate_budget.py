@@ -558,3 +558,23 @@ class TestNonFiniteMeasurements:
         # Every comparison against NaN is False, so leaving the row in reported the stage as
         # measured and comfortably within budget, and wrote NaN into the evidence file.
         assert [r.method_name for r in rows] == ["DedupKey_Real"]
+
+
+class TestPrefixRelatedSiblingBudgets:
+    """`Bench.ParseTrade` contains both `Parse` and `Parse_Trade`."""
+
+    RESULT = [vb.BdnResult(method_name="Bench.ParseTrade", mean_ns=1.0, allocated_bytes=0.0)]
+    STAGES = ["Parse", "Parse_Trade"]
+
+    def test_the_shorter_prefix_sibling_stays_unmeasured(self):
+        # Crediting one result to both stages let the never-executed `Parse` benchmark read as
+        # measured and slip past the unmeasured-budget gate.
+        assert vb.best_result_for("Parse", self.RESULT, self.STAGES) is None
+
+    def test_the_stage_the_result_describes_still_claims_it(self):
+        best = vb.best_result_for("Parse_Trade", self.RESULT, self.STAGES)
+
+        assert best is not None and best.method_name == "Bench.ParseTrade"
+
+    def test_without_sibling_context_behaviour_is_unchanged(self):
+        assert vb.best_result_for("Parse", self.RESULT) is not None

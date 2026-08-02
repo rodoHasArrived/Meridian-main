@@ -611,3 +611,58 @@ class BarrelSyntaxCoverageTests(unittest.TestCase):
 
         self.assertFalse(any("destructured" in p for p in problems), msg=problems)
         self.assertEqual(counts["duplicates"], 0)
+
+
+class ImportedReexportOriginTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_a_local_export_of_an_imported_name_resolves_to_its_source(self):
+        # TypeScript keeps `Shared` unambiguous here: both modules publish origin's binding.
+        self.fixture.write_module(
+            "workstation-1",
+            ['import type { Shared } from "../origin";', "export type { Shared };"],
+        )
+        self.fixture.write_module("workstation-2", ['export { Shared } from "../origin";'])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0, msg=problems)
+
+    def test_an_aliased_import_resolves_to_the_original_binding(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ['import type { Row as Shared } from "../origin";', "export type { Shared };"],
+        )
+        self.fixture.write_module("workstation-2", ['export { Row as Shared } from "../origin";'])
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0)
+
+    def test_a_local_export_of_a_locally_declared_name_still_collides(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ["interface Shared { id: string; }", "export { Shared };"],
+        )
+        self.fixture.write_module("workstation-2", ["export interface Shared { id: string; }"])
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+
+    def test_imports_from_different_sources_still_collide(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ['import type { Shared } from "../origin-a";', "export type { Shared };"],
+        )
+        self.fixture.write_module(
+            "workstation-2",
+            ['import type { Shared } from "../origin-b";', "export type { Shared };"],
+        )
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)

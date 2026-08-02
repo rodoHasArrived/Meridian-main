@@ -86,6 +86,11 @@ NAMED_REEXPORT = re.compile(
     r"(?<![\w$.])export\s+type\s*\{(?P<names>[^}]*)\}|(?<![\w$.])export\s*\{(?P<plain>[^}]*)\}",
     re.MULTILINE,
 )
+# `import type { Shared } from "./origin"` followed by a local `export type { Shared }` still
+# publishes origin's binding, so the export has to be resolved through the import rather than
+# attributed to this module — otherwise a sibling re-exporting the same original binding looked
+# like a second binding and the gate blocked a barrel TypeScript keeps unambiguous.
+NAMED_IMPORT = re.compile(r"(?<![\w$.])import\s+(?:type\s+)?\{(?P<names>[^}]*)\}", re.MULTILINE)
 # Inside the braces: `Name`, `Name as Alias`, `type Name`, `default as Name`. The published name
 # is the alias when present, otherwise the name itself.
 REEXPORT_SPECIFIER = re.compile(r"(?:type\s+)?(?P<name>[A-Za-z_$][\w$]*)(?:\s+as\s+(?P<alias>[A-Za-z_$][\w$]*))?")
@@ -322,6 +327,20 @@ def declared_names(module_path: Path, module: str = "") -> list[tuple[str, str]]
         prefix = text[line_starts[line] : offset]
         return depth_at_line_start[line] + prefix.count("{") - prefix.count("}") == 0
 
+    # local name -> the binding it was imported from, for resolving `export { X }` with no
+    # `from` clause. `import { A as B }` binds local B to the target's A.
+    imported: dict[str, str] = {}
+    for match in NAMED_IMPORT.finditer(text):
+        if not at_module_scope(match.start()):
+            continue
+        target = specifier_after(match.end())
+        if target is None:
+            continue
+        source = resolve(target)
+        for specifier in REEXPORT_SPECIFIER.finditer(match.group("names") or ""):
+            local = specifier.group("alias") or specifier.group("name")
+            imported[local] = f"{source}:{specifier.group('name')}"
+
     names: list[tuple[str, str]] = []
     for match in DECLARATION.finditer(text):
         if at_module_scope(match.start()):
@@ -338,8 +357,17 @@ def declared_names(module_path: Path, module: str = "") -> list[tuple[str, str]]
         for specifier in REEXPORT_SPECIFIER.finditer(body or ""):
             published = specifier.group("alias") or specifier.group("name")
             # `export { default as X }` publishes X; a bare `default` publishes nothing here.
-            if published != "default":
-                names.append((published, f"{source}:{specifier.group('name')}"))
+            if published == "default":
+                continue
+            local = specifier.group("name")
+            # A local clause re-exporting an imported name resolves to where it was imported
+            # from, not to this module.
+            origin = (
+                imported[local]
+                if target is None and local in imported
+                else f"{source}:{local}"
+            )
+            names.append((published, origin))
 
     for match in NAMESPACE_REEXPORT.finditer(text):
         if not at_module_scope(match.start()):
