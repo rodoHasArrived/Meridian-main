@@ -300,6 +300,19 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertNotIn("tests/Meridian.Tests/AttrCommentTests.fs", paths)
 
+    def test_finds_an_fsharp_skip_after_a_semicolon_separator(self):
+        # F# separates attributes inside `[< >]` with semicolons, not commas, so recognising only
+        # commas kept the owner at Trait and omitted a real skipped fact.
+        (self.fixture.tests_dir / "SemiAttrTests.fs").write_text(
+            '[<Trait("Category", "Slow"); Fact(Skip = "F# section case.")>]\n'
+            "let ``disabled section case`` () = ()\n",
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("F# section case.", reasons)
+
     def test_finds_a_real_fsharp_skip_outside_a_block_comment(self):
         # The comment fix must not blind the scan to genuine F# skips.
         (self.fixture.tests_dir / "GatedTests.fs").write_text(
@@ -418,6 +431,24 @@ class DiscoverSkipsTests(unittest.TestCase):
         (obj_dir / "Generated.cs").write_text(QUARANTINED_SOURCE, encoding="utf-8")
 
         self.assertEqual(len(self.fixture.sites()), 1)
+
+
+class NullMetadataTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = SkipRegisterFixture(Path(self._tmp.name))
+
+    def test_a_null_owner_is_not_accepted_as_ownership(self):
+        # str(None) is the non-empty string "None", so a null owner passed validation and the
+        # gate reported the skip owned on metadata that names nobody.
+        bad = entry(SkipRegisterFixture.QUARANTINE_PATH, SkipRegisterFixture.QUARANTINE_REASON)
+        bad["owner"] = None
+        self.fixture.write_register([bad])
+
+        problems = self.fixture.problems()
+
+        self.assertTrue(any("owner" in p for p in problems), msg=problems)
 
 
 class EvaluateTests(unittest.TestCase):

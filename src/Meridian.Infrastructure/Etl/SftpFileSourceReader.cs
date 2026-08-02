@@ -11,19 +11,18 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
     private readonly ISftpCredentialResolver _credentialResolver;
     private readonly ISftpCapabilityService _capabilityService;
 
-    public SftpFileSourceReader(EtlStagingStore stagingStore, ISftpClientFactory clientFactory)
-        : this(stagingStore, clientFactory, new EnvironmentSftpCredentialResolver(), new SftpCapabilityService())
-    {
-    }
-
-    public SftpFileSourceReader(
-        EtlStagingStore stagingStore,
-        ISftpClientFactory clientFactory,
-        ISftpCredentialResolver credentialResolver)
-        : this(stagingStore, clientFactory, credentialResolver, new SftpCapabilityService())
-    {
-    }
-
+    /// <summary>
+    /// Creates a reader. Every dependency is required, including the capability gate.
+    /// </summary>
+    /// <remarks>
+    /// The convenience overloads that defaulted <paramref name="capabilityService"/> to a fresh
+    /// <see cref="SftpCapabilityService"/> are gone. In a default EnableSftp=false build that
+    /// default reports not-ready, so a caller supplying a working custom
+    /// <see cref="ISftpClientFactory"/> through a short overload had every connection path throw
+    /// before its factory was reached — the overload silently disabled the transport it was given.
+    /// Requiring the argument makes that a compile error instead of a runtime surprise, and
+    /// matches <see cref="SftpFilePublisher"/>.
+    /// </remarks>
     public SftpFileSourceReader(
         EtlStagingStore stagingStore,
         ISftpClientFactory clientFactory,

@@ -229,10 +229,14 @@ def declared_names(module_path: Path) -> list[str]:
 def discover_contract_modules(types_dir: Path) -> list[str]:
     """Return the module stems under src/types/, excluding test files."""
     stems = []
-    for path in sorted(types_dir.glob("*.ts")):
+    # Recursive: a contract at src/types/accounting/ledger.ts was invisible to a flat glob, so it
+    # could be absent from both the barrel and STANDALONE_MODULES while the orphan-module check
+    # reported success. Barrel entries and module_path already carry slash-separated paths, so
+    # nothing else here assumes a flat directory.
+    for path in sorted(types_dir.rglob("*.ts")):
         if path.name.endswith(".test.ts") or path.name.endswith(".d.ts"):
             continue
-        stems.append(path.stem)
+        stems.append(path.relative_to(types_dir).with_suffix("").as_posix())
     return stems
 
 

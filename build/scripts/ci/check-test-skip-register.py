@@ -79,7 +79,7 @@ XUNIT_ATTRIBUTE_BASE = re.compile(
 # how every custom gated attribute in this repository is named.
 ATTRIBUTE_OPENER = re.compile(r"\[\s*<?\s*(?P<name>[A-Za-z_][\w.]*)")
 XUNIT_TEST_ATTRIBUTE = re.compile(r"^(?:\w*\.)?\w*(?:Fact|Theory)(?:Attribute)?$")
-ATTRIBUTE_NAME_AFTER_COMMA = re.compile(r",\s*(?P<name>[A-Za-z_][\w.]*)")
+ATTRIBUTE_NAME_AFTER_COMMA = re.compile(r"[,;]\s*(?P<name>[A-Za-z_][\w.]*)")
 STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 PURE_LITERAL_EXPRESSION = re.compile(
     r"""^ \s* " (?: [^"\\] | \\. )* "
@@ -198,8 +198,10 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[tuple[int, bool
             sections[-1]["parens"] = max(0, sections[-1]["parens"] - 1)
             i += 1
             continue
-        if sections and ch == "," and sections[-1]["parens"] == 0:
-            # A comma at paren depth zero ends one attribute and begins the next.
+        if sections and ch in ",;" and sections[-1]["parens"] == 0:
+            # A comma (C#) or semicolon (F#) at paren depth zero ends one attribute and begins
+            # the next. Recognising only commas left `[<Trait(...); Fact(Skip = "held")>]` keyed
+            # to Trait, so a real F# skip was omitted and the ownership gate stayed green.
             following = ATTRIBUTE_NAME_AFTER_COMMA.match(text, i)
             sections[-1]["name"] = following.group("name") if following else ""
             i += 1
@@ -488,7 +490,14 @@ def evaluate(
             problems.append(f"{entry_id}: entry must be an object")
             continue
 
-        missing = [field for field in REQUIRED_FIELDS if not str(entry.get(field, "")).strip()]
+        # `str(None)` is the non-empty string "None", so stringifying first let `"owner": null`
+        # or `"tracking": null` pass and the gate report the skip owned and tracked on null
+        # metadata. Every one of these fields must be a real non-empty string.
+        missing = [
+            field
+            for field in REQUIRED_FIELDS
+            if not (isinstance(entry.get(field), str) and entry[field].strip())
+        ]
         if missing:
             problems.append(f"{entry_id}: missing required field(s): {', '.join(missing)}")
             continue
