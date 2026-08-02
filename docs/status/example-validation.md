@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 972 |
-| Valid | 555 |
+| Total code blocks | 977 |
+| Valid | 560 |
 | Invalid | 0 |
 | Skipped | 417 |
 
@@ -21,7 +21,7 @@
 | `bash` | 157 | 157 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 305 | 305 | 0 | 0 |
+| `csharp` | 310 | 310 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 62 | 62 | 0 | 0 |
@@ -113,7 +113,7 @@ No invalid code examples found.
 | `docs/docfx/api/index.md` | 1 |
 | `docs/engineering/README.md` | 1 |
 | `docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md` | 9 |
-| `docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md` | 8 |
+| `docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md` | 13 |
 | `docs/engineering/live-trading-engine.md` | 1 |
 | `docs/engineering/production-certification-evidence-chain.md` | 2 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |

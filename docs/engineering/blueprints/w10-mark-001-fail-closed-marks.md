@@ -15,9 +15,11 @@ property of this document.
 
 ## ⚠️ Breaking Change — source-breaking, not merely behavioural
 
-`StalePricePolicy` is a **public** record in `Meridian.Ledger`. Phase 2 deletes it. Any external
-caller that names the type, constructs it, or passes it to `DailyPortfolioPricingPolicy` **fails to
-compile** — this is not a case of the same code compiling and behaving differently.
+Phase 2 deletes **two** public types, not one.
+
+`StalePricePolicy` is a **public** record in `Meridian.Ledger`. Any external caller that names the
+type, constructs it, or passes it to `DailyPortfolioPricingPolicy` **fails to compile** — this is not
+a case of the same code compiling and behaving differently.
 
 | Consumer | Location | Migration |
 | --- | --- | --- |
@@ -39,6 +41,43 @@ new DailyPortfolioPricingPolicy(..., MarkFreshnessPolicy.FailClosed with { Maxim
 
 The *in-repo* blast radius is one production construction site. The external blast radius is
 unknown, which is why the obsolete shim exists rather than a bare deletion.
+
+### The second break — `MarkPriceQualityPolicy`
+
+`MarkPriceQualityPolicy` is likewise **public** (`DailyMarkToMarketService.cs:60`), with a public
+constructor (`:68-73`) and a public `Standard` preset (`:62-66`), and it is positional parameter 8 of
+the public `DailyMarkToMarketRequest` constructor (`:208`). Phase 2 deletes it. An earlier draft
+listed the deletion in the Phase 2 checklist without a migration entry, which understated the change:
+external callers that name the type, use `Standard`, or pass it positionally all stop compiling, and
+adding `ValuationRunId` to the same constructor moves the following parameter as well.
+
+Every field maps onto `MarkFreshnessPolicy`, so the replacement is mechanical:
+
+| `MarkPriceQualityPolicy` | `MarkFreshnessPolicy` | Note |
+| --- | --- | --- |
+| `MaximumAge` (`TimeSpan`) | `MaximumAgeDays` (`int`) | `(int)Math.Ceiling(maximumAge.TotalDays)`; a sub-day age rounds **up** to one day rather than to zero, which would block every mark |
+| `MinimumConfidence` | `MinimumConfidence` | unchanged |
+| `RequireObservedDate` | `RequireObservedDate` | unchanged |
+| `RequireCompleteCoverage` | `RequireCompleteCoverage` | unchanged |
+| *(none)* | future-dated and non-positive rejection | new, unconditional — this is the behaviour change the row exists for |
+
+```csharp
+// before
+new DailyMarkToMarketRequest(policy, periodId, asOf, ccy, positions, actor, reason,
+    new MarkPriceQualityPolicy(TimeSpan.FromDays(3), DailyPortfolioPriceConfidence.Medium), bookId);
+// after
+new DailyMarkToMarketRequest(policy, periodId, asOf, ccy, positions, actor, reason,
+    MarkFreshnessPolicy.FailClosed with { MaximumAgeDays = 3,
+        MinimumConfidence = DailyPortfolioPriceConfidence.Medium },
+    bookId, valuationRunId);
+```
+
+Phase 2 ships `MarkPriceQualityPolicy` as `[Obsolete]` with a `ToMarkFreshnessPolicy()` converter and
+a `DailyMarkToMarketRequest` constructor overload that accepts it — mirroring the `StalePricePolicy`
+window rather than inventing a second convention — and Phase 5 removes both. The overload mints a
+`ValuationRunId` when the caller has none, which keeps the compatibility path working while making
+the un-migrated caller's runs non-idempotent; that is the correct incentive, and it is noted in the
+obsoletion message.
 
 ---
 
@@ -313,6 +352,14 @@ per member.
 public sealed record MarkFreshnessOverride(
     string OverrideId,
     MarkOverrideScope Scope,
+    /// <summary>
+    /// The mark this authorisation is *of*, captured at request time and stored on the row. Not
+    /// optional: without it the reviewer list cannot show what is being authorised after the request
+    /// transaction ends, and <see cref="IMarkOverrideStore.TryClaimAsync"/> has nothing to compare
+    /// the current fingerprint against — which would leave the quote binding described below as
+    /// prose with no mechanism.
+    /// </summary>
+    MarkQuoteEvidence QuoteEvidence,
     string Reason,
     string RequestedBy,
     DateTimeOffset RequestedAtUtc,
@@ -329,7 +376,16 @@ public sealed record MarkFreshnessOverride(
 /// which is why symbol alone is not enough.
 /// </summary>
 public sealed record MarkOverrideScope(
-    string LedgerBookId,
+    /// <summary>
+    /// <c>Guid</c>, matching <c>DailyMarkToMarketRequest.LedgerBookId</c>
+    /// (<c>DailyMarkToMarketService.cs:209</c>) and the daily-valuation schedule. A <c>string</c>
+    /// here would make the scope key sensitive to textual form: uppercase, braced, and
+    /// hyphen-variant renderings of one book are distinct index entries, so an override requested
+    /// through one representation would not match the claim's canonical one, and several "active"
+    /// overrides could occupy the same logical scope. The route segment is parsed to
+    /// <c>Guid</c> at the endpoint, not carried as text.
+    /// </summary>
+    Guid LedgerBookId,
     Guid? SecurityId,
     string Symbol,
     string? FinancialAccountId,
@@ -379,20 +435,29 @@ public interface IMarkOverrideStore
     /// </summary>
     ValueTask<MarkFreshnessOverride?> TryClaimAsync(
         MarkOverrideScope scope, MarkOverrideConsumption consumption, DateTimeOffset nowUtc,
-        WorkstationTenantScope expectedTenant, CancellationToken ct = default);
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
 
     /// <summary>Non-consuming read for preview and display. Never transitions state.</summary>
     ValueTask<MarkFreshnessOverride?> PeekApprovedAsync(
-        MarkOverrideScope scope, DateTimeOffset nowUtc, WorkstationTenantScope expectedTenant,
+        MarkOverrideScope scope, DateTimeOffset nowUtc, LedgerTenantScope expectedTenant,
         CancellationToken ct = default);
 
     /// <summary>
     /// <paramref name="quoteEvidence"/> pins what was actually reviewed; see "An approval is of a
     /// mark, not of a slot" below.
+    ///
+    /// <paramref name="expiresOn"/> is **validated against a server-owned maximum**, not accepted as
+    /// given: it must be on or after <c>scope.ValuationDate</c> and no later than
+    /// <c>nowUtc.Date + MarkOverridePolicy.MaximumLifetime</c>. Without that ceiling a requester can
+    /// submit <c>9999-12-31</c>, and once approved the authorisation for that exact valuation stays
+    /// claimable indefinitely — a standing bypass, which is the one thing the roadmap criterion
+    /// requiring overrides to expire or be re-reviewed exists to prevent. A date outside the window
+    /// is rejected at request time rather than silently clamped, so the requester learns the rule.
     /// </summary>
     ValueTask<MarkFreshnessOverride> RequestAsync(
         MarkOverrideScope scope, MarkQuoteEvidence quoteEvidence, string reason, string requestedBy,
-        DateOnly expiresOn, WorkstationTenantScope expectedTenant, CancellationToken ct = default);
+        DateOnly expiresOn, DateTimeOffset nowUtc, LedgerTenantScope expectedTenant,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Reviewer comes from the authenticated principal at the endpoint, never from a request body.
@@ -404,19 +469,29 @@ public interface IMarkOverrideStore
     /// </summary>
     ValueTask<MarkFreshnessOverride> RecordApprovalDecisionAsync(
         string overrideId, bool approved, string reviewedBy, string? note,
-        WorkstationTenantScope expectedTenant, CancellationToken ct = default);
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
 
     ValueTask<IReadOnlyList<MarkFreshnessOverride>> ListAsync(
-        string ledgerBookId, DateOnly valuationDate, WorkstationTenantScope expectedTenant,
+        Guid ledgerBookId, DateOnly valuationDate, LedgerTenantScope expectedTenant,
         CancellationToken ct = default);
 
     /// <summary>Pending requests awaiting a decision, for the reviewer's queue.</summary>
     ValueTask<IReadOnlyList<MarkFreshnessOverride>> ListPendingAsync(
-        string ledgerBookId, WorkstationTenantScope expectedTenant, CancellationToken ct = default);
+        Guid ledgerBookId, LedgerTenantScope expectedTenant, CancellationToken ct = default);
 
     /// <summary>Append-only lifecycle history: request, approve, reject, claim, expire.</summary>
     ValueTask<IReadOnlyList<MarkOverrideAuditEntry>> ReadAuditTrailAsync(
-        string overrideId, WorkstationTenantScope expectedTenant, CancellationToken ct = default);
+        string overrideId, LedgerTenantScope expectedTenant, CancellationToken ct = default);
+}
+
+/// <summary>
+/// Server-owned bounds on how long a requested override may remain claimable. Constants, not
+/// operator input — an override whose lifetime the requester chooses is not a bounded exception.
+/// </summary>
+public static class MarkOverridePolicy
+{
+    /// <summary>Maximum days between the request and <c>ExpiresOn</c>.</summary>
+    public static TimeSpan MaximumLifetime { get; } = TimeSpan.FromDays(7);
 }
 
 /// <summary>
@@ -434,7 +509,14 @@ public sealed record MarkQuoteEvidence(
 
 public sealed record MarkOverrideAuditEntry(
     string OverrideId,
-    MarkOverrideState FromState,
+    /// <summary>
+    /// Null on the creation entry, and only there. <see cref="MarkOverrideState"/> begins at
+    /// <c>Pending</c>, so a newly requested override has no prior state: a non-nullable field would
+    /// force the store either to omit the request from the trail — losing the event the audit
+    /// contract explicitly promises to retain — or to write a <c>Pending → Pending</c> transition
+    /// that never happened. Null says "this row came into existence here", which is the truth.
+    /// </summary>
+    MarkOverrideState? FromState,
     MarkOverrideState ToState,
     string Actor,
     DateTimeOffset OccurredAtUtc,
@@ -442,6 +524,22 @@ public sealed record MarkOverrideAuditEntry(
     /// <summary>Set on the claim transition, so the trail says where the authorisation was used.</summary>
     string? ValuationRunId,
     string? CorrelationId);
+```
+
+**On `LedgerTenantScope`.** It is a **new** value in `Meridian.Contracts`, not an existing type.
+`WorkstationTenantContext` (`src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:14`) is the
+only value carrying tenant and company today, and it cannot be used here: `PostgresMarkOverrideStore`
+lives in `Meridian.Storage`, and `Meridian.Ui.Shared` already references `Meridian.Storage`
+(`Meridian.Ui.Shared.csproj:53`), so depending on it from the store would invert that edge and the
+contract would be unimplementable in its named layer. `Meridian.Storage` already references
+`Meridian.Contracts` (`Meridian.Storage.csproj:39`), so a scope value defined there is visible to
+both. The endpoint constructs it from the resolved `WorkstationTenantContext`; the store never sees
+a UI type.
+
+```csharp
+/// <summary>Normalised tenant and company ownership, passed to any store operation that must
+/// prove the stored row belongs to the caller's scope.</summary>
+public readonly record struct LedgerTenantScope(string TenantId, string CompanyId);
 ```
 
 **Note on scope equality.** `MarkToMarketCarryingValueKey` normalises `Symbol` to trimmed upper case
@@ -457,18 +555,29 @@ restate it.
 public interface IMarkFreshnessPreviewService
 {
     ValueTask<MarkFreshnessPreview> PreviewAsync(
-        string ledgerBookId, DateOnly valuationDate, MarkFreshnessPolicy candidate, CancellationToken ct = default);
+        Guid ledgerBookId, DateOnly valuationDate, MarkFreshnessPolicy candidate, CancellationToken ct = default);
 }
 
 public sealed record MarkFreshnessPreview(
     int PositionsEvaluated,
     int PositionsBlocked,
     IReadOnlyList<BlockedMarkDto> Blocked,
+    /// <summary>
+    /// Positions the candidate policy would block but an approved override already covers. Reported
+    /// separately because a count of blockers alone is not a measure of policy pressure: once
+    /// overrides exist, a book with forty standing authorisations previews as clean, and the
+    /// operator sizing the backlog — or the reviewer asking whether overrides have become routine —
+    /// sees nothing. The risk mitigation below requires override counts beside blocked counts;
+    /// this is where they come from.
+    /// </summary>
+    int PositionsOverridden,
+    IReadOnlyList<OverriddenMarkDto> Overridden,
     MarkFreshnessPolicy Candidate);
 ```
 
 The preview uses `PeekApprovedAsync`, never `TryClaimAsync` — a preview that consumed a one-shot
-authorisation would be a governance defect, not merely a bug.
+authorisation would be a governance defect, not merely a bug. `PositionsOverridden` is therefore what
+*would* be tolerated on a real run, not a record that anything was consumed.
 
 ### Modified — `Meridian.Contracts`
 
@@ -490,6 +599,24 @@ public sealed record BlockedMarkDto(
     int? AgeDays,
     DateOnly? ObservedOn,
     string? OverrideId);
+
+/// <summary>
+/// One position the policy blocked and an override authorised anyway. A separate type rather than a
+/// flag on <see cref="BlockedMarkDto"/>, because the two are read by different consumers for
+/// opposite reasons — blocked positions gate, overridden positions are the bypass ledger — and a
+/// shared type invites a caller to count `blockedMarks.Length` and get a number that silently
+/// includes tolerated failures.
+/// </summary>
+public sealed record OverriddenMarkDto(
+    string Symbol,
+    Guid? SecurityId,
+    string? FinancialAccountId,
+    string Verdict,
+    int? AgeDays,
+    DateOnly? ObservedOn,
+    string OverrideId,
+    string ApprovedBy,
+    DateOnly ExpiresOn);
 ```
 
 **On the existing flattened blockers.** `DailyValuationScheduleStatusDto:35` already carries
@@ -530,13 +657,14 @@ need a shared-prefix decision this row has no reason to take.
 
 ```
 GET  /api/ledger/journal-automation/daily-mark-to-market-freshness/{ledgerBookId}?valuationDate=YYYY-MM-DD
-     200 { positionsEvaluated, positionsBlocked, blockedMarks: [...] }
+     200 { positionsEvaluated, positionsBlocked, blockedMarks: [...],
+           positionsOverridden, overriddenMarks: [...] }
 
 POST /api/ledger/journal-automation/daily-mark-to-market-freshness-preview/{ledgerBookId}
      Body   { valuationDate, maximumAgeDays, minimumConfidence, requireObservedDate,
               requireCompleteCoverage }
      200    { valuationDate, positionsEvaluated, positionsBlocked, blockedMarks: [...],
-              candidate: {...} }
+              positionsOverridden, overriddenMarks: [...], candidate: {...} }
 
 GET  /api/ledger/journal-automation/daily-mark-to-market-overrides/{ledgerBookId}?state=pending
      200 { overrides: [ { overrideId, scope, quoteEvidence, reason, requestedBy,
@@ -673,6 +801,58 @@ Maps each `MarkPriceQuote` to a `MarkFreshnessInput`, replaces `EvaluateMarkQual
 with one `MarkFreshnessPolicy.Assess` call, and on a blocking verdict calls
 `IMarkOverrideStore.TryClaimAsync(scope, consumption, timeProvider.GetUtcNow())`.
 
+#### The run identity has to exist before the first claim
+
+Per-run claim idempotency is keyed on `MarkOverrideConsumption.ValuationRunId`, and today there is
+nothing to put there. `DailyMarkToMarketRequest` (`DailyMarkToMarketService.cs:200-210`) and
+`DailyMarkToMarketRun` (`:216-`) carry no run identifier, and the only correlation value in the
+neighbourhood is built **after** preparation returns:
+`AutomatedJournalIntakeRunner.cs:284-288` calls `BuildDailyValuationBatchCorrelationId(request,
+positions, valuation.Approvals, request.BatchCorrelationId)` — it takes `valuation.Approvals` as an
+input, so it cannot exist before the run that produces them. Claiming happens inside `PrepareAsync`.
+Leaving the identity to the implementer therefore produces one of two failure modes, both of which
+defeat the idempotency it was added for:
+
+- **A fresh id per attempt.** The retry presents a different run id, the store correctly refuses an
+  override already `Consumed` by the first attempt, and the valuation can never complete — exactly
+  the stranding the per-run rule exists to prevent, reintroduced one layer up.
+- **A date-derived id.** Anything shaped like *(ledger book, valuation date)* is shared by every
+  distinct run of that date, so an unrelated later run inherits the first run's claims and consumes
+  authorisations it was never granted.
+
+So the identity is part of this design, not an implementation detail:
+
+```csharp
+public sealed record DailyMarkToMarketRequest(
+    …,
+    /// <summary>
+    /// Stable across retries of one logical valuation attempt, distinct across separate attempts.
+    /// Minted by the caller **before** PrepareAsync and reused unchanged when that attempt is
+    /// retried. Required — a null would silently disable claim idempotency.
+    /// </summary>
+    string ValuationRunId);
+
+public sealed record DailyMarkToMarketRun(
+    …,
+    /// <summary>Echoed from the request so every downstream artifact — drafts, assessments, audit
+    /// rows — can be traced to the attempt that produced it.</summary>
+    string ValuationRunId);
+```
+
+**Minting and lifecycle.** `AutomatedJournalIntakeRunner` owns it, because it owns the retry: it
+generates a `Guid`-derived id at the top of `RunDailyMarkToMarketAsync`, before `PrepareAsync`, and
+persists it with the attempt. A retry of the *same* attempt — the scheduler re-driving a run that
+failed after some claims succeeded — reuses the stored id; a new scheduled execution mints a new one.
+`request.BatchCorrelationId` is not reused for this: it is caller-supplied and optional, so it can be
+null or repeated across attempts. The batch correlation id keeps its existing job and is recorded
+alongside, not instead.
+
+**Tested at the orchestration level, not only the store.** A store test proves
+`TryClaimAsync` returns the same row twice for one run id; it cannot prove the runner presents the
+same id twice. The test plan below adds a runner-level retry case: drive a run that claims an
+override and then fails on a later position, re-drive the same attempt, and assert the valuation
+completes and the override is claimed exactly once.
+
 **Two collections, not one — this is the difference between an override that works and one that
 cannot.** A blocking assessment goes to exactly one of:
 
@@ -706,14 +886,49 @@ from both `Created` and `Skipped` at `:541`. New rule: when the run carries a no
 change that makes the default path fail closed, because `RequireCompleteCoverage: false` means the
 partial-coverage branch is the default path.
 
-### `DailyValuationBatchLifecycleService` (modified) — second enforcement point
+### Posting guard — second enforcement point, in the shared lifecycle seam
 
 **Namespace:** `Meridian.Ui.Shared.Services`
 
-`ApproveAndPostAsync` (`:28-231`) gains a precondition it does not have today: refuse to post a batch
-whose originating run carried blocked positions, returning the blocked list rather than posting
-retained drafts. Belt and braces with the intake block, deliberately — a draft persisted before this
-change ships must not become postable simply because it predates the guard.
+`DailyValuationBatchLifecycleService.ApproveAndPostAsync` (`:28-231`) gains a precondition it does
+not have today: refuse to post a batch whose originating run carried blocked positions, returning
+the blocked list rather than posting retained drafts. Belt and braces with the intake block,
+deliberately — a draft persisted before this change ships must not become postable simply because it
+predates the guard.
+
+**But the batch wrapper is not the only way to post such a draft, so the check cannot live only
+there.** The generic manual-journal lifecycle route
+(`UiApiRoutes.LedgerManualJournalEntryLifecycleAction`, mapped in `LedgerEndpoints.cs:1763-1787`)
+resolves `IManualJournalEntryLifecycleService` and calls `ApplyLifecycleActionAsync` directly, and
+`ManualJournalEntryWorkbenchService.ApplyLifecycleActionAsync` (`:474-555`) dispatches
+`JournalEntryLifecycleActionDto.Post` to `PostApprovedManualJournalEntryAsync` after checking
+status, notes, and posting evidence — none of which consults mark freshness. That is precisely the
+scenario the migration section names: a fair-value draft retained before the default flip, sitting
+in `Approved`. An operator opens it in the workbench, posts it individually, and the batch-level
+precondition is never reached.
+
+So the guard belongs in the **shared posting validation chain**, beside the preconditions already
+there, not in the batch wrapper alone:
+
+```csharp
+JournalEntryLifecycleActionDto.Post => await PostApprovedManualJournalEntryAsync(
+    RequireStatus(validated, ManualJournalEntryStatusDto.Approved, request.Action),
+    RequireFreshValuationMarks(validated),          // NEW — same seam as the checks beside it
+    RequirePostingLifecycleEvidence(
+        RequirePostingLifecycleNotes(request), validated),
+    now, ct)
+```
+
+`RequireFreshValuationMarks` is a no-op for entries that are not governed daily-valuation drafts —
+identified by their originating valuation run, which the run identity above now makes durable — and
+for governed drafts it reads the retained assessments for that run and refuses when any remain
+blocking and unoverridden. The batch wrapper keeps its own check so a batch fails as a batch with a
+useful list, but the shared seam is what makes the guarantee hold on **every** path that can post.
+The alternative — prohibiting individual lifecycle actions on governed valuation drafts outright —
+is simpler to enforce but takes away a legitimate correction path, so it is not proposed.
+
+The endpoint test covers the generic route explicitly, not only the batch route; a suite that
+exercises `ApproveAndPostAsync` alone would pass while the bypass stays open.
 
 ### `DailyValuationScheduler` (modified) — reporting, not enforcement
 
@@ -741,7 +956,8 @@ to resolve, because the thing it was requested against is gone.
 
 The `ledger_mark_freshness_assessment` table above is what makes the case durable: it is keyed by
 valuation date, so yesterday's blocked positions remain queryable after today's run overwrites the
-schedule row. Two rules follow, and both belong to Phase 4:
+schedule row. The table itself lands in **Phase 2**, because the enforcement points and the posting
+guard already read retained assessments; the two rules below are how Phase 4 *reads* it:
 
 - **The review-required case is read from the assessment table, not from the schedule row.** The
   schedule reports today; the case list reports every valuation date with unresolved blocking
@@ -818,7 +1034,7 @@ phase rather than left to the implementer. Two tables, both tenant-owned:
 | --- | --- | --- |
 | `override_id` | `text` | primary key |
 | `tenant_id`, `company_id` | `text` | ownership; every query filters on both |
-| `ledger_book_id` | `text` | |
+| `ledger_book_id` | `uuid` | `Guid`, matching the request and schedule; not text |
 | `security_id` | `uuid` **null** | part of the scope key |
 | `symbol` | `text` | stored already normalised (trimmed, upper-cased) |
 | `financial_account_id` | `text` **null** | blank normalised to null before insert |
@@ -828,7 +1044,20 @@ phase rather than left to the implementer. Two tables, both tenant-owned:
 | `state` | `text` | `Pending`/`Approved`/`Rejected`/`Expired`/`Consumed` |
 | `reason`, `requested_by`, `approved_by`, `note` | `text` | `approved_by` null until decided |
 | `requested_at_utc`, `approved_at_utc` | `timestamptz` | |
-| `expires_on` | `date` | compared against the clock at claim time, not the valuation date |
+| `expires_on` | `date` | compared against the clock at claim time, not the valuation date; bounded at request time by `MarkOverridePolicy.MaximumLifetime` |
+| `quote_price` | `numeric(38,12)` | the five evidence columns below carry `MarkQuoteEvidence` |
+| `quote_source` | `text` | |
+| `quote_evidence_reference` | `text` | |
+| `quote_confidence` | `text` | `DailyPortfolioPriceConfidence` name |
+| `quote_blocking_verdict` | `text` | `MarkFreshnessVerdict` name — which rule the override answers |
+| `quote_fingerprint` | `text` | recomputed and compared at claim time |
+
+**The evidence columns are load-bearing, not decoration.** Without them the snapshot exists only for
+the lifetime of the request transaction: the reviewer queue — which by design renders a request the
+*current* process may not have created — has nothing to display, and `TryClaimAsync` has no stored
+fingerprint to compare the current quote against, so the "an approval is of a mark, not of a slot"
+rule below degrades to prose with no mechanism and the $10.00-authorises-$10,000 defect returns
+intact. They are written in the same insert as the request and never updated.
 
 **Uniqueness is the whole point of the scope key**, so it is enforced in the database rather than
 only in code. Because `security_id`, `financial_account_id`, and `mark_observed_on` are nullable and
@@ -862,7 +1091,9 @@ contract test passes.
 
 | Column | Type | Notes |
 | --- | --- | --- |
-| `tenant_id`, `company_id`, `ledger_book_id` | `text` | ownership and book scope |
+| `tenant_id`, `company_id` | `text` | ownership |
+| `ledger_book_id` | `uuid` | book scope; `Guid`, as on the override table |
+| `valuation_run_id` | `text` | the attempt that produced this assessment |
 | `security_id` | `uuid` **null** | with `symbol` and `financial_account_id`, mirrors `MarkToMarketCarryingValueKey` |
 | `symbol` | `text` | stored normalised |
 | `financial_account_id` | `text` **null** | blank normalised to null |
@@ -877,9 +1108,55 @@ contract test passes.
 
 Unique on `(tenant_id, company_id, ledger_book_id, security_id, symbol, financial_account_id,
 valuation_date)` with `NULLS NOT DISTINCT`, so a rerun of the same valuation **replaces** its
-assessments rather than accumulating them. Written by `DailyMarkToMarketService` as part of the run,
-in the same transaction as the run's own persistence — an assessment that outlives its run, or a run
-whose assessments were not written, is worse than none.
+assessments rather than accumulating them.
+
+##### Who commits the assessments, and with what
+
+"Written in the same transaction as the run's own persistence" was an instruction with no addressee:
+`DailyMarkToMarketService.PrepareAsync` returns an **in-memory** `DailyMarkToMarketRun` and persists
+nothing, while draft retention happens later and elsewhere, in
+`AutomatedJournalIntakeRunner.IntakeDraftsAsync`. There is no existing component whose transaction
+spans both, so as written a crash between them leaves either assessments describing a run whose
+drafts were never retained, or retained drafts with no assessments — and the Phase 4 producer joins
+and the review-required case list both read the assessment table, so the second failure ships a
+valuation nobody can review.
+
+This design names the owner rather than leaving it to the implementer:
+
+```csharp
+/// <summary>Durable per-position freshness assessments for one valuation attempt.</summary>
+public interface IMarkFreshnessAssessmentStore
+{
+    /// <summary>
+    /// Replaces every assessment for (book, valuation date) with this attempt's set, and returns
+    /// the drafts to retain, so both commit or neither does. Enlisting rather than committing
+    /// internally is the point — see below.
+    /// </summary>
+    ValueTask WriteAsync(
+        Guid ledgerBookId, DateOnly valuationDate, string valuationRunId,
+        IReadOnlyList<MarkFreshnessAssessment> assessments,
+        LedgerTenantScope scope, CancellationToken ct = default);
+}
+```
+
+**`AutomatedJournalIntakeRunner` is the transaction owner**, because it is the component that already
+persists drafts and it is where the retry lives. `PrepareAsync` returns assessments alongside the run
+— they are pure output of the policy evaluation, so the service stays persistence-free — and the
+runner opens **one** transaction that writes the assessments and retains the drafts together, then
+commits. The order inside it does not matter; the atomicity does.
+
+Two consequences worth stating so an implementer does not reintroduce the gap:
+
+- **A blocked run still writes its assessments.** When `BlockedPositions` is non-empty no drafts are
+  retained, but the assessment write must still commit — that record *is* the review-required case.
+  "Both or neither" applies to a run that produces drafts; a run that deliberately produces none
+  still produces evidence.
+- **The override claim is a separate transaction, and must be.** `TryClaimAsync` commits its own
+  serializable transaction inside `PrepareAsync`, before the assessments exist. That is why per-run
+  claim idempotency is required rather than merely convenient: the claim cannot be rolled back by a
+  later assessment failure, so the retry has to be able to re-present the same run id and receive
+  the same authorisation. An outbox would be the alternative shape, and is deliberately not proposed
+  — it would add an asynchronous hop between claiming an override and recording that it was used.
 
 Retention follows the valuation it describes: assessments are deleted when their ledger book's
 valuation history is pruned. They are evidence about a specific dated valuation, not a time series.
@@ -897,33 +1174,45 @@ first; do not renumber a migration that has already shipped.
 ### Valuation with a stale mark (fail-closed, no override)
 
 1. `DailyValuationScheduler` triggers a run for a ledger book and valuation date.
-2. `DailyMarkToMarketService` pulls each position's quote via `IMarkPriceSource` and maps it to a
+2. `AutomatedJournalIntakeRunner` mints a `ValuationRunId` for the attempt and passes it into
+   `PrepareAsync`. A retry of this attempt presents the same id; a later scheduled execution mints a
+   new one.
+3. `DailyMarkToMarketService` pulls each position's quote via `IMarkPriceSource` and maps it to a
    `MarkFreshnessInput`.
-3. `MarkFreshnessPolicy.Assess(input, valuationDate)` → `Stale`, age 9, `Handling = Block`.
-4. `IMarkOverrideStore.TryClaimAsync(scope, consumption, now)` → `null`.
-5. The position is added to `BlockedPositions` with verdict, age, and observation date.
-6. `AutomatedJournalIntakeRunner` sees a non-empty `BlockedPositions` and **persists no drafts**.
-7. `DailyValuationScheduler` maps to `ReviewRequired` and attaches `BlockedMarks`.
-8. Both workstations render review-required with each offending position named (criterion 3).
-9. Should a draft from before this change exist, `ApproveAndPostAsync` refuses to post it.
+4. `MarkFreshnessPolicy.Assess(input, valuationDate)` → `Stale`, age 9, `Handling = Block`.
+5. `IMarkOverrideStore.TryClaimAsync(scope, consumption, now)` → `null`.
+6. The position is added to `BlockedPositions` with verdict, age, and observation date.
+7. `AutomatedJournalIntakeRunner` sees a non-empty `BlockedPositions`, **persists no drafts**, and
+   commits the run's assessments — the blocked run still produces its evidence, which is what the
+   review-required case is read from.
+8. `DailyValuationScheduler` maps to `ReviewRequired` and attaches `BlockedMarks`.
+9. Both workstations render review-required with each offending position named (criterion 3).
+10. Should a draft from before this change exist, it is refused on **either** posting path:
+    `ApproveAndPostAsync` for the batch, and `RequireFreshValuationMarks` in the shared lifecycle
+    chain for the generic manual-journal route.
 
 ### Valuation with an approved override
 
-Steps 1–3 as above.
+Steps 1–4 as above.
 
-4. `TryClaimAsync` matches an override whose scope equals ledger book, security id, symbol,
+5. `TryClaimAsync` matches an override whose scope equals ledger book, security id, symbol,
    financial account id, valuation date, observation date, **and current policy version**, whose
-   `State` is `Approved`, and whose `ExpiresOn >= now.Date` — **evaluated against the clock at the
-   moment of use, not against the valuation date.** An override for a 1 July valuation expiring
-   2 July does not authorise an August rerun of that same valuation.
-5. In the same transaction the override transitions to `Consumed` and an audit row is appended
+   `State` is `Approved`, whose stored `quote_fingerprint` still equals the current quote's, and
+   whose `ExpiresOn >= now.Date` — **evaluated against the clock at the moment of use, not against
+   the valuation date.** An override for a 1 July valuation expiring 2 July does not authorise an
+   August rerun of that same valuation, and `MarkOverridePolicy.MaximumLifetime` bounded how far out
+   that date could have been set in the first place.
+6. In the same transaction the override transitions to `Consumed` and an audit row is appended
    carrying the actor and the valuation run id, so the trail records *where* the authorisation was
-   used rather than only that it was used. A concurrent run or a retry finds it already consumed
-   and blocks.
-6. The position is valued and recorded in **`OverriddenPositions`, not `BlockedPositions`** — the
+   used rather than only that it was used. A **different** run finds it already consumed and blocks;
+   a retry of the *same* attempt presents the same `ValuationRunId` and receives the same override
+   back, so a later position blocking cannot strand this claim.
+7. The position is valued and recorded in **`OverriddenPositions`, not `BlockedPositions`** — the
    distinction that lets the run proceed. It still surfaces its `MarkFreshnessRef` with `OverrideId`
-   set, so the UI shows it was overridden rather than fresh.
-7. `AutomatedJournalIntakeRunner` sees an empty `BlockedPositions` and persists drafts normally.
+   set, so the UI shows it was overridden rather than fresh, and it is counted in
+   `PositionsOverridden` so the bypass stays visible rather than reading as clean.
+8. `AutomatedJournalIntakeRunner` sees an empty `BlockedPositions` and, in one transaction, persists
+   the drafts and commits the run's assessments.
 
 ### Future-dated mark
 
@@ -1034,6 +1323,12 @@ through their own services rather than inferring them from the schedule state.
 | `IntakeRunner_PartialCoverageWithNoBlockers_PersistsAsBefore` | no regression on the existing path |
 | `ApproveAndPost_BatchFromRunWithBlockedPositions_IsRefused` | the posting boundary, which reads no schedule state today |
 | `ApproveAndPost_BatchFromCleanRun_PostsAsBefore` | no regression |
+| `LifecycleAction_PostGovernedValuationDraftWithBlockedMarks_IsRefused` | **the workbench bypass** — the generic route, not the batch wrapper |
+| `LifecycleAction_PostOrdinaryManualEntry_IsUnaffected` | `RequireFreshValuationMarks` is a no-op off the valuation path |
+| `IntakeRunner_RetriedAttempt_ReusesValuationRunIdAndCompletes` | **orchestration-level retry**; a store test cannot prove the runner re-presents the same id |
+| `IntakeRunner_NewScheduledExecution_MintsADistinctValuationRunId` | a date-derived id would let an unrelated run inherit the claims |
+| `IntakeRunner_AssessmentWriteFails_RetainsNoDrafts` | the run/assessment transaction is atomic |
+| `IntakeRunner_BlockedRun_StillCommitsItsAssessments` | a blocked run produces no drafts but must still produce the review case |
 
 ### Unit — `DailyValuationScheduler`
 
@@ -1069,6 +1364,11 @@ through their own services rather than inferring them from the schedule state.
 | `PeekApprovedAsync_DoesNotTransitionState` | preview safety |
 | `RequestAsync_DuplicateScopeWithApprovedOverride_Conflicts` |
 | `NullStore_TryClaimAsync_FailsRatherThanReturningNull` | the fallback cannot mean "no overrides exist" |
+| `RequestAsync_ExpiresOnBeyondMaximumLifetime_IsRejected` | **no standing bypass** — `9999-12-31` must not be accepted |
+| `RequestAsync_ExpiresOnBeforeValuationDate_IsRejected` | an override that expires before the run it authorises |
+| `RequestAsync_PersistsQuoteEvidenceReadableInAFreshTransaction` | the snapshot must outlive the request, or the reviewer list has nothing to show |
+| `ReadAuditTrailAsync_CreationEntry_HasNullFromState` | the request event is retained faithfully, not as `Pending → Pending` |
+| `MarkOverrideScope_EquivalentGuidTextForms_ResolveToOneScope` | ledger book identity is `Guid`, so casing and braces cannot mint a second scope |
 
 ### Endpoint
 
@@ -1138,7 +1438,10 @@ the *implementations* they front still arrive later.
 - [ ] Implement `Assess` by evaluating every applicable predicate and reporting the most severe; no
       negative-age clamp; nullable `AgeDays`; `Handling` consulted for `Stale` only.
 - [ ] Implement deterministic `PolicyVersion` over every governing member.
-- [ ] Add `BlockedMarkDto` to `Meridian.Contracts` — the preview's result type.
+- [ ] Add `BlockedMarkDto`, `OverriddenMarkDto`, and `LedgerTenantScope` to `Meridian.Contracts` —
+      the preview's result types and the scope value the store seam takes. `LedgerTenantScope` lands
+      here and not in `Meridian.Ui.Shared`, so `Meridian.Storage` can implement the store without
+      inverting the existing Ui.Shared → Storage reference.
 - [ ] Add `IMarkOverrideStore` with **`PeekApprovedAsync` only**, plus a null implementation
       returning no override. The consuming operations arrive in Phase 3; this is the read seam the
       preview binds to so it never has to be rewritten.
@@ -1164,14 +1467,23 @@ until Phase 4 — the two are not separable.
 - [ ] Replace `EvaluateMarkQuality` with the single `Assess` call, mapping `MarkPriceQuote` →
       `MarkFreshnessInput` at the call site.
 - [ ] Split blocking assessments into `BlockedPositions` and `OverriddenPositions`.
+- [ ] Add required `ValuationRunId` to `DailyMarkToMarketRequest` and `DailyMarkToMarketRun`; mint it
+      in `AutomatedJournalIntakeRunner` **before** `PrepareAsync` and reuse it across retries of one
+      attempt.
+- [ ] Add `IMarkFreshnessAssessmentStore` and the `ledger_mark_freshness_assessment` migration, and
+      make `AutomatedJournalIntakeRunner` the transaction owner that commits assessments and drafts
+      together. This moves forward from Phase 4: the enforcement points and the posting guard both
+      read retained assessments, so deferring the table would leave Phase 2 enforcing on state that
+      does not survive the run.
 - [ ] **Block draft persistence** in `AutomatedJournalIntakeRunner` when `BlockedPositions` is
       non-empty.
-- [ ] **Block posting** in `DailyValuationBatchLifecycleService.ApproveAndPostAsync` for a batch
-      whose run carried blocked positions.
+- [ ] **Block posting** in the shared lifecycle validation chain via `RequireFreshValuationMarks`,
+      *and* in `DailyValuationBatchLifecycleService.ApproveAndPostAsync`. The shared seam is the one
+      that closes the generic manual-journal route; the batch check stays so a batch fails as a batch.
 - [ ] **Invert** `DailyValuationPolicyTests.StalePricePolicy_FuturePrice_IsFreshWithZeroAge`.
-- [ ] Mark `StalePricePolicy` `[Obsolete]` with `ToMarkFreshnessPolicy()` and a compatibility
-      constructor overload; delete `MarkPriceQualityPolicy`; delete unread `StalePricedSymbols` /
-      `IsBlocked`.
+- [ ] Mark **both** `StalePricePolicy` and `MarkPriceQualityPolicy` `[Obsolete]`, each with a
+      converter and a compatibility constructor overload; delete unread `StalePricedSymbols` /
+      `IsBlocked`. Neither type is deleted in this phase — Phase 5 removes both shims together.
 - [ ] **Gate:** preview evidence from Phase 1 reviewed and the override backlog sized before merge.
 
 Until Phase 3 lands there is no override store, so `BlockedPositions` is the only outcome and
@@ -1183,12 +1495,17 @@ escape hatch has not shipped yet — it is also why the Phase 1 preview gate mat
       `MarkQuoteEvidence`, `MarkFreshnessOverride`, `MarkOverrideState`,
       `MarkOverrideConsumption`, `MarkOverrideAuditEntry`; extend `IMarkOverrideStore` from the
       Phase 1 read seam with the consuming and lifecycle operations.
-- [ ] Migration: `ledger_mark_override` plus `ledger_mark_override_audit`, with the nullable-aware
-      partial unique index on the scope.
+- [ ] Migration: `ledger_mark_override` — including the five `quote_*` evidence columns, without
+      which the fingerprint comparison and the reviewer list have nothing to read — plus
+      `ledger_mark_override_audit` with a **nullable** `from_state`, and the nullable-aware partial
+      unique index on the scope.
 - [ ] `PostgresMarkOverrideStore` with serializable claim, row lock, expiry evaluated against the
       clock, `Expired` sweep on both claim and request, evidence-fingerprint comparison, and audit
       append in the same transaction.
-- [ ] Per-run claim idempotency keyed on `ValuationRunId`.
+- [ ] Enforce `MarkOverridePolicy.MaximumLifetime` in `RequestAsync`: reject an `expiresOn` before
+      the valuation date or beyond the server-owned ceiling, rather than clamping it silently.
+- [ ] Per-run claim idempotency keyed on `ValuationRunId`, with the runner-level retry test — the
+      store test alone cannot prove the caller re-presents one id.
 - [ ] Tenant/company scope threaded through **every** store operation and validated against the
       stored row inside its transaction.
 - [ ] `NullMarkOverrideStore` that fails rather than returning null from `TryClaimAsync`.
@@ -1204,6 +1521,11 @@ escape hatch has not shipped yet — it is also why the Phase 1 preview gate mat
 - [ ] Append `ReviewRequired = 8`; replace the null-projection guard with the documented precedence.
 - [ ] Add `BlockedMarkDto` and `BlockedMarks` beside the existing `Blockers`, projecting freshness
       blockers into both for one release.
+- [ ] Surface `PositionsOverridden` / `OverriddenMarks` beside the blocked counts on both freshness
+      routes and in both lanes. A blocked count alone reads as clean once overrides exist, which is
+      exactly when the bypass backlog most needs to be visible.
+- [ ] Read the review-required case list from `ledger_mark_freshness_assessment` (landed in Phase 2)
+      rather than from the schedule row, so an unresolved valuation survives the next night's run.
 - [ ] Add `MarkFreshnessRef` to the three read models **with their producer joins**; decide the
       `WorkstationTradingPositionRow` question; update the TS mirror.
 - [ ] Write the scheduler, producer, and both-lane UI tests.
@@ -1226,7 +1548,9 @@ asserting a **populated** value. Where open question 5 resolves to "honest null"
 and the test asserts that, so the absence stays deliberate rather than looking like a wiring gap.
 
 ### Phase 5 — Wrap-up
-- [ ] Remove the `[Obsolete]` `StalePricePolicy` shim and the duplicated `Blockers` projection.
+- [ ] Remove the `[Obsolete]` `StalePricePolicy` **and** `MarkPriceQualityPolicy` shims — both
+      converters and both compatibility constructor overloads — and the duplicated `Blockers`
+      projection.
 - [ ] XML doc comments on every new public type.
 - [ ] Structured logging only — no interpolation inside log calls.
 - [ ] Update the roadmap row from `planned` with implementation paths and evidence (criterion 6).
@@ -1252,8 +1576,10 @@ and the test asserts that, so the absence stays deliberate rather than looking l
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
 | Fail-closed default blocks a large share of current valuations on day one | **High** | High | Phase 1 delivers the preview and Phase 2 gates on reviewing its evidence — the sequence is the mitigation, not a note attached to it. |
-| Deleting `StalePricePolicy` breaks an external caller's compile | Medium | Medium | `[Obsolete]` shim plus converter for one release; release-noted as source-breaking. |
-| The override store becomes a routine bypass | Medium | High | Full-identity scope keys, expiry at time of use, `PolicyVersion` invalidation, single-claim consumption, and override counts reported alongside blocked counts. |
+| Deleting `StalePricePolicy` **or** `MarkPriceQualityPolicy` breaks an external caller's compile | Medium | Medium | `[Obsolete]` shim plus converter for each, for one release; a documented field-by-field mapping for both; release-noted as source-breaking in two places, not one. |
+| The override store becomes a routine bypass | Medium | High | Full-identity scope keys, a server-owned maximum lifetime so no approval can stand indefinitely, expiry at time of use, `PolicyVersion` invalidation, single-claim consumption, and `PositionsOverridden` reported beside `PositionsBlocked` on every freshness surface. |
+| A valuation-run identity that changes per attempt or is shared across attempts | Medium | High | The id is part of the request contract, minted by the runner before `PrepareAsync`, and asserted by an orchestration-level retry test rather than store tests alone. |
+| A governed valuation draft is posted through the generic manual-journal route | Medium | High | The freshness precondition lives in the shared lifecycle validation chain, not only in the batch wrapper, and the endpoint test covers the generic route. |
 | Blocking draft intake strands a legitimate close | Medium | High | Open question 4 decides whether a governed exception path is needed; until then the override is that path, and it is audited. |
 | `MarkFreshnessRef` ships null on one or more read models | Medium | Medium | Producer joins are named per model above, and each test asserts a populated value rather than contract presence. |
 | `WorkstationTradingPositionRow` gaining a typed member breaks browser consumers expecting all-strings | Medium | Low | It is an added optional member; update the TS mirror in the same change. |
