@@ -363,20 +363,36 @@ public interface IMarkOverrideStore
     /// to <see cref="MarkOverrideState.Consumed"/>, returning null when none applies. Read, guard,
     /// transition, and audit-append happen in one serializable transaction over a row lock, so a
     /// retry or a concurrent run cannot both claim the same one-shot authorisation.
+    ///
     /// Expiry is evaluated against <paramref name="nowUtc"/> — the moment of use — not against the
-    /// valuation date, which would leave a historical override usable forever on later reruns.
+    /// valuation date, which would leave a historical override usable forever on later reruns. An
+    /// approved row found past its expiry is transitioned to
+    /// <see cref="MarkOverrideState.Expired"/> and audited in the same transaction rather than
+    /// merely skipped; see "Expiry is a transition, not a filter" below.
+    ///
+    /// **Idempotent per run.** <paramref name="consumption"/> carries a stable
+    /// <c>ValuationRunId</c>, and a row already <c>Consumed</c> by that same run id is returned
+    /// again rather than refused. Without this a run that claims one override and then blocks on a
+    /// *later* position strands the first authorisation: the retry finds it consumed, returns null,
+    /// and the valuation can never complete even though no draft was ever retained. A different run
+    /// id still gets null — the one-shot guarantee holds across runs, which is what it is for.
     /// </summary>
     ValueTask<MarkFreshnessOverride?> TryClaimAsync(
         MarkOverrideScope scope, MarkOverrideConsumption consumption, DateTimeOffset nowUtc,
-        CancellationToken ct = default);
+        WorkstationTenantScope expectedTenant, CancellationToken ct = default);
 
     /// <summary>Non-consuming read for preview and display. Never transitions state.</summary>
     ValueTask<MarkFreshnessOverride?> PeekApprovedAsync(
-        MarkOverrideScope scope, DateTimeOffset nowUtc, CancellationToken ct = default);
-
-    ValueTask<MarkFreshnessOverride> RequestAsync(
-        MarkOverrideScope scope, string reason, string requestedBy, DateOnly expiresOn,
+        MarkOverrideScope scope, DateTimeOffset nowUtc, WorkstationTenantScope expectedTenant,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// <paramref name="quoteEvidence"/> pins what was actually reviewed; see "An approval is of a
+    /// mark, not of a slot" below.
+    /// </summary>
+    ValueTask<MarkFreshnessOverride> RequestAsync(
+        MarkOverrideScope scope, MarkQuoteEvidence quoteEvidence, string reason, string requestedBy,
+        DateOnly expiresOn, WorkstationTenantScope expectedTenant, CancellationToken ct = default);
 
     /// <summary>
     /// Reviewer comes from the authenticated principal at the endpoint, never from a request body.
@@ -394,10 +410,27 @@ public interface IMarkOverrideStore
         string ledgerBookId, DateOnly valuationDate, WorkstationTenantScope expectedTenant,
         CancellationToken ct = default);
 
+    /// <summary>Pending requests awaiting a decision, for the reviewer's queue.</summary>
+    ValueTask<IReadOnlyList<MarkFreshnessOverride>> ListPendingAsync(
+        string ledgerBookId, WorkstationTenantScope expectedTenant, CancellationToken ct = default);
+
     /// <summary>Append-only lifecycle history: request, approve, reject, claim, expire.</summary>
     ValueTask<IReadOnlyList<MarkOverrideAuditEntry>> ReadAuditTrailAsync(
-        string overrideId, CancellationToken ct = default);
+        string overrideId, WorkstationTenantScope expectedTenant, CancellationToken ct = default);
 }
+
+/// <summary>
+/// An immutable snapshot of the mark an override was requested against, so an approver can see
+/// what they are authorising and a later claim can confirm it is still the same mark.
+/// </summary>
+public sealed record MarkQuoteEvidence(
+    decimal Price,
+    string Source,
+    string EvidenceReference,
+    DailyPortfolioPriceConfidence Confidence,
+    MarkFreshnessVerdict BlockingVerdict,
+    /// <summary>Hash over the fields above, compared at claim time.</summary>
+    string Fingerprint);
 
 public sealed record MarkOverrideAuditEntry(
     string OverrideId,
@@ -500,8 +533,19 @@ GET  /api/ledger/journal-automation/daily-mark-to-market-freshness/{ledgerBookId
      200 { positionsEvaluated, positionsBlocked, blockedMarks: [...] }
 
 POST /api/ledger/journal-automation/daily-mark-to-market-freshness-preview/{ledgerBookId}
-     Body   { maximumAgeDays, minimumConfidence, requireObservedDate, requireCompleteCoverage }
-     200    { positionsEvaluated, positionsBlocked, blockedMarks: [...], candidate: {...} }
+     Body   { valuationDate, maximumAgeDays, minimumConfidence, requireObservedDate,
+              requireCompleteCoverage }
+     200    { valuationDate, positionsEvaluated, positionsBlocked, blockedMarks: [...],
+              candidate: {...} }
+
+GET  /api/ledger/journal-automation/daily-mark-to-market-overrides/{ledgerBookId}?state=pending
+     200 { overrides: [ { overrideId, scope, quoteEvidence, reason, requestedBy,
+                          requestedAtUtc, expiresOn, state } ] }
+
+GET  /api/ledger/journal-automation/daily-mark-to-market-overrides/{overrideId}/audit
+     200 { entries: [ { fromState, toState, actor, occurredAtUtc, note,
+                        valuationRunId, correlationId } ] }
+     404 { "error": "not found" }        ← also the cross-tenant answer
 
 POST /api/ledger/journal-automation/daily-mark-to-market-overrides/{ledgerBookId}
      Body   { securityId, symbol, financialAccountId, valuationDate, markObservedOn, reason, expiresOn }
@@ -519,6 +563,20 @@ The decision route carries **no ledger-book segment**, which is why the tenant c
 the route. It is passed into `RecordApprovalDecisionAsync` and validated against the stored row
 inside the same transaction, and a tenant mismatch returns `404` rather than `403` so the route does
 not confirm that someone else's override id exists.
+
+**The two read routes are what make the approval workflow usable at all.** Approver must differ from
+requester, and the decision route takes only an override id — so without a pending-list an
+independent reviewer has no supported way to *discover* a request, and would need the id passed out
+of band. The audit route is the other half: a reviewer deciding on a request, or an auditor asking
+after the fact where an authorisation was used, needs the retained history that
+`ReadAuditTrailAsync` already produces and that nothing previously exposed. Both are tenant-scoped
+like the mutations, and both surface in the operator workstation alongside the review-required
+banner rather than being API-only.
+
+**The preview route carries `valuationDate` explicitly.** `IMarkFreshnessPreviewService.PreviewAsync`
+requires one, and a route that omitted it would force the implementation to invent a date — almost
+certainly the server's today — producing a preview for a different valuation than the operator was
+looking at. It is echoed in the response so the answer is self-describing.
 
 **`reviewedBy` is absent from the request body by design.** Accepting it would let a caller attribute
 an approval to another identity and walk straight past the requester-versus-approver comparison. The
@@ -569,27 +627,42 @@ search missed it and the slate initially asserted no performance route existed.
 **Responsibilities:** evaluate one `MarkFreshnessInput` against all gates; order verdicts by severity;
 never clamp a negative age; derive `PolicyVersion` deterministically from every governing member.
 
-**Gate order, which is behaviour rather than style. It mirrors `EvaluateMarkQuality`
-(`DailyMarkToMarketService.cs:486-506`) line for line, and the ordering is load-bearing twice:**
+**Evaluate every applicable predicate, then report the most severe. Do not return at the first
+match.** An earlier draft returned eagerly in source order, which produced two contradictions at
+once: it reported `LowConfidence` for a quote that was *also* stale or future-dated, disagreeing
+with the severity order declared on the verdict enum and with this document's own
+`Assess_StaleAndLowConfidence_ReportsMostSevereVerdict`. Collecting first and ranking second is the
+only shape that satisfies both the "check confidence even when no date is required" requirement and
+the declared severity.
 
-1. `Price <= 0` → `InvalidPrice`, **before and regardless of `Enabled`** — mirrors `:491`
-   preceding the `policy is null` short-circuit at `:493`.
-2. If not `Enabled` → `Fresh` — mirrors `:493`.
-3. `Confidence < MinimumConfidence` → `LowConfidence` — mirrors `:495`, and it comes **before** the
-   observation-date gate deliberately. The current implementation checks confidence independently of
-   whether a date is required, so a low-confidence quote with no observation date is rejected today
-   under `RequireObservedDate: false`. Ordering confidence after the date gate would let that quote
-   through and would be a **regression**, not a consolidation.
-4. `ObservedOn` missing → `MissingObservation` when `RequireObservedDate`, else `Fresh` — mirrors
-   `:497`. Only the *date-derived* gates below are skipped here; confidence has already run.
-5. `ObservedOn > valuationDate` → `FutureDated` — mirrors `:499-500`. `AgeDays` carries the true
-   negative value rather than being clamped.
-6. `ageDays > MaximumAgeDays` → `Stale` — mirrors `:503-505`.
-7. otherwise `Fresh`.
+**Predicates, each evaluated independently:**
 
-Two tests pin the ordering specifically: one asserting a low-confidence quote with **no** observation
-date and `RequireObservedDate: false` is `LowConfidence` rather than `Fresh`, and one asserting a
-non-positive price outranks every other verdict.
+| Predicate | Verdict | Mirrors |
+| --- | --- | --- |
+| `Price <= 0` | `InvalidPrice` | `:491`, which precedes the `policy is null` short-circuit at `:493` — so this one fires **even when the policy is unenforced**, and is evaluated before anything else |
+| `ObservedOn > valuationDate` | `FutureDated` | `:499-500`. `AgeDays` carries the true negative value rather than being clamped |
+| `ObservedOn` missing **and** `RequireObservedDate` | `MissingObservation` | `:497` |
+| `Confidence < MinimumConfidence` | `LowConfidence` | `:495`. **Evaluated whether or not an observation date exists** — the current implementation checks confidence independently of the date requirement, so a low-confidence quote with no date is rejected today under `RequireObservedDate: false`. Skipping it in that branch would be a regression, not a consolidation |
+| `ageDays > MaximumAgeDays` | `Stale` | `:503-505`. Requires an observation date; skipped when absent |
+
+If the policy is not `Enabled`, only `InvalidPrice` is evaluated; every other predicate is skipped
+and the result is `Fresh`. Otherwise the assessment reports the **most severe** verdict among those
+that matched, in the enum's declared order — `InvalidPrice`, `FutureDated`, `MissingObservation`,
+`Stale`, `LowConfidence` — or `Fresh` when none matched.
+
+**`StalePriceHandling` applies to `Stale` alone.** The enum governs an over-age mark and nothing
+else: `Allow` means "include the mark unchanged" and `Flag` means "include but annotate"
+(`src/Meridian.Ledger/StalePricePolicy.cs:8-12`). Attaching the handling value to every verdict
+would let an `Allow` or `Flag` compatibility policy admit a `FutureDated`, `MissingObservation`,
+`InvalidPrice`, or `LowConfidence` mark — conditions the current quality policy rejects
+*independently* of stale handling, and which no operator asked to tolerate by setting an age
+posture. `IsBlocking` is therefore `true` for every non-`Fresh` verdict except `Stale`, and `Stale`
+alone consults `Handling`.
+
+Four tests pin this: a low-confidence quote with no observation date under
+`RequireObservedDate: false` is `LowConfidence` not `Fresh`; a stale *and* low-confidence quote
+reports `Stale`; a non-positive price outranks every other verdict; and each of `FutureDated`,
+`MissingObservation`, and `LowConfidence` stays blocking under `Handling = Allow`.
 
 ### `DailyMarkToMarketService` (modified)
 
@@ -659,6 +732,31 @@ The null-projection guard at `:473-487` is replaced by this ordering. The test p
 each of the three branches, including the all-blocked-and-null-projection case that the previous
 draft left ambiguous.
 
+**But a mapped state is not a retained case, and on its own `ReviewRequired` does not survive the
+night.** The schedule row holds *current* state: `CompleteAsync` always advances `NextRunAtUtc`, and
+the next due execution overwrites the schedule's blockers and evidence with its own result. So an
+unresolved review-required valuation and the positions that caused it silently disappear on the
+following day's run — and an override scoped to the original `ValuationDate` then has no case left
+to resolve, because the thing it was requested against is gone.
+
+The `ledger_mark_freshness_assessment` table above is what makes the case durable: it is keyed by
+valuation date, so yesterday's blocked positions remain queryable after today's run overwrites the
+schedule row. Two rules follow, and both belong to Phase 4:
+
+- **The review-required case is read from the assessment table, not from the schedule row.** The
+  schedule reports today; the case list reports every valuation date with unresolved blocking
+  assessments. An operator opening the queue sees a valuation from three days ago that nobody has
+  resolved.
+- **A rerun supersedes rather than erases.** Because the assessment table is unique per position and
+  valuation date, rerunning a date replaces its assessments — so a resolved position stops being
+  blocking and an unresolved one persists. What must not happen is a *different* date's run
+  clearing it, which is exactly what relying on the schedule row would do.
+
+An explicit hold on scheduling is deliberately **not** proposed. Blocking tomorrow's valuation
+because yesterday's is unresolved would convert one stuck close into an outage, and the posting
+guard already prevents an unresolved valuation from reaching the ledger. Open question 4 covers
+whether `ReviewRequired` should additionally be terminal.
+
 ### `MarkFreshnessPreviewService`
 
 **Namespace:** `Meridian.Ui.Shared.Services` · **Lifetime:** Scoped
@@ -677,6 +775,37 @@ consumption context, all inside one `IsolationLevel.Serializable` transaction, m
 fallback mirrors `NullOperatorOverridesStore`, but — unlike the Security Master fallback — it must
 make `TryClaimAsync` **fail the run** rather than return null, so a missing store cannot silently
 become "no overrides exist".
+
+#### Expiry is a transition, not a filter
+
+The claim path guards on expiry, but guarding is not enough on its own. The partial unique index
+below covers rows in `Pending` or `Approved`, so an approved override that expires **unclaimed**
+stays `Approved` forever, keeps occupying its scope in that index, and blocks every replacement
+request for the same position with a `409` — while being permanently unusable. The operator would
+have no way to get a fresh authorisation for a position that has one.
+
+So both `TryClaimAsync` and `RequestAsync` sweep first: any row for the scope whose `ExpiresOn` is
+before `nowUtc.Date` and whose state is `Pending` or `Approved` transitions to `Expired` with an
+audit row, inside the same transaction, before the operation proceeds. That frees the index slot and
+leaves a trail explaining why. A background worker is *not* required — the two paths that care are
+the two paths that touch the row — but one may be added later for reporting without changing this
+contract.
+
+#### An approval is of a mark, not of a slot
+
+`MarkOverrideScope` identifies a *position on a valuation date*, not the mark itself. Nothing in it
+pins price, source, confidence, or evidence reference. Two consequences, both bad:
+
+- an approver reviewing a request cannot see **which mark** they are authorising — only that some
+  mark for this position was blocked;
+- a provider correction that changes the price or the evidence while keeping the same observation
+  date still matches an already-approved scope, so an approval granted for a $10.00 mark silently
+  authorises a $10,000 one.
+
+`RequestAsync` therefore captures a `MarkQuoteEvidence` snapshot, which is displayed to the reviewer
+and stored on the row. At claim time the current quote is re-fingerprinted and compared: a mismatch
+returns null and audits `evidence-changed`, so the position blocks again and a fresh approval is
+required. This is deliberately strict — a changed mark is a changed decision.
 
 #### Migration
 
@@ -725,9 +854,41 @@ legitimate request for the same scope, which is what the `409` on the request ro
 Supporting index for the claim path and the list route:
 `(tenant_id, company_id, ledger_book_id, valuation_date)`.
 
-The migration takes its ordinal from the shared migration ledger at implementation time — **do not
-reserve one in this document**, since an ordinal claimed in a design and not merged for weeks
-collides with whatever lands first.
+**`ledger_mark_freshness_assessment`** — the third table, and the one the Phase 4 producer joins
+depend on. Without it those joins have nothing to read: the three read models explicitly do **not**
+consume `DailyMarkToMarketRun`, so after the run ends — or after a process restart — there is no
+in-memory assessment left to join against and `MarkFreshnessRef` ships null on both lanes while the
+contract test passes.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `tenant_id`, `company_id`, `ledger_book_id` | `text` | ownership and book scope |
+| `security_id` | `uuid` **null** | with `symbol` and `financial_account_id`, mirrors `MarkToMarketCarryingValueKey` |
+| `symbol` | `text` | stored normalised |
+| `financial_account_id` | `text` **null** | blank normalised to null |
+| `valuation_date` | `date` | |
+| `verdict` | `text` | `MarkFreshnessVerdict` name |
+| `age_days` | `integer` **null** | null for `MissingObservation` |
+| `observed_on` | `date` **null** | |
+| `is_blocking` | `boolean` | |
+| `override_id` | `text` **null** | set when a claim authorised the position |
+| `policy_version` | `text` | which rule produced this verdict |
+| `assessed_at_utc` | `timestamptz` | |
+
+Unique on `(tenant_id, company_id, ledger_book_id, security_id, symbol, financial_account_id,
+valuation_date)` with `NULLS NOT DISTINCT`, so a rerun of the same valuation **replaces** its
+assessments rather than accumulating them. Written by `DailyMarkToMarketService` as part of the run,
+in the same transaction as the run's own persistence — an assessment that outlives its run, or a run
+whose assessments were not written, is worse than none.
+
+Retention follows the valuation it describes: assessments are deleted when their ledger book's
+valuation history is pruned. They are evidence about a specific dated valuation, not a time series.
+
+The migrations take their ordinals from the reservation table in
+[`docs/engineering/blueprints/README.md`](README.md#ledger-migration-ordinals). **036–037 are
+reserved for this blueprint** — override plus audit, and the assessment table. Re-derive the next
+free ordinal from disk at implementation time and update that table if an unrelated lane lands
+first; do not renumber a migration that has already shipped.
 
 ---
 
@@ -836,6 +997,10 @@ through their own services rather than inferring them from the schedule state.
 | `Assess_NonPositivePrice_IsInvalidPriceEvenWhenUnenforced` | the gate that has no policy to switch it off |
 | `Assess_NonPositivePrice_OutranksEveryOtherVerdict` | gate ordering, mirroring `:491` before `:493` |
 | `Assess_MissingObservedDate_WhenRequired_HasNullAgeNotZero` | the nullable-age contract |
+| `Assess_StaleAndLowConfidence_ReportsStale` | **most-severe reporting** — the eager-return order contradicted the declared severity |
+| `Assess_FutureDatedUnderAllowHandling_StaysBlocking` | `Handling` governs `Stale` alone |
+| `Assess_MissingObservationUnderFlagHandling_StaysBlocking` | same |
+| `Assess_LowConfidenceUnderAllowHandling_StaysBlocking` | same |
 | `Assess_LowConfidenceWithNoObservationDate_WhenDateNotRequired_IsLowConfidence` | **the gate-order regression** — confidence runs before the date gate, as `:495` does before `:497` |
 | `Assess_ObservationOlderThanMaximumAge_IsStale` | boundary at exactly `MaximumAgeDays` is fresh |
 | `Assess_ConfidenceBelowMinimum_IsLowConfidence` | gate survives consolidation (criterion 2) |
@@ -891,6 +1056,12 @@ through their own services rather than inferring them from the schedule state.
 | `TryClaimAsync_ExpiredAtTimeOfUse_ReturnsNull` | expiry against the clock, with a valuation date well inside the window |
 | `TryClaimAsync_AppendsAuditEntryInSameTransaction` | audit cannot be lost from the evidence model |
 | `TryClaimAsync_AuditEntryRecordsActorAndValuationRun` | the trail says *where* the authorisation was used |
+| `TryClaimAsync_SameRunIdAfterAConsumedClaim_ReturnsTheSameOverride` | **per-run idempotency** — a later position blocking must not strand an earlier claim |
+| `TryClaimAsync_DifferentRunId_AfterConsumption_ReturnsNull` | the one-shot guarantee still holds across runs |
+| `TryClaimAsync_QuoteFingerprintChanged_ReturnsNullAndAuditsEvidenceChanged` | an approval is of a mark, not a slot |
+| `TryClaimAsync_ExpiredApprovedRow_IsTransitionedToExpiredAndAudited` | expiry is a transition, not a filter |
+| `RequestAsync_AfterAnUnclaimedExpiry_Succeeds` | the partial index must not block a replacement forever |
+| `EveryStoreOperation_ForeignTenant_IsRejectedInsideItsTransaction` | scope threaded through all of them, not just the decision |
 | `TryClaimAsync_NullObservedOnMatchesOnlyTheMissingObservationScope` | null is a value, not a wildcard |
 | `RecordApprovalDecisionAsync_ForeignTenant_IsRejectedBeforeAnyStateChange` | the stored-row tenant check |
 | `UniqueScopeIndex_RejectsSecondPendingOverrideForSameScope` | the partial unique index |
@@ -915,6 +1086,8 @@ through their own services rather than inferring them from the schedule state.
 | --- | --- | --- |
 | `WorkstationEndpoints_PositionRow_CarriesPopulatedMarkFreshness` | `tests/Meridian.Tests` | criterion 4 browser lane — **populated**, not merely present |
 | `PortfolioReadService_JoinsPersistedAssessment` | `tests/Meridian.Tests` | the producer join |
+| `AssessmentStore_RerunOfSameDate_ReplacesRatherThanAccumulates` | `tests/Meridian.Tests` | the unique key |
+| `ReviewRequiredCase_SurvivesTheNextDaysRun` | `tests/Meridian.Tests` | **the case is read from assessments, not the schedule row** |
 | `FundPortfolioPosition_AggregatesWorstVerdictAndOldestObservation` | `tests/Meridian.Tests` | the aggregation rule |
 | `FundLedgerViewModel_BlockedPosition_SurfacesReviewRequired` | `tests/Meridian.Wpf.Tests` | criterion 3 desktop lane |
 | `FundLedgerPage_MarkAgeColumn_RendersDashForNullAge` | `tests/Meridian.Wpf.Tests` | the nullable-age contract at the surface |
@@ -953,10 +1126,22 @@ whole point of criterion 5 and the stated mitigation for the top risk; a sequenc
 fail-closed in PR 1 and delivers the impact preview in PR 3 inverts the gate it claims to respect.
 
 ### Phase 1 — Policy and preview, default unchanged (PR 1)
+
+**The preview's dependencies land here, not later.** `MarkFreshnessPreview` returns
+`IReadOnlyList<BlockedMarkDto>` and the service must not consume overrides, so it needs
+`PeekApprovedAsync`. Leaving `BlockedMarkDto` to Phase 4 and the store seam to Phase 3 would make
+PR 1 unbuildable as designed, or force a throwaway contract that changes twice. Both move forward;
+the *implementations* they front still arrive later.
+
 - [ ] Add `MarkFreshnessInput`, `MarkFreshnessVerdict`, `MarkFreshnessAssessment`,
       `MarkFreshnessPolicy` to `Meridian.Ledger`.
-- [ ] Implement `Assess` with the gate order above; no negative-age clamp; nullable `AgeDays`.
+- [ ] Implement `Assess` by evaluating every applicable predicate and reporting the most severe; no
+      negative-age clamp; nullable `AgeDays`; `Handling` consulted for `Stale` only.
 - [ ] Implement deterministic `PolicyVersion` over every governing member.
+- [ ] Add `BlockedMarkDto` to `Meridian.Contracts` — the preview's result type.
+- [ ] Add `IMarkOverrideStore` with **`PeekApprovedAsync` only**, plus a null implementation
+      returning no override. The consuming operations arrive in Phase 3; this is the read seam the
+      preview binds to so it never has to be rewritten.
 - [ ] Add `IMarkFreshnessPreviewService` and `MarkFreshnessPreviewService`, plus the two read routes
       with constants in `UiApiRoutes.cs` and the authorization trio.
 - [ ] **Default posture unchanged in this phase** — `DailyPortfolioPricingPolicy` still defaults to
@@ -995,15 +1180,25 @@ escape hatch has not shipped yet — it is also why the Phase 1 preview gate mat
 
 ### Phase 3 — Overrides (PR 3)
 - [ ] Add `MarkOverrideScope` (mirroring `MarkToMarketCarryingValueKey` normalisation),
-      `MarkFreshnessOverride`, `MarkOverrideState`, `MarkOverrideAuditEntry`, `IMarkOverrideStore`.
-- [ ] `PostgresMarkOverrideStore` with serializable claim, row lock, expiry against the clock, and
-      audit append in the same transaction.
+      `MarkQuoteEvidence`, `MarkFreshnessOverride`, `MarkOverrideState`,
+      `MarkOverrideConsumption`, `MarkOverrideAuditEntry`; extend `IMarkOverrideStore` from the
+      Phase 1 read seam with the consuming and lifecycle operations.
+- [ ] Migration: `ledger_mark_override` plus `ledger_mark_override_audit`, with the nullable-aware
+      partial unique index on the scope.
+- [ ] `PostgresMarkOverrideStore` with serializable claim, row lock, expiry evaluated against the
+      clock, `Expired` sweep on both claim and request, evidence-fingerprint comparison, and audit
+      append in the same transaction.
+- [ ] Per-run claim idempotency keyed on `ValuationRunId`.
+- [ ] Tenant/company scope threaded through **every** store operation and validated against the
+      stored row inside its transaction.
 - [ ] `NullMarkOverrideStore` that fails rather than returning null from `TryClaimAsync`.
 - [ ] Enforce approval separation; reviewer from the authenticated principal, no request field.
 - [ ] Inject into `DailyMarkToMarketService` with `TimeProvider`; fail the run when the store is
       unavailable.
-- [ ] Map the two override routes with constants and the full authorization trio.
-- [ ] Write the nine store tests and the five endpoint tests.
+- [ ] Map the request, decision, pending-list, and audit routes with constants and the full
+      authorization trio.
+- [ ] Browser and WPF: pending-override queue and audit drawer for the independent reviewer.
+- [ ] Write the store and endpoint tests.
 
 ### Phase 4 — Surfacing (PR 4)
 - [ ] Append `ReviewRequired = 8`; replace the null-projection guard with the documented precedence.

@@ -1,12 +1,12 @@
 {
-  "total_files": 640,
-  "total_lines": 118366,
+  "total_files": 641,
+  "total_lines": 119628,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 184.9,
-  "health_score": 79,
+  "average_lines": 186.6,
+  "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2154,7 +2154,15 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 173,
+      "line_count": 175,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
+      "line_count": 1259,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2570,7 +2578,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9673,
+      "line_count": 9674,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
