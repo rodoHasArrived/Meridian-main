@@ -303,6 +303,10 @@ class PyYamlDifferentialTests(unittest.TestCase):
             "tools:\n  - Read\n  - Glob\n",
             "hooks:\n  PreToolUse:\n    - echo before\n",
             "hooks:\n  PreToolUse:\n    - a\n  PostToolUse:\n    - b\n",
+            "hooks:\n  PreToolUse:\n    - matcher: Bash\n      hooks:\n"
+            "        - type: command\n          command: echo hi\n",
+            "skills: [foo, bar]\n",
+            "skills: []\n",
         ):
             with self.subTest(frontmatter=frontmatter):
                 ours = module.parse_frontmatter(f"---\n{frontmatter}---\n")
@@ -649,6 +653,74 @@ class ValidateAgentTests(unittest.TestCase):
         )
 
         self.assertEqual([], module.validate_agent(path))
+
+    def test_unterminated_flow_sequence_is_rejected(self) -> None:
+        # Dropping the bracket and returning the items anyway would pass a definition
+        # a real parser fails outright.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\nskills: [foo",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("unterminated flow sequence", errors)
+
+    def test_sequence_of_mappings_is_parsed(self) -> None:
+        # The ordinary shape of a hook entry: `- matcher: Bash` with sibling keys
+        # aligned beneath it. Treating every `- ` item as a scalar rejected valid
+        # configuration for a field the allowlist had just accepted.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\n"
+            "hooks:\n  PreToolUse:\n    - matcher: Bash\n      hooks:\n"
+            "        - type: command\n          command: echo hi",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+        parsed = module.parse_frontmatter(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "echo hi"}]}]},
+            parsed["hooks"],
+        )
+
+    def test_deny_list_cancelling_every_allowed_entry_is_rejected(self) -> None:
+        # Each field was valid on its own; the empty grant only appears when the two
+        # are compared, which is a route neither field-level check could see.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\ndisallowedTools: Read",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry in `tools`", errors)
+
+    def test_deny_list_cancelling_some_entries_is_accepted(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read, Glob\n"
+            "disallowedTools: Glob",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_deny_list_cancels_a_scoped_entry_by_its_head_name(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(git diff:*)\ndisallowedTools: Bash",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry in `tools`", errors)
 
     def test_mcp_only_disallowed_tools_is_accepted(self) -> None:
         # A deny-list that matches nothing is harmless; only an allow-list fails open.

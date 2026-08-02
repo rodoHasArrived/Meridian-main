@@ -235,7 +235,11 @@ def _strip_quotes(value: str) -> object:
 
 
 def _parse_flow_sequence(value: str) -> list[object]:
-    inner = value[1:-1].strip() if value.endswith("]") else value[1:].strip()
+    # A real parser fails the document on `skills: [foo`. Dropping the bracket and
+    # returning the items anyway would pass a definition the host cannot load.
+    if not value.endswith("]"):
+        raise ValueError("frontmatter is not valid YAML: unterminated flow sequence")
+    inner = value[1:-1].strip()
     if not inner:
         return []
     return [_strip_quotes(item.strip()) for item in inner.split(",") if item.strip()]
@@ -267,13 +271,39 @@ def _parse_sequence(
 ) -> tuple[list[object], int]:
     items: list[object] = []
     while index < len(lines) and lines[index][0] == indent and lines[index][1].startswith("- "):
-        item = lines[index][1][2:].strip()
+        raw_indent, content, number = lines[index]
+        item = content[2:].strip()
         index += 1
-        if not item and index < len(lines) and lines[index][0] > indent:
-            nested, index = _parse_mapping(lines, index, lines[index][0])
-            items.append(nested)
-        else:
-            items.append(_strip_quotes(item))
+
+        if not item:
+            # `-` alone: the entry is whatever is indented beneath it.
+            if index < len(lines) and lines[index][0] > raw_indent:
+                nested, index = _parse_mapping(lines, index, lines[index][0])
+                items.append(nested)
+            else:
+                items.append(None)
+            continue
+
+        if KEY_PATTERN.match(item):
+            # Compact block mapping in a sequence entry - `- matcher: Bash` followed by
+            # sibling keys aligned under `matcher`. This is the ordinary shape of a hook
+            # entry, so treating every `- ...` item as a scalar rejected valid `hooks`
+            # configuration the field allowlist had just accepted.
+            child_indent = raw_indent + 2
+            synthetic: list[tuple[int, str, int]] = [(child_indent, item, number)]
+            while index < len(lines) and lines[index][0] >= child_indent:
+                synthetic.append(lines[index])
+                index += 1
+            entry, consumed = _parse_mapping(synthetic, 0, child_indent)
+            if consumed != len(synthetic):
+                raise ValueError(
+                    "frontmatter is not valid YAML: unexpected content on line "
+                    f"{synthetic[consumed][2]}"
+                )
+            items.append(entry)
+            continue
+
+        items.append(_strip_quotes(item))
     return items, index
 
 
@@ -571,6 +601,7 @@ def validate_agent(path: Path) -> list[str]:
         frontmatter, "description", path, errors, note="; the host routes on it"
     )
 
+    resolved: dict[str, list[str]] = {}
     for field in TOOL_FIELDS:
         if field not in frontmatter:
             continue
@@ -606,6 +637,21 @@ def validate_agent(path: Path) -> list[str]:
                 f"{path.name}: `{field}` names only MCP entries; an MCP server is a "
                 "property of the host session, so this grants nothing on a session "
                 "without it - include at least one built-in tool"
+            )
+        resolved[field] = entries
+
+    # The two fields were checked independently, so `tools: Read` beside
+    # `disallowedTools: Read` passed while the deny-list cancelled the only grant -
+    # the same empty-grant end state, reached by a route neither field-level check
+    # could see. Compare the effective sets.
+    allowed = resolved.get(ALLOW_LIST_FIELD) or []
+    denied = {entry_head(entry)[0] for entry in resolved.get("disallowedTools") or []}
+    if allowed and denied:
+        surviving = [entry for entry in allowed if entry_head(entry)[0] not in denied]
+        if not surviving:
+            errors.append(
+                f"{path.name}: `disallowedTools` cancels every entry in `tools`, "
+                "leaving no usable grant"
             )
 
     return errors
