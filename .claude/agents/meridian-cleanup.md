@@ -10,7 +10,7 @@ description: >
   "outdated", "obsolete", "irrelevant logs", "log noise", "noisy logging",
   "Console.Write", "code tombstone", or when audit tooling (ai-repo-updater)
   surfaces code/doc/convention violations.
-tools: Read, Glob, Grep, Edit, Write
+tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
 # Meridian — Cleanup Specialist

@@ -5,7 +5,7 @@ description: >
   FluentAssertions tests grounded in real-world market scenarios that exercise
   complete code paths from provider ingestion through pipeline, storage,
   backtesting, and execution.
-tools: Read, Glob, Grep, Edit, Write
+tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
 # Meridian — Test Writer Specialist
