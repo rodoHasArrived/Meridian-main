@@ -71,6 +71,11 @@ def read_barrel_modules(barrel_path: Path) -> list[str]:
     return BARREL_EXPORT.findall(barrel_path.read_text(encoding="utf-8"))
 
 
+REGEX_PRECEDING_KEYWORD = re.compile(
+    r"\b(?:return|typeof|instanceof|in|of|new|delete|void|throw|case|do|else|yield|await)$"
+)
+
+
 def _starts_regex_literal(emitted: list[str]) -> bool:
     """Return whether a `/` at this point opens a regex literal rather than dividing.
 
@@ -79,12 +84,16 @@ def _starts_regex_literal(emitted: list[str]) -> bool:
     statement boundary. Contract modules are types and constants, so the heuristic is ample —
     and it is only used to blank the literal out, never to interpret it.
     """
-    for ch in reversed(emitted):
-        if ch in " \t\r\n":
-            continue
-        # `/` after `/` or `*` is a comment opener, handled by the caller before this runs.
-        return ch in "(,=:[!&|?{};+-*%~^<>"
-    return True  # start of file
+    prefix = "".join(emitted).rstrip()
+    if not prefix:
+        return True  # start of file
+    # `return /\{/.test(x)` ends in a keyword, not punctuation. Treating that `/` as division
+    # left the escaped brace in the text, and declared_names infers nesting from brace depth, so
+    # the depth stayed positive and every later module-scope export dropped out of the comparison.
+    if REGEX_PRECEDING_KEYWORD.search(prefix):
+        return True
+    # `/` after `/` or `*` is a comment opener, handled by the caller before this runs.
+    return prefix[-1] in "(,=:[!&|?{};+-*%~^<>"
 
 
 def strip_comments_and_strings(text: str) -> str:

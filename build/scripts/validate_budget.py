@@ -56,7 +56,7 @@ class Budget:
 class BdnResult:
     method_name: str
     mean_ns: float
-    allocated_bytes: int
+    allocated_bytes: float
 
 
 @dataclass(frozen=True)
@@ -159,7 +159,10 @@ def load_bdn_results(results_dir: str) -> list[BdnResult]:
             rows.append(BdnResult(
                 method_name=method_name,
                 mean_ns=float(mean_ns),
-                allocated_bytes=int(allocated_bytes),
+                # BytesAllocatedPerOperation is an average, so it is genuinely fractional.
+                # Truncating 256.9 to 256 passed a 256-byte budget the run had exceeded;
+                # compare_benchmarks.py already reads it as a float.
+                allocated_bytes=float(allocated_bytes),
             ))
 
     if not rows:
@@ -370,14 +373,14 @@ def render_summary(
 
         violation = next((v for v in violations if v.stage_name == stage_name), None)
         if violation:
-            actual: object = violation.result.allocated_bytes
+            actual: object = _format_bytes(violation.result.allocated_bytes)
             status = f"❌ +{violation.allocated_over_by} bytes over budget"
         elif stage_name in unmeasured_set:
             actual = "—"
             status = "⛔ No benchmark measured this budget"
         else:
             best = best_result_for(stage_name, results, budgets.keys())
-            actual = best.allocated_bytes if best is not None else "—"
+            actual = _format_bytes(best.allocated_bytes) if best is not None else "—"
             status = "✅ Pass" if best is not None else "➖ Unmeasured (declared)"
 
         lines.append(f"| `{stage_name}` | {budget.max_allocated_bytes_per_event} | {actual} | {status} |")
@@ -468,6 +471,11 @@ def build_evidence(
         "measured_count": sum(1 for s in stages if s["measured"]),
         "stages": stages,
     }
+
+
+def _format_bytes(value: float) -> str:
+    """Render an allocation for display: integral values plainly, fractional ones as measured."""
+    return str(int(value)) if float(value).is_integer() else f"{value:g}"
 
 
 def _normalise(s: str) -> str:

@@ -318,12 +318,10 @@ def is_skip_expression(expression: str, declares_test_attribute: bool, in_attrib
     candidate = expression.strip()
     if not candidate or NON_STRING_LITERAL.match(candidate):
         return False
-    if '"' in candidate:
-        return True
-    if in_attribute:
-        return True
-    # Outside an attribute this is ordinary code unless the file declares a test attribute.
-    return declares_test_attribute
+    # A quoted value is not enough on its own: `new SearchOptions { Skip = "cursor" }` is a
+    # string-valued DTO assignment, and accepting every quoted expression made the required
+    # workflow lane demand a register entry for a pagination cursor. The syntactic owner decides.
+    return in_attribute or declares_test_attribute
 
 
 # The decorated member follows an attribute; the enclosing type is what a statement assignment
@@ -336,18 +334,25 @@ FSHARP_MEMBER_AFTER = re.compile(r"\blet\s+``?(?P<name>[^`\n=]+?)``?\s*(?:\(|:|=
 TYPE_BEFORE = re.compile(r"\b(?:class|record|struct|type)\s+(?P<name>[A-Za-z_]\w*)")
 
 
-def resolve_test_identity(text: str, position: int, fsharp: bool) -> str:
+def resolve_test_identity(text: str, position: int, fsharp: bool, in_attribute: bool) -> str:
     """Return the test or type the skip at *position* belongs to.
 
-    An attribute decorates the member that follows it; a `Skip = reason` statement belongs to the
-    type that encloses it. Looking forward first and falling back to the enclosing type covers
-    both without needing a real parser.
+    The two forms need opposite directions. An attribute decorates the member that *follows* it,
+    so `[Fact(Skip = ...)]` resolves forward. A `Skip = reason` statement belongs to the type that
+    *encloses* it, so it resolves backward.
+
+    Searching forward for both attributed `DirectLendingDatabaseFactAttribute`'s constructor
+    assignment to whatever method happened to appear within the next few hundred characters — it
+    keyed as `GetExternalConnectionString`. Renaming or replacing the attribute while keeping that
+    helper would have left the registration untouched, which is the silent ownership transfer this
+    identity exists to prevent.
     """
-    window = text[position : position + 600]
-    pattern = FSHARP_MEMBER_AFTER if fsharp else MEMBER_AFTER
-    match = pattern.search(window)
-    if match:
-        return match.group("name").strip()
+    if in_attribute:
+        window = text[position : position + 600]
+        pattern = FSHARP_MEMBER_AFTER if fsharp else MEMBER_AFTER
+        match = pattern.search(window)
+        if match:
+            return match.group("name").strip()
 
     preceding = [m.group("name") for m in TYPE_BEFORE.finditer(text, 0, position)]
     return preceding[-1] if preceding else "<unknown>"
@@ -390,7 +395,7 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
                         relative,
                         line,
                         reason,
-                        resolve_test_identity(text, position, path.suffix == ".fs"),
+                        resolve_test_identity(text, position, path.suffix == ".fs", in_attribute),
                     )
                 )
     return sites

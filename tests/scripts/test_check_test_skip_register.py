@@ -122,7 +122,7 @@ class DiscoverSkipsTests(unittest.TestCase):
         # An interpolated reason has no statically-known string, but the skip is just as real;
         # matching only plain literals left environment-gated skips entirely uninventoried.
         (self.fixture.tests_dir / "InterpolatedTests.cs").write_text(
-            'public sealed class T { void M() { Skip = $"skipped because {Variable}=true."; } }\n',
+            'public sealed class GatedFact : FactAttribute { public GatedFact() { Skip = $"skipped because {Variable}=true."; } }\n',
             encoding="utf-8",
         )
 
@@ -242,7 +242,7 @@ class DiscoverSkipsTests(unittest.TestCase):
     def test_does_not_truncate_a_concatenation_at_an_interpolated_segment(self):
         # Recording only the leading literal would register a reason the runner never reports.
         (self.fixture.tests_dir / "MixedTests.cs").write_text(
-            'public sealed class T { void M() { Skip = "first part. " + $"set {Variable} to run."; } }\n',
+            'public sealed class GatedFact : FactAttribute { public GatedFact() { Skip = "first part. " + $"set {Variable} to run."; } }\n',
             encoding="utf-8",
         )
 
@@ -252,7 +252,7 @@ class DiscoverSkipsTests(unittest.TestCase):
 
     def test_reason_containing_a_semicolon_is_not_cut_short(self):
         (self.fixture.tests_dir / "SemicolonTests.cs").write_text(
-            'public sealed class T { void M() { Skip = "blocked; pending review"; } }\n',
+            '[Fact(Skip = "blocked; pending review")]\npublic void Held() {}\n',
             encoding="utf-8",
         )
 

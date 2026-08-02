@@ -2,7 +2,7 @@
   "skips": [
     {
       "path": "tests/Meridian.DirectLending.Tests/DirectLendingDatabaseFactAttribute.cs",
-      "test": "GetExternalConnectionString",
+      "test": "DirectLendingDatabaseFactAttribute",
       "reason": "reason",
       "owner": "Storage",
       "category": "environment-gated",
@@ -29,7 +29,7 @@
     },
     {
       "path": "tests/Meridian.Tests/AssetOperations/AssetOperationsMigrationRunnerTests.cs",
-      "test": "IsDockerAvailable",
+      "test": "AssetOperationsDatabaseFactAttribute",
       "reason": "$\"Asset Operations PostgreSQL tests are skipped because {DisableDockerVariable}=true.\"",
       "owner": "Storage",
       "category": "environment-gated",
@@ -38,7 +38,7 @@
     },
     {
       "path": "tests/Meridian.Tests/AssetOperations/AssetOperationsMigrationRunnerTests.cs",
-      "test": "IsDockerAvailable",
+      "test": "AssetOperationsDatabaseFactAttribute",
       "reason": "\"Asset Operations PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker or set {ConnectionStringVariable} to an external Postgres instance.\"",
       "owner": "Storage",
       "category": "environment-gated",
@@ -56,7 +56,7 @@
     },
     {
       "path": "tests/Meridian.Tests/SecurityMaster/SecurityMasterDatabaseFactAttribute.cs",
-      "test": "IsDockerAvailable",
+      "test": "SecurityMasterDatabaseFactAttribute",
       "reason": "\"Security Master PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable} to an external Postgres instance, \" + $\"or set {DisableDockerVariable}=true to suppress this suite explicitly.\"",
       "owner": "Storage",
       "category": "environment-gated",
@@ -74,7 +74,7 @@
     },
     {
       "path": "tests/Meridian.Tests/Storage/FundAccounts/FundAccountDatabaseFactAttribute.cs",
-      "test": "IsDockerAvailable",
+      "test": "FundAccountDatabaseFactAttribute",
       "reason": "\"Fund-account PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable} to an external Postgres instance, \" + $\"or set {DisableDockerVariable}=true to suppress this suite explicitly.\"",
       "owner": "Storage",
       "category": "environment-gated",
@@ -92,7 +92,7 @@
     },
     {
       "path": "tests/Meridian.Tests/Storage/LedgerDatabaseFactAttribute.cs",
-      "test": "IsDockerAvailable",
+      "test": "LedgerDatabaseFactAttribute",
       "reason": "\"Ledger PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable} to an external Postgres instance, \" + $\"or set {DisableDockerVariable}=true to suppress this suite explicitly.\"",
       "owner": "Storage",
       "category": "environment-gated",
@@ -101,7 +101,7 @@
     },
     {
       "path": "tests/Meridian.Tests/Storage/Reporting/ReportingArtifactStoreTests.cs",
-      "test": "IsDockerAvailable",
+      "test": "ReportingDatabaseFactAttribute",
       "reason": "$\"Reporting PostgreSQL tests are skipped because {DisableDockerVariable}=true.\"",
       "owner": "Storage",
       "category": "environment-gated",
@@ -110,7 +110,7 @@
     },
     {
       "path": "tests/Meridian.Tests/Storage/Reporting/ReportingArtifactStoreTests.cs",
-      "test": "IsDockerAvailable",
+      "test": "ReportingDatabaseFactAttribute",
       "reason": "\"Reporting PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable}, or set {DisableDockerVariable}=true.\"",
       "owner": "Storage",
       "category": "environment-gated",
