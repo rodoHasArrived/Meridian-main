@@ -287,6 +287,19 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertIn("F# char case pending a decision.", reasons)
 
+    def test_ignores_an_fsharp_comment_inside_attribute_parentheses(self):
+        # The attribute-paren tracking added for C# sections consumed `(*` as a parenthesis, so
+        # the comment handler never ran and the example inside was inventoried as a real skip.
+        (self.fixture.tests_dir / "AttrCommentTests.fs").write_text(
+            '[<Fact((* example: Skip = "documented reason" *))>]\n'
+            "let ``live case`` () = ()\n",
+            encoding="utf-8",
+        )
+
+        paths = {site.path for site in self.fixture.sites()}
+
+        self.assertNotIn("tests/Meridian.Tests/AttrCommentTests.fs", paths)
+
     def test_finds_a_real_fsharp_skip_outside_a_block_comment(self):
         # The comment fix must not blind the scan to genuine F# skips.
         (self.fixture.tests_dir / "GatedTests.fs").write_text(

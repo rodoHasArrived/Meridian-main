@@ -159,6 +159,27 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[tuple[int, bool
     length = len(text)
     while i < length:
         ch = text[i]
+        if fsharp and ch == "(" and i + 1 < length and text[i + 1] == "*":
+            # Checked before the attribute-paren branches below: those consumed `(*` as an
+            # opening parenthesis, so a comment inside `[<Fact((* Skip = "x" *))>]` was never
+            # skipped and the example inside it was inventoried as a real disabled test.
+            # `(*)` is F#'s multiplication operator used as a function, not a comment opener.
+            if i + 2 < length and text[i + 2] == ")":
+                i += 3
+                continue
+            nesting = 1
+            i += 2
+            while i < length and nesting > 0:
+                if text.startswith("(*", i):
+                    nesting += 1
+                    i += 2
+                    continue
+                if text.startswith("*)", i):
+                    nesting -= 1
+                    i += 2
+                    continue
+                i += 1
+            continue
         if ch == "[":
             opener = ATTRIBUTE_OPENER.match(text, i)
             sections.append({"name": opener.group("name") if opener else "", "parens": 0})
@@ -182,24 +203,6 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[tuple[int, bool
             following = ATTRIBUTE_NAME_AFTER_COMMA.match(text, i)
             sections[-1]["name"] = following.group("name") if following else ""
             i += 1
-            continue
-        if fsharp and ch == "(" and i + 1 < length and text[i + 1] == "*":
-            # `(*)` is F#'s multiplication operator used as a function, not a comment opener.
-            if i + 2 < length and text[i + 2] == ")":
-                i += 3
-                continue
-            nesting = 1
-            i += 2
-            while i < length and nesting > 0:
-                if text.startswith("(*", i):
-                    nesting += 1
-                    i += 2
-                    continue
-                if text.startswith("*)", i):
-                    nesting -= 1
-                    i += 2
-                    continue
-                i += 1
             continue
         if ch == '"':
             # A C# raw string literal opens with three or more quotes and closes with the same
