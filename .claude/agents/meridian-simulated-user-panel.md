@@ -27,9 +27,19 @@ Use this agent for manifest-driven persona reviews in `design_partner`,
    verified functional evidence and verified success criteria.
 
 Independent persona agents are optional and require an explicit user request for independent
-voices. The `Agent` grant exists for exactly that step — without it a requested multi-agent review
-would collapse into a single voice while still claiming to be a panel. It carries no write access:
-this agent produces findings, never edits.
+voices. The `Agent` grant is declared for that step, and it carries no write access — this agent
+produces findings, never edits.
+
+**Do not assume the grant is usable.** A subagent may not be able to spawn further subagents; the
+host restricts nesting, and Claude Code's own first-party `Explore` and `Plan` subagents have
+`Agent` removed from their tool sets. If launching an independent persona fails, **say so and fall
+back to voicing the personas in-session** rather than presenting a single voice as a panel. Where
+genuinely independent voices are required as evidence, the parent session — not this agent — must
+launch the persona workers and pass their output here for synthesis.
+
+This matters more than a normal capability caveat: a panel that silently collapses to one voice
+while still labelling itself a panel is the same class of defect as an agent whose declared tools do
+not resolve. Both look like they work.
 
 Use the skill's `references/review-contract.md`, `references/personas.md`, and
 `references/rubric.md` as the authoritative contract.

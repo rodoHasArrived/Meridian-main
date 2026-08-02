@@ -193,13 +193,13 @@ the former `meridian-navigation` and `meridian-user-panel` aliases were pruned h
 | [`meridian-brainstorm.md`](../../../.claude/agents/meridian-brainstorm.md) | Generate Meridian-native product and architecture ideas |
 | [`meridian-browser-workstation.md`](../../../.claude/agents/meridian-browser-workstation.md) | Route and implement browser workstation TypeScript/React tasks |
 | [`meridian-cleanup.md`](../../../.claude/agents/meridian-cleanup.md) | Cleanup specialist |
-| [`meridian-code-review.md`](../../../.claude/agents/meridian-code-review.md) | Review changes for bugs, regressions, and architecture drift |
+| [`meridian-code-review.md`](../../../.claude/agents/meridian-code-review.md) | Review changes for bugs, regressions, and architecture drift. **Findings only, and holds no command tool** — scope it to named files or supply the diff; it cannot derive one from a commit hash, branch, or worktree |
 | [`meridian-docs.md`](../../../.claude/agents/meridian-docs.md) | Documentation specialist |
 | [`meridian-implementation-assurance.md`](../../../.claude/agents/meridian-implementation-assurance.md) | Verify implementation completeness, evidence, docs sync, and guardrails |
 | [`meridian-provider-builder.md`](../../../.claude/agents/meridian-provider-builder.md) | Build or extend ProviderSdk-compliant data providers |
-| [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist |
+| [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist. Declares a **deny-list**, so it uses the session's navigation MCP tools when present rather than being confined to filesystem search |
 | [`meridian-roadmap-strategist.md`](../../../.claude/agents/meridian-roadmap-strategist.md) | Roadmap, delivery-plan, and target-state specialist |
-| [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Evidence-led Persona Matrix specialist for design-partner, usability-lab, and fail-closed release-gate reviews |
+| [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Evidence-led Persona Matrix specialist for design-partner, usability-lab, and fail-closed release-gate reviews. Independent persona voices need the **parent session** to launch the workers — a subagent may not be able to nest, and the panel must say so rather than collapse to one voice |
 | [`meridian-test-writer.md`](../../../.claude/agents/meridian-test-writer.md) | Write scenario-first Meridian tests |
 
 ---
