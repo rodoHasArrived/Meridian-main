@@ -588,6 +588,8 @@ public sealed class RiskRuleRuntimeService
     /// True when this audit entry represents capacity the throttle is still holding.
     /// <list type="bullet">
     /// <item><description>A submission the gateway accepted — the slot was committed.</description></item>
+    /// <item><description>An amendment the gateway accepted — it revalidated through the same
+    /// reserving rules and committed its own slot.</description></item>
     /// <item><description>A submission that threw after dispatch — ambiguous, so the slot was
     /// deliberately over-counted rather than released.</description></item>
     /// </list>
@@ -596,7 +598,11 @@ public sealed class RiskRuleRuntimeService
     /// </summary>
     private static bool CountsAgainstOrderRate(ExecutionAuditEntry entry)
     {
-        if (string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase))
+        // A routed amendment revalidates through the same reserving rules and commits its own
+        // slot, so it counts exactly as a submission does. Recognising only OrderSubmitted made
+        // accepted amendments vanish from reported utilization while still consuming capacity.
+        if (string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(entry.Action, "OrderModified", StringComparison.OrdinalIgnoreCase))
         {
             return !string.Equals(entry.Outcome, "Rejected", StringComparison.OrdinalIgnoreCase);
         }

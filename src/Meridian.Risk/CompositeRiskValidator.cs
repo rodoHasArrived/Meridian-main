@@ -369,11 +369,30 @@ public sealed class CompositeRiskValidator : IRiskValidator
         // RiskValidationResult.Violations documents, and the order BlockingViolation relies on to
         // name the most severe breach rather than the earliest-evaluated one.
         IReadOnlyList<RiskViolation> Ordered() => violations
-            .OrderByDescending(static entry => entry.Violation.Severity)
+            .OrderBy(static entry => DecisionPrecedence(entry.Violation.Severity))
             .ThenBy(static entry => entry.Priority)
             .Select(static entry => entry.Violation)
             .ToList();
     }
+
+    /// <summary>
+    /// Orders findings the way the decision does, which is not the enum's own order: Escalate sits
+    /// above Error numerically, but a hard rejection outranks a releasable escalation. Sorting by
+    /// the raw enum made <see cref="RiskValidationResult.BlockingViolation"/> name the escalation
+    /// an operator could release rather than the Error that actually forced the rejection.
+    /// </summary>
+    private static int DecisionPrecedence(RiskRuleSeverity severity) => severity switch
+    {
+        RiskRuleSeverity.Critical => 0,
+        RiskRuleSeverity.Error => 1,
+        RiskRuleSeverity.Escalate => 2,
+        RiskRuleSeverity.Warning => 3,
+        RiskRuleSeverity.Info => 4,
+
+        // An unrecognised value on a fail-closed gate sorts first, so it cannot hide behind
+        // findings this build knows about.
+        _ => -1,
+    };
 
     /// <summary>
     /// Stable code recorded when a rule itself fails, rather than reporting a breach.
@@ -416,8 +435,49 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // Checked before the sync fast path so a reserving rule cannot be bypassed by one.
             if (rule is IReservingRiskRule reserving)
             {
-                var reserved = await Bound(reserving.EvaluateAndReserveAsync(request, timeout?.Token ?? ct))
-                    .ConfigureAwait(false);
+                var reservation = reserving.EvaluateAndReserveAsync(request, timeout?.Token ?? ct);
+
+                RiskRuleReservationResult reserved;
+                try
+                {
+                    reserved = await Bound(reservation).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // The await was abandoned — the ceiling fired, or the caller gave up — so this
+                    // frame never receives the handle. A rule that ignores its token and reserves
+                    // late would strand that capacity permanently, and repeated timeouts walk the
+                    // ceiling down to zero. Cleanup is attached only here: on the normal path
+                    // ownership transfers to the caller and rolling back would release a slot the
+                    // order is about to use.
+                    _ = reservation.ContinueWith(
+                        static (completed, state) =>
+                        {
+                            if (completed.Status is not TaskStatus.RanToCompletion ||
+                                completed.Result.Reservation is not { } late)
+                            {
+                                return;
+                            }
+
+                            var owner = (CompositeRiskValidator)state!;
+                            try
+                            {
+                                late.Rollback();
+                            }
+                            catch (Exception ex)
+                            {
+                                owner.TryLogSuppressed(
+                                    ex,
+                                    "rollback of a reservation returned after its evaluation was abandoned");
+                            }
+                        },
+                        this,
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
+
+                    throw;
+                }
 
                 if (reserved.Reservation is not null)
                 {
@@ -496,7 +556,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
             RuleName: rule.RuleName,
             Severity: releasedByApproval
                 ? RiskRuleSeverity.Warning
-                : result.Code == EvaluationFailedCode ? RiskRuleSeverity.Error : rule.Severity,
+                : result.Code == EvaluationFailedCode ? RiskRuleSeverity.Critical : rule.Severity,
             Code: result.Code ?? "RISK_REJECTED",
             Message: string.IsNullOrWhiteSpace(result.RejectReason)
                 ? $"Rejected by risk rule '{rule.RuleName}'."
