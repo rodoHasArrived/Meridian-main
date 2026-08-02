@@ -57,7 +57,12 @@ class TrackedAgentDefinitionsTests(unittest.TestCase):
             self.assertIsNone(problem, stem)
             self.assertIn("Bash", entries, stem)
 
-    def test_findings_only_agents_are_not_granted_write_access(self) -> None:
+    def test_findings_only_agents_cannot_write(self) -> None:
+        # Two shapes reach the same posture, and both are legitimate. An allow-list
+        # that omits the writers is fail-closed against tools the host adds later; a
+        # deny-list naming them keeps session-provided MCP reachable, which
+        # repo-navigation's skill requires. Assert the outcome, not the mechanism.
+        writers = ("Edit", "Write", "Bash", "NotebookEdit")
         for stem in (
             "meridian-code-review",
             "meridian-repo-navigation",
@@ -65,14 +70,29 @@ class TrackedAgentDefinitionsTests(unittest.TestCase):
         ):
             path = module.AGENTS_ROOT / f"{stem}.md"
             frontmatter = module.parse_frontmatter(path.read_text(encoding="utf-8"))
-            entries, problem = module.parse_tool_list(frontmatter["tools"])
-            heads = [module.entry_head(entry)[0] for entry in entries]
 
-            self.assertIsNone(problem, stem)
-            self.assertNotIn("Edit", heads, stem)
-            self.assertNotIn("Write", heads, stem)
-            # An unscoped Bash would let a findings-only agent edit through the shell.
-            self.assertNotIn("Bash", entries, stem)
+            if "tools" in frontmatter:
+                entries, problem = module.parse_tool_list(frontmatter["tools"])
+                self.assertIsNone(problem, stem)
+                heads = [module.entry_head(entry)[0] for entry in entries]
+                for writer in writers:
+                    self.assertNotIn(writer, heads, f"{stem} allow-lists {writer}")
+            else:
+                denied, problem = module.parse_tool_list(frontmatter["disallowedTools"])
+                self.assertIsNone(problem, stem)
+                heads = [module.entry_head(entry)[0] for entry in denied]
+                for writer in writers:
+                    self.assertIn(writer, heads, f"{stem} inherits {writer} undenied")
+
+    def test_repo_navigation_keeps_session_mcp_reachable(self) -> None:
+        # Its skill directs it to prefer mdc://repo-navigation/* and find-subsystem
+        # when the session provides them; an allow-list would suppress all of them,
+        # and they cannot be allow-listed because MCP servers are a session property.
+        path = module.AGENTS_ROOT / "meridian-repo-navigation.md"
+        frontmatter = module.parse_frontmatter(path.read_text(encoding="utf-8"))
+
+        self.assertNotIn("tools", frontmatter)
+        self.assertIn("disallowedTools", frontmatter)
 
     def test_code_review_holds_no_command_tool_at_all(self) -> None:
         # A scoped git grant was considered and rejected: Claude Code scoping is a
