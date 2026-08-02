@@ -49,6 +49,7 @@ public sealed class DatabaseFactAttribute : FactAttribute
 def entry(
     path: str,
     reason: str,
+    test: str = "Disabled_Example",
     owner: str = "Storage",
     category: str = "quarantined",
     tracking: str = "PRD-112",
@@ -56,6 +57,7 @@ def entry(
 ) -> dict:
     return {
         "path": path,
+        "test": test,
         "reason": reason,
         "owner": owner,
         "category": category,
@@ -426,9 +428,11 @@ class EvaluateTests(unittest.TestCase):
 
         self.assertTrue(any("is not an ISO date" in p for p in problems), msg=problems)
 
-    def test_duplicate_reasons_in_one_file_fail(self):
-        # Two skips sharing a reason cannot be registered or reviewed independently, so the
-        # gate rejects the ambiguity rather than silently approving both from one entry.
+    def test_two_skips_sharing_a_reason_are_registered_independently(self):
+        # Keyed on (path, reason) these were indistinguishable, so the gate had to reject the
+        # ambiguity. The test identity separates them, and each now carries its own owner and
+        # review date — which is the point: deleting one and reusing its reason elsewhere no
+        # longer inherits the other's approval.
         second_skip = (
             f'    [Fact(Skip = "{SkipRegisterFixture.QUARANTINE_REASON}")]\n'
             "    public void Disabled_Other()\n"
@@ -439,17 +443,30 @@ class EvaluateTests(unittest.TestCase):
             QUARANTINED_SOURCE.replace("}\n", "}\n\n" + second_skip, 1),
             encoding="utf-8",
         )
+        self.fixture.write_register(
+            [
+                entry(SkipRegisterFixture.QUARANTINE_PATH, SkipRegisterFixture.QUARANTINE_REASON),
+                entry(
+                    SkipRegisterFixture.QUARANTINE_PATH,
+                    SkipRegisterFixture.QUARANTINE_REASON,
+                    test="Disabled_Other",
+                ),
+            ]
+        )
+
+        self.assertEqual(self.fixture.problems(), [])
+
+    def test_reusing_a_reason_for_a_different_test_needs_its_own_entry(self):
+        # The transfer this key exists to prevent: the registered test is gone and a different
+        # one now carries the same reason. On (path, reason) the gate saw no change at all.
+        (self.fixture.tests_dir / "ExampleTests.cs").write_text(
+            QUARANTINED_SOURCE.replace("Disabled_Example", "Disabled_Successor"), encoding="utf-8"
+        )
 
         problems = self.fixture.problems()
 
-        self.assertTrue(any("duplicate skip reason" in p for p in problems), msg=problems)
-
-
-class EvidenceTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self._tmp.cleanup)
-        self.fixture = SkipRegisterFixture(Path(self._tmp.name))
+        self.assertTrue(any("not in the register" in p for p in problems), msg=problems)
+        self.assertTrue(any("matches no skip in the source" in p for p in problems), msg=problems)
 
     def test_evidence_carries_owner_and_category(self):
         entries = MODULE.load_register(self.fixture.register_path)

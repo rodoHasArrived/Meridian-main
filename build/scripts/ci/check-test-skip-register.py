@@ -41,7 +41,7 @@ DEFAULT_REGISTER = REPO_ROOT / "build" / "config" / "testing" / "test-skip-regis
 DEFAULT_TESTS_DIR = REPO_ROOT / "tests"
 
 VALID_CATEGORIES = {"environment-gated", "quarantined"}
-REQUIRED_FIELDS = ("path", "reason", "owner", "category", "tracking", "review_by")
+REQUIRED_FIELDS = ("path", "test", "reason", "owner", "category", "tracking", "review_by")
 
 # Every `Skip = <expression>` in a test project, in any of the forms xUnit accepts:
 #     [Fact(Skip = "plain literal")]
@@ -83,17 +83,22 @@ class GateFailure(Exception):
 
 
 class SkipSite:
-    def __init__(self, path: str, line: int, reason: str) -> None:
+    def __init__(self, path: str, line: int, reason: str, test: str) -> None:
         self.path = path
         self.line = line
         self.reason = reason
+        self.test = test
 
     @property
-    def key(self) -> tuple[str, str]:
-        return (self.path, self.reason)
+    def key(self) -> tuple[str, str, str]:
+        # Keyed by the test as well as the file and reason. On (path, reason) alone, deleting one
+        # skipped test and giving a different test in the same file the same reason left the key
+        # unchanged: no stale entry, no unregistered skip, and the owner and review date silently
+        # transferred to coverage nobody had reviewed.
+        return (self.path, self.test, self.reason)
 
     def as_dict(self) -> dict[str, object]:
-        return {"path": self.path, "line": self.line, "reason": self.reason}
+        return {"path": self.path, "test": self.test, "line": self.line, "reason": self.reason}
 
 
 def join_literals(literal_text: str) -> str:
@@ -321,6 +326,33 @@ def is_skip_expression(expression: str, declares_test_attribute: bool, in_attrib
     return declares_test_attribute
 
 
+# The decorated member follows an attribute; the enclosing type is what a statement assignment
+# belongs to. Both are matched loosely — this is an identity for keying, not a parse.
+MEMBER_AFTER = re.compile(
+    r"\b(?:public|private|protected|internal|static|async|sealed|override|virtual|partial|extern|unsafe|new)\s+"
+    r"[^\s(){};]+\s+(?P<name>[A-Za-z_]\w*)\s*(?:<[^>()]*>)?\s*\(",
+)
+FSHARP_MEMBER_AFTER = re.compile(r"\blet\s+``?(?P<name>[^`\n=]+?)``?\s*(?:\(|:|=)")
+TYPE_BEFORE = re.compile(r"\b(?:class|record|struct|type)\s+(?P<name>[A-Za-z_]\w*)")
+
+
+def resolve_test_identity(text: str, position: int, fsharp: bool) -> str:
+    """Return the test or type the skip at *position* belongs to.
+
+    An attribute decorates the member that follows it; a `Skip = reason` statement belongs to the
+    type that encloses it. Looking forward first and falling back to the enclosing type covers
+    both without needing a real parser.
+    """
+    window = text[position : position + 600]
+    pattern = FSHARP_MEMBER_AFTER if fsharp else MEMBER_AFTER
+    match = pattern.search(window)
+    if match:
+        return match.group("name").strip()
+
+    preceding = [m.group("name") for m in TYPE_BEFORE.finditer(text, 0, position)]
+    return preceding[-1] if preceding else "<unknown>"
+
+
 def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
     """Return every skip declaration in the .NET/F# test projects, in stable order."""
     sites: list[SkipSite] = []
@@ -353,7 +385,14 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
                     if PURE_LITERAL_EXPRESSION.match(expression)
                     else normalise_expression(expression)
                 )
-                sites.append(SkipSite(relative, line, reason))
+                sites.append(
+                    SkipSite(
+                        relative,
+                        line,
+                        reason,
+                        resolve_test_identity(text, position, path.suffix == ".fs"),
+                    )
+                )
     return sites
 
 
@@ -417,7 +456,7 @@ def evaluate(
             )
             continue
 
-        key = (entry["path"], entry["reason"])
+        key = (entry["path"], entry["test"], entry["reason"])
         if key in registered:
             problems.append(f"{entry_id} ({entry['path']}): duplicate register entry for the same skip")
             continue
@@ -445,18 +484,19 @@ def evaluate(
     source_keys = set(seen_keys)
     for key, entry in registered.items():
         if key not in source_keys:
-            path, reason = key
+            path, test, reason = key
             excerpt = reason if len(reason) <= 60 else reason[:57] + "..."
             problems.append(
-                f"{path}: register entry matches no skip in the source (reason: \"{excerpt}\"). "
-                "Remove the stale entry, or update it if the skip reason changed."
+                f"{path}: register entry for '{test}' matches no skip in the source "
+                f"(reason: \"{excerpt}\"). Remove the stale entry, or update it if the skip "
+                "reason or the test it covers changed."
             )
 
     return problems
 
 
 def build_evidence(sites: list[SkipSite], entries: list[dict]) -> dict:
-    by_key = {(entry.get("path"), entry.get("reason")): entry for entry in entries if isinstance(entry, dict)}
+    by_key = {(entry.get("path"), entry.get("test"), entry.get("reason")): entry for entry in entries if isinstance(entry, dict)}
     categorised: dict[str, int] = {category: 0 for category in sorted(VALID_CATEGORIES)}
     records = []
     for site in sites:

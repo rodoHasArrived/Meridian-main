@@ -50,8 +50,8 @@ BARREL_EXPORT = re.compile(r'^\s*export\s+\*\s+from\s+"\./types/(?P<module>[^"]+
 # depth-zero declaration is what `export *` re-exports, so `export namespace N { export interface
 # Row {} }` contributes `N` and never `Row`.
 DECLARATION = re.compile(
-    r"^[ \t]*export\s+(?:declare\s+)?(?:abstract\s+)?"
-    r"(?:type|interface|enum|const\s+enum|const|let|var|function|class|namespace|module)\s+"
+    r"^[ \t]*export\s+(?:declare\s+)?(?:abstract\s+)?(?:async\s+)?"
+    r"(?:type|interface|enum|const\s+enum|const|let|var|function\*?|class|namespace|module)\s+"
     r"(?P<name>[A-Za-z_$][\w$]*)",
     re.MULTILINE,
 )
@@ -238,7 +238,12 @@ def evaluate(barrel_path: Path, types_dir: Path) -> tuple[list[str], dict[str, i
             problems.append(f"src/types.ts re-exports './types/{module}', which does not exist")
             continue
         for name in declared_names(module_path):
-            declarations[name].append(module)
+            # Declaration merging and function overloads legitimately repeat a name inside one
+            # module, and `export *` still publishes a single unambiguous symbol. Appending each
+            # occurrence made three overload signatures read as "3 barrel modules" and blocked CI
+            # over a collision that does not exist. Only distinct owning modules can collide.
+            if module not in declarations[name]:
+                declarations[name].append(module)
 
     for name, owners in sorted(declarations.items()):
         if len(owners) > 1:

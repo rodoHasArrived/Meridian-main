@@ -189,6 +189,42 @@ class DashboardTypeBarrelTests(unittest.TestCase):
 
         self.assertEqual(counts["duplicates"], 1, msg=problems)
 
+    def test_overloads_in_one_module_are_not_a_duplicate(self):
+        # Function overloads and declaration merging legitimately repeat a name inside one
+        # module, and `export *` still publishes one unambiguous symbol. Counting each
+        # occurrence made three signatures read as "3 barrel modules" and blocked CI.
+        self.fixture.write_module(
+            "workstation-1",
+            [
+                "export function load(id: string): string;",
+                "export function load(id: number): string;",
+                "export function load(id: unknown): string { return String(id); }",
+            ],
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0, msg=problems)
+        self.assertEqual(problems, [])
+
+    def test_detects_a_duplicate_async_function_export(self):
+        # The declaration pattern allowed modifiers only for `declare` and `abstract`, so an
+        # `export async function` matched nothing and two modules publishing `load` collided
+        # invisibly under the barrel.
+        self.fixture.write_module(
+            "workstation-1",
+            ["export async function load(): Promise<void> {}"],
+        )
+        self.fixture.write_module(
+            "workstation-2",
+            ["export async function load(): Promise<void> {}"],
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+        self.assertTrue(any("load" in p for p in problems), msg=problems)
+
     def test_ignores_a_declaration_inside_a_line_comment(self):
         self.fixture.write_module(
             "workstation-2",
