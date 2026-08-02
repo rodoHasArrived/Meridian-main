@@ -1032,6 +1032,8 @@ Meridian-main
 │   ├── config
 │   │   ├── security
 │   │   │   └── npm-audit-accepted-advisories.json
+│   │   ├── testing
+│   │   │   └── test-skip-register.json
 │   │   └── file-size-baseline.json
 │   ├── dotnet
 │   │   ├── DocGenerator
@@ -1092,8 +1094,10 @@ Meridian-main
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
 │       │   ├── check-apiclient-callers.py
+│       │   ├── check-dashboard-type-barrel.py
 │       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
+│       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
 │       │   ├── dispatch-targeted-test.py
@@ -9488,8 +9492,10 @@ Meridian-main
 │   │   ├── test_check_codex_memory.py
 │   │   ├── test_check_codex_skills.py
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_check_dashboard_type_barrel.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
+│   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_ci_summary.py
 │   │   ├── test_ci_workflow_contract.py

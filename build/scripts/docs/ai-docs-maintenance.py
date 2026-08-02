@@ -201,7 +201,7 @@ def _count_files(directory: str, extension: str) -> int:
     """Count files with given extension in directory, excluding bin/obj."""
     count = 0
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if d not in {"bin", "obj", "node_modules", ".git", "__pycache__"}]
+        dirs[:] = [d for d in dirs if d not in {"bin", "obj", "node_modules", ".git", "__pycache__", ".pytest_cache"}]
         for f in files:
             if f.endswith(extension):
                 count += 1

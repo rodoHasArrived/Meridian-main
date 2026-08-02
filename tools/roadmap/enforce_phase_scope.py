@@ -76,6 +76,7 @@ GENERATED_ARTIFACT_PATTERNS: list[str] = [
     "docs/status/TODO.md",
     "docs/status/coverage-report.md",
     "docs/status/workflow-drift-report.md",
+    "docs/status/example-validation.md",
     "docs/diagrams/**",
     "docs/generated/**",
     "docs/**/generated/**",
