@@ -16,13 +16,15 @@ This gate fails when:
   listed as a deliberately standalone module (so a new DTO file cannot be added outside
   the single-declaration contract without saying so).
 
-Known limitation: name collection covers direct declarations and named re-exports, not
-transitive `export * from "../contracts"` chains. A barrel module that republishes a name
-through a star re-export contributes no owner here, so a collision between that name and a
-sibling module's direct declaration is not detected — `@/types` drops the name and this gate
-still reports zero duplicates. Resolving it means following relative module paths outside
-`src/types/`, which wants the TypeScript AST rather than another regex pass; deliberately not
-attempted here. Tracked with `PRD-109`.
+Name collection covers direct declarations, named re-exports, and `export * as Ns from`
+(which publishes the single name `Ns`). It cannot follow a *bare* `export * from "../contracts"`
+chain: the names that publishes depend on the target and everything it re-exports in turn,
+which wants the TypeScript AST rather than another regex pass. Left as a silent gap that would
+be the gate's worst failure mode — a name republished that way contributes no owner, so a real
+collision with a sibling's declaration removes the name from `@/types` while the gate reports
+zero duplicates. So a bare star re-export inside a barrel module is rejected outright instead,
+with the explicit form to use. No barrel module uses one today, so this bounds the gap rather
+than restricting anything currently written.
 
 Run with `--summary` for a one-line report.
 """
@@ -71,6 +73,20 @@ NAMED_REEXPORT = re.compile(r"^[ \t]*export\s+type\s*\{(?P<names>[^}]*)\}|^[ \t]
 # Inside the braces: `Name`, `Name as Alias`, `type Name`, `default as Name`. The published name
 # is the alias when present, otherwise the name itself.
 REEXPORT_SPECIFIER = re.compile(r"(?:type\s+)?(?P<name>[A-Za-z_$][\w$]*)(?:\s+as\s+(?P<alias>[A-Za-z_$][\w$]*))?")
+# `export * as Ns from "..."` publishes exactly one name, so it collides like a declaration.
+# A *bare* `export * from "..."` republishes an unknown set, which this gate cannot resolve
+# without the TypeScript AST — it is rejected outright rather than under-reported. See
+# star_reexports() for why that is a failure and not a silent skip.
+# Matched against the *stripped* text, so a star export written inside a comment or a string
+# is not a finding. strip_comments_and_strings blanks a literal including its quotes, so these
+# cannot require the quotes — the specifier is recovered from the raw text by offset, which the
+# blanking preserves exactly.
+NAMESPACE_REEXPORT = re.compile(
+    r"^[ \t]*export\s*\*\s*as\s+(?P<name>[A-Za-z_$][\w$]*)\s+from\b",
+    re.MULTILINE,
+)
+BARE_STAR_REEXPORT = re.compile(r"^[ \t]*export\s*\*\s*from\b", re.MULTILINE)
+MODULE_SPECIFIER = re.compile(r"[\"'](?P<module>[^\"']+)[\"']")
 
 
 def read_barrel_modules(barrel_path: Path) -> list[str]:
@@ -231,7 +247,35 @@ def declared_names(module_path: Path) -> list[str]:
             if published != "default":
                 names.append(published)
 
+    for match in NAMESPACE_REEXPORT.finditer(text):
+        if at_module_scope(match.start()):
+            names.append(match.group("name"))
+
     return names
+
+
+def star_reexports(module_path: Path) -> list[str]:
+    """Return the module specifiers a contract module republishes with a bare `export *`.
+
+    The names such a re-export publishes cannot be determined without resolving the target
+    and everything it in turn re-exports, which wants the TypeScript AST rather than this
+    lexer. Rather than let those names contribute no owner — which would report zero
+    duplicates for a collision that does remove the name from '@/types' — the gate treats a
+    bare star re-export inside a barrel module as a failure and says why. No barrel module
+    uses one today, so this is a precondition that keeps the reported count honest, not a
+    restriction on anything currently written.
+    """
+    raw = module_path.read_text(encoding="utf-8")
+    text = strip_comments_and_strings(raw)
+
+    targets = []
+    for match in BARE_STAR_REEXPORT.finditer(text):
+        # The statement runs to the first ';' or newline after the match; the specifier is the
+        # quoted string inside it, read from raw text because stripping blanked the quotes.
+        end = min(pos for pos in (text.find(";", match.end()), text.find("\n", match.end()), len(text)) if pos != -1)
+        specifier = MODULE_SPECIFIER.search(raw, match.end(), end)
+        targets.append(specifier.group("module") if specifier else "<unresolved>")
+    return targets
 
 
 def discover_contract_modules(types_dir: Path) -> list[str]:
@@ -258,6 +302,13 @@ def evaluate(barrel_path: Path, types_dir: Path) -> tuple[list[str], dict[str, i
         if not module_path.is_file():
             problems.append(f"src/types.ts re-exports './types/{module}', which does not exist")
             continue
+        for target in star_reexports(module_path):
+            problems.append(
+                f"src/types/{module}.ts republishes '{target}' with a bare 'export *'. "
+                "This gate cannot resolve which names that publishes, so a collision between "
+                "them and a sibling module's declaration would be reported as zero duplicates. "
+                "Re-export the names explicitly ('export { A, B } from ...') so they are visible."
+            )
         for name in declared_names(module_path):
             # Declaration merging and function overloads legitimately repeat a name inside one
             # module, and `export *` still publishes a single unambiguous symbol. Appending each

@@ -274,3 +274,53 @@ class RepositoryBarrelTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StarReexportTests(unittest.TestCase):
+    """The exact scenario a bare `export *` hides, and the precondition that stops it."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_bare_star_reexport_in_a_barrel_module_fails(self):
+        # Reviewer's case: workstation-1 republishes ../contracts, which declares LedgerRowDto,
+        # while workstation-2 declares it directly. TypeScript drops the ambiguous name from
+        # '@/types'. The lexer cannot resolve '../contracts', so instead of reporting zero
+        # duplicates it refuses the construct and says which module to make explicit.
+        self.fixture.write_module("workstation-1", ['export * from "../contracts";'])
+        self.fixture.write_module("workstation-2", ["export interface LedgerRowDto { id: string; }"])
+
+        problems, _ = self.fixture.evaluate()
+
+        self.assertTrue(
+            any("workstation-1" in p and "../contracts" in p and "bare 'export *'" in p for p in problems),
+            msg=problems,
+        )
+
+    def test_namespace_star_reexport_publishes_exactly_one_name(self):
+        # `export * as Ledger from` publishes the single name `Ledger`, so it can collide with a
+        # sibling's declaration of the same name — and it is resolvable, unlike the bare form.
+        self.fixture.write_module("workstation-1", ['export * as Ledger from "../contracts";'])
+        self.fixture.write_module("workstation-2", ["export interface Ledger { id: string; }"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+        self.assertTrue(any("'Ledger'" in p and "2 barrel modules" in p for p in problems), msg=problems)
+        self.assertFalse(any("bare 'export *'" in p for p in problems), msg=problems)
+
+    def test_star_reexport_inside_a_string_or_comment_is_not_a_finding(self):
+        self.fixture.write_module(
+            "workstation-1",
+            [
+                '// export * from "../contracts";',
+                'const doc = \'export * from "../contracts";\';',
+                "export interface LedgerRowDto { id: string; }",
+            ],
+        )
+
+        problems, _ = self.fixture.evaluate()
+
+        self.assertFalse(any("bare 'export *'" in p for p in problems), msg=problems)
