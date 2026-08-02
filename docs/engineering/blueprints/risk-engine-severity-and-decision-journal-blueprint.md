@@ -78,13 +78,20 @@ live in `Meridian.Risk`.**
   `ExecutionAuditTrailService`.
 - Surfacing the F# `RiskDecision` model (`Approve | Reject | Escalate`) that already exists and is
   currently unreachable from C#. **Scope limit:** the F# `Escalate` case is surfaced as a
-  *distinguishable record*, not as a different admission outcome. `PositionLimitRule` and
-  `DrawdownCircuitBreaker` both carry `Error` severity, and severity alone decides admission, so an
-  interop `escalate` still resolves to `Rejected` — as it does today. What changes is that the
-  violation carries a distinct code (`..._ESCALATED`) instead of being flattened into a generic
-  rejection, so the distinction survives into the journal and the operator surface. Making those
-  rules genuinely admit-and-escalate would mean re-declaring them at a non-blocking severity, which
-  is a risk-policy decision and is out of scope here.
+  *distinguishable record*, not as a different admission outcome. `PositionLimitRule` carries
+  `Error` and `DrawdownCircuitBreaker` carries `Critical` — the latter trips the desk-wide circuit
+  breaker on a measured breach, which is the behaviour its name describes and which the merged
+  implementation ships. Severity alone decides admission, so an interop `escalate` still resolves to
+  `Rejected` — as it does today. What changes is that the violation carries a distinct code
+  (`..._ESCALATED`) instead of being flattened into a generic rejection, so the distinction survives
+  into the journal and the operator surface. Making those rules genuinely admit-and-escalate would
+  mean re-declaring them at a non-blocking severity, which is a risk-policy decision and is out of
+  scope here.
+
+  > This paragraph originally described `DrawdownCircuitBreaker` as `Error`. It ships `Critical`,
+  > and the composite validator halts the desk on its breach. A blueprint that understates a
+  > desk-wide halt is worse than one that says nothing: an implementer or test author following it
+  > would encode materially weaker behaviour than the gate actually has.
 - An additive `GET /api/risk/decisions` read surface plus the dashboard panel that consumes it.
 
 **Out of scope**
