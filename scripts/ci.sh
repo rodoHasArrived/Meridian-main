@@ -205,12 +205,6 @@ verify_docs() {
   run_step "Validate status doc staleness" \
     "$python_cmd" scripts/check_status_doc_staleness.py
 
-  # Runs here rather than only in the docs-automation profile: the Documentation
-  # Automation workflow is path-filtered, so a change touching only .claude/agents/**
-  # would otherwise land without any hosted check resolving its tool declarations.
-  run_step "Validate Claude agent definitions" \
-    bash -c '"$0" build/scripts/docs/validate-agent-definitions.py && "$0" -m unittest tests/scripts/test_validate_agent_definitions.py' "$python_cmd"
-
   run_step "Validate provider-validation script tests" \
     bash -c '"$0" -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py && "$0" -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py' "$python_cmd"
 

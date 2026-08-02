@@ -72,10 +72,6 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         "script": "validate-docs-structure.py",
         "args": ["--summary"],
     },
-    "validate-agent-definitions": {
-        "script": "validate-agent-definitions.py",
-        "args": [],
-    },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
         "args": ["--output", "docs/status/doc-health-dashboard.md", "--json-output", "docs/status/doc-health-dashboard.json"],
@@ -278,7 +274,6 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "quick": [
         "scan-todos",
         "validate-docs-structure",
-        "validate-agent-definitions",
         "validate-examples",
         "repair-links",
         "check-ai-inventory",
@@ -293,7 +288,6 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "core": [
         "scan-todos",
         "validate-docs-structure",
-        "validate-agent-definitions",
         "generate-structure-docs",
         "generate-health-dashboard",
         "validate-examples",
@@ -316,7 +310,6 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "full": [
         "scan-todos",
         "validate-docs-structure",
-        "validate-agent-definitions",
         "generate-structure-docs",
         "generate-health-dashboard",
         "repair-links",

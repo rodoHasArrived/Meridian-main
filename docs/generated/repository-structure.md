@@ -1168,7 +1168,6 @@ Meridian-main
 │       │   ├── sync-source-readmes.py
 │       │   ├── test-scripts.py
 │       │   ├── update-claude-md.py
-│       │   ├── validate-agent-definitions.py
 │       │   ├── validate-api-docs.py
 │       │   ├── validate-design-document-adaptation.py
 │       │   ├── validate-design-module-conformance.py
@@ -9546,7 +9545,6 @@ Meridian-main
 │   │   ├── test_summarize_desktop_workflow_bundle.py
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
-│   │   ├── test_validate_agent_definitions.py
 │   │   ├── test_validate_npm_audit.py
 │   │   ├── test_validate_observability_contract.py
 │   │   ├── test_validate_screenshot_captures.py

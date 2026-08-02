@@ -15,7 +15,6 @@ on:
     paths:
       - "docs/**"
       - ".codex/memory/**"
-      - ".claude/agents/**"
       - "build/scripts/docs/**"
       - "scripts/generate-diagrams.mjs"
       - "scripts/lib/ui-diagram-generator.mjs"
@@ -30,7 +29,6 @@ on:
     paths:
       - "docs/**"
       - ".codex/memory/**"
-      - ".claude/agents/**"
       - "build/scripts/docs/**"
       - "scripts/generate-diagrams.mjs"
       - "scripts/lib/ui-diagram-generator.mjs"

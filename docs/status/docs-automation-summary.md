@@ -8,7 +8,6 @@
 |--------|--------|--------------|--------|
 | `scan-todos` | `success` | `0.000` | `docs/status/TODO.md` |
 | `validate-docs-structure` | `success` | `0.000` | `-` |
-| `validate-agent-definitions` | `success` | `0.000` | `-` |
 | `generate-structure-docs` | `success` | `0.000` | `docs/generated/repository-structure.md` |
 | `generate-health-dashboard` | `success` | `0.000` | `docs/status/doc-health-dashboard.md` |
 | `validate-examples` | `success` | `0.000` | `docs/status/example-validation.md` |
