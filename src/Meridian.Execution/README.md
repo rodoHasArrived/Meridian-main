@@ -31,9 +31,10 @@ This layer implements execution behavior and broker-facing runtime services whil
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
 
 The OMS owns settlement of pre-trade risk reservations. `IRiskValidator` returns a
-`RiskValidationOutcome` carrying any capacity a stateful rule took while evaluating (today, the
-order-rate window); passing the gate is not the same as routing, so the validator transfers those
-reservations rather than committing them. The OMS then settles at the routing boundary:
+`RiskValidationResult` whose `Reservations` carry any capacity a stateful rule took while evaluating
+(today, the order-rate window); passing the gate is not the same as routing, so the validator
+transfers those reservations rather than committing them. The OMS then settles at the routing
+boundary:
 
 - gateway returns an accepted report — commit;
 - gateway returns `OrderStatus.Rejected`, the order is rejected by risk or operator controls, or the
@@ -54,6 +55,18 @@ and contradict an accounting handoff that already happened. An order that execut
 
 Every path between the gate and the venue must settle exactly once; a leaked reservation
 permanently consumes capacity and eventually blocks every later order.
+
+Order amendments follow the same rules. `ReserveAmendedExposureAsync` revalidates a risk-increasing
+modification through the same reserving rules a placement uses, so it takes real capacity; the
+decision rides on `AmendmentGateResult` and settles at the modify boundary — rolled back on refusal,
+on losing the exposure-publish race, on cancellation, and on a broker rejection; committed once the
+gateway accepts, and on a non-cancellation fault after dispatch.
+
+The OMS rolls reservations back on any non-approved decision rather than assuming the validator
+already did. `CompositeRiskValidator` does release its own capacity before returning a block, but the
+`IRiskValidator` contract says a normal return transfers ownership, so an alternate implementation is
+entitled to hand back a rejected result still holding slots. Settlement is idempotent, so covering
+that costs nothing.
 
 **Logging convention in this module:** caller-supplied order text — the client order id, the symbol,
 and rejection reasons, which embed the symbol via rule text — is rendered through
