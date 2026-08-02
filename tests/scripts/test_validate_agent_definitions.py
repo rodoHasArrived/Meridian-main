@@ -262,6 +262,37 @@ class PyYamlDifferentialTests(unittest.TestCase):
                 else:
                     self.assertEqual(value, ours[key], f"{path.name}:{key}")
 
+    def test_scalar_types_resolve_the_same_as_pyyaml(self) -> None:
+        # Comparing only the tracked tree missed `description: null` resolving to the
+        # string "null" here and to None in PyYAML, so the fixtures are explicit.
+        for frontmatter in (
+            "description: null\n",
+            "description: ~\n",
+            "description:\n",
+            "description: Null\n",
+            "tools: 123\n",
+            "tools: 1.5\n",
+            "tools: true\n",
+            "tools: yes\n",
+            "tools: off\n",
+            'description: "null"\n',
+            "description: 'null'\n",
+            "tools: Read, Glob\n",
+            "description: >\n  folded body\n",
+            "tools:\n  - Read\n  - Glob\n",
+        ):
+            with self.subTest(frontmatter=frontmatter):
+                ours = module.parse_frontmatter(f"---\n{frontmatter}---\n")
+                theirs = self.yaml.safe_load(frontmatter)
+
+                self.assertEqual(set(theirs), set(ours))
+                for key, value in theirs.items():
+                    self.assertEqual(type(value), type(ours[key]), key)
+                    if isinstance(value, str):
+                        self.assertEqual(value.strip(), ours[key].strip(), key)
+                    else:
+                        self.assertEqual(value, ours[key], key)
+
     def test_pyyaml_also_rejects_what_the_parser_rejects(self) -> None:
         for frontmatter in (
             "name: x\n: invalid yaml\n",
@@ -462,15 +493,57 @@ class ValidateAgentTests(unittest.TestCase):
         self.assertIn("unknown frontmatter key `whatever`", errors)
         self.assertNotIn("did you mean", errors)
 
-    def test_optional_supported_fields_are_accepted(self) -> None:
+    def test_every_supported_host_field_is_accepted(self) -> None:
+        # The allowlist has to cover the host's whole documented surface, not just the
+        # fields this repository happens to use: this gate now runs on every agent
+        # change, so an omitted-but-supported field would block legitimate work.
         path = write_agent(
             self.directory,
             "sample-agent",
             "name: sample-agent\ndescription: Does a thing.\ntools: Read\n"
-            "model: opus\ncolor: blue",
+            "disallowedTools: Bash\nmodel: opus\ncolor: blue\npermissionMode: plan\n"
+            "skills: some-skill\nhooks: some-hook\nmemory: project\n"
+            "background: true\nisolation: worktree",
         )
 
         self.assertEqual([], module.validate_agent(path))
+
+    def test_null_description_is_rejected_rather_than_read_as_the_string_null(self) -> None:
+        # The host's parser resolves this to null and the agent loses its routing
+        # description; a parser that kept "null" as text would validate it clean.
+        for literal in ("null", "~", "Null"):
+            with self.subTest(literal=literal):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    f"name: sample-agent\ndescription: {literal}\ntools: Read",
+                )
+
+                errors = " | ".join(module.validate_agent(path))
+
+                self.assertIn("`description` is empty", errors)
+
+    def test_quoted_null_stays_a_real_string(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            'name: sample-agent\ndescription: "null"\ntools: Read',
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_non_string_tools_scalar_is_reported_by_type(self) -> None:
+        for literal, rendered in (("123", "int"), ("true", "bool"), ("1.5", "float")):
+            with self.subTest(literal=literal):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    f"name: sample-agent\ndescription: Does a thing.\ntools: {literal}",
+                )
+
+                errors = " | ".join(module.validate_agent(path))
+
+                self.assertIn(f"is a {rendered}", errors)
 
     def test_unterminated_quoted_scalar_is_rejected(self) -> None:
         # A real YAML parser fails the whole document; returning it as a plain string

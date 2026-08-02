@@ -113,12 +113,30 @@ NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TOOL_FIELDS = ("tools", "disallowedTools")
 ALLOW_LIST_FIELD = "tools"
 
-# Frontmatter keys the host understands. An unknown key is an error rather than
-# something to ignore, because the two permission fields fail *open* when misspelled:
-# omitting `tools` inherits the default tool pool, so a `tool:` typo silently turns a
-# deliberately read-only agent into one with edit and command access, and no other
-# check in this repository would notice.
-KNOWN_FIELDS = frozenset({"name", "description", "tools", "disallowedTools", "model", "color"})
+# Frontmatter keys the host understands — the whole documented surface, not just the
+# three this repository currently uses. An unknown key is an error rather than something
+# to ignore, because the two permission fields fail *open* when misspelled: omitting
+# `tools` inherits the default tool pool, so a `tool:` typo silently turns a deliberately
+# read-only agent into one with edit and command access, and no other check here would
+# notice. That check only earns its place if the allowlist is complete, since this gate
+# now runs on every agent change — a field the host supports but this set omits would
+# block legitimate work. Add new host fields here as they ship.
+KNOWN_FIELDS = frozenset(
+    {
+        "name",
+        "description",
+        "tools",
+        "disallowedTools",
+        "model",
+        "color",
+        "permissionMode",
+        "skills",
+        "hooks",
+        "memory",
+        "background",
+        "isolation",
+    }
+)
 
 
 KEY_PATTERN = re.compile(r"^(?P<key>[A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]+(?P<value>.*))?$")
@@ -134,15 +152,53 @@ def split_frontmatter(text: str) -> str:
     return text[4:end]
 
 
-def _strip_quotes(value: str) -> str:
-    """Unquote a scalar, rejecting one whose quote never closes.
+# Plain-scalar resolution, matching PyYAML (which implements YAML 1.1, so `yes`/`no`/
+# `on`/`off` are booleans). Quoted scalars are always strings and skip this entirely.
+_YAML_NULL = frozenset({"", "~", "null", "Null", "NULL"})
+_YAML_TRUE = frozenset({"true", "True", "TRUE", "yes", "Yes", "YES", "on", "On", "ON"})
+_YAML_FALSE = frozenset({"false", "False", "FALSE", "no", "No", "NO", "off", "Off", "OFF"})
+
+
+def _resolve_scalar(value: str) -> object:
+    """Resolve a plain scalar to its YAML type rather than leaving everything a string.
+
+    Without this, `description: null` becomes the string `"null"` and passes the
+    non-empty check, while the host's parser resolves it to null and leaves the agent
+    with no routing description — a definition that validates clean and does not work.
+    Number and boolean forms matter for the same reason: `tools: 123` must be reported
+    as a non-string, not silently treated as a one-entry tool list.
+
+    Exotic YAML 1.1 numeric spellings (hex, octal, underscores, sexagesimal) are left as
+    strings; none appears in agent frontmatter, and the differential test against PyYAML
+    would surface it if one ever did.
+    """
+    if value in _YAML_NULL:
+        return None
+    if value in _YAML_TRUE:
+        return True
+    if value in _YAML_FALSE:
+        return False
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+
+def _strip_quotes(value: str) -> object:
+    """Unquote a scalar, or resolve a plain one, rejecting an unterminated quote.
 
     A real YAML parser fails the whole document on `description: "unterminated`.
     Returning it as a plain string instead would pass a definition the host cannot
     load at all, which is the failure mode this validator exists to prevent.
     """
-    if not value or value[0] not in "\"'":
-        return value
+    if not value:
+        return None
+    if value[0] not in "\"'":
+        return _resolve_scalar(value)
     quote = value[0]
     if len(value) >= 2 and value[-1] == quote:
         return value[1:-1]
@@ -151,7 +207,7 @@ def _strip_quotes(value: str) -> str:
     )
 
 
-def _parse_flow_sequence(value: str) -> list[str]:
+def _parse_flow_sequence(value: str) -> list[object]:
     inner = value[1:-1].strip() if value.endswith("]") else value[1:].strip()
     if not inner:
         return []
@@ -176,7 +232,7 @@ def parse_frontmatter(text: str) -> dict[str, object]:
     mapping: dict[str, object] = {}
     block_lines: list[str] | None = None
     block_separator = " "
-    sequence_items: list[str] | None = None
+    sequence_items: list[object] | None = None
     open_key: str | None = None
 
     def close_open_key() -> None:
