@@ -359,12 +359,32 @@ class TestAmbiguousStageMatching:
             )
         ]
 
-        for stage in stages:
-            assert vb.best_result_for(stage, results, stages) is None, stage
+        # Small is the stage this result actually describes, so it counts; the siblings it only
+        # shares a family token with do not.
+        assert vb.best_result_for("WalChecksum_Small", results, stages) is not None
+        assert vb.best_result_for("WalChecksum_Medium_1KB", results, stages) is None
+        assert vb.best_result_for("WalChecksum_Large_4KB", results, stages) is None
 
-        # Without the sibling set the ambiguity rule cannot apply; this pins the old behaviour
-        # so the difference is explicit rather than incidental.
-        assert vb.best_result_for("WalChecksum_Small", results) is not None
+        # Without the sibling set the old behaviour stands: every sibling claims the row.
+        for stage in stages:
+            assert vb.best_result_for(stage, results) is not None, stage
+
+    def test_a_complete_family_run_is_not_reported_unmeasured(self):
+        # Rejecting every shared-token row was the opposite error: a real
+        # NewlineScanBenchmarks.SearchValues_Portable result describes NewlineScan_Portable
+        # exactly and NewlineScan_Avx2 only incidentally, so discarding it for both turned a
+        # fully measured lane into a failing one under --fail-on-violation.
+        stages = ["NewlineScan_Portable", "NewlineScan_Avx2"]
+        results = [
+            vb.BdnResult(
+                method_name="Meridian.Benchmarks.NewlineScanBenchmarks.SearchValues_Portable",
+                mean_ns=40.0,
+                allocated_bytes=0,
+            )
+        ]
+
+        assert vb.best_result_for("NewlineScan_Portable", results, stages) is not None
+        assert vb.best_result_for("NewlineScan_Avx2", results, stages) is None
 
     def test_an_abbreviated_stage_name_still_matches_its_benchmark(self):
         # The fallback exists for exactly this: DedupKey vs DeduplicationKey. Tightening it to

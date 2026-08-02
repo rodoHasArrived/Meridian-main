@@ -214,6 +214,19 @@ def check_budgets(budgets: dict[str, Budget], results: list[BdnResult]) -> list[
     return violations
 
 
+def _fallback_score(stage_name: str, method_name: str) -> int:
+    """Return how many of *stage_name*'s distinguishing tokens *method_name* contains.
+
+    Used to pick the stage a shared-token result describes best. `WalChecksumBenchmarks.Small`
+    contains both of `WalChecksum_Small`'s tokens but only one of `WalChecksum_Medium_1KB`'s,
+    so the first wins outright and the others stay honestly unmeasured. A tie means the result
+    cannot say which budget it measured, and counts for neither.
+    """
+    norm_method = _normalise(method_name)
+    tokens = [t.lower() for t in stage_name.split("_") if len(t) >= 5]
+    return sum(1 for t in tokens if t in norm_method)
+
+
 def best_result_for(
     stage_name: str,
     results: list[BdnResult],
@@ -243,10 +256,15 @@ def best_result_for(
 
     if all_stage_names is not None:
         siblings = [s for s in all_stage_names if s != stage_name]
-        # Drop any result that a sibling budget would claim just as well.
+        # Keep only results this stage describes strictly better than any sibling does.
+        # Rejecting every shared-token row instead was too blunt: a complete run of
+        # NewlineScanBenchmarks.SearchValues_Portable describes NewlineScan_Portable exactly and
+        # NewlineScan_Avx2 only incidentally, and discarding it for both reported a fully
+        # measured lane as unmeasured.
         matching = [
             r for r in matching
-            if not any(_stage_matches_method(s, r.method_name) for s in siblings)
+            if _fallback_score(stage_name, r.method_name)
+            > max((_fallback_score(s, r.method_name) for s in siblings), default=0)
         ]
         if not matching:
             return None
