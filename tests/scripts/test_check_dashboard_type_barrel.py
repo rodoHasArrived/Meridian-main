@@ -475,3 +475,58 @@ class ReexportOriginTests(unittest.TestCase):
         problems, counts = self.fixture.evaluate()
 
         self.assertEqual(counts["duplicates"], 1, msg=problems)
+
+
+class NamespaceOriginAndCommentedBarrelTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_two_modules_reexporting_one_namespace_agree_on_its_origin(self):
+        # NAMESPACE_REEXPORT matches through `from`, so re-checking for the keyword found nothing
+        # and each module fell back to itself as the origin. TypeScript publishes one namespace
+        # binding here, so reporting a collision blocked CI for a valid barrel.
+        self.fixture.write_module("workstation-1", ['export * as Contracts from "./origin";'])
+        self.fixture.write_module("workstation-2", ['export * as Contracts from "./origin";'])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0, msg=problems)
+        self.assertEqual(problems, [])
+
+    def test_namespaces_of_different_targets_still_collide(self):
+        self.fixture.write_module("workstation-1", ['export * as Contracts from "./origin";'])
+        self.fixture.write_module("workstation-2", ['export * as Contracts from "./other";'])
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+
+    def test_a_commented_out_barrel_entry_is_not_a_live_module(self):
+        # TypeScript ignores the statement, so requiring './types/retired' to exist blocked CI
+        # over a module that was deliberately removed along with its export.
+        self.fixture.barrel.write_text(
+            'export * from "./types/workstation-1";\n'
+            "/*\n"
+            'export * from "./types/retired";\n'
+            "*/\n"
+            'export * from "./types/workstation-2";\n',
+            encoding="utf-8",
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["modules"], 2)
+        self.assertFalse(any("retired" in p for p in problems), msg=problems)
+
+    def test_a_live_barrel_entry_on_the_same_line_as_a_comment_still_counts(self):
+        self.fixture.barrel.write_text(
+            'export * from "./types/workstation-1"; // keep\n'
+            'export * from "./types/workstation-2";\n',
+            encoding="utf-8",
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["modules"], 2, msg=problems)

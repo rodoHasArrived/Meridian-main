@@ -225,6 +225,37 @@ describe("FinancialRecordExplorerShell", () => {
     expect(selected[0]).toHaveTextContent("Revenue");
   });
 
+  it("shows the keyboard hint on screen once focus enters the grid", async () => {
+    renderExplorer();
+
+    const help = screen.getByText(/Right Arrow to move into the record/i);
+    // A sighted keyboard-only operator never hears sr-only text, and the cell links are out of
+    // the tab sequence — so before focus arrives the hint may be screen-reader-only, but once
+    // the grid has focus it has to be visible or Tab silently skips every proof link.
+    expect(help).toHaveClass("sr-only");
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const firstRow = within(grid).getAllByRole("row")[1];
+    act(() => firstRow.focus());
+
+    expect(help).not.toHaveClass("sr-only");
+    expect(help).toBeVisible();
+  });
+
+  it("keeps the keyboard hint visible while focus moves between cells in the grid", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const firstRow = within(grid).getAllByRole("row")[1];
+    act(() => firstRow.focus());
+    await user.keyboard("{ArrowRight}");
+
+    // Moving into a cell link fires blur on the row; only focus leaving the grid entirely
+    // should hide the hint, or it flashes off exactly as the operator starts using it.
+    expect(screen.getByText(/Right Arrow to move into the record/i)).not.toHaveClass("sr-only");
+  });
+
   it("has no detectable accessibility violations in the record grid", async () => {
     const { container } = renderExplorer();
 

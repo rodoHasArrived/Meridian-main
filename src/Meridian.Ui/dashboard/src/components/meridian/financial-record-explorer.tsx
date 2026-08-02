@@ -466,6 +466,12 @@ function ExplorerGrid({
   const rowElements = useRef(new Map<string, HTMLTableRowElement>());
   const keyboardHelpId = useId();
   const [activeRowIndex, setActiveRowIndex] = useState(0);
+  // A sighted keyboard-only operator does not use a screen reader, so sr-only instructions are
+  // invisible to exactly the person who most needs them: the cell links are out of the tab
+  // sequence, and Tab now skips every proof link with nothing on screen saying why or how to
+  // reach one. The same element becomes visible while focus is inside the grid, so the hint is
+  // announced and shown from one source rather than duplicated.
+  const [keyboardHelpVisible, setKeyboardHelpVisible] = useState(false);
 
   const registerRow = useCallback((recordId: string, element: HTMLTableRowElement | null) => {
     if (element) {
@@ -595,8 +601,16 @@ function ExplorerGrid({
       {/* Taking the cell links out of the tab order is only half the job: a keyboard or
           screen-reader user has no way to discover the replacement gesture, so without this
           the proof links are unreachable in practice. The instructions are announced when
-          focus enters the grid. */}
-      <p id={keyboardHelpId} className="sr-only">
+          focus enters the grid, and shown on screen for the sighted keyboard-only operator
+          who never hears them. */}
+      <p
+        id={keyboardHelpId}
+        className={cn(
+          keyboardHelpVisible
+            ? "mb-2 rounded-md border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground"
+            : "sr-only",
+        )}
+      >
         Use the up and down arrow keys to move between records, Enter or Space to open the
         selected record&apos;s proof detail, Right Arrow to move into the record&apos;s links,
         Left and Right Arrow to move between them, and Escape to return to the record.
@@ -607,6 +621,14 @@ function ExplorerGrid({
         aria-describedby={keyboardHelpId}
         aria-rowcount={rows.length + 1}
         className="min-w-full text-sm"
+        onFocus={() => setKeyboardHelpVisible(true)}
+        onBlur={(event) => {
+          // Focus moving between cells inside the grid must not flash the hint off, so only a
+          // target outside the grid counts as leaving.
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setKeyboardHelpVisible(false);
+          }
+        }}
       >
         <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
           <tr aria-rowindex={1}>

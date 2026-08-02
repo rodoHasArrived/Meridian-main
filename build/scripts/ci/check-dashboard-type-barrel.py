@@ -56,7 +56,13 @@ STANDALONE_MODULES = {
     "provider-setup",
 }
 
-BARREL_EXPORT = re.compile(r'^\s*export\s+\*\s+from\s+"\./types/(?P<module>[^"]+)"\s*;?\s*$', re.MULTILINE)
+# A trailing `// note` is allowed: without it the whole entry failed to match, so the module
+# dropped out of the barrel list and then tripped the orphan-module check instead — a
+# confusing failure for a line TypeScript reads as an ordinary export.
+BARREL_EXPORT = re.compile(
+    r'^\s*export\s+\*\s+from\s+"\./types/(?P<module>[^"]+)"\s*;?\s*(?://.*)?$',
+    re.MULTILINE,
+)
 # Leading whitespace is permitted because indentation alone does not mean nesting: 11 declarations
 # in workstation-3.ts sit at module scope carrying stray indentation from a removed wrapper, and
 # requiring column zero skipped every one of them, so duplicating any would still have reported
@@ -106,9 +112,24 @@ FROM_CLAUSE = re.compile(r"\s*from\b")
 
 
 def read_barrel_modules(barrel_path: Path) -> list[str]:
+    """Return the modules the barrel re-exports, ignoring commented-out entries.
+
+    BARREL_EXPORT has to run over raw text because stripping blanks a string literal along with
+    its quotes, and the module path lives inside those quotes. So a commented-out
+    `export * from "./types/retired"` was collected as a live entry, and if that module had been
+    deleted the gate reported it missing and blocked CI over a statement TypeScript ignores.
+    Comment-stripping preserves offsets exactly, so a match whose span comes back blank there was
+    inside a comment.
+    """
     if not barrel_path.is_file():
         raise FileNotFoundError(f"type barrel not found: {barrel_path}")
-    return BARREL_EXPORT.findall(barrel_path.read_text(encoding="utf-8"))
+    raw = barrel_path.read_text(encoding="utf-8")
+    stripped = strip_comments_and_strings(raw)
+    return [
+        match.group("module")
+        for match in BARREL_EXPORT.finditer(raw)
+        if "export" in stripped[match.start() : match.end()]
+    ]
 
 
 REGEX_PRECEDING_KEYWORD = re.compile(
@@ -249,11 +270,15 @@ def declared_names(module_path: Path, module: str = "") -> list[tuple[str, str]]
             return spec  # bare package specifier; distinct from any local module
         return posixpath.normpath(posixpath.join(posixpath.dirname(module), spec))
 
-    def specifier_after(end: int) -> str | None:
-        """Return the module specifier of a `from "..."` clause starting at *end*, if any."""
-        tail = text[end : end + 200]
-        clause = FROM_CLAUSE.match(tail)
-        if clause is None:
+    def specifier_after(end: int, from_consumed: bool = False) -> str | None:
+        """Return the module specifier of the `from "..."` clause at *end*, if any.
+
+        NAMESPACE_REEXPORT matches through `from`, so requiring the keyword again here found
+        nothing and every `export * as Ns from "./origin"` fell back to its own module as the
+        origin. Two barrel modules re-exporting one target then looked like two bindings and
+        were reported as a collision, blocking CI for a barrel TypeScript accepts.
+        """
+        if not from_consumed and FROM_CLAUSE.match(text, end) is None:
             return None
         found = MODULE_SPECIFIER.search(raw, end, end + 200)
         return found.group("module") if found else None
@@ -303,7 +328,7 @@ def declared_names(module_path: Path, module: str = "") -> list[tuple[str, str]]
             continue
         # The namespace object of a module is canonical, so two modules re-exporting the same
         # target under the same name publish one binding, not two.
-        target = specifier_after(match.end())
+        target = specifier_after(match.end(), from_consumed=True)
         source = resolve(target) if target is not None else module
         names.append((match.group("name"), f"{source}:*"))
 
