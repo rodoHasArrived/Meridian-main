@@ -146,7 +146,9 @@ KNOWN_FIELDS = frozenset(
 # confidence get a value check here. The rest are type-checked instead, which
 # catches the shape errors (a mapping where a string belongs, a string where a
 # boolean belongs) without inventing a vocabulary.
-PERMISSION_MODES = frozenset({"default", "acceptEdits", "bypassPermissions", "plan"})
+PERMISSION_MODES = frozenset(
+    {"default", "acceptEdits", "bypassPermissions", "dontAsk", "plan"}
+)
 
 # Expected Python type per field once the frontmatter has been resolved. `bool`
 # is checked before `int` because Python treats bool as a subclass of int.
@@ -228,10 +230,51 @@ def _strip_quotes(value: str) -> object:
         return _resolve_scalar(value)
     quote = value[0]
     if len(value) >= 2 and value[-1] == quote:
-        return value[1:-1]
+        inner = value[1:-1]
+        if quote == '"':
+            _reject_bad_escapes(inner)
+        return inner
     raise ValueError(
         f"frontmatter is not valid YAML: unterminated {quote} quoted scalar"
     )
+
+
+# YAML double-quoted escapes. An unrecognised one fails the document in a real
+# parser, so accepting `description: "bad\q"` would pass a definition the host
+# cannot load - the same failure the unterminated-quote check exists to catch,
+# reached through a scalar whose quotes happen to match.
+_YAML_ESCAPES = frozenset('0abtnvfre "/\\N_LP\tP')
+_YAML_ESCAPE_SIZED = {"x": 2, "u": 4, "U": 8}
+
+
+def _reject_bad_escapes(inner: str) -> None:
+    index = 0
+    while index < len(inner):
+        if inner[index] != "\\":
+            index += 1
+            continue
+        index += 1
+        if index >= len(inner):
+            raise ValueError(
+                "frontmatter is not valid YAML: trailing escape in a quoted scalar"
+            )
+        char = inner[index]
+        if char in _YAML_ESCAPE_SIZED:
+            width = _YAML_ESCAPE_SIZED[char]
+            digits = inner[index + 1 : index + 1 + width]
+            if len(digits) != width or any(d not in "0123456789abcdefABCDEF" for d in digits):
+                raise ValueError(
+                    f"frontmatter is not valid YAML: malformed \\{char} escape in a "
+                    "quoted scalar"
+                )
+            index += 1 + width
+            continue
+        if char not in _YAML_ESCAPES:
+            raise ValueError(
+                f"frontmatter is not valid YAML: unknown escape '\\{char}' in a "
+                "quoted scalar"
+            )
+        index += 1
 
 
 def _parse_flow_sequence(value: str) -> list[object]:
@@ -270,9 +313,16 @@ def _parse_sequence(
     lines: list[tuple[int, str, int]], index: int, indent: int
 ) -> tuple[list[object], int]:
     items: list[object] = []
-    while index < len(lines) and lines[index][0] == indent and lines[index][1].startswith("- "):
+    while (
+        index < len(lines)
+        and lines[index][0] == indent
+        # A bare `-` on its own line is the block form of an empty sequence indicator,
+        # and `_prepare_lines` strips it to exactly "-". Matching only "- " returned an
+        # empty sequence and left the following mapping to be rejected as stray content.
+        and (lines[index][1].startswith("- ") or lines[index][1] == "-")
+    ):
         raw_indent, content, number = lines[index]
-        item = content[2:].strip()
+        item = content[2:].strip() if content.startswith("- ") else ""
         index += 1
 
         if not item:
@@ -313,7 +363,7 @@ def _parse_mapping(
     mapping: dict[str, object] = {}
     while index < len(lines) and lines[index][0] == indent:
         _, content, number = lines[index]
-        if content.startswith("- "):
+        if content.startswith("- ") or content == "-":
             raise ValueError("frontmatter is a sequence, expected a mapping")
 
         match = KEY_PATTERN.match(content)
@@ -353,7 +403,7 @@ def _parse_mapping(
         # mapping such as a `hooks:` block, or nothing at all.
         if index < len(lines) and lines[index][0] > indent:
             child_indent = lines[index][0]
-            if lines[index][1].startswith("- "):
+            if lines[index][1].startswith("- ") or lines[index][1] == "-":
                 mapping[key], index = _parse_sequence(lines, index, child_indent)
             else:
                 mapping[key], index = _parse_mapping(lines, index, child_indent)
@@ -652,6 +702,16 @@ def validate_agent(path: Path) -> list[str]:
             errors.append(
                 f"{path.name}: `disallowedTools` cancels every entry in `tools`, "
                 "leaving no usable grant"
+            )
+        # The MCP-only rule has to be re-applied to what survives, not only to what was
+        # declared: `tools: Read, mcp__github__*` with `disallowedTools: Read` leaves an
+        # MCP entry standing and passed both checks, while a session without that server
+        # still resolves nothing.
+        elif not any(entry_head(entry)[0] in KNOWN_TOOLS for entry in surviving):
+            errors.append(
+                f"{path.name}: `disallowedTools` removes every built-in from `tools`, "
+                "leaving only MCP entries that resolve to nothing on a session without "
+                "that server"
             )
 
     return errors

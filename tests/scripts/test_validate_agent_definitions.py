@@ -307,6 +307,7 @@ class PyYamlDifferentialTests(unittest.TestCase):
             "        - type: command\n          command: echo hi\n",
             "skills: [foo, bar]\n",
             "skills: []\n",
+            "hooks:\n  PreToolUse:\n    -\n      matcher: Bash\n",
         ):
             with self.subTest(frontmatter=frontmatter):
                 ours = module.parse_frontmatter(f"---\n{frontmatter}---\n")
@@ -721,6 +722,80 @@ class ValidateAgentTests(unittest.TestCase):
         errors = " | ".join(module.validate_agent(path))
 
         self.assertIn("cancels every entry in `tools`", errors)
+
+    def test_unknown_escape_in_a_quoted_scalar_is_rejected(self) -> None:
+        # Matched quotes are not well-formedness: a real parser fails the document on
+        # an unknown escape, so accepting it passes an agent the host cannot load.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            'name: sample-agent\ndescription: "bad\\q"\ntools: Read',
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("unknown escape", errors)
+
+    def test_valid_escapes_in_a_quoted_scalar_are_accepted(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            'name: sample-agent\ndescription: "a\\nb \\\\ \\u00e9 \\"q\\""\ntools: Read',
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_single_quoted_scalars_do_not_process_escapes(self) -> None:
+        # YAML single quotes are literal; only double-quoted scalars take escapes.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: 'a backslash \\q is literal here'\ntools: Read",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_deny_list_leaving_only_mcp_entries_is_rejected(self) -> None:
+        # Each earlier rule passes on its own: a built-in was declared, and not every
+        # entry was cancelled. Only what *survives* the deny list shows the empty grant.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Read, mcp__github__*\ndisallowedTools: Read",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("removes every built-in", errors)
+
+    def test_deny_list_leaving_a_builtin_beside_mcp_is_accepted(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Read, Glob, mcp__github__*\ndisallowedTools: Glob",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_bare_dash_sequence_indicator_is_parsed(self) -> None:
+        # The alternate block form: `-` alone, with the entry's mapping indented beneath.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\n"
+            "hooks:\n  PreToolUse:\n    -\n      matcher: Bash\n      hooks:\n"
+            "        - type: command",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+        parsed = module.parse_frontmatter(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command"}]}]},
+            parsed["hooks"],
+        )
 
     def test_mcp_only_disallowed_tools_is_accepted(self) -> None:
         # A deny-list that matches nothing is harmless; only an allow-list fails open.
