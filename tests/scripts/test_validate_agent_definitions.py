@@ -410,6 +410,81 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertIn("is a YAML sequence", errors)
 
+    def test_punctuation_only_tool_list_is_rejected(self) -> None:
+        # Non-empty, so the emptiness check passes, but it splits to nothing - the same
+        # effective empty grant this validator exists to prevent.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            'name: sample-agent\ndescription: Does a thing.\ntools: ","',
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("contains no tool entries", errors)
+
+    def test_misspelled_tools_key_is_rejected_because_it_fails_open(self) -> None:
+        # Omitting `tools` inherits the default pool, so a typo here quietly turns a
+        # read-only agent into one with edit and command access.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntool: Read, Glob",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("unknown frontmatter key `tool`", errors)
+        self.assertIn("did you mean `tools`?", errors)
+        self.assertIn("widens the grant", errors)
+
+    def test_misspelled_disallowed_tools_key_names_its_own_consequence(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ndisalowedTools: Bash",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("did you mean `disallowedTools`?", errors)
+        self.assertIn("drops the restriction", errors)
+
+    def test_unrelated_unknown_key_is_rejected_without_a_misleading_hint(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\nwhatever: 1",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("unknown frontmatter key `whatever`", errors)
+        self.assertNotIn("did you mean", errors)
+
+    def test_optional_supported_fields_are_accepted(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\n"
+            "model: opus\ncolor: blue",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_unterminated_quoted_scalar_is_rejected(self) -> None:
+        # A real YAML parser fails the whole document; returning it as a plain string
+        # would pass a definition the host cannot load at all.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            'name: sample-agent\ndescription: "unterminated\ntools: Read',
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("unterminated", errors)
+
     def test_omitted_tools_field_is_allowed(self) -> None:
         path = write_agent(
             self.directory, "sample-agent", "name: sample-agent\ndescription: Does a thing."

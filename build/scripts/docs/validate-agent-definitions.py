@@ -113,6 +113,13 @@ NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TOOL_FIELDS = ("tools", "disallowedTools")
 ALLOW_LIST_FIELD = "tools"
 
+# Frontmatter keys the host understands. An unknown key is an error rather than
+# something to ignore, because the two permission fields fail *open* when misspelled:
+# omitting `tools` inherits the default tool pool, so a `tool:` typo silently turns a
+# deliberately read-only agent into one with edit and command access, and no other
+# check in this repository would notice.
+KNOWN_FIELDS = frozenset({"name", "description", "tools", "disallowedTools", "model", "color"})
+
 
 KEY_PATTERN = re.compile(r"^(?P<key>[A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]+(?P<value>.*))?$")
 BLOCK_SCALAR_PATTERN = re.compile(r"^[|>][+-]?\d*$")
@@ -128,9 +135,20 @@ def split_frontmatter(text: str) -> str:
 
 
 def _strip_quotes(value: str) -> str:
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+    """Unquote a scalar, rejecting one whose quote never closes.
+
+    A real YAML parser fails the whole document on `description: "unterminated`.
+    Returning it as a plain string instead would pass a definition the host cannot
+    load at all, which is the failure mode this validator exists to prevent.
+    """
+    if not value or value[0] not in "\"'":
+        return value
+    quote = value[0]
+    if len(value) >= 2 and value[-1] == quote:
         return value[1:-1]
-    return value
+    raise ValueError(
+        f"frontmatter is not valid YAML: unterminated {quote} quoted scalar"
+    )
 
 
 def _parse_flow_sequence(value: str) -> list[str]:
@@ -273,9 +291,18 @@ def parse_tool_list(value: object) -> tuple[list[str], str | None]:
     if not text:
         return [], "is empty; omit the field entirely to inherit the default tool pool"
     try:
-        return split_top_level(text), None
+        entries = split_top_level(text)
     except ValueError as exc:
         return [], str(exc)
+    if not entries:
+        # Non-empty but punctuation-only, such as `tools: ","`. The emptiness check
+        # above passes and the split yields nothing, so without this the validator
+        # would approve the very empty-grant state it exists to prevent.
+        return [], (
+            "contains no tool entries; omit the field entirely to inherit the "
+            "default tool pool"
+        )
+    return entries, None
 
 
 def entry_head(entry: str) -> tuple[str, str | None]:
@@ -337,12 +364,45 @@ def required_string(
     return stripped
 
 
+def _is_near_miss(candidate: str, known: str) -> bool:
+    """True when `candidate` looks like a typo of `known` — case, or one edit away."""
+    a, b = candidate.lower(), known.lower()
+    if a == b:
+        return True
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) == len(b):
+        return sum(x != y for x, y in zip(a, b)) == 1
+    shorter, longer = (a, b) if len(a) < len(b) else (b, a)
+    for index in range(len(longer)):
+        if longer[:index] + longer[index + 1 :] == shorter:
+            return True
+    return False
+
+
 def validate_agent(path: Path) -> list[str]:
     errors: list[str] = []
     try:
         frontmatter = parse_frontmatter(path.read_text(encoding="utf-8"))
     except ValueError as exc:
         return [f"{path.name}: {exc}"]
+
+    for key in frontmatter:
+        if key in KNOWN_FIELDS:
+            continue
+        hint = ""
+        for known in sorted(TOOL_FIELDS):
+            if _is_near_miss(key, known):
+                consequence = (
+                    "an omitted `tools` inherits the default tool pool, so this "
+                    "misspelling widens the grant instead of narrowing it"
+                    if known == ALLOW_LIST_FIELD
+                    else "an omitted `disallowedTools` denies nothing, so this "
+                    "misspelling silently drops the restriction"
+                )
+                hint = f"; did you mean `{known}`? {consequence}"
+                break
+        errors.append(f"{path.name}: unknown frontmatter key `{key}`{hint}")
 
     name = required_string(frontmatter, "name", path, errors)
     if name:
