@@ -48,6 +48,19 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+`RiskRuleRuntimeService` reports rule status to the workstation *and* supplies the limits the
+enforced rules read, so the dashboard and the gate cannot disagree. `DrawdownGuardrailRule` takes
+this service directly; the order-rate rule is bound the other way round, through
+`RiskRuleRuntimeService.OrderRateUsageProbe`.
+
+**Composition invariant: the probe must close over the same `OrderRateThrottle` instance that the
+validator enforces with.** `WorkstationServiceCollectionExtensions` constructs the throttle once,
+assigns the probe from it, and puts that instance in the rule list. Binding a second instance, or
+leaving the probe unset in a host that does compose a throttle, silently reverts the status to
+counting audit history — which cannot see a reservation held by an in-flight submission, so it
+reports available capacity during exactly the window in which the throttle is blocking. The audit
+fallback exists only for hosts that compose no throttle at all.
+
 `ProviderDataReadModelService` aggregates optional provider read interfaces into one typed, live-updating projection for both workstation lanes. Each news, scanner, P&L, calendar, market-rule, and instrument row retains a stable provenance key plus provider connection and entitlement evidence, keeping adapter-specific state outside UI code.
 Interactive Brokers request and durable-result projections require the authenticated tenant and
 company. Unowned legacy rows are excluded, durable keys include provider connection and immutable

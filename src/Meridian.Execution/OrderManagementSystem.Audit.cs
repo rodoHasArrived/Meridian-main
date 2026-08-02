@@ -1,4 +1,5 @@
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 
 namespace Meridian.Execution;
 
@@ -54,6 +55,59 @@ public sealed partial class OrderManagementSystem
         if (riskWarnings is { Count: > 0 })
         {
             metadata["riskWarnings"] = string.Join("; ", riskWarnings);
+        }
+
+        return metadata;
+    }
+
+    private static IReadOnlyDictionary<string, string>? BuildOrderSubmittedAuditMetadata(
+        ExecutionControlDecision? operatorControlDecision,
+        LiveOrderReadinessDecision? liveOrderReadinessDecision)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(operatorControlDecision?.AppliedManualOverrideId))
+        {
+            metadata["manualOverrideId"] = operatorControlDecision.AppliedManualOverrideId;
+            metadata["controlDecision"] = "approved-by-manual-override";
+        }
+
+        if (!string.IsNullOrWhiteSpace(liveOrderReadinessDecision?.EvidenceReference))
+        {
+            metadata["liveReadinessDecision"] = "approved";
+            metadata["liveReadinessEvidenceReference"] = liveOrderReadinessDecision.EvidenceReference;
+        }
+
+        return metadata.Count == 0 ? null : metadata;
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildOrderRejectedByControlAuditMetadata(
+        ExecutionControlDecision operatorControlDecision)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["controlDecision"] = "rejected-by-operator-controls"
+        };
+
+        if (!string.IsNullOrWhiteSpace(operatorControlDecision.RejectCode))
+        {
+            metadata["rejectCode"] = operatorControlDecision.RejectCode;
+        }
+
+        return metadata;
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildLiveOrderReadinessRejectedAuditMetadata(
+        LiveOrderReadinessDecision liveOrderReadinessDecision)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["liveReadinessDecision"] = "rejected",
+            ["rejectCode"] = "LIVE_ORDER_READINESS_REJECTED"
+        };
+
+        if (!string.IsNullOrWhiteSpace(liveOrderReadinessDecision.EvidenceReference))
+        {
+            metadata["liveReadinessEvidenceReference"] = liveOrderReadinessDecision.EvidenceReference;
         }
 
         return metadata;

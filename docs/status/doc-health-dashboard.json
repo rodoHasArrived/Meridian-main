@@ -1,12 +1,12 @@
 {
-  "total_files": 640,
-  "total_lines": 118366,
+  "total_files": 641,
+  "total_lines": 119840,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 184.9,
-  "health_score": 79,
+  "average_lines": 187.0,
+  "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2154,7 +2154,15 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 173,
+      "line_count": 174,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/risk-engine-severity-and-decision-journal-blueprint.md",
+      "line_count": 1352,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2570,7 +2578,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9673,
+      "line_count": 9679,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3338,7 +3346,7 @@
     },
     {
       "path": "docs/roadmap/roadmap-governance.md",
-      "line_count": 80,
+      "line_count": 97,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5090,7 +5098,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 159,
+      "line_count": 218,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5250,7 +5258,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 85,
+      "line_count": 111,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5290,7 +5298,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2121,
+      "line_count": 2134,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

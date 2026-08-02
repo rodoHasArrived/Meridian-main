@@ -1216,6 +1216,7 @@ Meridian-main
 │       │   └── test_validate_budget.py
 │       ├── ai-architecture-check.py
 │       ├── ai-repo-updater.py
+│       ├── check-execution-log-sanitization.py
 │       ├── duplication-audit.ps1
 │       ├── generate-ui-api-routes-ts.py
 │       ├── generate-workspace-catalog-ts.py
@@ -1696,7 +1697,8 @@ Meridian-main
 │   ├── engineering
 │   │   ├── blueprints
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
-│   │   │   └── README.md
+│   │   │   ├── README.md
+│   │   │   └── risk-engine-severity-and-decision-journal-blueprint.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── free-development-tools.md
 │   │   ├── live-trading-engine.md
@@ -4377,6 +4379,7 @@ Meridian-main
 │   │   ├── Models.cs
 │   │   ├── PositionExtensions.cs
 │   │   ├── README.md
+│   │   ├── RiskContracts.cs
 │   │   └── TaxLot.cs
 │   ├── Meridian.FinancialOperations
 │   │   ├── AccountingClose
@@ -8369,6 +8372,7 @@ Meridian-main
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
+│   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
 │   │   │   ├── OrderManagementSystemDurableHandoffOrderingTests.cs
@@ -8384,6 +8388,7 @@ Meridian-main
 │   │   │   ├── PaperTradingPortfolioTests.cs
 │   │   │   ├── PortfolioStatePositionTrackerTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
+│   │   │   ├── RiskValidationResultTests.cs
 │   │   │   ├── SessionTcaReporterTests.cs
 │   │   │   ├── TradeFillHandoffFailureStoreConcurrencyTests.cs
 │   │   │   └── TradierExecutionReconciliationTests.cs
@@ -9101,6 +9106,7 @@ Meridian-main
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
+│   │   │   ├── RiskRuleRuntimeOrderRateStatusTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs
