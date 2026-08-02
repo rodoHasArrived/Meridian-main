@@ -117,7 +117,7 @@ def _is_char_literal(text: str, index: int) -> bool:
     return len(rest) >= 2 and rest[1] == "'"
 
 
-def find_skip_positions(text: str, fsharp: bool = False) -> list[int]:
+def find_skip_positions(text: str, fsharp: bool = False) -> list[tuple[int, bool]]:
     """Return offsets just past each `Skip =` that appears in real code.
 
     Broadening discovery to every textual occurrence would inventory documentation such as
@@ -130,11 +130,20 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[int]:
     without this a documentation block containing an example `Skip = "reason"` was inventoried
     as a real skipped test and failed the required workflow lane.
     """
-    positions: list[int] = []
+    positions: list[tuple[int, bool]] = []
+    bracket_depth = 0
     i = 0
     length = len(text)
     while i < length:
         ch = text[i]
+        if ch == "[":
+            bracket_depth += 1
+            i += 1
+            continue
+        if ch == "]":
+            bracket_depth = max(0, bracket_depth - 1)
+            i += 1
+            continue
         if fsharp and ch == "(" and i + 1 < length and text[i + 1] == "*":
             # `(*)` is F#'s multiplication operator used as a function, not a comment opener.
             if i + 2 < length and text[i + 2] == ")":
@@ -214,7 +223,7 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[int]:
             before_is_identifier = i > 0 and IDENTIFIER_CHAR.match(text[i - 1]) is not None
             match = SKIP_KEYWORD.match(text, i)
             if match and not before_is_identifier:
-                positions.append(match.end())
+                positions.append((match.end(), bracket_depth > 0))
                 i = match.end()
                 continue
         i += 1
@@ -285,24 +294,30 @@ def normalise_expression(expression: str) -> str:
     return WHITESPACE_RUN.sub(" ", expression).strip()
 
 
-def is_skip_expression(expression: str, declares_test_attribute: bool) -> bool:
+def is_skip_expression(expression: str, declares_test_attribute: bool, in_attribute: bool) -> bool:
     """Return whether *expression* is a value xUnit would accept as a skip reason.
 
     `Skip` is an ordinary property name, so a DTO initializer such as
     `new SearchOptions { Skip = 10 }` is textually indistinguishable from a disabled test.
-    xUnit's Skip is a string; a numeric, boolean, or null value never is. A bare identifier is
-    ambiguous, so it counts only where a FactAttribute/TheoryAttribute subclass is declared —
-    the shape DirectLendingDatabaseFactAttribute uses.
+    Three signals separate them:
+
+    - xUnit's Skip is a string, so a numeric, boolean, or null value never qualifies;
+    - a `Skip =` inside an attribute application is a named argument to a test attribute.
+      `[Fact(Skip = SkipReasons.Quarantine)]` and `[Fact(Skip = nameof(Method))]` are real skips
+      even though neither is a literal, and neither appears in a file that *declares* a custom
+      attribute — restricting computed expressions to such files missed both entirely;
+    - outside an attribute, a computed expression counts only where a FactAttribute or
+      TheoryAttribute subclass is declared, which is the shape DirectLendingDatabaseFactAttribute
+      uses when it assigns `Skip = reason` to itself.
     """
     candidate = expression.strip()
     if not candidate or NON_STRING_LITERAL.match(candidate):
         return False
     if '"' in candidate:
         return True
-    if BARE_IDENTIFIER.match(candidate):
-        return declares_test_attribute
-    # Anything else (a call, a conditional, a concatenation of identifiers) is only a skip in a
-    # file that declares a test attribute; elsewhere it is ordinary code assigning some Skip.
+    if in_attribute:
+        return True
+    # Outside an attribute this is ordinary code unless the file declares a test attribute.
     return declares_test_attribute
 
 
@@ -322,11 +337,11 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
                 continue
             relative = path.relative_to(repo_root).as_posix()
             declares_test_attribute = XUNIT_ATTRIBUTE_BASE.search(text) is not None
-            for position in find_skip_positions(text, fsharp=path.suffix == ".fs"):
+            for position, in_attribute in find_skip_positions(text, fsharp=path.suffix == ".fs"):
                 expression = read_expression(text, position)
                 if expression is None or not expression.strip():
                     continue
-                if not is_skip_expression(expression, declares_test_attribute):
+                if not is_skip_expression(expression, declares_test_attribute, in_attribute):
                     continue
                 line = text.count("\n", 0, position) + 1
                 # A pure literal registers under the exact text the runner reports. Anything

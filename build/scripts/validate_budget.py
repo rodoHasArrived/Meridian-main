@@ -37,6 +37,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable
 
 
 # ---------------------------------------------------------------------------
@@ -194,7 +195,7 @@ def check_budgets(budgets: dict[str, Budget], results: list[BdnResult]) -> list[
         if budget.requires_simd:
             continue  # SIMD benchmarks excluded from CI gate
 
-        best = best_result_for(stage_name, results)
+        best = best_result_for(stage_name, results, budgets.keys())
         if best is None:
             continue  # Reported as an unmeasured budget instead of a violation.
 
@@ -213,11 +214,43 @@ def check_budgets(budgets: dict[str, Budget], results: list[BdnResult]) -> list[
     return violations
 
 
-def best_result_for(stage_name: str, results: list[BdnResult]) -> BdnResult | None:
-    """Return the lowest-allocating result matching *stage_name*, or None when unmeasured."""
+def best_result_for(
+    stage_name: str,
+    results: list[BdnResult],
+    all_stage_names: Iterable[str] | None = None,
+) -> BdnResult | None:
+    """Return the lowest-allocating result matching *stage_name*, or None when unmeasured.
+
+    An exact match — the normalised stage name inside the normalised method name — always
+    counts. A *fallback* token match counts only when it is unambiguous.
+
+    Without that rule one result stood in for its whole family: `WalChecksumBenchmarks.Small`
+    matched `WalChecksum_Small`, `WalChecksum_Medium_1KB`, and `WalChecksum_Large_4KB` alike
+    through the shared `WalChecksum` token, so a run where two of the three benchmarks never
+    executed still reported no unmeasured stages — defeating the missing-measurement gate. A
+    result that cannot distinguish which budget it measured is not evidence for any of them.
+
+    *all_stage_names* supplies the sibling budgets to test ambiguity against; when omitted the
+    ambiguity rule cannot apply and behaviour is unchanged.
+    """
+    exact = [r for r in results if _normalise(stage_name) in _normalise(r.method_name)]
+    if exact:
+        return min(exact, key=lambda r: r.allocated_bytes)
+
     matching = [r for r in results if _stage_matches_method(stage_name, r.method_name)]
     if not matching:
         return None
+
+    if all_stage_names is not None:
+        siblings = [s for s in all_stage_names if s != stage_name]
+        # Drop any result that a sibling budget would claim just as well.
+        matching = [
+            r for r in matching
+            if not any(_stage_matches_method(s, r.method_name) for s in siblings)
+        ]
+        if not matching:
+            return None
+
     # Use the row with lowest allocation (most optimistic reading)
     return min(matching, key=lambda r: r.allocated_bytes)
 
@@ -241,7 +274,7 @@ def find_unmeasured_budgets(
         for stage_name, budget in budgets.items()
         if not budget.requires_simd
         and stage_name not in allowed
-        and best_result_for(stage_name, results) is None
+        and best_result_for(stage_name, results, budgets.keys()) is None
     )
 
 
@@ -264,7 +297,7 @@ def find_waived_budgets(
         for stage_name, budget in budgets.items()
         if not budget.requires_simd
         and stage_name in allowed
-        and best_result_for(stage_name, results) is None
+        and best_result_for(stage_name, results, budgets.keys()) is None
     )
 
 
@@ -274,9 +307,14 @@ def _stage_matches_method(stage_name: str, method_name: str) -> bool:
 
     Pass 1: full normalised stage_name appears as a substring of the normalised
     method name (handles most well-named cases).
-    Pass 2: token fallback — any ``_``-delimited token of *stage_name* with length ≥ 5
-    that appears case-insensitively in the normalised method name.  Needed when stage
+    Pass 2: token fallback — *every* ``_``-delimited token of *stage_name* with length ≥ 5
+    must appear case-insensitively in the normalised method name.  Needed when stage
     names use abbreviations different from BDN class/method names.
+
+    The fallback is deliberately loose so `DedupKey_CacheHit` still matches
+    `DeduplicationKeyBenchmarks.IsDuplicate_CacheHit`. Ambiguity is handled by the caller
+    (see :func:`best_result_for`), not by tightening this predicate — requiring every token
+    would break exactly the abbreviation case the fallback exists for.
     """
     norm_method = _normalise(method_name)
     if _normalise(stage_name) in norm_method:
@@ -320,7 +358,7 @@ def render_summary(
             actual = "—"
             status = "⛔ No benchmark measured this budget"
         else:
-            best = best_result_for(stage_name, results)
+            best = best_result_for(stage_name, results, budgets.keys())
             actual = best.allocated_bytes if best is not None else "—"
             status = "✅ Pass" if best is not None else "➖ Unmeasured (declared)"
 
@@ -333,7 +371,7 @@ def render_summary(
         for stage_name, budget in sorted(budgets.items())
         if not budget.requires_simd
         and stage_name not in unmeasured_set
-        and best_result_for(stage_name, results) is None
+        and best_result_for(stage_name, results, budgets.keys()) is None
     ]
 
     if violations:
@@ -371,7 +409,7 @@ def build_evidence(
     """Build the machine-readable record of what this lane actually measured."""
     stages = []
     for stage_name, budget in sorted(budgets.items()):
-        best = None if budget.requires_simd else best_result_for(stage_name, results)
+        best = None if budget.requires_simd else best_result_for(stage_name, results, budgets.keys())
         violation = next((v for v in violations if v.stage_name == stage_name), None)
         stages.append(
             {

@@ -141,6 +141,35 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertIn("reason", reasons)
 
+    def test_finds_a_constant_skip_reason_on_an_ordinary_fact(self):
+        # `[Fact(Skip = SkipReasons.Quarantine)]` disables the test just as a literal does, but
+        # the file only *uses* FactAttribute rather than deriving from one. Requiring a declared
+        # custom attribute for computed expressions missed every skip of this shape.
+        (self.fixture.tests_dir / "ConstantSkipTests.cs").write_text(
+            "public sealed class T {\n"
+            "    [Fact(Skip = SkipReasons.Quarantine)]\n"
+            "    public void Disabled() { }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("SkipReasons.Quarantine", reasons)
+
+    def test_finds_a_nameof_skip_reason_on_an_ordinary_fact(self):
+        (self.fixture.tests_dir / "NameofSkipTests.cs").write_text(
+            "public sealed class T {\n"
+            "    [Theory(Skip = nameof(Disabled))]\n"
+            "    public void Disabled() { }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("nameof(Disabled)", reasons)
+
     def test_ignores_a_skip_property_on_an_ordinary_dto(self):
         # `Skip` is not reserved. Counting every assignment made the gate demand a register entry
         # for a pagination offset, so adding a test for any type with a Skip property blocked CI

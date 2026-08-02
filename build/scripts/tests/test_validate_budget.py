@@ -345,6 +345,43 @@ class TestUnmeasuredBudgets:
         assert "waived with `--allow-unmeasured`" in summary
 
 
+class TestAmbiguousStageMatching:
+    def test_one_result_does_not_satisfy_every_sibling_budget(self):
+        # WalChecksumBenchmarks.Small shares the WalChecksum token with all three budgets, so
+        # the loose fallback let a run where two benchmarks never executed report no unmeasured
+        # stages — defeating the gate this module exists to provide.
+        stages = ["WalChecksum_Small", "WalChecksum_Medium_1KB", "WalChecksum_Large_4KB"]
+        results = [
+            vb.BdnResult(
+                method_name="Meridian.Benchmarks.WalChecksumBenchmarks.Small",
+                mean_ns=100.0,
+                allocated_bytes=0,
+            )
+        ]
+
+        for stage in stages:
+            assert vb.best_result_for(stage, results, stages) is None, stage
+
+        # Without the sibling set the ambiguity rule cannot apply; this pins the old behaviour
+        # so the difference is explicit rather than incidental.
+        assert vb.best_result_for("WalChecksum_Small", results) is not None
+
+    def test_an_abbreviated_stage_name_still_matches_its_benchmark(self):
+        # The fallback exists for exactly this: DedupKey vs DeduplicationKey. Tightening it to
+        # require every token would have broken this case, so ambiguity is rejected instead.
+        stages = ["DedupKey_CacheHit", "DedupKey_CacheMiss"]
+        results = [
+            vb.BdnResult(
+                method_name="Meridian.Benchmarks.DeduplicationKeyBenchmarks.IsDuplicate_CacheHit",
+                mean_ns=150.0,
+                allocated_bytes=64,
+            )
+        ]
+
+        assert vb.best_result_for("DedupKey_CacheHit", results, stages) is not None
+        assert vb.best_result_for("DedupKey_CacheMiss", results, stages) is None
+
+
 class TestCheckBudgets:
     def test_no_violations_when_within_limits(self, budget_file, results_dir_clean):
         budgets = vb.load_budgets(budget_file)
