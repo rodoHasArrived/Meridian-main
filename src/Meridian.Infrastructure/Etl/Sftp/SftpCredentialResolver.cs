@@ -26,17 +26,37 @@ public sealed class EnvironmentSftpCredentialResolver : ISftpCredentialResolver
     {
         ArgumentNullException.ThrowIfNull(source);
         _ = ct;
-        return ValueTask.FromResult(Resolve(source.Username, source.SecretRef, "source"));
+        // trimLiteral: the source resolver has always trimmed a literal username and secret.
+        return ValueTask.FromResult(Resolve(source.Username, source.SecretRef, "source", trimLiteral: true));
     }
 
     public ValueTask<SftpCredentialMaterial> ResolveAsync(EtlDestinationDefinition destination, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(destination);
         _ = ct;
-        return ValueTask.FromResult(Resolve(destination.Username, destination.SecretRef, "destination"));
+        // trimLiteral: SftpFilePublisher passed destination.Username and destination.SecretRef
+        // to the client verbatim, so destinations must keep seeing them verbatim.
+        return ValueTask.FromResult(Resolve(destination.Username, destination.SecretRef, "destination", trimLiteral: false));
     }
 
-    private static SftpCredentialMaterial Resolve(string? username, string? secretRef, string role)
+    /// <summary>
+    /// Resolves credential material for one role.
+    /// </summary>
+    /// <param name="trimLiteral">
+    /// Whether a *literal* username/secret is trimmed. This differs by role on purpose, and the
+    /// asymmetry is compatibility rather than design: the two roles normalised differently before
+    /// they shared this resolver — sources trimmed, destinations passed through verbatim — so any
+    /// single behaviour silently re-authenticates one role's working configurations as different
+    /// credentials. That is unacceptable for a change whose stated purpose is to certify the SFTP
+    /// capability, so each role keeps what it had.
+    ///
+    /// What is genuinely unified is the part that was broken: `env:` references now resolve
+    /// identically for both, which is the defect this work exists to fix — publishing used to send
+    /// the literal text "env:SFTP_PASSWORD" as the password. Collapsing the two literal behaviours
+    /// into one is a deliberate migration with an operator-visible failure mode, not a cleanup to
+    /// fold into this change.
+    /// </param>
+    private static SftpCredentialMaterial Resolve(string? username, string? secretRef, string role, bool trimLiteral)
     {
         if (string.IsNullOrWhiteSpace(username))
             throw new InvalidOperationException($"SFTP {role} username is required.");
@@ -44,28 +64,21 @@ public sealed class EnvironmentSftpCredentialResolver : ISftpCredentialResolver
         if (string.IsNullOrWhiteSpace(secretRef))
             throw new InvalidOperationException($"SFTP {role} secretRef is required.");
 
-        // Trim only to recognise and parse an `env:` reference; a literal secret is returned
-        // exactly as configured. `env: MERIDIAN_SFTP_PASSWORD` reads naturally in YAML, and
-        // Evaluate accepts it, but passing the leading space to GetEnvironmentVariable looked
-        // up a different name and failed after the destination had already been reported
-        // ready — an accepted-then-broken export. Trimming a *literal* password is the same
-        // class of defect pointed the other way: it silently substitutes a different
-        // credential, and leaves a password whose significant characters include leading or
-        // trailing whitespace impossible to express. Publishing passed destination.SecretRef
-        // through verbatim before destinations moved onto this path, so trimming here would
-        // have broken exports that authenticate today.
+        // The `env:` prefix is always detected and parsed on trimmed text, for both roles.
+        // `env: MERIDIAN_SFTP_PASSWORD` reads naturally in YAML, and Evaluate accepts it, but
+        // passing the leading space to GetEnvironmentVariable looked up a different name and
+        // failed after the destination had already been reported ready — an accepted-then-broken
+        // export. The environment variable's *value* is never trimmed: the operator who set it
+        // chose its bytes.
         var trimmed = secretRef.Trim();
         var password = trimmed.StartsWith("env:", StringComparison.OrdinalIgnoreCase)
             ? Environment.GetEnvironmentVariable(trimmed[4..].Trim())
-            : secretRef;
+            : (trimLiteral ? trimmed : secretRef);
 
         if (string.IsNullOrEmpty(password))
             throw new InvalidOperationException($"SFTP {role} secretRef '{secretRef}' did not resolve to a password.");
 
-        // Verbatim for the same reason as the password above: the publisher passed
-        // destination.Username straight through, so trimming it here would silently
-        // authenticate a destination that works today as a different account.
-        return new SftpCredentialMaterial(username, password);
+        return new SftpCredentialMaterial(trimLiteral ? username.Trim() : username, password);
     }
 }
 

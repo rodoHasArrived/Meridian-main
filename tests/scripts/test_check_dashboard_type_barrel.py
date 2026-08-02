@@ -324,3 +324,49 @@ class StarReexportTests(unittest.TestCase):
         problems, _ = self.fixture.evaluate()
 
         self.assertFalse(any("bare 'export *'" in p for p in problems), msg=problems)
+
+
+class MultipleDeclarationsPerLineTests(unittest.TestCase):
+    """The `^` anchor saw only the first export on a line; brace depth now decides scope."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_second_declaration_on_a_line_is_collected(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ["export interface A { id: string; } export interface Shared { id: string; }"],
+        )
+        self.fixture.write_module("workstation-2", ["export interface Shared { id: string; }"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+        self.assertTrue(any("'Shared'" in p for p in problems), msg=problems)
+
+    def test_single_line_namespace_member_is_still_not_module_scope(self):
+        # The anchor made this pass by accident — only `N` began the line. With the anchor gone,
+        # scope has to come from brace depth at the match offset, or `Row` reads as top level and
+        # collides with the sibling's real `Row`, blocking CI over a collision that cannot exist.
+        self.fixture.write_module(
+            "workstation-1",
+            ["export namespace N { export interface Row { id: string; } }"],
+        )
+        self.fixture.write_module("workstation-2", ["export interface Row { id: string; }"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0, msg=problems)
+        self.assertEqual(problems, [])
+
+    def test_export_inside_an_identifier_is_not_a_declaration(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ["const reexport = 1;", "export interface OnlyOne { id: string; }"],
+        )
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["exported_names"], 2)

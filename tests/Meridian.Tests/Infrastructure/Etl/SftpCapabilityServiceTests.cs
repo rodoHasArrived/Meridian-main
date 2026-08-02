@@ -140,16 +140,14 @@ public sealed class SftpCapabilityServiceTests
     }
 
     [Fact]
-    public async Task ResolveAsync_PreservesWhitespaceInALiteralCredential()
+    public async Task ResolveAsync_Destination_PreservesWhitespaceInALiteralCredential()
     {
         var resolver = new EnvironmentSftpCredentialResolver();
 
-        // Publishing passed destination.Username and destination.SecretRef through verbatim
-        // before destinations moved onto this resolver. Trimming them here would silently
-        // substitute a different credential and break an export that authenticates today,
-        // and it leaves a secret whose significant characters include leading or trailing
-        // whitespace impossible to express at all. Only an `env:` reference is trimmed, and
-        // only so the variable name resolves.
+        // SftpFilePublisher passed destination.Username and destination.SecretRef to the client
+        // verbatim before destinations moved onto this resolver, so trimming them here would
+        // silently substitute a different credential and break an export that authenticates
+        // today.
         var destination = new EtlDestinationDefinition
         {
             Kind = EtlDestinationKind.Sftp,
@@ -164,6 +162,31 @@ public sealed class SftpCapabilityServiceTests
 
         material.Password.Should().Be("  pass word  ");
         material.Username.Should().Be(" meridian ops ");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_Source_KeepsItsEstablishedTrimming()
+    {
+        var resolver = new EnvironmentSftpCredentialResolver();
+
+        // The mirror of the destination case. The source resolver has always trimmed a literal
+        // username and secret, so a source that authenticates today as 'meridian-ops'/'pass'
+        // must keep doing so. Applying the destination's verbatim behaviour to both roles would
+        // break the read side exactly as trimming both breaks the write side — the two roles
+        // normalised differently before they shared this code, so neither single behaviour is
+        // compatible with both. Unifying them is a migration, not a cleanup.
+        var source = new EtlSourceDefinition
+        {
+            Kind = EtlSourceKind.Sftp,
+            Location = "sftp://partner.example.com/outbound",
+            Username = " meridian-ops ",
+            SecretRef = "  pass  "
+        };
+
+        var material = await resolver.ResolveAsync(source, CancellationToken.None);
+
+        material.Password.Should().Be("pass");
+        material.Username.Should().Be("meridian-ops");
     }
 
     [Fact]
@@ -237,14 +260,61 @@ public sealed class SftpCapabilityServiceTests
         factory.CreateCalls.Should().Be(0);
     }
 
-    private static EtlSourceDefinition CompleteSource() => new()
+    [Theory]
+    [InlineData("sftp://partner.example.com/", "malformed location")]
+    [InlineData("not-a-uri", "unparsable location")]
+    public async Task ListFilesAsync_ReportsCapabilityBeforeTheConfigurationError(string location, string _)
     {
-        Kind = EtlSourceKind.Sftp,
-        Location = "sftp://partner.example.com/outbound",
-        Username = "meridian-ops",
-        SecretRef = "literal-secret",
-        HostKeySha256Fingerprint = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
-    };
+        var factory = new ThrowingSftpClientFactory();
+        var reader = new SftpFileSourceReader(
+            new EtlStagingStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))),
+            factory,
+            new EnvironmentSftpCredentialResolver(),
+            new StubCapabilityService(ready: false, issues: ["Real SFTP support is disabled in this build."]));
+
+        var source = CompleteSource(location: location);
+
+        var act = async () => await reader.ListFilesAsync(source, CancellationToken.None);
+
+        // Evaluating capability inside CreateClient put it after ParseRequired and credential
+        // resolution, both of which throw on their own. A source that is *both* misconfigured and
+        // running on a build without SFTP therefore reported only the URI error and never said
+        // real SFTP was absent — the operator fixes the URI, retries, and hits the same wall for a
+        // reason nobody told them. Evaluate aggregates every issue, so it has to run first.
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not available for this source*disabled in this build*");
+        factory.CreateCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ListFilesAsync_ReportsCapabilityBeforeAnUnresolvableSecret()
+    {
+        var factory = new ThrowingSftpClientFactory();
+        var reader = new SftpFileSourceReader(
+            new EtlStagingStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))),
+            factory,
+            new EnvironmentSftpCredentialResolver(),
+            new StubCapabilityService(ready: false, issues: ["Real SFTP support is disabled in this build."]));
+
+        var source = CompleteSource(secretRef: "env:MERIDIAN_TEST_SFTP_DEFINITELY_UNSET");
+
+        var act = async () => await reader.ListFilesAsync(source, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not available for this source*disabled in this build*");
+        factory.CreateCalls.Should().Be(0);
+    }
+
+    private static EtlSourceDefinition CompleteSource(
+        string? location = "sftp://partner.example.com/outbound",
+        string? secretRef = "literal-secret") => new()
+        {
+            Kind = EtlSourceKind.Sftp,
+            Location = location,
+            Username = "meridian-ops",
+            SecretRef = secretRef,
+            HostKeySha256Fingerprint = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        };
 
     [Fact]
     public async Task PublishAsync_WhenCapabilityIsNotReady_FailsClosedWithTheReadinessIssues()

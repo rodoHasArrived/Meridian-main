@@ -59,8 +59,11 @@ BARREL_EXPORT = re.compile(r'^\s*export\s+\*\s+from\s+"\./types/(?P<module>[^"]+
 # zero duplicates. Nesting is decided by brace depth instead (see declared_names) — only a
 # depth-zero declaration is what `export *` re-exports, so `export namespace N { export interface
 # Row {} }` contributes `N` and never `Row`.
+# `(?<![\w$.])` instead of a line anchor: several declarations may share a line, and the anchor
+# let this collector see only the first. The lookbehind still refuses a match inside an identifier
+# ('reexport') or after a dot ('ns.export'), which a bare \b would not.
 DECLARATION = re.compile(
-    r"^[ \t]*export\s+(?:declare\s+)?(?:abstract\s+)?(?:async\s+)?"
+    r"(?<![\w$.])export\s+(?:declare\s+)?(?:abstract\s+)?(?:async\s+)?"
     r"(?:type|interface|enum|const\s+enum|const|let|var|function\*?|class|namespace|module)\s+"
     r"(?P<name>[A-Za-z_$][\w$]*)",
     re.MULTILINE,
@@ -69,7 +72,10 @@ DECLARATION = re.compile(
 # module just as a declaration does, so they collide under the barrel's `export *` in exactly the
 # same way. Matching only declarations meant a re-exported duplicate silently vanished from
 # '@/types' while the gate reported zero duplicates.
-NAMED_REEXPORT = re.compile(r"^[ \t]*export\s+type\s*\{(?P<names>[^}]*)\}|^[ \t]*export\s*\{(?P<plain>[^}]*)\}", re.MULTILINE)
+NAMED_REEXPORT = re.compile(
+    r"(?<![\w$.])export\s+type\s*\{(?P<names>[^}]*)\}|(?<![\w$.])export\s*\{(?P<plain>[^}]*)\}",
+    re.MULTILINE,
+)
 # Inside the braces: `Name`, `Name as Alias`, `type Name`, `default as Name`. The published name
 # is the alias when present, otherwise the name itself.
 REEXPORT_SPECIFIER = re.compile(r"(?:type\s+)?(?P<name>[A-Za-z_$][\w$]*)(?:\s+as\s+(?P<alias>[A-Za-z_$][\w$]*))?")
@@ -82,10 +88,10 @@ REEXPORT_SPECIFIER = re.compile(r"(?:type\s+)?(?P<name>[A-Za-z_$][\w$]*)(?:\s+as
 # cannot require the quotes — the specifier is recovered from the raw text by offset, which the
 # blanking preserves exactly.
 NAMESPACE_REEXPORT = re.compile(
-    r"^[ \t]*export\s*\*\s*as\s+(?P<name>[A-Za-z_$][\w$]*)\s+from\b",
+    r"(?<![\w$.])export\s*\*\s*as\s+(?P<name>[A-Za-z_$][\w$]*)\s+from\b",
     re.MULTILINE,
 )
-BARE_STAR_REEXPORT = re.compile(r"^[ \t]*export\s*\*\s*from\b", re.MULTILINE)
+BARE_STAR_REEXPORT = re.compile(r"(?<![\w$.])export\s*\*\s*from\b", re.MULTILINE)
 MODULE_SPECIFIER = re.compile(r"[\"'](?P<module>[^\"']+)[\"']")
 
 
@@ -230,7 +236,13 @@ def declared_names(module_path: Path) -> list[str]:
         line_starts.append(line_starts[-1] + len(line) + 1)
 
     def at_module_scope(offset: int) -> bool:
-        return depth_at_line_start[bisect_right(line_starts, offset) - 1] == 0
+        # Depth at the exact offset, not at the start of its line. Several declarations can share
+        # a line ('export interface A {} export interface Shared {}'), and a line-granular depth
+        # would give every one of them the first's scope — counting `Row` in a single-line
+        # `export namespace N { export interface Row {} }` as though it were top level.
+        line = bisect_right(line_starts, offset) - 1
+        prefix = text[line_starts[line] : offset]
+        return depth_at_line_start[line] + prefix.count("{") - prefix.count("}") == 0
 
     names: list[str] = []
     for match in DECLARATION.finditer(text):
