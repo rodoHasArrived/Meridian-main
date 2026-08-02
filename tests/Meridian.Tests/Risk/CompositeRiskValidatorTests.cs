@@ -553,13 +553,18 @@ public sealed class CompositeRiskValidatorTests
             }
         };
 
-        // The token is consumed up front; a later rule then faults out of validation.
-        var act = () => validator.ValidateOrderAsync(resubmission);
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        // The token is consumed up front; a later rule then faults. The fault no longer escapes —
+        // it is converted into a fail-closed refusal, because handing the submitter a raw rule
+        // exception left them with no rejection state and no audit record.
+        var result = await validator.ValidateOrderAsync(resubmission);
+
+        result.IsApproved.Should().BeFalse("a rule that could not be evaluated cannot admit an order");
+        result.Code.Should().Be(CompositeRiskValidator.EvaluationFailedCode);
+        result.IsUnmeasurable.Should().BeTrue("no breach was measured, so the desk must not halt");
 
         queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
             RiskEscalationStatus.Approved,
-            "an exceptional exit routed nothing, so the operator's approval must not stay retired");
+            "the refusal routed nothing, so the operator's approval must not stay retired");
     }
 
     [Fact]

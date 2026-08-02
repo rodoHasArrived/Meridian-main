@@ -707,7 +707,15 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(safeRequest.Symbol));
 
-            RestoreConsumedApprovals(consumedApprovalId, "a gateway submission failure", orderId);
+            // Re-armed only when the failure provably predates dispatch. After dispatch the
+            // submission is ambiguous and the order may still execute, so restoring the one-shot
+            // release would let a retry route a second approved order against one decision — the
+            // same ambiguity that makes the rate slot commit rather than roll back. An operator can
+            // re-approve; a duplicate execution cannot be taken back.
+            if (!dispatchAttempted)
+            {
+                RestoreConsumedApprovals(consumedApprovalId, "a submission failure before dispatch", orderId);
+            }
 
             var rejectedState = orderState with
             {
@@ -893,11 +901,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // The rate slot follows the placement path's rule rather than the state
             // reservation's: a modify that threw after dispatch may still have reached the venue,
             // so it is committed. Over-counting a rate window is the safe direction.
-            // Cancellation surfacing from the gateway before it mutated anything is not ambiguous:
-            // a gateway that checks the token on entry has dispatched nothing, so the slot is
-            // released. Only a non-cancellation fault after dispatch is genuinely ambiguous.
-            var amendmentMayHaveRouted = amendmentDispatchAttempted && !ct.IsCancellationRequested;
-            SettleRiskReservations(amendmentDecision, commit: amendmentMayHaveRouted, orderId);
+            // Cancellation after the gateway call began is ambiguous, not pre-dispatch. Gateways
+            // that send and then await acknowledgement on the same token — the brokerage adapter
+            // does — cancel while the venue already holds the amended exposure. The only proof of
+            // pre-dispatch is the check before the call, which throws before the flag is set.
+            SettleRiskReservations(amendmentDecision, commit: amendmentDispatchAttempted, orderId);
             RollBackSpeculativeReservation(orderId, speculativeReservation, state);
             throw;
         }

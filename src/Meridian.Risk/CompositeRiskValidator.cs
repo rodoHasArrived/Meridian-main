@@ -57,6 +57,21 @@ public sealed class CompositeRiskValidator : IRiskValidator
             .Select(static entry => entry.Rule)
             .ToList()
             .AsReadOnly() ?? throw new ArgumentNullException(nameof(rules));
+        // Governed approvals are scoped by rule name: a consumed token releases the escalation
+        // parked by the rule whose name it carries. Two rules sharing a name would make one
+        // operator decision release both, so the ambiguity is refused at composition rather than
+        // discovered when an unapproved order routes.
+        var duplicateName = _rules
+            .GroupBy(static rule => rule.RuleName, StringComparer.Ordinal)
+            .FirstOrDefault(static group => group.Count() > 1);
+        if (duplicateName is not null)
+        {
+            throw new ArgumentException(
+                $"Risk rule name '{duplicateName.Key}' is registered {duplicateName.Count()} times. "
+                    + "Rule names scope governed approvals, so they must be unique.",
+                nameof(rules));
+        }
+
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _operatorControls = operatorControls;
         _escalationQueue = escalationQueue;
