@@ -584,6 +584,30 @@ public sealed class RiskRuleRuntimeService
             Severity: "Critical");
     }
 
+    /// <summary>
+    /// True when this audit entry represents capacity the throttle is still holding.
+    /// <list type="bullet">
+    /// <item><description>A submission the gateway accepted — the slot was committed.</description></item>
+    /// <item><description>A submission that threw after dispatch — ambiguous, so the slot was
+    /// deliberately over-counted rather than released.</description></item>
+    /// </list>
+    /// A submission the broker rejected reached no venue and had its slot rolled back, so it does
+    /// not count however it was recorded.
+    /// </summary>
+    private static bool CountsAgainstOrderRate(ExecutionAuditEntry entry)
+    {
+        if (string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase))
+        {
+            return !string.Equals(entry.Outcome, "Rejected", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return string.Equals(entry.Action, "OrderRejected", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                entry.Reason,
+                OrderManagementSystem.AmbiguousSubmissionReason,
+                StringComparison.Ordinal);
+    }
+
     private int? ReadOrderRateUsage()
     {
         var probe = OrderRateUsageProbe;
@@ -613,18 +637,13 @@ public sealed class RiskRuleRuntimeService
         // Prefer the enforcing instance. Audit reconstruction counts only orders that were
         // submitted, so it misses capacity held for in-flight submissions and reports room the
         // gate will not honour.
+        // The fallback reconstructs *committed slots*, not submissions. The throttle releases
+        // capacity for anything that did not reach a venue, so counting every OrderSubmitted entry
+        // regardless of outcome over-reports a desk whose orders the broker refused, while
+        // ignoring the ambiguous rejections under-reports one whose slots are still held. Both
+        // errors point the wrong way at once.
         var recentOrderCount = ReadOrderRateUsage() ?? auditEntries.Count(entry =>
-            entry.OccurredAt >= cutoff &&
-            (string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase) ||
-
-             // An ambiguous submission was rejected but kept its slot, because the order may still
-             // have executed. Counting only OrderSubmitted would show the desk room the throttle
-             // has already spent -- the one rejection that must not be treated as released.
-             (string.Equals(entry.Action, "OrderRejected", StringComparison.OrdinalIgnoreCase) &&
-              string.Equals(
-                  entry.Reason,
-                  OrderManagementSystem.AmbiguousSubmissionReason,
-                  StringComparison.Ordinal))));
+            entry.OccurredAt >= cutoff && CountsAgainstOrderRate(entry));
 
         // At the ceiling the throttle already refuses, so the dashboard has to say Constrained at
         // the same count rather than one above it. Reporting Observe on an order the gate would

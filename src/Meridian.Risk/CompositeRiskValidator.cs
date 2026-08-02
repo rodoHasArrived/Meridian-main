@@ -149,6 +149,28 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 var result = await EvaluateRuleAsync(rule, request, reservations, ct).ConfigureAwait(false);
                 evaluated.Add((rule, result));
 
+                // Acted on here rather than in a later pass. Waiting until every rule had been
+                // awaited meant a caller cancelling in between unwound before the trip ran, and a
+                // confirmed halt was silently dropped. Cancellation must not be able to veto a
+                // breach that has already been established. This is also why the trip does not
+                // live in the decision pass: an earlier Error rule owning the returned rejection
+                // must not skip a later rule's Critical halt.
+                if (!result.IsApproved
+                    && !result.IsUnmeasurable
+                    && rule.Severity == RiskRuleSeverity.Critical
+                    && !IsEvaluationFailure(result))
+                {
+                    _logger.LogError(
+                        "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
+                        rule.RuleName);
+
+                    // CancellationToken.None: the halt outlives this order's submission, so a
+                    // caller giving up must not abandon a trip the desk is owed. The pending-trip
+                    // latch retries it if the durable write fails.
+                    await TripCircuitBreakerAsync(rule, DescribeRefusal(rule, result), CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+
                 if (!result.IsApproved)
                 {
                     var released = releasedEntries.Any(entry =>
@@ -173,29 +195,6 @@ public sealed class CompositeRiskValidator : IRiskValidator
                             ObservedValue: result.ObservedValue,
                             LimitValue: result.LimitValue), rule.Priority));
                     }
-                }
-            }
-
-            // Critical side effects run over the whole evaluated set, before any outcome is
-            // selected. The desk-wide halt belongs to the breach, not to whichever rule happens to
-            // own the returned rejection: an earlier-priority Error rule must not swallow it.
-            foreach (var (rule, result) in evaluated)
-            {
-                if (result.IsApproved || result.IsUnmeasurable)
-                {
-                    continue;
-                }
-
-                // RequiresApproval is deliberately not consulted: a Critical rule cannot escalate
-                // past its own severity. Block-before-Escalate is the blueprint's precedence, and
-                // a halt that an operator could release by approving one order is not a halt.
-                if (rule.Severity == RiskRuleSeverity.Critical && !IsEvaluationFailure(result))
-                {
-                    _logger.LogError(
-                        "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
-                        rule.RuleName);
-                    await TripCircuitBreakerAsync(rule, reason: DescribeRefusal(rule, result), ct)
-                        .ConfigureAwait(false);
                 }
             }
 
