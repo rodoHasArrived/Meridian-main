@@ -731,3 +731,48 @@ class EnclosingTypeAndCodeOnlyIdentityTests(unittest.TestCase):
         ):
             with self.subTest(fsharp=fsharp):
                 self.assertEqual(len(MODULE.blank_non_code(text, fsharp=fsharp)), len(text))
+
+
+class VerbatimAndRawLiteralTests(unittest.TestCase):
+    def test_verbatim_literals_keep_significant_whitespace(self):
+        # These fell through to normalise_expression, which collapses runs of spaces, so both
+        # spellings produced one register key though xUnit reports different reasons.
+        wide = MODULE.literal_reason('@"A   B"')
+        narrow = MODULE.literal_reason('@"A B"')
+
+        self.assertEqual(wide, "A   B")
+        self.assertEqual(narrow, "A B")
+        self.assertNotEqual(wide, narrow)
+
+    def test_verbatim_literals_decode_doubled_quotes(self):
+        self.assertEqual(MODULE.literal_reason('@"say ""hi"""'), 'say "hi"')
+
+    def test_raw_literals_keep_significant_whitespace(self):
+        self.assertEqual(MODULE.literal_reason('"""A   B"""'), "A   B")
+
+    def test_a_verbatim_literal_has_no_backslash_escapes(self):
+        # @"C:\network" is a literal backslash-n, not a newline.
+        self.assertEqual(MODULE.literal_reason(r'@"C:\network"'), r"C:\network")
+
+    def test_a_non_literal_expression_is_still_not_a_literal_reason(self):
+        self.assertIsNone(MODULE.literal_reason("SkipReasons.Quarantine"))
+
+
+class UndecodableSourceTests(unittest.TestCase):
+    def test_a_utf16_source_is_decoded_rather_than_skipped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "Utf16Tests.cs"
+            path.write_bytes('[Fact(Skip = "held")]\npublic void T() { }\n'.encode("utf-16"))
+
+            self.assertIn("Skip", MODULE.read_source(path))
+
+    def test_an_undecodable_source_fails_the_gate_instead_of_being_ignored(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tests_dir = Path(tmp) / "tests"
+            tests_dir.mkdir()
+            # Invalid UTF-8 with no BOM: previously the whole file was dropped, so any skip in it
+            # needed no register entry while the gate still reported success.
+            (tests_dir / "BrokenTests.cs").write_bytes(b'[Fact(Skip = "\xff\xfe held")]')
+
+            with self.assertRaises(MODULE.GateFailure):
+                MODULE.discover_skips(tests_dir, Path(tmp))

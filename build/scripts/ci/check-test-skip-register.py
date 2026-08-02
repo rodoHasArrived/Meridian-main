@@ -81,6 +81,12 @@ ATTRIBUTE_OPENER = re.compile(r"\[\s*<?\s*(?P<name>[A-Za-z_][\w.]*)")
 XUNIT_TEST_ATTRIBUTE = re.compile(r"^(?:\w*\.)?\w*(?:Fact|Theory)(?:Attribute)?$")
 ATTRIBUTE_NAME_AFTER_COMMA = re.compile(r"[,;]\s*(?P<name>[A-Za-z_][\w.]*)")
 STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
+# `@"A   B"` and `"""A   B"""` are pure literals too, but they carry no backslash escapes and
+# their whitespace is significant. They previously fell through to normalise_expression, which
+# collapses runs of spaces — so `@"A   B"` and `@"A B"` produced one register key even though
+# xUnit reports different reasons, letting the actual skip text change without re-review.
+VERBATIM_LITERAL = re.compile(r'^\s*@"(?P<body>(?:[^"]|"")*)"\s*$')
+RAW_LITERAL = re.compile(r'^\s*(?P<fence>"{3,})(?P<body>.*?)(?P=fence)\s*$', re.DOTALL)
 PURE_LITERAL_EXPRESSION = re.compile(
     r"""^ \s* " (?: [^"\\] | \\. )* "
         (?: \s* \+ \s* " (?: [^"\\] | \\. )* " )* \s* $
@@ -392,6 +398,23 @@ def read_expression(text: str, start: int) -> str | None:
     return None
 
 
+def literal_reason(expression: str) -> str | None:
+    """Return the exact reason string *expression* produces, or None if it is not a pure literal.
+
+    A verbatim or raw literal has no escapes and its interior whitespace is significant, so it is
+    decoded rather than routed through normalise_expression, which would collapse it.
+    """
+    raw = RAW_LITERAL.match(expression)
+    if raw is not None:
+        return raw.group("body")
+    verbatim = VERBATIM_LITERAL.match(expression)
+    if verbatim is not None:
+        return verbatim.group("body").replace('""', '"')
+    if PURE_LITERAL_EXPRESSION.match(expression):
+        return join_literals(expression)
+    return None
+
+
 def normalise_expression(expression: str) -> str:
     """Collapse an expression's source to a stable single-line form."""
     return WHITESPACE_RUN.sub(" ", expression).strip()
@@ -561,6 +584,20 @@ def resolve_test_identity(text: str, position: int, fsharp: bool, in_attribute: 
     return preceding[-1] if preceding else "<unknown>"
 
 
+def read_source(path: Path) -> str:
+    """Read a test source, honouring a UTF-16/UTF-8 byte-order mark.
+
+    MSBuild accepts UTF-16 sources, and `read_text(encoding="utf-8")` raises on them.
+    """
+    data = path.read_bytes()
+    for bom, encoding in (
+        (b"\xff\xfe", "utf-16"), (b"\xfe\xff", "utf-16"), (b"\xef\xbb\xbf", "utf-8-sig"),
+    ):
+        if data.startswith(bom):
+            return data.decode(encoding)
+    return data.decode("utf-8")
+
+
 def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
     """Return every skip declaration in the .NET/F# test projects, in stable order."""
     sites: list[SkipSite] = []
@@ -570,9 +607,17 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
             if "/obj/" in posix or "/bin/" in posix:
                 continue
             try:
-                text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
+                text = read_source(path)
+            except OSError:
                 continue
+            except UnicodeDecodeError as error:
+                # Silently dropping the file made every skip in it unregistered *and*
+                # unreported, so the gate announced that all skips are owned while ignoring a
+                # whole source. A gate whose claim is total coverage has to fail closed.
+                raise GateFailure(
+                    f"cannot decode test source {path.relative_to(repo_root).as_posix()}: {error}. "
+                    "Skips in an unreadable file would go uninventoried."
+                ) from error
             if "Skip" not in text:
                 continue
             relative = path.relative_to(repo_root).as_posix()
@@ -594,11 +639,9 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
                 # interpolated or computed has no statically-known reason, so it registers
                 # under its normalised source instead — still exact, still forcing re-review
                 # when it changes, and no longer invisible.
-                reason = (
-                    join_literals(expression)
-                    if PURE_LITERAL_EXPRESSION.match(expression)
-                    else normalise_expression(expression)
-                )
+                reason = literal_reason(expression)
+                if reason is None:
+                    reason = normalise_expression(expression)
                 sites.append(
                     SkipSite(
                         relative,

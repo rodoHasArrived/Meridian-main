@@ -167,7 +167,40 @@ def _starts_regex_literal(emitted: list[str]) -> bool:
     if REGEX_PRECEDING_KEYWORD.search(prefix):
         return True
     # `/` after `/` or `*` is a comment opener, handled by the caller before this runs.
-    return prefix[-1] in "(,=:[!&|?{};+-*%~^<>"
+    # `)` is genuinely ambiguous: `(a + b) / c` divides, but `if (value) /\{/.test(value)` opens
+    # a regex. Admitting it is safe only because _regex_end requires the literal to terminate on
+    # the same line — and getting it wrong in this direction is the costly one. Classifying that
+    # opener as division let the regex's `{` reach the brace counter, raising the depth for the
+    # rest of the file so every later declaration looked nested and dropped out of the
+    # comparison, and the gate then reported zero duplicates whatever was duplicated.
+    return prefix[-1] in "(),=:[!&|?{};+-*%~^<>"
+
+
+def _regex_end(text: str, start: int) -> int | None:
+    """Return the index just past a regex literal opening at *start*, or None.
+
+    A JavaScript regex literal cannot contain an unescaped newline, so a candidate that reaches
+    end of line was never a regex. Checking before blanking means a misread `/` costs nothing;
+    the previous shape blanked as it scanned and only then discovered the newline.
+    """
+    i = start + 1
+    length = len(text)
+    in_class = False
+    while i < length:
+        ch = text[i]
+        if ch == "\\":
+            i += 2
+            continue
+        if ch == "\n":
+            return None
+        if ch == "[":
+            in_class = True
+        elif ch == "]":
+            in_class = False
+        elif ch == "/" and not in_class:
+            return i + 1
+        i += 1
+    return None
 
 
 def strip_comments_and_strings(text: str) -> str:
@@ -227,31 +260,12 @@ def strip_comments_and_strings(text: str) -> str:
             # nesting from brace depth. One such literal at module scope would raise the depth
             # for the rest of the file, dropping every later export from the comparison — the
             # gate would then report zero duplicates no matter what was duplicated.
-            out.append(" ")
-            i += 1
-            in_class = False
-            while i < length:
-                if text[i] == "\\":
-                    out.append("  ")
-                    i += 2
-                    continue
-                if text[i] == "\n":
-                    # An unterminated regex cannot span lines; treat this as a division sign
-                    # after all and resume normal scanning.
-                    out.append("\n")
-                    i += 1
-                    break
-                if text[i] == "[":
-                    in_class = True
-                elif text[i] == "]":
-                    in_class = False
-                elif text[i] == "/" and not in_class:
-                    out.append(" ")
-                    i += 1
-                    break
-                out.append(" ")
-                i += 1
-            continue
+            regex_end = _regex_end(text, i)
+            if regex_end is not None:
+                out.append(" " * (regex_end - i))
+                i = regex_end
+                continue
+            # Not a regex after all — fall through and emit the slash as an ordinary character.
         out.append(ch)
         i += 1
     return "".join(out)

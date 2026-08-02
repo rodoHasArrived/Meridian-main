@@ -666,3 +666,44 @@ class ImportedReexportOriginTests(unittest.TestCase):
         _, counts = self.fixture.evaluate()
 
         self.assertEqual(counts["duplicates"], 1)
+
+
+class RegexLiteralAfterConditionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_a_regex_after_a_condition_does_not_swallow_later_exports(self):
+        # Classifying that opener as division let the regex's `{` reach the brace counter, so the
+        # depth stayed raised and every later declaration looked nested — the gate then reported
+        # zero duplicates whatever was duplicated.
+        self.fixture.write_module(
+            "workstation-1",
+            ["if (value) /\\{/.test(value);", "export interface Shared { id: string; }"],
+        )
+        self.fixture.write_module("workstation-2", ["export interface Shared { id: string; }"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1, msg=problems)
+
+    def test_ordinary_division_after_a_paren_is_not_treated_as_a_regex(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ["const ratio = (a + b) / c;", "export interface Shared { id: string; }"],
+        )
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["exported_names"], 2)
+
+    def test_two_divisions_on_one_line_keep_later_exports(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ["const ratio = (a) / b / c;", "export interface Kept { id: string; }"],
+        )
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["exported_names"], 2)
