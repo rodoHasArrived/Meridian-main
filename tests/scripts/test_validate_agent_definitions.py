@@ -202,6 +202,77 @@ class FrontmatterParsingTests(unittest.TestCase):
 
         self.assertIn("expected a mapping", str(caught.exception))
 
+    def test_empty_frontmatter_is_rejected(self) -> None:
+        with self.assertRaises(ValueError) as caught:
+            module.parse_frontmatter("---\n\n---\n")
+
+        self.assertIn("frontmatter is empty", str(caught.exception))
+
+    def test_unexpected_indented_content_is_rejected(self) -> None:
+        with self.assertRaises(ValueError) as caught:
+            module.parse_frontmatter("---\nname: x\n  stray: value\n---\n")
+
+        self.assertIn("unexpected indented content", str(caught.exception))
+
+    def test_folded_block_is_joined_into_one_scalar(self) -> None:
+        parsed = module.parse_frontmatter(
+            "---\ndescription: >\n  first line\n  second line\nname: x\n---\n"
+        )
+
+        self.assertEqual("first line second line", parsed["description"])
+        self.assertEqual("x", parsed["name"])
+
+    def test_block_sequence_parses_as_a_list(self) -> None:
+        parsed = module.parse_frontmatter("---\ntools:\n  - Read\n  - Glob\n---\n")
+
+        self.assertEqual(["Read", "Glob"], parsed["tools"])
+
+    def test_bare_key_with_no_items_is_an_empty_value_not_an_empty_list(self) -> None:
+        parsed = module.parse_frontmatter("---\nname: x\ndescription:\n---\n")
+
+        self.assertIsNone(parsed["description"])
+
+
+class PyYamlDifferentialTests(unittest.TestCase):
+    """Cross-check the hand-rolled parser against PyYAML wherever PyYAML exists.
+
+    PyYAML is optional in this repository — `common.py` guards its import and the
+    hosted docs lanes do not install it — so the validator parses the frontmatter
+    subset itself and one code path runs everywhere. These tests keep that parser
+    honest against the real implementation on machines that do have PyYAML.
+    """
+
+    def setUp(self) -> None:
+        try:
+            import yaml  # noqa: PLC0415 - optional dependency, probed deliberately
+        except ImportError:  # pragma: no cover - exercised only on lanes without PyYAML
+            self.skipTest("PyYAML is not installed in this environment")
+        self.yaml = yaml
+
+    def test_tracked_definitions_parse_the_same_as_pyyaml(self) -> None:
+        for path in sorted(module.AGENTS_ROOT.rglob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            ours = module.parse_frontmatter(text)
+            theirs = self.yaml.safe_load(module.split_frontmatter(text))
+
+            self.assertEqual(set(theirs), set(ours), path.name)
+            for key, value in theirs.items():
+                if isinstance(value, str):
+                    self.assertEqual(value.strip(), str(ours[key]).strip(), f"{path.name}:{key}")
+                else:
+                    self.assertEqual(value, ours[key], f"{path.name}:{key}")
+
+    def test_pyyaml_also_rejects_what_the_parser_rejects(self) -> None:
+        for frontmatter in (
+            "name: x\n: invalid yaml\n",
+            "name: x\n  stray: value\n",
+        ):
+            with self.subTest(frontmatter=frontmatter):
+                with self.assertRaises(ValueError):
+                    module.parse_frontmatter(f"---\n{frontmatter}---\n")
+                with self.assertRaises(self.yaml.YAMLError):
+                    self.yaml.safe_load(frontmatter)
+
 
 class ValidateAgentTests(unittest.TestCase):
     def setUp(self) -> None:

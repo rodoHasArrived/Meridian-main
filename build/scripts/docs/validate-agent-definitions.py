@@ -50,8 +50,6 @@ import re
 import sys
 from pathlib import Path
 
-import yaml
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 AGENTS_ROOT = REPO_ROOT / ".claude" / "agents"
 
@@ -116,29 +114,8 @@ TOOL_FIELDS = ("tools", "disallowedTools")
 ALLOW_LIST_FIELD = "tools"
 
 
-class StrictLoader(yaml.SafeLoader):
-    """SafeLoader that rejects duplicate mapping keys instead of taking the last."""
-
-
-def _construct_mapping_no_duplicates(loader: StrictLoader, node: yaml.MappingNode, deep: bool = False):
-    seen: set[object] = set()
-    for key_node, _ in node.value:
-        key = loader.construct_object(key_node, deep=deep)
-        if key in seen:
-            raise yaml.constructor.ConstructorError(
-                None,
-                None,
-                f"duplicate key '{key}' in frontmatter; the host resolves the last "
-                "occurrence, so a repeated key silently changes the effective value",
-                key_node.start_mark,
-            )
-        seen.add(key)
-    return yaml.SafeLoader.construct_mapping(loader, node, deep=deep)
-
-
-StrictLoader.add_constructor(
-    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_mapping_no_duplicates
-)
+KEY_PATTERN = re.compile(r"^(?P<key>[A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]+(?P<value>.*))?$")
+BLOCK_SCALAR_PATTERN = re.compile(r"^[|>][+-]?\d*$")
 
 
 def split_frontmatter(text: str) -> str:
@@ -150,19 +127,109 @@ def split_frontmatter(text: str) -> str:
     return text[4:end]
 
 
+def _strip_quotes(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
+def _parse_flow_sequence(value: str) -> list[str]:
+    inner = value[1:-1].strip() if value.endswith("]") else value[1:].strip()
+    if not inner:
+        return []
+    return [_strip_quotes(item.strip()) for item in inner.split(",") if item.strip()]
+
+
 def parse_frontmatter(text: str) -> dict[str, object]:
-    """Return the frontmatter mapping, raising ValueError on anything the host would reject."""
+    """Return the frontmatter mapping, raising ValueError on anything the host would reject.
+
+    PyYAML is an optional dependency in this repository - `common.py` guards its
+    import and the hosted docs lanes do not install it - so this parses the
+    frontmatter subset directly rather than importing it. One code path runs in
+    every environment, which is what a gate needs; the test suite cross-checks
+    this parser against PyYAML wherever PyYAML is actually available.
+
+    The subset is what agent frontmatter uses: plain scalars, folded and literal
+    block scalars, flow sequences, and block sequences. Anything else at column
+    zero is reported as invalid rather than skipped, and a repeated key is an
+    error rather than a silent last-wins overwrite.
+    """
     raw = split_frontmatter(text)
-    try:
-        parsed = yaml.load(raw, Loader=StrictLoader)  # noqa: S506 - StrictLoader is SafeLoader-derived
-    except yaml.YAMLError as exc:
-        detail = str(exc).replace("\n", " ")
-        raise ValueError(f"frontmatter is not valid YAML: {detail}") from exc
-    if parsed is None:
+    mapping: dict[str, object] = {}
+    block_lines: list[str] | None = None
+    block_separator = " "
+    sequence_items: list[str] | None = None
+    open_key: str | None = None
+
+    def close_open_key() -> None:
+        nonlocal block_lines, sequence_items, open_key
+        if open_key is not None:
+            if block_lines is not None:
+                mapping[open_key] = block_separator.join(
+                    line for line in block_lines if line
+                )
+            elif sequence_items is not None:
+                # A bare key with no items is an empty value, not an empty sequence -
+                # `description:` must read as absent the way the host reads it.
+                mapping[open_key] = sequence_items if sequence_items else None
+        block_lines = None
+        sequence_items = None
+        open_key = None
+
+    for number, line in enumerate(raw.split("\n"), start=1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+
+        if line[0] in " \t":
+            stripped = line.strip()
+            if block_lines is not None:
+                block_lines.append(stripped)
+                continue
+            if sequence_items is not None and stripped.startswith("- "):
+                sequence_items.append(_strip_quotes(stripped[2:].strip()))
+                continue
+            raise ValueError(
+                f"frontmatter is not valid YAML: unexpected indented content on line {number}"
+            )
+
+        if line.startswith("- "):
+            raise ValueError("frontmatter is a sequence, expected a mapping")
+
+        match = KEY_PATTERN.match(line)
+        if not match:
+            raise ValueError(
+                f"frontmatter is not valid YAML: line {number} is not a `key: value` entry"
+            )
+
+        close_open_key()
+        key = match.group("key")
+        if key in mapping:
+            raise ValueError(
+                f"duplicate key '{key}' in frontmatter; the host resolves the last "
+                "occurrence, so a repeated key silently changes the effective value"
+            )
+
+        value = (match.group("value") or "").strip()
+        if not value:
+            # A bare key opens either a block sequence or an empty value, and which one
+            # is only knowable from the next line.
+            open_key = key
+            sequence_items = []
+            continue
+        if BLOCK_SCALAR_PATTERN.match(value):
+            open_key = key
+            block_lines = []
+            block_separator = "\n" if value[0] == "|" else " "
+            continue
+        mapping[key] = (
+            _parse_flow_sequence(value) if value.startswith("[") else _strip_quotes(value)
+        )
+
+    close_open_key()
+
+    if not mapping:
         raise ValueError("frontmatter is empty")
-    if not isinstance(parsed, dict):
-        raise ValueError(f"frontmatter is a {type(parsed).__name__}, expected a mapping")
-    return parsed
+    return mapping
 
 
 def split_top_level(value: str) -> list[str]:
