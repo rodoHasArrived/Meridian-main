@@ -583,7 +583,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 : result.RejectReason,
             ObservedValue: result.ObservedValue,
             LimitValue: result.LimitValue,
-            RequiresAcknowledgement: result.RequiresApproval);
+            // Cleared for a released finding. The token has already been consumed, so the
+            // acknowledgement this violation asked for has happened; leaving the flag set makes an
+            // ApprovedWithWarnings summary carry a violation still requesting approval, and a
+            // consumer reads a completed decision as outstanding.
+            RequiresAcknowledgement: !releasedByApproval && result.RequiresApproval);
 
     /// <summary>
     /// Releases every reservation, attempting all of them even if one throws. Stopping at the
