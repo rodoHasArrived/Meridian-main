@@ -160,21 +160,28 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     && rule.Severity == RiskRuleSeverity.Critical
                     && !IsEvaluationFailure(result))
                 {
-                    _logger.LogError(
-                        "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
-                        rule.RuleName);
-
                     // CancellationToken.None: the halt outlives this order's submission, so a
                     // caller giving up must not abandon a trip the desk is owed. The pending-trip
                     // latch retries it if the durable write fails.
                     await TripCircuitBreakerAsync(rule, DescribeRefusal(rule, result), CancellationToken.None)
                         .ConfigureAwait(false);
+
+                    // Logged after the trip, and guarded. A throwing logger provider between the
+                    // breach and the trip would have left the breaker closed and the latch unset
+                    // on a confirmed desk-wide halt, so unrelated later orders kept routing.
+                    TryLogSuppressed(
+                        null,
+                        $"critical breach from rule '{rule.RuleName}' tripped the circuit breaker");
                 }
 
                 if (!result.IsApproved)
                 {
-                    var released = releasedEntries.Any(entry =>
-                        string.Equals(entry.RuleName, rule.RuleName, StringComparison.Ordinal));
+                    // Scoped to the outcome the token can actually satisfy: an approval releases
+                    // an escalation, not a hard rejection the rule has since hardened into.
+                    var released =
+                        (result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
+                        && releasedEntries.Any(entry =>
+                            string.Equals(entry.RuleName, rule.RuleName, StringComparison.Ordinal));
 
                     violations.Add((ToViolation(rule, result, releasedByApproval: released), rule.Priority));
                 }
@@ -520,10 +527,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
     }
 
     /// <summary>
-    /// Reports a failure that must never replace the decision being returned. The logger call is
-    /// itself guarded, because the provider is exactly what may be broken.
+    /// Reports something that must never replace the decision being returned, or interrupt a halt
+    /// already applied. The logger call is itself guarded, because the provider is exactly what may
+    /// be broken. <paramref name="failure"/> is null when there is no exception to attach.
     /// </summary>
-    private void TryLogSuppressed(Exception failure, string what)
+    private void TryLogSuppressed(Exception? failure, string what)
     {
         try
         {
