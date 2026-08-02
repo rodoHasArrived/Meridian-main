@@ -370,3 +370,40 @@ class MultipleDeclarationsPerLineTests(unittest.TestCase):
         _, counts = self.fixture.evaluate()
 
         self.assertEqual(counts["exported_names"], 2)
+
+
+class TypeOnlyStarReexportTests(unittest.TestCase):
+    """TypeScript 5.0 `export type *` publishes like its value form and must classify alike."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_type_only_bare_star_reexport_is_rejected(self):
+        self.fixture.write_module("workstation-1", ['export type * from "../contracts";'])
+
+        problems, _ = self.fixture.evaluate()
+
+        self.assertTrue(
+            any("workstation-1" in p and "../contracts" in p and "bare 'export *'" in p for p in problems),
+            msg=problems,
+        )
+
+    def test_type_only_namespace_star_reexport_publishes_one_name(self):
+        self.fixture.write_module("workstation-1", ['export type * as Ledger from "../contracts";'])
+        self.fixture.write_module("workstation-2", ["export interface Ledger { id: string; }"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+        self.assertFalse(any("bare 'export *'" in p for p in problems), msg=problems)
+
+    def test_star_reexport_without_surrounding_space_is_still_rejected(self):
+        # `export*from"../contracts"` is legal JavaScript; requiring whitespace after the keyword
+        # would let the tightest spelling through the rejection entirely.
+        self.fixture.write_module("workstation-1", ['export*from"../contracts";'])
+
+        problems, _ = self.fixture.evaluate()
+
+        self.assertTrue(any("bare 'export *'" in p for p in problems), msg=problems)

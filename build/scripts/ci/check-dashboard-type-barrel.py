@@ -79,6 +79,10 @@ NAMED_REEXPORT = re.compile(
 # Inside the braces: `Name`, `Name as Alias`, `type Name`, `default as Name`. The published name
 # is the alias when present, otherwise the name itself.
 REEXPORT_SPECIFIER = re.compile(r"(?:type\s+)?(?P<name>[A-Za-z_$][\w$]*)(?:\s+as\s+(?P<alias>[A-Za-z_$][\w$]*))?")
+# `export type * from "..."` and `export type * as Ns from "..."` (TypeScript 5.0) publish the
+# same way as their value forms and must be recognised identically — matching only the untyped
+# spelling left the type-only one collecting nothing, which is the silent under-report this
+# rejection exists to prevent.
 # `export * as Ns from "..."` publishes exactly one name, so it collides like a declaration.
 # A *bare* `export * from "..."` republishes an unknown set, which this gate cannot resolve
 # without the TypeScript AST — it is rejected outright rather than under-reported. See
@@ -88,10 +92,10 @@ REEXPORT_SPECIFIER = re.compile(r"(?:type\s+)?(?P<name>[A-Za-z_$][\w$]*)(?:\s+as
 # cannot require the quotes — the specifier is recovered from the raw text by offset, which the
 # blanking preserves exactly.
 NAMESPACE_REEXPORT = re.compile(
-    r"(?<![\w$.])export\s*\*\s*as\s+(?P<name>[A-Za-z_$][\w$]*)\s+from\b",
+    r"(?<![\w$.])export(?:\s+type)?\s*\*\s*as\s+(?P<name>[A-Za-z_$][\w$]*)\s+from\b",
     re.MULTILINE,
 )
-BARE_STAR_REEXPORT = re.compile(r"(?<![\w$.])export\s*\*\s*from\b", re.MULTILINE)
+BARE_STAR_REEXPORT = re.compile(r"(?<![\w$.])export(?:\s+type)?\s*\*\s*from\b", re.MULTILINE)
 MODULE_SPECIFIER = re.compile(r"[\"'](?P<module>[^\"']+)[\"']")
 
 
