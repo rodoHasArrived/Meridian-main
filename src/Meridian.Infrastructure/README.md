@@ -190,12 +190,25 @@ ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts
 only owns transport connection, pinned host-key verification, directory creation, and upload
 mechanics. SFTP source and destination definitions must provide a SHA-256 host-key fingerprint so
 imports and exports fail closed before trusting a remote server identity.
-SFTP source imports now resolve credentials through `ISftpCredentialResolver` before opening a
-session, expose `ISftpCapabilityService` for runtime readiness diagnostics, and support explicit
-post-import source handling (`leave`, `delete`, `archive`, `error`, or `.done` marker) without
-weakening the pinned-host-key requirement. SFTP locations are strict `sftp://` URIs with a host and
-absolute remote path; user info, query strings, fragments, traversal segments, and files outside the
-configured source root are rejected before opening a session. Local and SFTP ETL source readers
+SFTP imports **and exports** resolve credentials through the same `ISftpCredentialResolver`:
+`ResolveAsync` has source and destination overloads that share one secret model, so an `env:`
+reference resolves identically on both sides. Before this the publisher passed
+`destination.SecretRef` through verbatim, sending the literal text `env:VARIABLE` as the password
+on the write side while the read side resolved it correctly.
+
+`ISftpCapabilityService` provides runtime readiness diagnostics for sources and destinations alike
+and exposes `RealSftpEnabled`, the build-time `EnableSftp` state. `SftpFilePublisher` evaluates
+capability *before* opening any connection, so a default `EnableSftp=false` build reports the
+readiness issues rather than surfacing the disabled stub's `NotSupportedException` as a transport
+failure. Readiness delegates location validation to `SftpRemoteLocation.ParseRequired`, the same
+parser the transfer path uses, so a destination cannot be reported ready and then rejected before
+connecting. Readiness also rejects a malformed host-key fingerprint and an `env:` reference whose
+variable is unset or empty, both of which would otherwise fail only after a job was accepted.
+
+Sources additionally support explicit post-import handling (`leave`, `delete`, `archive`, `error`,
+or `.done` marker) without weakening the pinned-host-key requirement. SFTP locations are strict
+`sftp://` URIs with a host and absolute remote path; user info, query strings, fragments, traversal
+segments, and files outside the configured source root are rejected before opening a session. Local and SFTP ETL source readers
 discover both CSV and XLSX partner files by default, with semicolon-delimited file patterns for
 scoped exchanges. Publisher uploads use temporary remote names and rename into place so readers do
 not observe partial exports; the SSH.NET transfer calls remain synchronous, with cancellation
