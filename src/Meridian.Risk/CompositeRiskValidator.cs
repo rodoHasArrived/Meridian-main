@@ -212,10 +212,16 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 && !releasedEntries.Any(released =>
                     string.Equals(released.RuleName, entry.Rule.RuleName, StringComparison.Ordinal))
                 && (IsEvaluationFailure(entry.Result)
-                    // Critical is blocking whatever the result asks for; Error only when the rule
-                    // itself did not request escalation for this order.
-                    || entry.Rule.Severity is RiskRuleSeverity.Critical
-                    || (entry.Rule.Severity is RiskRuleSeverity.Error && !entry.Result.RequiresApproval)));
+
+                    // Stated as the complement, matching RiskViolation.IsBlocking: anything that is
+                    // not explicitly non-blocking blocks. Listing Critical and Error let an
+                    // unrecognised severity -- a cast or a numeric deserialization in host code --
+                    // fall through as non-blocking here while IsBlocking called it blocking, so an
+                    // earlier rule could park an order that a later one had hard-rejected.
+                    // Escalate is excluded only while the rule is still asking for approval, which
+                    // is the one outcome a governed release can actually satisfy.
+                    || (entry.Rule.Severity is not (RiskRuleSeverity.Info or RiskRuleSeverity.Warning)
+                        && !(entry.Rule.Severity is RiskRuleSeverity.Escalate || entry.Result.RequiresApproval)));
 
             foreach (var (rule, result) in evaluated)
             {
