@@ -257,7 +257,16 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
                 // A rule can escalate explicitly via its result; otherwise its declared
                 // severity decides the outcome of the failure.
+                //
+                // Unmeasurable is excluded: it means the rule could not evaluate the order at all,
+                // usually because pricing or reference data was missing. Treating that as an
+                // escalation let an operator approval release it, and the matching-token branch
+                // below then skips the rule entirely -- so the order routed still unmeasured,
+                // which is the one thing the Unmeasurable contract exists to prevent. An operator
+                // can authorise accepting a known breach; they cannot authorise a measurement that
+                // never happened.
                 if ((result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
+                    && !result.IsUnmeasurable
                     && !hasBlockingBreach)
                 {
                     // A consumed approval satisfies only the escalation it was parked for;
