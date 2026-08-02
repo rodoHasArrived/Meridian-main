@@ -203,6 +203,36 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertIn("Requires PostgreSQL.", reasons)
 
+    def test_finds_a_skip_on_a_later_attribute_in_one_section(self):
+        # `[Trait(...), Fact(Skip = ...)]` is one section holding two attributes. Recording only
+        # the opener attributed the real skip to Trait and dropped it — a false green on a
+        # genuinely disabled test.
+        (self.fixture.tests_dir / "SectionTests.cs").write_text(
+            "public sealed class T {\n"
+            '    [Trait("Category", "Slow"), Fact(Skip = "held pending triage")]\n'
+            "    public void Disabled_Section() { }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+
+        reasons = {site.reason for site in self.fixture.sites()}
+
+        self.assertIn("held pending triage", reasons)
+
+    def test_ignores_a_non_test_attribute_later_in_one_section(self):
+        # The mirror case: `[Fact, UiOption(Skip = "cursor")]` must not credit the option to Fact.
+        (self.fixture.tests_dir / "SectionOptionTests.cs").write_text(
+            "public sealed class T {\n"
+            '    [Fact, UiOption(Skip = "cursor")]\n'
+            "    public void Live_Test() { }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+
+        paths = {site.path for site in self.fixture.sites()}
+
+        self.assertNotIn("tests/Meridian.Tests/SectionOptionTests.cs", paths)
+
     def test_ignores_a_skip_property_on_an_ordinary_dto(self):
         # `Skip` is not reserved. Counting every assignment made the gate demand a register entry
         # for a pagination offset, so adding a test for any type with a Skip property blocked CI

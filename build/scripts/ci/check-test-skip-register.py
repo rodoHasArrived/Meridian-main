@@ -79,6 +79,7 @@ XUNIT_ATTRIBUTE_BASE = re.compile(
 # how every custom gated attribute in this repository is named.
 ATTRIBUTE_OPENER = re.compile(r"\[\s*<?\s*(?P<name>[A-Za-z_][\w.]*)")
 XUNIT_TEST_ATTRIBUTE = re.compile(r"^(?:\w*\.)?\w*(?:Fact|Theory)(?:Attribute)?$")
+ATTRIBUTE_NAME_AFTER_COMMA = re.compile(r",\s*(?P<name>[A-Za-z_][\w.]*)")
 STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 PURE_LITERAL_EXPRESSION = re.compile(
     r"""^ \s* " (?: [^"\\] | \\. )* "
@@ -147,23 +148,39 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[tuple[int, bool
     as a real skipped test and failed the required workflow lane.
     """
     positions: list[tuple[int, bool]] = []
-    # The name opening each enclosing attribute list. `bracket_depth > 0` alone accepted
-    # `[UiOption(Skip = "cursor")]`, an ordinary attribute with a string property that happens to
-    # be called Skip, and made the gate demand a register entry for it. Only an xUnit test
-    # attribute can carry a real skip.
-    attribute_names: list[str] = []
+    # One frame per open attribute section, holding the attribute that currently owns arguments
+    # and that attribute's paren depth. Recording only the section opener was wrong in both
+    # directions: `[Trait(...), Fact(Skip = "x")]` attributed the real skip to Trait and dropped
+    # it — a false green — while `[Fact, UiOption(Skip = "cursor")]` attributed an unrelated
+    # option to Fact. A C# attribute section holds several attributes separated by commas at
+    # paren depth zero, so the owner has to advance across them.
+    sections: list[dict] = []
     i = 0
     length = len(text)
     while i < length:
         ch = text[i]
         if ch == "[":
             opener = ATTRIBUTE_OPENER.match(text, i)
-            attribute_names.append(opener.group("name") if opener else "")
+            sections.append({"name": opener.group("name") if opener else "", "parens": 0})
             i += 1
             continue
         if ch == "]":
-            if attribute_names:
-                attribute_names.pop()
+            if sections:
+                sections.pop()
+            i += 1
+            continue
+        if sections and ch == "(":
+            sections[-1]["parens"] += 1
+            i += 1
+            continue
+        if sections and ch == ")":
+            sections[-1]["parens"] = max(0, sections[-1]["parens"] - 1)
+            i += 1
+            continue
+        if sections and ch == "," and sections[-1]["parens"] == 0:
+            # A comma at paren depth zero ends one attribute and begins the next.
+            following = ATTRIBUTE_NAME_AFTER_COMMA.match(text, i)
+            sections[-1]["name"] = following.group("name") if following else ""
             i += 1
             continue
         if fsharp and ch == "(" and i + 1 < length and text[i + 1] == "*":
@@ -245,9 +262,9 @@ def find_skip_positions(text: str, fsharp: bool = False) -> list[tuple[int, bool
             before_is_identifier = i > 0 and IDENTIFIER_CHAR.match(text[i - 1]) is not None
             match = SKIP_KEYWORD.match(text, i)
             if match and not before_is_identifier:
-                in_test_attribute = any(
-                    XUNIT_TEST_ATTRIBUTE.match(name) for name in attribute_names if name
-                )
+                # Only the attribute that directly owns this argument counts, not any outer one.
+                owner = sections[-1]["name"] if sections else ""
+                in_test_attribute = bool(owner) and XUNIT_TEST_ATTRIBUTE.match(owner) is not None
                 positions.append((match.end(), in_test_attribute))
                 i = match.end()
                 continue
