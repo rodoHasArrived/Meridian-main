@@ -191,16 +191,24 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   semantics.
 - **Absence from a run is only evidence of clearing when that run finished — and "finished" is not
   `Completed`.** `StatementRunStatus` (`StatementReconciliationDtos.cs:9-20`) carries both
-  `ReviewRequired = 6` and `Completed = 7` as successful terminal states, and
-  `ReconciliationApiService.cs:92` assigns `breakDtos.Length == 0 ? Completed : ReviewRequired`
-  (same shape at `:187-188`, `:232`, `:634`). **`Completed` is therefore exactly the set of runs with
-  zero breaks.** An implementation gating the diff on `status == Completed` would suppress
-  run-over-run comparison precisely when breaks exist: in a successor where break A remains and
-  break B disappeared, B would never clear. The conclusive successor is a *successfully reconciled
-  terminal run* — `ReviewRequired` or `Completed` — while `ValidationFailed`, `Failed`, and
-  `Canceled` are inconclusive. Both compared runs must be conclusive in that sense and bound to the
-  same account, source, period, and profile identity; otherwise the prior break stays open or its
-  state reads as unknown.
+  `ReviewRequired = 6` and `Completed = 7` as successful terminal states. An implementation gating
+  the diff on `status == Completed` would suppress run-over-run comparison precisely when breaks
+  exist: in a successor where break A remains and break B disappeared, B would never clear. The
+  conclusive successor is a *successfully reconciled terminal run* — `ReviewRequired` or
+  `Completed` — while `ValidationFailed`, `Failed`, and `Canceled` are inconclusive. Both compared
+  runs must be conclusive in that sense and bound to the same account, source, period, and profile
+  identity; otherwise the prior break stays open or its state reads as unknown.
+- **`Completed` means "nothing is open", not "nothing was found" — and the four derivation sites do
+  not agree.** Two of them test for zero break *records*: `ReconciliationApiService.cs:92`
+  (`breakDtos.Length == 0 ? Completed : ReviewRequired`) and `:232` (`breaks.Length == 0`). The
+  other two test only whether a break is still *open* — `:186-188` returns `Completed` unless
+  `breaks.Any(item => item.Status == "Open")`, and `:634` derives it from
+  `ResolveOpenExceptionCount`. So the status a reader receives from `GetStatementRunAsync` or from
+  a summary projection also covers runs that found breaks and resolved every one of them. Lineage
+  must therefore read break records, never the run status: a run whose breaks all resolved is the
+  most informative successor there is — it is where clearing actually happened — and status alone
+  cannot tell it apart from a run that produced no breaks at all. Collapsing the two discards the
+  resolved historical occurrences that the run-over-run diff exists to preserve.
 - **"Profile version" is two pairs, and both are currently unrecorded.** `StatementRunDto`
   (`StatementReconciliationDtos.cs:277-282`) exposes `MappingProfileId` / `MappingProfileVersion`
   *and* `ToleranceProfileId` / `ToleranceProfileVersion` as independent nullable members, and the
