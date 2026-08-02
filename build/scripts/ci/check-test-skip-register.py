@@ -372,7 +372,12 @@ MEMBER_AFTER = re.compile(
     r"\b(?:public|private|protected|internal|static|async|sealed|override|virtual|partial|extern|unsafe|new)\s+"
     r"[^\s(){};]+\s+(?P<name>[A-Za-z_]\w*)\s*(?:<[^>()]*>)?\s*\(",
 )
-FSHARP_MEMBER_AFTER = re.compile(r"\blet\s+``?(?P<name>[^`\n=]+?)``?\s*(?:\(|:|=)")
+# Both F# binding forms: ``quoted name with spaces`` and an ordinary identifier. Requiring a
+# backtick resolved only the quoted form, so an ordinary `let disabledCase () = ...` keyed as
+# <unknown> and any other unknown-keyed skip in the file shared its owner and review date.
+FSHARP_MEMBER_AFTER = re.compile(
+    r"\blet\s+(?:``(?P<quoted>[^`\n]+)``|(?P<plain>[A-Za-z_]\w*))\s*(?:\(|:|=)"
+)
 TYPE_BEFORE = re.compile(r"\b(?:class|record|struct|type)\s+(?P<name>[A-Za-z_]\w*)")
 
 
@@ -394,7 +399,10 @@ def resolve_test_identity(text: str, position: int, fsharp: bool, in_attribute: 
         pattern = FSHARP_MEMBER_AFTER if fsharp else MEMBER_AFTER
         match = pattern.search(window)
         if match:
-            return match.group("name").strip()
+            groups = match.groupdict()
+            name = groups.get("name") or groups.get("quoted") or groups.get("plain")
+            if name:
+                return name.strip()
 
     preceding = [m.group("name") for m in TYPE_BEFORE.finditer(text, 0, position)]
     return preceding[-1] if preceding else "<unknown>"

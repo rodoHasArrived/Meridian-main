@@ -313,6 +313,19 @@ class DiscoverSkipsTests(unittest.TestCase):
 
         self.assertIn("F# section case.", reasons)
 
+    def test_resolves_an_ordinary_fsharp_identifier_as_the_test(self):
+        # Only ``quoted names`` resolved, so an ordinary binding keyed as <unknown> and every
+        # other unknown-keyed skip in the file shared its owner and review date.
+        (self.fixture.tests_dir / "PlainNameTests.fs").write_text(
+            '[<Fact(Skip = "F# plain-name case.")>]\n'
+            "let disabledCase () = ()\n",
+            encoding="utf-8",
+        )
+
+        sites = {s.reason: s.test for s in self.fixture.sites()}
+
+        self.assertEqual(sites.get("F# plain-name case."), "disabledCase")
+
     def test_finds_a_real_fsharp_skip_outside_a_block_comment(self):
         # The comment fix must not blind the scan to genuine F# skips.
         (self.fixture.tests_dir / "GatedTests.fs").write_text(

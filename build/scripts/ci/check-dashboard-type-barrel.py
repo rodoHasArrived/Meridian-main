@@ -16,6 +16,14 @@ This gate fails when:
   listed as a deliberately standalone module (so a new DTO file cannot be added outside
   the single-declaration contract without saying so).
 
+Known limitation: name collection covers direct declarations and named re-exports, not
+transitive `export * from "../contracts"` chains. A barrel module that republishes a name
+through a star re-export contributes no owner here, so a collision between that name and a
+sibling module's direct declaration is not detected — `@/types` drops the name and this gate
+still reports zero duplicates. Resolving it means following relative module paths outside
+`src/types/`, which wants the TypeScript AST rather than another regex pass; deliberately not
+attempted here. Tracked with `PRD-109`.
+
 Run with `--summary` for a one-line report.
 """
 
