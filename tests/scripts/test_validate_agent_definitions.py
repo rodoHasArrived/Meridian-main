@@ -245,14 +245,14 @@ class FrontmatterParsingTests(unittest.TestCase):
         with self.assertRaises(ValueError) as caught:
             module.parse_frontmatter("---\nname: x\n  stray: value\n---\n")
 
-        self.assertIn("unexpected indented content", str(caught.exception))
+        self.assertIn("not valid YAML", str(caught.exception))
 
     def test_folded_block_is_joined_into_one_scalar(self) -> None:
         parsed = module.parse_frontmatter(
             "---\ndescription: >\n  first line\n  second line\nname: x\n---\n"
         )
 
-        self.assertEqual("first line second line", parsed["description"])
+        self.assertEqual("first line second line", parsed["description"].strip())
         self.assertEqual("x", parsed["name"])
 
     def test_block_sequence_parses_as_a_list(self) -> None:
@@ -264,85 +264,6 @@ class FrontmatterParsingTests(unittest.TestCase):
         parsed = module.parse_frontmatter("---\nname: x\ndescription:\n---\n")
 
         self.assertIsNone(parsed["description"])
-
-
-class PyYamlDifferentialTests(unittest.TestCase):
-    """Cross-check the hand-rolled parser against PyYAML wherever PyYAML exists.
-
-    PyYAML is optional in this repository — `common.py` guards its import and the
-    hosted docs lanes do not install it — so the validator parses the frontmatter
-    subset itself and one code path runs everywhere. These tests keep that parser
-    honest against the real implementation on machines that do have PyYAML.
-    """
-
-    def setUp(self) -> None:
-        try:
-            import yaml  # noqa: PLC0415 - optional dependency, probed deliberately
-        except ImportError:  # pragma: no cover - exercised only on lanes without PyYAML
-            self.skipTest("PyYAML is not installed in this environment")
-        self.yaml = yaml
-
-    def test_tracked_definitions_parse_the_same_as_pyyaml(self) -> None:
-        for path in sorted(module.AGENTS_ROOT.rglob("*.md")):
-            text = path.read_text(encoding="utf-8")
-            ours = module.parse_frontmatter(text)
-            theirs = self.yaml.safe_load(module.split_frontmatter(text))
-
-            self.assertEqual(set(theirs), set(ours), path.name)
-            for key, value in theirs.items():
-                if isinstance(value, str):
-                    self.assertEqual(value.strip(), str(ours[key]).strip(), f"{path.name}:{key}")
-                else:
-                    self.assertEqual(value, ours[key], f"{path.name}:{key}")
-
-    def test_scalar_types_resolve_the_same_as_pyyaml(self) -> None:
-        # Comparing only the tracked tree missed `description: null` resolving to the
-        # string "null" here and to None in PyYAML, so the fixtures are explicit.
-        for frontmatter in (
-            "description: null\n",
-            "description: ~\n",
-            "description:\n",
-            "description: Null\n",
-            "tools: 123\n",
-            "tools: 1.5\n",
-            "tools: true\n",
-            "tools: yes\n",
-            "tools: off\n",
-            'description: "null"\n',
-            "description: 'null'\n",
-            "tools: Read, Glob\n",
-            "description: >\n  folded body\n",
-            "tools:\n  - Read\n  - Glob\n",
-            "hooks:\n  PreToolUse:\n    - echo before\n",
-            "hooks:\n  PreToolUse:\n    - a\n  PostToolUse:\n    - b\n",
-            "hooks:\n  PreToolUse:\n    - matcher: Bash\n      hooks:\n"
-            "        - type: command\n          command: echo hi\n",
-            "skills: [foo, bar]\n",
-            "skills: []\n",
-            "hooks:\n  PreToolUse:\n    -\n      matcher: Bash\n",
-        ):
-            with self.subTest(frontmatter=frontmatter):
-                ours = module.parse_frontmatter(f"---\n{frontmatter}---\n")
-                theirs = self.yaml.safe_load(frontmatter)
-
-                self.assertEqual(set(theirs), set(ours))
-                for key, value in theirs.items():
-                    self.assertEqual(type(value), type(ours[key]), key)
-                    if isinstance(value, str):
-                        self.assertEqual(value.strip(), ours[key].strip(), key)
-                    else:
-                        self.assertEqual(value, ours[key], key)
-
-    def test_pyyaml_also_rejects_what_the_parser_rejects(self) -> None:
-        for frontmatter in (
-            "name: x\n: invalid yaml\n",
-            "name: x\n  stray: value\n",
-        ):
-            with self.subTest(frontmatter=frontmatter):
-                with self.assertRaises(ValueError):
-                    module.parse_frontmatter(f"---\n{frontmatter}---\n")
-                with self.assertRaises(self.yaml.YAMLError):
-                    self.yaml.safe_load(frontmatter)
 
 
 class ValidateAgentTests(unittest.TestCase):
@@ -678,7 +599,7 @@ class ValidateAgentTests(unittest.TestCase):
 
         errors = " | ".join(module.validate_agent(path))
 
-        self.assertIn("unterminated flow sequence", errors)
+        self.assertIn("not valid YAML", errors)
 
     def test_sequence_of_mappings_is_parsed(self) -> None:
         # The ordinary shape of a hook entry: `- matcher: Bash` with sibling keys
@@ -723,7 +644,8 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertEqual([], module.validate_agent(path))
 
-    def test_deny_list_cancels_a_scoped_entry_by_its_head_name(self) -> None:
+    def test_unscoped_deny_cancels_a_scoped_grant(self) -> None:
+        # An unscoped deny covers every scope of that tool.
         path = write_agent(
             self.directory,
             "sample-agent",
@@ -735,9 +657,34 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertIn("cancels every entry in `tools`", errors)
 
-    def test_unknown_escape_in_a_quoted_scalar_is_rejected(self) -> None:
-        # Matched quotes are not well-formedness: a real parser fails the document on
-        # an unknown escape, so accepting it passes an agent the host cannot load.
+    def test_narrower_deny_does_not_cancel_a_broader_grant(self) -> None:
+        # The least-privilege shape: broad read access with a narrow mutation denial.
+        # Collapsing both sides to the head `Bash` reported the whole grant cancelled
+        # and made this inexpressible.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(git:*)\ndisallowedTools: Bash(git push:*)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_identical_scopes_cancel(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(git:*)\ndisallowedTools: Bash(git:*)",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry in `tools`", errors)
+
+    def test_invalid_escape_in_a_quoted_scalar_is_rejected(self) -> None:
+        # PyYAML fails the document on an unknown escape, so the definition the host
+        # cannot load is the definition this gate refuses.
         path = write_agent(
             self.directory,
             "sample-agent",
@@ -746,23 +693,29 @@ class ValidateAgentTests(unittest.TestCase):
 
         errors = " | ".join(module.validate_agent(path))
 
-        self.assertIn("unknown escape", errors)
+        self.assertIn("not valid YAML", errors)
 
-    def test_valid_escapes_in_a_quoted_scalar_are_accepted(self) -> None:
+    def test_escapes_are_decoded_the_way_the_host_resolves_them(self) -> None:
+        # A checked-but-undecoded escape made `name` mismatch its filename and turned an
+        # escaped comma into one unknown tool instead of two grants.
         path = write_agent(
             self.directory,
             "sample-agent",
-            'name: sample-agent\ndescription: "a\\nb \\\\ \\u00e9 \\"q\\""\ntools: Read',
+            'name: "sample\\u002dagent"\ndescription: x\ntools: "Read\\u002c Glob"',
         )
 
         self.assertEqual([], module.validate_agent(path))
 
-    def test_single_quoted_scalars_do_not_process_escapes(self) -> None:
-        # YAML single quotes are literal; only double-quoted scalars take escapes.
+        frontmatter = module.parse_frontmatter(path.read_text(encoding="utf-8"))
+        self.assertEqual("sample-agent", frontmatter["name"])
+        self.assertEqual((["Read", "Glob"], None), module.parse_tool_list(frontmatter["tools"]))
+
+    def test_inline_comments_do_not_reach_the_value(self) -> None:
+        # `tools: Read # read-only` was read as a tool literally named "Read # read-only".
         path = write_agent(
             self.directory,
             "sample-agent",
-            "name: sample-agent\ndescription: 'a backslash \\q is literal here'\ntools: Read",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read, Glob # read-only",
         )
 
         self.assertEqual([], module.validate_agent(path))
@@ -867,6 +820,29 @@ class DiscoveryTests(unittest.TestCase):
         module.AGENTS_ROOT = self.directory
 
         self.assertEqual(1, module.main())
+
+    def test_duplicate_name_across_directories_fails(self) -> None:
+        # Each file is valid on its own; the collision only exists across the tree,
+        # and leaves neither agent addressable unambiguously.
+        nested = self.directory / "lanes"
+        nested.mkdir()
+        body = "name: shared-agent\ndescription: Does a thing.\ntools: Read"
+        write_agent(self.directory, "shared-agent", body)
+        write_agent(nested, "shared-agent", body)
+        module.AGENTS_ROOT = self.directory
+
+        self.assertEqual([], module.validate_agent(self.directory / "shared-agent.md"))
+        self.assertEqual([], module.validate_agent(nested / "shared-agent.md"))
+        self.assertEqual(1, module.main())
+
+    def test_distinct_names_across_directories_pass(self) -> None:
+        nested = self.directory / "lanes"
+        nested.mkdir()
+        write_agent(self.directory, "first-agent", "name: first-agent\ndescription: x\ntools: Read")
+        write_agent(nested, "second-agent", "name: second-agent\ndescription: x\ntools: Read")
+        module.AGENTS_ROOT = self.directory
+
+        self.assertEqual(0, module.main())
 
 
 if __name__ == "__main__":

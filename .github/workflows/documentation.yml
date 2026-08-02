@@ -64,6 +64,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
+      # hand-rolled subset parser, so this lane needs the dependency installed.
+      - name: Install docs script dependencies
+        run: python -m pip install --requirement build/scripts/docs/requirements.txt
+
       - name: Run docs rules engine
         run: python3 build/scripts/docs/rules-engine.py --rules build/rules/doc-rules.yaml --summary
 
@@ -105,6 +110,11 @@ jobs:
         uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
+
+      # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
+      # hand-rolled subset parser, so this lane needs the dependency installed.
+      - name: Install docs script dependencies
+        run: python -m pip install --requirement build/scripts/docs/requirements.txt
 
       - name: Set up Node.js
         uses: actions/setup-node@v6.4.0

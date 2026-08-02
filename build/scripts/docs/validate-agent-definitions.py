@@ -48,7 +48,18 @@ from __future__ import annotations
 
 import re
 import sys
+from collections.abc import Sequence
 from pathlib import Path
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover - exercised only on an unprovisioned lane
+    sys.stderr.write(
+        "validate-agent-definitions requires PyYAML.\n"
+        "  pip install --requirement build/scripts/docs/requirements.txt\n"
+        "CI lanes install it; see .github/workflows/meridian-ci.yml.\n"
+    )
+    raise SystemExit(2) from None
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 AGENTS_ROOT = REPO_ROOT / ".claude" / "agents"
@@ -168,8 +179,34 @@ FIELD_TYPES: dict[str, tuple[type, ...]] = {
 }
 
 
-KEY_PATTERN = re.compile(r"^(?P<key>[A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]+(?P<value>.*))?$")
-BLOCK_SCALAR_PATTERN = re.compile(r"^[|>][+-]?\d*$")
+class _StrictLoader(yaml.SafeLoader):
+    """SafeLoader that rejects duplicate mapping keys instead of silently keeping the last.
+
+    PyYAML's default is last-wins, which is exactly the divergence the host exhibits:
+    a file whose `tools` key appears twice would validate against one value while the
+    host resolves the other.
+    """
+
+
+def _no_duplicate_keys(loader: _StrictLoader, node: yaml.MappingNode, deep: bool = False):
+    seen: set[object] = set()
+    for key_node, _ in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in seen:
+            raise yaml.constructor.ConstructorError(
+                None,
+                None,
+                f"duplicate key '{key}' in frontmatter; the host resolves the last "
+                "occurrence, so a repeated key silently changes the effective value",
+                key_node.start_mark,
+            )
+        seen.add(key)
+    return yaml.SafeLoader.construct_mapping(loader, node, deep=deep)
+
+
+_StrictLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_duplicate_keys
+)
 
 
 def split_frontmatter(text: str) -> str:
@@ -181,276 +218,32 @@ def split_frontmatter(text: str) -> str:
     return text[4:end]
 
 
-# Plain-scalar resolution, matching PyYAML (which implements YAML 1.1, so `yes`/`no`/
-# `on`/`off` are booleans). Quoted scalars are always strings and skip this entirely.
-_YAML_NULL = frozenset({"", "~", "null", "Null", "NULL"})
-_YAML_TRUE = frozenset({"true", "True", "TRUE", "yes", "Yes", "YES", "on", "On", "ON"})
-_YAML_FALSE = frozenset({"false", "False", "FALSE", "no", "No", "NO", "off", "Off", "OFF"})
-
-
-def _resolve_scalar(value: str) -> object:
-    """Resolve a plain scalar to its YAML type rather than leaving everything a string.
-
-    Without this, `description: null` becomes the string `"null"` and passes the
-    non-empty check, while the host's parser resolves it to null and leaves the agent
-    with no routing description — a definition that validates clean and does not work.
-    Number and boolean forms matter for the same reason: `tools: 123` must be reported
-    as a non-string, not silently treated as a one-entry tool list.
-
-    Exotic YAML 1.1 numeric spellings (hex, octal, underscores, sexagesimal) are left as
-    strings; none appears in agent frontmatter, and the differential test against PyYAML
-    would surface it if one ever did.
-    """
-    if value in _YAML_NULL:
-        return None
-    if value in _YAML_TRUE:
-        return True
-    if value in _YAML_FALSE:
-        return False
-    try:
-        return int(value)
-    except ValueError:
-        pass
-    try:
-        return float(value)
-    except ValueError:
-        return value
-
-
-def _strip_quotes(value: str) -> object:
-    """Unquote a scalar, or resolve a plain one, rejecting an unterminated quote.
-
-    A real YAML parser fails the whole document on `description: "unterminated`.
-    Returning it as a plain string instead would pass a definition the host cannot
-    load at all, which is the failure mode this validator exists to prevent.
-    """
-    if not value:
-        return None
-    if value[0] not in "\"'":
-        return _resolve_scalar(value)
-    quote = value[0]
-    if len(value) >= 2 and value[-1] == quote:
-        inner = value[1:-1]
-        if quote == '"':
-            _reject_bad_escapes(inner)
-        return inner
-    raise ValueError(
-        f"frontmatter is not valid YAML: unterminated {quote} quoted scalar"
-    )
-
-
-# YAML double-quoted escapes. An unrecognised one fails the document in a real
-# parser, so accepting `description: "bad\q"` would pass a definition the host
-# cannot load - the same failure the unterminated-quote check exists to catch,
-# reached through a scalar whose quotes happen to match.
-_YAML_ESCAPES = frozenset('0abtnvfre "/\\N_LP\tP')
-_YAML_ESCAPE_SIZED = {"x": 2, "u": 4, "U": 8}
-
-
-def _reject_bad_escapes(inner: str) -> None:
-    index = 0
-    while index < len(inner):
-        if inner[index] != "\\":
-            index += 1
-            continue
-        index += 1
-        if index >= len(inner):
-            raise ValueError(
-                "frontmatter is not valid YAML: trailing escape in a quoted scalar"
-            )
-        char = inner[index]
-        if char in _YAML_ESCAPE_SIZED:
-            width = _YAML_ESCAPE_SIZED[char]
-            digits = inner[index + 1 : index + 1 + width]
-            if len(digits) != width or any(d not in "0123456789abcdefABCDEF" for d in digits):
-                raise ValueError(
-                    f"frontmatter is not valid YAML: malformed \\{char} escape in a "
-                    "quoted scalar"
-                )
-            index += 1 + width
-            continue
-        if char not in _YAML_ESCAPES:
-            raise ValueError(
-                f"frontmatter is not valid YAML: unknown escape '\\{char}' in a "
-                "quoted scalar"
-            )
-        index += 1
-
-
-def _parse_flow_sequence(value: str) -> list[object]:
-    # A real parser fails the document on `skills: [foo`. Dropping the bracket and
-    # returning the items anyway would pass a definition the host cannot load.
-    if not value.endswith("]"):
-        raise ValueError("frontmatter is not valid YAML: unterminated flow sequence")
-    inner = value[1:-1].strip()
-    if not inner:
-        return []
-    return [_strip_quotes(item.strip()) for item in inner.split(",") if item.strip()]
-
-
-def _prepare_lines(raw: str) -> list[tuple[int, str, int]]:
-    """Strip blanks and comments, returning (indent, content, line-number) triples."""
-    prepared: list[tuple[int, str, int]] = []
-    for number, line in enumerate(raw.split("\n"), start=1):
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-        indent = len(line) - len(line.lstrip(" \t"))
-        prepared.append((indent, line.strip(), number))
-    return prepared
-
-
-def _gather_block_scalar(
-    lines: list[tuple[int, str, int]], index: int, indent: int, separator: str
-) -> tuple[str, int]:
-    body: list[str] = []
-    while index < len(lines) and lines[index][0] > indent:
-        body.append(lines[index][1])
-        index += 1
-    return separator.join(part for part in body if part), index
-
-
-def _parse_sequence(
-    lines: list[tuple[int, str, int]], index: int, indent: int
-) -> tuple[list[object], int]:
-    items: list[object] = []
-    while (
-        index < len(lines)
-        and lines[index][0] == indent
-        # A bare `-` on its own line is the block form of an empty sequence indicator,
-        # and `_prepare_lines` strips it to exactly "-". Matching only "- " returned an
-        # empty sequence and left the following mapping to be rejected as stray content.
-        and (lines[index][1].startswith("- ") or lines[index][1] == "-")
-    ):
-        raw_indent, content, number = lines[index]
-        item = content[2:].strip() if content.startswith("- ") else ""
-        index += 1
-
-        if not item:
-            # `-` alone: the entry is whatever is indented beneath it.
-            if index < len(lines) and lines[index][0] > raw_indent:
-                nested, index = _parse_mapping(lines, index, lines[index][0])
-                items.append(nested)
-            else:
-                items.append(None)
-            continue
-
-        if KEY_PATTERN.match(item):
-            # Compact block mapping in a sequence entry - `- matcher: Bash` followed by
-            # sibling keys aligned under `matcher`. This is the ordinary shape of a hook
-            # entry, so treating every `- ...` item as a scalar rejected valid `hooks`
-            # configuration the field allowlist had just accepted.
-            child_indent = raw_indent + 2
-            synthetic: list[tuple[int, str, int]] = [(child_indent, item, number)]
-            while index < len(lines) and lines[index][0] >= child_indent:
-                synthetic.append(lines[index])
-                index += 1
-            entry, consumed = _parse_mapping(synthetic, 0, child_indent)
-            if consumed != len(synthetic):
-                raise ValueError(
-                    "frontmatter is not valid YAML: unexpected content on line "
-                    f"{synthetic[consumed][2]}"
-                )
-            items.append(entry)
-            continue
-
-        items.append(_strip_quotes(item))
-    return items, index
-
-
-def _parse_mapping(
-    lines: list[tuple[int, str, int]], index: int, indent: int
-) -> tuple[dict[str, object], int]:
-    mapping: dict[str, object] = {}
-    while index < len(lines) and lines[index][0] == indent:
-        _, content, number = lines[index]
-        if content.startswith("- ") or content == "-":
-            raise ValueError("frontmatter is a sequence, expected a mapping")
-
-        match = KEY_PATTERN.match(content)
-        if not match:
-            raise ValueError(
-                f"frontmatter is not valid YAML: line {number} is not a `key: value` entry"
-            )
-        key = match.group("key")
-        if key in mapping:
-            raise ValueError(
-                f"duplicate key '{key}' in frontmatter; the host resolves the last "
-                "occurrence, so a repeated key silently changes the effective value"
-            )
-        value = (match.group("value") or "").strip()
-        index += 1
-
-        if BLOCK_SCALAR_PATTERN.match(value):
-            mapping[key], index = _gather_block_scalar(
-                lines, index, indent, "\n" if value[0] == "|" else " "
-            )
-            continue
-        if value:
-            # A key with an inline value cannot also own an indented block.
-            if index < len(lines) and lines[index][0] > indent:
-                raise ValueError(
-                    "frontmatter is not valid YAML: unexpected indented content on "
-                    f"line {lines[index][2]}"
-                )
-            mapping[key] = (
-                _parse_flow_sequence(value)
-                if value.startswith("[")
-                else _strip_quotes(value)
-            )
-            continue
-
-        # A bare key owns whatever is indented beneath it: a sequence, a nested
-        # mapping such as a `hooks:` block, or nothing at all.
-        if index < len(lines) and lines[index][0] > indent:
-            child_indent = lines[index][0]
-            if lines[index][1].startswith("- ") or lines[index][1] == "-":
-                mapping[key], index = _parse_sequence(lines, index, child_indent)
-            else:
-                mapping[key], index = _parse_mapping(lines, index, child_indent)
-        else:
-            mapping[key] = None
-
-    if index < len(lines) and lines[index][0] > indent:
-        raise ValueError(
-            "frontmatter is not valid YAML: unexpected indented content on "
-            f"line {lines[index][2]}"
-        )
-    return mapping, index
-
-
 def parse_frontmatter(text: str) -> dict[str, object]:
     """Return the frontmatter mapping, raising ValueError on anything the host would reject.
 
-    PyYAML is an optional dependency in this repository - `common.py` guards its
-    import and the hosted docs lanes do not install it - so this parses the
-    frontmatter subset directly rather than importing it. One code path runs in
-    every environment, which is what a gate needs; the test suite cross-checks
-    this parser against PyYAML wherever PyYAML is actually available.
-
-    The subset covers plain scalars, folded and literal block scalars, flow
-    sequences, block sequences, and nested mappings - the last of these because
-    `hooks:` is a documented frontmatter field whose value is a mapping, so a
-    parser that only accepted scalars and sequences would reject valid
-    configuration. Anything else is reported rather than skipped, and a repeated
-    key is an error rather than a silent last-wins overwrite.
+    This delegates to PyYAML rather than parsing the subset by hand. An earlier
+    revision hand-rolled a parser because PyYAML was not installed in the hosted
+    lanes; a dozen review findings followed, every one of them a place where the
+    hand-rolled subset diverged from real YAML - unterminated flow sequences,
+    sequences of mappings, bare dash indicators, quoted-scalar escapes and their
+    decoding, inline comments. Installing the dependency deletes that entire class
+    of defect instead of patching it form by form.
     """
-    lines = _prepare_lines(split_frontmatter(text))
-    if not lines:
-        raise ValueError("frontmatter is empty")
-    if lines[0][0] != 0:
+    raw = split_frontmatter(text)
+    try:
+        parsed = yaml.load(raw, Loader=_StrictLoader)  # noqa: S506 - SafeLoader-derived
+    except yaml.YAMLError as exc:
         raise ValueError(
-            "frontmatter is not valid YAML: unexpected indented content on "
-            f"line {lines[0][2]}"
+            f"frontmatter is not valid YAML: {str(exc).replace(chr(10), ' ')}"
+        ) from exc
+    if parsed is None:
+        raise ValueError("frontmatter is empty")
+    if not isinstance(parsed, dict):
+        raise ValueError(
+            f"frontmatter is a {type(parsed).__name__}, expected a mapping"
         )
+    return parsed
 
-    mapping, index = _parse_mapping(lines, 0, 0)
-    if index != len(lines):
-        raise ValueError(
-            f"frontmatter is not valid YAML: line {lines[index][2]} is not a `key: value` entry"
-        )
-    if not mapping:
-        raise ValueError("frontmatter is empty")
-    return mapping
 
 
 def split_top_level(value: str) -> list[str]:
@@ -586,6 +379,46 @@ def _render_types(expected: tuple[type, ...]) -> str:
     return " or ".join(names.get(item, item.__name__) for item in expected)
 
 
+def _entry_scope(entry: str) -> str | None:
+    """Return the text inside `Tool(...)`, or None for an unscoped entry."""
+    if "(" not in entry or not entry.endswith(")"):
+        return None
+    return entry[entry.index("(") + 1 : -1].strip()
+
+
+def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
+    """True when some deny entry covers this allow entry.
+
+    Scope matters in both directions, so neither side can be collapsed to its head
+    name. `disallowedTools: Bash` cancels `Bash(git:*)` because an unscoped deny
+    covers every scope; `disallowedTools: Bash(git push:*)` does **not** cancel
+    `Bash(git:*)`, because it removes a narrower slice than the grant. Collapsing
+    both to `Bash` reported the whole grant cancelled and made least-privilege
+    definitions - broad read access, narrow mutation denial - inexpressible.
+    """
+    allow_head, _ = entry_head(allowed)
+    allow_scope = _entry_scope(allowed)
+    for deny in denied:
+        deny_head, _ = entry_head(deny)
+        if deny_head != allow_head:
+            continue
+        deny_scope = _entry_scope(deny)
+        if deny_scope is None:
+            return True  # unscoped deny cancels every scope of that tool
+        if allow_scope is None:
+            # A scoped deny narrows an unscoped grant rather than removing it.
+            continue
+        # Prefix containment: the deny covers the allow only when the allow's scope
+        # falls entirely inside it. `Bash(git:*)` denied by `Bash(git:*)` cancels;
+        # denied by `Bash(git push:*)` does not.
+        if allow_scope == deny_scope or allow_scope.startswith(deny_scope.rstrip("*")):
+            if deny_scope.endswith("*") and allow_scope.startswith(deny_scope[:-1]):
+                return True
+            if allow_scope == deny_scope:
+                return True
+    return False
+
+
 def _is_near_miss(candidate: str, known: str) -> bool:
     """True when `candidate` looks like a typo of `known` — case, or one edit away."""
     a, b = candidate.lower(), known.lower()
@@ -695,9 +528,9 @@ def validate_agent(path: Path) -> list[str]:
     # the same empty-grant end state, reached by a route neither field-level check
     # could see. Compare the effective sets.
     allowed = resolved.get(ALLOW_LIST_FIELD) or []
-    denied = {entry_head(entry)[0] for entry in resolved.get("disallowedTools") or []}
+    denied = resolved.get("disallowedTools") or []
     if allowed and denied:
-        surviving = [entry for entry in allowed if entry_head(entry)[0] not in denied]
+        surviving = [entry for entry in allowed if not _is_cancelled_by(entry, denied)]
         if not surviving:
             errors.append(
                 f"{path.name}: `disallowedTools` cancels every entry in `tools`, "
@@ -738,8 +571,28 @@ def main() -> int:
         return 1
 
     errors: list[str] = []
+    # Discovery is recursive, so two definitions in different subdirectories can both
+    # be valid in isolation while registering the same agent identifier - and then
+    # neither is addressable unambiguously. That collision is only visible across the
+    # whole result set, so it is checked here rather than in validate_agent.
+    claimed: dict[str, Path] = {}
     for path in agents:
         errors.extend(validate_agent(path))
+        try:
+            name = parse_frontmatter(path.read_text(encoding="utf-8")).get("name")
+        except ValueError:
+            continue  # already reported by validate_agent
+        if not isinstance(name, str) or not name.strip():
+            continue
+        name = name.strip()
+        if name in claimed:
+            errors.append(
+                f"{display_path(path)}: agent name '{name}' is already declared by "
+                f"{display_path(claimed[name])}; the host cannot address either "
+                "unambiguously"
+            )
+        else:
+            claimed[name] = path
 
     for error in errors:
         print(f"error: {error}")
