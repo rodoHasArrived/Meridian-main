@@ -1102,7 +1102,9 @@ Meridian-main
 │       │   ├── run-script-tests.py
 │       │   ├── script-test-quarantine.json
 │       │   ├── summarize-ci-artifacts.py
+│       │   ├── validate-monitoring-deployment.py
 │       │   ├── validate-npm-audit.py
+│       │   ├── validate-observability-contract.py
 │       │   └── validate-test-results.py
 │       ├── docs
 │       │   ├── tests
@@ -1248,6 +1250,7 @@ Meridian-main
 ├── deploy
 │   ├── docker
 │   │   ├── .dockerignore
+│   │   ├── docker-compose.monitoring.yml
 │   │   ├── docker-compose.override.yml
 │   │   ├── docker-compose.yml
 │   │   └── Dockerfile
@@ -1270,6 +1273,7 @@ Meridian-main
 │   │   │       │   └── dashboards.yml
 │   │   │       └── datasources
 │   │   │           └── datasources.yml
+│   │   ├── alert-rules.test.yml
 │   │   ├── alert-rules.yml
 │   │   └── prometheus.yml
 │   ├── systemd
@@ -1812,6 +1816,7 @@ Meridian-main
 │   │   ├── failover-and-recovery.md
 │   │   ├── fund-ops-persistence-cutover.md
 │   │   ├── governed-reporting-operations.md
+│   │   ├── operator-runbook.md
 │   │   ├── plaid-provider-operations.md
 │   │   ├── preflight-checklist.md
 │   │   ├── provider-backfill-operations.md
@@ -1820,6 +1825,7 @@ Meridian-main
 │   │   ├── provider-onboarding-interactive-brokers.md
 │   │   ├── README.md
 │   │   ├── reconciliation-operations.md
+│   │   ├── service-level-objectives.md
 │   │   ├── statement-reconciliation-report-operations.md
 │   │   └── verified-outcome-recovery.md
 │   ├── plans
@@ -8115,6 +8121,7 @@ Meridian-main
 │   │   │   ├── Logging
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
+│   │   │   │   ├── PrometheusExporterTests.cs
 │   │   │   │   ├── PrometheusMetricsTests.cs
 │   │   │   │   ├── QualityTrendCalculationTests.cs
 │   │   │   │   └── StatusWriterTests.cs
@@ -9538,6 +9545,7 @@ Meridian-main
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_npm_audit.py
+│   │   ├── test_validate_observability_contract.py
 │   │   ├── test_validate_screenshot_captures.py
 │   │   ├── test_validate_source_readmes.py
 │   │   ├── test_validate_test_results.py
