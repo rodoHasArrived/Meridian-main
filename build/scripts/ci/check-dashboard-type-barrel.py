@@ -193,6 +193,15 @@ def _regex_end(text: str, start: int) -> int | None:
             continue
         if ch == "\n":
             return None
+        # A quote before the closing slash means this was almost certainly code, not a regex:
+        # `(total) / "x/y".length` would otherwise terminate on the slash *inside* the string,
+        # blank through it, and leave the string's closing quote to open a new one — swallowing
+        # any declaration later on the line. Regexes matching a quote character exist but are
+        # vanishingly rare in contract modules, and rejecting them only falls back to reading
+        # the slash as division, which is what this position meant before regexes were admitted
+        # here at all.
+        if ch in "\"'`":
+            return None
         if ch == "[":
             in_class = True
         elif ch == "]":
@@ -459,6 +468,17 @@ def evaluate(barrel_path: Path, types_dir: Path) -> tuple[list[str], dict[str, i
                 "This gate cannot resolve which names that publishes, so a collision between "
                 "them and a sibling module's declaration would be reported as zero duplicates. "
                 "Re-export the names explicitly ('export { A, B } from ...') so they are visible."
+            )
+        stripped = strip_comments_and_strings(module_path.read_text(encoding="utf-8"))
+        if stripped.count("{") != stripped.count("}"):
+            # Brace depth decides which declarations are at module scope, so an unbalanced view
+            # means this lexer misread something and every later declaration in the file may have
+            # silently dropped out of the comparison. Reporting zero duplicates from that view is
+            # the one outcome worse than failing.
+            problems.append(
+                f"src/types/{module}.ts did not parse to balanced braces. The scanner cannot tell "
+                "which declarations are at module scope in this file, so its result is not "
+                "trustworthy; simplify the construct or report this as a gate bug."
             )
         for name, origin in declared_names(module_path, module):
             # Declaration merging and function overloads legitimately repeat a name inside one

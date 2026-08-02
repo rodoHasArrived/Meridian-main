@@ -123,6 +123,9 @@ class SkipSite:
 # character itself, which matches how these reasons are written in practice.
 ESCAPES = {
     "n": "\n", "t": "\t", "r": "\r", "0": "\0", "a": "\a", "b": "\b", "f": "\f", "v": "\v",
+    # C# 13's ESC escape. Without it the fallback dropped the backslash, so `"\e"` fingerprinted
+    # as the string "e" — identical to the distinct reason `"e"`.
+    "e": "\x1b",
     '"': '"', "'": "'", "\\": "\\",
 }
 # C# and F# numeric escapes, keyed by marker to the number of hex digits they consume.

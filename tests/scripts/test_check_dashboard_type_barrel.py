@@ -707,3 +707,43 @@ class RegexLiteralAfterConditionTests(unittest.TestCase):
         _, counts = self.fixture.evaluate()
 
         self.assertEqual(counts["exported_names"], 2)
+
+
+class RegexProbeStringTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_a_slash_inside_a_string_does_not_terminate_a_regex_probe(self):
+        # Admitting `)` as a regex opener made the probe terminate on the slash *inside* the
+        # string, blank through it, and leave the closing quote to open a new one — swallowing
+        # the declaration later on the same line.
+        self.fixture.write_module(
+            "workstation-1",
+            ['const ratio = (total) / "x/y".length; export interface Shared { id: string; }'],
+        )
+        self.fixture.write_module("workstation-2", ["export interface Shared { id: string; }"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1, msg=problems)
+
+    def test_a_regex_after_a_condition_still_works_on_one_line(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ["if (value) /\\{/.test(value); export interface Later { id: string; }"],
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["exported_names"], 2, msg=problems)
+
+    def test_an_unbalanced_parse_is_reported_rather_than_trusted(self):
+        self.fixture.write_module("workstation-1", ["export interface Broken { id: string;"])
+
+        problems, _ = self.fixture.evaluate()
+
+        self.assertTrue(
+            any("workstation-1" in p and "balanced braces" in p for p in problems), msg=problems
+        )

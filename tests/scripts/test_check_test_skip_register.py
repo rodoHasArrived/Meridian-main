@@ -776,3 +776,10 @@ class UndecodableSourceTests(unittest.TestCase):
 
             with self.assertRaises(MODULE.GateFailure):
                 MODULE.discover_skips(tests_dir, Path(tmp))
+
+
+class EscapeCharacterTests(unittest.TestCase):
+    def test_the_escape_character_does_not_collide_with_a_literal_e(self):
+        self.assertEqual(MODULE.join_literals(r'"\e"'), "\x1b")
+        self.assertEqual(MODULE.join_literals(r'"e"'), "e")
+        self.assertNotEqual(MODULE.join_literals(r'"\e"'), MODULE.join_literals(r'"e"'))
