@@ -238,10 +238,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 // refusal blocks, but stays unmeasurable so it cannot halt the desk.
                 if (IsEvaluationFailure(result))
                 {
-                    _logger.LogError(
-                        "Risk rule {RuleName} ({Severity}) could not be evaluated; the order is refused",
-                        rule.RuleName,
-                        rule.Severity);
+                    TryLogSuppressed(
+                        null,
+                        $"risk rule '{rule.RuleName}' ({rule.Severity}) could not be evaluated; the order is refused");
                     return Block(RestoreOnFailure(
                         WithWarnings(RiskValidationResult.Unmeasurable(reason) with
                         {

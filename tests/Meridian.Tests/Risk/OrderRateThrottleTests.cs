@@ -38,7 +38,7 @@ public sealed class OrderRateThrottleTests
     {
         var result = await CreateSut(maxOrdersPerMinute: 5).EvaluateAndReserveAsync(CreateOrder());
 
-        result.Finding.Should().BeNull();
+        result.Result.IsApproved.Should().BeTrue();
         result.Reservation.Should().NotBeNull();
     }
 
@@ -52,7 +52,7 @@ public sealed class OrderRateThrottleTests
             await sut.EvaluateAndReserveAsync(CreateOrder());
         }
 
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().BeNull();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeTrue();
     }
 
     [Fact]
@@ -67,8 +67,8 @@ public sealed class OrderRateThrottleTests
 
         var result = await sut.EvaluateAndReserveAsync(CreateOrder());
 
-        result.Finding.Should().NotBeNull();
-        result.Finding!.Code.Should().Be(OrderRateThrottle.RateExceededCode);
+        result.Result.IsApproved.Should().BeFalse();
+        result.Result.Code.Should().Be(OrderRateThrottle.RateExceededCode);
         result.Reservation.Should().BeNull();
     }
 
@@ -82,10 +82,10 @@ public sealed class OrderRateThrottleTests
             await sut.EvaluateAndReserveAsync(CreateOrder());
         }
 
-        var finding = (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding;
+        var finding = (await sut.EvaluateAndReserveAsync(CreateOrder())).Result;
 
         // Structured values, not just a formatted sentence — the operator surface compares them.
-        finding!.ObservedValue.Should().Be(2m);
+        finding.ObservedValue.Should().Be(2m);
         finding.LimitValue.Should().Be(2m);
         finding.Message.Should().Contain("2");
     }
@@ -95,7 +95,7 @@ public sealed class OrderRateThrottleTests
     {
         var result = await CreateSut(maxOrdersPerMinute: 0).EvaluateAndReserveAsync(CreateOrder());
 
-        result.Finding.Should().NotBeNull();
+        result.Result.IsApproved.Should().BeFalse();
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public sealed class OrderRateThrottleTests
 
         for (var i = 0; i < 5; i++)
         {
-            (await sut.EvaluateAsync(CreateOrder())).Should().BeNull();
+            (await sut.EvaluateAsync(CreateOrder())).IsApproved.Should().BeTrue();
         }
     }
 
@@ -119,11 +119,11 @@ public sealed class OrderRateThrottleTests
         var sut = CreateSut(maxOrdersPerMinute: 1);
 
         var first = await sut.EvaluateAndReserveAsync(CreateOrder());
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().NotBeNull();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeFalse();
 
         first.Reservation!.Rollback();
 
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().BeNull();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeTrue();
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public sealed class OrderRateThrottleTests
 
         (await sut.EvaluateAndReserveAsync(CreateOrder())).Reservation!.Commit();
 
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().NotBeNull();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeFalse();
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public sealed class OrderRateThrottleTests
         reserved.Reservation.Rollback();
 
         // A rollback after commit must not hand capacity back: the order was routed.
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().NotBeNull();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeFalse();
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public sealed class OrderRateThrottleTests
 
         results.Count(r => r.Reservation is not null).Should().Be(limit,
             "a concurrent burst must not reserve more slots than the per-minute limit");
-        results.Count(r => r.Finding is not null).Should().Be(burst - limit);
+        results.Count(r => !r.Result.IsApproved).Should().Be(burst - limit);
     }
 
     /// <summary>
@@ -186,17 +186,17 @@ public sealed class OrderRateThrottleTests
         // Acknowledgement is slow: well past the one-minute window.
         time.Advance(TimeSpan.FromSeconds(120));
 
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should()
-            .NotBeNull("an in-flight submission still holds its slot");
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should()
+            .BeFalse("an in-flight submission still holds its slot");
 
         // It commits late; the slot is now stamped at routing time and holds for another minute.
         pending.Reservation!.Commit();
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should()
-            .NotBeNull("the routed order occupies the window from its acknowledgement");
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should()
+            .BeFalse("the routed order occupies the window from its acknowledgement");
 
         time.Advance(TimeSpan.FromSeconds(61));
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should()
-            .BeNull("the committed slot expires a minute after routing");
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should()
+            .BeTrue("the committed slot expires a minute after routing");
     }
 
     [Fact]
@@ -206,15 +206,15 @@ public sealed class OrderRateThrottleTests
         var sut = CreateSut(maxOrdersPerMinute: 1, time);
 
         var first = await sut.EvaluateAndReserveAsync(CreateOrder());
-        first.Finding.Should().BeNull();
+        first.Result.IsApproved.Should().BeTrue();
         // Only committed slots age out, so the order has to route before the window can release it.
         first.Reservation!.Commit();
 
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().NotBeNull();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeFalse();
 
         time.Advance(TimeSpan.FromSeconds(61));
 
-        (await sut.EvaluateAndReserveAsync(CreateOrder())).Finding.Should().BeNull();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeTrue();
     }
 
     /// <summary>
