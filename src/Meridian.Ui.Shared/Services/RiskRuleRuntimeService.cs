@@ -695,7 +695,7 @@ public sealed class RiskRuleRuntimeService
         var grossExposure = snapshot?.GrossExposure ?? 0m;
 
         var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure");
-        var violations = DescribeViolations(violationEntries);
+        var violations = DescribeViolations(violationEntries, "gross exposure");
         // Live state follows current exposure plus breaches inside the liveness window;
         // older rejections stay as evidence without pinning the rule Constrained.
         var liveViolation = HasLiveViolation(violationEntries, asOf);
@@ -752,7 +752,7 @@ public sealed class RiskRuleRuntimeService
         }
 
         var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "concentration");
-        var violations = DescribeViolations(violationEntries);
+        var violations = DescribeViolations(violationEntries, "concentration");
         var liveViolation = HasLiveViolation(violationEntries, asOf);
         var utilization = ComputeUtilization(topPercent, maxPercent);
         var breached = maxPercent.HasValue && topPercent > maxPercent.Value;
@@ -805,7 +805,7 @@ public sealed class RiskRuleRuntimeService
             .ToList();
 
         var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "notional");
-        var violations = DescribeViolations(violationEntries);
+        var violations = DescribeViolations(violationEntries, "notional");
         var configured = maxNotional.HasValue || escalateAt.HasValue;
         var breached = HasLiveViolation(violationEntries, asOf);
         var state = breached
