@@ -279,6 +279,16 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   be aggregated within a comparable measure and currency — or across a governed translation — with an
   unknown unit or an unavailable rate failing closed to the stricter approval rather than being
   quietly summed.
+- **And matching measure and unit is not sufficient for quantity, because the unit is a constant.**
+  `ReconciliationBreakQueueProjection.BuildStatementBreakMeasures` (`:223-263`) stamps the literal
+  string `"units"` on every quantity measure regardless of instrument, and
+  `ReconciliationBreakQueueItem` (`Workstation/ReconciliationDtos.cs:407-`) carries no security id,
+  symbol, or any other instrument dimension — `ExternalAccountId`, `CustodianId`, `Counterparty`, and
+  `FundAccountId` are the closest it comes. So 100 shares of one security and 100 shares of another
+  present as the same measure in the same unit, and a rule that fails closed on an *unknown* unit
+  never fires, because the unit is always known and always identical. Quantity exposure needs the
+  instrument itself, which means the queue contract has to start carrying one; until it does, a cause
+  group mixing instruments holds at the stricter approval.
 - **The bulk request carries no expected versions and no preview receipt.** It holds break IDs, an
   action, an actor, command and correlation IDs, a source, an idempotency key, dry-run and
   partial-success flags, and optional reason, assignee, and priority — and the repository reads each
@@ -305,6 +315,20 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   approval queue accumulating conflicting drafts for the same occurrence. The claim has to be taken
   at initial enqueue, keyed by schedule and occurrence date, with retries returning the existing
   draft.
+- **But a schedule/date claim alone returns drafts built from content the schedule no longer has.**
+  `FundAdministrationControlService.ScheduleRecurringJournal` (`:105-130`) overwrites in place —
+  `_recurringSchedules[schedule.ScheduleId] = schedule;` — and `RecurringJournalSchedule`
+  (`src/Meridian.Ledger/RecurringJournalSchedule.cs:22-36`) carries no version member. Re-scheduling
+  the same id with a changed template, ledger book, or parameters therefore leaves the claim
+  resolving to a draft materialized from the *old* definition, and returning it applies stale
+  content silently. Adding the version to the claim key is not the fix either — that would let two
+  approval drafts exist for one logical occurrence, which is the duplicate the claim exists to
+  prevent. The occurrence claim has to *retain* the schedule and template versions and fail closed on
+  drift until the existing draft is explicitly superseded or corrected. The codebase already treats
+  this as a hazard one level up: the template-registration comment at
+  `FundAdministrationControlService.cs:80-82` notes that "recurring schedules resolve the current
+  template at materialization, so the chain must preserve which version was approved" — the schedule
+  overwrite has no equivalent guard.
 
 ### `W10-TAX-001` — tax character and relief
 
@@ -327,6 +351,17 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   today, and a generic incomplete-input rule does not catch that — the inputs are complete, the
   window simply has not closed. The figure needs an as-of/provisional label, the remaining window,
   and re-evaluation or governed finalization when it closes.
+- **An open window does not always mean an open answer, though — the disallowance saturates.**
+  `ComputeWashSale` caps the match at the quantity sold —
+  `matchedQuantity = Math.Min(input.QuantitySold, matching.Sum(r => r.Quantity))` — and derives
+  `disallowedLoss = RoundCurrency(totalLoss * (matchedQuantity / input.QuantitySold))`, then bounds
+  it again with `Math.Min(disallowedLoss, totalLoss)`
+  (`LedgerTaxLotReliefProjector.cs:246-259`). Once known replacement acquisitions cover the whole
+  quantity sold, the ratio is already 1 and the entire realized loss is already disallowed, so no
+  later acquisition inside the remaining window can raise either number. Labelling that disposal
+  provisional promises a re-evaluation with nothing left to re-evaluate — the same defect the
+  governing-policy and gain-only narrowings above correct, in a third form. Provisional belongs to
+  the disposals where additional eligible acquisitions could still increase the disallowance.
 - **But provisional is not the right label for every open-window disposal.** `ComputeWashSale`
   (`LedgerTaxLotReliefProjector.cs:225-232`) returns `null` when `realizedGainOrLoss >= 0m`, so a
   disposal whose relieved lots all realize a gain cannot attract a wash sale no matter what is
