@@ -621,3 +621,43 @@ class RepositoryRegisterTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FingerprintFidelityTests(unittest.TestCase):
+    """Two different reasons must never share one register key."""
+
+    def test_escaped_backslash_is_not_reinterpreted_as_an_escape(self):
+        # Chained str.replace decoded `\\` into a real backslash and then re-read it as the start
+        # of the next escape, so this valid reason collapsed into "Requires C:" + newline. It then
+        # shared a fingerprint with the genuinely different reason below, letting either inherit
+        # the other's owner and review date.
+        literal = MODULE.join_literals(r'"Requires C:\\network share"')
+        newline = MODULE.join_literals(r'"Requires C:\nnetwork share"')
+
+        self.assertEqual(literal, "Requires C:\\network share")
+        self.assertEqual(newline, "Requires C:\nnetwork share")
+        self.assertNotEqual(literal, newline)
+
+    def test_known_escapes_still_decode(self):
+        self.assertEqual(MODULE.join_literals(r'"line\nbreak"'), "line\nbreak")
+        self.assertEqual(MODULE.join_literals(r'"tab\there"'), "tab\there")
+        self.assertEqual(MODULE.join_literals(r'"say \"hi\""'), 'say "hi"')
+
+    def test_a_semicolon_inside_a_block_comment_does_not_end_the_expression(self):
+        expression = MODULE.read_expression("/* ; */ ReasonA; trailing", 0)
+
+        self.assertIsNotNone(expression)
+        self.assertEqual(MODULE.normalise_expression(expression), "/* ; */ ReasonA")
+
+    def test_a_changed_producing_expression_changes_the_fingerprint(self):
+        commented = MODULE.normalise_expression(MODULE.read_expression("/* ; */ ReasonA; x", 0))
+        changed = MODULE.normalise_expression(
+            MODULE.read_expression("CompletelyDifferentReason(); x", 0)
+        )
+
+        self.assertNotEqual(commented, changed)
+
+    def test_a_semicolon_inside_a_line_comment_does_not_end_the_expression(self):
+        expression = MODULE.read_expression("// ; note\nReasonB; trailing", 0)
+
+        self.assertEqual(MODULE.normalise_expression(expression), "// ; note ReasonB")

@@ -113,13 +113,33 @@ class SkipSite:
         return {"path": self.path, "test": self.test, "line": self.line, "reason": self.reason}
 
 
+# Only the escapes that plausibly appear in a skip reason. An unknown escape decodes to the
+# character itself, which matches how these reasons are written in practice.
+ESCAPES = {"n": "\n", "t": "\t", "r": "\r", "0": "\0", '"': '"', "'": "'", "\\": "\\"}
+
+
 def join_literals(literal_text: str) -> str:
     """Concatenate a C# string-literal expression into the single string it produces."""
     parts = STRING_LITERAL.findall(literal_text)
     joined = "".join(parts)
-    # Unescape the sequences that actually appear in skip reasons; leaving them encoded would
-    # make the register text differ from what the test runner reports.
-    return joined.replace('\\"', '"').replace("\\\\", "\\").replace("\\n", "\n").replace("\\t", "\t")
+    # Decode in a single left-to-right pass. Chained str.replace calls decoded an escaped
+    # backslash into a real one and then re-read it as the start of the *next* escape, so the
+    # valid reason "Requires C:\\network share" became "Requires C:" + newline + "etwork share"
+    # and collided with the genuinely different "Requires C:\nnetwork share" — two reasons
+    # sharing one fingerprint means either can silently inherit the other's owner and review
+    # date, which is the whole thing this register exists to prevent.
+    out: list[str] = []
+    i = 0
+    length = len(joined)
+    while i < length:
+        ch = joined[i]
+        if ch == "\\" and i + 1 < length:
+            out.append(ESCAPES.get(joined[i + 1], joined[i + 1]))
+            i += 2
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
 
 
 def _is_char_literal(text: str, index: int) -> bool:
@@ -289,6 +309,20 @@ def read_expression(text: str, start: int) -> str | None:
     length = len(text)
     while i < length:
         ch = text[i]
+        # Comments before delimiters: `Skip = /* ; */ Reason;` put a semicolon at depth 0 that
+        # ended the expression, fingerprinting the reason as "/*". Every later edit to the real
+        # producing expression then reproduced that same key, so the entry kept its owner and
+        # review date while the skip logic changed underneath it. F# `(* ... *)` is already safe
+        # here because its opening paren raises the nesting depth.
+        if ch == "/" and i + 1 < length:
+            if text[i + 1] == "/":
+                end = text.find("\n", i)
+                i = length if end == -1 else end
+                continue
+            if text[i + 1] == "*":
+                end = text.find("*/", i + 2)
+                i = length if end == -1 else end + 2
+                continue
         if ch == '"':
             # A C# raw string literal opens with three or more quotes and closes with the same
             # count. Treating its quotes as ordinary boundaries let the scan resume inside the
