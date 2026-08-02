@@ -74,19 +74,31 @@ class TrackedAgentDefinitionsTests(unittest.TestCase):
             # An unscoped Bash would let a findings-only agent edit through the shell.
             self.assertNotIn("Bash", entries, stem)
 
-    def test_code_review_gets_read_only_git_but_never_unscoped_bash(self) -> None:
-        # Its workflow step 1 scopes "the diff", which Read/Glob/Grep cannot obtain;
-        # scoping the grant keeps the "findings only - no edits" posture intact.
+    def test_code_review_holds_no_command_tool_at_all(self) -> None:
+        # A scoped git grant was considered and rejected: Claude Code scoping is a
+        # command prefix match, so `Bash(git diff:*)` also admits
+        # `git diff --output=<file>`, which writes. With no Bash of any shape, the
+        # "findings only - no edits" posture is a property of the tool set rather than
+        # of an instruction, which is why this asserts absence rather than scoping.
         path = module.AGENTS_ROOT / "meridian-code-review.md"
         frontmatter = module.parse_frontmatter(path.read_text(encoding="utf-8"))
         entries, problem = module.parse_tool_list(frontmatter["tools"])
 
         self.assertIsNone(problem)
-        self.assertIn("Bash(git diff:*)", entries)
-        self.assertNotIn("Bash", entries)
-        for entry in entries:
-            if entry.startswith("Bash("):
-                self.assertTrue(entry.startswith("Bash(git "), entry)
+        self.assertEqual(["Read", "Glob", "Grep"], entries)
+
+    def test_simulated_user_panel_can_launch_personas_but_not_write(self) -> None:
+        # Its contract offers independent persona voices on explicit request; without
+        # Agent a requested panel would collapse to one voice while still calling
+        # itself a panel.
+        path = module.AGENTS_ROOT / "meridian-simulated-user-panel.md"
+        frontmatter = module.parse_frontmatter(path.read_text(encoding="utf-8"))
+        entries, problem = module.parse_tool_list(frontmatter["tools"])
+
+        self.assertIsNone(problem)
+        self.assertIn("Agent", entries)
+        for forbidden in ("Edit", "Write", "Bash"):
+            self.assertNotIn(forbidden, entries)
 
 
 class KnownToolsTests(unittest.TestCase):
