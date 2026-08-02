@@ -25,7 +25,7 @@ from dashboard_rendering import (
 )
 
 
-EXCLUDE_DIRS = {".git", ".vs", "bin", "obj", "node_modules", "__pycache__", "TestResults"}
+EXCLUDE_DIRS = {".git", ".vs", "bin", "obj", "node_modules", "__pycache__", ".pytest_cache", "TestResults"}
 HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "PATCH"}
 
 ROUTE_CONST_RE = re.compile(r'public\s+const\s+string\s+(\w+)\s*=\s*"([^"]+)"')
