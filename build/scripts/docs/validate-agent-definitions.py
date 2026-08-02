@@ -138,6 +138,33 @@ KNOWN_FIELDS = frozenset(
     }
 )
 
+# Value domains, for the fields whose domain is small and well established.
+#
+# Deliberately partial. Restricting a field to a set that turns out to be
+# incomplete blocks legitimate work, which is exactly how the first version of
+# KNOWN_FIELDS failed - so only fields whose accepted values can be stated with
+# confidence get a value check here. The rest are type-checked instead, which
+# catches the shape errors (a mapping where a string belongs, a string where a
+# boolean belongs) without inventing a vocabulary.
+PERMISSION_MODES = frozenset({"default", "acceptEdits", "bypassPermissions", "plan"})
+
+# Expected Python type per field once the frontmatter has been resolved. `bool`
+# is checked before `int` because Python treats bool as a subclass of int.
+FIELD_TYPES: dict[str, tuple[type, ...]] = {
+    "name": (str,),
+    "description": (str,),
+    "tools": (str,),
+    "disallowedTools": (str,),
+    "model": (str,),
+    "color": (str,),
+    "permissionMode": (str,),
+    "memory": (str,),
+    "isolation": (str,),
+    "background": (bool,),
+    "skills": (str, list),
+    "hooks": (dict,),
+}
+
 
 KEY_PATTERN = re.compile(r"^(?P<key>[A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]+(?P<value>.*))?$")
 BLOCK_SCALAR_PATTERN = re.compile(r"^[|>][+-]?\d*$")
@@ -214,6 +241,103 @@ def _parse_flow_sequence(value: str) -> list[object]:
     return [_strip_quotes(item.strip()) for item in inner.split(",") if item.strip()]
 
 
+def _prepare_lines(raw: str) -> list[tuple[int, str, int]]:
+    """Strip blanks and comments, returning (indent, content, line-number) triples."""
+    prepared: list[tuple[int, str, int]] = []
+    for number, line in enumerate(raw.split("\n"), start=1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip(" \t"))
+        prepared.append((indent, line.strip(), number))
+    return prepared
+
+
+def _gather_block_scalar(
+    lines: list[tuple[int, str, int]], index: int, indent: int, separator: str
+) -> tuple[str, int]:
+    body: list[str] = []
+    while index < len(lines) and lines[index][0] > indent:
+        body.append(lines[index][1])
+        index += 1
+    return separator.join(part for part in body if part), index
+
+
+def _parse_sequence(
+    lines: list[tuple[int, str, int]], index: int, indent: int
+) -> tuple[list[object], int]:
+    items: list[object] = []
+    while index < len(lines) and lines[index][0] == indent and lines[index][1].startswith("- "):
+        item = lines[index][1][2:].strip()
+        index += 1
+        if not item and index < len(lines) and lines[index][0] > indent:
+            nested, index = _parse_mapping(lines, index, lines[index][0])
+            items.append(nested)
+        else:
+            items.append(_strip_quotes(item))
+    return items, index
+
+
+def _parse_mapping(
+    lines: list[tuple[int, str, int]], index: int, indent: int
+) -> tuple[dict[str, object], int]:
+    mapping: dict[str, object] = {}
+    while index < len(lines) and lines[index][0] == indent:
+        _, content, number = lines[index]
+        if content.startswith("- "):
+            raise ValueError("frontmatter is a sequence, expected a mapping")
+
+        match = KEY_PATTERN.match(content)
+        if not match:
+            raise ValueError(
+                f"frontmatter is not valid YAML: line {number} is not a `key: value` entry"
+            )
+        key = match.group("key")
+        if key in mapping:
+            raise ValueError(
+                f"duplicate key '{key}' in frontmatter; the host resolves the last "
+                "occurrence, so a repeated key silently changes the effective value"
+            )
+        value = (match.group("value") or "").strip()
+        index += 1
+
+        if BLOCK_SCALAR_PATTERN.match(value):
+            mapping[key], index = _gather_block_scalar(
+                lines, index, indent, "\n" if value[0] == "|" else " "
+            )
+            continue
+        if value:
+            # A key with an inline value cannot also own an indented block.
+            if index < len(lines) and lines[index][0] > indent:
+                raise ValueError(
+                    "frontmatter is not valid YAML: unexpected indented content on "
+                    f"line {lines[index][2]}"
+                )
+            mapping[key] = (
+                _parse_flow_sequence(value)
+                if value.startswith("[")
+                else _strip_quotes(value)
+            )
+            continue
+
+        # A bare key owns whatever is indented beneath it: a sequence, a nested
+        # mapping such as a `hooks:` block, or nothing at all.
+        if index < len(lines) and lines[index][0] > indent:
+            child_indent = lines[index][0]
+            if lines[index][1].startswith("- "):
+                mapping[key], index = _parse_sequence(lines, index, child_indent)
+            else:
+                mapping[key], index = _parse_mapping(lines, index, child_indent)
+        else:
+            mapping[key] = None
+
+    if index < len(lines) and lines[index][0] > indent:
+        raise ValueError(
+            "frontmatter is not valid YAML: unexpected indented content on "
+            f"line {lines[index][2]}"
+        )
+    return mapping, index
+
+
 def parse_frontmatter(text: str) -> dict[str, object]:
     """Return the frontmatter mapping, raising ValueError on anything the host would reject.
 
@@ -223,84 +347,27 @@ def parse_frontmatter(text: str) -> dict[str, object]:
     every environment, which is what a gate needs; the test suite cross-checks
     this parser against PyYAML wherever PyYAML is actually available.
 
-    The subset is what agent frontmatter uses: plain scalars, folded and literal
-    block scalars, flow sequences, and block sequences. Anything else at column
-    zero is reported as invalid rather than skipped, and a repeated key is an
-    error rather than a silent last-wins overwrite.
+    The subset covers plain scalars, folded and literal block scalars, flow
+    sequences, block sequences, and nested mappings - the last of these because
+    `hooks:` is a documented frontmatter field whose value is a mapping, so a
+    parser that only accepted scalars and sequences would reject valid
+    configuration. Anything else is reported rather than skipped, and a repeated
+    key is an error rather than a silent last-wins overwrite.
     """
-    raw = split_frontmatter(text)
-    mapping: dict[str, object] = {}
-    block_lines: list[str] | None = None
-    block_separator = " "
-    sequence_items: list[object] | None = None
-    open_key: str | None = None
-
-    def close_open_key() -> None:
-        nonlocal block_lines, sequence_items, open_key
-        if open_key is not None:
-            if block_lines is not None:
-                mapping[open_key] = block_separator.join(
-                    line for line in block_lines if line
-                )
-            elif sequence_items is not None:
-                # A bare key with no items is an empty value, not an empty sequence -
-                # `description:` must read as absent the way the host reads it.
-                mapping[open_key] = sequence_items if sequence_items else None
-        block_lines = None
-        sequence_items = None
-        open_key = None
-
-    for number, line in enumerate(raw.split("\n"), start=1):
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-
-        if line[0] in " \t":
-            stripped = line.strip()
-            if block_lines is not None:
-                block_lines.append(stripped)
-                continue
-            if sequence_items is not None and stripped.startswith("- "):
-                sequence_items.append(_strip_quotes(stripped[2:].strip()))
-                continue
-            raise ValueError(
-                f"frontmatter is not valid YAML: unexpected indented content on line {number}"
-            )
-
-        if line.startswith("- "):
-            raise ValueError("frontmatter is a sequence, expected a mapping")
-
-        match = KEY_PATTERN.match(line)
-        if not match:
-            raise ValueError(
-                f"frontmatter is not valid YAML: line {number} is not a `key: value` entry"
-            )
-
-        close_open_key()
-        key = match.group("key")
-        if key in mapping:
-            raise ValueError(
-                f"duplicate key '{key}' in frontmatter; the host resolves the last "
-                "occurrence, so a repeated key silently changes the effective value"
-            )
-
-        value = (match.group("value") or "").strip()
-        if not value:
-            # A bare key opens either a block sequence or an empty value, and which one
-            # is only knowable from the next line.
-            open_key = key
-            sequence_items = []
-            continue
-        if BLOCK_SCALAR_PATTERN.match(value):
-            open_key = key
-            block_lines = []
-            block_separator = "\n" if value[0] == "|" else " "
-            continue
-        mapping[key] = (
-            _parse_flow_sequence(value) if value.startswith("[") else _strip_quotes(value)
+    lines = _prepare_lines(split_frontmatter(text))
+    if not lines:
+        raise ValueError("frontmatter is empty")
+    if lines[0][0] != 0:
+        raise ValueError(
+            "frontmatter is not valid YAML: unexpected indented content on "
+            f"line {lines[0][2]}"
         )
 
-    close_open_key()
-
+    mapping, index = _parse_mapping(lines, 0, 0)
+    if index != len(lines):
+        raise ValueError(
+            f"frontmatter is not valid YAML: line {lines[index][2]} is not a `key: value` entry"
+        )
     if not mapping:
         raise ValueError("frontmatter is empty")
     return mapping
@@ -420,6 +487,25 @@ def required_string(
     return stripped
 
 
+def _matches_type(value: object, expected: tuple[type, ...]) -> bool:
+    # bool is a subclass of int in Python, so a boolean would otherwise satisfy an
+    # int expectation and vice versa.
+    if isinstance(value, bool):
+        return bool in expected
+    return isinstance(value, expected) and not (int in expected and isinstance(value, bool))
+
+
+def _render_types(expected: tuple[type, ...]) -> str:
+    names = {
+        str: "a string",
+        bool: "a boolean",
+        list: "a sequence",
+        dict: "a mapping",
+        int: "an integer",
+    }
+    return " or ".join(names.get(item, item.__name__) for item in expected)
+
+
 def _is_near_miss(candidate: str, known: str) -> bool:
     """True when `candidate` looks like a typo of `known` — case, or one edit away."""
     a, b = candidate.lower(), known.lower()
@@ -443,8 +529,22 @@ def validate_agent(path: Path) -> list[str]:
     except ValueError as exc:
         return [f"{path.name}: {exc}"]
 
-    for key in frontmatter:
+    for key, value in frontmatter.items():
         if key in KNOWN_FIELDS:
+            expected = FIELD_TYPES.get(key)
+            # A recognised key is not the same as a usable value: `background: maybe`
+            # or a `hooks` block written as a scalar is something the host cannot
+            # interpret as intended, and only the shape check catches it.
+            if expected and value is not None and not _matches_type(value, expected):
+                errors.append(
+                    f"{path.name}: `{key}` is a {type(value).__name__}, expected "
+                    f"{_render_types(expected)}"
+                )
+            elif key == "permissionMode" and isinstance(value, str) and value not in PERMISSION_MODES:
+                errors.append(
+                    f"{path.name}: `permissionMode` '{value}' is not a known mode; "
+                    f"expected one of {', '.join(sorted(PERMISSION_MODES))}"
+                )
             continue
         hint = ""
         for known in sorted(TOOL_FIELDS):
@@ -478,18 +578,34 @@ def validate_agent(path: Path) -> list[str]:
         if problem:
             errors.append(f"{path.name}: `{field}` {problem}")
             continue
+        builtin_count = 0
         for entry in entries:
             head, scope_problem = entry_head(entry)
             if scope_problem:
                 errors.append(f"{path.name}: `{field}` entry '{entry}' {scope_problem}")
                 continue
-            if head in KNOWN_TOOLS or MCP_PATTERN.match(head):
+            if head in KNOWN_TOOLS:
+                builtin_count += 1
+                continue
+            if MCP_PATTERN.match(head):
                 continue
             if head == MCP_ALL_SERVERS and field != ALLOW_LIST_FIELD:
                 continue
             errors.append(
                 f"{path.name}: `{field}` entry '{head}' is not a known tool"
                 f"{describe_unknown(field, head)}"
+            )
+
+        # Which MCP servers exist is a property of the host session, not of this
+        # repository - the same reason this file's guidance discourages naming one.
+        # An allow-list made only of MCP patterns therefore resolves to nothing on
+        # any session without that server, which is the empty grant that made the
+        # whole agent layer inert. A deny-list has no such failure mode.
+        if field == ALLOW_LIST_FIELD and entries and builtin_count == 0:
+            errors.append(
+                f"{path.name}: `{field}` names only MCP entries; an MCP server is a "
+                "property of the host session, so this grants nothing on a session "
+                "without it - include at least one built-in tool"
             )
 
     return errors

@@ -44,6 +44,11 @@ class TrackedAgentDefinitionsTests(unittest.TestCase):
             "meridian-archive-organizer",
             "meridian-docs",
             "meridian-implementation-assurance",
+            # AGENTS.md:131 makes `git status --short` a start gate for any agent that
+            # edits, so every write-capable agent needs command access too.
+            "meridian-blueprint",
+            "meridian-brainstorm",
+            "meridian-roadmap-strategist",
         ):
             path = module.AGENTS_ROOT / f"{stem}.md"
             frontmatter = module.parse_frontmatter(path.read_text(encoding="utf-8"))
@@ -61,11 +66,27 @@ class TrackedAgentDefinitionsTests(unittest.TestCase):
             path = module.AGENTS_ROOT / f"{stem}.md"
             frontmatter = module.parse_frontmatter(path.read_text(encoding="utf-8"))
             entries, problem = module.parse_tool_list(frontmatter["tools"])
+            heads = [module.entry_head(entry)[0] for entry in entries]
 
             self.assertIsNone(problem, stem)
-            self.assertNotIn("Edit", entries, stem)
-            self.assertNotIn("Write", entries, stem)
+            self.assertNotIn("Edit", heads, stem)
+            self.assertNotIn("Write", heads, stem)
+            # An unscoped Bash would let a findings-only agent edit through the shell.
             self.assertNotIn("Bash", entries, stem)
+
+    def test_code_review_gets_read_only_git_but_never_unscoped_bash(self) -> None:
+        # Its workflow step 1 scopes "the diff", which Read/Glob/Grep cannot obtain;
+        # scoping the grant keeps the "findings only - no edits" posture intact.
+        path = module.AGENTS_ROOT / "meridian-code-review.md"
+        frontmatter = module.parse_frontmatter(path.read_text(encoding="utf-8"))
+        entries, problem = module.parse_tool_list(frontmatter["tools"])
+
+        self.assertIsNone(problem)
+        self.assertIn("Bash(git diff:*)", entries)
+        self.assertNotIn("Bash", entries)
+        for entry in entries:
+            if entry.startswith("Bash("):
+                self.assertTrue(entry.startswith("Bash(git "), entry)
 
 
 class KnownToolsTests(unittest.TestCase):
@@ -280,6 +301,8 @@ class PyYamlDifferentialTests(unittest.TestCase):
             "tools: Read, Glob\n",
             "description: >\n  folded body\n",
             "tools:\n  - Read\n  - Glob\n",
+            "hooks:\n  PreToolUse:\n    - echo before\n",
+            "hooks:\n  PreToolUse:\n    - a\n  PostToolUse:\n    - b\n",
         ):
             with self.subTest(frontmatter=frontmatter):
                 ours = module.parse_frontmatter(f"---\n{frontmatter}---\n")
@@ -402,7 +425,8 @@ class ValidateAgentTests(unittest.TestCase):
             self.directory,
             "sample-agent",
             "name: sample-agent\ndescription: Does a thing.\n"
-            "tools: mcp__github, mcp__github__get_me, mcp__github__*\n"
+            # A built-in alongside them, since an MCP-only allow-list is its own error.
+            "tools: Read, mcp__github, mcp__github__get_me, mcp__github__*\n"
             "disallowedTools: mcp__github__delete_file",
         )
 
@@ -502,8 +526,9 @@ class ValidateAgentTests(unittest.TestCase):
             "sample-agent",
             "name: sample-agent\ndescription: Does a thing.\ntools: Read\n"
             "disallowedTools: Bash\nmodel: opus\ncolor: blue\npermissionMode: plan\n"
-            "skills: some-skill\nhooks: some-hook\nmemory: project\n"
-            "background: true\nisolation: worktree",
+            "skills: some-skill\nmemory: project\n"
+            "background: true\nisolation: worktree\n"
+            "hooks:\n  PreToolUse:\n    - echo before",
         )
 
         self.assertEqual([], module.validate_agent(path))
@@ -544,6 +569,96 @@ class ValidateAgentTests(unittest.TestCase):
                 errors = " | ".join(module.validate_agent(path))
 
                 self.assertIn(f"is a {rendered}", errors)
+
+    def test_nested_hook_mapping_is_accepted(self) -> None:
+        # `hooks` is a supported field whose value is a mapping. Allowlisting the key
+        # while the parser only accepted scalars and sequences would have made the
+        # gate reject valid hook configuration.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\n"
+            "hooks:\n  PreToolUse:\n    - echo before\n  PostToolUse:\n    - echo after",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_hooks_written_as_a_scalar_is_rejected(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\nhooks: nope",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("`hooks` is a str, expected a mapping", errors)
+
+    def test_unknown_permission_mode_is_rejected(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\npermissionMode: plna",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("is not a known mode", errors)
+
+    def test_known_permission_modes_are_accepted(self) -> None:
+        for mode in sorted(module.PERMISSION_MODES):
+            with self.subTest(mode=mode):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    f"name: sample-agent\ndescription: Does a thing.\ntools: Read\npermissionMode: {mode}",
+                )
+
+                self.assertEqual([], module.validate_agent(path))
+
+    def test_background_must_be_a_boolean(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\nbackground: maybe",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("`background` is a str, expected a boolean", errors)
+
+    def test_mcp_only_tool_list_is_rejected(self) -> None:
+        # Which MCP servers exist is a host-session property, so an allow-list of only
+        # MCP patterns resolves to nothing on a session without that server - the same
+        # empty grant that made the agent layer inert.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: mcp__github__*",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("names only MCP entries", errors)
+
+    def test_mcp_alongside_a_builtin_is_accepted(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read, mcp__github__*",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_mcp_only_disallowed_tools_is_accepted(self) -> None:
+        # A deny-list that matches nothing is harmless; only an allow-list fails open.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\ndisallowedTools: mcp__*",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
 
     def test_unterminated_quoted_scalar_is_rejected(self) -> None:
         # A real YAML parser fails the whole document; returning it as a plain string
