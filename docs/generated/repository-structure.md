@@ -8125,6 +8125,8 @@ Meridian-main
 │   │   │   ├── Monitoring
 │   │   │   │   ├── PrometheusExporterTests.cs
 │   │   │   │   ├── PrometheusMetricsTests.cs
+│   │   │   │   ├── PrometheusResettableTotalCollection.cs
+│   │   │   │   ├── PrometheusResettableTotalTests.cs
 │   │   │   │   ├── QualityTrendCalculationTests.cs
 │   │   │   │   └── StatusWriterTests.cs
 │   │   │   ├── Pipeline
