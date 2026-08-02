@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Contracts.Etl;
 using Meridian.Infrastructure.Etl;
 using Meridian.Infrastructure.Etl.Sftp;
+using Meridian.Storage.Etl;
 
 namespace Meridian.Tests.Infrastructure.Etl;
 
@@ -189,6 +190,34 @@ public sealed class SftpCapabilityServiceTests
             status.Ready.Should().BeTrue();
         }
     }
+
+    [Fact]
+    public async Task ListFilesAsync_WhenCapabilityIsNotReady_FailsClosedWithTheReadinessIssues()
+    {
+        var factory = new ThrowingSftpClientFactory();
+        var reader = new SftpFileSourceReader(
+            new EtlStagingStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))),
+            factory,
+            new EnvironmentSftpCredentialResolver(),
+            new StubCapabilityService(ready: false, issues: ["Real SFTP support is disabled in this build."]));
+
+        var act = async () => await reader.ListFilesAsync(CompleteSource(), CancellationToken.None);
+
+        // Only the publisher was gated, so a default EnableSftp=false build accepted an SFTP
+        // source and surfaced the disabled stub's NotSupportedException as a transport failure.
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not available for this source*disabled in this build*");
+        factory.CreateCalls.Should().Be(0);
+    }
+
+    private static EtlSourceDefinition CompleteSource() => new()
+    {
+        Kind = EtlSourceKind.Sftp,
+        Location = "sftp://partner.example.com/outbound",
+        Username = "meridian-ops",
+        SecretRef = "literal-secret",
+        HostKeySha256Fingerprint = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    };
 
     [Fact]
     public async Task PublishAsync_WhenCapabilityIsNotReady_FailsClosedWithTheReadinessIssues()

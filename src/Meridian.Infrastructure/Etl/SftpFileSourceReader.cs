@@ -9,17 +9,31 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
     private readonly EtlStagingStore _stagingStore;
     private readonly ISftpClientFactory _clientFactory;
     private readonly ISftpCredentialResolver _credentialResolver;
+    private readonly ISftpCapabilityService _capabilityService;
 
     public SftpFileSourceReader(EtlStagingStore stagingStore, ISftpClientFactory clientFactory)
-        : this(stagingStore, clientFactory, new EnvironmentSftpCredentialResolver())
+        : this(stagingStore, clientFactory, new EnvironmentSftpCredentialResolver(), new SftpCapabilityService())
     {
     }
 
-    public SftpFileSourceReader(EtlStagingStore stagingStore, ISftpClientFactory clientFactory, ISftpCredentialResolver credentialResolver)
+    public SftpFileSourceReader(
+        EtlStagingStore stagingStore,
+        ISftpClientFactory clientFactory,
+        ISftpCredentialResolver credentialResolver)
+        : this(stagingStore, clientFactory, credentialResolver, new SftpCapabilityService())
+    {
+    }
+
+    public SftpFileSourceReader(
+        EtlStagingStore stagingStore,
+        ISftpClientFactory clientFactory,
+        ISftpCredentialResolver credentialResolver,
+        ISftpCapabilityService capabilityService)
     {
         _stagingStore = stagingStore;
         _clientFactory = clientFactory;
         _credentialResolver = credentialResolver;
+        _capabilityService = capabilityService;
     }
 
     public EtlSourceKind Kind => EtlSourceKind.Sftp;
@@ -157,6 +171,18 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
 
     private ISftpClient CreateClient(EtlSourceDefinition source, SftpRemoteLocation location, SftpCredentialMaterial credential)
     {
+        // The read path was left ungated while the publisher checked capability, so a default
+        // EnableSftp=false build accepted an SFTP source and then surfaced the disabled stub's
+        // NotSupportedException from list, preview, and ingestion as a transport failure. That is
+        // the same accepted-then-broken shape the destination fix removed, and it made the stated
+        // "reject in production, fail closed" disposition true of exports only.
+        var status = _capabilityService.Evaluate(source);
+        if (!status.Ready)
+        {
+            throw new InvalidOperationException(
+                "SFTP import is not available for this source: " + string.Join(" ", status.Issues));
+        }
+
         return _clientFactory.Create(SftpConnectionOptions.Create(
             location.Host,
             location.Port,
