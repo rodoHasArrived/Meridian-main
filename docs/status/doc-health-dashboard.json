@@ -1,11 +1,11 @@
 {
-  "total_files": 640,
-  "total_lines": 118344,
-  "orphaned_count": 255,
+  "total_files": 641,
+  "total_lines": 119249,
+  "orphaned_count": 256,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 184.9,
+  "average_lines": 186.0,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -215,6 +215,7 @@
     "docs/development/score-reason-taxonomy.md",
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
+    "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
     "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/configuration-schema.md",
     "docs/generated/documentation-coverage.md",
@@ -2161,6 +2162,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
+      "line_count": 902,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/dead-code-inventory.md",
       "line_count": 55,
       "has_heading": true,
@@ -2570,7 +2579,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9665,
+      "line_count": 9668,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
