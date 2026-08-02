@@ -40,8 +40,19 @@ internal sealed class EtlFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<ISftpCredentialResolver, EnvironmentSftpCredentialResolver>();
         services.AddSingleton<ISftpClientFactory, SftpClientFactory>();
         services.AddSingleton<IEtlSourceReader, LocalFileSourceReader>();
-        services.AddSingleton<IEtlSourceReader, SftpFileSourceReader>();
-        services.AddSingleton<ISftpFilePublisher, SftpFilePublisher>();
+        // Both directions resolve through DI so imports and exports share one credential resolver
+        // and one capability gate. Container-selected constructors would otherwise fork them: the
+        // reader picked the two-argument overload and defaulted its own resolver and capability,
+        // which is how the read path stayed ungated while the write path was fixed.
+        services.AddSingleton<IEtlSourceReader>(sp => new SftpFileSourceReader(
+            sp.GetRequiredService<EtlStagingStore>(),
+            sp.GetRequiredService<ISftpClientFactory>(),
+            sp.GetRequiredService<ISftpCredentialResolver>(),
+            sp.GetRequiredService<ISftpCapabilityService>()));
+        services.AddSingleton<ISftpFilePublisher>(sp => new SftpFilePublisher(
+            sp.GetRequiredService<ISftpClientFactory>(),
+            sp.GetRequiredService<ISftpCredentialResolver>(),
+            sp.GetRequiredService<ISftpCapabilityService>()));
         services.AddSingleton<IEtlExportService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<Meridian.Storage.StorageOptions>();
