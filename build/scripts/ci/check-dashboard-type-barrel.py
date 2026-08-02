@@ -10,7 +10,10 @@ declarations survived long enough to become a tracked defect.
 
 This gate fails when:
 
-- two barrel modules declare the same exported name;
+- two barrel modules publish the same exported name from *different bindings* (one module
+  declaring `Shared` and another re-exporting that same `Shared` is not a collision —
+  TypeScript keeps the name importable — so names are attributed to the binding they
+  resolve to rather than to the module that published them);
 - a module listed in the barrel does not exist;
 - a contract module under `src/types/` is not reachable through the barrel and is not
   listed as a deliberately standalone module (so a new DTO file cannot be added outside
@@ -32,6 +35,7 @@ Run with `--summary` for a one-line report.
 from __future__ import annotations
 
 import argparse
+import posixpath
 import re
 import sys
 from bisect import bisect_right
@@ -97,6 +101,8 @@ NAMESPACE_REEXPORT = re.compile(
 )
 BARE_STAR_REEXPORT = re.compile(r"(?<![\w$.])export(?:\s+type)?\s*\*\s*from\b", re.MULTILINE)
 MODULE_SPECIFIER = re.compile(r"[\"'](?P<module>[^\"']+)[\"']")
+# A `from` clause immediately after a re-export's closing brace or star.
+FROM_CLAUSE = re.compile(r"\s*from\b")
 
 
 def read_barrel_modules(barrel_path: Path) -> list[str]:
@@ -217,15 +223,40 @@ def strip_comments_and_strings(text: str) -> str:
     return "".join(out)
 
 
-def declared_names(module_path: Path) -> list[str]:
-    """Return the names `export *` re-exports from *module_path*.
+def declared_names(module_path: Path, module: str = "") -> list[tuple[str, str]]:
+    """Return `(published_name, origin)` for every name `export *` re-exports from *module_path*.
 
     Only module-scope declarations qualify. A declaration inside `export namespace N { ... }`
     or an ambient `declare module "x" { ... }` block is reachable as `N.Row`, never as a bare
     `Row`, so counting it would let a legitimate top-level `Row` elsewhere read as an ambiguous
     star export and block CI over a collision TypeScript never sees.
+
+    `origin` identifies the *binding* a name resolves to, not the module that published it. Two
+    barrel modules publishing the same name are only ambiguous to TypeScript when the names
+    resolve to different bindings: one module declaring `Shared` and another writing
+    `export { Shared } from "./first"` republishes a single binding, so `Shared` stays importable
+    from `@/types` and reporting it as a duplicate would block CI over a collision that does not
+    exist. Attributing a re-export to its target rather than to the re-exporting module makes
+    those two agree on one origin, while two independent declarations keep distinct origins and
+    are still reported.
     """
-    text = strip_comments_and_strings(module_path.read_text(encoding="utf-8"))
+    raw = module_path.read_text(encoding="utf-8")
+    text = strip_comments_and_strings(raw)
+
+    def resolve(spec: str) -> str:
+        """Resolve a module specifier against this module's directory."""
+        if not spec.startswith("."):
+            return spec  # bare package specifier; distinct from any local module
+        return posixpath.normpath(posixpath.join(posixpath.dirname(module), spec))
+
+    def specifier_after(end: int) -> str | None:
+        """Return the module specifier of a `from "..."` clause starting at *end*, if any."""
+        tail = text[end : end + 200]
+        clause = FROM_CLAUSE.match(tail)
+        if clause is None:
+            return None
+        found = MODULE_SPECIFIER.search(raw, end, end + 200)
+        return found.group("module") if found else None
 
     # Brace depth at the start of each line. Comments and string bodies are already blanked, so
     # a brace surviving here is real syntax.
@@ -248,24 +279,33 @@ def declared_names(module_path: Path) -> list[str]:
         prefix = text[line_starts[line] : offset]
         return depth_at_line_start[line] + prefix.count("{") - prefix.count("}") == 0
 
-    names: list[str] = []
+    names: list[tuple[str, str]] = []
     for match in DECLARATION.finditer(text):
         if at_module_scope(match.start()):
-            names.append(match.group("name"))
+            names.append((match.group("name"), f"{module}:{match.group('name')}"))
 
     for match in NAMED_REEXPORT.finditer(text):
         if not at_module_scope(match.start()):
             continue
         body = match.group("names") if match.group("names") is not None else match.group("plain")
+        # `export { A } from "./first"` resolves to first's binding; a local `export { A }`
+        # resolves to this module's own `A`.
+        target = specifier_after(match.end())
+        source = resolve(target) if target is not None else module
         for specifier in REEXPORT_SPECIFIER.finditer(body or ""):
             published = specifier.group("alias") or specifier.group("name")
             # `export { default as X }` publishes X; a bare `default` publishes nothing here.
             if published != "default":
-                names.append(published)
+                names.append((published, f"{source}:{specifier.group('name')}"))
 
     for match in NAMESPACE_REEXPORT.finditer(text):
-        if at_module_scope(match.start()):
-            names.append(match.group("name"))
+        if not at_module_scope(match.start()):
+            continue
+        # The namespace object of a module is canonical, so two modules re-exporting the same
+        # target under the same name publish one binding, not two.
+        target = specifier_after(match.end())
+        source = resolve(target) if target is not None else module
+        names.append((match.group("name"), f"{source}:*"))
 
     return names
 
@@ -312,7 +352,8 @@ def evaluate(barrel_path: Path, types_dir: Path) -> tuple[list[str], dict[str, i
     problems: list[str] = []
     modules = read_barrel_modules(barrel_path)
 
-    declarations: dict[str, list[str]] = defaultdict(list)
+    # published name -> resolved binding origin -> the barrel modules publishing it.
+    declarations: dict[str, dict[str, list[str]]] = defaultdict(dict)
     for module in modules:
         module_path = types_dir / f"{module}.ts"
         if not module_path.is_file():
@@ -325,18 +366,21 @@ def evaluate(barrel_path: Path, types_dir: Path) -> tuple[list[str], dict[str, i
                 "them and a sibling module's declaration would be reported as zero duplicates. "
                 "Re-export the names explicitly ('export { A, B } from ...') so they are visible."
             )
-        for name in declared_names(module_path):
+        for name, origin in declared_names(module_path, module):
             # Declaration merging and function overloads legitimately repeat a name inside one
             # module, and `export *` still publishes a single unambiguous symbol. Appending each
             # occurrence made three overload signatures read as "3 barrel modules" and blocked CI
-            # over a collision that does not exist. Only distinct owning modules can collide.
-            if module not in declarations[name]:
-                declarations[name].append(module)
+            # over a collision that does not exist. Only distinct *bindings* can collide.
+            owners = declarations[name].setdefault(origin, [])
+            if module not in owners:
+                owners.append(module)
 
-    for name, owners in sorted(declarations.items()):
-        if len(owners) > 1:
+    for name, by_origin in sorted(declarations.items()):
+        if len(by_origin) > 1:
+            modules_involved = sorted({m for owners in by_origin.values() for m in owners})
             problems.append(
-                f"'{name}' is declared in {len(owners)} barrel modules ({', '.join(sorted(owners))}). "
+                f"'{name}' is declared in {len(modules_involved)} barrel modules "
+                f"({', '.join(modules_involved)}). "
                 "An ambiguous star export removes the name from '@/types' entirely — "
                 "keep one declaration and re-export it."
             )
@@ -353,7 +397,7 @@ def evaluate(barrel_path: Path, types_dir: Path) -> tuple[list[str], dict[str, i
     counts = {
         "modules": len(modules),
         "exported_names": len(declarations),
-        "duplicates": sum(1 for owners in declarations.values() if len(owners) > 1),
+        "duplicates": sum(1 for by_origin in declarations.values() if len(by_origin) > 1),
     }
     return problems, counts
 

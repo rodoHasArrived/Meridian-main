@@ -407,3 +407,71 @@ class TypeOnlyStarReexportTests(unittest.TestCase):
         problems, _ = self.fixture.evaluate()
 
         self.assertTrue(any("bare 'export *'" in p for p in problems), msg=problems)
+
+
+class ReexportOriginTests(unittest.TestCase):
+    """Two modules publishing one binding is legal; two bindings is the collision."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_reexporting_a_siblings_declaration_is_not_a_duplicate(self):
+        # TypeScript allows both star exports here: `Shared` resolves to one binding, so it stays
+        # importable from '@/types'. Counting owners by publishing module reported a duplicate and
+        # blocked CI, and the advice it gave ("re-export it") was what the module already did.
+        self.fixture.write_module("workstation-1", ["export interface Shared { id: string; }"])
+        self.fixture.write_module("workstation-2", ['export { Shared } from "./workstation-1";'])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0, msg=problems)
+        self.assertEqual(problems, [])
+
+    def test_two_independent_declarations_are_still_a_duplicate(self):
+        self.fixture.write_module("workstation-1", ["export interface Shared { id: string; }"])
+        self.fixture.write_module("workstation-2", ["export interface Shared { id: string; }"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+        self.assertTrue(any("'Shared'" in p for p in problems), msg=problems)
+
+    def test_two_modules_reexporting_the_same_external_binding_agree(self):
+        self.fixture.write_module("workstation-1", ['export { Row } from "../contracts";'])
+        self.fixture.write_module("workstation-2", ['export { Row } from "../contracts";'])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0, msg=problems)
+
+    def test_same_published_name_from_different_bindings_is_a_duplicate(self):
+        # Both publish `Row`, but from different sources — TypeScript drops the name.
+        self.fixture.write_module("workstation-1", ['export { Row } from "../contracts";'])
+        self.fixture.write_module("workstation-2", ['export { Row } from "../other-contracts";'])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1, msg=problems)
+
+    def test_alias_of_a_different_binding_still_collides(self):
+        # workstation-2 publishes `Shared`, but it is contracts' `Row`, not workstation-1's
+        # `Shared` — a genuinely ambiguous name that must stay reported.
+        self.fixture.write_module("workstation-1", ["export interface Shared { id: string; }"])
+        self.fixture.write_module("workstation-2", ['export { Row as Shared } from "../contracts";'])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1, msg=problems)
+
+    def test_local_reexport_without_a_from_clause_belongs_to_its_own_module(self):
+        self.fixture.write_module(
+            "workstation-1",
+            ["interface Shared { id: string; }", "export { Shared };"],
+        )
+        self.fixture.write_module("workstation-2", ["export interface Shared { id: string; }"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1, msg=problems)
