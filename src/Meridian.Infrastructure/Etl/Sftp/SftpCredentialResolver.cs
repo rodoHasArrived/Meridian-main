@@ -44,19 +44,28 @@ public sealed class EnvironmentSftpCredentialResolver : ISftpCredentialResolver
         if (string.IsNullOrWhiteSpace(secretRef))
             throw new InvalidOperationException($"SFTP {role} secretRef is required.");
 
+        // Trim only to recognise and parse an `env:` reference; a literal secret is returned
+        // exactly as configured. `env: MERIDIAN_SFTP_PASSWORD` reads naturally in YAML, and
+        // Evaluate accepts it, but passing the leading space to GetEnvironmentVariable looked
+        // up a different name and failed after the destination had already been reported
+        // ready — an accepted-then-broken export. Trimming a *literal* password is the same
+        // class of defect pointed the other way: it silently substitutes a different
+        // credential, and leaves a password whose significant characters include leading or
+        // trailing whitespace impossible to express. Publishing passed destination.SecretRef
+        // through verbatim before destinations moved onto this path, so trimming here would
+        // have broken exports that authenticate today.
         var trimmed = secretRef.Trim();
-        // Trim the variable name the same way readiness does. `env: MERIDIAN_SFTP_PASSWORD`
-        // reads naturally in YAML, and Evaluate accepts it, but passing the leading space to
-        // GetEnvironmentVariable looked up a different name and failed after the destination
-        // had already been reported ready — an accepted-then-broken export.
         var password = trimmed.StartsWith("env:", StringComparison.OrdinalIgnoreCase)
             ? Environment.GetEnvironmentVariable(trimmed[4..].Trim())
-            : trimmed;
+            : secretRef;
 
         if (string.IsNullOrEmpty(password))
             throw new InvalidOperationException($"SFTP {role} secretRef '{secretRef}' did not resolve to a password.");
 
-        return new SftpCredentialMaterial(username.Trim(), password);
+        // Verbatim for the same reason as the password above: the publisher passed
+        // destination.Username straight through, so trimming it here would silently
+        // authenticate a destination that works today as a different account.
+        return new SftpCredentialMaterial(username, password);
     }
 }
 

@@ -140,6 +140,33 @@ public sealed class SftpCapabilityServiceTests
     }
 
     [Fact]
+    public async Task ResolveAsync_PreservesWhitespaceInALiteralCredential()
+    {
+        var resolver = new EnvironmentSftpCredentialResolver();
+
+        // Publishing passed destination.Username and destination.SecretRef through verbatim
+        // before destinations moved onto this resolver. Trimming them here would silently
+        // substitute a different credential and break an export that authenticates today,
+        // and it leaves a secret whose significant characters include leading or trailing
+        // whitespace impossible to express at all. Only an `env:` reference is trimmed, and
+        // only so the variable name resolves.
+        var destination = new EtlDestinationDefinition
+        {
+            Kind = EtlDestinationKind.Sftp,
+            Location = "sftp://partner.example.com/inbound",
+            Username = " meridian ops ",
+            SecretRef = "  pass word  ",
+            HostKeySha256Fingerprint =
+                "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        };
+
+        var material = await resolver.ResolveAsync(destination, CancellationToken.None);
+
+        material.Password.Should().Be("  pass word  ");
+        material.Username.Should().Be(" meridian ops ");
+    }
+
+    [Fact]
     public void Evaluate_Destination_WithAnEmptyEnvReference_IsNotReady()
     {
         var service = new SftpCapabilityService();
