@@ -221,7 +221,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     // Escalate is excluded only while the rule is still asking for approval, which
                     // is the one outcome a governed release can actually satisfy.
                     || (entry.Rule.Severity is not (RiskRuleSeverity.Info or RiskRuleSeverity.Warning)
-                        && !(entry.Rule.Severity is RiskRuleSeverity.Escalate || entry.Result.RequiresApproval)));
+                        && !(entry.Rule.Severity is RiskRuleSeverity.Escalate || entry.Result.RequiresApproval))));
 
             foreach (var (rule, result) in evaluated)
             {
