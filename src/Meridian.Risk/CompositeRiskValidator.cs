@@ -265,7 +265,13 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 // which is the one thing the Unmeasurable contract exists to prevent. An operator
                 // can authorise accepting a known breach; they cannot authorise a measurement that
                 // never happened.
+                // Critical is excluded for the same reason, one step further: its breach has
+                // already opened the circuit breaker in the side-effect pass above. Letting a token
+                // release it would route the very order that halted the desk -- and route it past a
+                // breaker the OMS checked *before* risk validation, so nothing downstream stops it.
+                // Critical is documented to reject and halt; an approval cannot undo a halt.
                 if ((result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
+                    && rule.Severity != RiskRuleSeverity.Critical
                     && !result.IsUnmeasurable
                     && !hasBlockingBreach)
                 {
