@@ -306,6 +306,16 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   decomposed to defer only those shares, so that case cannot currently be excluded and does stay
   provisional. Provisional therefore belongs to loss-generating disposals and to mixed gain/loss
   reliefs, not to every recent one.
+- **Nor to a disposal the policy does not govern at all — which is the default.** The same guard
+  clause at `LedgerTaxLotReliefProjector.cs:232` short-circuits on `!AppliesOn(input.SaleDate)`
+  before it ever looks at the realized result, and `WashSalePolicy.AppliesOn`
+  (`WashSale.cs:66-67`) is `Enabled && (EffectiveDate is not { } effective || saleDate >=
+  effective)`. `WashSalePolicy.Disabled` (`WashSale.cs:47`) is the named default, so an account
+  with no wash-sale policy configured, or one whose policy takes effect after the sale date, can
+  never accrue exposure however the window moves. The store-side query applies the same gate
+  (`PostgresLedgerJournalStore.WashSale.cs:26`), so a disposal outside policy governance is not
+  merely zero today — it is settled, and provisional labelling would promise a re-evaluation that
+  has nothing to re-evaluate. Governance is therefore the first test, ahead of the loss test.
 - The realized gain and loss contract that already reaches the workstation exposes a single scalar
   with no character split — extending it is the lowest-friction first move.
 - The shared contracts must not reference the ledger implementation assembly; define contract-side
