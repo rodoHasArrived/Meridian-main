@@ -60,7 +60,7 @@ STANDALONE_MODULES = {
 # dropped out of the barrel list and then tripped the orphan-module check instead — a
 # confusing failure for a line TypeScript reads as an ordinary export.
 BARREL_EXPORT = re.compile(
-    r"^\s*export\s+\*\s+from\s+(?P<q>[\"'])\./types/(?P<module>[^\"']+)(?P=q)\s*;?\s*(?://.*)?$",
+    r"^\s*export\s+(?:type\s+)?\*\s+from\s+(?P<q>[\"'])\./types/(?P<module>[^\"']+)(?P=q)\s*;?\s*(?://.*)?$",
     re.MULTILINE,
 )
 # Leading whitespace is permitted because indentation alone does not mean nesting: 11 declarations
@@ -106,6 +106,14 @@ NAMESPACE_REEXPORT = re.compile(
     re.MULTILINE,
 )
 BARE_STAR_REEXPORT = re.compile(r"(?<![\w$.])export(?:\s+type)?\s*\*\s*from\b", re.MULTILINE)
+# `export const { Shared } = value` publishes every binding in the pattern, which can nest,
+# rename, default, and rest. Enumerating those correctly is parser work; leaving them uncollected
+# means a real collision with a sibling's declaration reports as zero duplicates. Rejected
+# outright instead, exactly as a bare star re-export is.
+DESTRUCTURED_EXPORT = re.compile(
+    r"(?<![\w$.])export\s+(?:declare\s+)?(?:const|let|var)\s*[{\[]",
+    re.MULTILINE,
+)
 MODULE_SPECIFIER = re.compile(r"[\"'](?P<module>[^\"']+)[\"']")
 # A `from` clause immediately after a re-export's closing brace or star.
 FROM_CLAUSE = re.compile(r"\s*from\b")
@@ -394,6 +402,15 @@ def evaluate(barrel_path: Path, types_dir: Path) -> tuple[list[str], dict[str, i
         if not module_path.is_file():
             problems.append(f"src/types.ts re-exports './types/{module}', which does not exist")
             continue
+        for _ in DESTRUCTURED_EXPORT.finditer(
+            strip_comments_and_strings(module_path.read_text(encoding="utf-8"))
+        ):
+            problems.append(
+                f"src/types/{module}.ts uses a destructured export "
+                "('export const {{ ... }} = ...'). This gate cannot enumerate the names that "
+                "publishes, so a collision between them and a sibling module's declaration would "
+                "be reported as zero duplicates. Declare the bindings individually."
+            )
         for target in star_reexports(module_path):
             problems.append(
                 f"src/types/{module}.ts republishes '{target}' with a bare 'export *'. "

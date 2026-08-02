@@ -679,3 +679,55 @@ class UnicodeEscapeTests(unittest.TestCase):
         self.assertEqual(MODULE.join_literals(r'"line\nbreak"'), "line\nbreak")
         self.assertEqual(MODULE.join_literals(r'"Requires C:\\network share"'), "Requires C:\\network share")
         self.assertEqual(MODULE.join_literals(r'"say \"hi\""'), 'say "hi"')
+
+
+class EnclosingTypeAndCodeOnlyIdentityTests(unittest.TestCase):
+    def test_a_dto_assignment_beside_a_custom_fact_is_not_a_skip(self):
+        # A file-wide flag inventoried this DTO assignment as a disabled test purely because the
+        # file also declares a custom fact, so the gate demanded ownership for something that is
+        # not a test and blocked a valid change.
+        text = (
+            "public sealed class WidgetFactAttribute : FactAttribute { }\n"
+            "public sealed class WidgetTests\n"
+            "{\n"
+            '    private readonly SearchOptions _o = new() { Skip = "cursor" };\n'
+            "}\n"
+        )
+        code = MODULE.blank_non_code(text, fsharp=False)
+        position = text.index('Skip = "cursor"')
+
+        self.assertFalse(MODULE.encloses_test_attribute(code, position))
+
+    def test_a_skip_inside_the_custom_fact_itself_is_still_a_skip(self):
+        text = (
+            "public sealed class WidgetTests { }\n"
+            "public sealed class WidgetFactAttribute : FactAttribute\n"
+            "{\n"
+            "    public WidgetFactAttribute()\n"
+            "    {\n"
+            '        Skip = "Docker is unavailable.";\n'
+            "    }\n"
+            "}\n"
+        )
+        code = MODULE.blank_non_code(text, fsharp=False)
+        position = text.index('Skip = "Docker')
+
+        self.assertTrue(MODULE.encloses_test_attribute(code, position))
+
+    def test_identity_ignores_a_method_shaped_comment(self):
+        text = '[Fact(Skip = "held")]\n// public void Placeholder()\npublic void RealTest() { }\n'
+        code = MODULE.blank_non_code(text, fsharp=False)
+        position = code.index("Skip")
+
+        self.assertEqual(
+            MODULE.resolve_test_identity(code, position, fsharp=False, in_attribute=True),
+            "RealTest",
+        )
+
+    def test_blank_non_code_preserves_offsets(self):
+        for fsharp, text in (
+            (False, 'var a = "x"; /* c */ // d\nvar b = 1;\n'),
+            (True, 'let a = "x" (* c (* nested *) *)\nlet b = 1\n'),
+        ):
+            with self.subTest(fsharp=fsharp):
+                self.assertEqual(len(MODULE.blank_non_code(text, fsharp=fsharp)), len(text))

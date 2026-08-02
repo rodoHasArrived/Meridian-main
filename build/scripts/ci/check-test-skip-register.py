@@ -435,6 +435,103 @@ FSHARP_MEMBER_AFTER = re.compile(
     r"\blet\s+(?:``(?P<quoted>[^`\n]+)``|(?P<plain>[A-Za-z_]\w*))\s*(?:\(|:|=)"
 )
 TYPE_BEFORE = re.compile(r"\b(?:class|record|struct|type)\s+(?P<name>[A-Za-z_]\w*)")
+# The type declaration itself, through its base list, so the base can be tested for Fact/Theory.
+TYPE_DECLARATION = re.compile(
+    r"\b(?:class|record|struct|type)\s+(?P<name>[A-Za-z_]\w*)(?P<bases>[^{=\n]*)"
+)
+
+
+def encloses_test_attribute(text: str, position: int) -> bool:
+    """Return whether the type enclosing *position* is an xUnit attribute subclass.
+
+    This replaces a file-wide flag. A file that declares a custom `FactAttribute` *and* holds an
+    unrelated string assignment such as `new SearchOptions { Skip = "cursor" }` had the DTO
+    assignment inventoried as a disabled test, so the gate demanded an ownership entry for
+    something that is not a test and blocked a valid change. The six real cases in this repository
+    all assign `Skip` inside the attribute's own constructor, so scoping to the enclosing type
+    keeps every one of them while dropping assignments that merely share a file.
+    """
+    enclosing = None
+    for match in TYPE_DECLARATION.finditer(text, 0, position):
+        enclosing = match
+    return enclosing is not None and XUNIT_ATTRIBUTE_BASE.search(enclosing.group("bases")) is not None
+
+
+def blank_non_code(text: str, fsharp: bool) -> str:
+    """Replace comments and string bodies with spaces, preserving every offset.
+
+    Identity resolution looks for the member a skip decorates by scanning forward, and the
+    enclosing-type check scans backward for a type declaration. Both read source, so a comment or
+    string containing method-shaped text — `// public void Placeholder()`, or an attribute
+    argument quoting one — was selected as though it were code. Offsets are preserved so positions
+    found by the scanner stay valid against the blanked copy.
+    """
+    out: list[str] = []
+    i = 0
+    length = len(text)
+    depth = 0  # F# (* *) comments nest.
+    while i < length:
+        ch = text[i]
+        if fsharp and text.startswith("(*", i):
+            depth += 1
+            out.append("  ")
+            i += 2
+            continue
+        if fsharp and depth and text.startswith("*)", i):
+            depth -= 1
+            out.append("  ")
+            i += 2
+            continue
+        if depth:
+            out.append("\n" if ch == "\n" else " ")
+            i += 1
+            continue
+        if text.startswith("//", i):
+            end = text.find("\n", i)
+            end = length if end == -1 else end
+            out.append(" " * (end - i))
+            i = end
+            continue
+        if not fsharp and text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            end = length if end == -1 else end + 2
+            out.append("".join("\n" if c == "\n" else " " for c in text[i:end]))
+            i = end
+            continue
+        if ch == '"':
+            verbatim = i > 0 and text[i - 1] == "@"
+            fence = 0
+            while i + fence < length and text[i + fence] == '"':
+                fence += 1
+            if fence >= 3:
+                closing = '"' * fence
+                end = text.find(closing, i + fence)
+                end = length if end == -1 else end + fence
+                out.append("".join("\n" if c == "\n" else " " for c in text[i:end]))
+                i = end
+                continue
+            start = i
+            i += 1
+            while i < length:
+                if verbatim:
+                    if text[i] == '"':
+                        if i + 1 < length and text[i + 1] == '"':
+                            i += 2
+                            continue
+                        break
+                else:
+                    if text[i] == "\\":
+                        i += 2
+                        continue
+                    if text[i] == '"' or text[i] == "\n":
+                        break
+                i += 1
+            i = min(i + 1, length)
+            out.append("".join("\n" if c == "\n" else " " for c in text[start:i]))
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
 
 
 def resolve_test_identity(text: str, position: int, fsharp: bool, in_attribute: bool) -> str:
@@ -479,12 +576,18 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
             if "Skip" not in text:
                 continue
             relative = path.relative_to(repo_root).as_posix()
-            declares_test_attribute = XUNIT_ATTRIBUTE_BASE.search(text) is not None
+            # Identity and enclosing-type checks run over code only. A comment or an unrelated
+            # attribute string holding method-shaped text such as `public void Placeholder()`
+            # was selected as the decorated test, so renaming the real test left the register key
+            # unchanged and silently transferred its owner and review date.
+            code = blank_non_code(text, fsharp=path.suffix == ".fs")
             for position, in_attribute in find_skip_positions(text, fsharp=path.suffix == ".fs"):
                 expression = read_expression(text, position)
                 if expression is None or not expression.strip():
                     continue
-                if not is_skip_expression(expression, declares_test_attribute, in_attribute):
+                if not is_skip_expression(
+                    expression, encloses_test_attribute(code, position), in_attribute
+                ):
                     continue
                 line = text.count("\n", 0, position) + 1
                 # A pure literal registers under the exact text the runner reports. Anything
@@ -501,7 +604,7 @@ def discover_skips(tests_dir: Path, repo_root: Path) -> list[SkipSite]:
                         relative,
                         line,
                         reason,
-                        resolve_test_identity(text, position, path.suffix == ".fs", in_attribute),
+                        resolve_test_identity(code, position, path.suffix == ".fs", in_attribute),
                     )
                 )
     return sites

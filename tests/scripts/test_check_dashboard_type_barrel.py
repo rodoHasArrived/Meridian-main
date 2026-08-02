@@ -572,3 +572,42 @@ class SpecifierResolutionTests(unittest.TestCase):
         problems, counts = self.fixture.evaluate()
 
         self.assertEqual(counts["duplicates"], 0, msg=problems)
+
+
+class BarrelSyntaxCoverageTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_type_only_barrel_entries_are_discovered(self):
+        self.fixture.barrel.write_text(
+            'export type * from "./types/workstation-1";\n'
+            'export * from "./types/workstation-2";\n',
+            encoding="utf-8",
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["modules"], 2, msg=problems)
+        self.assertEqual(problems, [])
+
+    def test_a_destructured_export_is_rejected_rather_than_uncollected(self):
+        # `export const { Shared } = value` publishes bindings this lexer cannot enumerate, so
+        # leaving them uncollected would report a real collision as zero duplicates.
+        self.fixture.write_module("workstation-1", ["export const { Shared } = value;"])
+
+        problems, _ = self.fixture.evaluate()
+
+        self.assertTrue(
+            any("workstation-1" in p and "destructured export" in p for p in problems),
+            msg=problems,
+        )
+
+    def test_an_ordinary_const_export_is_unaffected(self):
+        self.fixture.write_module("workstation-1", ["export const Shared = 1;"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertFalse(any("destructured" in p for p in problems), msg=problems)
+        self.assertEqual(counts["duplicates"], 0)
