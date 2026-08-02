@@ -107,6 +107,18 @@ public sealed class RiskRuleRuntimeService
     public int MaxOrdersPerMinute => GetMaxOrdersPerMinute();
 
     /// <summary>
+    /// Reads live consumed rate capacity from the throttle instance that actually enforces the
+    /// ceiling. Set by the composition root; null when no reserving throttle is composed, in which
+    /// case the status falls back to counting audit entries.
+    /// <para>
+    /// The fallback cannot see reservations taken for orders still in flight, so it under-reports
+    /// exactly when the desk is closest to the ceiling — the dashboard would show room the gate
+    /// will refuse to give. The probe reports the number the gate itself compares.
+    /// </para>
+    /// </summary>
+    public Func<int>? OrderRateUsageProbe { get; set; }
+
+    /// <summary>
     /// Operator-tuned portfolio-wide gross exposure ceiling, read per evaluation by the
     /// enforced gross-exposure rule. Null when unconfigured (the rule approves).
     /// </summary>
@@ -572,17 +584,43 @@ public sealed class RiskRuleRuntimeService
             Severity: "Critical");
     }
 
+    private int? ReadOrderRateUsage()
+    {
+        var probe = OrderRateUsageProbe;
+        if (probe is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return probe();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Order-rate usage probe failed; falling back to audit reconstruction");
+            return null;
+        }
+    }
+
     private RiskRuleStatusDto BuildOrderRateStatus(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         DateTimeOffset asOf)
     {
         var maxOrdersPerMinute = GetMaxOrdersPerMinute();
         var cutoff = asOf.AddMinutes(-1);
-        var recentOrderCount = auditEntries.Count(entry =>
+
+        // Prefer the enforcing instance. Audit reconstruction counts only orders that were
+        // submitted, so it misses capacity held for in-flight submissions and reports room the
+        // gate will not honour.
+        var recentOrderCount = ReadOrderRateUsage() ?? auditEntries.Count(entry =>
             entry.OccurredAt >= cutoff &&
             string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase));
 
-        var breached = recentOrderCount > maxOrdersPerMinute;
+        // At the ceiling the throttle already refuses, so the dashboard has to say Constrained at
+        // the same count rather than one above it. Reporting Observe on an order the gate would
+        // reject is the disagreement this probe exists to remove.
+        var breached = recentOrderCount >= maxOrdersPerMinute;
         var state = breached
             ? "Constrained"
             : recentOrderCount >= (int)Math.Ceiling(maxOrdersPerMinute * 0.8m) ? "Observe" : "Healthy";
