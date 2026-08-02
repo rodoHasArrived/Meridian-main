@@ -59,7 +59,7 @@ Reservations for the in-flight blueprints:
 | 029–030 | [Incentive-fee mechanics](../../development/accounting-blueprints/incentive-fee-mechanics.md) — policy, state |
 | 031–032 | [Commitment & capital-call engine](../../development/accounting-blueprints/commitment-and-capital-call-engine.md) — commitments, expiry events |
 | 033–035 | [Equalization / series accounting](../../development/accounting-blueprints/equalization-and-series-accounting.md) — policy, subscription lots, fund series |
-| 036–037 | [Fail-closed mark freshness](w10-mark-001-fail-closed-marks.md) — mark override plus audit, per-position freshness assessment |
+| 036–038 | [Fail-closed mark freshness](w10-mark-001-fail-closed-marks.md) — mark override plus audit, per-position freshness assessment, valuation attempt record |
 
 Re-derive the next free ordinal from disk at implementation time and update this table if an
 unrelated lane lands first. Do not renumber a migration that has already shipped.
