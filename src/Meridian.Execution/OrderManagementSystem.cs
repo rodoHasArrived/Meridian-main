@@ -407,7 +407,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         sessionId,
                         ct,
                         rejectionSource: "risk validator",
-                        metadata: BuildRiskWarningsAuditMetadata(riskResult.Warnings),
+                        metadata: BuildRiskDecisionAuditMetadata(riskResult),
                         riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null,
                         riskDecision: riskResult.ToSummary())
                         .ConfigureAwait(false);
@@ -740,7 +740,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     RunId: runId,
                     Symbol: safeRequest.Symbol,
                     CorrelationId: correlationId,
-                    Message: ex.Message), ct).ConfigureAwait(false);
+                    Message: ex.Message,
+                    // Stamped only when dispatch was attempted, because only then did the slot
+                    // stay consumed. Marking a pre-dispatch failure would tell the status
+                    // projection to count capacity the throttle had already released.
+                    Reason: dispatchAttempted ? AmbiguousSubmissionReason : null),
+                    // CancellationToken.None: a cancelled caller must not erase the record of
+                    // capacity the throttle is still holding on their behalf.
+                    CancellationToken.None).ConfigureAwait(false);
             }
 
             return new OrderResult
@@ -754,6 +761,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             };
         }
     }
+
+    /// <summary>
+    /// Audit reason marking the one <c>OrderRejected</c> entry whose rate slot was <em>not</em>
+    /// released: a gateway submission that threw after dispatch was attempted. The order may still
+    /// execute, so the throttle over-counts rather than under-counts, and the status projection has
+    /// to count this entry when it falls back to reconstructing usage from audit history.
+    /// </summary>
+    public const string AmbiguousSubmissionReason = "AmbiguousSubmission";
 
     /// <inheritdoc />
     public async Task<OrderResult> CancelOrderAsync(string orderId, CancellationToken ct = default)

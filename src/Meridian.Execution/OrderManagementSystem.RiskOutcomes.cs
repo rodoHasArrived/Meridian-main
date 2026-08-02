@@ -815,6 +815,59 @@ public sealed partial class OrderManagementSystem
         return metadata;
     }
 
+    /// <summary>
+    /// Serializes the whole decision into the rejection audit: the headline names one breach, but
+    /// every rule is evaluated before a decision is taken, so a rejection can carry several.
+    /// Without these fields a breach behind the headline exists only on the transient
+    /// <see cref="OrderResult"/> and never reaches rule status or history.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string>? BuildRiskDecisionAuditMetadata(
+        RiskValidationResult decision)
+    {
+        if (decision.Violations.Count == 0 && decision.Warnings.Count == 0)
+        {
+            return null;
+        }
+
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["decisionSource"] = "risk",
+            ["decision"] = decision.Decision.ToString(),
+        };
+
+        AppendRiskWarningsMetadata(metadata, decision.Warnings);
+
+        if (decision.Violations.Count == 0)
+        {
+            return metadata;
+        }
+
+        // Invariant culture on the numerics: a WAL written under one locale has to parse under
+        // another, and these are read back by the status projection.
+        metadata["violation.count"] = decision.Violations.Count.ToString(CultureInfo.InvariantCulture);
+        for (var i = 0; i < decision.Violations.Count; i++)
+        {
+            var violation = decision.Violations[i];
+            var prefix = string.Create(CultureInfo.InvariantCulture, $"violation.{i}");
+            metadata[$"{prefix}.rule"] = violation.RuleName;
+            metadata[$"{prefix}.code"] = violation.Code;
+            metadata[$"{prefix}.message"] = violation.Message;
+            metadata[$"{prefix}.severity"] = violation.Severity.ToString();
+
+            if (violation.ObservedValue is { } observed)
+            {
+                metadata[$"{prefix}.observed"] = observed.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (violation.LimitValue is { } limit)
+            {
+                metadata[$"{prefix}.limit"] = limit.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        return metadata;
+    }
+
     private static void AppendRiskWarningsMetadata(
         IDictionary<string, string> metadata,
         IReadOnlyList<string> warnings)

@@ -615,7 +615,16 @@ public sealed class RiskRuleRuntimeService
         // gate will not honour.
         var recentOrderCount = ReadOrderRateUsage() ?? auditEntries.Count(entry =>
             entry.OccurredAt >= cutoff &&
-            string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase));
+            (string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase) ||
+
+             // An ambiguous submission was rejected but kept its slot, because the order may still
+             // have executed. Counting only OrderSubmitted would show the desk room the throttle
+             // has already spent -- the one rejection that must not be treated as released.
+             (string.Equals(entry.Action, "OrderRejected", StringComparison.OrdinalIgnoreCase) &&
+              string.Equals(
+                  entry.Reason,
+                  OrderManagementSystem.AmbiguousSubmissionReason,
+                  StringComparison.Ordinal))));
 
         // At the ceiling the throttle already refuses, so the dashboard has to say Constrained at
         // the same count rather than one above it. Reporting Observe on an order the gate would
@@ -854,16 +863,65 @@ public sealed class RiskRuleRuntimeService
             .Where(entry =>
                 string.Equals(entry.Action, actionHint, StringComparison.OrdinalIgnoreCase) &&
                 ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                 (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false)))
+                 (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 MatchesViolationMetadata(entry, textHint)))
             .OrderByDescending(static entry => entry.OccurredAt)
             .Take(5)
             .ToList();
     }
 
-    private static List<string> DescribeViolations(IEnumerable<ExecutionAuditEntry> entries) =>
+    /// <summary>
+    /// Searches the structured violation set the rejection audit carries, not just its headline.
+    /// <para>
+    /// Every rule is evaluated before a decision is taken, so one rejection can record several
+    /// breaches while only the most severe becomes the message. Matching on the headline alone made
+    /// every other rule's breach invisible to rule status and history — a position-limit breach
+    /// behind a drawdown headline simply disappeared.
+    /// </para>
+    /// </summary>
+    private static bool MatchesViolationMetadata(ExecutionAuditEntry entry, string textHint) =>
+        entry.Metadata is { } metadata &&
+        metadata.Any(pair =>
+            pair.Key.StartsWith(ViolationMetadataPrefix, StringComparison.Ordinal) &&
+            (pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
+             pair.Key.EndsWith(".code", StringComparison.Ordinal)) &&
+            pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Reports the message belonging to the matched breach rather than the entry's headline, so a
+    /// rule's status quotes what that rule found instead of what a more severe rule found.
+    /// </summary>
+    private static List<string> DescribeViolations(IEnumerable<ExecutionAuditEntry> entries, string textHint) =>
         entries
-            .Select(static entry => entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.")
+            .Select(entry => DescribeViolation(entry, textHint))
             .ToList();
+
+    private static string DescribeViolation(ExecutionAuditEntry entry, string textHint)
+    {
+        if (entry.Metadata is { } metadata)
+        {
+            var matched = metadata
+                .Where(pair =>
+                    pair.Key.StartsWith(ViolationMetadataPrefix, StringComparison.Ordinal) &&
+                    (pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
+                     pair.Key.EndsWith(".code", StringComparison.Ordinal)) &&
+                    pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase))
+                .Select(pair => pair.Key[..pair.Key.LastIndexOf('.')])
+                .FirstOrDefault();
+
+            if (matched is not null &&
+                metadata.TryGetValue($"{matched}.message", out var message) &&
+                !string.IsNullOrWhiteSpace(message))
+            {
+                return message;
+            }
+        }
+
+        return entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.";
+    }
+
+    /// <summary>Prefix for the per-violation audit metadata keys, e.g. <c>violation.0.rule</c>.</summary>
+    private const string ViolationMetadataPrefix = "violation.";
 
     private static bool HasLiveViolation(IReadOnlyList<ExecutionAuditEntry> entries, DateTimeOffset asOf) =>
         entries.Any(entry => asOf - entry.OccurredAt <= ViolationLivenessWindow);
@@ -872,7 +930,7 @@ public sealed class RiskRuleRuntimeService
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         string actionHint,
         string textHint) =>
-        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint));
+        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint), textHint);
 
     /// <summary>
     /// Drawdown as a percentage of the capital the P&amp;L was earned on, i.e. the starting
