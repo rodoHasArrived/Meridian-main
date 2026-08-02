@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 29.7% |
+| Weighted score | 29.8% |
 | Endpoint coverage | 41.2% |
-| Workstation contract coverage | 12.4% |
+| Workstation contract coverage | 12.6% |
 | Endpoints documented | 254 / 617 |
-| Workstation contracts documented | 112 / 903 |
+| Workstation contracts documented | 114 / 903 |
 
 ## Endpoint Coverage
 
@@ -1061,9 +1061,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReconciliationBreakDispositionDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:386` |
 | `ReconciliationBreakDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:124` |
 | `ReconciliationBreakExplanationDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:535` |
-| `ReconciliationBreakMeasureDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:376` |
+| `ReconciliationBreakMeasureDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:376` |
 | `ReconciliationBreakMeasureKindDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:365` |
-| `ReconciliationBreakQueueItem` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:407` |
+| `ReconciliationBreakQueueItem` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:407` |
 | `ReconciliationBreakQueueProjectionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:247` |
 | `ReconciliationBreakQueueProjectionItemDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:262` |
 | `ReconciliationBreakQueueScope` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:514` |
@@ -1550,7 +1550,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 363 mapped endpoint gap(s).
-- Document or intentionally suppress 791 workstation contract gap(s).
+- Document or intentionally suppress 789 workstation contract gap(s).
 
 ---
 

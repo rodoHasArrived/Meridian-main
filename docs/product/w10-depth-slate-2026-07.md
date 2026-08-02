@@ -209,6 +209,18 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   two materially different runs as matching. The comparison needs both ids *and* both versions, and
   must treat an absent version as unknown rather than as agreement — which in turn means the
   adapter has to start recording them.
+- **A run status is inferred, never recorded — so a *failed* run can present as a successful one.**
+  `StatementRunWorkflowService.CreateAsync`
+  (`FinancialOperations/Reconciliation/StatementRunWorkflowService.cs`) persists the import through
+  `brokerStatementService.ImportAsync` **before** it loads internal populations, runs
+  `StatementRunMatcher.Match`, or calls `breakStore.WriteAsync`. A throw anywhere in that later
+  stretch leaves a durable import with no breaks attached. `ReconciliationApiService.cs:634` then
+  labels any retained import by counting open exceptions —
+  `openExceptionCount > 0 ? ReviewRequired : Completed` — so that half-finished run reads as
+  `Completed`. The terminal-status pair is therefore not sufficient evidence on its own: gating
+  lineage on `ReviewRequired`-or-`Completed` would let a run that never reconciled clear every prior
+  break. Conclusiveness has to come from a durably recorded reconciliation outcome, not from an
+  absence of breaks.
 - The queue carries a single break identifier and nothing distinguishing a lineage from an occurrence
   of it. Adding lineage alone leaves a cleared-then-recurring break able to reopen its original item
   and keep the original SLA age, or to overwrite the interval during which it was clear. Lineage and
@@ -249,6 +261,16 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   can still contain a material member, and gating only on the aggregate lets that member bypass the
   independent approval it individually requires. Any group cap must be measured on gross exposure,
   and the presence of one material or high-risk member must force the approval separation.
+- **But gross exposure has no safe summation rule today, because the amounts are not commensurable.**
+  `ReconciliationBreakQueueItem.Variance` (`Workstation/ReconciliationDtos.cs:407-414`) is a bare
+  `decimal` with no currency and no unit, while the typed item-level measures beside it
+  (`ReconciliationBreakMeasureDto`, `:376-383`) carry a `Kind` of `Value`, `Quantity`, or `CostBasis`
+  and a free-text `Unit`, and the queue projection can put a quantity delta into that same top-level
+  variance. Summing absolute variances across a cause group can therefore add shares to cash, or USD
+  to EUR, and trip or skip the group threshold on a number that means nothing. Gross exposure has to
+  be aggregated within a comparable measure and currency — or across a governed translation — with an
+  unknown unit or an unavailable rate failing closed to the stricter approval rather than being
+  quietly summed.
 - **The bulk request carries no expected versions and no preview receipt.** It holds break IDs, an
   action, an actor, command and correlation IDs, a source, an idempotency key, dry-run and
   partial-success flags, and optional reason, assignee, and priority — and the repository reads each

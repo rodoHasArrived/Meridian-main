@@ -1,11 +1,11 @@
 {
   "total_files": 640,
-  "total_lines": 118554,
+  "total_lines": 118576,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 185.2,
+  "average_lines": 185.3,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2954,7 +2954,7 @@
     },
     {
       "path": "docs/product/w10-depth-slate-2026-07.md",
-      "line_count": 515,
+      "line_count": 537,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

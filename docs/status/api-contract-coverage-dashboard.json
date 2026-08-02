@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.7,
+  "score_percent": 29.8,
   "endpoint_coverage_percent": 41.2,
-  "contract_coverage_percent": 12.4,
+  "contract_coverage_percent": 12.6,
   "summary": {
     "endpoint_count": 617,
     "documented_endpoint_count": 254,
     "undocumented_endpoint_count": 363,
     "workstation_contract_count": 903,
-    "documented_workstation_contract_count": 112,
-    "undocumented_workstation_contract_count": 791
+    "documented_workstation_contract_count": 114,
+    "undocumented_workstation_contract_count": 789
   },
   "endpoints": [
     {
@@ -6376,7 +6376,7 @@
     {
       "name": "ReconciliationBreakMeasureDto",
       "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:376",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReconciliationBreakDispositionDto",
@@ -6391,7 +6391,7 @@
     {
       "name": "ReconciliationBreakQueueItem",
       "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:407",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReconciliationBreakQueueScope",
