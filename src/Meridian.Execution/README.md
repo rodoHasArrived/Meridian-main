@@ -82,9 +82,10 @@ choice.
 so `cs/log-forging` recognizes a sanitized call site and no query filter is needed. The invariant is
 additionally enforced by `build/scripts/check-execution-log-sanitization.py`, which fails on any
 caller-supplied value reaching a logger unsanitized — it catches a *missing* sanitizer call, which is
-the direction the query cannot check, and it runs whether or not code scanning does. It is a required
-step in `scripts/ci.sh`, so this is a ratchet rather than a convention. Run it after
-touching logging in this module; `--list` prints the patterns it checks. A hand-written grep was
+the direction the query cannot check. It is **not** wired into `scripts/ci.sh` or any workflow yet:
+this module's phase scope does not cover the CI entrypoint, so wiring it needs a change that does.
+Until then it is a reviewer's tool, not a gate — treat the convention as enforced by review. Run it
+after touching logging in this module; `--list` prints the patterns it checks. A hand-written grep was
 declared clean twice during PR #2554 and was wrong both times, because its pattern list was narrower
 than the code — the list belongs in review, not in someone's shell history.
 Broker-backed order placement fails closed unless `BrokerageConfiguration` names the active

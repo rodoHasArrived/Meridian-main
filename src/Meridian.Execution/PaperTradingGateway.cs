@@ -105,7 +105,7 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
                         .BuildNoReferencePriceRejectReason(request.Symbol);
                     _logger.LogWarning(
                         "Paper order rejected: {Symbol} {Side} {Quantity} — {RejectReason}",
-                        LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, rejectReason);
+                        LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, LogSanitizer.Sanitize(rejectReason));
 
                     return new ExecutionReport
                     {

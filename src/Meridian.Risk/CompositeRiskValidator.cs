@@ -136,7 +136,10 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
                 if (!result.IsApproved)
                 {
-                    violations.Add((ToViolation(rule, result), rule.Priority));
+                    var released = releasedEntries.Any(entry =>
+                        string.Equals(entry.RuleName, rule.RuleName, StringComparison.Ordinal));
+
+                    violations.Add((ToViolation(rule, result, releasedByApproval: released), rule.Priority));
                 }
                 else if (result.Warnings.Count > 0)
                 {
@@ -183,8 +186,10 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
             // Any blocking breach outranks an escalation, regardless of priority order. Parking an
             // order that a later rule hard-rejects offers the operator a release that cannot work.
-            var hasBlockingBreach = evaluated.Any(static entry =>
+            var hasBlockingBreach = evaluated.Any(entry =>
                 !entry.Result.IsApproved
+                && !releasedEntries.Any(released =>
+                    string.Equals(released.RuleName, entry.Rule.RuleName, StringComparison.Ordinal))
                 && (IsEvaluationFailure(entry.Result)
                     // Critical is blocking whatever the result asks for; Error only when the rule
                     // itself did not request escalation for this order.
@@ -455,10 +460,22 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// Attributes a rule's refusal to the rule that raised it. Severity comes from the declaring
     /// rule, never from the result, which is what stops a rule contradicting its own severity.
     /// </summary>
-    private static RiskViolation ToViolation(IRiskRule rule, RiskValidationResult result) =>
+    /// <param name="releasedByApproval">
+    /// True when an operator's one-shot approval released this rule's escalation. The breach is
+    /// still recorded — the operator's decision is evidence, not amnesia — but at a non-blocking
+    /// severity, because a blocking violation on an approved result recomputes
+    /// <see cref="RiskValidationResult.IsApproved"/> to false and the release could never take
+    /// effect.
+    /// </param>
+    private static RiskViolation ToViolation(
+        IRiskRule rule,
+        RiskValidationResult result,
+        bool releasedByApproval = false) =>
         new(
             RuleName: rule.RuleName,
-            Severity: result.Code == EvaluationFailedCode ? RiskRuleSeverity.Error : rule.Severity,
+            Severity: releasedByApproval
+                ? RiskRuleSeverity.Warning
+                : result.Code == EvaluationFailedCode ? RiskRuleSeverity.Error : rule.Severity,
             Code: result.Code ?? "RISK_REJECTED",
             Message: string.IsNullOrWhiteSpace(result.RejectReason)
                 ? $"Rejected by risk rule '{rule.RuleName}'."

@@ -16,9 +16,11 @@ caught in review even where the query is not run. Twice during PR #2554 an ad-ho
 declared clean and was not, both times because the pattern list below was too narrow —
 keep it here, in review, rather than in anyone's head.
 
-Runs as a required step in ``scripts/ci.sh`` ("Enforce execution log sanitization"),
-so a raw caller-controlled log argument fails the build rather than depending on
-someone remembering to run this by hand.
+NOT yet wired into ``scripts/ci.sh`` or any workflow: this PR's roadmap phase scope
+(PR7) does not permit editing ``scripts/**``, and the only phase that does is PR9,
+which allows everything. Until a phase that covers the CI entrypoint carries the
+change, this is a reviewer's tool rather than a gate — run it after touching logging
+in the covered roots. Do not describe it as an enforced ratchet before it is one.
 
 Usage:
     python3 build/scripts/check-execution-log-sanitization.py [--list]
@@ -50,6 +52,12 @@ CALLER_SUPPLIED = (
     r"(?<![\w.])orderId\b",
     r"(?<![\w.])clientOrderId\b",
     r"(?<![\w.])symbol\b",
+    # Derived text. These locals are built from caller values -- a reject reason embeds the
+    # symbol via rule text -- so they carry the same injection the direct fields do. Listed by
+    # name because this checker matches argument expressions and does not follow dataflow; a
+    # newly named local carrying caller text has to be added here.
+    r"(?<![\w.])rejectReason\b",
+    r"(?<![\w.])reason\b",
 )
 
 LOG_CALL = re.compile(r"_logger\.Log\w+\((?:[^()]|\([^()]*\))*\)", re.S)

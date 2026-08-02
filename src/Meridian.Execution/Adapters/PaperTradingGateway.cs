@@ -284,7 +284,7 @@ public sealed class PaperTradingGateway : IOrderGateway
                 var rejectReason = PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol);
                 _logger.LogWarning(
                     "Paper order rejected: {ClientOrderId} {Symbol} — {RejectReason}",
-                    LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(request.Symbol), rejectReason);
+                    LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(rejectReason));
 
                 var rejection = new OrderStatusUpdate(
                     OrderId: orderId,
