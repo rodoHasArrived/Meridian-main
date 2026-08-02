@@ -27,7 +27,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 GENERATOR_VERSION = "1.0"
-EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", "TestResults", "artifacts"}
+EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", ".pytest_cache", "TestResults", "artifacts"}
 DEFAULT_RECENT_CHANGES_DAYS = 14
 DEFAULT_RECENT_CHANGES_LIMIT = 40
 

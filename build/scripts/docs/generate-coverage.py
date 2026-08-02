@@ -38,6 +38,7 @@ EXCLUDE_DIRS: Set[str] = {
     "bin",
     "obj",
     "__pycache__",
+    ".pytest_cache",
     ".vs",
 }
 STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"

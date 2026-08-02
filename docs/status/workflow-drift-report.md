@@ -64,12 +64,12 @@
 - `build/scripts/ai/tests/test_promptfoo_adapter.py`
 - `build/scripts/check-execution-log-sanitization.py`
 - `build/scripts/ci/check-apiclient-callers.py`
+- `build/scripts/ci/check-dashboard-type-barrel.py`
 - `build/scripts/ci/check-file-size.py`
 - `build/scripts/ci/check-lane-manifest.py`
+- `build/scripts/ci/check-test-skip-register.py`
 - `build/scripts/ci/check-warning-suppressions.py`
 - `build/scripts/ci/check-workflow-hygiene.py`
 - `build/scripts/ci/generate-release-evidence-manifest.py`
 - `build/scripts/ci/run-dotnet-ci-tests.py`
 - `build/scripts/ci/run-script-tests.py`
-- `build/scripts/ci/summarize-ci-artifacts.py`
-- `build/scripts/ci/validate-monitoring-deployment.py`
