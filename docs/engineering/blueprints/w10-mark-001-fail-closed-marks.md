@@ -85,7 +85,7 @@ flowchart TB
   end
   subgraph app["Meridian.Application.Accounting"]
     DMM["DailyMarkToMarketService<br/>maps MarkPriceQuote → MarkFreshnessInput"]
-    RUN["DailyMarkToMarketRun<br/>+ BlockedPositions"]
+    RUN["DailyMarkToMarketRun<br/>+ BlockedPositions<br/>+ OverriddenPositions"]
   end
   subgraph sto["Meridian.Storage"]
     OVR["PostgresMarkOverrideStore<br/>serializable claim + audit append"]
@@ -334,8 +334,25 @@ public sealed record MarkOverrideScope(
     string Symbol,
     string? FinancialAccountId,
     DateOnly ValuationDate,
-    DateOnly MarkObservedOn,
+    /// <summary>
+    /// Null when the mark carried no observation date at all. `MissingObservation` is a blocking
+    /// verdict, so an override must be expressible for it; a non-nullable field would force the
+    /// caller to invent a date that then fails exact matching. Null participates in scope
+    /// equality as a value — it means "the mark with no observation date", not "any date".
+    /// </summary>
+    DateOnly? MarkObservedOn,
     string PolicyVersion);
+
+/// <summary>
+/// Who consumed an override and as part of which valuation. Without this the audit row can record
+/// that an authorisation became <see cref="MarkOverrideState.Consumed"/> but not where it was used,
+/// which is not durable evidence — a claim followed by a failed run, or several reruns of the same
+/// valuation date, would be indistinguishable.
+/// </summary>
+public sealed record MarkOverrideConsumption(
+    string Actor,
+    string ValuationRunId,
+    string? CorrelationId);
 
 public enum MarkOverrideState { Pending, Approved, Rejected, Expired, Consumed }
 
@@ -350,7 +367,8 @@ public interface IMarkOverrideStore
     /// valuation date, which would leave a historical override usable forever on later reruns.
     /// </summary>
     ValueTask<MarkFreshnessOverride?> TryClaimAsync(
-        MarkOverrideScope scope, DateTimeOffset nowUtc, CancellationToken ct = default);
+        MarkOverrideScope scope, MarkOverrideConsumption consumption, DateTimeOffset nowUtc,
+        CancellationToken ct = default);
 
     /// <summary>Non-consuming read for preview and display. Never transitions state.</summary>
     ValueTask<MarkFreshnessOverride?> PeekApprovedAsync(
@@ -360,12 +378,21 @@ public interface IMarkOverrideStore
         MarkOverrideScope scope, string reason, string requestedBy, DateOnly expiresOn,
         CancellationToken ct = default);
 
-    /// <summary>Reviewer comes from the authenticated principal at the endpoint, never from a request body.</summary>
+    /// <summary>
+    /// Reviewer comes from the authenticated principal at the endpoint, never from a request body.
+    /// <paramref name="expectedTenant"/> is validated **against the stored row inside the same
+    /// transaction** before any state changes: the decision route carries only an override id, so
+    /// without it a caller authorised for one tenant could act on another tenant's override by
+    /// guessing the id. Passing the scope in rather than pre-checking it also closes the window
+    /// between a separate read and the mutation.
+    /// </summary>
     ValueTask<MarkFreshnessOverride> RecordApprovalDecisionAsync(
-        string overrideId, bool approved, string reviewedBy, string? note, CancellationToken ct = default);
+        string overrideId, bool approved, string reviewedBy, string? note,
+        WorkstationTenantScope expectedTenant, CancellationToken ct = default);
 
     ValueTask<IReadOnlyList<MarkFreshnessOverride>> ListAsync(
-        string ledgerBookId, DateOnly valuationDate, CancellationToken ct = default);
+        string ledgerBookId, DateOnly valuationDate, WorkstationTenantScope expectedTenant,
+        CancellationToken ct = default);
 
     /// <summary>Append-only lifecycle history: request, approve, reject, claim, expire.</summary>
     ValueTask<IReadOnlyList<MarkOverrideAuditEntry>> ReadAuditTrailAsync(
@@ -378,7 +405,10 @@ public sealed record MarkOverrideAuditEntry(
     MarkOverrideState ToState,
     string Actor,
     DateTimeOffset OccurredAtUtc,
-    string? Note);
+    string? Note,
+    /// <summary>Set on the claim transition, so the trail says where the authorisation was used.</summary>
+    string? ValuationRunId,
+    string? CorrelationId);
 ```
 
 **Note on scope equality.** `MarkToMarketCarryingValueKey` normalises `Symbol` to trimmed upper case
@@ -459,24 +489,36 @@ Precedent for the state itself: `TradingAcceptanceGateStatusDto.ReviewRequired`
 
 ### REST surface
 
+Routes stay inside the existing ledger journal-automation family rather than opening an
+`/api/valuation` top level. The daily-valuation constants already live at
+`/api/ledger/journal-automation/daily-mark-to-market-*` (`UiApiRoutes.cs:832-835`), and this work is
+the same workflow — splitting it across two API namespaces would fork one operator flow and would
+need a shared-prefix decision this row has no reason to take.
+
 ```
-GET  /api/valuation/{ledgerBookId}/mark-freshness?valuationDate=YYYY-MM-DD
+GET  /api/ledger/journal-automation/daily-mark-to-market-freshness/{ledgerBookId}?valuationDate=YYYY-MM-DD
      200 { positionsEvaluated, positionsBlocked, blockedMarks: [...] }
 
-POST /api/valuation/{ledgerBookId}/mark-freshness/preview
+POST /api/ledger/journal-automation/daily-mark-to-market-freshness-preview/{ledgerBookId}
      Body   { maximumAgeDays, minimumConfidence, requireObservedDate, requireCompleteCoverage }
      200    { positionsEvaluated, positionsBlocked, blockedMarks: [...], candidate: {...} }
 
-POST /api/valuation/{ledgerBookId}/mark-overrides
+POST /api/ledger/journal-automation/daily-mark-to-market-overrides/{ledgerBookId}
      Body   { securityId, symbol, financialAccountId, valuationDate, markObservedOn, reason, expiresOn }
      201    { overrideId, state: "Pending", ... }
      409    { "error": "an approved override already covers this scope" }
 
-POST /api/valuation/mark-overrides/{overrideId}/decision
+POST /api/ledger/journal-automation/daily-mark-to-market-overrides/{overrideId}/decision
      Body   { approved, note }              ← no reviewer field; see below
      200    { overrideId, state: "Approved" | "Rejected", ... }
      403    { "error": "approver must differ from requester" }
+     404    { "error": "not found" }        ← also the cross-tenant answer; see below
 ```
+
+The decision route carries **no ledger-book segment**, which is why the tenant check cannot live in
+the route. It is passed into `RecordApprovalDecisionAsync` and validated against the stored row
+inside the same transaction, and a tenant mismatch returns `404` rather than `403` so the route does
+not confirm that someone else's override id exists.
 
 **`reviewedBy` is absent from the request body by design.** Accepting it would let a caller attribute
 an approval to another identity and walk straight past the requester-versus-approver comparison. The
@@ -527,18 +569,27 @@ search missed it and the slate initially asserted no performance route existed.
 **Responsibilities:** evaluate one `MarkFreshnessInput` against all gates; order verdicts by severity;
 never clamp a negative age; derive `PolicyVersion` deterministically from every governing member.
 
-**Gate order, which is behaviour rather than style:**
+**Gate order, which is behaviour rather than style. It mirrors `EvaluateMarkQuality`
+(`DailyMarkToMarketService.cs:486-506`) line for line, and the ordering is load-bearing twice:**
 
-1. `Price <= 0` → `InvalidPrice`, **before and regardless of `Enabled`**.
-2. If not `Enabled` → `Fresh`.
-3. `ObservedOn` missing → `MissingObservation` when `RequireObservedDate`, else `Fresh`.
-4. `ObservedOn > valuationDate` → `FutureDated` — `ageDays` is the true negative value, not clamped.
-5. `ageDays > MaximumAgeDays` → `Stale`.
-6. `Confidence < MinimumConfidence` → `LowConfidence`.
+1. `Price <= 0` → `InvalidPrice`, **before and regardless of `Enabled`** — mirrors `:491`
+   preceding the `policy is null` short-circuit at `:493`.
+2. If not `Enabled` → `Fresh` — mirrors `:493`.
+3. `Confidence < MinimumConfidence` → `LowConfidence` — mirrors `:495`, and it comes **before** the
+   observation-date gate deliberately. The current implementation checks confidence independently of
+   whether a date is required, so a low-confidence quote with no observation date is rejected today
+   under `RequireObservedDate: false`. Ordering confidence after the date gate would let that quote
+   through and would be a **regression**, not a consolidation.
+4. `ObservedOn` missing → `MissingObservation` when `RequireObservedDate`, else `Fresh` — mirrors
+   `:497`. Only the *date-derived* gates below are skipped here; confidence has already run.
+5. `ObservedOn > valuationDate` → `FutureDated` — mirrors `:499-500`. `AgeDays` carries the true
+   negative value rather than being clamped.
+6. `ageDays > MaximumAgeDays` → `Stale` — mirrors `:503-505`.
 7. otherwise `Fresh`.
 
-Steps 1–2 preserve `EvaluateMarkQuality`'s existing precedence exactly, where `quote.Price <= 0m`
-(`:491`) precedes `policy is null` (`:493`).
+Two tests pin the ordering specifically: one asserting a low-confidence quote with **no** observation
+date and `RequireObservedDate: false` is `LowConfidence` rather than `Fresh`, and one asserting a
+non-positive price outranks every other verdict.
 
 ### `DailyMarkToMarketService` (modified)
 
@@ -547,9 +598,24 @@ Steps 1–2 preserve `EvaluateMarkQuality`'s existing precedence exactly, where 
 
 Maps each `MarkPriceQuote` to a `MarkFreshnessInput`, replaces `EvaluateMarkQuality` (`:486-506`)
 with one `MarkFreshnessPolicy.Assess` call, and on a blocking verdict calls
-`IMarkOverrideStore.TryClaimAsync(scope, timeProvider.GetUtcNow())`. Every blocked position is
-recorded in a new `DailyMarkToMarketRun.BlockedPositions` carrying symbol, security id, financial
-account id, verdict, age, observation date, and override id when one was claimed.
+`IMarkOverrideStore.TryClaimAsync(scope, consumption, timeProvider.GetUtcNow())`.
+
+**Two collections, not one — this is the difference between an override that works and one that
+cannot.** A blocking assessment goes to exactly one of:
+
+- `DailyMarkToMarketRun.BlockedPositions` — blocking **and no override was claimed**. This is the
+  list the intake and posting guards read, so a position appears here only when nothing authorised
+  it.
+- `DailyMarkToMarketRun.OverriddenPositions` — blocking **but a claim succeeded**. The position is
+  valued and carries its `OverrideId` for evidence and display.
+
+Putting a successfully overridden position in `BlockedPositions` would be self-defeating: the intake
+guard refuses drafts whenever that list is non-empty, so the override would authorise a valuation
+and then block the very run it authorised. Both collections are surfaced — the operator needs to see
+what was overridden as much as what was blocked — but only the first one gates.
+
+Each entry carries symbol, security id, financial account id, verdict, age, observation date, and
+override id where one applies.
 
 **Error handling:** an unavailable override store **fails the run** rather than proceeding without
 overrides — the fail-closed posture applies to the override lookup itself.
@@ -605,12 +671,63 @@ Reuses the same `Assess` call as enforcement so the preview cannot drift from it
 **Namespace:** `Meridian.Storage.Valuation`
 
 `TryClaimAsync` runs `SELECT … FOR UPDATE` → guard on `State == Approved` → guard on
-`ExpiresOn >= nowUtc.Date` → transition to `Consumed` → append the audit row, all inside one
-`IsolationLevel.Serializable` transaction, mirroring
+`ExpiresOn >= nowUtc.Date` → transition to `Consumed` → append the audit row carrying the
+consumption context, all inside one `IsolationLevel.Serializable` transaction, mirroring
 `PostgresOperatorOverridesStore.RecordApprovalDecisionAsync:166-255`. A `NullMarkOverrideStore`
 fallback mirrors `NullOperatorOverridesStore`, but — unlike the Security Master fallback — it must
 make `TryClaimAsync` **fail the run** rather than return null, so a missing store cannot silently
 become "no overrides exist".
+
+#### Migration
+
+The serializable claim needs a schema to be serializable *against*, so the tables are part of this
+phase rather than left to the implementer. Two tables, both tenant-owned:
+
+**`ledger_mark_override`**
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `override_id` | `text` | primary key |
+| `tenant_id`, `company_id` | `text` | ownership; every query filters on both |
+| `ledger_book_id` | `text` | |
+| `security_id` | `uuid` **null** | part of the scope key |
+| `symbol` | `text` | stored already normalised (trimmed, upper-cased) |
+| `financial_account_id` | `text` **null** | blank normalised to null before insert |
+| `valuation_date` | `date` | |
+| `mark_observed_on` | `date` **null** | null is a real scope value — the missing-observation case |
+| `policy_version` | `text` | |
+| `state` | `text` | `Pending`/`Approved`/`Rejected`/`Expired`/`Consumed` |
+| `reason`, `requested_by`, `approved_by`, `note` | `text` | `approved_by` null until decided |
+| `requested_at_utc`, `approved_at_utc` | `timestamptz` | |
+| `expires_on` | `date` | compared against the clock at claim time, not the valuation date |
+
+**Uniqueness is the whole point of the scope key**, so it is enforced in the database rather than
+only in code. Because `security_id`, `financial_account_id`, and `mark_observed_on` are nullable and
+PostgreSQL treats `NULL` as distinct in a plain unique index, use `NULLS NOT DISTINCT` (PG 15+) or a
+unique index over `COALESCE`d expressions:
+
+```sql
+CREATE UNIQUE INDEX ux_ledger_mark_override_active_scope
+  ON ledger_mark_override (
+    tenant_id, company_id, ledger_book_id, security_id, symbol,
+    financial_account_id, valuation_date, mark_observed_on, policy_version)
+  NULLS NOT DISTINCT
+  WHERE state IN ('Pending', 'Approved');
+```
+
+The partial predicate is deliberate: a consumed or rejected override must not block a later
+legitimate request for the same scope, which is what the `409` on the request route means.
+
+**`ledger_mark_override_audit`** — append-only, no update or delete path: `audit_id` (pk),
+`override_id` (fk, indexed), `from_state`, `to_state`, `actor`, `occurred_at_utc`, `note`,
+`valuation_run_id`, `correlation_id`.
+
+Supporting index for the claim path and the list route:
+`(tenant_id, company_id, ledger_book_id, valuation_date)`.
+
+The migration takes its ordinal from the shared migration ledger at implementation time — **do not
+reserve one in this document**, since an ordinal claimed in a design and not merged for weeks
+collides with whatever lands first.
 
 ---
 
@@ -622,7 +739,7 @@ become "no overrides exist".
 2. `DailyMarkToMarketService` pulls each position's quote via `IMarkPriceSource` and maps it to a
    `MarkFreshnessInput`.
 3. `MarkFreshnessPolicy.Assess(input, valuationDate)` → `Stale`, age 9, `Handling = Block`.
-4. `IMarkOverrideStore.TryClaimAsync(scope, now)` → `null`.
+4. `IMarkOverrideStore.TryClaimAsync(scope, consumption, now)` → `null`.
 5. The position is added to `BlockedPositions` with verdict, age, and observation date.
 6. `AutomatedJournalIntakeRunner` sees a non-empty `BlockedPositions` and **persists no drafts**.
 7. `DailyValuationScheduler` maps to `ReviewRequired` and attaches `BlockedMarks`.
@@ -638,10 +755,14 @@ Steps 1–3 as above.
    `State` is `Approved`, and whose `ExpiresOn >= now.Date` — **evaluated against the clock at the
    moment of use, not against the valuation date.** An override for a 1 July valuation expiring
    2 July does not authorise an August rerun of that same valuation.
-5. In the same transaction the override transitions to `Consumed` and an audit row is appended. A
-   concurrent run or a retry finds it already consumed and blocks.
-6. The position is valued and still surfaces its `MarkFreshnessRef` with `OverrideId` set, so the UI
-   shows it was overridden rather than fresh.
+5. In the same transaction the override transitions to `Consumed` and an audit row is appended
+   carrying the actor and the valuation run id, so the trail records *where* the authorisation was
+   used rather than only that it was used. A concurrent run or a retry finds it already consumed
+   and blocks.
+6. The position is valued and recorded in **`OverriddenPositions`, not `BlockedPositions`** — the
+   distinction that lets the run proceed. It still surfaces its `MarkFreshnessRef` with `OverrideId`
+   set, so the UI shows it was overridden rather than fresh.
+7. `AutomatedJournalIntakeRunner` sees an empty `BlockedPositions` and persists drafts normally.
 
 ### Future-dated mark
 
@@ -669,7 +790,7 @@ persisted join, and each test must assert a **populated** value rather than cont
 
 | Read model | Current producer | Required join |
 | --- | --- | --- |
-| `PortfolioPositionSummary` (`StrategyRunReadModels.cs:369-384`) | `PortfolioReadService` maps strategy run snapshots | Persist the run's per-position assessment keyed by the `MarkToMarketCarryingValueKey` triple and the valuation date; the read service joins on it. |
+| `PortfolioPositionSummary` (`StrategyRunReadModels.cs:369-384`) | `PortfolioReadService` maps strategy run snapshots | Persist the run's per-position assessment keyed by **`LedgerBookId` plus** the `MarkToMarketCarryingValueKey` triple and the valuation date. The ledger book is not optional in that key: every assessment is produced inside a book-scoped valuation, so two books valuing the same security and account on the same date would otherwise collide or cross-attach. **Open question 6** covers the harder half — a strategy-run snapshot carries no ledger-book field, so how a strategy run maps to a book has to be settled before this join can be written. |
 | `FundPortfolioPosition` (`FundOperationsDtos.cs:118-135`) | `FundLedgerViewModel` aggregates those summaries across runs | Aggregation needs an explicit rule: the **worst** verdict across contributing marks, and the **oldest** observation date, so a fresh mark cannot mask a stale sibling. An aggregate with any blocking member is itself blocking. |
 | `WorkstationTradingPositionRow` (`WorkstationBootstrapDtos.cs:326-335`) | the trading endpoint computes a live BBO/trade mark via `ResolveLiveMark`, which returns a bare decimal | This is a **live** mark, not a valuation mark. Either extend `ResolveLiveMark` to return its observation timestamp and assess it against the same policy, or leave the member null and render "not applicable" — do not join it to a valuation-date assessment it does not correspond to. Decide before Phase 4; the honest null is acceptable, silently borrowing another surface's freshness is not. |
 
@@ -715,6 +836,7 @@ through their own services rather than inferring them from the schedule state.
 | `Assess_NonPositivePrice_IsInvalidPriceEvenWhenUnenforced` | the gate that has no policy to switch it off |
 | `Assess_NonPositivePrice_OutranksEveryOtherVerdict` | gate ordering, mirroring `:491` before `:493` |
 | `Assess_MissingObservedDate_WhenRequired_HasNullAgeNotZero` | the nullable-age contract |
+| `Assess_LowConfidenceWithNoObservationDate_WhenDateNotRequired_IsLowConfidence` | **the gate-order regression** — confidence runs before the date gate, as `:495` does before `:497` |
 | `Assess_ObservationOlderThanMaximumAge_IsStale` | boundary at exactly `MaximumAgeDays` is fresh |
 | `Assess_ConfidenceBelowMinimum_IsLowConfidence` | gate survives consolidation (criterion 2) |
 | `Assess_StaleAndLowConfidence_ReportsMostSevereVerdict` | deterministic ordering |
@@ -729,6 +851,9 @@ through their own services rather than inferring them from the schedule state.
 | --- | --- |
 | `RunAsync_BlockingMarkWithoutOverride_AddsToBlockedPositions` |
 | `RunAsync_BlockingMarkWithClaimedOverride_ValuesPositionAndRecordsConsumption` |
+| `RunAsync_ClaimedOverride_IsExcludedFromBlockedPositions` | **the override must not block the run it authorised** |
+| `RunAsync_ClaimedOverride_AppearsInOverriddenPositionsWithItsId` |
+| `RunAsync_MissingObservationVerdict_BuildsScopeWithNullObservedOn` | the nullable scope component |
 | `RunAsync_OverrideForDifferentSecurityIdSameSymbol_DoesNotApply` | the scope-key finding |
 | `RunAsync_OverrideForDifferentFinancialAccount_DoesNotApply` | the scope-key finding |
 | `RunAsync_OverrideForDifferentValuationDate_DoesNotApply` |
@@ -765,6 +890,11 @@ through their own services rather than inferring them from the schedule state.
 | `TryClaimAsync_RetryAfterSuccessfulClaim_ReturnsNull` | retry safety |
 | `TryClaimAsync_ExpiredAtTimeOfUse_ReturnsNull` | expiry against the clock, with a valuation date well inside the window |
 | `TryClaimAsync_AppendsAuditEntryInSameTransaction` | audit cannot be lost from the evidence model |
+| `TryClaimAsync_AuditEntryRecordsActorAndValuationRun` | the trail says *where* the authorisation was used |
+| `TryClaimAsync_NullObservedOnMatchesOnlyTheMissingObservationScope` | null is a value, not a wildcard |
+| `RecordApprovalDecisionAsync_ForeignTenant_IsRejectedBeforeAnyStateChange` | the stored-row tenant check |
+| `UniqueScopeIndex_RejectsSecondPendingOverrideForSameScope` | the partial unique index |
+| `UniqueScopeIndex_AllowsNewRequestAfterConsumption` | consumed rows must not block a later request |
 | `PeekApprovedAsync_DoesNotTransitionState` | preview safety |
 | `RequestAsync_DuplicateScopeWithApprovedOverride_Conflicts` |
 | `NullStore_TryClaimAsync_FailsRatherThanReturningNull` | the fallback cannot mean "no overrides exist" |
@@ -833,17 +963,35 @@ fail-closed in PR 1 and delivers the impact preview in PR 3 inverts the gate it 
       the permissive policy, so the preview can be run against production data without blocking it.
 - [ ] Write the twelve policy tests and the two preview tests.
 
-### Phase 2 — Consolidation and the default flip (PR 2)
+### Phase 2 — Consolidation, enforcement, and the default flip (PR 2)
+
+**The enforcement points ship in the same PR as the flip, not later.** Enabling `FailClosed` while
+the guards are still two PRs away leaves a window in which the policy marks positions blocked and
+nothing acts on it: with `RequireCompleteCoverage: false` the run still builds approvals from the
+accepted marks, `AutomatedJournalIntakeRunner` still persists them, and `ApproveAndPostAsync` still
+posts them without reading freshness state. That window has the cost of the breaking change and none
+of its benefit. If the enforcement work has to slip, the *default* slips with it and stays permissive
+until Phase 4 — the two are not separable.
+
 - [ ] Point `DailyPortfolioPricingPolicy` at `MarkFreshnessPolicy`, defaulting to `FailClosed`.
 - [ ] Rewrite `AutomatedJournalIntakeRunner.cs:266,276-280` to build **one** policy from
       `MaximumMarkAgeDays`.
 - [ ] Replace `EvaluateMarkQuality` with the single `Assess` call, mapping `MarkPriceQuote` →
       `MarkFreshnessInput` at the call site.
+- [ ] Split blocking assessments into `BlockedPositions` and `OverriddenPositions`.
+- [ ] **Block draft persistence** in `AutomatedJournalIntakeRunner` when `BlockedPositions` is
+      non-empty.
+- [ ] **Block posting** in `DailyValuationBatchLifecycleService.ApproveAndPostAsync` for a batch
+      whose run carried blocked positions.
 - [ ] **Invert** `DailyValuationPolicyTests.StalePricePolicy_FuturePrice_IsFreshWithZeroAge`.
 - [ ] Mark `StalePricePolicy` `[Obsolete]` with `ToMarkFreshnessPolicy()` and a compatibility
       constructor overload; delete `MarkPriceQualityPolicy`; delete unread `StalePricedSymbols` /
       `IsBlocked`.
 - [ ] **Gate:** preview evidence from Phase 1 reviewed and the override backlog sized before merge.
+
+Until Phase 3 lands there is no override store, so `BlockedPositions` is the only outcome and
+`OverriddenPositions` is always empty. That is the correct posture for a fail-closed default whose
+escape hatch has not shipped yet — it is also why the Phase 1 preview gate matters.
 
 ### Phase 3 — Overrides (PR 3)
 - [ ] Add `MarkOverrideScope` (mirroring `MarkToMarketCarryingValueKey` normalisation),
@@ -857,17 +1005,30 @@ fail-closed in PR 1 and delivers the impact preview in PR 3 inverts the gate it 
 - [ ] Map the two override routes with constants and the full authorization trio.
 - [ ] Write the nine store tests and the five endpoint tests.
 
-### Phase 4 — Enforcement and surfacing (PR 4)
-- [ ] Block draft persistence in `AutomatedJournalIntakeRunner` when `BlockedPositions` is non-empty.
-- [ ] Block posting in `DailyValuationBatchLifecycleService.ApproveAndPostAsync`.
+### Phase 4 — Surfacing (PR 4)
 - [ ] Append `ReviewRequired = 8`; replace the null-projection guard with the documented precedence.
 - [ ] Add `BlockedMarkDto` and `BlockedMarks` beside the existing `Blockers`, projecting freshness
       blockers into both for one release.
 - [ ] Add `MarkFreshnessRef` to the three read models **with their producer joins**; decide the
       `WorkstationTradingPositionRow` question; update the TS mirror.
-- [ ] Browser: mark-age column and review-required banner naming offending positions.
-- [ ] WPF: `FundLedgerPage.xaml` column plus state triggers.
-- [ ] Write the enforcement, scheduler, producer, and both-lane UI tests.
+- [ ] Write the scheduler, producer, and both-lane UI tests.
+
+**Every surface the modified contracts reach, not just two.** Criterion 4 asks for freshness
+wherever positions appear, so naming a single browser column and a single WPF page would leave the
+criterion unmet while looking done. The affected views:
+
+| Lane | Surface | Read model |
+| --- | --- | --- |
+| Browser | Trading positions table | `WorkstationTradingPositionRow` |
+| Browser | Portfolio positions table | `WorkstationTradingPositionRow` |
+| Browser | review-required banner naming offending positions | `BlockedMarkDto` |
+| WPF | `FundLedgerPage.xaml` positions grid | `FundPortfolioPosition` |
+| WPF | `StrategyRunPortfolioViewModel` positions table | `PortfolioPositionSummary` |
+
+Each gets the age column or inspector field and the verdict-driven state, and each gets a test
+asserting a **populated** value. Where open question 5 resolves to "honest null" for
+`WorkstationTradingPositionRow`, the two browser tables render "not applicable" rather than a blank —
+and the test asserts that, so the absence stays deliberate rather than looking like a wiring gap.
 
 ### Phase 5 — Wrap-up
 - [ ] Remove the `[Obsolete]` `StalePricePolicy` shim and the duplicated `Blockers` projection.
@@ -889,6 +1050,7 @@ fail-closed in PR 1 and delivers the impact preview in PR 3 inverts the gate it 
 | 3 | Should an expired-but-unclaimed override auto-renew on request, or always require a fresh submission? | Product | Affects whether operators can quietly keep a bypass alive. |
 | 4 | Is a partially priced valuation ever legitimately postable, or is `ReviewRequired` terminal until resolved? | Product | Phase 4 assumes terminal. If it is not, the posting-boundary block needs a governed exception path rather than a flat refusal. |
 | 5 | Does `WorkstationTradingPositionRow` get live-mark freshness, or an honest null? | Engineering + Product | Decides whether `ResolveLiveMark` grows an observation timestamp in Phase 4 or the member renders "not applicable". |
+| 6 | How does a strategy run map to a ledger book? | Engineering | The persisted assessment is keyed by ledger book, but a strategy-run snapshot carries no ledger-book field. Until this is settled `PortfolioPositionSummary` cannot be joined without guessing, and guessing risks showing one book's verdict against another book's position. |
 
 ## Risks
 

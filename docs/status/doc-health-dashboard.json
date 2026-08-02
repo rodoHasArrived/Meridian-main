@@ -1,12 +1,12 @@
 {
   "total_files": 641,
-  "total_lines": 119249,
-  "orphaned_count": 256,
+  "total_lines": 119412,
+  "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 220,
-  "average_lines": 186.0,
-  "health_score": 79,
+  "average_lines": 186.3,
+  "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -215,7 +215,6 @@
     "docs/development/score-reason-taxonomy.md",
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
-    "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
     "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/configuration-schema.md",
     "docs/generated/documentation-coverage.md",
@@ -2155,7 +2154,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 173,
+      "line_count": 174,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2163,7 +2162,7 @@
     },
     {
       "path": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
-      "line_count": 902,
+      "line_count": 1064,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
