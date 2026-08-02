@@ -175,8 +175,19 @@ export const EXECUTION_API_ENDPOINTS = {
 } as const;
 
 export const RISK_API_ENDPOINTS = {
-  rules: "/api/risk/rules"
+  rules: "/api/risk/rules",
+  escalations: "/api/risk/escalations"
 } as const;
+
+/** Approve endpoint for a parked governed-approval escalation. */
+export function riskEscalationApproveEndpoint(escalationId: string): string {
+  return `${RISK_API_ENDPOINTS.escalations}/${pathSegment(escalationId, "escalationId")}/approve`;
+}
+
+/** Deny endpoint for a parked governed-approval escalation. */
+export function riskEscalationDenyEndpoint(escalationId: string): string {
+  return `${RISK_API_ENDPOINTS.escalations}/${pathSegment(escalationId, "escalationId")}/deny`;
+}
 
 export const REPLAY_API_ENDPOINTS = {
   files: UI_API_ROUTES.ReplayFiles,

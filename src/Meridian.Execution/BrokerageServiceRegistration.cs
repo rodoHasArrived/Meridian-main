@@ -98,7 +98,8 @@ public static class BrokerageServiceRegistration
                 liveOrderReadinessGate: liveOrderReadinessGate,
                 options: orderManagementOptions,
                 tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
+                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
+                escalationQueue: sp.GetService<RiskEscalationQueueService>());
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
