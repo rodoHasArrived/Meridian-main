@@ -530,3 +530,45 @@ class NamespaceOriginAndCommentedBarrelTests(unittest.TestCase):
         problems, counts = self.fixture.evaluate()
 
         self.assertEqual(counts["modules"], 2, msg=problems)
+
+
+class SpecifierResolutionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.fixture = BarrelFixture(Path(self._tmp.name))
+
+    def test_a_quoted_comment_before_from_is_not_the_target(self):
+        # Searching raw text from the closing brace picked the comment's string, so two modules
+        # sharing that comment were given one origin and a real collision read as zero duplicates.
+        self.fixture.write_module(
+            "workstation-1",
+            ['export { Shared } /* "../origins/common" */ from "../origins/a";'],
+        )
+        self.fixture.write_module(
+            "workstation-2",
+            ['export { Shared } /* "../origins/common" */ from "../origins/b";'],
+        )
+
+        _, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 1)
+
+    def test_single_quoted_barrel_entries_are_discovered(self):
+        self.fixture.barrel.write_text(
+            "export * from './types/workstation-1';\nexport * from './types/workstation-2';\n",
+            encoding="utf-8",
+        )
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["modules"], 2, msg=problems)
+        self.assertEqual(problems, [])
+
+    def test_single_quoted_reexport_targets_resolve(self):
+        self.fixture.write_module("workstation-1", ["export interface Shared { id: string; }"])
+        self.fixture.write_module("workstation-2", ["export { Shared } from './workstation-1';"])
+
+        problems, counts = self.fixture.evaluate()
+
+        self.assertEqual(counts["duplicates"], 0, msg=problems)

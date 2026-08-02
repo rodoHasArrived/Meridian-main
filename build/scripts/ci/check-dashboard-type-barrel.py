@@ -60,7 +60,7 @@ STANDALONE_MODULES = {
 # dropped out of the barrel list and then tripped the orphan-module check instead — a
 # confusing failure for a line TypeScript reads as an ordinary export.
 BARREL_EXPORT = re.compile(
-    r'^\s*export\s+\*\s+from\s+"\./types/(?P<module>[^"]+)"\s*;?\s*(?://.*)?$',
+    r"^\s*export\s+\*\s+from\s+(?P<q>[\"'])\./types/(?P<module>[^\"']+)(?P=q)\s*;?\s*(?://.*)?$",
     re.MULTILINE,
 )
 # Leading whitespace is permitted because indentation alone does not mean nesting: 11 declarations
@@ -278,9 +278,19 @@ def declared_names(module_path: Path, module: str = "") -> list[tuple[str, str]]
         origin. Two barrel modules re-exporting one target then looked like two bindings and
         were reported as a collision, blocking CI for a barrel TypeScript accepts.
         """
-        if not from_consumed and FROM_CLAUSE.match(text, end) is None:
-            return None
-        found = MODULE_SPECIFIER.search(raw, end, end + 200)
+        search_from = end
+        if not from_consumed:
+            clause = FROM_CLAUSE.match(text, end)
+            if clause is None:
+                return None
+            # Start after the `from` keyword. Searching from the closing brace picked up a
+            # quoted string inside an intervening comment —
+            # `export { Shared } /* "../origins/common" */ from "../origins/a"` resolved to the
+            # comment, so two modules sharing that comment were given one origin and a real
+            # collision was reported as zero duplicates. FROM_CLAUSE runs on stripped text, so a
+            # `from` written inside a comment is not mistaken for the real one.
+            search_from = clause.end()
+        found = MODULE_SPECIFIER.search(raw, search_from, search_from + 200)
         return found.group("module") if found else None
 
     # Brace depth at the start of each line. Comments and string bodies are already blanked, so

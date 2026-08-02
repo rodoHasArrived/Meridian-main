@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 from dataclasses import dataclass
@@ -148,10 +149,10 @@ def load_bdn_results(results_dir: str) -> list[BdnResult]:
             # any budget — the same false green an absent result set produces.
             mean_ns = stats.get("Mean")
             allocated_bytes = memory.get("BytesAllocatedPerOperation")
-            if not isinstance(mean_ns, (int, float)) or not isinstance(allocated_bytes, (int, float)):
+            if not _is_measurement(mean_ns) or not _is_measurement(allocated_bytes):
                 print(
-                    f"[validate_budget] WARNING: '{method_name or jf.name}' has no mean/allocation "
-                    "statistics; treating it as unmeasured.",
+                    f"[validate_budget] WARNING: '{method_name or jf.name}' has no usable "
+                    "mean/allocation statistics; treating it as unmeasured.",
                     file=sys.stderr,
                 )
                 continue
@@ -228,6 +229,23 @@ def _fallback_score(stage_name: str, method_name: str) -> int:
     norm_method = _normalise(method_name)
     tokens = [t.lower() for t in stage_name.split("_") if len(t) >= 5]
     return sum(1 for t in tokens if t in norm_method)
+
+
+def _is_measurement(value: object) -> bool:
+    """Return whether *value* is a real, usable benchmark number.
+
+    A type check alone is not enough. Python's JSON parser accepts the non-standard `NaN`,
+    `Infinity`, and `-Infinity` tokens that a crashed BenchmarkDotNet run can emit, and
+    `isinstance(nan, float)` is True — so the row counted as measured, *every* budget comparison
+    against NaN returned False (NaN is unordered, so it is neither over nor under), and the stage
+    reported as measured and comfortably passing while NaN was written into the evidence file.
+    That is the same false green an absent result set produces, arriving through a value that
+    looks present. A negative duration or allocation is likewise not a measurement, and `bool`
+    is excluded because it is an `int` subclass in Python.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    return math.isfinite(value) and value >= 0
 
 
 def best_result_for(

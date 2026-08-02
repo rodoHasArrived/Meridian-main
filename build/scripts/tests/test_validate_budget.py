@@ -524,3 +524,37 @@ class TestExitCodes:
         assert evidence["violation_count"] == 0
         assert evidence["unmeasured_count"] == 0
         assert evidence["benchmark_result_rows"] == 2
+
+
+class TestNonFiniteMeasurements:
+    """A crashed run can emit NaN, which reads as measured *and* passing."""
+
+    @pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf"), -1.0, True])
+    def test_non_finite_or_negative_values_are_not_measurements(self, bad):
+        assert vb._is_measurement(bad) is False
+
+    @pytest.mark.parametrize("good", [0, 0.0, 1, 256.9])
+    def test_real_numbers_are_measurements(self, good):
+        assert vb._is_measurement(good) is True
+
+    def test_json_parses_nan_so_the_guard_must_catch_it(self):
+        # Python's json module accepts the non-standard NaN token, and isinstance(nan, float) is
+        # True — that is how a crashed benchmark reached the comparison in the first place.
+        assert vb._is_measurement(json.loads('{"Mean": NaN}')["Mean"]) is False
+
+    def test_a_nan_row_is_treated_as_unmeasured(self, tmp_path, capsys):
+        d = tmp_path / "results"
+        d.mkdir()
+        (d / "Meridian.Benchmarks.NaNBenchmarks-report-full.json").write_text(
+            '{"Benchmarks": [{"FullName": "DedupKey_CacheHit", '
+            '"Statistics": {"Mean": NaN}, "Memory": {"BytesAllocatedPerOperation": NaN}}, '
+            '{"FullName": "DedupKey_Real", "Statistics": {"Mean": 10.0}, '
+            '"Memory": {"BytesAllocatedPerOperation": 0}}]}',
+            encoding="utf-8",
+        )
+
+        rows = vb.load_bdn_results(str(d))
+
+        # Every comparison against NaN is False, so leaving the row in reported the stage as
+        # measured and comfortably within budget, and wrote NaN into the evidence file.
+        assert [r.method_name for r in rows] == ["DedupKey_Real"]

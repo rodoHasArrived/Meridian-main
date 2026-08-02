@@ -661,3 +661,21 @@ class FingerprintFidelityTests(unittest.TestCase):
         expression = MODULE.read_expression("// ; note\nReasonB; trailing", 0)
 
         self.assertEqual(MODULE.normalise_expression(expression), "// ; note ReasonB")
+
+
+class UnicodeEscapeTests(unittest.TestCase):
+    def test_unicode_escape_does_not_collide_with_its_literal_spelling(self):
+        # Dropping the backslash fingerprinted "\u0041" as "u0041" — identical to the distinct
+        # literal reason "u0041", though xUnit reports "A" for the first.
+        self.assertEqual(MODULE.join_literals(r'"\u0041"'), "A")
+        self.assertEqual(MODULE.join_literals(r'"u0041"'), "u0041")
+        self.assertNotEqual(MODULE.join_literals(r'"\u0041"'), MODULE.join_literals(r'"u0041"'))
+
+    def test_hex_and_wide_unicode_escapes_decode(self):
+        self.assertEqual(MODULE.join_literals(r'"\x41"'), "A")
+        self.assertEqual(MODULE.join_literals(r'"\U00000041"'), "A")
+
+    def test_previously_handled_escapes_are_unaffected(self):
+        self.assertEqual(MODULE.join_literals(r'"line\nbreak"'), "line\nbreak")
+        self.assertEqual(MODULE.join_literals(r'"Requires C:\\network share"'), "Requires C:\\network share")
+        self.assertEqual(MODULE.join_literals(r'"say \"hi\""'), 'say "hi"')

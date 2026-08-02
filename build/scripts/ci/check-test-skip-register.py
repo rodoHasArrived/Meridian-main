@@ -115,7 +115,12 @@ class SkipSite:
 
 # Only the escapes that plausibly appear in a skip reason. An unknown escape decodes to the
 # character itself, which matches how these reasons are written in practice.
-ESCAPES = {"n": "\n", "t": "\t", "r": "\r", "0": "\0", '"': '"', "'": "'", "\\": "\\"}
+ESCAPES = {
+    "n": "\n", "t": "\t", "r": "\r", "0": "\0", "a": "\a", "b": "\b", "f": "\f", "v": "\v",
+    '"': '"', "'": "'", "\\": "\\",
+}
+# C# and F# numeric escapes, keyed by marker to the number of hex digits they consume.
+HEX_ESCAPES = {"u": 4, "U": 8, "x": 4}
 
 
 def join_literals(literal_text: str) -> str:
@@ -134,7 +139,24 @@ def join_literals(literal_text: str) -> str:
     while i < length:
         ch = joined[i]
         if ch == "\\" and i + 1 < length:
-            out.append(ESCAPES.get(joined[i + 1], joined[i + 1]))
+            marker = joined[i + 1]
+            # `\u0041` is the letter A. Dropping the backslash fingerprinted it as "u0041",
+            # which is exactly the distinct literal reason "u0041" — one more way for two
+            # different reasons to share a key and inherit each other's owner and review date.
+            if marker in HEX_ESCAPES:
+                digits = HEX_ESCAPES[marker]
+                body = joined[i + 2 : i + 2 + digits]
+                # \x takes 1-4 digits; \u and \U are fixed width.
+                if marker == "x":
+                    body = body[: len(body) - len(body.lstrip("0123456789abcdefABCDEF"))] or ""
+                if len(body) == digits or (marker == "x" and body):
+                    try:
+                        out.append(chr(int(body, 16)))
+                        i += 2 + len(body)
+                        continue
+                    except (ValueError, OverflowError):
+                        pass
+            out.append(ESCAPES.get(marker, marker))
             i += 2
             continue
         out.append(ch)
