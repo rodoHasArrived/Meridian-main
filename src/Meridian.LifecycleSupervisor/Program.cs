@@ -95,7 +95,17 @@ internal static class Program
         }
         finally
         {
-            mutex.ReleaseMutex();
+            // The mutex was acquired before the awaits above, so this finally usually resumes
+            // on a different thread and ReleaseMutex throws ApplicationException (mutexes have
+            // thread affinity). The process is exiting either way: the OS abandons the handle,
+            // and the acquisition path above already treats AbandonedMutexException as owned.
+            try
+            {
+                mutex.ReleaseMutex();
+            }
+            catch (ApplicationException)
+            {
+            }
         }
     }
 
