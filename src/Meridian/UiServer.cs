@@ -278,6 +278,10 @@ public sealed class UiServer : IAsyncDisposable
                 FailClosedOnMissingOrCorruptSnapshot:
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)));
             builder.Services.AddSingleton<ExecutionOperatorControlService>();
+            // Governed-approval queue snapshots belong under the writable data root; the
+            // queue's AppContext.BaseDirectory default is read-only in installed deployments.
+            builder.Services.AddSingleton(new RiskEscalationQueueOptions(
+                Path.Combine(resolvedDataRoot, "execution", "risk-escalations", "escalations.json")));
             // Durable paper-session storage root is operator-tunable via
             // "PaperTrading:Sessions:BaseDirectory"; unset keeps the data-root default.
             var paperSessionBaseDirectory = builder.Configuration.GetValue<string?>(
@@ -367,7 +371,8 @@ public sealed class UiServer : IAsyncDisposable
                     liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
                     options: sp.GetRequiredService<OrderManagementSystemOptions>(),
                     tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
+                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
+                    escalationQueue: sp.GetService<RiskEscalationQueueService>());
             });
             if (usesPaperGateway)
             {

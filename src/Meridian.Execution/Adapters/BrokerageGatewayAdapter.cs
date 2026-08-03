@@ -1,3 +1,4 @@
+using Meridian.Execution.Logging;
 using System.Runtime.CompilerServices;
 using Meridian.Execution.Exceptions;
 using Meridian.Execution.Models;
@@ -141,7 +142,7 @@ internal sealed class BrokerageGatewayAdapter : IOrderGateway
 
         _logger.LogInformation(
             "{Broker} order submitted: {OrderId} {Side} {Quantity} {Symbol} — {Status}",
-            BrokerName, report.OrderId, request.Side, request.Quantity, request.Symbol, report.OrderStatus);
+            BrokerName, LogSanitizer.Sanitize(report.OrderId), request.Side, request.Quantity, LogSanitizer.Sanitize(request.Symbol), report.OrderStatus);
 
         return new OrderAcknowledgement(
             OrderId: report.OrderId,
@@ -159,12 +160,12 @@ internal sealed class BrokerageGatewayAdapter : IOrderGateway
         try
         {
             var report = await _inner.CancelOrderAsync(orderId, ct).ConfigureAwait(false);
-            _logger.LogInformation("{Broker} order {OrderId} cancel — {Status}", BrokerName, orderId, report.OrderStatus);
+            _logger.LogInformation("{Broker} order {OrderId} cancel — {Status}", BrokerName, LogSanitizer.Sanitize(orderId), report.OrderStatus);
             return report.OrderStatus is SdkOrderStatus.Cancelled;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "{Broker} failed to cancel order {OrderId}", BrokerName, orderId);
+            _logger.LogWarning(ex, "{Broker} failed to cancel order {OrderId}", BrokerName, LogSanitizer.Sanitize(orderId));
             return false;
         }
     }

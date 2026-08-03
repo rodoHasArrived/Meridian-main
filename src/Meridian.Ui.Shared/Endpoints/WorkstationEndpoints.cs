@@ -2910,46 +2910,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        // --- Cross-strategy aggregate portfolio ---
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioAggregate), (HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var positions = aggregator.GetAggregatedPositions();
-            return Results.Json(positions, jsonOptions);
-        })
-        .WithName("GetPortfolioAggregate")
-        .Produces<IReadOnlyList<AggregatedPosition>>(200)
-        .Produces(503);
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioExposure), (HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var report = aggregator.GetCrossStrategyExposure();
-            return Results.Json(report, jsonOptions);
-        })
-        .WithName("GetPortfolioExposure")
-        .Produces<CrossStrategyExposureReport>(200)
-        .Produces(503);
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioSymbolExposure), (string symbol, HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var net = aggregator.GetNetPositionForSymbol(symbol);
-            return Results.Json(net, jsonOptions);
-        })
-        .WithName("GetPortfolioSymbolExposure")
-        .Produces<NetSymbolPosition>(200)
-        .Produces(503);
+        MapCrossStrategyPortfolioRoutes(portfolioGroup, jsonOptions);
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
 
@@ -3579,6 +3540,7 @@ public static partial class WorkstationEndpoints
         var riskState = "Healthy";
         var riskSummary = "Portfolio exposure is within configured paper thresholds.";
         IReadOnlyList<string> activeGuardrails = [];
+        IReadOnlyList<WorkstationRiskGuardrail> guardrails = [];
 
         if (portfolio is not null)
         {
@@ -3608,6 +3570,7 @@ public static partial class WorkstationEndpoints
             riskState = runtimeRisk.State;
             riskSummary = runtimeRisk.Summary;
             activeGuardrails = runtimeRisk.ActiveGuardrails;
+            guardrails = runtimeRisk.Guardrails;
         }
 
         var risk = new WorkstationTradingRiskState(
@@ -3622,7 +3585,8 @@ public static partial class WorkstationEndpoints
             BuyingPowerUsed: portfolio is not null && portfolio.BuyingPower > 0m
                 ? FormatPercent(grossExposure / portfolio.BuyingPower)
                 : "—",
-            ActiveGuardrails: activeGuardrails);
+            ActiveGuardrails: activeGuardrails,
+            Guardrails: guardrails);
 
         // --- Brokerage state ---
         var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);

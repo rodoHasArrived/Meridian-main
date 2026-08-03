@@ -35,6 +35,11 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly CancellationTokenSource _engineCts = new();
     private readonly ConcurrentDictionary<string, ActiveRun> _activeRuns = new(StringComparer.Ordinal);
+    // Cross-strategy aggregation and the portfolio-aware risk rails read the registry, so
+    // an active run's portfolio must appear under its real run id rather than only under
+    // the host placeholder. Registering the shared host instance a second time is safe:
+    // AggregatePortfolioService deduplicates by instance.
+    private readonly Meridian.Execution.Services.PortfolioRegistry? _portfolioRegistry;
     private readonly Lock _pumpLock = new();
     private Task? _reportPumpTask;
     private int _disposed;
@@ -51,7 +56,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         ILoggerFactory? loggerFactory = null,
         StrategyLifecycleManager? lifecycleManager = null,
         ExecutionAuditTrailService? auditTrail = null,
-        BrokerageConfiguration? brokerageConfiguration = null)
+        BrokerageConfiguration? brokerageConfiguration = null,
+        Meridian.Execution.Services.PortfolioRegistry? portfolioRegistry = null)
     {
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _feed = feed ?? throw new ArgumentNullException(nameof(feed));
@@ -66,6 +72,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         _lifecycleManager = lifecycleManager;
         _auditTrail = auditTrail;
         _brokerageConfiguration = brokerageConfiguration;
+        _portfolioRegistry = portfolioRegistry;
     }
 
     /// <summary>Run ids currently executing on this engine.</summary>
@@ -154,6 +161,12 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             return RunLaunchResult.Success();
         }
 
+        if (_portfolioRegistry is not null &&
+            _portfolioState is Meridian.Execution.Models.IMultiAccountPortfolioState runPortfolio)
+        {
+            _portfolioRegistry.Register(run.RunId, runPortfolio);
+        }
+
         TryRegisterWithLifecycleManager(strategy);
         activeRun.Execution = Task.Run(
             async () =>
@@ -165,6 +178,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 finally
                 {
                     _activeRuns.TryRemove(run.RunId, out _);
+                    _portfolioRegistry?.Deregister(run.RunId);
                 }
             },
             CancellationToken.None);

@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-07-31
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -23,6 +23,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [2026-07 First-Order Improvement Slate](product-roadmap-priorities-2026-07.md) — ranked W9
     priority rationale (`W9-TRUTH-001` through `W9-INGEST-009`, decision `DEC-PRIORITY-SLATE-001`);
     live status stays in the roadmap registry
+  - [2026-07 Depth Slate](w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
+    functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
+    live status stays in the roadmap registry
 - Treat the following as dated working design inputs, not canonical status sources:
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
@@ -31,7 +34,17 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     table tracking which lanes have since shipped
   - [Portfolio Cash Ladder Blueprint (2026-07)](portfolio-cash-ladder-blueprint-2026-07.md) —
     code-ready design for the wave-8 portfolio cash-flow forecasting and liquidity ladder engine,
-    aggregating per-security projection runs into scenario-aware, per-currency cash ladders
+    aggregating per-security projection runs into scenario-aware, per-currency cash ladders; the
+    first vertical slice has landed and the persisted-run phases remain open
+  - [Quote-stream Fan-out Blueprint (2026-07)](web-ui-stream-fan-out-blueprint-2026-07.md) —
+    delivered design for event-driven SSE fan-out, per-session stream caps, and companion-pane
+    stream sharing (PRs A–C shipped)
+  - [Report-run Status Stream Blueprint (2026-07)](web-ui-report-run-stream-blueprint-2026-07.md) —
+    delivered design for the `report-run:<id>` stream and the generic `StreamBroadcaster<TPayload>`;
+    supersedes the fan-out blueprint's `workspace` / `inbox` topic proposal
+  - All blueprints across every lane are catalogued in the canonical
+    [blueprint register](../engineering/blueprints/README.md), which also records the shared
+    migration-ordinal, precision, route-prefix, and cross-blueprint contracts
   - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
     nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
     and sequencing
@@ -48,10 +61,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 
 ## Current Project Snapshot
 
-The registry snapshot dated 2026-07-18 records Evidence Vault productization, statement
-reconciliation onboarding, and WPF parity as the active productization targets. The accepted
-W1-W5, FREX, FINOPS, connector-library, and bounded W7 milestones remain bounded completion claims,
-not blanket production certification.
+The registry snapshot dated 2026-07-31 records Evidence Vault productization, statement
+reconciliation onboarding, and WPF parity as the active productization targets, with the ranked W9
+first-order slate and the W10 depth slate accepted as planned priority order behind them. The
+accepted W1-W5, FREX, FINOPS, connector-library, and bounded W7 milestones remain bounded completion
+claims, not blanket production certification. Every W10 row and the nine open W9 rows carry
+planned-evidence posture rather than a completion claim; `W9-ASSET-010` is the one W9 row already
+closed with complete evidence.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,

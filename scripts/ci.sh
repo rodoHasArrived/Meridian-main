@@ -183,6 +183,27 @@ verify_browser() {
 verify_docs() {
   verify_toolchain_docs
 
+  # TypeScript resolves an ambiguous star export by exporting neither declaration, so a
+  # duplicated DTO silently disappears from '@/types' rather than conflicting.
+  run_step "Validate dashboard type barrel" \
+    "$python_cmd" build/scripts/ci/check-dashboard-type-barrel.py --summary
+
+  # An alert whose expr names a series the exporter never emits can never fire, and a
+  # runbook link that does not resolve strands the responder. Both used to be invisible.
+  run_step "Validate observability contract" \
+    "$python_cmd" build/scripts/ci/validate-observability-contract.py --summary
+
+  # The contract gate is static. It cannot tell whether a rule fires on the condition it
+  # claims, which is where every monitoring regression here has actually lived, so promtool
+  # runs the rule unit tests and `docker compose config` renders the deployed stacks.
+  # --allow-missing-tools keeps a local run useful; CI installs both and must not pass it.
+  local monitoring_tool_policy=()
+  if [[ -z "${GITHUB_ACTIONS:-}" ]]; then
+    monitoring_tool_policy+=(--allow-missing-tools)
+  fi
+  run_step "Validate monitoring deployment" \
+    "$python_cmd" build/scripts/ci/validate-monitoring-deployment.py --summary "${monitoring_tool_policy[@]}"
+
   run_step "Validate status docs delivery claims" \
     bash -c '"$0" scripts/check_status_delivery_claims.py && "$0" -m unittest tests/scripts/test_check_status_delivery_claims.py' "$python_cmd"
 
@@ -254,6 +275,11 @@ verify_workflows() {
 
   run_step "Validate workflow hygiene" \
     bash -c 'set -euo pipefail; "$0" build/scripts/ci/check-workflow-hygiene.py 2>&1 | tee artifacts/build-logs/workflow-hygiene.log' "$python_cmd"
+
+  # A skipped test reports the same green as a passing one, so every skip must name an
+  # owner, a category, and a review date that expires.
+  run_step "Validate test skip register" \
+    "$python_cmd" build/scripts/ci/check-test-skip-register.py --summary
 
   # Audit finding P9: ~65 of 75 tests/scripts suites were wired to no CI lane and several
   # had rotted unnoticed. The runner gates every suite except the tracked quarantine list

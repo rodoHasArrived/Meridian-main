@@ -1,5 +1,5 @@
 import { Filter, GitBranch, LayoutPanelTop, Link2, Save, Search, ShieldCheck } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerBody } from "@/components/ui/drawer";
@@ -463,6 +463,124 @@ function ExplorerGrid({
   selectedRecordId: string | null;
   onSelect: (recordId: string) => void;
 }) {
+  const rowElements = useRef(new Map<string, HTMLTableRowElement>());
+  const keyboardHelpId = useId();
+  const [activeRowIndex, setActiveRowIndex] = useState(0);
+  // A sighted keyboard-only operator does not use a screen reader, so sr-only instructions are
+  // invisible to exactly the person who most needs them: the cell links are out of the tab
+  // sequence, and Tab now skips every proof link with nothing on screen saying why or how to
+  // reach one. The same element becomes visible while focus is inside the grid, so the hint is
+  // announced and shown from one source rather than duplicated.
+  const [keyboardHelpVisible, setKeyboardHelpVisible] = useState(false);
+
+  const registerRow = useCallback((recordId: string, element: HTMLTableRowElement | null) => {
+    if (element) {
+      rowElements.current.set(recordId, element);
+    } else {
+      rowElements.current.delete(recordId);
+    }
+  }, []);
+
+  // Filtering can shrink the row set under the active index, and an external selection
+  // (the explorer auto-selects a first record) should move the tab stop to that row so
+  // Tab lands where the operator is already looking.
+  const selectedIndex = rows.findIndex((row) => row.recordId === selectedRecordId);
+  useEffect(() => {
+    setActiveRowIndex((current) => {
+      if (selectedIndex >= 0) return selectedIndex;
+      if (rows.length === 0) return 0;
+      return Math.min(current, rows.length - 1);
+    });
+  }, [selectedIndex, rows.length]);
+
+  const focusRow = useCallback(
+    (index: number) => {
+      const target = rows[index];
+      if (!target) return;
+      setActiveRowIndex(index);
+      rowElements.current.get(target.recordId)?.focus();
+    },
+    [rows]
+  );
+
+  const rowLinks = useCallback(
+    (recordId: string) =>
+      Array.from(rowElements.current.get(recordId)?.querySelectorAll<HTMLAnchorElement>("a[href]") ?? []),
+    []
+  );
+
+  const handleRowKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTableRowElement>, recordId: string, rowIndex: number) => {
+      // A cell link is focusable, so its own keydowns bubble to the row. Escape returns focus
+      // to the row, which is how a keyboard user leaves a link without tabbing forward through
+      // the rest of the grid.
+      if (event.target !== event.currentTarget) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          focusRow(rowIndex);
+        }
+        return;
+      }
+
+      // Links inside cells carry tabIndex={-1} so the grid keeps one tab stop, which means Tab
+      // can no longer reach them. ArrowRight enters the row's links instead — without this the
+      // record links become keyboard-unreachable, trading one accessibility defect for another.
+      if (event.key === "ArrowRight") {
+        const [first] = rowLinks(recordId);
+        if (first) {
+          event.preventDefault();
+          first.focus();
+          return;
+        }
+      }
+
+      switch (event.key) {
+        case "Enter":
+        case " ":
+          event.preventDefault();
+          onSelect(recordId);
+          return;
+        case "ArrowDown":
+          event.preventDefault();
+          focusRow(Math.min(rowIndex + 1, rows.length - 1));
+          return;
+        case "ArrowUp":
+          event.preventDefault();
+          focusRow(Math.max(rowIndex - 1, 0));
+          return;
+        case "Home":
+          event.preventDefault();
+          focusRow(0);
+          return;
+        case "End":
+          event.preventDefault();
+          focusRow(rows.length - 1);
+          return;
+        default:
+      }
+    },
+    [focusRow, onSelect, rowLinks, rows.length]
+  );
+
+  // ArrowLeft/ArrowRight move along a row's links and ArrowLeft from the first returns to the
+  // row, so the whole row stays navigable from the keyboard with the links out of the tab order.
+  const handleLinkKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLAnchorElement>, recordId: string, rowIndex: number) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const links = rowLinks(recordId);
+      const current = links.indexOf(event.currentTarget);
+      if (current < 0) return;
+      event.preventDefault();
+      const next = event.key === "ArrowRight" ? current + 1 : current - 1;
+      if (next < 0) {
+        focusRow(rowIndex);
+        return;
+      }
+      links[Math.min(next, links.length - 1)]?.focus();
+    },
+    [focusRow, rowLinks]
+  );
+
   if (explorer.isBlocked || rows.length === 0) {
     return (
       <div className="rounded-md border border-border/70 bg-background/60 p-6 text-sm text-muted-foreground" role="status">
@@ -473,38 +591,86 @@ function ExplorerGrid({
 
   return (
     <div className="overflow-x-auto rounded-md border border-border/70">
-      <table className="min-w-full text-sm">
+      {/* role="grid" is what makes aria-selected meaningful on these rows: a plain table row
+          has no selection semantics, so assistive technology could not report which record
+          the operator had picked. It also commits the grid to roving tabindex below. */}
+      {/* The header is a grid row too, so the count includes it and data rows start at 2.
+          Numbering data rows from 1 would make the first record claim the header's position
+          and announce every row one place too early. Matches ExplorerDenseGrid in
+          components/meridian/ui-kit-primitives.tsx. */}
+      {/* Taking the cell links out of the tab order is only half the job: a keyboard or
+          screen-reader user has no way to discover the replacement gesture, so without this
+          the proof links are unreachable in practice. The instructions are announced when
+          focus enters the grid, and shown on screen for the sighted keyboard-only operator
+          who never hears them. */}
+      <p
+        id={keyboardHelpId}
+        className={cn(
+          keyboardHelpVisible
+            ? "mb-2 rounded-md border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground"
+            : "sr-only",
+        )}
+      >
+        Use the up and down arrow keys to move between records, Enter or Space to open the
+        selected record&apos;s proof detail, Right Arrow to move into the record&apos;s links,
+        Left and Right Arrow to move between them, and Escape to return to the record.
+      </p>
+      <table
+        role="grid"
+        aria-label={`${explorer.title} records`}
+        aria-describedby={keyboardHelpId}
+        aria-rowcount={rows.length + 1}
+        className="min-w-full text-sm"
+        onFocus={() => setKeyboardHelpVisible(true)}
+        onBlur={(event) => {
+          // Focus moving between cells inside the grid must not flash the hint off, so only a
+          // target outside the grid counts as leaving.
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setKeyboardHelpVisible(false);
+          }
+        }}
+      >
         <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-          <tr>
+          <tr aria-rowindex={1}>
             {columns.map((column) => (
               <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{column.header}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {rows.map((row, rowIndex) => (
             <tr
               key={row.recordId}
-              tabIndex={0}
-              aria-current={selectedRecordId === row.recordId}
+              ref={(element) => registerRow(row.recordId, element)}
+              // One tab stop for the whole grid. Making every row tabbable would put a
+              // hundred-record explorer a hundred Tab presses away from the next control.
+              tabIndex={rowIndex === activeRowIndex ? 0 : -1}
+              aria-selected={selectedRecordId === row.recordId}
+              aria-rowindex={rowIndex + 2}
               className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
+              onFocus={() => setActiveRowIndex(rowIndex)}
               onClick={(event) => {
                 event.currentTarget.focus();
                 onSelect(row.recordId);
               }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onSelect(row.recordId);
-                }
-              }}
+              onKeyDown={(event) => handleRowKeyDown(event, row.recordId, rowIndex)}
             >
               {columns.map((column) => {
                 const cell = row.cells.find((candidate) => candidate.columnId === column.columnId);
                 return (
                   <td key={column.columnId} className={cn("px-3 py-2 align-top", column.isRightAligned ? "text-right font-mono" : "")}>
                     {cell?.linkHref ? (
-                      <a href={cell.linkHref} className="font-medium text-primary hover:underline" onClick={(event) => event.stopPropagation()}>
+                      // Out of the tab sequence so the grid really is one tab stop: leaving these
+                      // tabbable meant Tab still walked every link in every rendered row, which is
+                      // the cost the roving row tabIndex was meant to remove. Reachable with
+                      // ArrowRight from the row, and Escape returns.
+                      <a
+                        href={cell.linkHref}
+                        tabIndex={-1}
+                        className="font-medium text-primary hover:underline"
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => handleLinkKeyDown(event, row.recordId, rowIndex)}
+                      >
                         {cell.displayValue}
                       </a>
                     ) : (

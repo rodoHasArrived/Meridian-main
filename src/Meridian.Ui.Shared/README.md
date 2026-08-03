@@ -48,6 +48,19 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+`RiskRuleRuntimeService` reports rule status to the workstation *and* supplies the limits the
+enforced rules read, so the dashboard and the gate cannot disagree. `DrawdownGuardrailRule` takes
+this service directly; the order-rate rule is bound the other way round, through
+`RiskRuleRuntimeService.OrderRateUsageProbe`.
+
+**Composition invariant: the probe must close over the same `OrderRateThrottle` instance that the
+validator enforces with.** `WorkstationServiceCollectionExtensions` constructs the throttle once,
+assigns the probe from it, and puts that instance in the rule list. Binding a second instance, or
+leaving the probe unset in a host that does compose a throttle, silently reverts the status to
+counting audit history — which cannot see a reservation held by an in-flight submission, so it
+reports available capacity during exactly the window in which the throttle is blocking. The audit
+fallback exists only for hosts that compose no throttle at all.
+
 `ProviderDataReadModelService` aggregates optional provider read interfaces into one typed, live-updating projection for both workstation lanes. Each news, scanner, P&L, calendar, market-rule, and instrument row retains a stable provenance key plus provider connection and entitlement evidence, keeping adapter-specific state outside UI code.
 Interactive Brokers request and durable-result projections require the authenticated tenant and
 company. Unowned legacy rows are excluded, durable keys include provider connection and immutable
@@ -2057,6 +2070,21 @@ controller review. Provider-ledger runs also check account-position and historic
 for each held asset class, so a provider that supports positions generally but lacks the held
 asset-class or valuation-mark history records review-grade capability breaks before close
 readiness treats the evidence as clean.
+
+`RiskEndpoints` exposes the governed-approval queue for orders parked by an `Escalate`-severity
+rule. `/api/risk/escalations` filters fund-scoped entries to the caller's scoped `ManageOrders`
+authority; approve and deny both require a written rationale, which is retained with the decision,
+and a release re-checks the approver's scoped authority because it bypasses `/orders/submit`.
+Segregation of duties is enforced against the retained submitter. `/api/risk/rules` and
+`/api/risk/rules/{name}/status` require `ViewTrades`: rule status carries aggregate gross exposure
+across every registered portfolio and violation reasons that can name traded symbols, so they are
+trade reads rather than configuration reads. Order submission and the position close/upsize actions
+answer 202 with a `PendingApproval` outcome for a parked order rather than 400, so operators do not
+read a park as a failure and resubmit — each resubmission mints a new client order id.
+`AggregatePortfolioExposureProvider` feeds the portfolio-aware rules from the same aggregated
+cross-run positions the Portfolio workspace reports, valuing them at live marks only while those
+marks are fresh, reserving accepted-but-unfilled orders, and reporting option reference prices per
+contract while keeping the contract multiplier in exposure totals.
 
 ## Diagrams
 

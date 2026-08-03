@@ -290,6 +290,48 @@ type RiskInterop private () =
             MaxDrawdownPercent = if maxDrawdownPercent.HasValue then Some maxDrawdownPercent.Value else None
             RecentOrderRate = None
             PortfolioExposure = None
+            SymbolExposure = None
+            SignedSymbolExposure = None
+            OrderNotional = None
+            SignedOrderNotional = None
+            MaxGrossExposure = None
+            MaxSymbolConcentrationPercent = None
+            MaxOrderNotional = None
+            EscalateOrderNotional = None
+        }
+
+    /// Context for the portfolio-aware rules: gross-exposure, symbol-concentration,
+    /// and per-order-notional gates fed from the live aggregated portfolio. Signed
+    /// values make the projections direction-aware so de-risking orders reduce them.
+    static member CreatePortfolioContext(
+        request: Meridian.Execution.Sdk.OrderRequest,
+        portfolioExposure: Nullable<decimal>,
+        symbolExposure: Nullable<decimal>,
+        signedSymbolExposure: Nullable<decimal>,
+        portfolioValue: Nullable<decimal>,
+        orderNotional: Nullable<decimal>,
+        signedOrderNotional: Nullable<decimal>,
+        maxGrossExposure: Nullable<decimal>,
+        maxSymbolConcentrationPercent: Nullable<decimal>,
+        maxOrderNotional: Nullable<decimal>,
+        escalateOrderNotional: Nullable<decimal>) : RiskContext =
+        {
+            Request = request
+            CurrentPositionQuantity = 0m
+            MaxPositionSize = None
+            PortfolioValue = if portfolioValue.HasValue then Some portfolioValue.Value else None
+            InitialCapital = None
+            MaxDrawdownPercent = None
+            RecentOrderRate = None
+            PortfolioExposure = if portfolioExposure.HasValue then Some portfolioExposure.Value else None
+            SymbolExposure = if symbolExposure.HasValue then Some symbolExposure.Value else None
+            SignedSymbolExposure = if signedSymbolExposure.HasValue then Some signedSymbolExposure.Value else None
+            OrderNotional = if orderNotional.HasValue then Some orderNotional.Value else None
+            SignedOrderNotional = if signedOrderNotional.HasValue then Some signedOrderNotional.Value else None
+            MaxGrossExposure = if maxGrossExposure.HasValue then Some maxGrossExposure.Value else None
+            MaxSymbolConcentrationPercent = if maxSymbolConcentrationPercent.HasValue then Some maxSymbolConcentrationPercent.Value else None
+            MaxOrderNotional = if maxOrderNotional.HasValue then Some maxOrderNotional.Value else None
+            EscalateOrderNotional = if escalateOrderNotional.HasValue then Some escalateOrderNotional.Value else None
         }
 
     static member EvaluatePositionLimit(ctx: RiskContext) : RiskDecisionDto =
@@ -297,6 +339,15 @@ type RiskInterop private () =
 
     static member EvaluateDrawdownCircuitBreaker(ctx: RiskContext) : RiskDecisionDto =
         RiskRules.drawdownCircuitBreaker ctx |> RiskInterop.ToDto
+
+    static member EvaluateGrossExposure(ctx: RiskContext) : RiskDecisionDto =
+        RiskRules.grossExposureLimit ctx |> RiskInterop.ToDto
+
+    static member EvaluateSymbolConcentration(ctx: RiskContext) : RiskDecisionDto =
+        RiskRules.symbolConcentration ctx |> RiskInterop.ToDto
+
+    static member EvaluateOrderNotional(ctx: RiskContext) : RiskDecisionDto =
+        RiskRules.orderNotional ctx |> RiskInterop.ToDto
 
     static member Aggregate(decisions: seq<RiskDecisionDto>) : RiskDecisionDto =
         let unionDecisions =

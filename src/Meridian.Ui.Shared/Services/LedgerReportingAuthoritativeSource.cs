@@ -87,17 +87,24 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
     private readonly IFundProfileTenancyRegistry _tenancyRegistry;
     private readonly IFundStructureService _fundStructure;
     private readonly TimeProvider _timeProvider;
+    private readonly ILedgerTaxLotDisposalHistory? _taxLotDisposalHistory;
 
     public LedgerReportingAuthoritativeSource(
         ILedgerJournalStore journalStore,
         IFundProfileTenancyRegistry tenancyRegistry,
         IFundStructureService fundStructure,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null)
     {
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
         _tenancyRegistry = tenancyRegistry ?? throw new ArgumentNullException(nameof(tenancyRegistry));
         _fundStructure = fundStructure ?? throw new ArgumentNullException(nameof(fundStructure));
         _timeProvider = timeProvider ?? TimeProvider.System;
+
+        // Optional: a store without retained tax-lot history contributes no realized-gain rows, which
+        // is exactly the behavior the pack had before. Falling back to the journal store keeps the
+        // common case (one Postgres store implementing both) wired without extra registration.
+        _taxLotDisposalHistory = taxLotDisposalHistory ?? journalStore as ILedgerTaxLotDisposalHistory;
     }
 
     public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
@@ -385,7 +392,113 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             lockedPeriod,
             lineDimensions: selectedDimensions);
 
-        return LedgerReportPackBuilder.Build(ledger, reportRequest);
+        // The pack's tax-lot artifact has always accepted relief projections but never been given
+        // any, so it shipped as a header with no rows. Rebuilding them from retained disposal
+        // history against the same journals this checkpoint was taken over is what makes the
+        // realized-gain and wash-sale columns report real numbers.
+        var taxLotReliefProjections = await BuildTaxLotReliefProjectionsAsync(
+                book.LedgerBookId,
+                orderedHistory,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        return LedgerReportPackBuilder.Build(
+            ledger,
+            reportRequest,
+            taxLotReliefProjections: taxLotReliefProjections);
+    }
+
+    /// <summary>
+    /// Rebuilds realized-gain relief projections for the disposals recorded against
+    /// <paramref name="journals"/>. A disposal whose retained economics cannot produce a well-formed
+    /// projection is omitted rather than failing the capture: an unreconstructable historical row
+    /// must not block a governed pack from being produced at all.
+    /// </summary>
+    private async Task<IReadOnlyList<LedgerTaxLotReliefProjection>> BuildTaxLotReliefProjectionsAsync(
+        Guid ledgerBookId,
+        IReadOnlyList<LedgerJournalEntryRecord> journals,
+        CancellationToken cancellationToken)
+    {
+        if (_taxLotDisposalHistory is null || journals.Count == 0)
+        {
+            return [];
+        }
+
+        IReadOnlyList<LedgerTaxLotDisposalHistoryRecord> disposals;
+        try
+        {
+            disposals = await _taxLotDisposalHistory
+                .GetTaxLotDisposalHistoryAsync(
+                    ledgerBookId,
+                    journals.Select(static record => record.Entry.JournalEntryId).ToArray(),
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (NotSupportedException)
+        {
+            return [];
+        }
+
+        if (disposals.Count == 0)
+        {
+            return [];
+        }
+
+        var journalsById = journals
+            .GroupBy(static record => record.Entry.JournalEntryId)
+            .ToDictionary(static group => group.Key, static group => group.First().Entry);
+
+        var projections = new List<LedgerTaxLotReliefProjection>(disposals.Count);
+        foreach (var disposal in disposals)
+        {
+            if (!journalsById.TryGetValue(disposal.JournalEntryId, out var entry))
+            {
+                continue;
+            }
+
+            var projection = LedgerTaxLotReliefHistoryProjector.Project(new LedgerTaxLotDisposalHistory(
+                disposal.MutationBatchId,
+                disposal.JournalEntryId,
+                disposal.Account,
+                entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(entry.Timestamp.UtcDateTime),
+                disposal.ReliefMethod,
+                disposal.Lots,
+                ResolveRecognizedGainOrLoss(entry),
+                disposal.WashSaleBasisIncreases,
+                disposal.MatchedReplacementQuantity));
+
+            if (projection is not null)
+            {
+                projections.Add(projection);
+            }
+        }
+
+        return projections;
+    }
+
+    /// <summary>
+    /// The gain or loss this journal actually booked, read from its realized gain/loss lines. Any
+    /// wash-sale deferral is excluded by construction (only the allowed portion was ever posted),
+    /// which is why the rebuild adds the retained deferral back to recover economic proceeds.
+    /// Accounts are matched by name so both the unscoped and per-financial-account variants count.
+    /// </summary>
+    private static decimal ResolveRecognizedGainOrLoss(JournalEntry entry)
+    {
+        var gain = 0m;
+        var loss = 0m;
+        foreach (var line in entry.Lines)
+        {
+            if (string.Equals(line.Account.Name, LedgerAccounts.RealizedGain.Name, StringComparison.Ordinal))
+            {
+                gain += line.Credit - line.Debit;
+            }
+            else if (string.Equals(line.Account.Name, LedgerAccounts.RealizedLoss.Name, StringComparison.Ordinal))
+            {
+                loss += line.Debit - line.Credit;
+            }
+        }
+
+        return gain - loss;
     }
 
     private async Task<LedgerBookRecord> ResolveBookAsync(

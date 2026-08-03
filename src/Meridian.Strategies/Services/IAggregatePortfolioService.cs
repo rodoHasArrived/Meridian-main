@@ -28,12 +28,18 @@ public sealed record AggregatedPosition(
 /// <param name="Quantity">Signed quantity from this run/account.</param>
 /// <param name="CostBasis">Average cost basis in this run/account.</param>
 /// <param name="UnrealisedPnl">Unrealised P&amp;L in this run/account.</param>
+/// <param name="ContractMultiplier">
+/// Notional one unit of <paramref name="Quantity"/> represents: 1 for outright instruments,
+/// 100 for standard equity option contracts. Exposure that ignores it under-measures an
+/// option position by the multiplier.
+/// </param>
 public sealed record RunPositionContribution(
     string RunId,
     string AccountId,
     decimal Quantity,
     decimal CostBasis,
-    decimal UnrealisedPnl);
+    decimal UnrealisedPnl,
+    decimal ContractMultiplier = 1m);
 
 /// <summary>Cross-strategy gross/net exposure summary.</summary>
 /// <param name="GrossExposure">Sum of all absolute market values.</param>

@@ -75,8 +75,7 @@ public sealed class DrawdownCircuitBreakerTests
 
         var result = await sut.EvaluateAsync(CreateOrder());
 
-        result.IsApproved.Should().BeTrue();
-        result.RejectReason.Should().BeNull();
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -89,8 +88,8 @@ public sealed class DrawdownCircuitBreakerTests
 
         var result = await sut.EvaluateAsync(CreateOrder());
 
-        result.IsApproved.Should().BeFalse();
-        result.RejectReason.Should().NotBeNullOrWhiteSpace();
+        result.Should().NotBeNull();
+        result!.Message.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -103,7 +102,7 @@ public sealed class DrawdownCircuitBreakerTests
 
         var result = await sut.EvaluateAsync(CreateOrder());
 
-        result.IsApproved.Should().BeFalse();
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -116,7 +115,7 @@ public sealed class DrawdownCircuitBreakerTests
 
         var result = await sut.EvaluateAsync(CreateOrder());
 
-        result.IsApproved.Should().BeTrue();
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -129,7 +128,7 @@ public sealed class DrawdownCircuitBreakerTests
 
         var result = await sut.EvaluateAsync(CreateOrder());
 
-        result.IsApproved.Should().BeTrue();
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -158,6 +157,7 @@ public sealed class DrawdownCircuitBreakerTests
 
         var result = await sut.EvaluateAsync(CreateOrder());
 
-        result.IsApproved.Should().Be(shouldApprove);
+        // A satisfied rule returns no finding; a breach returns one.
+        (result is null).Should().Be(shouldApprove);
     }
 }
