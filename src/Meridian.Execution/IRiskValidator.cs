@@ -121,8 +121,10 @@ public sealed record RiskValidationResult
 
     /// <summary>
     /// When the approval consumed a one-shot governed release token, its escalation id.
-    /// The OMS re-arms this approval if the gateway faults before the order routes, so a
-    /// transient submission failure never permanently retires an operator's decision.
+    /// The OMS re-arms this approval only when submission provably fails before dispatch or the
+    /// gateway definitively rejects without routing. Once gateway invocation begins, a fault is
+    /// ambiguous and the token stays consumed so one operator decision cannot authorize a retry
+    /// while the first submission may still execute.
     /// </summary>
     public string? ConsumedApprovalId { get; init; }
 

@@ -46,11 +46,11 @@ Total items: **230**
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 945 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1339 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1381 | `NOTE` | ❌ | Note: request.Note, |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 760 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 771 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 782 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 793 | `NOTE` | ❌ | Note: hasAudit ? null : "No audit reference was captured for this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 807 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1221 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1232 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1243 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1254 | `NOTE` | ❌ | Note: hasAudit ? null : "No audit reference was captured for this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1268 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 476 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
@@ -116,8 +116,8 @@ Total items: **230**
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2041 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 913 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6070 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
-| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
+| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 304 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 1111 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.test.tsx` | 76 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 128 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 141 | `NOTE` | ❌ | note: string; |
@@ -210,9 +210,9 @@ Total items: **230**
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 86 | `NOTE` | ❌ | // NOTE: Using null! dependencies - we only verify that ArgumentOutOfRangeException is not thrown |
 | `tests/Meridian.Tests/Application/Pipeline/FSharpEventValidatorTests.cs` | 72 | `NOTE` | ❌ | // Note: Trade.ctor only checks Price > 0, so $2,000,000 is constructible. |
 | `tests/Meridian.Tests/DataIntegration/Monitoring/DataQuality/DataFreshnessSlaMonitorTests.cs` | 525 | `NOTE` | ❌ | // NOTE: Actual result depends on current time, so we check the logic is working |
-| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1503 | `NOTE` | ❌ | note: "Canonical pilot run created from the certified renderer manifest."); |
-| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1516 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
-| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1529 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |
+| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1519 | `NOTE` | ❌ | note: "Canonical pilot run created from the certified renderer manifest."); |
+| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1532 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
+| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1545 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 258 | `NOTE` | ❌ | Note: "Ready for review."); |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 284 | `NOTE` | ❌ | Note: "Submit through gate.", |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 313 | `NOTE` | ❌ | Note: "Submit.", |
@@ -220,7 +220,7 @@ Total items: **230**
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 362 | `NOTE` | ❌ | Note: "Submit through gate.", |
 | `tests/Meridian.Tests/Storage/StorageChecksumServiceTests.cs` | 99 | `NOTE` | ❌ | // NOTE: File.WriteAllTextAsync uses UTF-8 with BOM by default on some platforms, |
 | `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 868 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
-| `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 4262 | `NOTE` | ❌ | Note: "Delivered after approval.", |
+| `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 5504 | `NOTE` | ❌ | Note: "Delivered after approval.", |
 | `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs` | 418 | `NOTE` | ❌ | // Note: Status derives as ApprovalPending once all four gates are clean, which is expected |
 | `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 2056 | `NOTE` | ❌ | Note: "Delivered after restatement.", |
 | `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 274 | `NOTE` | ❌ | Note: "ready", |

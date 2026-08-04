@@ -51,40 +51,11 @@ public sealed class StatementImportEvidenceBridge(
         var evidenceRoute = BuildEvidenceWorkbenchRoute(result.RunId);
         var reconciliationRoute = BuildReconciliationRoute(result.RunId);
         var intake = await store.WriteIntakeArtifactAsync(
-                new EvidenceVaultIntakeRequestDto(
-                    SubjectKind: StatementRunSubjectKind,
-                    SubjectId: result.RunId,
-                    IntakeChannel: "statement-import",
-                    FileName: Path.GetFileName(retainedSourcePath),
-                    ContentType: ResolveContentType(retainedSourcePath),
-                    SourceSystem: request.SourceInstitution,
-                    SourceReference: result.RetainedSourcePath,
-                    ReceivedBy: request.ImportedBy,
-                    ExtractedFields: BuildExtractedFields(result, request),
-                    Linkage: new EvidenceSubjectLinkageDto(
-                        EvidenceSubject: $"{StatementRunSubjectKind}/{result.RunId}",
-                        RunId: result.RunId,
-                        PeriodId: BuildPeriodId(request.PeriodStart, request.PeriodEnd),
-                        ReportPackId: null,
-                        ReconciliationCaseId: ResolvePrimaryCaseId(result)))
-                {
-                    Classification = EvidenceDocumentClassificationDto.Statement,
-                    Actor = request.ImportedBy,
-                    ExtractionStatus = result.CaseCount > 0 || result.BreakCount > 0
-                        ? EvidenceExtractionStatusDto.NeedsReview
-                        : EvidenceExtractionStatusDto.Extracted,
-                    IntakeChannelKind = EvidenceDocumentIntakeChannelDto.ImportedFileReference,
-                    ExtractorId = "statement-connector-import",
-                    ReviewerState = new EvidenceDocumentReviewStateDto(
-                        result.CaseCount > 0 || result.BreakCount > 0
-                            ? EvidenceDocumentReviewStatusDto.NeedsReview
-                            : EvidenceDocumentReviewStatusDto.Unreviewed),
-                    ObjectLinks = BuildObjectLinks(result, request, reconciliationRoute),
-                    IntakeSource = new EvidenceDocumentIntakeSourceDto(
-                        EvidenceDocumentIntakeSourceKindDto.ImportedFileReference,
-                        Path: retainedSourcePath,
-                        DisplayName: result.RetainedSourcePath)
-                },
+                BuildIntakeRequest(
+                    result,
+                    request,
+                    retainedSourcePath,
+                    reconciliationRoute),
                 ct)
             .ConfigureAwait(false);
 
@@ -123,6 +94,51 @@ public sealed class StatementImportEvidenceBridge(
 
         return fullPath;
     }
+
+    internal static EvidenceVaultIntakeRequestDto BuildIntakeRequest(
+        StatementImportCommitResultDto result,
+        StatementImportEvidenceBridgeRequest request,
+        string retainedSourcePath,
+        string reconciliationRoute,
+        string? expectedContentHashSha256 = null) =>
+        new(
+            SubjectKind: StatementRunSubjectKind,
+            SubjectId: result.RunId,
+            IntakeChannel: "statement-import",
+            FileName: Path.GetFileName(retainedSourcePath),
+            ContentType: ResolveContentType(retainedSourcePath),
+            SourceSystem: request.SourceInstitution,
+            SourceReference: result.RetainedSourcePath,
+            ReceivedBy: request.ImportedBy,
+            ExpectedContentHashSha256: expectedContentHashSha256,
+            ExtractedFields: BuildExtractedFields(result, request),
+            Linkage: new EvidenceSubjectLinkageDto(
+                EvidenceSubject: $"{StatementRunSubjectKind}/{result.RunId}",
+                RunId: result.RunId,
+                PeriodId: BuildPeriodId(request.PeriodStart, request.PeriodEnd),
+                ReportPackId: null,
+                ReconciliationCaseId: ResolvePrimaryCaseId(result)))
+        {
+            Classification = EvidenceDocumentClassificationDto.Statement,
+            Actor = request.ImportedBy,
+            TenantId = request.TenantId,
+            Scope = request.CompanyId,
+            ExtractionStatus = result.CaseCount > 0 || result.BreakCount > 0
+                ? EvidenceExtractionStatusDto.NeedsReview
+                : EvidenceExtractionStatusDto.Extracted,
+            IntakeChannelKind = EvidenceDocumentIntakeChannelDto.ImportedFileReference,
+            ExtractorId = "statement-connector-import",
+            ReviewerState = new EvidenceDocumentReviewStateDto(
+                result.CaseCount > 0 || result.BreakCount > 0
+                    ? EvidenceDocumentReviewStatusDto.NeedsReview
+                    : EvidenceDocumentReviewStatusDto.Unreviewed),
+            ObjectLinks = BuildObjectLinks(result, request, reconciliationRoute),
+            IntakeSource = new EvidenceDocumentIntakeSourceDto(
+                EvidenceDocumentIntakeSourceKindDto.ImportedFileReference,
+                Path: retainedSourcePath,
+                DisplayName: result.RetainedSourcePath,
+                ExpectedContentHashSha256: expectedContentHashSha256)
+        };
 
     private static IReadOnlyList<EvidenceDocumentLinkDto> BuildObjectLinks(
         StatementImportCommitResultDto result,
@@ -213,7 +229,7 @@ public sealed class StatementImportEvidenceBridge(
             LinkedRecordKind: null,
             LinkedRecordId: null);
 
-    private static IReadOnlyList<string> BuildNextActions(StatementImportCommitResultDto result)
+    internal static IReadOnlyList<string> BuildNextActions(StatementImportCommitResultDto result)
     {
         var nextActions = new List<string>
         {
@@ -307,7 +323,7 @@ public sealed class StatementImportEvidenceBridge(
            + $"&subjectId={Uri.EscapeDataString(runId)}"
            + "&documentClassification=Statement";
 
-    private static string BuildReconciliationRoute(string runId)
+    internal static string BuildReconciliationRoute(string runId)
         => $"/accounting/reconciliation/match?runId={Uri.EscapeDataString(runId)}";
 
     private static string BuildPeriodId(DateOnly start, DateOnly end)

@@ -1786,20 +1786,24 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(within(classificationSelect).getByRole("option", { name: "Bank Statement" })).toBeInTheDocument();
     expect(within(classificationSelect).getByRole("option", { name: "Admin Package" })).toBeInTheDocument();
     expect(within(classificationSelect).getByRole("option", { name: "Tax Audit Support" })).toBeInTheDocument();
-    const extractionStatusSelect = screen.getByRole("combobox", { name: "Extraction status" });
-    expect(within(extractionStatusSelect).getByRole("option", { name: "Pending" })).toBeInTheDocument();
-    expect(within(extractionStatusSelect).queryByRole("option", { name: "Accepted" })).not.toBeInTheDocument();
+    const sourceKindSelect = screen.getByRole("combobox", { name: "Document source kind" });
     expect(screen.getByRole("option", { name: "Email" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Sftp" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Api" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Portal Download" })).toBeInTheDocument();
+    expect(within(sourceKindSelect).queryByRole("option", { name: "Local File" })).not.toBeInTheDocument();
+    expect(within(sourceKindSelect).queryByRole("option", { name: "Imported File Reference" })).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Fund" })).toBeInTheDocument();
     await user.selectOptions(classificationSelect, "BankStatement");
-    await user.selectOptions(screen.getByLabelText("Extraction status"), "Pending");
-    await user.selectOptions(screen.getByLabelText("Reviewer state"), "NeedsReview");
-    await user.type(screen.getByLabelText("Actor"), "fund-controller");
-    await user.type(screen.getByLabelText("Tenant"), "tenant-alpha");
-    await user.type(screen.getByLabelText("Scope"), "fund-alpha");
+    expect(screen.queryByLabelText("Extraction status")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Reviewer state")).not.toBeInTheDocument();
+    expect(screen.getByText(/Extraction and initial review posture are assigned by the server/)).toBeInTheDocument();
+    expect(screen.getByText(
+      "Actor, tenant, and company scope are derived from the authenticated workstation session."
+    )).toBeInTheDocument();
+    expect(screen.queryByLabelText("Actor")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Tenant")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Scope")).not.toBeInTheDocument();
     await user.type(screen.getByLabelText("Source system"), "operator-upload");
     await user.type(screen.getByLabelText("Source reference"), "close-bank-evidence.csv");
     await user.selectOptions(screen.getByLabelText("Linked object kind"), "Fund");
@@ -1816,17 +1820,8 @@ describe("EvidenceWorkbenchScreen", () => {
         contentType: "text/csv",
         sourceSystem: "operator-upload",
         sourceReference: "close-bank-evidence.csv",
-        receivedBy: "fund-controller",
         classification: "BankStatement",
-        actor: "fund-controller",
-        tenantId: "tenant-alpha",
-        scope: "fund-alpha",
-        extractionStatus: "Pending",
         intakeChannelKind: "Upload",
-        reviewerState: expect.objectContaining({
-          status: "NeedsReview",
-          reviewer: "fund-controller"
-        }),
         objectLinks: [
           expect.objectContaining({
             linkKind: "Fund",
@@ -1841,6 +1836,13 @@ describe("EvidenceWorkbenchScreen", () => {
       }),
       expect.objectContaining({ signal: expect.any(Object) })
     );
+    const submittedRequest = vi.mocked(intakeEvidenceVaultDocument).mock.calls[0]?.[0];
+    expect(submittedRequest).not.toHaveProperty("actor");
+    expect(submittedRequest).not.toHaveProperty("receivedBy");
+    expect(submittedRequest).not.toHaveProperty("tenantId");
+    expect(submittedRequest).not.toHaveProperty("scope");
+    expect(submittedRequest).not.toHaveProperty("extractionStatus");
+    expect(submittedRequest).not.toHaveProperty("reviewerState");
     expect(await screen.findByText(/Retained close-bank-evidence.csv as intake:ev-uploaded-close-document/i)).toBeInTheDocument();
     await waitFor(() => expect(listEvidenceVaultDocuments).toHaveBeenCalledTimes(3));
     expect(screen.getByText("Missing evidence")).toBeInTheDocument();
@@ -1941,54 +1943,18 @@ describe("EvidenceWorkbenchScreen", () => {
     );
   });
 
-  it.each([
-    ["LocalFile", "local-file", "LocalFile", "D:\\imports\\custodian-statement.csv", "CustodianFile"],
-    ["ImportedFileReference", "imported-file-reference", "ImportedFileReference", "D:\\imports\\portal\\capital-notice.pdf", "CapitalNotice"]
-  ] as const)("submits %s document references through the shared intake contract", async (sourceKind, intakeChannel, intakeChannelKind, sourcePath, classification) => {
+  it("does not offer server-local filesystem intake through the browser", async () => {
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
-    const user = userEvent.setup();
 
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
     expect(await screen.findByRole("heading", { name: "Momentum strategy run", level: 2 }))
       .toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText("Document source kind"), sourceKind);
-    await user.type(screen.getByLabelText("Source file path"), sourcePath);
-    await user.selectOptions(screen.getByRole("combobox", { name: /^Document classification$/ }), classification);
-    await user.type(screen.getByLabelText("Actor"), "fund-controller");
-    await user.type(screen.getByLabelText("Linked object id"), "close-task:cash-support");
-    await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
-
-    const fileName = sourcePath.split("\\").at(-1);
-    await waitFor(() => expect(intakeEvidenceVaultDocument).toHaveBeenCalledTimes(1));
-    expect(intakeEvidenceVaultDocument).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subjectKind: "strategy-run",
-        subjectId: "run-1",
-        intakeChannel,
-        fileName,
-        contentBase64: null,
-        contentType: null,
-        sourceReference: sourcePath,
-        receivedBy: "fund-controller",
-        classification,
-        actor: "fund-controller",
-        intakeChannelKind,
-        intakeSource: expect.objectContaining({
-          sourceKind,
-          path: sourcePath,
-          displayName: fileName
-        }),
-        objectLinks: [
-          expect.objectContaining({
-            linkKind: "CloseTask",
-            objectId: "close-task:cash-support"
-          })
-        ]
-      }),
-      expect.objectContaining({ signal: expect.any(Object) })
-    );
+    const sourceKindSelect = screen.getByRole("combobox", { name: "Document source kind" });
+    expect(within(sourceKindSelect).queryByRole("option", { name: "Local File" })).not.toBeInTheDocument();
+    expect(within(sourceKindSelect).queryByRole("option", { name: "Imported File Reference" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Source file path")).not.toBeInTheDocument();
   });
 
   it("submits adapter-seam source metadata with uploaded bytes instead of fetching the remote source", async () => {
@@ -2006,7 +1972,6 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.selectOptions(screen.getByRole("combobox", { name: /^Document classification$/ }), "AdminPackage");
     await user.type(screen.getByLabelText("Source system"), "fund-admin-portal");
     await user.type(screen.getByLabelText("Source reference"), "portal://fund-admin/fund-alpha/admin-package-202606");
-    await user.type(screen.getByLabelText("Actor"), "fund-admin-operator");
     await user.type(screen.getByLabelText("Linked object id"), "fund-alpha");
     await user.selectOptions(screen.getByLabelText("Linked object kind"), "Fund");
     await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
@@ -2022,9 +1987,7 @@ describe("EvidenceWorkbenchScreen", () => {
         contentType: "text/csv",
         sourceSystem: "fund-admin-portal",
         sourceReference: "portal://fund-admin/fund-alpha/admin-package-202606",
-        receivedBy: "fund-admin-operator",
         classification: "AdminPackage",
-        actor: "fund-admin-operator",
         intakeChannelKind: "PortalDownload",
         intakeSource: expect.objectContaining({
           sourceKind: "PortalDownload",

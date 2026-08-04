@@ -1105,7 +1105,8 @@ public static class WorkstationServiceCollectionExtensions
             runRepository: sp.GetRequiredService<IStrategyRepository>(),
             options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<CoveredCallBacktestOptions>>(),
             resultCache: sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
-            loggerFactory: sp.GetRequiredService<ILoggerFactory>()));
+            loggerFactory: sp.GetRequiredService<ILoggerFactory>(),
+            evidenceArtifactStore: sp.GetRequiredService<IEvidenceArtifactStore>()));
         services.TryAddSingleton<ICoveredCallBacktestService>(sp => sp.GetRequiredService<CoveredCallBacktestService>());
         services.AddHostedService(sp => sp.GetRequiredService<CoveredCallBacktestService>());
     }

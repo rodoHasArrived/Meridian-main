@@ -3997,6 +3997,7 @@ Meridian-main
 │   │   │   ├── DailyValuationScheduleDtos.cs
 │   │   │   ├── DataOperationsAssuranceDtos.cs
 │   │   │   ├── DataUploadDtos.cs
+│   │   │   ├── EvidenceVaultReference.cs
 │   │   │   ├── EvidenceWorkflowDtos.cs
 │   │   │   ├── FeatureCapabilityDtos.cs
 │   │   │   ├── FinancialOperationsCommandCenterDtos.cs
@@ -6109,6 +6110,7 @@ Meridian-main
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
+│   │   │   │   │   │   ├── promotion.contracts.ts
 │   │   │   │   │   │   ├── provider-modules.api.test.ts
 │   │   │   │   │   │   ├── provider-modules.api.ts
 │   │   │   │   │   │   ├── reporting-runs.api.test.ts
@@ -6295,6 +6297,7 @@ Meridian-main
 │   │   │   │   │   ├── cash-ladder-screen.tsx
 │   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
 │   │   │   │   │   ├── cash-ladder-screen.view-model.ts
+│   │   │   │   │   ├── covered-call-screen.formatters.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -6464,6 +6467,7 @@ Meridian-main
 │   │   │   │   │   ├── strategy-designer-screen.view-model.ts
 │   │   │   │   │   ├── strategy-screen.a11y.test.tsx
 │   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
+│   │   │   │   │   ├── strategy-screen.formatters.ts
 │   │   │   │   │   ├── strategy-screen.operator-focus.ts
 │   │   │   │   │   ├── strategy-screen.status-announcement.ts
 │   │   │   │   │   ├── strategy-screen.test.tsx
@@ -6865,6 +6869,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.StatementReconciliationReport.cs
 │   │   │   ├── WorkstationEndpoints.Strategy.cs
 │   │   │   ├── WorkstationEndpoints.StrategyBriefing.cs
+│   │   │   ├── WorkstationEndpoints.StrategyWorkspace.cs
 │   │   │   ├── WorkstationEndpoints.Stream.cs
 │   │   │   ├── WorkstationEndpoints.StructuredReportingExport.cs
 │   │   │   ├── WorkstationEndpoints.Trading.cs
@@ -6883,6 +6888,7 @@ Meridian-main
 │   │   │   ├── FileEvidenceArtifactStore.cs
 │   │   │   ├── FileEvidenceArtifactStore.DocumentReview.cs
 │   │   │   ├── FileEvidenceArtifactStore.Models.cs
+│   │   │   ├── FileEvidenceArtifactStore.VaultAccess.cs
 │   │   │   ├── FileStatementReconciliationReportAuthorityStore.cs
 │   │   │   ├── ReconciliationEvidenceContributor.StatementRuns.cs
 │   │   │   ├── ReportingStatementImportEvidenceRetainer.cs
@@ -6892,7 +6898,8 @@ Meridian-main
 │   │   │   ├── StatementReconciliationReportWorkflowService.Authority.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.Reconciliation.cs
-│   │   │   └── StatementToReportWorkflowService.Compatibility.cs
+│   │   │   ├── StatementToReportWorkflowService.Compatibility.cs
+│   │   │   └── StrategyRunEvidenceContributor.cs
 │   │   ├── Extensibility
 │   │   │   ├── ExtensibilityCatalogService.cs
 │   │   │   ├── ExtensibilityConfigurationService.cs
@@ -7078,6 +7085,7 @@ Meridian-main
 │   │   │   ├── StrategyRunReviewPacketService.cs
 │   │   │   ├── TradingOperatorLiveOrderReadinessGate.cs
 │   │   │   ├── TradingOperatorReadinessService.cs
+│   │   │   ├── TradingOperatorReadinessService.Strategy.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── Streaming
@@ -8579,6 +8587,7 @@ Meridian-main
 │   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigDirectLendingAuthorizationTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
+│   │   │   │   ├── CoveredCallEndpointAuthorizationTests.cs
 │   │   │   │   ├── DirectLendingEndpointMutationTests.cs
 │   │   │   │   ├── EndpointGuardTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
@@ -8932,6 +8941,7 @@ Meridian-main
 │   │   │   └── XlsxWorkbookWriterTests.cs
 │   │   ├── Strategies
 │   │   │   ├── CoveredCall
+│   │   │   │   ├── CoveredCallBacktestServiceTests.cs
 │   │   │   │   ├── CoveredCallChainProviderAdapterTests.cs
 │   │   │   │   ├── CoveredCallChainProviderFactoryConvertCallsTests.cs
 │   │   │   │   └── CoveredCallRunProjectionTests.cs
@@ -9151,6 +9161,8 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
+│   │   │   ├── WorkstationEndpointsTests.StrategyTenantScope.cs
+│   │   │   ├── WorkstationEndpointsTests.TradingTenantScope.cs
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs

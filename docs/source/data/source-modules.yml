@@ -102,6 +102,7 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W6-BTSTUDIO-001
       - W9-ASSET-010
     stage_gates:
       - DataConfidence
@@ -109,6 +110,7 @@ modules:
       - PortfolioLedgerReview
       - GovernedReportPack
       - AccountingRecords
+      - BacktestingEvidence
     validation:
       - dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~AutoGapRemediationServiceTests|FullyQualifiedName~BackfillCoordinatorPreviewTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -939,12 +941,14 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W6-BTSTUDIO-001
       - W9-ASSET-010
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
       - GovernedReportPack
       - AccountingRecords
+      - BacktestingEvidence
     validation:
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
@@ -972,6 +976,7 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W6-BTSTUDIO-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -979,6 +984,7 @@ modules:
       - PortfolioLedgerReview
       - GovernedReportPack
       - AccountingRecords
+      - BacktestingEvidence
     validation:
       - npm --prefix src/Meridian.Ui/dashboard run test
       - npm --prefix src/Meridian.Ui/dashboard run build

@@ -83,8 +83,15 @@ public sealed class PilotAcceptanceHarnessTests
                 RunId: seed.BacktestRunId,
                 ApprovedBy: "pilot.operator",
                 ApprovalReason: "Pilot harness replay, controls, and dataset evidence accepted.",
-                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
-        promotion.Success.Should().BeTrue();
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+                EvidenceReferences:
+                [
+                    $"{PromotionApprovalChecklist.Dk1TrustPacketReviewed}:{FeedEvidenceId}",
+                    $"{PromotionApprovalChecklist.RunLineageReviewed}:audit-{seed.BacktestRunId}",
+                    $"{PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed}:{seed.StrategyId}-backtest-ledger",
+                    $"{PromotionApprovalChecklist.RiskControlsReviewed}:{DatasetEvidenceId}"
+                ]));
+        promotion.Success.Should().BeTrue(promotion.Reason);
 
         var research = await client.GetFromJsonAsync<ResearchBriefingDto>(
             "/api/workstation/research/briefing",
@@ -504,7 +511,7 @@ public sealed class PilotAcceptanceHarnessTests
                     ? requestedActor.ToString().Trim()
                     : "pilot.operator";
             context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Admin);
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "pilot-acceptance-tenant";
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "pilot-acceptance-tenant";
             await next();
@@ -618,6 +625,8 @@ public sealed class PilotAcceptanceHarnessTests
         var startedAt = new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddMinutes(30);
         var result = BuildPilotBacktestResult(startedAt, completedAt);
+        var ledgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger";
+        var auditReference = $"audit-{runId}";
 
         return StrategyRunEntry.Start(strategyId, strategyName, runType).Complete(result) with
         {
@@ -627,8 +636,15 @@ public sealed class PilotAcceptanceHarnessTests
             DatasetReference = DatasetEvidenceId,
             FeedReference = FeedEvidenceId,
             PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
-            LedgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
-            AuditReference = $"audit-{runId}",
+            LedgerReference = ledgerReference,
+            AuditReference = auditReference,
+            RetainedEvidenceReferences =
+            [
+                DatasetEvidenceId,
+                FeedEvidenceId,
+                ledgerReference,
+                auditReference
+            ],
             ParentRunId = parentRunId,
             FundProfileId = fundProfileId,
             FundDisplayName = fundDisplayName,
