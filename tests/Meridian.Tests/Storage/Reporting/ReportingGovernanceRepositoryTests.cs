@@ -857,8 +857,8 @@ public sealed class ReportingGovernancePersistenceSerializationTests
                 EvidenceIds: default),
             [audit]);
 
-        var payload = PostgresReportingGovernanceRepository.SerializeRunForPersistence(run);
-        var retained = PostgresReportingGovernanceRepository.DeserializeRunFromPersistence(payload);
+        var payload = ReportingGovernancePersistenceJson.SerializeRun(run);
+        var retained = ReportingGovernancePersistenceJson.DeserializeRun(payload);
 
         retained.Access.Principals.IsDefault.Should().BeFalse();
         retained.CreationAuthority.PrincipalIds.IsDefault.Should().BeFalse();
@@ -899,8 +899,8 @@ public sealed class ReportingGovernancePersistenceSerializationTests
                     default)
             ]);
 
-        var payload = PostgresReportingGovernanceRepository.SerializeRestatementForPersistence(request);
-        var retained = PostgresReportingGovernanceRepository.DeserializeRestatementFromPersistence(payload);
+        var payload = ReportingGovernancePersistenceJson.SerializeRestatement(request);
+        var retained = ReportingGovernancePersistenceJson.DeserializeRestatement(payload);
 
         retained.ChangedLines.Single().EvidenceIds.IsDefault.Should().BeFalse();
         retained.RequestedBy.PrincipalIds.IsDefault.Should().BeFalse();
@@ -912,10 +912,10 @@ public sealed class ReportingGovernancePersistenceSerializationTests
     [Fact]
     public void AuditPayload_DefaultPrincipalAudience_RoundTripsAsCanonicalEmptyCollection()
     {
-        var payload = PostgresReportingGovernanceRepository.SerializeAuditForPersistence(
+        var payload = ReportingGovernancePersistenceJson.SerializeAudit(
             NewAudit(NewAuthority()));
 
-        var retained = PostgresReportingGovernanceRepository.DeserializeAuditFromPersistence(payload);
+        var retained = ReportingGovernancePersistenceJson.DeserializeAudit(payload);
 
         retained.Authority.PrincipalIds.IsDefault.Should().BeFalse();
     }

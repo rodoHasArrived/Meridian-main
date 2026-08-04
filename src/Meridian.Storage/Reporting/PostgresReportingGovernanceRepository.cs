@@ -81,147 +81,6 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         }
     }
 
-    internal static string SerializeRunForPersistence(GovernedReportingRun run)
-    {
-        ArgumentNullException.ThrowIfNull(run);
-        return JsonSerializer.Serialize(
-            NormalizeForPersistence(run),
-            ReportingGovernanceJsonContext.Default.GovernedReportingRun);
-    }
-
-    internal static GovernedReportingRun DeserializeRunFromPersistence(string payload) =>
-        NormalizeForPersistence(
-            JsonSerializer.Deserialize(
-                payload,
-                ReportingGovernanceJsonContext.Default.GovernedReportingRun)
-            ?? throw new JsonException("The retained reporting run payload was null."));
-
-    internal static string SerializeRestatementForPersistence(ReportingRestatementRequest request)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        return JsonSerializer.Serialize(
-            NormalizeForPersistence(request),
-            ReportingGovernanceJsonContext.Default.ReportingRestatementRequest);
-    }
-
-    internal static ReportingRestatementRequest DeserializeRestatementFromPersistence(string payload) =>
-        NormalizeForPersistence(
-            JsonSerializer.Deserialize(
-                payload,
-                ReportingGovernanceJsonContext.Default.ReportingRestatementRequest)
-            ?? throw new JsonException("The retained reporting restatement payload was null."));
-
-    internal static string SerializeAuditForPersistence(ReportingGovernanceAuditEntry entry)
-    {
-        ArgumentNullException.ThrowIfNull(entry);
-        return JsonSerializer.Serialize(
-            NormalizeForPersistence(entry),
-            ReportingGovernanceJsonContext.Default.ReportingGovernanceAuditEntry);
-    }
-
-    internal static ReportingGovernanceAuditEntry DeserializeAuditFromPersistence(string payload) =>
-        NormalizeForPersistence(
-            JsonSerializer.Deserialize(
-                payload,
-                ReportingGovernanceJsonContext.Default.ReportingGovernanceAuditEntry)
-            ?? throw new JsonException("The retained reporting governance audit payload was null."));
-
-    private static GovernedReportingRun NormalizeForPersistence(GovernedReportingRun run) =>
-        run with
-        {
-            Access = NormalizeForPersistence(run.Access),
-            CreationAuthority = NormalizeForPersistence(run.CreationAuthority),
-            Readiness = NormalizeForPersistence(run.Readiness),
-            Approval = NormalizeForPersistence(run.Approval),
-            Release = NormalizeForPersistence(run.Release),
-            AuditTrail = NormalizeAudit(run.AuditTrail)
-        };
-
-    private static ReportingRestatementRequest NormalizeForPersistence(
-        ReportingRestatementRequest request) =>
-        request with
-        {
-            ChangedLines = NormalizeChangedLines(request.ChangedLines),
-            RequestedBy = NormalizeForPersistence(request.RequestedBy),
-            ApprovedBy = NormalizeOptionalAuthority(request.ApprovedBy),
-            AuditTrail = NormalizeAudit(request.AuditTrail),
-            RequestedChangedLines = NormalizeChangedLines(request.RequestedChangedLines)
-        };
-
-    private static ReportingAccessScope NormalizeForPersistence(ReportingAccessScope access) =>
-        access is null
-            ? null!
-            : access with { Principals = OrEmpty(access.Principals) };
-
-    private static ReportingAuthorityScope NormalizeForPersistence(ReportingAuthorityScope authority) =>
-        authority is null
-            ? null!
-            : authority with
-            {
-                Permissions = OrEmpty(authority.Permissions),
-                PrincipalIds = OrEmpty(authority.PrincipalIds)
-            };
-
-    private static ReportingAuthorityScope? NormalizeOptionalAuthority(ReportingAuthorityScope? authority) =>
-        authority is null ? null : NormalizeForPersistence(authority);
-
-    private static ReportingReadinessReceipt? NormalizeForPersistence(ReportingReadinessReceipt? readiness) =>
-        readiness is null
-            ? null
-            : readiness with { Checks = NormalizeReadinessChecks(readiness.Checks) };
-
-    private static ReportingApprovalReceipt? NormalizeForPersistence(ReportingApprovalReceipt? approval) =>
-        approval is null
-            ? null
-            : approval with { Authority = NormalizeForPersistence(approval.Authority) };
-
-    private static ReportingReleaseReceipt? NormalizeForPersistence(ReportingReleaseReceipt? release) =>
-        release is null
-            ? null
-            : release with
-            {
-                Authority = NormalizeForPersistence(release.Authority),
-                Artifacts = OrEmpty(release.Artifacts),
-                EvidenceIds = OrEmpty(release.EvidenceIds)
-            };
-
-    private static ReportingGovernanceAuditEntry NormalizeForPersistence(
-        ReportingGovernanceAuditEntry entry) =>
-        entry is null
-            ? null!
-            : entry with { Authority = NormalizeForPersistence(entry.Authority) };
-
-    private static ImmutableArray<ReportingReadinessCheck> NormalizeReadinessChecks(
-        ImmutableArray<ReportingReadinessCheck> checks) =>
-        checks.IsDefault
-            ? []
-            : checks
-                .Select(static check => check is null
-                    ? null!
-                    : check with { EvidenceIds = OrEmpty(check.EvidenceIds) })
-                .ToImmutableArray();
-
-    private static ImmutableArray<ReportingRestatementChangedLine> NormalizeChangedLines(
-        ImmutableArray<ReportingRestatementChangedLine> changedLines) =>
-        changedLines.IsDefault
-            ? []
-            : changedLines
-                .Select(static line => line is null
-                    ? null!
-                    : line with { EvidenceIds = OrEmpty(line.EvidenceIds) })
-                .ToImmutableArray();
-
-    private static ImmutableArray<ReportingGovernanceAuditEntry> NormalizeAudit(
-        ImmutableArray<ReportingGovernanceAuditEntry> audit) =>
-        audit.IsDefault
-            ? []
-            : audit
-                .Select(static entry => NormalizeForPersistence(entry))
-                .ToImmutableArray();
-
-    private static ImmutableArray<T> OrEmpty<T>(ImmutableArray<T> values) =>
-        values.IsDefault ? [] : values;
-
     private sealed class PostgresReportingGovernanceTransaction : IReportingGovernanceTransaction
     {
         private const int MaximumKeyLength = 256;
@@ -1957,13 +1816,13 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         }
 
         private static string SerializeRun(GovernedReportingRun run) =>
-            SerializeRunForPersistence(run);
+            ReportingGovernancePersistenceJson.SerializeRun(run);
 
         private static GovernedReportingRun DeserializeRun(string payload, string id)
         {
             try
             {
-                return DeserializeRunFromPersistence(payload);
+                return ReportingGovernancePersistenceJson.DeserializeRun(payload);
             }
             catch (JsonException exception)
             {
@@ -1991,13 +1850,13 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         }
 
         private static string SerializeRestatement(ReportingRestatementRequest request) =>
-            SerializeRestatementForPersistence(request);
+            ReportingGovernancePersistenceJson.SerializeRestatement(request);
 
         private static ReportingRestatementRequest DeserializeRestatement(string payload, string id)
         {
             try
             {
-                return DeserializeRestatementFromPersistence(payload);
+                return ReportingGovernancePersistenceJson.DeserializeRestatement(payload);
             }
             catch (JsonException exception)
             {
@@ -2028,13 +1887,13 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         }
 
         private static string SerializeAudit(ReportingGovernanceAuditEntry entry) =>
-            SerializeAuditForPersistence(entry);
+            ReportingGovernancePersistenceJson.SerializeAudit(entry);
 
         private static ReportingGovernanceAuditEntry DeserializeAudit(string payload, string id)
         {
             try
             {
-                return DeserializeAuditFromPersistence(payload);
+                return ReportingGovernancePersistenceJson.DeserializeAudit(payload);
             }
             catch (JsonException exception)
             {
