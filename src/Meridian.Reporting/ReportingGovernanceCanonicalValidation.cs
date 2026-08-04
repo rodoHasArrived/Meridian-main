@@ -1239,10 +1239,15 @@ public static class ReportingGovernanceCanonicalValidation
         && StringComparer.Ordinal.Equals(left.TenantId, right.TenantId)
         && StringComparer.Ordinal.Equals(left.OrganizationId, right.OrganizationId)
         && StringComparer.Ordinal.Equals(left.CompanyId, right.CompanyId)
-        && left.Permissions.SequenceEqual(right.Permissions)
+        && Normalize(left.Permissions).SequenceEqual(Normalize(right.Permissions))
         && left.Origin == right.Origin
         && StringComparer.Ordinal.Equals(left.CorrelationId, right.CorrelationId)
-        && left.PrincipalIds.SequenceEqual(right.PrincipalIds, StringComparer.Ordinal);
+        && Normalize(left.PrincipalIds).SequenceEqual(
+            Normalize(right.PrincipalIds),
+            StringComparer.Ordinal);
+
+    private static ImmutableArray<T> Normalize<T>(ImmutableArray<T> values) =>
+        values.IsDefault ? ImmutableArray<T>.Empty : values;
 
     private static CanonicalParameterBinding ParseCanonicalParameters(string canonicalJson)
     {

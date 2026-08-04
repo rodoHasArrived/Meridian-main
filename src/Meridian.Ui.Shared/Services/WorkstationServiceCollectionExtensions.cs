@@ -265,10 +265,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
-        foreach (var handler in DefaultProviderSetupHandlers.Create())
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IProviderSetupHandler), handler));
-        }
+        services.AddDefaultProviderSetupHandlers();
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton<ProviderReadinessService>();

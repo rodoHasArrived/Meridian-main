@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Ledger;
-using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Tests.Storage;
@@ -279,27 +278,13 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                     "Cash",
                     LedgerAccountType.Asset.ToString(),
                     Debit: 125m,
-                    Credit: 0m,
-                    Symbol: "POSTGRES",
-                    SecurityId: securityId,
-                    SecurityMasterApproved: true,
-                    SecurityMasterProvenance: provenance,
-                    LedgerMappingReference: $"ledger-map:POSTGRES:{securityId:N}",
-                    SecurityMasterApprovalReference: "sm-approval:postgres-controller",
-                    SecurityMasterStatus: SecurityStatusDto.Active),
+                    Credit: 0m),
                 new OperationsLedgerJournalLineDto(
                     Guid.NewGuid(),
                     "Interest Income",
                     LedgerAccountType.Revenue.ToString(),
                     Debit: 0m,
-                    Credit: 125m,
-                    Symbol: "POSTGRES",
-                    SecurityId: securityId,
-                    SecurityMasterApproved: true,
-                    SecurityMasterProvenance: provenance,
-                    LedgerMappingReference: $"ledger-map:POSTGRES:{securityId:N}",
-                    SecurityMasterApprovalReference: "sm-approval:postgres-controller",
-                    SecurityMasterStatus: SecurityStatusDto.Active)
+                    Credit: 125m)
             ],
             CommandId: Guid.NewGuid(),
             CorrelationId: Guid.NewGuid(),

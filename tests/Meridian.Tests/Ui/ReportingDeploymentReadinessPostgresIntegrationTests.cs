@@ -4,12 +4,14 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.FundStructure;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Entities.FundStructure;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.PortfolioRecords.FundAccounts;
@@ -21,7 +23,6 @@ using Meridian.Storage.Ledger;
 using Meridian.Storage.Reporting;
 using Meridian.TestSupport;
 using Meridian.Tests.Application.Composition;
-using Meridian.Tests.Storage.FundAccounts;
 using Meridian.Tests.Storage.Reporting;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -44,7 +45,7 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
         await using var database =
             await PostgresTestServer.CreateAsync("MERIDIAN_REPORTING_CONNECTION_STRING");
 
-        var reportingSchema = PostgresTestSchema.NewSchemaName("reporting_readiness");
+        var reportingSchema = database.CreateSchemaName("reporting_readiness");
         var reportingOptions = new ReportingArtifactStoreOptions
         {
             ConnectionString = database.ConnectionString,
@@ -53,19 +54,19 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
         var ledgerOptions = new LedgerJournalStoreOptions
         {
             ConnectionString = database.ConnectionString,
-            SchemaName = PostgresTestSchema.NewSchemaName("reporting_source_ledger"),
+            SchemaName = database.CreateSchemaName("reporting_source_ledger"),
             RequireGovernedPostingCommand = true,
             RequireExpectedVersion = true
         };
         var fundAccountOptions = new FundAccountStoreOptions
         {
             ConnectionString = database.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("reporting_source_accounts")
+            Schema = database.CreateSchemaName("reporting_source_accounts")
         };
         var fundStructureOptions = new FundStructureStoreOptions
         {
             ConnectionString = database.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("reporting_source_structure")
+            Schema = database.CreateSchemaName("reporting_source_structure")
         };
 
         using var environment = new EnvironmentVariableScope("ASPNETCORE_ENVIRONMENT", "Production");
@@ -130,6 +131,11 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             builder.Services.DeclareMeridianDeploymentPosture(
                 MeridianDeploymentPosture.ProductionApi);
             builder.Services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
+            builder.Services.AddSingleton<StorageOptions>(new StorageOptions { RootPath = dataRoot });
+            builder.Services.AddStatementReconciliationServices(dataRoot);
+            builder.Services.AddSingleton<NullSecurityMasterQueryService>();
+            builder.Services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
             RegisterPostgresLedgerPresentationSources(
                 builder.Services,
                 ledgerOptions,
@@ -268,21 +274,6 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
         }
         finally
         {
-            if (database.UsesExternalConnection)
-            {
-                await new ReportingMigrationRunner(reportingOptions)
-                    .ResetSchemaAsync();
-                await FundAccountDatabaseFixture.DropSchemaAsync(
-                    database.ConnectionString,
-                    ledgerOptions.SchemaName);
-                await FundAccountDatabaseFixture.DropSchemaAsync(
-                    database.ConnectionString,
-                    fundAccountOptions.Schema);
-                await FundAccountDatabaseFixture.DropSchemaAsync(
-                    database.ConnectionString,
-                    fundStructureOptions.Schema);
-            }
-
             Directory.Delete(root, recursive: true);
         }
     }

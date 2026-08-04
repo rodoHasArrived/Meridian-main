@@ -14,8 +14,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// process instances, so the audit guarantee survives restarts and horizontal scale-out.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection(nameof(SecurityMasterDatabaseCollection))]
-public sealed class PostgresSecurityMasterConflictServiceTests
+public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private readonly SecurityMasterDatabaseFixture _fixture;
 

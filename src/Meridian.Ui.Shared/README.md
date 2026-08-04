@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-03
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Ui.Shared
@@ -21,6 +21,11 @@ one-use bootstrap token.
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
 and desktop surfaces.
+
+`DemoTenantProvisioner` publishes its deterministic reconciliation casework through the same
+tenant/company-scoped queue contract as production workflows. Seeded demo breaks carry the fixed
+`DemoTenantBlueprint` tenant and company identifiers; authenticated demo hosts must resolve that
+scope to read the cases, and legacy unscoped queue rows remain inaccessible.
 
 ## Layer responsibility
 

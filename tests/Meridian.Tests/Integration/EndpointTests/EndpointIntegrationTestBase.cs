@@ -11,7 +11,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Implements improvement B2/#7 from the structural improvements analysis.
 /// </summary>
 [Collection("Endpoint")]
-public abstract class EndpointIntegrationTestBase
+public abstract class EndpointIntegrationTestBase : IClassFixture<EndpointTestFixture>
 {
     protected readonly HttpClient Client;
     protected readonly EndpointTestFixture Fixture;

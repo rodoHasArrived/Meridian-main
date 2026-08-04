@@ -21,7 +21,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class CoveredCallEndpointAuthorizationTests
+public sealed class CoveredCallEndpointAuthorizationTests : IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;
 

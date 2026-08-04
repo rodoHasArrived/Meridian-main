@@ -42,7 +42,7 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
         var options = new LedgerJournalStoreOptions
         {
             ConnectionString = server.ConnectionString,
-            SchemaName = PostgresTestSchema.NewSchemaName("ledger")
+            SchemaName = server.CreateSchemaName("ledger")
         };
 
         var database = new LedgerPostgresTestDatabase(server, options);
@@ -113,41 +113,6 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        // External databases persist across runs, so the run-scoped schema must be dropped;
-        // containers are discarded whole by the shared server.
-        if (_server.UsesExternalConnection)
-        {
-            await DropSchemaAsync().ConfigureAwait(false);
-        }
-
         await _server.DisposeAsync().ConfigureAwait(false);
-    }
-
-    private async Task DropSchemaAsync()
-    {
-        await using var connection = new NpgsqlConnection(Options.ConnectionString);
-        await connection.OpenAsync().ConfigureAwait(false);
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = $"drop schema if exists {ValidateIdentifier(Options.SchemaName)} cascade;";
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-    }
-
-    private static string ValidateIdentifier(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new InvalidOperationException("Schema name is required.");
-        }
-
-        foreach (var c in value)
-        {
-            if (!(char.IsAsciiLetterOrDigit(c) || c == '_'))
-            {
-                throw new InvalidOperationException("Schema name contains an invalid identifier character.");
-            }
-        }
-
-        return value;
     }
 }

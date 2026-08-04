@@ -16,7 +16,9 @@ using Xunit;
 namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
-public sealed class ReportingGovernanceRepositoryTests : IClassFixture<ReportingGovernanceDatabaseFixture>
+public sealed class ReportingGovernanceRepositoryTests :
+    IClassFixture<ReportingGovernanceDatabaseFixture>,
+    IAsyncLifetime
 {
     private readonly ReportingGovernanceDatabaseFixture _database;
 
@@ -24,6 +26,10 @@ public sealed class ReportingGovernanceRepositoryTests : IClassFixture<Reporting
     {
         _database = database;
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task Lifecycle_PersistsTenantBoundStateAndImmutableAuditAcrossRepositoryInstances()
@@ -829,7 +835,7 @@ public sealed class ReportingGovernanceDatabaseFixture : IAsyncLifetime
         Options = new ReportingArtifactStoreOptions
         {
             ConnectionString = _server.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("reporting_governance")
+            Schema = _server.CreateSchemaName("reporting_governance")
         };
 
         try
@@ -851,12 +857,24 @@ public sealed class ReportingGovernanceDatabaseFixture : IAsyncLifetime
             return;
         }
 
-        if (_server.UsesExternalConnection)
+        await _server.DisposeAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Recreates this class fixture's schema after every test method, including scenarios that
+    /// deliberately corrupt retained payloads or disable database guards.
+    /// </summary>
+    public async Task ResetAsync()
+    {
+        if (_server is null)
         {
-            await new ReportingMigrationRunner(Options).ResetSchemaAsync().ConfigureAwait(false);
+            throw new InvalidOperationException("The reporting governance fixture is not initialized.");
         }
 
-        await _server.DisposeAsync().ConfigureAwait(false);
+        var migrationRunner = new ReportingMigrationRunner(Options);
+        await migrationRunner.ResetSchemaAsync().ConfigureAwait(false);
+        await migrationRunner.EnsureMigratedAsync().ConfigureAwait(false);
+        Repository = new PostgresReportingGovernanceRepository(Options);
     }
 
     public async Task<long> CountAuditRowsAsync(
