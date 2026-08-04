@@ -218,6 +218,10 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             beforeWorkerStart.Components
                 .Single(static component => component.ComponentId == "release-consistency")
                 .IsReady.Should().BeTrue();
+            app.Services.GetRequiredService<IReportingDeploymentReadinessService>()
+                .GetScheduleWorkerCycleBlockingReasons()
+                .Should().ContainSingle(reason =>
+                    reason.Contains("secure distribution worker", StringComparison.Ordinal));
 
             app.Use(async (context, next) =>
             {
@@ -233,6 +237,9 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             app.MapWorkstationEndpoints(
                 new JsonSerializerOptions(JsonSerializerDefaults.Web));
             await app.StartAsync();
+            await WaitUntilAsync(
+                () => app.Services.GetRequiredService<ReportingScheduleWorkerReadinessState>().IsReady
+                      && app.Services.GetRequiredService<ReportingDeliveryWorkerReadinessState>().IsReady);
 
             var capability = app.Services
                 .GetRequiredService<IReportingDeploymentReadinessService>()
@@ -275,6 +282,17 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
         finally
         {
             Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> predicate)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        while (!predicate())
+        {
+            // BackgroundService.StartAsync returns after dispatching ExecuteAsync; the readiness
+            // receipt is the production observable for completion of each first worker cycle.
+            await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
         }
     }
 

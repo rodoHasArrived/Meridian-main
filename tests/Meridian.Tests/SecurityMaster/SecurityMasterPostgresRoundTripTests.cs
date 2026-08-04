@@ -193,6 +193,12 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
             null,
             DateTimeOffset.UtcNow,
             includeInactive: false);
+        var resolvedWithWrongProvider = await store.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US0378331005",
+            "BLOOMBERG",
+            DateTimeOffset.UtcNow,
+            includeInactive: false);
 
         resolvedByIdentifier.Should().NotBeNull();
         resolvedByIdentifier!.SecurityId.Should().Be(securityId);
@@ -204,5 +210,6 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         resolvedByAlias!.SecurityId.Should().Be(securityId);
 
         resolvedWithoutProvider.Should().BeNull();
+        resolvedWithWrongProvider.Should().BeNull();
     }
 }

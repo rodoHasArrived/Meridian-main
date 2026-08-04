@@ -183,29 +183,33 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
                 "USD",
                 completedAt,
                 completedAt));
-        var periodReadCount = 0;
+        // Model the ledger authority's committed state instead of coupling the fixture to the
+        // bridge's number of defensive boundary reads.
+        var currentPeriod = softClosed;
         ledgerBookService.ListPeriodsAsync(
                 Arg.Any<LedgerPeriodQuery>(),
                 Arg.Any<CancellationToken>())
-            .Returns(_ => ++periodReadCount <= 3
-                ? new[] { softClosed }
-                : new[] { hardClosed });
+            .Returns(_ => new[] { currentPeriod });
         ledgerBookService.GetPeriodSummaryAsync(periodId, Arg.Any<CancellationToken>())
             .Returns(summary);
         ledgerBookService.ClosePeriodAsync(
                 periodId,
                 Arg.Any<CloseLedgerPeriodRequest>(),
                 Arg.Any<CancellationToken>())
-            .Returns(new LedgerPeriodCloseResultDto(
-                hardClosed,
-                summary,
-                new OperatorWorkItemDto(
-                    $"period-close:{periodId:D}",
-                    OperatorWorkItemKindDto.LedgerPeriodClose,
-                    "Period hard closed",
-                    "The reporting close completed.",
-                    OperatorWorkItemToneDto.Success,
-                    completedAt)));
+            .Returns(_ =>
+            {
+                currentPeriod = hardClosed;
+                return new LedgerPeriodCloseResultDto(
+                    hardClosed,
+                    summary,
+                    new OperatorWorkItemDto(
+                        $"period-close:{periodId:D}",
+                        OperatorWorkItemKindDto.LedgerPeriodClose,
+                        "Period hard closed",
+                        "The reporting close completed.",
+                        OperatorWorkItemToneDto.Success,
+                        completedAt));
+            });
 
         var workbench = Substitute.For<IManualJournalEntryWorkbenchService>();
         workbench.GetWorkbenchAsync(

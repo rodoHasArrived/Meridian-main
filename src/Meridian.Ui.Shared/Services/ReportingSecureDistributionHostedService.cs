@@ -124,6 +124,12 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
         }
     }
 
+    public override Task StartAsync(CancellationToken cancellationToken)
+    {
+        _readiness?.MarkStarting();
+        return base.StartAsync(cancellationToken);
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var workerId = $"{_options.WorkerId}:hosted";

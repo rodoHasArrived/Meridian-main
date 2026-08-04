@@ -1284,6 +1284,11 @@ Reporting startup also integrity-reloads the one reconciliation queue shared by 
 casework, Operations Continuity, hard close, and Final evidence; readiness requires that receipt and
 the running schedule and secure-delivery workers with valid options. PostgreSQL-shaped source
 registrations without those completed source migrations remain blocked.
+During the delivery worker's explicit one-time initial-start state, the schedule worker excludes
+only the two worker-liveness receipts so independently starting workers do not deadlock on startup
+order. Once delivery succeeds, fails, stops, or becomes stale, its liveness blocks schedule polling
+again; every durable store, migration, configuration, and non-worker blocker always remains
+fail-closed.
 `GET /api/workstation/reporting` returns `503`
 when any component is missing instead of inheriting Accounting health or a fallback Reporting
 payload; workstation structured Reporting exports apply the same fail-closed posture. A successful

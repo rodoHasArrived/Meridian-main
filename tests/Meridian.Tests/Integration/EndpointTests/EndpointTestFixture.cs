@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using Meridian.Application.Composition;
 using Meridian.Application.DirectLending;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Identity.Auth;
@@ -214,6 +215,17 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _configureTestServices?.Invoke(builder.Services);
 
         _app = builder.Build();
+        if (FundAccountsStartup.IsConfigured())
+        {
+            // AddUiSharedServices selects the PostgreSQL fund-account adapter when the hosted
+            // certification lane publishes a database URL, but this direct TestServer host does
+            // not pass through HostStartup's database-readiness phase. Migrate the fixture-owned
+            // schema before any endpoint test can resolve the adapter.
+            await FundAccountsStartup
+                .EnsureDatabaseReadyAsync(_app.Services)
+                .ConfigureAwait(false);
+        }
+
         // Mirror the production UiServer pipeline order: session auth first so the API-key
         // gate can exempt session-authenticated browser requests. The X-Test-Auth marker
         // middleware emulates LoginSessionMiddleware's session validation (setting the

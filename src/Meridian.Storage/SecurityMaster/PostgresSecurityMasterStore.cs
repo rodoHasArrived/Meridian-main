@@ -757,11 +757,18 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             limit 1;
             """,
             $"""
-            select security_id
-            from {Qualified("securities")}
-            where primary_identifier_kind = @identifier_kind
-              and normalized_primary_identifier_value = @normalized_identifier_value
-              and (@include_inactive = true or status = 'Active')
+            select s.security_id
+            from {Qualified("securities")} s
+            where s.primary_identifier_kind = @identifier_kind
+              and s.normalized_primary_identifier_value = @normalized_identifier_value
+              and @normalized_provider is null
+              and not exists (
+                  select 1
+                  from {Qualified("security_identifiers")} i
+                  where i.security_id = s.security_id
+                    and i.identifier_kind = @identifier_kind
+                    and i.normalized_identifier_value = @normalized_identifier_value)
+              and (@include_inactive = true or s.status = 'Active')
             limit 1;
             """
         })

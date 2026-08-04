@@ -3351,6 +3351,7 @@ Meridian-main
 │   │   │   ├── BankingStartup.cs
 │   │   │   ├── CircuitBreakerCallbackRouter.cs
 │   │   │   ├── DatabaseMigrationReadinessReceipt.cs
+│   │   │   ├── DefaultProviderSetupHandlerRegistration.cs
 │   │   │   ├── DirectLendingStartup.cs
 │   │   │   ├── FundAccountsStartup.cs
 │   │   │   ├── FundStructureStartup.cs
@@ -8594,6 +8595,7 @@ Meridian-main
 │   │   │   │   ├── EndpointMetadataTests.cs
 │   │   │   │   ├── EndpointTestCollection.cs
 │   │   │   │   ├── EndpointTestFixture.cs
+│   │   │   │   ├── EndpointTestFixtureProviderCatalogLifetimeTests.cs
 │   │   │   │   ├── EnvironmentDesignerEndpointTests.cs
 │   │   │   │   ├── FailoverEndpointTests.cs
 │   │   │   │   ├── FundStructureEndpointTests.cs
@@ -9006,7 +9008,9 @@ Meridian-main
 │   │   │   └── TestArtifactDirectory.cs
 │   │   ├── TestSupport
 │   │   │   ├── ControllableReportingReleaseConsistencyGate.cs
-│   │   │   └── ImmediateReportingReleaseConsistencyGate.cs
+│   │   │   ├── ImmediateReportingReleaseConsistencyGate.cs
+│   │   │   ├── PostgresTestSchemaTests.cs
+│   │   │   └── ProviderCatalogTestLease.cs
 │   │   ├── Treasury
 │   │   │   ├── MmfFamilyNormalizationTests.cs
 │   │   │   ├── MmfLiquidityServiceTests.cs
@@ -9192,6 +9196,7 @@ Meridian-main
 │   │   ├── Meridian.TestSupport.csproj
 │   │   ├── PostgresTestContainerOptions.cs
 │   │   ├── PostgresTestSchema.cs
+│   │   ├── PostgresTestSchemaEnvironmentScope.cs
 │   │   └── PostgresTestServer.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections

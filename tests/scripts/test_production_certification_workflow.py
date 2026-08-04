@@ -4,6 +4,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "production-certification.yml"
+COVERLET_SETTINGS_PATH = REPO_ROOT / "tests" / "coverlet.runsettings"
 LIVE_PROVIDER_TESTS = (
     REPO_ROOT / "tests" / "Meridian.Tests" / "Integration" / "YahooFinancePcgPreferredIntegrationTests.cs",
     REPO_ROOT / "tests" / "Meridian.Tests" / "Integration" / "ConfigurableTickerDataCollectionTests.cs",
@@ -14,6 +15,7 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+        cls.coverlet_settings = COVERLET_SETTINGS_PATH.read_text(encoding="utf-8")
 
     def test_runs_on_release_tags_schedule_and_manual_dispatch(self) -> None:
         self.assertIn("workflow_dispatch:", self.workflow)
@@ -28,6 +30,13 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         self.assertIn("--settings tests/coverlet.runsettings", self.workflow)
         self.assertIn('"Category=Integration&Category!=LiveProvider"', self.workflow)
         self.assertIn('"Category=Integration"', self.workflow)
+
+        # Coverlet 10 rejects DeterministicReport with its OpenCover reporter.
+        # Cobertura is the repository's consumed coverage format, so keep the
+        # certification collector deterministic and limited to that reporter.
+        self.assertIn("<Format>cobertura</Format>", self.coverlet_settings)
+        self.assertNotIn("opencover", self.coverlet_settings.casefold())
+        self.assertIn("<DeterministicReport>true</DeterministicReport>", self.coverlet_settings)
 
     def test_live_provider_tests_are_explicitly_owned_by_the_exclusion_category(self) -> None:
         for test_path in LIVE_PROVIDER_TESTS:

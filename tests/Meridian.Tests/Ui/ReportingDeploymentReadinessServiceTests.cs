@@ -656,6 +656,112 @@ public sealed class ReportingDeploymentReadinessServiceTests
     }
 
     [Fact]
+    public async Task ScheduleWorkerCycleBlockers_InitialDeliveryBootstrapExemptsOnlyPeerLiveness()
+    {
+        var deliveryReadiness = new ReportingDeliveryWorkerReadinessState();
+        var capability = WorkerBootstrapCapability(deliveryReady: false);
+        var firstCycle = new TaskCompletionSource<ReportingScheduledHandoffBridgeResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var scheduleService = new ReportingScheduleService(
+            Substitute.For<IReportingOrchestrationService>(),
+            (Meridian.Reporting.IReportingScheduleStore?)null);
+        using var worker = new ReportingSecureDistributionHostedService(
+            scheduleService,
+            static (_, _, _) => Task.FromResult("unused-job"),
+            NullLogger<ReportingSecureDistributionHostedService>.Instance,
+            readiness: deliveryReadiness,
+            enqueueReleasedHandoffsAsync: _ => firstCycle.Task);
+
+        deliveryReadiness.IsInitialStartInProgress.Should().BeFalse();
+        ReportingDeploymentReadinessService
+            .ResolveScheduleWorkerCycleBlockingReasons(capability)
+            .Should().ContainSingle()
+            .Which.Should().Be(DeliveryWorkerBlockedSummary);
+
+        using var startup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await worker.StartAsync(startup.Token);
+        try
+        {
+            deliveryReadiness.IsInitialStartInProgress.Should().BeTrue(
+                "StartAsync must expose the bootstrap window before the scheduler starts");
+            ReportingDeploymentReadinessService
+                .ResolveScheduleWorkerCycleBlockingReasons(
+                    capability,
+                    allowDeliveryWorkerInitialBootstrap:
+                        deliveryReadiness.IsInitialStartInProgress)
+                .Should().BeEmpty();
+        }
+        finally
+        {
+            firstCycle.TrySetResult(new ReportingScheduledHandoffBridgeResult(
+                Attempted: 0,
+                Enqueued: 0,
+                AwaitingRelease: 0,
+                Failed: 0,
+                NextCursor: null));
+            using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await worker.StopAsync(shutdown.Token);
+        }
+
+        deliveryReadiness.IsInitialStartInProgress.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ScheduleWorkerCycleBlockers_StaleOrFailedDeliveryAfterStartRemainsBlocked()
+    {
+        var completedAt = new DateTimeOffset(2026, 8, 4, 10, 0, 0, TimeSpan.Zero);
+        var staleReadiness = new ReportingDeliveryWorkerReadinessState();
+        staleReadiness.MarkStarting();
+        staleReadiness.MarkReady(completedAt);
+        var staleCapability = WorkerBootstrapCapability(
+            deliveryReady: staleReadiness.IsHealthy(
+                completedAt.AddMinutes(4),
+                TimeSpan.FromMinutes(3)));
+
+        staleReadiness.IsInitialStartInProgress.Should().BeFalse();
+        ReportingDeploymentReadinessService
+            .ResolveScheduleWorkerCycleBlockingReasons(
+                staleCapability,
+                allowDeliveryWorkerInitialBootstrap:
+                    staleReadiness.IsInitialStartInProgress)
+            .Should().ContainSingle()
+            .Which.Should().Be(DeliveryWorkerBlockedSummary);
+
+        var failedReadiness = new ReportingDeliveryWorkerReadinessState();
+        failedReadiness.MarkStarting();
+        failedReadiness.MarkCycleFailed();
+        failedReadiness.MarkStarting();
+
+        failedReadiness.IsInitialStartInProgress.Should().BeFalse(
+            "a worker restart must not recreate its one-time bootstrap exemption");
+        ReportingDeploymentReadinessService
+            .ResolveScheduleWorkerCycleBlockingReasons(
+                WorkerBootstrapCapability(deliveryReady: false),
+                allowDeliveryWorkerInitialBootstrap:
+                    failedReadiness.IsInitialStartInProgress)
+            .Should().ContainSingle()
+            .Which.Should().Be(DeliveryWorkerBlockedSummary);
+    }
+
+    [Fact]
+    public void ScheduleWorkerCycleBlockers_MissingDeliveryComponentFailsClosed()
+    {
+        var deliveryReadiness = new ReportingDeliveryWorkerReadinessState();
+        deliveryReadiness.MarkStarting();
+
+        ReportingDeploymentReadinessService
+            .ResolveScheduleWorkerCycleBlockingReasons(
+                WorkerBootstrapCapability(
+                    deliveryReady: false,
+                    includeDeliveryComponent: false),
+                allowDeliveryWorkerInitialBootstrap:
+                    deliveryReadiness.IsInitialStartInProgress)
+            .Should().ContainSingle()
+            .Which.Should().Be(
+                "Reporting deployment readiness omitted the delivery-worker component.");
+    }
+
+    [Fact]
     public void ScheduleWorkerCycleBlockers_PreserveUnrepresentedAndInconsistentFailures()
     {
         var schedulingSummary =
@@ -682,7 +788,12 @@ public sealed class ReportingDeploymentReadinessServiceTests
                     "governance",
                     "Governance",
                     IsReady: false,
-                    "Governance component is not ready.")
+                    "Governance component is not ready."),
+                new ReportingDeploymentComponentDto(
+                    "delivery-worker",
+                    "Delivery worker",
+                    IsReady: true,
+                    "The secure distribution worker is ready.")
             ],
             BlockingReasons:
             [
@@ -1019,6 +1130,55 @@ public sealed class ReportingDeploymentReadinessServiceTests
                 .StatementReconciliationAuthorityCompatibilityMarker
         ]
     };
+
+    private const string SchedulingWorkerBlockedSummary =
+        "The server-owned reporting schedule worker is missing, stopped, stale, failed its latest cycle, or has invalid configuration.";
+
+    private const string DeliveryWorkerBlockedSummary =
+        "The server-owned secure distribution worker is missing, stopped, stale, failed its latest cycle, or has invalid configuration.";
+
+    private static ReportingDeploymentCapabilityDto WorkerBootstrapCapability(
+        bool deliveryReady,
+        bool includeDeliveryComponent = true)
+    {
+        var components = new List<ReportingDeploymentComponentDto>
+        {
+            new(
+                "scheduling-worker",
+                "Scheduling worker",
+                IsReady: false,
+                SchedulingWorkerBlockedSummary)
+        };
+        var blockers = new List<string> { SchedulingWorkerBlockedSummary };
+        if (includeDeliveryComponent)
+        {
+            components.Add(new ReportingDeploymentComponentDto(
+                "delivery-worker",
+                "Delivery worker",
+                deliveryReady,
+                deliveryReady
+                    ? "The secure distribution worker is ready."
+                    : DeliveryWorkerBlockedSummary));
+            if (!deliveryReady)
+            {
+                blockers.Add(DeliveryWorkerBlockedSummary);
+            }
+        }
+
+        return new ReportingDeploymentCapabilityDto(
+            IsReady: false,
+            DurableGovernance: true,
+            DurableArtifacts: true,
+            DurableReconciliationEvidence: true,
+            DurableRuns: true,
+            DurableScheduling: true,
+            DurableDelivery: true,
+            RecipientDestinationsConfigured: true,
+            ClientDocumentsConfigured: true,
+            MigrationsManaged: true,
+            Components: components,
+            BlockingReasons: blockers);
+    }
 
     private static StatementReconciliationReportWorkflowService CreateDurableStatementWorkflow(
         IStatementReconciliationReportAuthorityStore authority,

@@ -286,8 +286,12 @@ and UI presentation concerns in their owning layers.
   profile-backed `CustomAsset` and `OtherSecurity` payloads in projection and event evidence while
   reusing the existing generic-security domain backing model. The query service keeps ordinary text
   search delegated to the storage index and uses the projected Security Master universe only when
-  custom profile id, version, field-key, or field-value filters are supplied. Profile definitions
-  are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
+  custom profile id, version, field-key, or field-value filters are supplied. Identifier fallback
+  applies the same provider authority as the durable store: provider-bound
+  identifiers and aliases require the exact normalized provider, while providerless legacy primary
+  fields remain eligible only when no matching authoritative identifier row exists. Profile
+  definitions are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter
+  definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
   Security Master validation messages use operator-review wording for override audit remediation so
   application-layer guidance does not expose legacy Governance workspace language. Corporate-action
