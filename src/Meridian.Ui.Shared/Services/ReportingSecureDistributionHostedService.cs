@@ -130,6 +130,15 @@ public sealed class ReportingSecureDistributionHostedService : BackgroundService
         return base.StartAsync(cancellationToken);
     }
 
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        // Fail closed as soon as shutdown begins. BackgroundService can complete StopAsync
+        // before the ExecuteAsync continuation reaches its finally block, especially when the
+        // first cycle is released concurrently with the stop request.
+        _readiness?.MarkNotReady();
+        await base.StopAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var workerId = $"{_options.WorkerId}:hosted";

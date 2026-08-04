@@ -707,6 +707,49 @@ public sealed class ReportingDeploymentReadinessServiceTests
     }
 
     [Fact]
+    public async Task DeliveryWorker_CanceledInitialStart_ClearsBootstrapExemptionOnStop()
+    {
+        var deliveryReadiness = new ReportingDeliveryWorkerReadinessState();
+        var cycleInvocationCount = 0;
+        var scheduleService = new ReportingScheduleService(
+            Substitute.For<IReportingOrchestrationService>(),
+            (Meridian.Reporting.IReportingScheduleStore?)null);
+        using var worker = new ReportingSecureDistributionHostedService(
+            scheduleService,
+            static (_, _, _) => Task.FromResult("unused-job"),
+            NullLogger<ReportingSecureDistributionHostedService>.Instance,
+            readiness: deliveryReadiness,
+            enqueueReleasedHandoffsAsync: _ =>
+            {
+                Interlocked.Increment(ref cycleInvocationCount);
+                return Task.FromResult(new ReportingScheduledHandoffBridgeResult(
+                    Attempted: 0,
+                    Enqueued: 0,
+                    AwaitingRelease: 0,
+                    Failed: 0,
+                    NextCursor: null));
+            });
+        using var canceledStart = new CancellationTokenSource();
+        canceledStart.Cancel();
+
+        await worker.StartAsync(canceledStart.Token);
+        Volatile.Read(ref cycleInvocationCount).Should().Be(0);
+        deliveryReadiness.IsInitialStartInProgress.Should().BeTrue();
+
+        await worker.StopAsync(CancellationToken.None);
+
+        deliveryReadiness.IsInitialStartInProgress.Should().BeFalse();
+        deliveryReadiness.IsReady.Should().BeFalse();
+        ReportingDeploymentReadinessService
+            .ResolveScheduleWorkerCycleBlockingReasons(
+                WorkerBootstrapCapability(deliveryReady: false),
+                allowDeliveryWorkerInitialBootstrap:
+                    deliveryReadiness.IsInitialStartInProgress)
+            .Should().ContainSingle()
+            .Which.Should().Be(DeliveryWorkerBlockedSummary);
+    }
+
+    [Fact]
     public void ScheduleWorkerCycleBlockers_StaleOrFailedDeliveryAfterStartRemainsBlocked()
     {
         var completedAt = new DateTimeOffset(2026, 8, 4, 10, 0, 0, TimeSpan.Zero);
