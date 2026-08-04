@@ -9614,8 +9614,7 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   ├── shared-pattern-suggest.ps1
-│   │   └── test-gap-scan.ps1
+│   │   └── shared-pattern-suggest.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json

@@ -453,7 +453,7 @@ Closed 2026-08-03 as a bounded, governed evidence loop on the host-composed brow
 ### Exit Criteria
 
 - The host-composed browser Covered Call request binds its native backtest to exact tenant/company canonical strategy-run lineage before execution.
-- Count, value-length, and aggregate budgets fail before Vault I/O; at least one strict canonical evidence://evidence-vault/{vaultId} manifest must resolve inside the authenticated scope before queue admission.
+- Count, value-length, and aggregate budgets fail before Vault I/O; at least one strict canonical Evidence Vault manifest reference must resolve inside the authenticated scope before queue admission.
 - Operator-facing acceptance criteria are retained as requirements, while the four canonical Paper checklist items become Ready only from an approved durable promotion with operator/time/audit authority and keyed evidence exactly matching the source run.
 - The approved Paper target is durably retained in the same tenant/company scope with exact parent-run and strategy lineage; missing, rejected, foreign, or mismatched authority stays review-required or rejected.
 - Strategy promotion uses the governed promotion endpoint, and Strategy review plus Trading readiness consume scoped runs without a generic paper-session bypass or legacy fallback.
