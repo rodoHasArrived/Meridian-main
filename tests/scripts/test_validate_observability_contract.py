@@ -254,6 +254,38 @@ class ValidateObservabilityContractTests(unittest.TestCase):
     def test_consistent_fixture_produces_no_findings(self):
         self.assertEqual(self.fixture.messages(), [])
 
+    def test_source_scan_prunes_generated_vendor_and_worktree_directories(self):
+        excluded_roots = (
+            Path("Meridian.Generated/node_modules/package"),
+            Path("Meridian.Generated/bin/Debug"),
+            Path("Meridian.Generated/obj/Release"),
+            Path("Meridian.Generated/.git/objects"),
+            Path("Meridian.Generated/.claude/worktrees/agent"),
+            Path("Meridian.Generated/worktrees/agent"),
+        )
+        for relative_root in excluded_roots:
+            generated_root = self.fixture.root / "src" / relative_root
+            generated_root.mkdir(parents=True)
+            (generated_root / "GeneratedMetric.cs").write_text(
+                'Prometheus.Metrics.CreateGauge("mdc_generated_only", "not canonical source");',
+                encoding="utf-8",
+            )
+
+        source_files = MODULE.iter_source_files(self.fixture.root)
+        emitted = MODULE.collect_emitted_metrics(self.fixture.root)
+
+        self.assertIn(self.fixture.exporter, source_files)
+        self.assertNotIn("mdc_generated_only", emitted)
+        for source_file in source_files:
+            source_parts = {
+                part.casefold()
+                for part in source_file.relative_to(self.fixture.root / "src").parts[:-1]
+            }
+            self.assertTrue(
+                source_parts.isdisjoint(MODULE.SOURCE_SCAN_EXCLUDED_DIRECTORIES),
+                msg=source_file,
+            )
+
     def test_alert_on_unexported_metric_fails(self):
         self.fixture.alerts.write_text(alert_rules(expr="mdc_pipeline_queue_utilization > 0.9"), encoding="utf-8")
 

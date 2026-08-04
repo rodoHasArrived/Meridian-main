@@ -507,14 +507,17 @@ public sealed class CompositeRiskValidatorTests
     {
         var queue = CreateQueue();
         var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band"));
-        var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Rejected("position limit exceeded"));
+        var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Approved());
         var validator = new CompositeRiskValidator(
             [escalating, hardStop],
             NullLogger<CompositeRiskValidator>.Instance,
             escalationQueue: queue);
 
         var parked = await validator.ValidateOrderAsync(CreateOrder());
+        parked.RequiresApproval.Should().BeTrue();
+        parked.EscalationId.Should().NotBeNullOrWhiteSpace();
         queue.Approve(parked.EscalationId!, actor: "risk-desk");
+        hardStop.Result = RiskValidationResult.Rejected("position limit exceeded");
 
         var resubmission = CreateOrder() with
         {
@@ -536,14 +539,17 @@ public sealed class CompositeRiskValidatorTests
     {
         var queue = CreateQueue();
         var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band"));
-        var faulting = new FaultingRule("flaky-limit-feed");
+        var faulting = new FaultingRule("flaky-limit-feed") { Faults = false };
         var validator = new CompositeRiskValidator(
             [escalating, faulting],
             NullLogger<CompositeRiskValidator>.Instance,
             escalationQueue: queue);
 
         var parked = await validator.ValidateOrderAsync(CreateOrder());
+        parked.RequiresApproval.Should().BeTrue();
+        parked.EscalationId.Should().NotBeNullOrWhiteSpace();
         queue.Approve(parked.EscalationId!, actor: "risk-desk");
+        faulting.Faults = true;
 
         var resubmission = CreateOrder() with
         {
@@ -572,14 +578,17 @@ public sealed class CompositeRiskValidatorTests
     {
         var queue = CreateQueue();
         var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"));
-        var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Rejected("position limit exceeded"));
+        var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Approved());
         var validator = new CompositeRiskValidator(
             [escalating, hardStop],
             NullLogger<CompositeRiskValidator>.Instance,
             escalationQueue: queue);
 
         var parked = await validator.ValidateOrderAsync(CreateOrder());
+        parked.RequiresApproval.Should().BeTrue();
+        parked.EscalationId.Should().NotBeNullOrWhiteSpace();
         queue.Approve(parked.EscalationId!, actor: "risk-desk");
+        hardStop.Result = RiskValidationResult.Rejected("position limit exceeded");
 
         var resubmission = CreateOrder() with
         {
@@ -799,8 +808,17 @@ public sealed class CompositeRiskValidatorTests
     {
         public string RuleName => ruleName;
 
-        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
-            throw new InvalidOperationException("limit feed unavailable");
+        public bool Faults { get; set; } = true;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            if (Faults)
+            {
+                throw new InvalidOperationException("limit feed unavailable");
+            }
+
+            return Task.FromResult(RiskValidationResult.Approved());
+        }
     }
 
     private sealed class ThresholdStubRule(string ruleName) : IRiskRule
@@ -832,6 +850,8 @@ public sealed class CompositeRiskValidatorTests
 
         public int SyncEvaluateCalls { get; private set; }
 
+        public RiskValidationResult Result { get; set; } = result;
+
         public RiskValidationResult? TryEvaluate(OrderRequest request)
         {
             if (syncResult is null)
@@ -849,7 +869,7 @@ public sealed class CompositeRiskValidatorTests
         private RiskValidationResult RecordAsyncResult()
         {
             EvaluateCalls++;
-            return result;
+            return Result;
         }
     }
 

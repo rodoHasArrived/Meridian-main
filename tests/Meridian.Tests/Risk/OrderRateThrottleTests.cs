@@ -87,7 +87,7 @@ public sealed class OrderRateThrottleTests
         // Structured values, not just a formatted sentence — the operator surface compares them.
         finding.ObservedValue.Should().Be(2m);
         finding.LimitValue.Should().Be(2m);
-        finding.Message.Should().Contain("2");
+        finding.RejectReason.Should().Contain("2");
     }
 
     [Fact]

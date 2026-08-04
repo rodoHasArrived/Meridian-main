@@ -729,8 +729,12 @@ public sealed class PromotionServiceLiveGovernanceTests
             durableStore);
 
         var history = await restarted.GetPromotionHistoryAsync();
+        var scopedHistoryWithoutRetainedSource = await restarted.GetPromotionHistoryAsync(
+            new StrategyRunReadScope("tenant-a", "company-a"));
 
         history.Should().ContainSingle();
+        scopedHistoryWithoutRetainedSource.Should().BeEmpty(
+            "scoped history must fail closed when the restarted run store cannot prove source ownership");
         history[0].SourceRunId.Should().Be(run.RunId);
         history[0].TargetRunId.Should().NotBeNullOrWhiteSpace();
         history[0].AuditReference.Should().NotBeNullOrWhiteSpace();

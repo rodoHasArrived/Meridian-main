@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-07-31
+Snapshot date: 2026-08-03
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -284,23 +284,23 @@ Delivered 2026-07-02 and completed operator scheduled-fetch coverage 2026-07-18.
 | Field | Value |
 | --- | --- |
 | Wave | W5X |
-| Status | in_progress |
+| Status | done |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-07-02 |
+| Evidence posture | complete |
+| Last reviewed | 2026-08-03 |
 
 ### Current Summary
 
-Active 2026-07-02. Productizes the existing Evidence Vault identity, intake, request-list, document-list, extracted-field review, object-link, immutable-manifest, and audit primitives as a reusable evidence layer. The first implemented acceptance path is browser-first statement reconciliation onboarding; WPF UI parity is intentionally omitted from this v1 slice while shared DTO/API support remains compatible.
+Closed 2026-08-03 as the bounded browser-first Evidence Vault productization baseline. Retained document identity, intake, request/document queries, extracted-field review, source records and hashes, object links, immutable manifests, reviewer/audit state, and canonical deep links now support both local and production-authority statement intake. Broader document portal and collaboration expansion remains deferred, and WPF presentation remains a separate parity item.
 
 ### Exit Criteria
 
 - Evidence Vault retains imported source documents with immutable vault identity, manifest route, source hash, source record, reviewer state, and audit trail.
 - Request-list and document-list queries can filter retained documents by subject, classification, review status, and object links.
 - Document authority stays bounded to support, block, suggest, and link; documents cannot approve, post, certify, or release.
-- Browser Accounting, Reporting, and Data evidence workbench routes can deep-link into retained support for a selected subject without WPF-specific UI work.
+- The canonical browser Reporting Evidence Workbench route can deep-link into retained support for a selected subject; legacy Accounting and Data evidence routes redirect to that one owner surface without WPF-specific UI work.
 
 ### Source Modules
 
@@ -410,16 +410,16 @@ Planned productization candidate for a shared Operational Evidence Graph surface
 | Field | Value |
 | --- | --- |
 | Wave | W5X |
-| Status | in_progress |
+| Status | done |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-07-02 |
+| Evidence posture | complete |
+| Last reviewed | 2026-08-03 |
 
 ### Current Summary
 
-Active 2026-07-02. Turns the delivered statement connector library into the browser-first onboarding wedge: operators can import custodian or broker CSV, OFX, IB Flex, or mapped connector files, commit them into reconciliation, and immediately drill into retained Evidence Vault proof for the statement run. WPF implementation is omitted for this v1 wedge.
+Closed 2026-08-03 as the browser-first statement reconciliation onboarding wedge. Connector commits return canonical Evidence Workbench and reconciliation routes; production composition retains immutable Reporting authority while projecting the authority-verified Statement source, hash, reviewer/audit state, extracted counts, and run/account/period/import/case links into the queryable Evidence Vault. Break-bearing imports fail into review-required posture. WPF presentation remains a separate parity item.
 
 ### Exit Criteria
 
@@ -439,28 +439,35 @@ Active 2026-07-02. Turns the delivered statement connector library into the brow
 | Field | Value |
 | --- | --- |
 | Wave | W6 |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | medium |
 | Owner lane | Strategy Analytics |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-04 |
+| Evidence posture | complete |
+| Last reviewed | 2026-08-03 |
 
 ### Current Summary
 
-Backtesting Studio remains planned. Strategy work should link research or backtest results into retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting when those links are relevant, without treating prior baselines or named productization targets as development ceilings.
+Closed 2026-08-03 as a bounded, governed evidence loop on the host-composed browser Covered Call path. Before queueing, the request is budget-bounded, binds exact tenant/company strategy-run lineage, and resolves at least one strict canonical Evidence Vault manifest inside that scope. Strategy and Trading consume the same scoped run state. The four canonical Backtest-to-Paper checklist items remain review-required until a durable approved promotion records operator/time/audit authority, keyed evidence that exactly matches the source run, and an exact same-scope Paper child with matching parent and strategy identity; the Strategy surface uses that governed promotion instead of creating a generic paper session. BacktestStudioRunOrchestrator is not host-composed and Strategy Designer fails closed without one captured result, so neither is closure evidence. Broader Studio UX remains deferred.
 
 ### Exit Criteria
 
-- Backtest result evidence links to strategy lineage.
-- Operator-facing acceptance criteria are checklist-backed.
+- The host-composed browser Covered Call request binds its native backtest to exact tenant/company canonical strategy-run lineage before execution.
+- Count, value-length, and aggregate budgets fail before Vault I/O; at least one strict canonical evidence://evidence-vault/{vaultId} manifest must resolve inside the authenticated scope before queue admission.
+- Operator-facing acceptance criteria are retained as requirements, while the four canonical Paper checklist items become Ready only from an approved durable promotion with operator/time/audit authority and keyed evidence exactly matching the source run.
+- The approved Paper target is durably retained in the same tenant/company scope with exact parent-run and strategy lineage; missing, rejected, foreign, or mismatched authority stays review-required or rejected.
+- Strategy promotion uses the governed promotion endpoint, and Strategy review plus Trading readiness consume scoped runs without a generic paper-session bypass or legacy fallback.
+- The shared strategy-run store, replay, detail, review packet, evidence graph, and browser surfaces preserve the governed loop without client-local readiness rules.
 - Source READMEs explain module ownership and test lanes.
-- Scope remains limited to evidence linkage and paper-validation support unless a later roadmap change promotes broader Studio scope.
+- Scope remains limited to the supported Covered Call evidence and Paper-promotion loop unless a later roadmap change promotes broader Studio scope.
 
 ### Source Modules
 
-- `SRC-APP`
+- `SRC-BACKTESTING`
+- `SRC-STRATEGIES`
 - `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
 
 ## W7-LIVE-001 - Live-readiness governance
 | Field | Value |

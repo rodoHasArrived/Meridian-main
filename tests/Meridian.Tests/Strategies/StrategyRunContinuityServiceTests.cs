@@ -458,11 +458,42 @@ public sealed class StrategyRunContinuityServiceTests
 
     private sealed class StubPromotionRecordStore(IReadOnlyList<StrategyPromotionRecord> records) : IPromotionRecordStore
     {
-        public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default) =>
-            Task.FromResult(records);
+        private readonly List<StrategyPromotionRecord> _records = [.. records];
+        private readonly SemaphoreSlim _decisionGate = new(1, 1);
 
-        public Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default) =>
-            Task.CompletedTask;
+        public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<StrategyPromotionRecord>>(_records.ToArray());
+
+        public Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default)
+        {
+            _records.Add(record);
+            return Task.CompletedTask;
+        }
+
+        public async Task<PromotionDecisionReservation> ReserveFirstDecisionAsync(
+            StrategyPromotionRecord record,
+            CancellationToken ct = default)
+        {
+            await _decisionGate.WaitAsync(ct);
+            var existing = _records.FirstOrDefault(candidate =>
+                candidate.SourceRunId == record.SourceRunId &&
+                candidate.SourceRunType == record.SourceRunType &&
+                candidate.TargetRunType == record.TargetRunType);
+            var wasAppended = existing is null;
+            if (wasAppended)
+            {
+                _records.Add(record);
+            }
+
+            return new PromotionDecisionReservation(
+                existing ?? record,
+                wasAppended,
+                () =>
+                {
+                    _decisionGate.Release();
+                    return ValueTask.CompletedTask;
+                });
+        }
     }
 
     private static global::Meridian.Ledger.Ledger CreateLedger(DateTimeOffset startedAt, DateTimeOffset completedAt)

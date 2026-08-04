@@ -284,6 +284,335 @@ public sealed class StatementReconciliationProductionAuthorityTests : IDisposabl
     }
 
     [Fact]
+    public async Task EvidenceRetainer_ProductionProjection_RetainsQueryableStatementDocumentWithReviewAndLinks()
+    {
+        var authority = new InMemoryDurableStatementAuthority();
+        var evidenceStore = new FileEvidenceArtifactStore(
+            _root,
+            NullLogger<FileEvidenceArtifactStore>.Instance);
+        var source = WriteRetainedSource();
+        var result = BuildImportResult() with
+        {
+            RetainedSourcePath = source,
+            BreakCount = 1,
+            CaseCount = 1,
+            BreakIds = ["break-alpha"],
+            CaseIds = ["case:break-alpha"],
+            ReconciliationCaseLinks =
+            [
+                new StatementImportReconciliationCaseLinkDto(
+                    "case:break-alpha",
+                    "break-alpha",
+                    "/accounting/reconciliation/match?runId=statement-run-alpha&caseId=case%3Abreak-alpha&breakId=break-alpha",
+                    "Reconciliation case break-alpha",
+                    "Open",
+                    "High",
+                    "Statement import created a reconciliation break.",
+                    "Review the linked statement evidence.")
+            ]
+        };
+
+        var retained = await new ReportingStatementImportEvidenceRetainer(
+                authority,
+                _root,
+                evidenceStore)
+            .RetainAsync(result, BuildEvidenceRequest());
+
+        retained.EvidenceWorkbenchRoute.Should().Be(
+            "/reporting/evidence?subjectKind=statement-run&subjectId=statement-run-alpha&documentClassification=Statement");
+        retained.EvidenceVaultIdentity.Should().NotBeNull();
+        retained.EvidenceVaultIdentity!.StorageKind.Should().Be(authority.StorageKind,
+            "the Reporting authority remains canonical while Evidence Workbench is a projection");
+
+        var entries = await evidenceStore.ListDocumentsAsync(
+            new EvidenceVaultDocumentQueryDto(
+                Classification: EvidenceDocumentClassificationDto.Statement,
+                ChannelKind: EvidenceDocumentIntakeChannelDto.ImportedFileReference,
+                SubjectKind: "statement-run",
+                SubjectId: result.RunId,
+                TenantId: "tenant-alpha",
+                Scope: "company-alpha"));
+        var document = entries.Should().ContainSingle().Subject.Document;
+        var authoritySource = retained.EvidenceVaultIdentity.Artifacts.Single(artifact =>
+            artifact.Kind == "statement-source");
+        document.SourceHashSha256.Should().Be(authoritySource.ContentHashSha256);
+        document.SourceRecord.Should().NotBeNull();
+        document.SourceRecord!.SourceHashSha256.Should().Be(authoritySource.ContentHashSha256);
+        document.SourceRecord.ReceiptHash.Should().Be(authoritySource.ContentHashSha256);
+        document.SourceRecord.SourceReference.Should().Be(result.RetainedSourcePath);
+        document.SourceRecord.SourceSystem.Should().Be("Broker Alpha");
+        document.SourceRecord.Actor.Should().Be("operator-alpha");
+        document.SourceRecord.TenantId.Should().Be("tenant-alpha");
+        document.SourceRecord.Scope.Should().Be("company-alpha");
+        document.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.NeedsReview);
+        document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.NeedsReview);
+        document.AuditTrail.Should().ContainSingle(audit =>
+            audit.Action == "DocumentIntakeRetained"
+            && audit.Actor == "operator-alpha");
+        document.ExtractedFields.Should().Contain(field =>
+            field.FieldName == "recordCount"
+            && field.ExtractedValue == "1");
+        document.ExtractedFields.Should().Contain(field =>
+            field.FieldName == "breakCount"
+            && field.ExtractedValue == "1"
+            && field.ValidationStatus == EvidenceStatusDto.ReviewRequired);
+        document.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.StatementRun
+            && link.ObjectId == result.RunId);
+        document.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.Account
+            && link.ObjectId == "fund-account-alpha");
+        document.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.Period
+            && link.ObjectId == "2026-06-01..2026-06-30");
+        document.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.StatementImport
+            && link.ObjectId == result.RunId);
+        document.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.ReconciliationCase
+            && link.ObjectId == "case:break-alpha");
+    }
+
+    [Theory]
+    [InlineData(EvidenceDocumentReviewStatusDto.Accepted)]
+    [InlineData(EvidenceDocumentReviewStatusDto.Rejected)]
+    public async Task EvidenceRetainer_RetryAfterOperatorReview_ReusesProjectionAndPreservesReviewState(
+        EvidenceDocumentReviewStatusDto reviewStatus)
+    {
+        var authority = new InMemoryDurableStatementAuthority();
+        var evidenceStore = new FileEvidenceArtifactStore(
+            _root,
+            NullLogger<FileEvidenceArtifactStore>.Instance);
+        var retainer = new ReportingStatementImportEvidenceRetainer(authority, _root, evidenceStore);
+        var result = BuildImportResult() with { RetainedSourcePath = WriteRetainedSource() };
+        var request = BuildEvidenceRequest();
+        var retained = await retainer.RetainAsync(result, request);
+        var query = new EvidenceVaultDocumentQueryDto(
+            Classification: EvidenceDocumentClassificationDto.Statement,
+            ChannelKind: EvidenceDocumentIntakeChannelDto.ImportedFileReference,
+            SubjectKind: "statement-run",
+            SubjectId: result.RunId,
+            TenantId: "tenant-alpha",
+            Scope: "company-alpha");
+        var originalEntry = (await evidenceStore.ListDocumentsAsync(query))
+            .Should().ContainSingle().Subject;
+        IReadOnlyList<EvidenceDocumentConfirmedFieldDto> confirmedFields =
+            reviewStatus == EvidenceDocumentReviewStatusDto.Accepted
+                ? [
+                    new EvidenceDocumentConfirmedFieldDto(
+                        "recordCount",
+                        "1",
+                        "controller-alpha",
+                        default,
+                        "recordCount",
+                        "Confirmed against the authority-retained statement source.")
+                ]
+                : [];
+        var reviewRequest = new EvidenceVaultDocumentReviewRequestDto(
+            reviewStatus,
+            "controller-alpha",
+            "Statement projection reviewed before workflow resume.",
+            CorrelationId: $"review-{reviewStatus.ToString().ToLowerInvariant()}")
+        {
+            ConfirmedFields = confirmedFields
+        };
+        var review = await evidenceStore.ReviewDocumentAsync(
+            originalEntry.VaultId,
+            originalEntry.Document.DocumentId,
+            "tenant-alpha",
+            "company-alpha",
+            reviewRequest);
+        review.Should().NotBeNull();
+
+        var retried = await retainer.RetainAsync(retained, request);
+
+        var entries = await evidenceStore.ListDocumentsAsync(query);
+        var entry = entries.Should().ContainSingle().Subject;
+        entry.VaultId.Should().Be(originalEntry.VaultId);
+        entry.Document.ReviewerState.Status.Should().Be(reviewStatus);
+        entry.Document.ReviewerState.Reviewer.Should().Be("controller-alpha");
+        entry.Document.ExtractionStatus.Should().Be(
+            reviewStatus == EvidenceDocumentReviewStatusDto.Accepted
+                ? EvidenceExtractionStatusDto.Accepted
+                : EvidenceExtractionStatusDto.Rejected);
+        entry.Document.AuditTrail.Should().ContainSingle(audit =>
+            audit.Action == "DocumentReviewRecorded"
+            && audit.Actor == "controller-alpha");
+        retried.EvidenceVaultIdentity!.VaultId.Should().Be(retained.EvidenceVaultIdentity!.VaultId);
+    }
+
+    [Fact]
+    public async Task EvidenceRetainer_ConcurrentResumeAfterProjectionLoss_CreatesSingleProjection()
+    {
+        var authority = new InMemoryDurableStatementAuthority();
+        var evidenceStore = new FileEvidenceArtifactStore(
+            _root,
+            NullLogger<FileEvidenceArtifactStore>.Instance);
+        var retainer = new ReportingStatementImportEvidenceRetainer(authority, _root, evidenceStore);
+        var result = BuildImportResult() with { RetainedSourcePath = WriteRetainedSource() };
+        var request = BuildEvidenceRequest();
+        var retained = await retainer.RetainAsync(result, request);
+        var vaultDirectory = Path.Combine(_root, "workstation", "evidence", "_vault");
+        Directory.Exists(vaultDirectory).Should().BeTrue();
+        Directory.Delete(vaultDirectory, recursive: true);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var retries = await Task.WhenAll(
+            Enumerable.Range(0, 8)
+                .Select(_ => retainer.RetainAsync(retained, request, cts.Token)));
+
+        retries.Should().OnlyContain(retry =>
+            retry.EvidenceVaultIdentity!.VaultId == retained.EvidenceVaultIdentity!.VaultId);
+        var entries = await evidenceStore.ListDocumentsAsync(
+            new EvidenceVaultDocumentQueryDto(
+                Classification: EvidenceDocumentClassificationDto.Statement,
+                ChannelKind: EvidenceDocumentIntakeChannelDto.ImportedFileReference,
+                SubjectKind: "statement-run",
+                SubjectId: result.RunId,
+                TenantId: "tenant-alpha",
+                Scope: "company-alpha"),
+            cts.Token);
+        entries.Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData("manifest")]
+    [InlineData("artifact")]
+    public async Task EvidenceRetainer_OrphanedProjectionIndex_RebuildsVerifiedWorkbenchContent(
+        string corruptedPart)
+    {
+        var authority = new InMemoryDurableStatementAuthority();
+        var evidenceStore = new FileEvidenceArtifactStore(
+            _root,
+            NullLogger<FileEvidenceArtifactStore>.Instance);
+        var retainer = new ReportingStatementImportEvidenceRetainer(authority, _root, evidenceStore);
+        var retainedSourcePath = WriteRetainedSource();
+        var result = BuildImportResult() with { RetainedSourcePath = retainedSourcePath };
+        var request = BuildEvidenceRequest();
+        var retained = await retainer.RetainAsync(result, request);
+        var query = new EvidenceVaultDocumentQueryDto(
+            Classification: EvidenceDocumentClassificationDto.Statement,
+            ChannelKind: EvidenceDocumentIntakeChannelDto.ImportedFileReference,
+            SubjectKind: "statement-run",
+            SubjectId: result.RunId,
+            TenantId: "tenant-alpha",
+            Scope: "company-alpha");
+        var originalEntry = (await evidenceStore.ListDocumentsAsync(query))
+            .Should().ContainSingle().Subject;
+        var originalIdentity = await evidenceStore.TryGetVaultIdentityAsync(
+            originalEntry.VaultId,
+            "tenant-alpha",
+            "company-alpha");
+        originalIdentity.Should().NotBeNull();
+        var verifiedOriginalIdentity = originalIdentity!;
+        var originalArtifact = verifiedOriginalIdentity.Artifacts.Should().ContainSingle(artifact =>
+            artifact.Document != null
+            && artifact.Document.DocumentId == originalEntry.Document.DocumentId).Subject;
+        var manifestPath = Path.Combine(
+            _root,
+            verifiedOriginalIdentity.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var artifactPath = Path.Combine(
+            _root,
+            originalArtifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        var indexPath = Path.Combine(
+            _root,
+            "workstation",
+            "evidence",
+            "_vault",
+            $"{verifiedOriginalIdentity.VaultId}.json");
+
+        if (corruptedPart == "manifest")
+        {
+            await File.WriteAllTextAsync(manifestPath, "{not-a-valid-manifest");
+        }
+        else
+        {
+            var corruptedBytes = await File.ReadAllBytesAsync(artifactPath);
+            corruptedBytes[0] ^= 0xff;
+            await File.WriteAllBytesAsync(artifactPath, corruptedBytes);
+        }
+
+        File.Exists(indexPath).Should().BeTrue("the stale index is the recovery scenario");
+        File.Delete(Path.Combine(
+            _root,
+            retainedSourcePath.Replace('/', Path.DirectorySeparatorChar)));
+
+        await retainer.RetainAsync(retained, request);
+
+        var rebuiltEntry = (await evidenceStore.ListDocumentsAsync(query))
+            .Should().ContainSingle().Subject;
+        rebuiltEntry.VaultId.Should().NotBe(originalEntry.VaultId);
+        rebuiltEntry.Document.SourceHashSha256.Should().Be(
+            retained.EvidenceVaultIdentity!.Artifacts.Single(artifact =>
+                artifact.Kind == "statement-source").ContentHashSha256);
+        var rebuiltIdentity = await evidenceStore.TryGetVaultIdentityAsync(
+            rebuiltEntry.VaultId,
+            "tenant-alpha",
+            "company-alpha");
+        rebuiltIdentity.Should().NotBeNull();
+        var verifiedRebuiltIdentity = rebuiltIdentity!;
+        var rebuiltArtifact = verifiedRebuiltIdentity.Artifacts.Should().ContainSingle(artifact =>
+            artifact.Document != null
+            && artifact.Document.DocumentId == rebuiltEntry.Document.DocumentId).Subject;
+        var rebuiltArtifactPath = Path.Combine(
+            _root,
+            rebuiltArtifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        var rebuiltBytes = await File.ReadAllBytesAsync(rebuiltArtifactPath);
+        Convert.ToHexString(SHA256.HashData(rebuiltBytes)).ToLowerInvariant()
+            .Should().Be(rebuiltEntry.Document.SourceHashSha256);
+
+        var manifest = await evidenceStore.TryOpenManifestByVaultIdAsync(
+            rebuiltEntry.VaultId,
+            "tenant-alpha",
+            "company-alpha");
+        manifest.Should().NotBeNull();
+        await manifest!.Content.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task EvidenceRetainer_ProjectionLossAfterLocalSourceRemoval_RebuildsFromVerifiedAuthorityBytes()
+    {
+        var authority = new InMemoryDurableStatementAuthority();
+        var evidenceStore = new FileEvidenceArtifactStore(
+            _root,
+            NullLogger<FileEvidenceArtifactStore>.Instance);
+        var retainer = new ReportingStatementImportEvidenceRetainer(authority, _root, evidenceStore);
+        var retainedSourcePath = WriteRetainedSource();
+        var result = BuildImportResult() with { RetainedSourcePath = retainedSourcePath };
+        var request = BuildEvidenceRequest();
+        var retained = await retainer.RetainAsync(result, request);
+        var sourceArtifact = retained.EvidenceVaultIdentity!.Artifacts.Single(artifact =>
+            artifact.Kind == "statement-source");
+        var vaultDirectory = Path.Combine(_root, "workstation", "evidence", "_vault");
+        Directory.Delete(vaultDirectory, recursive: true);
+        File.Delete(Path.Combine(
+            _root,
+            retainedSourcePath.Replace('/', Path.DirectorySeparatorChar)));
+
+        var retried = await retainer.RetainAsync(retained, request);
+
+        retried.EvidenceVaultIdentity!.VaultId.Should().Be(retained.EvidenceVaultIdentity.VaultId);
+        retried.EvidenceVaultIdentity.TenantId.Should().Be("tenant-alpha");
+        retried.EvidenceVaultIdentity.Scope.Should().Be("company-alpha");
+        var entries = await evidenceStore.ListDocumentsAsync(
+            new EvidenceVaultDocumentQueryDto(
+                Classification: EvidenceDocumentClassificationDto.Statement,
+                ChannelKind: EvidenceDocumentIntakeChannelDto.ImportedFileReference,
+                SubjectKind: "statement-run",
+                SubjectId: result.RunId,
+                TenantId: "tenant-alpha",
+                Scope: "company-alpha"));
+        var document = entries.Should().ContainSingle().Subject.Document;
+        document.TenantId.Should().Be("tenant-alpha");
+        document.Scope.Should().Be("company-alpha");
+        document.SourceHashSha256.Should().Be(sourceArtifact.ContentHashSha256);
+        document.SourceRecord!.SourceReference.Should().Be(retainedSourcePath);
+        File.Exists(Path.Combine(
+            _root,
+            retainedSourcePath.Replace('/', Path.DirectorySeparatorChar))).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task EvidenceRetainer_MissingDurableDocuments_RebuildsFromRetainedSource()
     {
         var firstAuthority = new InMemoryDurableStatementAuthority();

@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-07-12
+last_reviewed: 2026-08-03
 ---
 
 # src/Meridian.Backtesting
@@ -23,8 +23,9 @@ This layer should keep simulation behavior isolated from live execution while pr
 
 - `Meridian.Backtesting.csproj` - backtesting runtime project boundary.
 - `BacktestStudioContracts.cs` - Backtest Studio request, handle, status, and engine contracts.
-- `BacktestStudioRunOrchestrator.cs` - records accepted, terminal, cancelled, and failed Studio
-  runs through strategy-run lineage.
+- `BacktestStudioRunOrchestrator.cs` - validates and records accepted, terminal, cancelled, and
+  failed Studio runs when invoked directly; it is not registered in the workstation host and is
+  not the supported W6 operator path.
 - `MeridianNativeBacktestStudioEngine.cs` - native Meridian engine adapter that returns canonical
   SDK backtest results.
 - `BacktestPreflightService.cs` - backtest-scoped preflight checks for date range, replay-data
@@ -42,10 +43,26 @@ Use this module for strategy backtests, simulation runtime behavior, and backtes
 Backtest Studio engines must return canonical SDK `BacktestResult` instances so native Meridian and
 external engine runs can flow through the same strategy-run repository, comparison, diff, and
 portfolio drill-in surfaces.
-Backtest Studio requests may carry operator-facing acceptance criteria plus retained evidence,
-accounting-record, approval, paper-validation, and governed-report references. The orchestrator
-persists those links onto the shared strategy-run entry at start and preserves them when the run
-completes, keeping W6 limited to evidence linkage rather than broad Studio UX expansion.
+The supported W6 path is the browser Covered Call form into UI Shared
+`CoveredCallBacktestService`, which records a tenant/company-scoped pre-execution entry through the
+shared strategy-run repository before queueing the native engine. It requires a stable strategy
+identity, at least one operator acceptance requirement, and at least one strict canonical
+`evidence://evidence-vault/{vaultId}` reference whose retained manifest resolves inside the
+authenticated tenant/company scope. Count, value-length, and aggregate budgets are checked before
+Vault I/O. The shared store, replay, run detail, review packet, and Trading readiness path preserve
+that scope and evidence lineage.
+
+Acceptance text remains a review requirement until the governed Backtest-to-Paper promotion path
+records an approved decision with operator, timestamp, audit reference, all four canonical Paper
+checklist ids, keyed evidence that exactly matches the source run, and an exact retained Paper child
+run in the same scope. Missing, rejected, foreign, or mismatched authority remains review-required
+or rejected; a declaration or eligible metric result alone never becomes checklist completion.
+
+`BacktestStudioRunOrchestrator` applies the same contract when called directly and its isolated
+tests remain useful contract proof, but no workstation host composes it. The Strategy Designer
+endpoint also requires exactly one captured canonical result, while its production compiler
+currently captures none, so it fails closed rather than serving as W6 closure evidence. Broader
+Studio UX remains deferred.
 
 ## Execution realism and result trustworthiness
 
@@ -85,10 +102,11 @@ completes, keeping W6 limited to evidence linkage rather than broad Studio UX ex
 - `BacktestStudioRunRequest`, `BacktestStudioRunHandle`, `BacktestStudioRunStatus`, and
   `IBacktestStudioEngine` live in this module so native and external Studio engines share the
   Backtesting-owned orchestration contract instead of depending on the application layer.
-- `BacktestStudioRunRequest` carries the W6 evidence-loop metadata consumed by
-  `BacktestStudioRunOrchestrator`: operator acceptance criteria, retained evidence references,
-  accounting-record references, approval references, paper-validation references, and governed
-  report references.
+- `BacktestStudioRunRequest` carries the declaration contract consumed by
+  `BacktestStudioRunOrchestrator`: operator acceptance requirements plus categorized retained
+  evidence, accounting-record, approval, paper-validation, and governed-report URI declarations.
+  Invalid declarations fail before its engine is invoked or a strategy-run entry is recorded, but
+  this contract-only path is not host composition, Vault-authority resolution, or W6 closure proof.
 - `BacktestPreflightService` consumes the shared `ISecurityValidationGateService` contract from
   `Meridian.Contracts.Services`, keeping Security Master trust-gate validation optional for hosts
   while preserving fail-closed preflight behavior when the gate reports blocking issues.

@@ -20,11 +20,24 @@ public sealed partial class FileEvidenceArtifactStore
         IReadOnlyList<EvidenceSupportRequestDto> SupportRequests,
         EvidenceVaultIdentityDto? VaultIdentity,
         EvidenceLifecycleMetadataDto? Lifecycle,
-        EvidenceSubjectLinkageDto? Linkage);
+        EvidenceSubjectLinkageDto? Linkage)
+    {
+        public string? TenantId { get; init; }
+        public string? Scope { get; init; }
+    }
 
     private sealed record EvidenceRequestListTarget(
         string RequestListKind,
         EvidenceRequestListKindDto RequestListKindCode,
         string TargetKind,
         string TargetId);
+
+    private sealed record DocumentListCandidate(
+        EvidenceVaultIdentityDto Locator,
+        EvidenceDocumentDto IndexedDocument);
+
+    private sealed record VerifiedDocumentCandidate(
+        EvidenceVaultIdentityDto Identity,
+        EvidenceDocumentDto Document,
+        EvidenceVaultArtifactDto Artifact);
 }
