@@ -410,13 +410,17 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                 ?? throw new ReportingGovernanceConcurrencyException(
                     $"Reporting run '{run.RunId}' version conflict: expected {expectedVersion}.");
             var current = await HydrateRunAsync(currentRow, cancellationToken).ConfigureAwait(false);
-            if (current.Version != expectedVersion
-                || !StringComparer.Ordinal.Equals(
-                    ReportingGovernanceCanonicalValidation.ComputeImmutableRunFingerprint(current),
-                    ReportingGovernanceCanonicalValidation.ComputeImmutableRunFingerprint(run)))
+            if (current.Version != expectedVersion)
             {
                 throw new ReportingGovernanceConcurrencyException(
-                    $"Reporting run '{run.RunId}' replacement attempted to change its immutable creation binding or stale version {expectedVersion}.");
+                    $"Reporting run '{run.RunId}' version conflict: expected {expectedVersion}, actual {current.Version}.");
+            }
+            if (!StringComparer.Ordinal.Equals(
+                ReportingGovernanceCanonicalValidation.ComputeImmutableRunFingerprint(current),
+                ReportingGovernanceCanonicalValidation.ComputeImmutableRunFingerprint(run)))
+            {
+                throw new ReportingGovernanceConcurrencyException(
+                    $"Reporting run '{run.RunId}' replacement attempted to change its immutable creation binding.");
             }
 
             var payload = SerializeRun(run with { AuditTrail = [] });
@@ -719,6 +723,8 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             {
                 throw Integrity("reporting run", row.RunId, "the retained state payload contains mutable audit history");
             }
+
+            ValidateRunShape(run, requireAudit: false);
 
             if (!StringComparer.Ordinal.Equals(run.Scope.TenantId, row.TenantId)
                 || !StringComparer.Ordinal.Equals(run.RunId, row.RunId)

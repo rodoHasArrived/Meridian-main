@@ -564,7 +564,7 @@ public static class ReportingGovernanceCanonicalValidation
                 throw new ReportingGovernanceException(
                     "Pending restatement state must be version 1 and cannot retain approval or draft fields.");
             }
-            if (!request.ChangedLines.SequenceEqual(request.RequestedChangedLines))
+            if (!SameChangedLines(request.ChangedLines, request.RequestedChangedLines))
             {
                 throw new ReportingGovernanceException(
                     "Pending restatement changed lines must exactly match the originally requested evidence.");
@@ -607,6 +607,31 @@ public static class ReportingGovernanceCanonicalValidation
         {
             ValidateRestatementAudit(request);
         }
+    }
+
+    private static bool SameChangedLines(
+        ImmutableArray<ReportingRestatementChangedLine> left,
+        ImmutableArray<ReportingRestatementChangedLine> right)
+    {
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < left.Length; index++)
+        {
+            var leftLine = left[index];
+            var rightLine = right[index];
+            if (!StringComparer.Ordinal.Equals(leftLine.LineKey, rightLine.LineKey)
+                || !StringComparer.Ordinal.Equals(leftLine.PreviousValue, rightLine.PreviousValue)
+                || !StringComparer.Ordinal.Equals(leftLine.CurrentValue, rightLine.CurrentValue)
+                || !leftLine.EvidenceIds.SequenceEqual(rightLine.EvidenceIds, StringComparer.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

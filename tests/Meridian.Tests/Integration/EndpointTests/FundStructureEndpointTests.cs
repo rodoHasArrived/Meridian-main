@@ -911,8 +911,9 @@ public sealed class FundStructureEndpointTests : IClassFixture<EndpointTestFixtu
             PendingSettlement: 125m))
             ;
 
+        var bankStatementBatchId = Guid.NewGuid();
         await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            BatchId: Guid.NewGuid(),
+            BatchId: bankStatementBatchId,
             AccountId: bankAccount.AccountId,
             StatementDate: new DateOnly(2026, 4, 11),
             BankName: "Meridian Bank",
@@ -921,7 +922,7 @@ public sealed class FundStructureEndpointTests : IClassFixture<EndpointTestFixtu
             [
                 new BankStatementLineDto(
                     LineId: Guid.NewGuid(),
-                    BatchId: Guid.NewGuid(),
+                    BatchId: bankStatementBatchId,
                     AccountId: bankAccount.AccountId,
                     TransactionDate: new DateOnly(2026, 4, 11),
                     ValueDate: new DateOnly(2026, 4, 11),

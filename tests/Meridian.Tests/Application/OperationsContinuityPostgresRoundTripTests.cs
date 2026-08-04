@@ -140,6 +140,11 @@ public sealed class OperationsContinuityPostgresRoundTripTests
         journalEntry.Entry.IsBalanced.Should().BeTrue();
         journalEntry.Entry.Metadata.LedgerBook.Should().Be(openContext.Book.LedgerBookId.ToString("D"));
         journalEntry.Entry.Metadata.Tags.Should().ContainKey("securityMasterLineage");
+        journalEntry.Entry.Metadata.ActivityType.Should().Be("interest");
+        journalEntry.Entry.Metadata.IdempotencyKey.Should().Be(journalCandidate.IdempotencyKey);
+        journalEntry.Entry.Metadata.FundEventId.Should().BeNull();
+        journalEntry.Entry.Metadata.FundEventType.Should().BeNull(
+            "a generic source event type must not be reclassified as private-capital fund-event metadata");
 
         var rejectedContext = await CreateLedgerContextAsync(database, "rejected", "HardClosed");
         var hardClosedPeriod = rejectedContext.Period;

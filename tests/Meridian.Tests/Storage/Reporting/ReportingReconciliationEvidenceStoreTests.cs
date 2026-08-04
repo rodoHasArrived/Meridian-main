@@ -364,8 +364,10 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
                     RequireBoundScope: true));
 
         var blocked = await certify.Should().ThrowAsync<ReportingRunReadinessBlockedException>();
-        blocked.Which.Message.Should().Contain(
-            "Final reporting requires retained proof that the accounting-close workflow committed");
+        blocked.Which.Readiness.BlockingReasons.Should().ContainSingle(reason =>
+            reason.Contains(
+                "Final reporting requires retained proof that the accounting-close workflow committed",
+                StringComparison.Ordinal));
     }
 
     private static ReportingReconciliationEvidenceReceipt NewReceipt()

@@ -469,9 +469,15 @@ public sealed class ReportingGovernanceRepositoryTests :
         await _database.MutateRunPayloadAndRehashAsync(
             scenario.TenantId,
             released.RunId,
-            root => RequiredObject(root, "Readiness", "readiness")[
-                PropertyName(RequiredObject(root, "Readiness", "readiness"), "OrganizationId", "organizationId")]
-                = "other-organization");
+            root =>
+            {
+                var readiness = RequiredObject(root, "Readiness", "readiness");
+                readiness[PropertyName(readiness, "OrganizationId", "organizationId")]
+                    = "other-organization";
+                var mutatedRun = ReportingGovernancePersistenceJson.DeserializeRun(root.ToJsonString());
+                readiness[PropertyName(readiness, "ReceiptHash", "receiptHash")]
+                    = ReportingGovernanceCanonicalValidation.ComputeReadinessReceiptHash(mutatedRun.Readiness!);
+            });
 
         Func<Task> read = async () =>
             await LoadRunAsync(_database.Repository, scenario.TenantId, released.RunId);
@@ -809,6 +815,46 @@ public sealed class ReportingGovernanceRepositoryTests :
 /// </summary>
 public sealed class ReportingGovernancePersistenceSerializationTests
 {
+    [Fact]
+    public void PendingRestatementPayload_EquivalentChangedLineEvidence_PassesCanonicalValidation()
+    {
+        var changedLines = ImmutableArray.Create(
+            new ReportingRestatementChangedLine(
+                "nav.total",
+                "100",
+                "101",
+                ["evidence-default-audiences"]));
+        var request = new ReportingRestatementRequest(
+            "restatement-equivalent-evidence",
+            "run-default-audiences",
+            "series-default-audiences",
+            PredecessorRevision: 1,
+            PredecessorVersion: 1,
+            "Correct retained source data",
+            changedLines,
+            NewAuthority() with
+            {
+                Permissions = [ReportingGovernancePermission.RequestRestatement]
+            },
+            FixedUtc,
+            ReportingRestatementRequestState.PendingApproval,
+            Version: 1,
+            ApprovedBy: null,
+            ApprovedAtUtc: null,
+            DraftRunId: null,
+            AuditTrail: [],
+            RequestedChangedLines: changedLines);
+
+        var payload = ReportingGovernancePersistenceJson.SerializeRestatement(request);
+        var retained = ReportingGovernancePersistenceJson.DeserializeRestatement(payload);
+
+        Action validate = () => ReportingGovernanceCanonicalValidation.ValidateRestatementRequest(
+            retained,
+            requireAuditTrail: false);
+
+        validate.Should().NotThrow();
+    }
+
     [Fact]
     public void RunPayload_DefaultImmutableCollections_RoundTripsAsCanonicalEmptyCollections()
     {
