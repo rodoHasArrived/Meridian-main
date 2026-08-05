@@ -14,7 +14,7 @@ public sealed class OperatorReadinessConsoleViewModelTests
     [
         "HomeWorkspace", "TradingShell", "PortfolioShell", "AccountingShell", "ReportingShell",
         "StrategyShell", "DataShell", "SettingsShell", "StrategyRuns", "SecurityMaster",
-        "FundReconciliation", "FundReportPack", "FundAccountingClose", "Provider"
+        "FundReconciliation", "FundReportPack", "FundAccountingClose", "Provider", "FundAuditTrail"
     ];
 
     private static bool IsRegistered(string tag)
@@ -67,6 +67,7 @@ public sealed class OperatorReadinessConsoleViewModelTests
     [InlineData("ReportingShell", OperatorWorkItemKindDto.ReportPackApproval, null, "FundReportPack")]
     [InlineData("AccountingShell", (OperatorWorkItemKindDto)999, null, "AccountingShell")]
     [InlineData("ProviderConnectionCenter", OperatorWorkItemKindDto.BrokerageSync, "settings", "Provider")]
+    [InlineData("TradingShell", OperatorWorkItemKindDto.PaperReplay, "trading", "FundAuditTrail")]
     [InlineData(null, OperatorWorkItemKindDto.LedgerPeriodClose, null, "FundAccountingClose")]
     [InlineData(null, (OperatorWorkItemKindDto)999, "reporting", "ReportingShell")]
     [InlineData(null, (OperatorWorkItemKindDto)999, "unknown-lane", "HomeWorkspace")]
@@ -346,6 +347,45 @@ public sealed class OperatorReadinessConsoleViewModelTests
                 WorkstationReadinessTone.SignoffRequired
             },
             "a failed run must not render with the success tone");
+    }
+
+    [Fact]
+    public void BuildWorkItemRows_SameTone_OrdersByServerPriorityScoreBeforeRecency()
+    {
+        var inboxItems = new[]
+        {
+            CreateWorkItem("wi-newer-low", OperatorWorkItemToneDto.Warning, DateTimeOffset.Parse("2026-08-05T06:00:00Z"), priorityScore: 10),
+            CreateWorkItem("wi-older-high", OperatorWorkItemToneDto.Warning, DateTimeOffset.Parse("2026-08-04T06:00:00Z"), priorityScore: 300)
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildWorkItemRows(inboxItems, [], IsRegistered);
+
+        rows.Select(static row => row.WorkItemId).Should().Equal(
+            new[] { "wi-older-high", "wi-newer-low" },
+            "within a tone the server's priority score outranks recency so top-triage items are never pushed out");
+    }
+
+    [Fact]
+    public void BuildTrustRows_UsesServerTrustGateAsToneAuthority()
+    {
+        var readiness = CreateReadiness();
+        readiness = readiness with
+        {
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto(
+                    "dk1-trust",
+                    "Provider trust",
+                    TradingAcceptanceGateStatusDto.Blocked,
+                    "DK1 packet is not ready for operator review.")
+            ]
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildTrustRows(readiness);
+
+        rows[0].ReadinessTone.Should().Be(
+            WorkstationReadinessTone.Blocked,
+            "the shared dk1-trust acceptance gate outranks the local blockers/sign-off fallback rule");
     }
 
     [Fact]

@@ -178,11 +178,18 @@ public static class OperatorReadinessConsoleMapper
         ArgumentNullException.ThrowIfNull(readiness);
 
         var trustGate = readiness.TrustGate;
-        var trustTone = trustGate.Blockers.Count > 0
-            ? WorkstationReadinessTone.Blocked
-            : !trustGate.OperatorSignoffRequired || IsOperatorSignoffComplete(trustGate.OperatorSignoffStatus)
-                ? WorkstationReadinessTone.EvidenceLinked
-                : WorkstationReadinessTone.SignoffRequired;
+        // The server's dk1-trust acceptance gate is the tone authority when present — it already
+        // folds in packet readiness states the local rule cannot see. The blockers/sign-off rule
+        // is only the fallback for payloads without that gate.
+        var trustAcceptanceGate = readiness.AcceptanceGates.FirstOrDefault(
+            static gate => string.Equals(gate.GateId, "dk1-trust", StringComparison.OrdinalIgnoreCase));
+        var trustTone = trustAcceptanceGate is not null
+            ? ToReadinessTone(trustAcceptanceGate.Status)
+            : trustGate.Blockers.Count > 0
+                ? WorkstationReadinessTone.Blocked
+                : !trustGate.OperatorSignoffRequired || IsOperatorSignoffComplete(trustGate.OperatorSignoffStatus)
+                    ? WorkstationReadinessTone.EvidenceLinked
+                    : WorkstationReadinessTone.SignoffRequired;
         var rows = new List<OperatorReadinessPanelRowModel>
         {
             new(
@@ -343,6 +350,10 @@ public static class OperatorReadinessConsoleMapper
 
         return merged.Values
             .OrderBy(static item => TonePriority(item.Tone))
+            // Within a tone the server's PriorityScore is the triage authority (the browser gets
+            // the same effect by preserving server order); CreatedAt only breaks score ties, so
+            // score-0 readiness-feed items still order by recency.
+            .ThenByDescending(static item => item.PriorityScore)
             .ThenByDescending(static item => item.CreatedAt)
             .Take(MaxWorkItemRows)
             .Select(item =>
@@ -388,7 +399,9 @@ public static class OperatorReadinessConsoleMapper
 
         var kindTag = item.Kind switch
         {
-            OperatorWorkItemKindDto.PaperReplay => "StrategyRuns",
+            // Replay work items route to the replay-evidence surface (same mapping the main
+            // shell's inbox uses), not run history — the verification action lives there.
+            OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
             OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
             OperatorWorkItemKindDto.BrokerageSync => "Provider",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
