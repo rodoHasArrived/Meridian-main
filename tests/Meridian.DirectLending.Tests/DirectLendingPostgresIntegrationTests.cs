@@ -67,6 +67,9 @@ public sealed class DirectLendingPostgresIntegrationTests
 
         var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
         await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(
+            created.LoanId,
+            new BookDrawdownRequest(100_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 24), "wire-idempotency-seed"));
 
         var commandId = Guid.NewGuid();
         var metadata = new DirectLendingCommandMetadataDto(
@@ -99,6 +102,9 @@ public sealed class DirectLendingPostgresIntegrationTests
 
         var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
         await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(
+            created.LoanId,
+            new BookDrawdownRequest(100_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 24), "wire-conflict-seed"));
 
         var commandId = Guid.NewGuid();
         var metadata = new DirectLendingCommandMetadataDto(
