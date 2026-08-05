@@ -16,10 +16,13 @@ public sealed class ReportingFeatureModule : IDesktopFeatureModule
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IReportingGovernanceApiClient, ReportingGovernanceApiClient>();
+        services.AddSingleton<IEvidenceWorkbenchApiClient, EvidenceWorkbenchApiClient>();
         services.AddTransient<ReportingGovernanceWorkbenchViewModel>();
+        services.AddTransient<EvidenceWorkbenchViewModel>();
         services.AddTransient<ReportingWorkspaceShellStateProvider>();
         services.AddTransient<ReportingWorkspaceShellViewModel>();
         services.AddTransient<ReportingWorkspaceShellPage>();
+        services.AddTransient<Meridian.Wpf.Views.EvidenceWorkbenchPage>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Capability.Pages;
