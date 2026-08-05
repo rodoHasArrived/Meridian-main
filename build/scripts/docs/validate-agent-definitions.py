@@ -448,7 +448,7 @@ def validate_agent(path: Path) -> list[str]:
             # A recognised key is not the same as a usable value: `background: maybe`
             # or a `hooks` block written as a scalar is something the host cannot
             # interpret as intended, and only the shape check catches it.
-            if expected and value is not None and not _matches_type(value, expected):
+            if expected and not _matches_type(value, expected):
                 errors.append(
                     f"{path.name}: `{key}` is a {type(value).__name__}, expected "
                     f"{_render_types(expected)}"
