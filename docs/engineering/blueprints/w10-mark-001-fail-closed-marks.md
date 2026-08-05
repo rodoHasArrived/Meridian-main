@@ -448,6 +448,21 @@ per member.
 
 ### New — override store
 
+**Namespace:** `Meridian.Contracts.Ledger` — **not** `Meridian.Ledger`.
+
+`IMarkOverrideStore` and every record below take `LedgerTenantScope`, which lands in
+`Meridian.Contracts` so `Meridian.Storage` can implement the store without inverting the existing
+Ui.Shared → Storage reference. Declaring the seam in `Meridian.Ledger` would therefore force
+Ledger → Contracts, and Ledger references only Core and FSharp.Ledger — the same project-graph
+inversion this design already refused when it kept `MarkFreshnessPolicy` on Ledger-owned primitives
+rather than taking `MarkPriceQuote`. It would also turn Phase 1's policy work into a
+project-reference change the phase explicitly says it is not.
+
+Nothing in `Meridian.Ledger` needs this seam: `MarkFreshnessPolicy` is a pure function over its
+inputs and never consults an override. The claiming happens in `Meridian.Application.Accounting`,
+the preview in `Meridian.Ui.Shared`, and the implementation in `Meridian.Storage.Valuation` — all
+three already see Contracts.
+
 ```csharp
 /// <summary>
 /// A reviewed, scoped, expiring authorisation to value one position on a mark that
@@ -643,11 +658,31 @@ public interface IMarkOverrideStore
     /// The comparison belongs inside this transaction rather than in the endpoint: a pre-check
     /// leaves a window in which the quote moves between the read and the mutation, which is the
     /// argument already made for the tenant check above.
+    ///
+    /// The caller obtains the scope through <see cref="ReadAsync"/> and resolves the quote through
+    /// `IMarkPriceSource`. That read *is* outside the transaction, and deliberately: it only decides
+    /// **which** quote to fetch. The authoritative comparison happens against the row under lock
+    /// here, so a quote that moves between the two is caught rather than admitted.
     /// </summary>
     ValueTask<MarkFreshnessOverride> RecordApprovalDecisionAsync(
         string overrideId, bool approved, string reviewedBy, string? note,
         MarkQuoteEvidence currentEvidence, DateTimeOffset nowUtc,
         LedgerTenantScope expectedTenant, CancellationToken ct = default);
+
+    /// <summary>
+    /// Non-mutating read by id, tenant-checked. This exists **because** the decision path now
+    /// requires `currentEvidence`: the decision route carries only an override id, so without a way
+    /// to read the stored `MarkOverrideScope` first the endpoint cannot know which book, symbol,
+    /// valuation date, and policy version to resolve a current quote for. An earlier revision added
+    /// the evidence parameter and left no way to obtain its input, which in practice means an
+    /// implementer either skips the re-check or invents an ad-hoc read outside the contract.
+    ///
+    /// Returns null for an unknown id **and** for another tenant's id, so the reviewer surface and
+    /// the decision route can both answer `404` without confirming that someone else's override
+    /// exists.
+    /// </summary>
+    ValueTask<MarkFreshnessOverride?> ReadAsync(
+        string overrideId, LedgerTenantScope expectedTenant, CancellationToken ct = default);
 
     ValueTask<IReadOnlyList<MarkFreshnessOverride>> ListAsync(
         Guid ledgerBookId, DateOnly valuationDate, LedgerTenantScope expectedTenant,
@@ -1151,6 +1186,22 @@ with one `MarkFreshnessPolicy.Assess` call, and on a blocking verdict calls
 `IMarkOverrideStore.TryClaimAsync(scope, currentEvidence, consumption, timeProvider.GetUtcNow())`,
 passing evidence derived from the same quote it is about to value the position on.
 
+#### The tenant scope has to travel with it
+
+`TryClaimAsync` takes `LedgerTenantScope` and validates it against the stored row inside the claim
+transaction — that is the whole tenant guard on the consuming path. But `DailyMarkToMarketRequest`
+carries no tenant fields, and the claim happens deep inside `PrepareAsync`, so as designed the
+Application service has nothing to pass. The two ways out of that are both wrong: reach for ambient
+HTTP state from a layer that has no HTTP, or pass a permissive scope and skip the guard — and the
+second lets a valuation evaluate, and *consume*, another tenant's approved override.
+
+So `LedgerTenantScope` is a required member of `DailyMarkToMarketRequest` alongside
+`ValuationRunId`, threaded through `PrepareAsync` to every `TryClaimAsync` and `PeekApprovedAsync`
+call. The scheduled intake path already resolves tenant and company for the schedule row it is
+executing, so the value exists at the top of the call and only needs carrying; nothing has to invent
+it. Required rather than nullable, for the same reason `ValuationRunId` is: a nullable tenant on a
+request that reaches a tenant-checked store is a guard that silently does nothing.
+
 #### The run identity has to exist before the first claim
 
 Per-run claim idempotency is keyed on `MarkOverrideConsumption.ValuationRunId`, and today there is
@@ -1211,10 +1262,30 @@ Phase 2 adds a nullable `ValuationRunId` to the draft DTO and threads it through
 
 Nullable, because drafts retained *before* this change necessarily lack it — and those are the very
 drafts the guard exists for, so "no run id" cannot mean "not governed". The classification rule is
-therefore fail-closed rather than permissive: a draft whose `EntryType` or automation-evidence
-assessment marks it as a daily-valuation fair-value draft, and which carries **no** `ValuationRunId`,
-is refused at posting with an explicit reason. Treating a null as "not a valuation draft" would
-reopen the bypass on precisely the population the guard was added to catch.
+therefore fail-closed rather than permissive: a governed daily-valuation fair-value draft carrying
+**no** `ValuationRunId` is refused at posting with an explicit reason. Treating a null as "not a
+valuation draft" would reopen the bypass on precisely the population the guard was added to catch.
+
+**But "governed" needs a marker these drafts actually carry.** An earlier revision said to classify
+by `EntryType` or the automation-evidence assessment, and neither survives contact with the existing
+data: a fair-value mark adjustment falls through to `ManualJournalEntryTypeDto.General`, so
+`EntryType` does not distinguish it from any other manual entry, and the daily mark-to-market intake
+path passes no evidence assessment, so `AutomationEvidenceAssessment` is null on exactly these rows.
+Classifying on either would leave the guard unable to tell a legacy governed draft from an ordinary
+manual journal — and the generic lifecycle route would post it with no freshness evidence at all,
+which is the bypass the guard was added to close.
+
+The classifier therefore uses the marker daily-valuation intake *does* write: the automated-journal
+**source event kind plus its idempotency key**, which `AutomatedJournalIntakeRunner` stamps on every
+draft it retains and which is durable on rows that predate this work. A draft whose source event is
+a daily mark-to-market intake and which carries no `ValuationRunId` is the legacy population, and it
+is exactly the set `ResolveLegacyValuationDraftAsync` operates on.
+
+**Confirm that marker against the retained rows before implementing.** It is the load-bearing
+assumption in this paragraph, and the previous two candidates both looked right until checked. If it
+turns out to be absent as well, the alternative is a one-off migration that tags the affected drafts
+at deploy time — more work, but the guard cannot be sound without *some* durable discriminator, and
+guessing a third time is worse than paying for the migration.
 
 **The field is server-owned, and the guard verifies the association rather than trusting the
 field.** Putting a run id on a *public* draft DTO hands the generic save and lifecycle routes a new
@@ -1607,7 +1678,7 @@ contract test passes.
 | `valuation_run_id` | `text` | the attempt that produced this assessment |
 | `security_id` | `uuid` **null** | with `symbol` and `financial_account_id`, mirrors `MarkToMarketCarryingValueKey` |
 | `symbol` | `text` | stored normalised |
-| `financial_account_id` | `text` **null** | blank normalised to null |
+| `financial_account_id` | `text` **null** | blank normalised to null, then **trimmed and upper-cased** — the same canonical form `MarkOverrideScope` uses. Canonicalising one side only would make the override request's required blocking-row lookup miss `acc-1` against a stored `ACC-1`, and the Phase 4 producer joins miss with it |
 | `valuation_date` | `date` | |
 | `verdict` | `text` | `MarkFreshnessVerdict` name |
 | `age_days` | `integer` **null** | null for `MissingObservation` |
@@ -2316,6 +2387,13 @@ through their own services rather than inferring them from the schedule state.
 | `MarkFreshnessRef_OneUnoverriddenBlockerAmongOverridden_IsBlocking` | the other direction of the same rule |
 | `MarkOverrideScope_FinancialAccountIdCaseVariants_ResolveToOneScope` | the ledger compares account ids case-insensitively; the scope key must not be stricter |
 | `UniqueScopeIndex_RejectsACaseVariantDuplicateActiveScope` | the database key is built on the canonical form, so it cannot diverge from the record key |
+| `AssessmentRow_FinancialAccountIdStoredCanonically` | both sides of the blocking-row lookup use one canonical form, or the request finds nothing |
+| `MarkOverrideRequest_CaseVariantAccountId_FindsTheStoredAssessment` | the end-to-end version of the same rule |
+| `TryClaimAsync_ForeignTenantScopeOnTheValuationRequest_IsRejected` | the request-borne scope is what makes the claim's tenant guard reachable at all |
+| `PrepareAsync_RequiresATenantScope` | a nullable tenant on a tenant-checked path is a guard that does nothing |
+| `ReadAsync_ForeignTenant_ReturnsNull` | the decision route resolves evidence through this read; it must not confirm another tenant's id |
+| `RecordApprovalDecision_ResolvesEvidenceFromTheStoredScope` | the read exists because the evidence parameter needs an input |
+| `LegacyDraftClassifier_IdentifiesGovernedDraftsWithNoRunIdOrEntryTypeMarker` | `EntryType` is `General` and the evidence assessment is null on this population |
 | `DailyMarkToMarketRequest_LegacyQualityPolicyAndLegacyStalePricePolicy_Throws` | the provenance flag is what makes the documented throw implementable |
 | `PreviewRoutes_SerializeCandidateEnumsAsNames` | the candidate crosses the wire as a DTO, not as the Ledger policy |
 | `UnresolvedCase_NamesOverriddenPositionsNotJustACount` | the bypass ledger has to survive onto the remediation surface |
@@ -2514,6 +2592,10 @@ enrich a queue that by then exists rather than being what makes one exist.
 - [ ] Add required `ValuationRunId` to `DailyMarkToMarketRequest` and `DailyMarkToMarketRun`; mint it
       in `AutomatedJournalIntakeRunner` and **commit the `ledger_valuation_attempt` row before the
       first claim**, so a crash mid-run can recover the id instead of minting a new one.
+- [ ] Add required `LedgerTenantScope` to `DailyMarkToMarketRequest` and thread it through
+      `PrepareAsync` to every `TryClaimAsync` and `PeekApprovedAsync` call. Without it the claim's
+      tenant guard has nothing to check against, and a valuation could consume another tenant's
+      approved override.
 - [ ] Migration: `ledger_valuation_attempt` **and `ledger_valuation_attempt_draft`** in one ordinal
       (037), with the assessment table at 036 — Phase 2 takes the lower ordinals so a database
       upgraded through this PR never applies a lower-numbered migration afterwards, with the attempt-state lifecycle, the `prepared_draft_payload` column, and the
@@ -2579,10 +2661,21 @@ So the gate resolves one way or the other on the evidence:
 
 - **Backlog empty, or every blocked position correctable by backfill before the flip** → Phase 2
   merges alone. There is nothing an override would have authorised.
-- **Backlog non-empty with positions that cannot be corrected** → Phase 2 and Phase 3 merge
-  **together**. Blocking a close with no supported way to authorise the exception is an outage
-  wearing a control's clothing, and the operator's only alternative would be reverting the default —
-  which is the fail-open state the whole row exists to remove.
+- **Backlog holds uncorrectable positions that are *overridable*** — a quote exists, it is merely
+  stale, future-dated, or low-confidence → Phase 2 and Phase 3 merge **together**. Blocking a close
+  with no supported way to authorise the exception is an outage wearing a control's clothing, and
+  the operator's only alternative would be reverting the default — the fail-open state this row
+  exists to remove.
+- **Backlog holds uncorrectable `Unavailable` positions** → the default stays **permissive** until
+  open question 7 is answered. Shipping Phase 3 does not help here: `Unavailable` is deliberately
+  *not* overridable — there is no quote to snapshot, so the request route returns `422` — and the
+  manual-quote workflow that would remediate it is exactly what question 7 defers. Treating "merge
+  Phase 3" as the remedy for every uncorrectable blocker quietly assumed all of them are
+  override-shaped, which the `Unavailable` decision had already made false.
+
+The split matters because the two categories fail differently: an overridable blocker has a governed
+exception path once Phase 3 lands, and a missing quote has none by design. A gate that cannot tell
+them apart would flip fail-closed on a close whose only remedy does not exist yet.
 
 Deferring the whole flip until Phase 3 was the other candidate and is rejected: it makes Phase 2 a
 PR that changes nothing observable, and the preview gate already exists to answer this question with
