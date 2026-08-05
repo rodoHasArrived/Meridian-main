@@ -3,6 +3,7 @@ using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.UI;
+using Meridian.Application.Durability;
 using Meridian.Storage.Archival;
 using Serilog;
 

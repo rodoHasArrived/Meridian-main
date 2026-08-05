@@ -1,9 +1,12 @@
-namespace Meridian.Application.Subscriptions.Services;
+// Deliberately not "Meridian.Application.Storage": that name shadows the top-level Meridian.Storage
+// for every file inside Meridian.Application, breaking unqualified references such as
+// Storage.Archival.WriteAheadLog in PipelineFeatureRegistration.
+namespace Meridian.Application.Durability;
 
 /// <summary>
 /// Preserves an unreadable JSON store file before a service falls back to an empty in-memory set.
-/// The stores in this folder follow a load-mutate-save pattern, so falling back to an empty set
-/// after a swallowed load failure would let the next save atomically overwrite the user's data.
+/// Stores that follow a load-mutate-save pattern would otherwise let the next save atomically
+/// overwrite the user's data after a swallowed load failure, leaving nothing to recover from.
 /// </summary>
 internal static class CorruptStoreQuarantine
 {
