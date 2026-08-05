@@ -118,14 +118,14 @@ public sealed class DirectLendingPostgresIntegrationTests
             created.LoanId,
             new ApplyPrincipalPaymentRequest(50_000m, new DateOnly(2026, 4, 1), "wire-dup-2"),
             metadata);
-        var second = await db.CommandService.ApplyPrincipalPaymentAsync(
+        Func<Task> act = () => db.CommandService.ApplyPrincipalPaymentAsync(
             created.LoanId,
             new ApplyPrincipalPaymentRequest(10_000m, new DateOnly(2026, 4, 2), "wire-dup-3"),
             metadata);
 
         first.Error.Should().BeNull();
-        second.Error.Should().NotBeNull();
-        second.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        var exception = await act.Should().ThrowAsync<DirectLendingCommandException>();
+        exception.Which.Error.Code.Should().Be(DirectLendingErrorCode.Conflict);
 
         var history = await db.Service.GetHistoryAsync(created.LoanId);
         history.Count(item => item.EventType == "loan.principal-payment-applied").Should().Be(1);
