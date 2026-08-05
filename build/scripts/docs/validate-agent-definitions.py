@@ -145,6 +145,19 @@ MCP_ALL_SERVERS = "mcp__*"
 # that made the first version of `KNOWN_FIELDS` block legitimate agents. Reject what
 # provably cannot work; leave the rest to the host.
 MCP_TRANSPORT_KEYS = frozenset({"command", "url"})
+
+# Wrappers the host removes before matching a Bash rule, quoted in full from
+# https://code.claude.com/docs/en/permissions. `command -v` and zsh's `nocorrect` are named
+# there as *not* stripped, and neither are environment runners such as `devbox run` or
+# `npx`, so both groups are absent here on purpose.
+BASH_WRAPPERS = frozenset(
+    {"timeout", "time", "nice", "nohup", "stdbuf", "command", "builtin", "noglob"}
+)
+ENV_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+DURATION = re.compile(r"\d+(?:\.\d+)?[smhd]?")
+
+# Tools whose scopes are file paths in gitignore syntax rather than shell commands.
+PATH_SCOPED_TOOLS = frozenset({"Read", "Edit", "Write"})
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TOOL_FIELDS = ("tools", "disallowedTools")
 ALLOW_LIST_FIELD = "tools"
@@ -572,6 +585,32 @@ def _normalize_scope(head: str, scope: str) -> str:
     return scope
 
 
+def _path_glob_to_regex(pattern: str) -> str:
+    """Translate a gitignore-style path pattern, where `*` does not cross a separator.
+
+    Per https://code.claude.com/docs/en/permissions: "In gitignore patterns, `*` matches
+    within a single path segment and can appear at any position in the pattern, while `**`
+    matches across directories." Applying the shell glob here made `Read(src/*.json)` cancel
+    `Read(src/a/b.json)` - a grant the host leaves live, the same class of false
+    cancellation as the WebFetch domain rule, on a different tool.
+
+    Anchoring (`//`, `~/`, a leading `/`, or relative), the rule that a bare filename matches
+    at any depth, and the allow-versus-deny depth difference for single-segment directory
+    patterns are **not** modelled: resolving them needs the settings source a subagent file
+    does not have. The effect is that some genuine cancellations go unreported, which is the
+    safe direction for a check whose job is deciding whether a grant survives.
+    """
+    out = []
+    for part in re.split(r"(\*\*|\*)", pattern):
+        if part == "**":
+            out.append(".*")
+        elif part == "*":
+            out.append("[^/]*")
+        else:
+            out.append(re.escape(part))
+    return "".join(out)
+
+
 def _glob_to_regex(pattern: str) -> str:
     """Expand `*` wildcards, escaping everything else. Any number, at any position."""
     return "".join(
@@ -603,6 +642,15 @@ def _declared_mcp_servers(value: object) -> tuple[set[str], list[str]]:
     declaration it trusts, so a declaration the host cannot act on must not grant it.
     Returned problems are full descriptions rather than bare values: the fix differs
     between the two malformed shapes, and the caller cannot tell them apart.
+
+    The two entry forms are **not** equivalent for this purpose, which the reference states
+    directly: a string is "a server name referencing an already-configured server", while an
+    inline definition supplies "a full MCP server config as value". Only the second makes a
+    grant self-contained. A string entry is therefore counted as a declaration only when this
+    repository's own `.mcp.json` configures that server; otherwise it names a dependency the
+    checkout does not satisfy, and the MCP-only guard should still fire - a repository agent
+    whose only tools come from a server nobody here configures is precisely the empty grant
+    this validator exists to catch.
     """
     if not isinstance(value, list):
         return set(), []
@@ -635,6 +683,7 @@ def _declared_mcp_servers(value: object) -> tuple[set[str], list[str]]:
             f"entry {item!r} is neither a server name nor an inline server definition"
         )
     return names, malformed
+
 
 
 def _render_value(value: object) -> str:
@@ -688,6 +737,11 @@ def _scope_regex(head: str, scope: str) -> re.Pattern[str]:
     """
     scope = _normalize_scope(head, scope)
 
+    if head in PATH_SCOPED_TOOLS:
+        # File rules are gitignore patterns, not shell globs, and carry no trailing-wildcard
+        # word-boundary form - `*` and `**` are the whole vocabulary.
+        return re.compile(_path_glob_to_regex(scope) + r"\Z", _scope_flags(head))
+
     if scope.endswith(" *"):
         # Word-bounded: the prefix alone, or the prefix followed by whitespace. The prefix
         # is still glob-expanded - `Bash(* --help *)` carries an internal wildcard as well
@@ -721,7 +775,72 @@ def _scope_covers(head: str, deny_scope: str, allow_scope: str) -> bool:
         and allow_scope.startswith("domain:")
     ):
         return _domain_covers(deny_scope[len("domain:"):], allow_scope[len("domain:"):])
+    if head == "Bash":
+        # The allow side is the *command*; the deny side is the rule matched against it, and
+        # the host normalises the command before matching. Stripping both would invent
+        # cancellations: a rule literally reading `Bash(timeout 30 npm test)` matches nothing,
+        # because every command it could match has already had `timeout 30` removed.
+        allow_scope = _strip_command_prefixes(allow_scope)
     return _scope_regex(head, deny_scope).match(allow_scope) is not None
+
+
+def _strip_command_prefixes(command: str) -> str:
+    """Remove the wrappers the host strips before matching a Bash command.
+
+    Enumerated in https://code.claude.com/docs/en/permissions: "Before matching Bash rules,
+    Claude Code strips a fixed set of wrappers, so a rule like `Bash(npm test *)` also
+    matches `timeout 30 npm test`." Unlike the PowerShell alias table, this list *is*
+    published in full and is stated to be "built in and ... not configurable", so
+    reproducing it adds detection without guessing.
+
+    Three documented exclusions are honoured, because each would otherwise produce a
+    cancellation the host does not apply:
+
+    - `command -v` looks a command up rather than running one, so it is not stripped
+      (`nocorrect` is likewise absent from the list and therefore left alone).
+    - `xargs` is stripped only with no flags; `xargs -n1 grep pattern` "is matched as an
+      `xargs` command", so a rule for the inner command does not cover it.
+    - Environment runners - `direnv exec`, `devbox run`, `mise exec`, `npx`, `docker exec` -
+      are explicitly *not* in the list, so they are not stripped either.
+
+    Leading environment assignments are stripped unconditionally because this function only
+    ever prepares the allow side for comparison against a **deny**, and "a deny or ask rule
+    matches past any leading assignment". The narrower known-safe-variable rule governs
+    allow-vs-command matching, which is not what happens here.
+    """
+    tokens = command.split()
+    index = 0
+    progressed = True
+    while progressed and index < len(tokens):
+        progressed = False
+        while index < len(tokens) and ENV_ASSIGNMENT.match(tokens[index]):
+            index += 1
+            progressed = True
+        if index >= len(tokens):
+            break
+        token = tokens[index]
+        if token in BASH_WRAPPERS:
+            if token == "command" and tokens[index + 1 : index + 2] == ["-v"]:
+                break
+            index += 1
+            progressed = True
+            # Wrappers carry their own arguments before the real command: `timeout 30`,
+            # `nice -n 5`, `stdbuf -oL`. Flags are skipped, and so are bare numeric tokens -
+            # a duration or a flag's separate value. A number is never a command name, so
+            # skipping one cannot swallow the command this comparison is about.
+            while index < len(tokens) and (
+                tokens[index].startswith("-") or DURATION.fullmatch(tokens[index])
+            ):
+                index += 1
+        elif token == "xargs":
+            if tokens[index + 1 : index + 2] and tokens[index + 1].startswith("-"):
+                break
+            index += 1
+            progressed = True
+    stripped = " ".join(tokens[index:])
+    # A scope that is nothing but wrappers has no command to compare; keep the original
+    # rather than collapsing it to an empty string that every pattern would match.
+    return stripped or command
 
 
 def _is_near_miss(candidate: str, known: str) -> bool:

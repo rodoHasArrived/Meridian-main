@@ -485,6 +485,23 @@ allow is evaluated as a **glob**, not a prefix test. Wildcards may appear anywhe
 `Bash(git * main)` and `Bash(* install)` behave as documented rather than being mistaken for exact
 commands.
 
+`Read`, `Edit`, and `Write` scopes are **gitignore path patterns**, not shell globs: `*` stays inside
+one path segment and only `**` crosses directories, so `Read(src/*.json)` does not cancel
+`Read(src/a/b.json)`. Anchoring (`//`, `~/`, a leading `/`), the rule that a bare filename matches at
+any depth, and the allow-versus-deny depth difference for single-segment directory patterns are not
+modelled — resolving them needs the settings source an agent file does not have — so some genuine
+cancellations go unreported. That is the safe direction here.
+
+For `Bash`, the wrappers the host strips before matching are reproduced on the **command** side:
+`timeout`, `time`, `nice`, `nohup`, `stdbuf`, `command`, `builtin`, `noglob`, and bare `xargs`, plus
+any leading environment assignment — a deny rule "matches past any leading assignment", which is the
+only direction this comparison ever runs. So `Bash(npm test *)` correctly cancels
+`Bash(timeout 30 npm test)`. The documented exclusions are honoured too: `command -v` looks a command
+up rather than running one, `nocorrect` is not on the list, `xargs` is stripped only when it carries
+no flags, and environment runners (`devbox run`, `npx`, `docker exec`, …) are explicitly excluded.
+Stripping is deliberately not applied to the deny side — a rule literally reading
+`Bash(timeout 30 npm test)` matches nothing, because commands reach it already stripped.
+
 `PowerShell` scopes match case-insensitively, and the three aliases the reference names — `gci`,
 `ls`, `dir` — are canonicalised to `Get-ChildItem` before comparison, so a deny written with any of
 them covers a grant written with another. Only those three: the host's alias table is not

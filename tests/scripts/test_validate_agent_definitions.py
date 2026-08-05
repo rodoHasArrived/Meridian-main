@@ -819,6 +819,131 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertIn("cancels every entry", errors)
 
+    def test_read_scope_wildcard_does_not_cross_a_path_segment(self) -> None:
+        # "In gitignore patterns, `*` matches within a single path segment … while `**`
+        # matches across directories." The Bash-style `.*` made `Read(src/*.json)` cancel a
+        # grant the host leaves live - the WebFetch domain bug again, on a different tool.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Read(src/a/b.json)\ndisallowedTools: Read(src/*.json)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_read_scope_double_star_does_cross_path_segments(self) -> None:
+        for scope in ("src/**", "src/**/*.json"):
+            with self.subTest(scope=scope):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\n"
+                    f"tools: Edit(src/a/b.json)\ndisallowedTools: Edit({scope})",
+                )
+
+                errors = " | ".join(module.validate_agent(path))
+
+                self.assertIn("cancels every entry", errors)
+
+    def test_path_scoped_star_still_cancels_within_one_segment(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Write(src/config.json)\ndisallowedTools: Write(src/*.json)",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
+
+    def test_bash_wrappers_are_stripped_before_matching(self) -> None:
+        # "Before matching Bash rules, Claude Code strips a fixed set of wrappers, so a rule
+        # like `Bash(npm test *)` also matches `timeout 30 npm test`." Unlike the PowerShell
+        # alias table, this list is published in full, so reproducing it is not guesswork.
+        for wrapped in (
+            "timeout 30 npm test",
+            "time npm test",
+            "nice -n 5 npm test",
+            "nohup npm test",
+            "stdbuf -oL npm test",
+            "command npm test",
+            "builtin npm test",
+            "noglob npm test",
+            "NODE_ENV=test npm test",
+            "FOO=bar BAZ=qux npm test",
+            "NODE_ENV=test timeout 30 npm test",
+        ):
+            with self.subTest(wrapped=wrapped):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\n"
+                    f"tools: Bash({wrapped})\ndisallowedTools: Bash(npm test *)",
+                )
+
+                errors = " | ".join(module.validate_agent(path))
+
+                self.assertIn("cancels every entry", errors)
+
+    def test_documented_non_wrappers_are_left_alone(self) -> None:
+        # Each of these is named in the reference as *not* stripped, so stripping it would
+        # invent a cancellation the host never applies - the failure direction that matters
+        # most for a check deciding whether a grant survives.
+        for unwrapped in (
+            "command -v npm test",       # looks a command up rather than running one
+            "nocorrect npm test",        # zsh's other prefix, absent from the list
+            "xargs -n1 npm test",        # xargs is stripped only with no flags
+            "devbox run npm test",       # environment runners are explicitly excluded
+            "npx npm test",
+        ):
+            with self.subTest(unwrapped=unwrapped):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\n"
+                    f"tools: Bash({unwrapped})\ndisallowedTools: Bash(npm test *)",
+                )
+
+                self.assertEqual([], module.validate_agent(path))
+
+    def test_bare_xargs_is_stripped(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(xargs grep pattern)\ndisallowedTools: Bash(grep *)",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
+
+    def test_wrapper_stripping_applies_to_the_command_side_only(self) -> None:
+        # The deny is a rule, not a command. A rule literally reading
+        # `Bash(timeout 30 npm test)` matches nothing, because every command it could match
+        # has already had `timeout 30` removed - so stripping it too would invent a
+        # cancellation.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(npm test)\ndisallowedTools: Bash(timeout 30 npm test)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_powershell_does_not_get_bash_wrapper_stripping(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: PowerShell(timeout 30 npm test)\ndisallowedTools: PowerShell(npm test *)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
     def test_webfetch_domain_wildcard_does_not_cross_a_dot(self) -> None:
         # "`WebFetch(domain:example.*)` matches `example.org` … but not
         # `example.evil.com`, where `*` would have to cross a dot. This keeps a trailing
