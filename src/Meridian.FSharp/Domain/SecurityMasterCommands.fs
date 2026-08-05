@@ -142,8 +142,10 @@ module SecurityMaster =
                    @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency
                    @ require (leg.Notional |> Option.forall (fun notional -> notional > 0m))
                        (error "swap_leg_notional_invalid" "SwapLeg Notional must be greater than zero when present.")
-                   @ require (leg.SpreadBps |> Option.forall (fun spread -> spread >= 0m))
-                       (error "swap_leg_spread_invalid" "SwapLeg SpreadBps must be zero or greater when present.")
+                   // SpreadBps is deliberately unconstrained in sign: a floating leg quoted below its
+                   // reference index (e.g. SOFR - 10bp) is ordinary economics, and the cash-flow
+                   // projection models the leg as CurrentIndexRate + SpreadBps, clamping only the
+                   // resulting annual rate.
                    @ require
                        (leg.Direction
                         |> Option.forall (fun direction ->
@@ -181,6 +183,18 @@ module SecurityMaster =
                  |> List.length = terms.FactorSchedule.Length)
                 (error "structured_credit_factor_schedule_duplicate_date"
                        "StructuredCredit FactorSchedule must not carry two points for the same date.")
+            // A pool factor only ever amortizes down. An increasing schedule is accepted nowhere
+            // downstream — FactorPaydownProjectionService rejects the transition outright with
+            // factor-paydown.factor-increase — so accepting it here would let a record be created
+            // canonically and then fail High-severity in accounting, which is the exact
+            // write-accepts/read-rejects split this change exists to close.
+            @ require
+                (terms.FactorSchedule
+                 |> List.sortBy (fun entry -> entry.AsOfDate)
+                 |> List.pairwise
+                 |> List.forall (fun (earlier, later) -> later.Factor <= earlier.Factor))
+                (error "structured_credit_factor_schedule_not_monotonic"
+                       "StructuredCredit FactorSchedule factors must not increase over time; a pool factor only amortizes down.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor

@@ -117,8 +117,22 @@ public sealed class SecurityMasterTermScheduleCodecTests
             couponOrIndex = "SOFR+250",
             factorSchedule = new object[]
             {
-                new { asOfDate = "2026-02-01", factor = 0.9912m },
-                new { asOfDate = "2026-03-01", factor = 0.9825m }
+                new
+                {
+                    asOfDate = "2026-02-01",
+                    factor = 0.9912m,
+                    source = "custodian-factor-file",
+                    evidenceLink = "evidence://factor/mbs-2026-02",
+                    sourceContentHash = "sha256:feb-row"
+                },
+                new
+                {
+                    asOfDate = "2026-03-01",
+                    factor = 0.9825m,
+                    source = "custodian-factor-file",
+                    evidenceLink = "evidence://factor/mbs-2026-03",
+                    sourceContentHash = "sha256:mar-row"
+                }
             }
         });
 
@@ -139,6 +153,48 @@ public sealed class SecurityMasterTermScheduleCodecTests
         var second = schedule[1];
         second.GetProperty("priorFactor").GetDecimal().Should().Be(0.9912m);
         second.GetProperty("currentFactor").GetDecimal().Should().Be(0.9825m);
+
+        // FactorPaydownProjectionService validates the evidence list before it checks whether the
+        // factor moved, so a row that reaches the reader without evidenceLink is rejected outright
+        // as factor-paydown.evidence-required. Carrying it is what makes the paydown postable.
+        first.GetProperty("evidenceLink").GetString().Should().Be("evidence://factor/mbs-2026-02");
+        first.GetProperty("source").GetString().Should().Be("custodian-factor-file");
+        first.GetProperty("sourceContentHash").GetString().Should().Be("sha256:feb-row");
+    }
+
+    [Fact]
+    public void StructuredCredit_UnchangedFactorObservation_IsRetainedForPeriodCoverage()
+    {
+        // SecurityMasterAccountingEventService refuses to generate anything for a factor security
+        // unless the schedule carries an entry dated inside the reporting period. Dropping an
+        // unchanged trustee observation as an "empty paydown" would therefore turn a current, fully
+        // evidenced observation into FACTOR_SCHEDULE_MISSING / FACTOR_STALE and block the security.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[]
+            {
+                new { asOfDate = "2026-02-01", factor = 0.9912m, evidenceLink = "evidence://factor/feb" },
+                // Same factor a month later: no principal moved, but the observation is still the
+                // period's coverage evidence.
+                new { asOfDate = "2026-03-01", factor = 0.9912m, evidenceLink = "evidence://factor/mar" }
+            }
+        });
+
+        var schedule = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection)
+            .EconomicTerms.GetProperty("structuredProduct").GetProperty("factorSchedule");
+
+        schedule.GetArrayLength().Should().Be(2, "the unchanged observation must survive");
+
+        var unchanged = schedule[1];
+        unchanged.GetProperty("asOfDate").GetString().Should().StartWith("2026-03-01");
+        unchanged.GetProperty("priorFactor").GetDecimal().Should().Be(0.9912m);
+        unchanged.GetProperty("currentFactor").GetDecimal().Should().Be(0.9912m);
+        unchanged.GetProperty("evidenceLink").GetString().Should().Be("evidence://factor/mar");
     }
 
     [Fact]
@@ -299,12 +355,59 @@ public sealed class SecurityMasterTermScheduleCodecTests
             value.ValueKind.Should().NotBe(JsonValueKind.Null);
         }
 
-        // ...and nothing may be emitted that the contract does not declare.
+        // ...nothing may be emitted that the contract does not declare...
         var declaredKeys = declared.Select(static f => f.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var emitted in element.EnumerateObject())
         {
             declaredKeys.Should().Contain(emitted.Name,
                 $"'{assetClass}.{fieldKey}[].{emitted.Name}' is serialized but undeclared");
+        }
+
+        // ...and every emitted value must match its declared type. Checking names alone would let
+        // the serializer regress `factor` from a number to a string, or a date to a boolean, while
+        // this guard still passed — which would defeat the reason ElementFields exists.
+        foreach (var field in declared)
+        {
+            if (!element.TryGetProperty(field.Key, out var value) || value.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            AssertValueKind(value, field.Type, $"{assetClass}.{fieldKey}[].{field.Key}");
+        }
+    }
+
+    private static void AssertValueKind(JsonElement value, SecurityAssetTermFieldType declared, string path)
+    {
+        switch (declared)
+        {
+            case SecurityAssetTermFieldType.Decimal:
+            case SecurityAssetTermFieldType.Integer:
+                value.ValueKind.Should().Be(JsonValueKind.Number, $"'{path}' is declared {declared}");
+                break;
+            case SecurityAssetTermFieldType.Boolean:
+                value.ValueKind.Should().BeOneOf([JsonValueKind.True, JsonValueKind.False],
+                    $"'{path}' is declared {declared}");
+                break;
+            case SecurityAssetTermFieldType.Date:
+                value.ValueKind.Should().Be(JsonValueKind.String, $"'{path}' is declared {declared}");
+                DateOnly.TryParse(value.GetString(), out _).Should().BeTrue(
+                    $"'{path}' is declared Date and must parse as one");
+                break;
+            case SecurityAssetTermFieldType.Guid:
+                value.ValueKind.Should().Be(JsonValueKind.String, $"'{path}' is declared {declared}");
+                Guid.TryParse(value.GetString(), out _).Should().BeTrue(
+                    $"'{path}' is declared Guid and must parse as one");
+                break;
+            case SecurityAssetTermFieldType.String:
+                value.ValueKind.Should().Be(JsonValueKind.String, $"'{path}' is declared {declared}");
+                break;
+            case SecurityAssetTermFieldType.Array:
+                value.ValueKind.Should().Be(JsonValueKind.Array, $"'{path}' is declared {declared}");
+                break;
+            case SecurityAssetTermFieldType.Object:
+                value.ValueKind.Should().Be(JsonValueKind.Object, $"'{path}' is declared {declared}");
+                break;
         }
     }
 

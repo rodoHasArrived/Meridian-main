@@ -469,9 +469,12 @@ internal static class SecurityMasterMapping
     private static SwapLeg ToSwapLeg(JsonElement json)
         => new(
             ToOption(GetFirstOptionalString(json, "legId", "id", "name")),
-            GetRequiredString(json, "legType"),
+            // rateType/type are declared aliases of legType; requiring the canonical spelling alone
+            // would make the alias contract unusable on the write path — a vendor payload the
+            // cash-flow resolver reads happily would throw before it could ever be persisted.
+            GetFirstRequiredString(json, "legType", "rateType", "type"),
             GetRequiredString(json, "currency"),
-            ToOption(GetFirstOptionalString(json, "direction", "payReceive", "payOrReceive", "side")),
+            ToOption(NormalizeLegDirection(GetFirstOptionalString(json, "direction", "payReceive", "payOrReceive", "side"))),
             ToOption(GetFirstOptionalString(json, "index", "indexName", "referenceIndex")),
             ToOption(GetOptionalDecimal(json, "fixedRate")),
             ToOption(GetOptionalDecimal(json, "spreadBps")),
@@ -479,7 +482,30 @@ internal static class SecurityMasterMapping
             ToOption(GetFirstOptionalDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
             ToOption(GetFirstOptionalString(json, "paymentFrequency", "frequency")),
             ToOption(GetFirstOptionalString(json, "dayCount", "dayCountConvention", "dayCountBasis")),
-            GetOptionalBoolean(json, "exchangesPrincipal") ?? false);
+            GetFirstOptionalBoolean(json, "exchangesPrincipal", "principalExchange", "notionalExchange") ?? false);
+
+    /// <summary>
+    /// Maps the vendor direction tokens the cash-flow resolver already accepts (anything containing
+    /// PAY or REC — "Payer", "Receiver", "P", "RCV") onto the canonical Pay/Receive the domain
+    /// validates. Normalizing on the way in keeps the strict domain check meaningful without
+    /// rejecting payloads the read side considers perfectly legible. An unrecognized token is
+    /// passed through unchanged so the domain still reports it rather than silently guessing.
+    /// </summary>
+    private static string? NormalizeLegDirection(string? direction)
+    {
+        if (string.IsNullOrWhiteSpace(direction))
+        {
+            return null;
+        }
+
+        var normalized = direction.Trim().ToUpperInvariant();
+        if (normalized.Contains("PAY", StringComparison.Ordinal))
+        {
+            return "Pay";
+        }
+
+        return normalized.Contains("REC", StringComparison.Ordinal) ? "Receive" : direction.Trim();
+    }
 
     /// <summary>
     /// Reads one dated pool-factor point. Rows missing either half of the pair are dropped by the
@@ -497,7 +523,12 @@ internal static class SecurityMasterMapping
         var factor = GetFirstOptionalDecimal(json, "factor", "currentFactor");
         return asOf is null || factor is null
             ? null
-            : new FactorScheduleEntry(asOf.Value, factor.Value);
+            : new FactorScheduleEntry(
+                asOf.Value,
+                factor.Value,
+                ToOption(GetOptionalString(json, "source")),
+                ToOption(GetFirstOptionalString(json, "evidenceLink", "evidenceId", "evidenceRoute")),
+                ToOption(GetFirstOptionalString(json, "sourceContentHash", "contentHash", "sourceHash")));
     }
 
     /// <summary>
@@ -511,8 +542,10 @@ internal static class SecurityMasterMapping
             .Select(ToFactorScheduleEntry)
             .Where(static entry => entry is not null)
             .Select(static entry => entry!)
-            .GroupBy(static entry => entry.AsOfDate)
-            .Select(static group => group.Last())
+            // Deliberately no de-duplication: the domain rejects two points on the same date, and
+            // collapsing them here would sanitize the input before that validator ever saw it,
+            // silently discarding one of two disagreeing vendor observations while the create or
+            // amend reported success. Ordering is safe — it changes no content.
             .OrderBy(static entry => entry.AsOfDate);
 
     private static string? GetFactorScheduleNote(JsonElement json)
@@ -698,6 +731,27 @@ internal static class SecurityMasterMapping
 
         return null;
     }
+
+    private static bool? GetFirstOptionalBoolean(JsonElement json, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (GetOptionalBoolean(json, propertyName) is { } value)
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Required read that accepts any declared alias, reporting the canonical spelling when none
+    /// resolve so the error names the contract rather than whichever alias was tried last.
+    /// </summary>
+    private static string GetFirstRequiredString(JsonElement json, params string[] propertyNames)
+        => GetFirstOptionalString(json, propertyNames)
+           ?? throw new InvalidOperationException($"Missing required string '{propertyNames[0]}'.");
 
     private static decimal GetRequiredDecimal(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.TryGetDecimal(out var decimalValue)

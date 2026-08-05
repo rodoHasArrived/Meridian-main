@@ -632,9 +632,13 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         CurrentFactor = Some 0.9825m
         CouponOrIndex = "SOFR+250"
         FactorSchedule =
-            [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 1.0m }
-              { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.9912m }
-              { AsOfDate = DateOnly(2026, 3, 1); Factor = 0.9825m } ]
+            [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 1.0m
+                Source = Some "custodian-factor-file"; EvidenceLink = Some "evidence://factor/jan"
+                SourceContentHash = Some "sha256:jan" }
+              { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.9912m
+                Source = None; EvidenceLink = None; SourceContentHash = None }
+              { AsOfDate = DateOnly(2026, 3, 1); Factor = 0.9825m
+                Source = None; EvidenceLink = None; SourceContentHash = None } ]
         FactorScheduleNote = Some "monthly-trustee"
     }
     let equityCommand = createEquityCreateCommand None
@@ -739,7 +743,9 @@ let ``SecurityMaster create rejects an out-of-range factor schedule point`` () =
         OriginalFace = 500_000m
         CurrentFactor = None
         CouponOrIndex = "FIXED"
-        FactorSchedule = [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 1.25m } ]
+        FactorSchedule =
+            [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 1.25m
+                Source = None; EvidenceLink = None; SourceContentHash = None } ]
         FactorScheduleNote = None
     }
     let equityCommand = createEquityCreateCommand None
@@ -751,6 +757,35 @@ let ``SecurityMaster create rejects an out-of-range factor schedule point`` () =
         |> List.exists (fun e -> e.Code = "structured_credit_factor_schedule_factor_invalid")
         |> should equal true
     | Ok _ -> failwith "Expected a factor above par to be rejected."
+
+[<Fact>]
+let ``SecurityMaster create rejects a factor schedule that increases over time`` () =
+    // A pool factor only amortizes down. FactorPaydownProjectionService rejects an increasing
+    // transition outright (factor-paydown.factor-increase), so accepting one here would let a record
+    // be created canonically and then fail High-severity in accounting.
+    let terms = {
+        Tranche = "A"
+        PoolId = None
+        CollateralType = "CLO"
+        OriginalFace = 1_000_000m
+        CurrentFactor = None
+        CouponOrIndex = "SOFR+250"
+        FactorSchedule =
+            [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.95m
+                Source = None; EvidenceLink = None; SourceContentHash = None }
+              { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.97m
+                Source = None; EvidenceLink = None; SourceContentHash = None } ]
+        FactorScheduleNote = None
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
+
+    match SecurityMaster.create command with
+    | Error errors ->
+        errors
+        |> List.exists (fun e -> e.Code = "structured_credit_factor_schedule_not_monotonic")
+        |> should equal true
+    | Ok _ -> failwith "Expected an increasing factor schedule to be rejected."
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =

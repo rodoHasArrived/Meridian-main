@@ -308,7 +308,10 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                         terms.FactorSchedule
                         |> List.map (fun entry ->
                             {| asOfDate = entry.AsOfDate
-                               factor = entry.Factor |})
+                               factor = entry.Factor
+                               source = entry.Source
+                               evidenceLink = entry.EvidenceLink
+                               sourceContentHash = entry.SourceContentHash |})
                    factorScheduleNote = terms.FactorScheduleNote |})
         | SecurityKind.PrivateFundInterest terms ->
             JsonSerializer.Serialize(

@@ -286,7 +286,14 @@ public static class SecurityAssetTermsSchema
                 // could not satisfy. The legacy free text now lands in factorScheduleNote.
                 Req("factorSchedule", SecurityAssetTermFieldType.Array).WithElements(
                     Req("asOfDate", SecurityAssetTermFieldType.Date, "factorDate", "effectiveDate", "date"),
-                    Req("factor", SecurityAssetTermFieldType.Decimal, "currentFactor")),
+                    Req("factor", SecurityAssetTermFieldType.Decimal, "currentFactor"),
+                    // Retained-evidence attribution. Optional on the contract because a schedule can
+                    // be captured before its evidence is filed, but the factor-paydown gate fails
+                    // closed without evidenceLink, so it must survive the codec rather than be
+                    // dropped between the domain and the accounting reader.
+                    Opt("source", SecurityAssetTermFieldType.String),
+                    Opt("evidenceLink", SecurityAssetTermFieldType.String, "evidenceId", "evidenceRoute"),
+                    Opt("sourceContentHash", SecurityAssetTermFieldType.String, "contentHash", "sourceHash")),
                 Opt("factorScheduleNote", SecurityAssetTermFieldType.String)
             ],
             ["PrivateFundInterest"] =

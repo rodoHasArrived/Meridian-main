@@ -41,21 +41,29 @@ module SecurityMasterLegacyUpgrade =
     /// from, so consecutive levels are paired into (prior, current).
     ///
     /// The first point pairs against 1.0 — original face, by definition of a pool factor — so an
-    /// opening paydown is not lost. Points that do not move the factor emit no transition: they
-    /// carry no principal and would otherwise raise empty paydown events.
+    /// opening paydown is not lost.
+    ///
+    /// Every observation is emitted, including ones where the factor did not move. It is tempting
+    /// to drop those as empty paydowns, but the coverage check in SecurityMasterAccountingEventService
+    /// requires an entry dated inside the reporting period before it will generate anything at all:
+    /// silently dropping an unchanged current-period trustee observation turns it into
+    /// FACTOR_SCHEDULE_MISSING / FACTOR_STALE and blocks the whole security. A retained no-change
+    /// row is harmless downstream — FactorPaydownProjectionService returns NoChange and posts
+    /// nothing when prior and current are equal.
     let private toFactorSchedulePoints (schedule: FactorScheduleEntry list) : FactorSchedulePoint list =
         schedule
         |> List.sortBy (fun entry -> entry.AsOfDate)
         |> List.fold
             (fun (priorFactor, points) entry ->
-                let nextPoints =
-                    if entry.Factor = priorFactor then points
-                    else
-                        { AsOfDate = entry.AsOfDate
-                          PriorFactor = priorFactor
-                          Factor = entry.Factor } :: points
+                let point =
+                    { AsOfDate = entry.AsOfDate
+                      PriorFactor = priorFactor
+                      Factor = entry.Factor
+                      Source = entry.Source
+                      EvidenceLink = entry.EvidenceLink
+                      SourceContentHash = entry.SourceContentHash }
 
-                entry.Factor, nextPoints)
+                entry.Factor, point :: points)
             (1m, [])
         |> snd
         |> List.rev

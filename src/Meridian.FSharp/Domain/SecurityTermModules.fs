@@ -343,6 +343,14 @@ type FactorSchedulePoint = {
     PriorFactor: decimal
     /// Factor in effect from <c>AsOfDate</c>.
     Factor: decimal
+    /// Where the observation came from; surfaces as the paydown's source name.
+    Source: string option
+    /// Retained-evidence route. FactorPaydownProjectionService validates evidence before it checks
+    /// whether the factor moved, so a point without this is rejected outright rather than treated
+    /// as a no-op — which is why it has to survive the trip into economic terms.
+    EvidenceLink: string option
+    /// Content hash of the retained source row.
+    SourceContentHash: string option
 }
 
 /// Analytics and pool-level data for factorable structured-credit instruments

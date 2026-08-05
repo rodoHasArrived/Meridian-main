@@ -415,6 +415,15 @@ type FactorScheduleEntry = {
     AsOfDate: DateOnly
     /// Outstanding pool factor in effect from <c>AsOfDate</c>, in (0, 1].
     Factor: decimal
+    /// Where the observation came from (e.g. "custodian-factor-file", "trustee-report").
+    Source: string option
+    /// Retained-evidence route for the observation. The factor-paydown projection fails closed
+    /// without it — a paydown posts real principal, so it may not rest on an unevidenced number.
+    /// Optional here because a schedule can legitimately be captured before its evidence is filed;
+    /// the accounting gate, not the domain, is what refuses to post in that state.
+    EvidenceLink: string option
+    /// Content hash of the retained source row, for tamper-evidence.
+    SourceContentHash: string option
 }
 
 type DirectLoanTerms = {
