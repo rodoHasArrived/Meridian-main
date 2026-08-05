@@ -790,7 +790,11 @@ public sealed partial class PostgresLedgerJournalStore
                    effective_date,
                    rationale,
                    created_at,
-                   updated_at
+                   updated_at,
+                   wash_sale_enabled,
+                   wash_sale_window_days,
+                   wash_sale_scope,
+                   wash_sale_effective_date
             from {Qualified("tax_lot_policies")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name

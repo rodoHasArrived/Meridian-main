@@ -24,6 +24,7 @@
           "id": { "type": "string" },
           "title": { "type": "string" },
           "wave": { "type": "string" },
+          "sequence": { "type": "integer", "minimum": 1, "description": "Explicit rank within the wave for generated views. Optional; when absent, rank falls back to the identifier's trailing number." },
           "stage_gates": { "type": "array", "items": { "type": "string" } },
           "workspace": { "type": "array", "items": { "type": "string" } },
           "owner_lane": { "type": "string" },

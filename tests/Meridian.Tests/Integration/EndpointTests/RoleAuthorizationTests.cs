@@ -275,11 +275,12 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthRoleProfiles_WithManageUsers_CreatesCustomProfileAndPreservesSessionPermissions()
     {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
         var profileName = $"Close Reviewer {Guid.NewGuid():N}";
         Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
         try
         {
-            using var cookieClient = Fixture.CreateNoRedirectClient();
+            using var cookieClient = isolated.Fixture.CreateNoRedirectClient();
             var loginResp = await cookieClient.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
             var authCookies = ExtractAuthCookies(loginResp);
@@ -316,7 +317,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"reviewer","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"{{profileName}}"}]""");
         try
         {
-            using var reviewerClient = Fixture.CreateNoRedirectClient();
+            using var reviewerClient = isolated.Fixture.CreateNoRedirectClient();
             var loginResp = await reviewerClient.PostAsJsonAsync("/api/auth/login", new { Username = "reviewer", Password = "pw" });
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
             var sessionCookie = loginResp.Headers
@@ -348,10 +349,11 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthRoleProfiles_InvalidPermission_ReturnsBadRequest()
     {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
         Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
         try
         {
-            using var cookieClient = Fixture.CreateNoRedirectClient();
+            using var cookieClient = isolated.Fixture.CreateNoRedirectClient();
             var loginResp = await cookieClient.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
             var authCookies = ExtractAuthCookies(loginResp);
@@ -734,8 +736,9 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthAccounts_WithManageUsers_AdministersAccountLifecycleAndRevokesSessions()
     {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
         var username = $"ops-{Guid.NewGuid():N}";
-        using var adminClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+        using var adminClient = isolated.Fixture.CreatePermittedClient(UserPermission.ManageUsers);
 
         var createResponse = await adminClient.PutAsJsonAsync(
             $"/api/auth/accounts/{username}",
@@ -765,7 +768,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         listJson.Should().NotContain("passwordHash");
         listJson.Should().NotContain("initial-pass");
 
-        using var sessionClient = Fixture.CreateNoRedirectClient();
+        using var sessionClient = isolated.Fixture.CreateNoRedirectClient();
         var loginResponse = await sessionClient.PostAsJsonAsync("/api/auth/login", new { Username = username, Password = "initial-pass" });
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var loginBody = await loginResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
@@ -835,7 +838,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthScopedAccess_WithAutomationOrigin_ReturnsBadRequestWithoutMutatingAuthority()
     {
-        using var adminClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        using var adminClient = isolated.Fixture.CreatePermittedClient(UserPermission.ManageUsers);
         var blockedPrincipal = $"assistant-admin-{Guid.NewGuid():N}";
         var createResponse = await adminClient.PostAsJsonAsync(
             "/api/auth/access-assignments",
@@ -938,5 +942,35 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     }
 
     private sealed record AuthCookies(string CookieHeader, string CsrfToken);
+
+    /// <summary>
+    /// Owns a disposable endpoint host for scenarios that persist account, role-profile, or scoped-access state.
+    /// The host's unique data root prevents one destructive authorization scenario from changing later logins.
+    /// </summary>
+    private sealed class IsolatedEndpointTestScope : IAsyncDisposable
+    {
+        private readonly EndpointTestFixture _fixture;
+
+        private IsolatedEndpointTestScope(EndpointTestFixture fixture) => _fixture = fixture;
+
+        public EndpointTestFixture Fixture => _fixture;
+
+        public static async Task<IsolatedEndpointTestScope> CreateAsync()
+        {
+            var fixture = new EndpointTestFixture();
+            try
+            {
+                await fixture.InitializeAsync();
+                return new IsolatedEndpointTestScope(fixture);
+            }
+            catch
+            {
+                await fixture.DisposeAsync();
+                throw;
+            }
+        }
+
+        public async ValueTask DisposeAsync() => await _fixture.DisposeAsync();
+    }
 
 }

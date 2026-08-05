@@ -6,6 +6,8 @@ namespace Meridian.Ui.Shared.Services.CoveredCall;
 /// </summary>
 public sealed class CoveredCallBacktestOptions
 {
+    internal static readonly TimeSpan DefaultResultCacheDuration = TimeSpan.FromMinutes(30);
+
     /// <summary>Configuration section name (<c>Strategies:CoveredCall</c>).</summary>
     public const string SectionName = "Strategies:CoveredCall";
 
@@ -13,7 +15,7 @@ public sealed class CoveredCallBacktestOptions
     public int MaxConcurrentRuns { get; init; } = 3;
 
     /// <summary>How long a completed run's full result stays cached in memory before re-hydration.</summary>
-    public TimeSpan ResultCacheDuration { get; init; } = TimeSpan.FromMinutes(30);
+    public TimeSpan ResultCacheDuration { get; init; } = DefaultResultCacheDuration;
 
     /// <summary>Max strikes per expiration to materialise from the production chain provider.</summary>
     public int MaxStrikesPerExpiration { get; init; } = 80;

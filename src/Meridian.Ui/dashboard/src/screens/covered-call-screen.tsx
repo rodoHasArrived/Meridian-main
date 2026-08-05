@@ -274,8 +274,14 @@ function StageStepper({
 
 function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const basicGroups = vm.formFieldGroups.slice(0, 5);
-  const advancedGroups = vm.formFieldGroups.slice(5);
+  const evidenceGroups = vm.formFieldGroups.filter((group) => group.id === "evidence-loop");
+  const basicGroups = [
+    ...vm.formFieldGroups.slice(0, 5),
+    ...evidenceGroups
+  ];
+  const advancedGroups = vm.formFieldGroups
+    .slice(5)
+    .filter((group) => group.id !== "evidence-loop");
   const hasAdvancedError = advancedGroups.some((group) => group.fields.some((field) => field.invalid));
 
   useEffect(() => {
@@ -298,6 +304,15 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
               {group.fields.map((field) => (
                 <CoveredCallFormField key={field.key} vm={vm} field={field} />
               ))}
+              {group.id === "evidence-loop" ? (
+                <p className="text-xs leading-5 text-muted-foreground sm:col-span-2">
+                  Need a retained vault id?{" "}
+                  <Link className="font-medium text-primary underline-offset-4 hover:underline" to="/reporting/evidence">
+                    Open the Reporting Evidence Workbench
+                  </Link>
+                  .
+                </p>
+              ) : null}
             </div>
           ))}
 
@@ -568,6 +583,8 @@ function ResultsStage({ vm }: { vm: CoveredCallScreenViewModel }) {
 function ResultsActionPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
   const panel = vm.resultsActionPanel;
   const iconByAction: Record<string, typeof LineChart> = {
+    "run-checklist": Layers,
+    "evidence-workbench": FileText,
     "live-quote": LineChart,
     "strategy-designer": SlidersHorizontal,
     "report-pack": FileText
@@ -840,6 +857,7 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
   );
 }
 
+/** Input is a fraction of 1 (0.425 -> "42.50%"), not percent units. */
 function fmtPct(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return `${(value * 100).toFixed(2)}%`;

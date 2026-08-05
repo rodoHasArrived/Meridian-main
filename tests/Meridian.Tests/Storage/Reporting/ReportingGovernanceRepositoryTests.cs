@@ -16,7 +16,9 @@ using Xunit;
 namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
-public sealed class ReportingGovernanceRepositoryTests : IClassFixture<ReportingGovernanceDatabaseFixture>
+public sealed class ReportingGovernanceRepositoryTests :
+    IClassFixture<ReportingGovernanceDatabaseFixture>,
+    IAsyncLifetime
 {
     private readonly ReportingGovernanceDatabaseFixture _database;
 
@@ -25,10 +27,15 @@ public sealed class ReportingGovernanceRepositoryTests : IClassFixture<Reporting
         _database = database;
     }
 
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
+
     [ReportingDatabaseFact]
     public async Task Lifecycle_PersistsTenantBoundStateAndImmutableAuditAcrossRepositoryInstances()
     {
         var scenario = NewScenario();
+        scenario.Creator.PrincipalIds.IsDefault.Should().BeTrue();
         var released = await CreateReleasedRunAsync(_database.Repository, scenario);
 
         var restarted = new PostgresReportingGovernanceRepository(_database.Options);
@@ -38,6 +45,8 @@ public sealed class ReportingGovernanceRepositoryTests : IClassFixture<Reporting
         retained.Should().BeEquivalentTo(released);
         retained!.GovernanceState.Should().Be(GovernedReportingState.Released);
         retained.Release.Should().NotBeNull();
+        retained.CreationAuthority.PrincipalIds.IsDefault.Should().BeFalse();
+        retained.AuditTrail.Should().OnlyContain(entry => !entry.Authority.PrincipalIds.IsDefault);
         ReportingGovernanceAuditChain.Verify(retained.AuditTrail).Should().BeTrue();
         (await _database.CountAuditRowsAsync(
             scenario.TenantId,
@@ -460,9 +469,15 @@ public sealed class ReportingGovernanceRepositoryTests : IClassFixture<Reporting
         await _database.MutateRunPayloadAndRehashAsync(
             scenario.TenantId,
             released.RunId,
-            root => RequiredObject(root, "Readiness", "readiness")[
-                PropertyName(RequiredObject(root, "Readiness", "readiness"), "OrganizationId", "organizationId")]
-                = "other-organization");
+            root =>
+            {
+                var readiness = RequiredObject(root, "Readiness", "readiness");
+                readiness[PropertyName(readiness, "OrganizationId", "organizationId")]
+                    = "other-organization";
+                var mutatedRun = ReportingGovernancePersistenceJson.DeserializeRun(root.ToJsonString());
+                readiness[PropertyName(readiness, "ReceiptHash", "receiptHash")]
+                    = ReportingGovernanceCanonicalValidation.ComputeReadinessReceiptHash(mutatedRun.Readiness!);
+            });
 
         Func<Task> read = async () =>
             await LoadRunAsync(_database.Repository, scenario.TenantId, released.RunId);
@@ -794,6 +809,219 @@ public sealed class ReportingGovernanceRepositoryTests : IClassFixture<Reporting
         ReportingAuthorityScope RestatementApprover);
 }
 
+/// <summary>
+/// Guards governed-report persistence when an identity provider supplies no additional principal
+/// audiences and optional immutable collections therefore arrive in their default state.
+/// </summary>
+public sealed class ReportingGovernancePersistenceSerializationTests
+{
+    [Fact]
+    public void PendingRestatementPayload_EquivalentChangedLineEvidence_PassesCanonicalValidation()
+    {
+        var changedLines = ImmutableArray.Create(
+            new ReportingRestatementChangedLine(
+                "nav.total",
+                "100",
+                "101",
+                ["evidence-default-audiences"]));
+        var request = new ReportingRestatementRequest(
+            "restatement-equivalent-evidence",
+            "run-default-audiences",
+            "series-default-audiences",
+            PredecessorRevision: 1,
+            PredecessorVersion: 1,
+            "Correct retained source data",
+            changedLines,
+            NewAuthority() with
+            {
+                Permissions = [ReportingGovernancePermission.RequestRestatement]
+            },
+            FixedUtc,
+            ReportingRestatementRequestState.PendingApproval,
+            Version: 1,
+            ApprovedBy: null,
+            ApprovedAtUtc: null,
+            DraftRunId: null,
+            AuditTrail: [],
+            RequestedChangedLines: changedLines);
+
+        var payload = ReportingGovernancePersistenceJson.SerializeRestatement(request);
+        var retained = ReportingGovernancePersistenceJson.DeserializeRestatement(payload);
+
+        Action validate = () => ReportingGovernanceCanonicalValidation.ValidateRestatementRequest(
+            retained,
+            requireAuditTrail: false);
+
+        validate.Should().NotThrow();
+    }
+
+    [Fact]
+    public void RunPayload_DefaultImmutableCollections_RoundTripsAsCanonicalEmptyCollections()
+    {
+        var authority = NewAuthority();
+        var audit = NewAudit(authority);
+        var run = new GovernedReportingRun(
+            "run-default-audiences",
+            "series-default-audiences",
+            Revision: 1,
+            "template-monthly-financials",
+            "1.0.0",
+            NewScope(),
+            new ReportingAccessScope(
+                "policy-default-audiences",
+                "1",
+                ReportingGovernanceAccessMode.CompanyWide,
+                OwnerPrincipalId: null,
+                AllowOwnerAccess: false,
+                Principals: default,
+                PolicyHash: new string('b', 64)),
+            NewSnapshot(),
+            authority,
+            FixedUtc,
+            RestatementOfRunId: null,
+            GovernedReportingExecutionState.Succeeded,
+            GovernedReportingState.Released,
+            Version: 1,
+            new ReportingReadinessReceipt(
+                "readiness-default-audiences",
+                new string('c', 64),
+                "run-default-audiences",
+                "tenant-default-audiences",
+                "organization-default-audiences",
+                "company-default-audiences",
+                "snapshot-default-audiences",
+                new string('d', 64),
+                FixedUtc,
+                [new ReportingReadinessCheck("ledger-ready", true, default)]),
+            new ReportingApprovalReceipt(authority, FixedUtc, "Approved"),
+            new ReportingReleaseReceipt(
+                authority,
+                FixedUtc,
+                "manifest-default-audiences",
+                new string('e', 64),
+                Artifacts: default,
+                EvidenceIds: default),
+            [audit]);
+
+        var payload = ReportingGovernancePersistenceJson.SerializeRun(run);
+        var retained = ReportingGovernancePersistenceJson.DeserializeRun(payload);
+
+        retained.Access.Principals.IsDefault.Should().BeFalse();
+        retained.CreationAuthority.PrincipalIds.IsDefault.Should().BeFalse();
+        retained.Readiness!.Checks.Single().EvidenceIds.IsDefault.Should().BeFalse();
+        retained.Approval!.Authority.PrincipalIds.IsDefault.Should().BeFalse();
+        retained.Release!.Authority.PrincipalIds.IsDefault.Should().BeFalse();
+        retained.Release.Artifacts.IsDefault.Should().BeFalse();
+        retained.Release.EvidenceIds.IsDefault.Should().BeFalse();
+        retained.AuditTrail.Single().Authority.PrincipalIds.IsDefault.Should().BeFalse();
+    }
+
+    [Fact]
+    public void RestatementPayload_DefaultImmutableCollections_RoundTripsAsCanonicalEmptyCollections()
+    {
+        var authority = NewAuthority();
+        var request = new ReportingRestatementRequest(
+            "restatement-default-audiences",
+            "run-default-audiences",
+            "series-default-audiences",
+            PredecessorRevision: 1,
+            PredecessorVersion: 1,
+            "Correct retained source data",
+            [new ReportingRestatementChangedLine("nav.total", "100", "101", default)],
+            authority,
+            FixedUtc,
+            ReportingRestatementRequestState.Approved,
+            Version: 2,
+            authority,
+            FixedUtc,
+            "run-restated-default-audiences",
+            AuditTrail: default,
+            RequestedChangedLines:
+            [
+                new ReportingRestatementChangedLine(
+                    "nav.total",
+                    "100",
+                    "101",
+                    default)
+            ]);
+
+        var payload = ReportingGovernancePersistenceJson.SerializeRestatement(request);
+        var retained = ReportingGovernancePersistenceJson.DeserializeRestatement(payload);
+
+        retained.ChangedLines.Single().EvidenceIds.IsDefault.Should().BeFalse();
+        retained.RequestedBy.PrincipalIds.IsDefault.Should().BeFalse();
+        retained.ApprovedBy!.PrincipalIds.IsDefault.Should().BeFalse();
+        retained.AuditTrail.IsDefault.Should().BeFalse();
+        retained.RequestedChangedLines.Single().EvidenceIds.IsDefault.Should().BeFalse();
+    }
+
+    [Fact]
+    public void AuditPayload_DefaultPrincipalAudience_RoundTripsAsCanonicalEmptyCollection()
+    {
+        var payload = ReportingGovernancePersistenceJson.SerializeAudit(
+            NewAudit(NewAuthority()));
+
+        var retained = ReportingGovernancePersistenceJson.DeserializeAudit(payload);
+
+        retained.Authority.PrincipalIds.IsDefault.Should().BeFalse();
+    }
+
+    private static readonly DateTimeOffset FixedUtc =
+        new(2026, 8, 4, 20, 0, 0, TimeSpan.Zero);
+
+    private static ReportingOperationalScope NewScope() =>
+        new(
+            "tenant-default-audiences",
+            "organization-default-audiences",
+            "company-default-audiences",
+            "fund-default-audiences",
+            "book-default-audiences",
+            "period-default-audiences");
+
+    private static ReportingCertifiedSnapshotScope NewSnapshot() =>
+        new(
+            "tenant-default-audiences",
+            "organization-default-audiences",
+            "company-default-audiences",
+            "fund-default-audiences",
+            "book-default-audiences",
+            "period-default-audiences",
+            "snapshot-default-audiences",
+            new string('d', 64),
+            "reconciliation-default-audiences",
+            FixedUtc);
+
+    private static ReportingAuthorityScope NewAuthority() =>
+        new(
+            "operator-default-audiences",
+            "tenant-default-audiences",
+            "organization-default-audiences",
+            "company-default-audiences",
+            [ReportingGovernancePermission.CreateRun],
+            ReportingCommandOrigin.HumanOperator,
+            "correlation-default-audiences");
+
+    private static ReportingGovernanceAuditEntry NewAudit(ReportingAuthorityScope authority) =>
+        new(
+            "event-default-audiences",
+            ReportingGovernanceAuditAggregateKind.Run,
+            "run-default-audiences",
+            AggregateVersion: 1,
+            FixedUtc,
+            ReportingGovernanceAuditAction.RunCreated,
+            authority,
+            ReportingGovernancePermission.CreateRun,
+            FromExecutionState: null,
+            ToExecutionState: GovernedReportingExecutionState.Queued,
+            FromGovernanceState: null,
+            ToGovernanceState: GovernedReportingState.Draft,
+            FromRestatementState: null,
+            ToRestatementState: null,
+            null,
+            null,
+            new string('f', 64));
+}
+
 public sealed class ReportingGovernanceDatabaseFixture : IAsyncLifetime
 {
     private static JsonObject RequiredObject(
@@ -829,7 +1057,7 @@ public sealed class ReportingGovernanceDatabaseFixture : IAsyncLifetime
         Options = new ReportingArtifactStoreOptions
         {
             ConnectionString = _server.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("reporting_governance")
+            Schema = _server.CreateSchemaName("reporting_governance")
         };
 
         try
@@ -851,12 +1079,24 @@ public sealed class ReportingGovernanceDatabaseFixture : IAsyncLifetime
             return;
         }
 
-        if (_server.UsesExternalConnection)
+        await _server.DisposeAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Recreates this class fixture's schema after every test method, including scenarios that
+    /// deliberately corrupt retained payloads or disable database guards.
+    /// </summary>
+    public async Task ResetAsync()
+    {
+        if (_server is null)
         {
-            await new ReportingMigrationRunner(Options).ResetSchemaAsync().ConfigureAwait(false);
+            throw new InvalidOperationException("The reporting governance fixture is not initialized.");
         }
 
-        await _server.DisposeAsync().ConfigureAwait(false);
+        var migrationRunner = new ReportingMigrationRunner(Options);
+        await migrationRunner.ResetSchemaAsync().ConfigureAwait(false);
+        await migrationRunner.EnsureMigratedAsync().ConfigureAwait(false);
+        Repository = new PostgresReportingGovernanceRepository(Options);
     }
 
     public async Task<long> CountAuditRowsAsync(

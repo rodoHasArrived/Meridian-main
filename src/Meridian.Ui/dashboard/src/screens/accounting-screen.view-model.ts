@@ -159,6 +159,7 @@ import type {
   JournalEntryLifecycleActionRequest,
   JournalEntryLifecycleActionResult,
   LockClosePeriodRequest,
+  LedgerDimensionSet,
   ManualJournalEntryDraft,
   ManualJournalEntryLine,
   ManualJournalEntryWorkbench,
@@ -346,6 +347,7 @@ export interface AccountingConfigurationIssueViewModel {
   message: string;
   detail: string;
   tone: "default" | "warning" | "danger";
+  targetId?: string | null; severity?: "Critical" | "Warning" | "Info";
 }
 
 export interface AccountingConfigurationAuditViewModel {
@@ -1895,9 +1897,7 @@ export type CapitalAccountWorkbenchFundEventCommandRowViewModel =
 export interface CapitalAccountWorkbenchViewModel {
   title: string;
   description: string;
-  available: boolean;
-  loading: boolean;
-  errorText: string | null;
+  available: boolean; loading: boolean; errorText: string | null;
   statusLabel: string;
   statusTone: AccountingToolingTone;
   statusReason: string;
@@ -1927,13 +1927,10 @@ export interface ManualJournalEntryWorkbenchViewModel {
   drafts: ManualJournalEntryDraft[];
   accountOptions: { value: string; label: string }[];
   selectedLineId: string;
-  securitySearchQuery: string;
-  securitySearchResults: SecurityMasterEntry[];
-  securitySearchBusy: boolean;
-  securitySearchErrorText: string | null;
+  securitySearchQuery: string; securitySearchResults: SecurityMasterEntry[];
+  securitySearchBusy: boolean; securitySearchErrorText: string | null;
   securitySearchStatusText: string;
-  attachmentDraft: ManualJournalEvidenceAttachmentDraft;
-  totalsLabel: string;
+  attachmentDraft: ManualJournalEvidenceAttachmentDraft; totalsLabel: string;
   totalDebitsLabel: string;
   totalCreditsLabel: string;
   imbalanceLabel: string;
@@ -1943,15 +1940,16 @@ export interface ManualJournalEntryWorkbenchViewModel {
   treasuryContextLabel: string;
   privateCapitalActivity: ManualJournalPrivateCapitalActivityViewModel;
   validationIssues: AccountingConfigurationIssueViewModel[];
+  blockingIssueCount: number; warningIssueCount: number;
+  saveState: "saved" | "unsaved" | "saving" | "error" | "recovered"; saveStatusLabel: string;
+  validationStatusLabel: string; recoveryStatusText: string | null;
   lifecycleCommands: ManualJournalLifecycleCommandViewModel[];
   lifecycleChecklist: ManualJournalLifecycleChecklistItemViewModel[];
   lifecycleTransitions: ManualJournalLifecycleTransitionViewModel[];
   lifecycleCorrectionRows: ManualJournalLifecycleCorrectionViewModel[];
   lifecycleStatusText: string | null;
   lifecycleBusyAction: JournalEntryLifecycleAction | null;
-  saveBusy: boolean;
-  validateBusy: boolean;
-  submitBusy: boolean;
+  saveBusy: boolean; validateBusy: boolean; submitBusy: boolean;
   attachEvidenceBusy: boolean;
   attachEvidenceStatusText: string | null;
   validationIsCurrent: boolean;
@@ -1961,14 +1959,16 @@ export interface ManualJournalEntryWorkbenchViewModel {
   updateHeader: (field: keyof Pick<ManualJournalEntryDraft, "memo" | "currency" | "fundProfileId" | "entityId" | "fundNodeId" | "periodId" | "accountingDate">, value: string) => void;
   selectDraft: (journalEntryId: string) => void;
   selectLine: (lineId: string) => void;
-  updateLine: (lineId: string, patch: Partial<ManualJournalEntryLine>) => void;
+  updateLine: (lineId: string, patch: Partial<ManualJournalEntryLine>) => void; updateDraftDimensions: (patch: Partial<LedgerDimensionSet>) => void;
   getLineBadges: (lineId: string) => ManualJournalLineValidationBadge[];
   updateSecuritySearchQuery: (query: string) => void;
   searchSecurityMaster: () => Promise<void>;
   selectSecurity: (lineId: string, security: SecurityMasterEntry) => void;
   clearSecurity: (lineId: string) => void;
   addLine: (side: AccountingTemplateLineSide) => void;
+  insertLineAfter: (lineId: string, side?: AccountingTemplateLineSide) => string; duplicateLine: (lineId: string) => string | null;
   removeLine: (lineId: string) => void;
+  discardRecoveredDraft: () => void;
   updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
   addAttachment: () => Promise<void>;
   removeAttachment: (attachmentId: string) => void;

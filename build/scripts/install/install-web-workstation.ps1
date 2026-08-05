@@ -1545,7 +1545,12 @@ Invoke-Step -Name "Create launcher script" -Action {
         dataRoot = $dataRootPath
         httpPort = $Port
         databasePort = 54329
-        startupTimeoutSeconds = 60
+        # First boot of an installed workstation self-extracts the compressed single-file
+        # host and runs first migrations before /readyz can answer; the supervisor's
+        # readiness deadline must cover that, not only warm restarts. The deadline stays a
+        # hard fail-closed ceiling and readiness still completes as soon as the host is
+        # Ready.
+        startupTimeoutSeconds = 300
         shutdownTimeoutSeconds = 45
         databaseTimeoutSeconds = 60
     }

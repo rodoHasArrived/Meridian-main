@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -12,13 +13,25 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ProviderEndpointTests
+public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
+    private readonly HttpClient _providerMutationClient;
+    private readonly HttpClient _credentialMutationClient;
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
+        _providerMutationClient = fixture.CreatePermittedClient(UserPermission.ManageProviders);
+        _credentialMutationClient = fixture.CreatePermittedClient(
+            UserPermission.ManageProviders,
+            UserPermission.ManageCredentials);
+    }
+
+    public void Dispose()
+    {
+        _providerMutationClient.Dispose();
+        _credentialMutationClient.Dispose();
     }
 
     #region GET /api/providers/catalog
@@ -190,7 +203,7 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/providers/configure", content);
+        var response = await _credentialMutationClient.PostAsync("/api/providers/configure", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -215,10 +228,13 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/providers/configure", content);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var response = await _providerMutationClient.PostAsync("/api/providers/configure", content);
         var result = await DeserializeAsync(response);
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "Yahoo is a credential-free historical provider supported by the setup registry: {0}",
+            result["error"].GetString());
         result["success"].GetBoolean().Should().BeTrue();
         result["providerId"].GetString().Should().StartWith("yahoo");
         result["providerName"].GetString().Should().Be(displayName);
@@ -249,7 +265,7 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/providers/configure", content);
+        var response = await _credentialMutationClient.PostAsync("/api/providers/configure", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var json = await DeserializeAsync(response);
@@ -278,7 +294,7 @@ public sealed class ProviderEndpointTests
         };
 
         var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
-        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var response = await _client.GetAsync("/api/config/datasources");
@@ -310,7 +326,7 @@ public sealed class ProviderEndpointTests
         };
 
         var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
-        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var response = await _client.GetAsync("/api/config/datasources");
@@ -344,7 +360,7 @@ public sealed class ProviderEndpointTests
         };
 
         var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
-        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var response = await _client.GetAsync("/api/config/data-sources");
@@ -375,7 +391,7 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var setupResponse = await _client.PostAsync("/api/providers/configure", content);
+        var setupResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", content);
         setupResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var response = await _client.GetAsync("/api/config/datasources");
@@ -421,7 +437,7 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/datasources", content);
+        var response = await _providerMutationClient.PostAsync("/api/config/datasources", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -434,7 +450,7 @@ public sealed class ProviderEndpointTests
         var payload = new { Name = "", Provider = "IB", Enabled = true };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/datasources", content);
+        var response = await _providerMutationClient.PostAsync("/api/config/datasources", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -445,7 +461,7 @@ public sealed class ProviderEndpointTests
         var payload = new { Enabled = false };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/datasources/nonexistent/toggle", content);
+        var response = await _providerMutationClient.PostAsync("/api/config/datasources/nonexistent/toggle", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

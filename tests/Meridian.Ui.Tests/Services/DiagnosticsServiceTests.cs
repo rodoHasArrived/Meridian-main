@@ -9,6 +9,7 @@ namespace Meridian.Ui.Tests.Services;
 /// Note: The service methods require a running backend (ApiClientService),
 /// so these tests focus on the result models and their behavior.
 /// </summary>
+[Collection("ApiClientService singleton serial")]
 public sealed class DiagnosticsServiceTests
 {
     // ── Singleton ────────────────────────────────────────────────────

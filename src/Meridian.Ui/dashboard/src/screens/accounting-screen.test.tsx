@@ -1554,6 +1554,7 @@ function findAppleSecuritySearchRow() {
 
 describe("AccountingScreen", () => {
   beforeEach(() => {
+    window.localStorage.clear();
     const searchSecurities = vi.mocked(api.searchSecurities);
     searchSecurities.mockReset();
     if (defaultSearchSecuritiesImplementation) {
@@ -3497,6 +3498,12 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal Entry");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Balanced");
+    expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Validation required");
+    expect(screen.getByText(/Keyboard: Arrow Up or Down/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Selected-line dimensions" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Line entity")).toHaveAttribute("placeholder", "entity-master");
+    expect(screen.getByLabelText("Strategy")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Manual journal entry - balanced double-entry" })).toHaveTextContent("Totals");
     expect(screen.getByRole("heading", { name: "Balance impact preview" })).toBeInTheDocument();
     expect(screen.getByText("This draft increases the debit-normal account balance by $100.")).toBeInTheDocument();
@@ -3622,6 +3629,50 @@ describe("AccountingScreen", () => {
     expect(debitInput).toHaveValue(250.75);
     expect(debitInput).not.toHaveAttribute("aria-invalid");
     expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+  });
+
+  it("supports keyboard line navigation, insertion, and duplication", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const firstDebit = screen.getByLabelText("Debit amount for line line-debit");
+    const secondDebit = screen.getByLabelText("Debit amount for line line-credit");
+    firstDebit.focus();
+    fireEvent.keyDown(firstDebit, { key: "ArrowDown" });
+    expect(secondDebit).toHaveFocus();
+
+    const accountCount = screen.getAllByLabelText(/^GL account for line/).length;
+    fireEvent.keyDown(secondDebit, { key: "Enter", ctrlKey: true });
+    expect(screen.getAllByLabelText(/^GL account for line/)).toHaveLength(accountCount + 1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Duplicate journal line line-debit" }));
+    expect(screen.getAllByLabelText(/^GL account for line/)).toHaveLength(accountCount + 2);
+    expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Unsaved changes");
+  });
+
+  it("navigates validation issues to their affected journal line", async () => {
+    const blockedDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      validationIssues: [{
+        code: "manual-je.account-missing",
+        severity: "Critical",
+        message: "GL account was not found.",
+        targetId: "line-debit",
+        suggestedAction: "Choose an active GL account."
+      }]
+    };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [blockedDraft]
+    });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    const health = screen.getByRole("region", { name: "Journal health and actions" });
+    expect(health).toHaveTextContent("1 blocker");
+    fireEvent.click(screen.getByRole("button", { name: "Go to affected field" }));
+    await waitFor(() => expect(document.getElementById("manual-je-line-line-debit")).toHaveFocus());
   });
 
   it("rejects unparseable journal amounts instead of silently posting them as zero", async () => {

@@ -1,4 +1,5 @@
 import importlib.util
+import shutil
 import sys
 import tempfile
 import unittest
@@ -28,11 +29,88 @@ mark_stale = load_script("mark_stale_docs", ROOT / "build" / "scripts" / "docs" 
 common = load_script("docs_common", ROOT / "build" / "scripts" / "docs" / "common.py")
 
 
+def _registry_root(temp_dir: str, sequence_line: str | None) -> Path:
+    """Clone the real registries into a temp root, optionally injecting a sequence on one item."""
+    root = Path(temp_dir)
+    shutil.copytree(ROOT / "docs" / "roadmap" / "data", root / "docs" / "roadmap" / "data")
+    (root / "docs" / "source" / "data").mkdir(parents=True)
+    shutil.copy(
+        ROOT / "docs" / "source" / "data" / "source-modules.yml",
+        root / "docs" / "source" / "data" / "source-modules.yml",
+    )
+    if sequence_line is not None:
+        items_path = root / "docs" / "roadmap" / "data" / "roadmap-items.yml"
+        text = items_path.read_text(encoding="utf-8")
+        marker = "  - id: W1-DATA-001\n"
+        assert marker in text
+        items_path.write_text(text.replace(marker, marker + sequence_line, 1), encoding="utf-8")
+    return root
+
+
 class RoadmapSourceDocsTests(unittest.TestCase):
     def test_current_registries_validate(self) -> None:
         self.assertEqual([], [finding for finding in validate_roadmap.validate(ROOT) if finding.severity == "error"])
         self.assertEqual([], [finding for finding in validate_source.validate(ROOT) if finding.severity == "error"])
         self.assertEqual([], [finding for finding in scan_todos.validate(ROOT) if finding.severity == "error"])
+
+    def test_valid_sequence_passes_registry_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = _registry_root(temp_dir, "    sequence: 3\n")
+            errors = [finding for finding in validate_roadmap.validate(root) if finding.severity == "error"]
+
+        self.assertEqual([], errors)
+
+    def test_out_of_range_or_wrong_typed_sequence_fails_registry_validation(self) -> None:
+        # The JSON Schema bounds sequence at integer >= 1 but nothing loads it, so without this
+        # check the renderers would silently fall back to the identifier suffix — ordering a
+        # generated view against its adopted rank while CI reported the data valid.
+        for declared in ("0", "-2", "abc", "1.5", "true"):
+            with self.subTest(sequence=declared):
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    root = _registry_root(temp_dir, f"    sequence: {declared}\n")
+                    errors = [finding for finding in validate_roadmap.validate(root) if finding.severity == "error"]
+
+                self.assertTrue(
+                    any("invalid sequence" in finding.message for finding in errors),
+                    f"expected an invalid-sequence error for {declared!r}, got {[f.message for f in errors]}",
+                )
+
+    def test_wave_disagreeing_with_its_identifier_fails_registry_validation(self) -> None:
+        # The sort key parses the wave from the identifier while the diagram labels with the
+        # declared `wave`, so a mismatch would place an item among one wave's work while
+        # presenting it as another's.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = _registry_root(temp_dir, None)
+            items_path = root / "docs" / "roadmap" / "data" / "roadmap-items.yml"
+            text = items_path.read_text(encoding="utf-8")
+            items_path.write_text(
+                text.replace("  - id: W1-DATA-001\n    title: Provider trust gate and data confidence baseline\n    wave: W1\n",
+                             "  - id: W1-DATA-001\n    title: Provider trust gate and data confidence baseline\n    wave: W2\n", 1),
+                encoding="utf-8",
+            )
+            errors = [finding for finding in validate_roadmap.validate(root) if finding.severity == "error"]
+
+        self.assertTrue(
+            any("declares wave W2 but its identifier belongs to W1" in finding.message for finding in errors),
+            [finding.message for finding in errors],
+        )
+
+    def test_generated_roadmap_views_share_one_ordering(self) -> None:
+        # The diagram, summary, and register must not disagree about delivery sequence.
+        items = [
+            {"id": "W10-CONSOL-001", "sequence": 11},
+            {"id": "W2-TRD-001"},
+            {"id": "W10-MARK-001", "sequence": 1},
+            {"id": "W9-ASSET-010"},
+            {"id": "W9-TRUTH-001"},
+        ]
+
+        ordered = [item["id"] for item in sorted(items, key=common.roadmap_item_sort_key)]
+
+        self.assertEqual(
+            ["W2-TRD-001", "W9-TRUTH-001", "W9-ASSET-010", "W10-MARK-001", "W10-CONSOL-001"],
+            ordered,
+        )
 
     def test_generated_block_replacement_is_exact(self) -> None:
         original = "A\n<!-- begin -->\nold\n<!-- end -->\nB\n"

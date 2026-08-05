@@ -283,7 +283,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
 
             response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
             var body = await response.Content.ReadAsStringAsync();
-            body.Should().Contain("Authentication is required but not configured");
+            body.Should().Contain("Authentication is required but is not configured");
         }
         finally
         {
@@ -305,7 +305,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
 
             response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
             var body = await response.Content.ReadAsStringAsync();
-            body.Should().Contain("Authentication is required but not configured");
+            body.Should().Contain("Authentication is required but is not configured");
         }
         finally
         {
@@ -316,6 +316,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task ApiKeyMiddleware_DoesNotAcceptQueryStringApiKey()
     {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
         try
         {
@@ -327,13 +328,14 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
         }
     }
 
     [Fact]
     public async Task ApiKeyMiddleware_AcceptsHeaderApiKey()
     {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
         try
         {
@@ -346,13 +348,14 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
         }
     }
 
     [Fact]
     public async Task ApiKeyMiddleware_MissingHeader_ReturnsUnauthorized()
     {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
         try
         {
@@ -364,13 +367,14 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
         }
     }
 
     [Fact]
     public async Task ApiKeyMiddleware_WrongKey_ReturnsUnauthorized()
     {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
         try
         {
@@ -383,7 +387,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
         }
     }
 
@@ -418,6 +422,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         // A session-authenticated request (emulated via the fixture's X-Test-Auth marker,
         // which sets the same context items LoginSessionMiddleware sets) must pass the
         // API-key gate even when MDC_API_KEY is configured.
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
         try
         {
@@ -430,7 +435,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
         }
     }
 }

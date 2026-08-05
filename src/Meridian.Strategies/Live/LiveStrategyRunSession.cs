@@ -35,6 +35,7 @@ internal sealed class LiveStrategyRunSession
     private readonly CancellationTokenSource _stopRequested = new();
     private readonly Dictionary<string, Order> _ordersByClientId = new(StringComparer.Ordinal);
     private readonly Dictionary<Guid, string> _clientIdsByOrderId = new();
+    private readonly HashSet<string> _parkedClientOrderIds = new(StringComparer.Ordinal);
     private readonly LiveRunMetricsTracker _metrics;
     private readonly string _clientOrderIdPrefix;
 
@@ -303,6 +304,8 @@ internal sealed class LiveStrategyRunSession
 
     private async Task RouteQueuedOrdersAsync(CancellationToken ct)
     {
+        RetireDeclinedEscalations();
+
         foreach (var cancelledOrderId in _context.DrainPendingCancellations())
         {
             if (!_clientIdsByOrderId.TryGetValue(cancelledOrderId, out var clientOrderId))
@@ -331,7 +334,19 @@ internal sealed class LiveStrategyRunSession
             try
             {
                 var result = await _orderManager.PlaceOrderAsync(request, ct).ConfigureAwait(false);
-                if (!result.Success)
+                if (result.RequiresApproval)
+                {
+                    // Parked for governed approval, not rejected: the order can still be
+                    // released later, and its execution report will carry this client
+                    // order id. Keep the mapping alive so the run receives the fill, and
+                    // remember the park so a decline — which produces no report at all —
+                    // still retires it.
+                    _parkedClientOrderIds.Add(clientOrderId);
+                    _logger.LogInformation(
+                        "Run {RunId} order {ClientOrderId} for {Symbol} is parked for governed risk approval ({EscalationId})",
+                        _run.RunId, clientOrderId, order.Symbol, result.EscalationId ?? "unknown");
+                }
+                else if (!result.Success)
                 {
                     _logger.LogWarning(
                         "Run {RunId} order {ClientOrderId} for {Symbol} was rejected: {Reason}",
@@ -417,6 +432,41 @@ internal sealed class LiveStrategyRunSession
     {
         _ordersByClientId.Remove(clientOrderId);
         _clientIdsByOrderId.Remove(orderId);
+        _parkedClientOrderIds.Remove(clientOrderId);
+    }
+
+    /// <summary>
+    /// Drops bookkeeping for parked orders whose governed approval was declined. Only a
+    /// released escalation re-enters the report stream; a declined one is terminal and
+    /// silent, so without this the run would hold its order mapping for the whole session.
+    /// </summary>
+    private void RetireDeclinedEscalations()
+    {
+        if (_parkedClientOrderIds.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var clientOrderId in _parkedClientOrderIds.ToArray())
+        {
+            if (!_orderManager.WasRiskApprovalDeclined(clientOrderId))
+            {
+                continue;
+            }
+
+            _logger.LogInformation(
+                "Run {RunId} order {ClientOrderId} was declined for governed risk approval; retiring its tracking.",
+                _run.RunId, clientOrderId);
+
+            if (_ordersByClientId.TryGetValue(clientOrderId, out var order))
+            {
+                ForgetOrder(clientOrderId, order.OrderId);
+            }
+            else
+            {
+                _parkedClientOrderIds.Remove(clientOrderId);
+            }
+        }
     }
 
     private ExecutionSdk.OrderRequest MapOrder(Order order, string clientOrderId) => new()
@@ -484,8 +534,88 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
+        // Only when the run is actually ending. A host shutdown calls RequestStop with
+        // completeRun: false precisely so the run can be resumed, and denying its parked
+        // orders there would durably discard live approvals and trade intentions on every
+        // deployment.
+        if (_completeRunOnExit)
+        {
+            // An escalation that survives teardown can still route an order into a run that
+            // no longer exists, whose fills reach no session. If any withdrawal fails the
+            // run is not cleanly complete, and must not be recorded as if it were.
+            var unwithdrawn = await WithdrawParkedOrdersAsync().ConfigureAwait(false);
+            if (unwithdrawn > 0)
+            {
+                faulted ??= new InvalidOperationException(
+                    $"{unwithdrawn} governed risk escalation(s) could not be withdrawn as the run ended; "
+                    + "an approval could still route an order this run cannot receive.");
+            }
+        }
         await RecordTerminalRunStateAsync(faulted).ConfigureAwait(false);
         await RecordSessionAuditAsync(faulted).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Cancels orders still awaiting governed approval as the run ends. The run is about to
+    /// be removed from the engine, so an approval granted after this point would route an
+    /// order for a strategy that is no longer running — and its fills would reach no
+    /// session at all. Cancelling withdraws the escalation, which is what makes the
+    /// approval unreachable rather than merely unattended.
+    /// </summary>
+    /// <returns>How many escalations remain actionable because withdrawal failed.</returns>
+    private async Task<int> WithdrawParkedOrdersAsync()
+    {
+        if (_parkedClientOrderIds.Count == 0)
+        {
+            return 0;
+        }
+
+        var unwithdrawn = 0;
+
+        foreach (var clientOrderId in _parkedClientOrderIds.ToArray())
+        {
+            try
+            {
+                // Ask before cancelling, not after. An escalation the desk already denied
+                // needs no withdrawal, and cancelling one drops its parked reservation on
+                // the way to a gateway cancel that fails for an order which never routed —
+                // after which the denial is no longer recognizable and an otherwise clean
+                // run is recorded Failed.
+                if (_orderManager.WasRiskApprovalDeclined(clientOrderId))
+                {
+                    _parkedClientOrderIds.Remove(clientOrderId);
+                    continue;
+                }
+
+                var cancelled = await _orderManager
+                    .CancelOrderAsync(clientOrderId, CancellationToken.None)
+                    .ConfigureAwait(false);
+                if (!cancelled.Success)
+                {
+                    unwithdrawn++;
+                    _logger.LogError(
+                        "Run {RunId} ended with order {ClientOrderId} parked, and its escalation could not be withdrawn: {Reason}",
+                        _run.RunId, clientOrderId, cancelled.ErrorMessage ?? "no reason given");
+                    continue;
+                }
+
+                _parkedClientOrderIds.Remove(clientOrderId);
+                _logger.LogInformation(
+                    "Run {RunId} ended; withdrew the governed escalation still holding order {ClientOrderId}.",
+                    _run.RunId, clientOrderId);
+            }
+            catch (Exception ex)
+            {
+                unwithdrawn++;
+                _logger.LogError(ex,
+                    "Run {RunId} could not withdraw parked order {ClientOrderId} during teardown.",
+                    _run.RunId, clientOrderId);
+            }
+        }
+
+        // Ids that failed to withdraw stay tracked: they are still actionable, and clearing
+        // them would lose the only record that they need resolving.
+        return unwithdrawn;
     }
 
     private async Task RecordTerminalRunStateAsync(Exception? faulted)

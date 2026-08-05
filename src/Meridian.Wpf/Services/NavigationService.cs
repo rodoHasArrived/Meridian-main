@@ -307,10 +307,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         var evidenceSubject = TryResolveEvidenceWorkbenchSubject(pageTag);
         if (evidenceSubject is not null)
         {
-            return new FundOperationsNavigationContext(
-                Tab: FundOperationsTab.AuditTrail,
-                EvidenceSubject: evidenceSubject,
-                EvidenceSubjectTarget: pageTag.Trim());
+            // The Evidence Workbench page parses "{subjectKind}/{subjectId}" via its Parameter.
+            return evidenceSubject;
         }
 
         return pageTag switch

@@ -5,6 +5,13 @@ import * as api from "@/lib/api";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { PaperSessionSummary, TradingWorkspaceResponse } from "@/types";
 
+const paperPromotionEvidenceReferences = [
+  "DK1_TRUST_PACKET_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+  "RUN_LINEAGE_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+  "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+  "RISK_CONTROLS_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567"
+];
+
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
@@ -482,6 +489,66 @@ describe("TradingScreen", () => {
     expect(within(controls).getByText("BypassOrderControls (AAPL)")).toBeInTheDocument();
   });
 
+  it("renders guardrail utilization bars from the live rule registry", async () => {
+    const guardrailData: TradingWorkspaceResponse = {
+      ...data,
+      risk: {
+        ...data.risk,
+        guardrails: [
+          {
+            ruleName: "SymbolConcentration",
+            state: "Observe",
+            currentValue: "NVDA 26.40%",
+            threshold: "30.00%",
+            utilizationPercent: 88,
+            severity: "Error"
+          },
+          {
+            ruleName: "OrderNotional",
+            state: "Healthy",
+            currentValue: "0 pending approval(s)",
+            threshold: "escalate ≥ 50000, reject > 250000",
+            utilizationPercent: null,
+            severity: "Escalate"
+          },
+          {
+            ruleName: "GrossExposure",
+            state: "Constrained",
+            currentValue: "$1,500,000",
+            threshold: "$1,000,000",
+            utilizationPercent: 150,
+            severity: "Critical"
+          }
+        ]
+      }
+    };
+    await renderTradingScreen(guardrailData, "/trading/risk");
+
+    const list = screen.getByRole("list", { name: "Guardrail utilization" });
+    expect(within(list).getByText("Single-name concentration")).toBeInTheDocument();
+    expect(within(list).getByText(/88% · Observe/)).toBeInTheDocument();
+    const bar = within(list).getByRole("progressbar", { name: /single-name concentration utilization/i });
+    expect(bar).toHaveAttribute("aria-valuenow", "88");
+    // A breached guardrail clamps the bar fill at 100% but must announce the real
+    // utilization to assistive technology, not the clamp.
+    const breachedBar = within(list).getByRole("progressbar", { name: /gross exposure ceiling utilization/i });
+    expect(breachedBar).toHaveAttribute("aria-valuenow", "100");
+    expect(breachedBar).toHaveAttribute("aria-valuetext", "150% · Constrained");
+    // A rule with no measurable utilization renders its state and thresholds without a bar.
+    expect(within(list).getByText("Per-order notional")).toBeInTheDocument();
+    expect(within(list).getByText("parks for approval")).toBeInTheDocument();
+    expect(within(list).queryByRole("progressbar", { name: /per-order notional utilization/i })).not.toBeInTheDocument();
+    // The legacy flat strings do not render when structured guardrails are present.
+    expect(screen.queryByText("Cap per single-name")).not.toBeInTheDocument();
+  });
+
+  it("falls back to flat guardrail strings when structured telemetry is absent", async () => {
+    await renderTradingScreen(data, "/trading/risk");
+
+    expect(screen.getByText("Cap per single-name")).toBeInTheDocument();
+    expect(screen.getByText("Throttle at 70%")).toBeInTheDocument();
+  });
+
   it("surfaces cockpit readiness against operator acceptance gates", async () => {
     await renderTradingScreen();
 
@@ -594,6 +661,9 @@ describe("TradingScreen", () => {
     fireEvent.change(within(promotionGate).getByLabelText("Approval reason"), { target: { value: "Meets risk constraints" } });
     fireEvent.change(within(promotionGate).getByLabelText("Review notes"), { target: { value: "Checked replay consistency" } });
     fireEvent.change(within(promotionGate).getByLabelText("Manual override id"), { target: { value: "override-9" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Promotion evidence references"), {
+      target: { value: paperPromotionEvidenceReferences.join("\n") }
+    });
     await user.click(within(promotionGate).getByRole("button", { name: /evaluate gate checks/i }));
     await waitFor(() => {
       expect(within(promotionGate).getByText("Evaluation results").parentElement).toHaveTextContent("Eligible: Yes");
@@ -605,6 +675,7 @@ describe("TradingScreen", () => {
       approvedBy: "operator-7",
       approvalReason: "Meets risk constraints",
       approvalChecklist: ["DK1_TRUST_PACKET_REVIEWED", "RUN_LINEAGE_REVIEWED", "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED", "RISK_CONTROLS_REVIEWED"],
+      evidenceReferences: paperPromotionEvidenceReferences,
       reviewNotes: "Checked replay consistency",
       manualOverrideId: "override-9"
     });

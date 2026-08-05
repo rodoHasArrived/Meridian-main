@@ -10,7 +10,7 @@ import {
   reviewEvidenceVaultDocument,
   validateEvidencePacket
 } from "@/lib/api";
-import { describeApiError } from "@/lib/api-errors";
+import { describeApiError, isAbortError } from "@/lib/api-errors";
 import {
   formatDate,
   formatEvidenceDocumentAuthority,
@@ -1599,12 +1599,6 @@ function buildSlaAssessmentRow(assessment: EvidenceSlaAssessment): EvidenceSlaAs
 
 function buildEvidenceWorkbenchError(error: unknown, fallback: string): EvidenceWorkbenchErrorState {
   return describeApiError(error, fallback);
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException
-    ? error.name === "AbortError"
-    : error instanceof Error && error.name === "AbortError";
 }
 
 export function buildEvidenceLineagePanel(

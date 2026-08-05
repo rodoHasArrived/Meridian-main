@@ -21,6 +21,7 @@ import type {
   OperationsEvidencePackageSummary,
   OperationsNextAction,
   OperationsWorkflowStatus,
+  OperatorWorkItem,
   PaymentIntentCashDirection,
   PaymentIntentWorkflowStatus,
   PortfolioSummary,
@@ -28,6 +29,7 @@ import type {
   PrivateCapitalFundEventLedgerReadiness,
   PrivateCapitalPaymentIntentEvidenceStatus,
   WorkstationSecurityReference,
+  WorkstationBrokerageSyncStatus,
 } from "../types";
 
 export interface JournalEntryLifecycleTransition {
@@ -1285,6 +1287,28 @@ export interface BiasDisclosure {
   items: BiasDisclosureItem[];
 }
 
+export interface StrategyRunEvidenceLoop {
+  operatorAcceptanceCriteria: string[];
+  retainedEvidenceReferences: string[];
+  accountingRecordReferences: string[];
+  approvalReferences: string[];
+  paperValidationReferences: string[];
+  governedReportReferences: string[];
+}
+
+export type StrategyRunAcceptanceChecklistStatus = "ReviewRequired" | "Ready" | "Rejected";
+
+export interface StrategyRunAcceptanceChecklistItem {
+  checklistId: string;
+  label: string;
+  status: StrategyRunAcceptanceChecklistStatus;
+  evidenceReference?: string | null;
+  decidedBy?: string | null;
+  decidedAt?: string | null;
+  auditReference?: string | null;
+  blocker?: string | null;
+}
+
 export interface StrategyRunDetail {
   summary: StrategyRunSummary;
   parameters: Record<string, string>;
@@ -1295,6 +1319,8 @@ export interface StrategyRunDetail {
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
   biasDisclosure?: BiasDisclosure | null;
+  evidenceLoop?: StrategyRunEvidenceLoop | null;
+  acceptanceChecklist?: StrategyRunAcceptanceChecklistItem[] | null;
 }
 
 export interface StrategyRunContinuityLink {
@@ -1388,6 +1414,18 @@ export interface StrategyRunContinuityDto {
   cashFlow: StrategyRunCashFlowDigest | null;
   reconciliation: ReconciliationRunSummary | null;
   continuityStatus: StrategyRunContinuityStatus;
+}
+
+export interface StrategyRunReviewPacket {
+  runId: string;
+  generatedAt: string;
+  run: StrategyRunDetail;
+  continuity: StrategyRunContinuityDto | null;
+  fills: RunFillSummary | null;
+  attribution: RunAttributionSummary | null;
+  brokerageSync: WorkstationBrokerageSyncStatus | null;
+  workItems: OperatorWorkItem[];
+  warnings: string[];
 }
 
 // --- Security Master workstation types ---

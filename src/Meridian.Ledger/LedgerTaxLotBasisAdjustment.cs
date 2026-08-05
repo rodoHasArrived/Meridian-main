@@ -27,13 +27,19 @@ namespace Meridian.Ledger;
 /// a null value applies to every lot matched by <paramref name="SecurityId"/>.
 /// </param>
 /// <param name="Reference">Optional provenance reference (e.g. corporate-action id or source tag).</param>
+/// <param name="HoldingPeriodCarryDate">
+/// For <see cref="LedgerTaxLotBasisAdjustmentKind.WashSale"/>, the disallowed sale's earliest
+/// relieved acquisition date, carried onto the replacement lot's holding period under IRC
+/// §1223(3). Ignored by every other kind.
+/// </param>
 public sealed record LedgerTaxLotBasisAdjustment(
     LedgerTaxLotBasisAdjustmentKind Kind,
     decimal Value,
     DateOnly EffectiveDate,
     Guid? SecurityId = null,
     string? LotId = null,
-    string? Reference = null)
+    string? Reference = null,
+    DateOnly? HoldingPeriodCarryDate = null)
 {
     /// <summary>Validates the <see cref="Value"/> magnitude against the <see cref="Kind"/>.</summary>
     public LedgerTaxLotBasisAdjustment EnsureValid()
@@ -46,6 +52,12 @@ public sealed record LedgerTaxLotBasisAdjustment(
                 throw new ArgumentOutOfRangeException(nameof(Value), Value, "Factor ratio must be positive.");
             case LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital when Value < 0m:
                 throw new ArgumentOutOfRangeException(nameof(Value), Value, "Return-of-capital amount cannot be negative.");
+            case LedgerTaxLotBasisAdjustmentKind.WashSale when Value < 0m:
+                throw new ArgumentOutOfRangeException(nameof(Value), Value, "Deferred wash-sale loss cannot be negative.");
+            case LedgerTaxLotBasisAdjustmentKind.WashSale when string.IsNullOrWhiteSpace(LotId):
+                throw new ArgumentException(
+                    "A wash-sale basis adjustment must name the replacement lot it capitalizes into.",
+                    nameof(LotId));
         }
 
         return this;
@@ -60,6 +72,14 @@ public sealed record LedgerTaxLotBasisAdjustment(
             return false;
         if (!string.IsNullOrWhiteSpace(LotId) && !string.Equals(LotId, lot.LotId, StringComparison.OrdinalIgnoreCase))
             return false;
+
+        // A wash-sale deferral capitalizes into a named replacement lot that is, by construction,
+        // often acquired *after* the disallowed sale — the §1091 window is symmetric. The
+        // acquired-before-effective-date guard below protects reference-data restatements but would
+        // reject exactly those forward replacements, so wash-sale adjustments match on lot identity
+        // alone (EnsureValid guarantees LotId is present).
+        if (Kind == LedgerTaxLotBasisAdjustmentKind.WashSale)
+            return !string.IsNullOrWhiteSpace(LotId);
 
         // Only lots that existed before the adjustment's economic effect are restated; a lot
         // acquired on or after the ex-date already reflects the post-event terms.

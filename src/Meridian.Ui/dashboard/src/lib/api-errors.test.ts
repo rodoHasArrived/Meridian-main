@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createApiErrorFromResponseBody, describeApiError, isApiError } from "@/lib/api-errors";
+import { createApiErrorFromResponseBody, describeApiError, isAbortError, isApiError } from "@/lib/api-errors";
 
 describe("api-errors", () => {
   it("parses validation errors into structured operator-facing details", () => {
@@ -104,5 +104,36 @@ describe("api-errors", () => {
         "The active role cannot read trading readiness."
       ]
     });
+  });
+});
+
+describe("isAbortError", () => {
+  it("recognises the DOMException form browsers reject with", () => {
+    expect(isAbortError(new DOMException("The operation was aborted.", "AbortError"))).toBe(true);
+  });
+
+  it("recognises the plain Error form jsdom and fetch polyfills reject with", () => {
+    const error = new Error("The operation was aborted.");
+    error.name = "AbortError";
+    expect(isAbortError(error)).toBe(true);
+  });
+
+  it("recognises a real AbortController signal rejection", () => {
+    const controller = new AbortController();
+    controller.abort();
+
+    expect(isAbortError(controller.signal.reason)).toBe(true);
+  });
+
+  it("does not treat genuine failures as aborts merely because they mention aborting", () => {
+    expect(isAbortError(new Error("Upload aborted by the remote host"))).toBe(false);
+    expect(isAbortError(new DOMException("Aborted the transaction", "InvalidStateError"))).toBe(false);
+  });
+
+  it("returns false for non-error values", () => {
+    expect(isAbortError(null)).toBe(false);
+    expect(isAbortError(undefined)).toBe(false);
+    expect(isAbortError("AbortError")).toBe(false);
+    expect(isAbortError({ name: "AbortError" })).toBe(false);
   });
 });

@@ -20,8 +20,9 @@ public static class LedgerTaxLotReliefProjector
 
         var orderedLots = OrderLots(input, effectiveLots).ToList();
         var averageUnitCost = ResolveAverageUnitCost(input.ReliefMethod, effectiveLots);
-        var selections = SelectLots(input.QuantitySold, orderedLots, averageUnitCost);
+        var parcels = SelectLots(input.QuantitySold, orderedLots, averageUnitCost);
         var proceeds = RoundCurrency(input.QuantitySold * input.SalePrice);
+        var selections = BuildSelections(parcels, input.SalePrice, proceeds, input.SaleDate);
         var costBasis = selections.Sum(static selection => selection.CostBasis);
         var realizedGainOrLoss = proceeds - costBasis;
         var washSale = ComputeWashSale(input, selections, realizedGainOrLoss);
@@ -97,7 +98,18 @@ public static class LedgerTaxLotReliefProjector
         }
     }
 
-    private static IReadOnlyList<LedgerTaxLotReliefSelection> SelectLots(
+    /// <summary>
+    /// One lot's share of the sale, priced but not yet attributed proceeds or holding-period
+    /// character. Splitting parcel pricing from parcel attribution keeps the average-cost residual
+    /// logic (which works on cost) separate from the proceeds residual logic (which works on price).
+    /// </summary>
+    private readonly record struct ReliefParcel(
+        LedgerTaxLot Lot,
+        decimal Quantity,
+        decimal CostBasis,
+        decimal UnitCost);
+
+    private static IReadOnlyList<ReliefParcel> SelectLots(
         decimal quantitySold,
         IReadOnlyList<LedgerTaxLot> orderedLots,
         decimal? averageUnitCost)
@@ -114,7 +126,7 @@ public static class LedgerTaxLotReliefProjector
         if (averageUnitCost is not { } pooledUnitCost)
         {
             return slices
-                .Select(static slice => new LedgerTaxLotReliefSelection(
+                .Select(static slice => new ReliefParcel(
                     slice.Lot,
                     slice.Quantity,
                     RoundCurrency(slice.Quantity * slice.Lot.UnitCost),
@@ -127,7 +139,7 @@ public static class LedgerTaxLotReliefProjector
         // sum exactly to the rounded pooled basis (no cent drift across lots). Each slice reports the
         // unit cost implied by its rounded basis so the realized-gain export ties per row.
         var totalCostBasis = RoundCurrency(slices.Sum(static slice => slice.Quantity) * pooledUnitCost);
-        var selections = new List<LedgerTaxLotReliefSelection>(slices.Count);
+        var parcels = new List<ReliefParcel>(slices.Count);
         var allocated = 0m;
 
         for (var index = 0; index < slices.Count; index++)
@@ -145,7 +157,54 @@ public static class LedgerTaxLotReliefProjector
             }
 
             var reportedUnitCost = slice.Quantity != 0m ? costBasis / slice.Quantity : pooledUnitCost;
-            selections.Add(new LedgerTaxLotReliefSelection(slice.Lot, slice.Quantity, costBasis, reportedUnitCost));
+            parcels.Add(new ReliefParcel(slice.Lot, slice.Quantity, costBasis, reportedUnitCost));
+        }
+
+        return parcels;
+    }
+
+    /// <summary>
+    /// Attributes proceeds and holding-period character to each priced parcel. Proceeds are
+    /// allocated with the rounding residual on the final parcel so the per-parcel amounts sum
+    /// exactly to <paramref name="totalProceeds"/>; a realized-gain export can then report row
+    /// amounts that tie to the journal instead of re-deriving them and drifting a cent.
+    /// </summary>
+    private static IReadOnlyList<LedgerTaxLotReliefSelection> BuildSelections(
+        IReadOnlyList<ReliefParcel> parcels,
+        decimal salePrice,
+        decimal totalProceeds,
+        DateOnly saleDate)
+    {
+        var selections = new List<LedgerTaxLotReliefSelection>(parcels.Count);
+        var allocatedProceeds = 0m;
+
+        for (var index = 0; index < parcels.Count; index++)
+        {
+            var parcel = parcels[index];
+            decimal parcelProceeds;
+            if (index == parcels.Count - 1)
+            {
+                parcelProceeds = totalProceeds - allocatedProceeds;
+            }
+            else
+            {
+                parcelProceeds = RoundCurrency(parcel.Quantity * salePrice);
+                allocatedProceeds += parcelProceeds;
+            }
+
+            // The holding period runs from the lot's effective start, which an earlier wash sale may
+            // have moved before the lot was actually acquired (IRC §1223(3)).
+            var holdingPeriodStart = parcel.Lot.HoldingPeriodStart;
+            selections.Add(new LedgerTaxLotReliefSelection(
+                parcel.Lot,
+                parcel.Quantity,
+                parcel.CostBasis,
+                parcel.UnitCost,
+                parcelProceeds,
+                parcelProceeds - parcel.CostBasis,
+                TaxCharacterRule.Classify(holdingPeriodStart, saleDate),
+                TaxCharacterRule.HoldingPeriodDays(holdingPeriodStart, saleDate),
+                parcel.Lot.HoldingPeriodStartDate is not null));
         }
 
         return selections;
@@ -168,7 +227,9 @@ public static class LedgerTaxLotReliefProjector
         IReadOnlyList<LedgerTaxLotReliefSelection> selections,
         decimal realizedGainOrLoss)
     {
-        if (!input.WashSalePolicy.Enabled || realizedGainOrLoss >= 0m || input.ReplacementAcquisitions.Count == 0)
+        // AppliesOn (not Enabled) gates the policy so a dated activation leaves sales before its
+        // effective date reporting exactly the numbers they were originally closed with.
+        if (!input.WashSalePolicy.AppliesOn(input.SaleDate) || realizedGainOrLoss >= 0m || input.ReplacementAcquisitions.Count == 0)
             return null;
 
         var soldSecurityId = ResolveSoldSecurityId(selections);
@@ -197,10 +258,13 @@ public static class LedgerTaxLotReliefProjector
         // Never disallow more than the recognized loss after rounding.
         disallowedLoss = Math.Min(disallowedLoss, totalLoss);
         var allowedLoss = totalLoss - disallowedLoss;
-        // Earliest relieved acquisition date carries the sold shares' holding period onto the
-        // replacement lot. Min over DayNumber keeps the result an unambiguous DateOnly.
+        // The earliest relieved holding-period start carries the sold shares' holding period onto
+        // the replacement lot (IRC §1223(3)). Using the effective start rather than the raw
+        // acquisition date is what lets deferrals chain: a replacement lot that already absorbed an
+        // earlier wash sale passes that older start along instead of resetting it to its own
+        // purchase date. Min over DayNumber keeps the result an unambiguous DateOnly.
         var holdingPeriodCarryDate = DateOnly.FromDayNumber(
-            selections.Min(static selection => selection.Lot.AcquiredDate.DayNumber));
+            selections.Min(static selection => selection.Lot.HoldingPeriodStart.DayNumber));
         var basisIncreases = DistributeBasisIncreases(matching, matchedQuantity, disallowedLoss, holdingPeriodCarryDate);
 
         return new WashSaleOutcome(disallowedLoss, allowedLoss, matchedQuantity, basisIncreases);
@@ -241,7 +305,10 @@ public static class LedgerTaxLotReliefProjector
         DateOnly holdingPeriodCarryDate)
     {
         // Consume replacement shares oldest-first up to the matched quantity, aggregating per lot.
-        var consumedByLot = new List<(string LotId, decimal Quantity)>();
+        // The replacement's account travels with it so a deferral can be traced to the exact account
+        // that absorbed it — which is the whole point of a book-wide replacement scope, where the
+        // absorbing account is frequently not the one that sold.
+        var consumedByLot = new List<(string LotId, decimal Quantity, LedgerAccount? Account)>();
         var remainingToMatch = matchedQuantity;
         foreach (var replacement in matching
             .OrderBy(static replacement => replacement.AcquiredDate)
@@ -255,9 +322,16 @@ public static class LedgerTaxLotReliefProjector
 
             var existing = consumedByLot.FindIndex(lot => string.Equals(lot.LotId, replacement.LotId, StringComparison.OrdinalIgnoreCase));
             if (existing >= 0)
-                consumedByLot[existing] = (replacement.LotId, consumedByLot[existing].Quantity + consumed);
+            {
+                consumedByLot[existing] = (
+                    replacement.LotId,
+                    consumedByLot[existing].Quantity + consumed,
+                    consumedByLot[existing].Account ?? replacement.Account);
+            }
             else
-                consumedByLot.Add((replacement.LotId, consumed));
+            {
+                consumedByLot.Add((replacement.LotId, consumed, replacement.Account));
+            }
         }
 
         var totalConsumed = consumedByLot.Sum(static lot => lot.Quantity);
@@ -275,7 +349,13 @@ public static class LedgerTaxLotReliefProjector
                 : Math.Min(remaining, RoundCurrency(disallowedLoss * (consumedByLot[index].Quantity / totalConsumed)));
             allocated += amount;
             if (amount != 0m)
-                increases.Add(new WashSaleBasisIncrease(consumedByLot[index].LotId, amount, holdingPeriodCarryDate));
+            {
+                increases.Add(new WashSaleBasisIncrease(
+                    consumedByLot[index].LotId,
+                    amount,
+                    holdingPeriodCarryDate,
+                    consumedByLot[index].Account));
+            }
         }
 
         return increases;

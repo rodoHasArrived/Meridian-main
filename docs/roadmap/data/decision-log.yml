@@ -56,3 +56,21 @@ decisions:
       - W9-SAFETY-007
       - W9-GOV-008
       - W9-INGEST-009
+  - id: DEC-DEPTH-SLATE-001
+    title: Adopt the 2026-07 depth slate as W10 roadmap rows
+    status: accepted
+    decided_on: 2026-07-31
+    owner_lane: Core Team
+    summary: Eleven deepenings of existing functionality enter the registry as the W10 depth slate. The adopted rank is W10-MARK-001, W10-RECON-001, W10-PROV-001, W10-RECON-002, W10-JRNL-001, W10-TAX-001, W10-SEAM-001, W10-RECON-003, W10-RECON-004, W10-PERF-001, then W10-CONSOL-001, and docs/product/w10-depth-slate-2026-07.md is authoritative for it. Read the groupings that follow as non-sequential themes rather than a second delivery order - truth and identity first, then the shared seam that later rows depend on, then reconciliation economics, then accounting depth, then the new surface that stands outside those arcs last. Six of the eleven wire capability that is already built and unwired rather than adding new surface. A new wave token is opened instead of extending W9 because the W9 numeric suffix encodes rank within the 2026-07 first-order slate and appending would corrupt that meaning; W10 rank is recorded in docs/product/w10-depth-slate-2026-07.md instead. The slate is post-W9 depth work and does not precede production certification, except that W10-MARK-001 and W10-SEAM-001 are pulled forward because they serve the release gate rather than competing with it.
+    related_roadmap_items:
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001

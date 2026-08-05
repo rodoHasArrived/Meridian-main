@@ -74,7 +74,11 @@ public sealed class StatementToDeliveryAuthorityTests
                 RunId: statementRunId,
                 PeriodId: null,
                 ReportPackId: null,
-                ReconciliationCaseId: null),
+                ReconciliationCaseId: null)
+            {
+                TenantId = "tenant-alpha",
+                Scope = "company-alpha"
+            },
             ct);
         retainedStatementEvidence.Should().ContainSingle(vault =>
             vault.VaultId == statementIntake.Execution.Workflow.EvidenceVaultIdentity.VaultId);

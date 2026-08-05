@@ -6,6 +6,7 @@ namespace Meridian.Ui.Tests.Services;
 /// <summary>
 /// Tests for <see cref="ScheduleManagerService"/> and its associated DTO models.
 /// </summary>
+[Collection("ApiClientService singleton serial")]
 public sealed class ScheduleManagerServiceTests
 {
     // ── Singleton ────────────────────────────────────────────────────

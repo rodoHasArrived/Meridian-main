@@ -2,7 +2,7 @@
 
 # `ledger` schema
 
-- Relations: 21
+- Relations: 22
 - Functions/procedures: 1
 - Triggers: 2
 - Row-level security policies: 0
@@ -305,6 +305,10 @@ erDiagram
         text rationale
         timestamp_with_time_zone created_at
         timestamp_with_time_zone updated_at
+        boolean wash_sale_enabled
+        integer wash_sale_window_days
+        text wash_sale_scope
+        date wash_sale_effective_date
     }
     ledger_tax_lots {
         uuid tax_lot_record_id PK
@@ -329,6 +333,26 @@ erDiagram
         uuid originating_mutation_batch_id FK
         uuid last_mutation_batch_id FK
     }
+    ledger_wash_sale_deferrals {
+        uuid deferral_id PK
+        uuid ledger_book_id FK
+        uuid disposal_mutation_batch_id FK
+        uuid security_id
+        date sale_date
+        text disposal_account_name
+        text disposal_account_type
+        text disposal_symbol
+        text disposal_financial_account_id
+        uuid replacement_tax_lot_record_id FK
+        text replacement_lot_id
+        numeric_38_12_ disallowed_amount
+        numeric_38_12_ matched_quantity
+        date holding_period_carry_date
+        text policy_id
+        integer window_days
+        text scope
+        timestamp_with_time_zone recorded_at
+    }
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_chart_nodes : "accounting_configuration_chart_nodes_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_journal_templates : "accounting_configuration_journal_templates_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_posting_rules : "accounting_configuration_posting_rules_workspace_fkey"
@@ -340,6 +364,7 @@ erDiagram
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_last_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_disposal_mutation_batch_id_fkey"
     ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_legs : "journal_legs_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
@@ -348,8 +373,10 @@ erDiagram
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lot_policies : "tax_lot_policies_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lots : "tax_lots_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_ledger_book_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
     ledger_tax_lots ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_tax_lot_record_id_fkey"
+    ledger_tax_lots ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_replacement_tax_lot_record_id_fkey"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
@@ -373,5 +400,6 @@ erDiagram
 | `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
 | `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
-| `tax_lot_policies` | table | 12 | `policy_record_id` | 1 | 3 | - |
-| `tax_lots` | table | 21 | `tax_lot_record_id` | 4 | 7 | - |
+| `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
+| `tax_lots` | table | 21 | `tax_lot_record_id` | 4 | 8 | - |
+| `wash_sale_deferrals` | table | 18 | `deferral_id` | 3 | 4 | - |

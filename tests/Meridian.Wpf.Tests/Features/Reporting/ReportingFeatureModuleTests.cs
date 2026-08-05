@@ -16,6 +16,7 @@ public sealed class ReportingFeatureModuleTests
             "ReportingShell",
             "FundReportPack",
             "ReportRunStatus",
+            "EvidenceWorkbench",
             "ReportLineProvenanceExplorer",
             "Dashboard",
             "AnalysisExport",
@@ -53,15 +54,19 @@ public sealed class ReportingFeatureModuleTests
         new ReportingFeatureModule().Register(services);
 
         DesktopFeatureModuleTestAssertions.AssertRegistered<IReportingGovernanceApiClient>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IEvidenceWorkbenchApiClient, EvidenceWorkbenchApiClient>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingGovernanceWorkbenchViewModel>(services, ServiceLifetime.Transient);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<EvidenceWorkbenchViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellStateProvider>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellPage>(services, ServiceLifetime.Transient);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<Meridian.Wpf.Views.EvidenceWorkbenchPage>(services, ServiceLifetime.Transient);
     }
 
     [Theory]
     [InlineData("ReportingShell", "ReportingShell", "reporting")]
     [InlineData("ReportLineProvenanceExplorer", "ReportLineProvenanceExplorer", "reporting")]
+    [InlineData("EvidenceWorkbench", "EvidenceWorkbench", "reporting")]
     public void ShellRegistry_ResolvesReportingRootNavigationTags(string requestedTag, string canonicalTag, string workspaceId)
     {
         DesktopFeatureModuleTestAssertions.AssertRouteResolves(requestedTag, canonicalTag, workspaceId);

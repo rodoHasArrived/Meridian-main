@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-08-03
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -23,6 +23,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [2026-07 First-Order Improvement Slate](product-roadmap-priorities-2026-07.md) — ranked W9
     priority rationale (`W9-TRUTH-001` through `W9-INGEST-009`, decision `DEC-PRIORITY-SLATE-001`);
     live status stays in the roadmap registry
+  - [2026-07 Depth Slate](w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
+    functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
+    live status stays in the roadmap registry
 - Treat the following as dated working design inputs, not canonical status sources:
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
@@ -31,7 +34,17 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     table tracking which lanes have since shipped
   - [Portfolio Cash Ladder Blueprint (2026-07)](portfolio-cash-ladder-blueprint-2026-07.md) —
     code-ready design for the wave-8 portfolio cash-flow forecasting and liquidity ladder engine,
-    aggregating per-security projection runs into scenario-aware, per-currency cash ladders
+    aggregating per-security projection runs into scenario-aware, per-currency cash ladders; the
+    first vertical slice has landed and the persisted-run phases remain open
+  - [Quote-stream Fan-out Blueprint (2026-07)](web-ui-stream-fan-out-blueprint-2026-07.md) —
+    delivered design for event-driven SSE fan-out, per-session stream caps, and companion-pane
+    stream sharing (PRs A–C shipped)
+  - [Report-run Status Stream Blueprint (2026-07)](web-ui-report-run-stream-blueprint-2026-07.md) —
+    delivered design for the `report-run:<id>` stream and the generic `StreamBroadcaster<TPayload>`;
+    supersedes the fan-out blueprint's `workspace` / `inbox` topic proposal
+  - All blueprints across every lane are catalogued in the canonical
+    [blueprint register](../engineering/blueprints/README.md), which also records the shared
+    migration-ordinal, precision, route-prefix, and cross-blueprint contracts
   - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
     nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
     and sequencing
@@ -53,10 +66,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 
 ## Current Project Snapshot
 
-The registry snapshot dated 2026-07-18 records Evidence Vault productization, statement
-reconciliation onboarding, and WPF parity as the active productization targets. The accepted
-W1-W5, FREX, FINOPS, connector-library, and bounded W7 milestones remain bounded completion claims,
-not blanket production certification.
+The registry snapshot dated 2026-08-03 records Evidence Vault productization, statement
+reconciliation onboarding, and the bounded W6 Covered Call evidence loop as complete; WPF parity
+(`W8-WPF-PARITY-001`) and browser screen consolidation (`W8-UX-CONSOL-001`) remain active. The
+ranked W9 first-order slate and W10 depth slate remain the accepted planned priority order behind
+them. The accepted W1-W7 bounded milestones are capability claims, not blanket production
+certification. Every W10 row and the nine open W9 rows carry planned-evidence posture;
+`W9-ASSET-010` is the one W9 row already closed with complete evidence.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,
@@ -126,7 +142,7 @@ closing web-UI parity gaps for screens that shipped browser-first while it was d
   - governed reporting and evidence retention,
   - capital-account, fund-event, and treasury-ledger records.
 - Product wedge: Meridian should make the operational proof chain the product, linking source evidence through validation, reconciliation, ledger impact, capital-account impact, close state, report line, delivery evidence, and audit history.
-- Operator UX direction: Accounting, Portfolio, Data, and Reporting share completed Financial Record Explorer patterns, while Accounting/Reporting expose the completed W5X-FINOPS control-center boundary for close and reconciliation state, priority-ranked exception queues, report-package release safety, and proof drill-through. Evidence Vault, statement onboarding, and WPF workstation parity are the active productization lanes.
+- Operator UX direction: Accounting, Portfolio, Data, and Reporting share completed Financial Record Explorer patterns, while Accounting/Reporting expose the completed W5X-FINOPS control-center boundary for close and reconciliation state, priority-ranked exception queues, report-package release safety, and proof drill-through. Evidence Vault, statement onboarding, and the bounded W6 Covered Call evidence loop are completed capability slices; WPF parity and browser screen consolidation are the active productization lanes.
 - Operating model: configurable tenant-aware system, not separate apps per organization type.
 - Extensibility model: stable financial operations core objects stay consistent across tenants; workflows, rules, data mappings, reports, permissions, domain extensions, and tenant templates are governed configuration layers. See the [Core Extensibility Model](../architecture/core-extensibility-model.md).
 - Shared operator root model remains: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`.
@@ -170,10 +186,10 @@ and required GitHub Actions evidence.
 - W1-W5 are closed baselines in the registry and form the coherent accepted operational-record baseline unless a later registry change says otherwise.
 - W5 is the v0.15 accounting records, operational evidence, and multi-asset coverage package.
 - W5X-FREX-001 is complete. Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers share contracts, saved views, proof state, evidence links, and audit routing across the accepted browser and WPF scope.
-- W5X-FINOPS-001 is a completed evidence-backed productization milestone that turns Financial Operations into the shared Accounting/Reporting control center for current close/reconciliation state, exception queues, approval/workflow controls, close-readiness blockers, retained evidence, governed reopen posture, and direct-lending operating controls. The accepted boundary is the shared Operations Continuity and Fund Ledger read-model surface consumed by browser Operations Continuity; WPF surfaces this through Fund Ledger today, with remaining Operations Continuity parity tracked as `W8-WPF-PARITY-001`. Evidence Vault and statement onboarding proceed through their own active rows. The bounded Asset Accounting Event Spine completed under `W9-ASSET-010`; additional fund-event command-center specializations remain separate roadmap decisions.
+- W5X-FINOPS-001 is a completed evidence-backed productization milestone that turns Financial Operations into the shared Accounting/Reporting control center for current close/reconciliation state, exception queues, approval/workflow controls, close-readiness blockers, retained evidence, governed reopen posture, and direct-lending operating controls. The accepted boundary is the shared Operations Continuity and Fund Ledger read-model surface consumed by browser Operations Continuity; WPF surfaces this through Fund Ledger today, with remaining Operations Continuity parity tracked as `W8-WPF-PARITY-001`. The bounded Asset Accounting Event Spine completed under `W9-ASSET-010`; additional fund-event command-center specializations remain separate roadmap decisions.
 - W5X-CONNECT-001 is complete. Declarative CSV/OFX profiles, IB Flex XML, OFX bank/investment, and Alpaca statement connectors normalize into the shared reconciliation workflow with preview, drift, confidence, and retained-source evidence.
-- W5X-EVIDENCE-001 and W5X-STMT-ONBOARD-001 are in progress. The current acceptance path is browser-first statement reconciliation onboarding into retained Evidence Vault proof; broader document-portal and collaboration scope remains separate.
-- W6-BTSTUDIO-001 remains planned rather than active.
+- W5X-EVIDENCE-001 and W5X-STMT-ONBOARD-001 are complete as the bounded browser-first Evidence Vault and statement-reconciliation onboarding baseline, including production-authority projection into queryable Statement proof; broader document-portal, collaboration, and WPF presentation scope remains separate.
+- W6-BTSTUDIO-001 is complete only as a bounded governed evidence loop on the host-composed browser Covered Call path: a budget-bounded canonical Evidence Vault manifest must resolve inside the authenticated tenant/company scope before queueing; the native backtest retains exact strategy-run lineage; and the four Backtest-to-Paper checklist items become ready only from a durable operator/audit approval with keyed source-run evidence and an exact same-scope Paper child. Strategy uses the governed promotion endpoint and Trading consumes the same scoped lineage. `BacktestStudioRunOrchestrator` is not host-composed, the Strategy Designer fails closed without one captured result, and neither is W6 closure evidence. Broader Backtesting Studio UX remains deferred.
 - W7-LIVE-001 is complete as a bounded governance milestone. Broader live execution productization and live portfolio operations are not part of that completion claim.
 - W8-WPF-PARITY-001 is in progress, closing browser-first screen gaps while preserving one shared contract/read-model seam.
 - `W9-ASSET-010` is complete. It established the evidence-backed Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal spine, preserves Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states, and joins acquisition or selected-lot disposal consequences to the immutable journal transaction, with focused contract, spine, storage, endpoint, shared-read-model, and readiness suites as evidence.

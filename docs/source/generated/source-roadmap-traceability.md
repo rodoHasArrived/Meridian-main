@@ -35,6 +35,7 @@ do_not_edit: true
 | `SRC-CONTRACTS` | Meridian contracts | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `SRC-CONTRACTS` | Meridian contracts | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `SRC-CONTRACTS` | Meridian contracts | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `SRC-CONTRACTS` | Meridian contracts | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-CONTRACTS` | Meridian contracts | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 | `SRC-CORE` | Meridian core | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-CORE` | Meridian core | `W2-TRD-001` | Paper trading cockpit reliability |
@@ -123,6 +124,7 @@ do_not_edit: true
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-UI-SERVICES` | UI services | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI-SERVICES` | UI services | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-UI-SERVICES` | UI services | `W3-CONT-001` | Research to paper continuity |
@@ -136,6 +138,7 @@ do_not_edit: true
 | `SRC-UI-SHARED` | UI shared contracts | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `SRC-UI-SHARED` | UI shared contracts | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `SRC-UI-SHARED` | UI shared contracts | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `SRC-UI-SHARED` | UI shared contracts | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-UI-SHARED` | UI shared contracts | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 | `SRC-WPF` | WPF workstation | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-WPF` | WPF workstation | `W4-RPT-001` | Governed report pack readiness |
