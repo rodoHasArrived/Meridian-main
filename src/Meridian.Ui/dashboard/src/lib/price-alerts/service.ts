@@ -1,6 +1,7 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { getLiveQuotesSnapshot } from "@/lib/api";
+import { isAbortError } from "@/lib/api-errors";
 import type { QuotesSnapshotItem, QuotesSnapshotResponse } from "@/types";
 import { describeCondition, shouldTrigger } from "./evaluator";
 import {
@@ -395,10 +396,6 @@ function readPermission(): NotificationPermission | "unsupported" {
     return "unsupported";
   }
   return Notification.permission;
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && (error.name === "AbortError" || /abort/i.test(error.message));
 }
 
 function formatPrice(value: number): string {
