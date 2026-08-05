@@ -1,0 +1,532 @@
+<Page x:Class="Meridian.Wpf.Views.EvidenceWorkbenchPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="{Binding Title}"
+      AutomationProperties.AutomationId="EvidenceWorkbenchPage">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
+        <Grid MaxWidth="1320">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource WorkspaceContextStripStyle}"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="EvidenceWorkbenchActionStrip"
+                    AutomationProperties.Name="{Binding Title}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,18,0">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Subtitle}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,10,0,0">
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding ScoreText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="EvidenceWorkbenchScoreChip" />
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding CompletenessStatusText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="EvidenceWorkbenchStatusChip" />
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding GeneratedText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="EvidenceWorkbenchGeneratedChip" />
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding ProofChainCoverageText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="EvidenceWorkbenchProofCoverageChip" />
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                MinWidth="320"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="EvidenceWorkbenchActionPosture">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Refresh"
+                                    Command="{Binding RefreshCommand}"
+                                    ToolTip="Reload subjects, packet, request lists, and retained documents from the shared workstation API."
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    AutomationProperties.AutomationId="EvidenceWorkbenchRefreshButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Validate"
+                                    Command="{Binding ValidateCommand}"
+                                    ToolTip="Ask the server to re-evaluate packet completeness for the selected subject."
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="EvidenceWorkbenchValidateButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Export manifest"
+                                    Command="{Binding ExportManifestCommand}"
+                                    ToolTip="Freeze and retain an evidence manifest for the selected subject on the server."
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="EvidenceWorkbenchExportButton"
+                                    Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding StatusText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="EvidenceWorkbenchStatusText" />
+                        <TextBlock Text="{Binding ErrorText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   Margin="0,3,0,0"
+                                   Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   AutomationProperties.AutomationId="EvidenceWorkbenchErrorText" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <ItemsControl Grid.Row="1"
+                          ItemsSource="{Binding SummaryItems}"
+                          Margin="0,0,0,14"
+                          AutomationProperties.AutomationId="EvidenceWorkbenchSummaryStrip">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource CardStyle}"
+                                Margin="0,0,10,10">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Label}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding Value}"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="0,4,0,0"
+                                           TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Detail}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchProofChainPanel">
+                        <StackPanel>
+                            <TextBlock Text="Operational Evidence Graph" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ProofChainSummaryText}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,10" />
+                            <ItemsControl ItemsSource="{Binding ProofChainRows}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchProofChainList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <WrapPanel>
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding StatusText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding CoverageText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </WrapPanel>
+                                                <TextBlock Text="{Binding CountsText}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                                <TextBlock Text="{Binding KindsText}"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,2,0,0" />
+                                                <TextBlock Text="{Binding Summary}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchNodePanel">
+                        <StackPanel>
+                            <TextBlock Text="Evidence nodes" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Server-resolved evidence for the selected subject, with freshness and retained artifact counts."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,10" />
+                            <ItemsControl ItemsSource="{Binding NodeRows}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchNodeList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <WrapPanel>
+                                                    <TextBlock Text="{Binding EvidenceId}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding KindText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding StatusText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding FreshnessText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </WrapPanel>
+                                                <TextBlock Text="{Binding Summary}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                                <WrapPanel Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding SourceSystem}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding ArtifactCountText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding WorkItemCountText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchLineagePanel">
+                        <StackPanel>
+                            <TextBlock Text="Lineage" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Evidence-to-evidence relationships retained with the packet."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,10" />
+                            <ItemsControl ItemsSource="{Binding LineageRows}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchLineageList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <WrapPanel>
+                                                    <TextBlock Text="{Binding FromId}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding RelationshipText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="8,0" />
+                                                    <TextBlock Text="{Binding ToId}" FontWeight="SemiBold" />
+                                                </WrapPanel>
+                                                <TextBlock Text="{Binding Reason}"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchRequestListPanel">
+                        <StackPanel>
+                            <TextBlock Text="Evidence Vault request lists" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Open support requests retained by Evidence Vault manifests and indexed by the shared workstation API."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,10" />
+                            <ItemsControl ItemsSource="{Binding RequestListRows}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchRequestListRows">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <WrapPanel>
+                                                    <TextBlock Text="{Binding KindText}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding TargetText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding SeverityText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding OpenRequestCountText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </WrapPanel>
+                                                <TextBlock Text="{Binding Summary}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                                <WrapPanel Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding BlockedOutputsText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding RetainedText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchDocumentPanel">
+                        <StackPanel>
+                            <TextBlock Text="Evidence Vault documents" Style="{StaticResource CardHeaderStyle}" />
+                            <WrapPanel Margin="0,6,0,0">
+                                <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                    <TextBlock Text="{Binding DocumentQueue.SummaryText}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               AutomationProperties.AutomationId="EvidenceWorkbenchDocumentSummary" />
+                                </Border>
+                                <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                    <TextBlock Text="{Binding DocumentQueue.ReadinessText}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               AutomationProperties.AutomationId="EvidenceWorkbenchDocumentReadiness" />
+                                </Border>
+                            </WrapPanel>
+                            <ItemsControl ItemsSource="{Binding DocumentQueue.Documents}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchDocumentRows">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <WrapPanel>
+                                                    <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding ClassificationText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding ExtractionText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding ReviewText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </WrapPanel>
+                                                <WrapPanel Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding SourceText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding OpenRequestCountText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchSubjectPanel">
+                        <StackPanel>
+                            <TextBlock Text="Evidence subjects" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Workflow subjects published by the shared workstation API."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,10" />
+                            <ListBox ItemsSource="{Binding Subjects}"
+                                     SelectedItem="{Binding SelectedSubject, Mode=TwoWay}"
+                                     MaxHeight="420"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     AutomationProperties.AutomationId="EvidenceWorkbenchSubjectList">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,4">
+                                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                            <WrapPanel Margin="0,2,0,0">
+                                                <TextBlock Text="{Binding Workspace}"
+                                                           FontSize="11"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           Margin="0,0,8,0" />
+                                                <TextBlock Text="{Binding SubjectKey}"
+                                                           FontSize="11"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchGapsPanel">
+                        <StackPanel>
+                            <TextBlock Text="Completeness gaps" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Missing evidence" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,2" />
+                            <ItemsControl ItemsSource="{Binding MissingEvidence}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchMissingList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="Stale evidence" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,2" />
+                            <ItemsControl ItemsSource="{Binding StaleEvidence}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchStaleList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="Orphan evidence" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,2" />
+                            <ItemsControl ItemsSource="{Binding OrphanEvidence}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchOrphanList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="SLA breaches" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,2" />
+                            <ItemsControl ItemsSource="{Binding SlaBreaches}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchSlaBreachList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="Warnings" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,2" />
+                            <ItemsControl ItemsSource="{Binding Warnings}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchWarningList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchPacketActionsPanel">
+                        <StackPanel>
+                            <TextBlock Text="Packet actions" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Workflow destinations linked to this evidence packet."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,10" />
+                            <ItemsControl ItemsSource="{Binding PacketActions}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchPacketActionList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Detail}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                                <Button Content="{Binding TargetText}"
+                                                        Command="{Binding DataContext.OpenPacketActionCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        HorizontalAlignment="Left"
+                                                        MinWidth="120"
+                                                        Margin="0,8,0,0"
+                                                        AutomationProperties.AutomationId="{Binding ActionId}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            Visibility="{Binding HasExportResult, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchExportResultPanel">
+                        <StackPanel>
+                            <TextBlock Text="Export result" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ExportResultText}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="EvidenceWorkbenchExportResultText" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>
