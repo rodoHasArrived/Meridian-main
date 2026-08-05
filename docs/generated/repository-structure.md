@@ -7356,6 +7356,7 @@ Meridian-main
 │   │   │   ├── DesktopLaunchArguments.cs
 │   │   │   ├── DesktopLaunchTicketClient.cs
 │   │   │   ├── DropImportService.cs
+│   │   │   ├── EvidenceWorkbenchApiClient.cs
 │   │   │   ├── ExportFormat.cs
 │   │   │   ├── ExportPresetService.cs
 │   │   │   ├── FirstRunService.cs
@@ -7513,6 +7514,7 @@ Meridian-main
 │   │   │   ├── DiagnosticsPageViewModel.cs
 │   │   │   ├── DirectLendingViewModel.cs
 │   │   │   ├── EventReplayViewModel.cs
+│   │   │   ├── EvidenceWorkbenchViewModel.cs
 │   │   │   ├── ExportPresetsViewModel.cs
 │   │   │   ├── FinancialRecordExplorerViewModel.cs
 │   │   │   ├── FundAccountProviderPanelModels.cs
@@ -7665,6 +7667,8 @@ Meridian-main
 │   │   │   ├── EnvironmentDesignerPage.xaml.cs
 │   │   │   ├── EventReplayPage.xaml
 │   │   │   ├── EventReplayPage.xaml.cs
+│   │   │   ├── EvidenceWorkbenchPage.xaml
+│   │   │   ├── EvidenceWorkbenchPage.xaml.cs
 │   │   │   ├── ExportPresetsPage.xaml
 │   │   │   ├── ExportPresetsPage.xaml.cs
 │   │   │   ├── FinancialRecordExplorerPage.xaml
@@ -7859,6 +7863,7 @@ Meridian-main
 │   │   │   │   └── WorkstationLayoutControls.cs
 │   │   │   ├── Models
 │   │   │   │   ├── EvidenceVaultPresentationModels.cs
+│   │   │   │   ├── EvidenceWorkbenchPresentationModels.cs
 │   │   │   │   └── WorkstationPresentationModels.cs
 │   │   │   ├── Primitives
 │   │   │   │   └── WorkstationPrimitiveControls.cs
@@ -9395,6 +9400,7 @@ Meridian-main
 │   │   │   ├── DataSamplingViewModelTests.cs
 │   │   │   ├── DataSourcesViewModelTests.cs
 │   │   │   ├── DirectLendingViewModelTests.cs
+│   │   │   ├── EvidenceWorkbenchViewModelTests.cs
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
