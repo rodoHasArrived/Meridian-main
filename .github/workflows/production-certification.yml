@@ -293,10 +293,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      # The core profile includes validate-agent-definitions.py, which parses agent
-      # frontmatter with PyYAML and exits 2 without it. This job previously installed
-      # nothing at all, so the dependency reached it undeclared.
-      - name: Install docs automation dependencies
+      # The core docs profile includes validate-agent-definitions.py, whose frontmatter parser
+      # requires PyYAML. Keep this lane aligned with the canonical docs validation jobs.
+      - name: Install docs script dependencies
         run: python -m pip install --requirement build/scripts/docs/requirements.txt
 
       - name: Run deterministic documentation automation
