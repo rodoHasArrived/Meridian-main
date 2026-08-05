@@ -476,8 +476,12 @@ internal static class SecurityMasterMapping
             GetRequiredString(json, "currency"),
             ToOption(NormalizeLegDirection(GetFirstOptionalString(json, "direction", "payReceive", "payOrReceive", "side"))),
             ToOption(GetFirstOptionalString(json, "index", "indexName", "referenceIndex")),
-            ToOption(GetOptionalDecimal(json, "fixedRate")),
-            ToOption(GetOptionalDecimal(json, "spreadBps")),
+            // Every leg term reads through the shared reader — including these two, which were left
+            // on the narrow number-only helper when the rest moved across. A fixed rate arriving as
+            // "rate", "couponRate", or the string "0.0425" would otherwise persist as null and the
+            // leg would project at 0%.
+            ToOption(GetFirstOptionalDecimal(json, "fixedRate", "rate", "couponRate")),
+            ToOption(GetFirstOptionalDecimal(json, "spreadBps")),
             ToOption(GetFirstOptionalDecimal(json, "currentIndexRate", "lastFixing", "currentRate", "indexRate")),
             ToOption(GetFirstOptionalDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
             ToOption(GetFirstOptionalString(json, "paymentFrequency", "frequency")),
@@ -531,7 +535,7 @@ internal static class SecurityMasterMapping
         return new FactorScheduleEntry(
                 asOf,
                 factor,
-                ToOption(GetOptionalString(json, "source")),
+                ToOption(GetFirstOptionalString(json, "source")),
                 ToOption(GetFirstOptionalString(json, "evidenceLink", "evidenceId", "evidenceRoute")),
                 ToOption(GetFirstOptionalString(json, "sourceContentHash", "contentHash", "sourceHash")));
     }
@@ -716,13 +720,29 @@ internal static class SecurityMasterMapping
     private static DateOnly? GetFirstOptionalDateOnly(JsonElement json, params string[] propertyNames)
         => SecurityTermReader.ReadDate(json, propertyNames);
 
+    /// <summary>
+    /// Alias-priority boolean read that also accepts a quoted boolean, matching the coercion the
+    /// cash-flow resolver applies. A vendor payload sending <c>"true"</c> as a string is legible to
+    /// the read side; without the same coercion here it would silently persist as <see langword="false"/>
+    /// and a cross-currency leg would lose its principal exchange.
+    /// </summary>
     private static bool? GetFirstOptionalBoolean(JsonElement json, params string[] propertyNames)
     {
         foreach (var propertyName in propertyNames)
         {
-            if (GetOptionalBoolean(json, propertyName) is { } value)
+            if (!SecurityTermReader.TryGetProperty(json, propertyName, out var property))
             {
-                return value;
+                continue;
+            }
+
+            if (property.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                return property.GetBoolean();
+            }
+
+            if (property.ValueKind == JsonValueKind.String && bool.TryParse(property.GetString(), out var parsed))
+            {
+                return parsed;
             }
         }
 
