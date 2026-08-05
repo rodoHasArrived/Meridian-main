@@ -3,8 +3,11 @@
 > **Mode:** Open Exploration, constrained to deepening — the request asks for high-value depth in
 > what the program already does, not new product surfaces. Ideas are filtered through the W9-era
 > scope gate (data confidence, reconciliation, approvals, accounting records, close support,
-> retained evidence, workflow controls, governed reporting) and the active lanes
-> (`W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W7-LIVE-001`, `W8-WPF-PARITY-001`).
+> retained evidence, workflow controls, governed reporting) and the lanes active at the
+> snapshot date (`W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W7-LIVE-001`,
+> `W8-WPF-PARITY-001`). As of the 2026-08-03 registry snapshot the first three are completed
+> baseline rows; WPF parity and browser consolidation (`W8-UX-CONSOL-001`) are the active
+> lanes, with the W9 and W10 slates behind them.
 >
 > **Grounding:** a fresh code-depth survey of eight subsystems (risk, reconciliation, ledger/NAV,
 > order management, portfolio surfaces, alerting, strategy lifecycle, backfill) plus direct reads
@@ -631,11 +634,14 @@ depth these ideas add.
 
 ## Appendix: Session Ledger Entry
 
-The brainstorm skill's session ledger lives at
-`.claude/skills/meridian-brainstorm/brainstorm-history.jsonl`, which sits outside the `PR1`
-docs phase scope enforced on this pull request by the roadmap-source-docs gate. To keep the
-dedup record without widening the phase, the session's ledger line is preserved here; append it
-to the ledger verbatim from a change that is not phase-constrained:
+Two tracked copies of the brainstorm session ledger exist in the current tree:
+`.claude/skills/meridian-brainstorm/brainstorm-history.jsonl` (complete — sixteen sessions
+through 2026-07-28) and `.agents/skills/meridian-brainstorm/brainstorm-history.jsonl` (a stale
+fork holding seven sessions through 2026-03-27; each tree's `SKILL.md` names its own copy).
+Both sit outside the `PR1` docs phase scope enforced on this pull request by the
+roadmap-source-docs gate. To keep the dedup record without widening the phase, the session's
+ledger line is preserved here; append it verbatim to the maintained ledger — and reconcile the
+stale `.agents/` fork while there — from a change that is not phase-constrained:
 
 ```json
 {"session_date": "2026-07-28", "mode": "Open Exploration (deepening-constrained)", "themes": ["portfolio-aware risk engine (exposure aggregation, severity semantics, Escalate-to-approval routing, honest guardrail rail)", "unified alerting spine (SLO evaluation loop, dispatcher DI wiring, dual-stack merge, shared alert inbox)", "promotion contract monitor (wire dead PromotionCriteria knobs, live-vs-paper drift, auto-demotion records)", "reconciliation matching floor (best-match assignment, split matching, IAccountingCalendar implementation, FX contract unification)", "break intelligence (recurrence fingerprints, operator-decision match-suggestion learning, tolerance amendment proposals)", "approval matrix enforcement binding (route filter, governed policy self-changes, delegation and escalation timers)", "period evidence-completeness certificate (close data gate over gaps, statements, recon freshness, evidence linkage)", "statement coverage calendar with missing-statement chase", "closed-loop backfill (market-calendar sweeps, durable queue, post-remediation verification)", "honest marks (mark-source provenance, stale-mark flagging on position surfaces)", "order lifecycle state machine (legal transitions, event history, stale-state detection)"], "ideas_count": 11, "document_updated": "docs/product/functionality-deepening-brainstorm-2026-07.md", "notes": "Deepening-of-existing-functionality session grounded in a fresh 8-subsystem code-depth survey. Central finding: 'declared but dead' seams. All 11 ideas positioned to compose with (not duplicate) the W9 slate. Avoided all 15 prior-session theme sets plus data-provider-accounting brainstorm lanes, adversarial-review items, and cash-ladder blueprint. Platform bets: alerting spine and approval-matrix enforcement. Sequencing: truth quick wins -> spine -> floors -> loops -> break intelligence."}
