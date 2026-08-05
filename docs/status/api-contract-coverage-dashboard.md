@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 29.9% |
+| Weighted score | 30.1% |
 | Endpoint coverage | 41.2% |
-| Workstation contract coverage | 13.0% |
+| Workstation contract coverage | 13.5% |
 | Endpoints documented | 254 / 617 |
-| Workstation contracts documented | 118 / 906 |
+| Workstation contracts documented | 122 / 906 |
 
 ## Endpoint Coverage
 
@@ -1553,7 +1553,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 363 mapped endpoint gap(s).
-- Document or intentionally suppress 788 workstation contract gap(s).
+- Document or intentionally suppress 784 workstation contract gap(s).
 
 ---
 
