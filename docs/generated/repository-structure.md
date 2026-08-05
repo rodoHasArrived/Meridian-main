@@ -7538,6 +7538,7 @@ Meridian-main
 │   │   │   ├── MainWindowViewModel.cs
 │   │   │   ├── MessagingHubViewModel.cs
 │   │   │   ├── NotificationCenterViewModel.cs
+│   │   │   ├── OperatorReadinessConsoleViewModel.cs
 │   │   │   ├── OptionsViewModel.cs
 │   │   │   ├── OrderBookHeatmapViewModel.cs
 │   │   │   ├── OrderBookViewModel.cs
@@ -7709,6 +7710,8 @@ Meridian-main
 │   │   │   ├── MessagingHubPage.xaml.cs
 │   │   │   ├── NotificationCenterPage.xaml
 │   │   │   ├── NotificationCenterPage.xaml.cs
+│   │   │   ├── OperatorReadinessConsolePage.xaml
+│   │   │   ├── OperatorReadinessConsolePage.xaml.cs
 │   │   │   ├── OptionsPage.xaml
 │   │   │   ├── OptionsPage.xaml.cs
 │   │   │   ├── OrderBookHeatmapControl.xaml
@@ -7864,6 +7867,7 @@ Meridian-main
 │   │   │   ├── Models
 │   │   │   │   ├── EvidenceVaultPresentationModels.cs
 │   │   │   │   ├── EvidenceWorkbenchPresentationModels.cs
+│   │   │   │   ├── OperatorReadinessConsolePresentationModels.cs
 │   │   │   │   └── WorkstationPresentationModels.cs
 │   │   │   ├── Primitives
 │   │   │   │   └── WorkstationPrimitiveControls.cs
@@ -9412,6 +9416,7 @@ Meridian-main
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
+│   │   │   ├── OperatorReadinessConsoleViewModelTests.cs
 │   │   │   ├── OrderBookHeatmapViewModelTests.cs
 │   │   │   ├── OrderBookViewModelTests.cs
 │   │   │   ├── PageActivationLifetimeContractTests.cs

@@ -253,6 +253,12 @@
           "notes": "Capture the Home screen from the registered WPF shell catalog."
         },
         {
+          "title": "Operator readiness",
+          "pageTag": "OperatorReadinessConsole",
+          "captureName": "wpf-operator-readiness-console",
+          "notes": "Capture the Operator readiness screen from the registered WPF shell catalog."
+        },
+        {
           "title": "Strategy Workspace",
           "pageTag": "StrategyShell",
           "captureName": "wpf-strategy-shell",

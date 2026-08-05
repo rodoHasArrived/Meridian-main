@@ -55,33 +55,30 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | strategy-designer-screen | `Views/QuantScriptPage.xaml` + `Views/BacktestPage.xaml` | Partial — authoring present, no designer canvas |
 | operations-continuity-screen | `Services/OperationsControlCenterClient.cs` (surfaced as a Settings tab) | **Gap-leaning** — no dedicated page |
 | evidence-workbench-screen (canonical mount `/reporting/evidence` per `W8-UX-CONSOL-001`; former `/accounting/evidence` and `/data/evidence` mounts redirect there) | `Views/EvidenceWorkbenchPage.xaml` + `ViewModels/EvidenceWorkbenchViewModel.cs` (Wave P1, delivered 2026-08-05) | Partial — subjects, packet completeness, proof chain, lineage, vault request lists/documents, validate, and manifest export ship over the shared evidence endpoints; document intake and reviewer accept/reject remain browser-first |
-| operator-readiness-console | `Views/DashboardPage.xaml` / `Views/SystemHealthPage.xaml` (tangential) | **Gap** — no cross-lane readiness console |
+| operator-readiness-console | `Views/OperatorReadinessConsolePage.xaml` + `ViewModels/OperatorReadinessConsoleViewModel.cs` (Wave P2, delivered 2026-08-05) | Partial — cross-lane gates, session/trust/promotion/run/break panels, and the prioritized operator work-item queue ship over the shared readiness, inbox, reconciliation, and run-summary seams; browser-only extras (per-endpoint API source strip, fund-account switcher, next-action hero) remain browser-first |
 | operations-record-release-screen | none (adjacent: `Views/RetentionAssurancePage.xaml`, `Views/ArchiveHealthPage.xaml`) | **Gap** — no record-release / publish-gating page |
 | covered-call-screen | `Views/OptionsPage.xaml` (chain viewer only) | **Gap** — no covered-call writing/roll workflow |
 | strategy-formula-workbench (tab of quant-lab-screen at `/strategy/quant-lab?view=formulas`; consolidated per `W8-UX-CONSOL-001`) | `Views/QuantScriptPage.xaml` | Not a gap — the web surface is a placeholder tab inside Quant Lab |
 
 ## True Gaps (ranked by operator centrality)
 
-1. **operator-readiness-console** — the operator's cross-lane daily cockpit that rolls up readiness
-   across strategy, trading, data, accounting, and reporting. WPF `DashboardPage`/`SystemHealthPage`
-   are only tangential. Web source: `screens/operator-readiness-console.tsx` + `.view-model.ts`.
-2. **operations-record-release-screen** — period-close record release / publish gating with readiness
+1. **operations-record-release-screen** — period-close record release / publish gating with readiness
    and evidence gates. No WPF page. Web source: `screens/operations-record-release-screen.tsx` + `.view-model.ts`.
-3. **operations-continuity-screen** — cross-lane operational continuity / approval-policy /
+2. **operations-continuity-screen** — cross-lane operational continuity / approval-policy /
    close-calendar. WPF surfaces only a fraction through `OperationsControlCenterClient` as a Settings
    tab; no dedicated page. Web source: `screens/operations-continuity-screen.tsx` + `.view-model.ts`.
-4. **covered-call-screen** — a staged covered-call income-strategy workflow (chain preview, trade
+3. **covered-call-screen** — a staged covered-call income-strategy workflow (chain preview, trade
    timeline, run history). WPF `OptionsPage` is a read-only chain viewer. Web source:
    `screens/covered-call-screen.tsx` + `.view-model.ts`.
-5. **data-operations-assurance-workstreams** — add Data workspace pages for the browser-first
+4. **data-operations-assurance-workstreams** — add Data workspace pages for the browser-first
    Ingestion Operations Center and Storage & Data Assurance. Consume
    `DataOperationsAssuranceDtos` and the shared workstation endpoints; do not reconstruct job
    transitions, maintenance permissions, preview fingerprints, or assurance summaries in WPF.
-6. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
+5. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
    WPF covers authoring via `QuantScriptPage`/`BacktestPage` but has no designer canvas.
 
-Closed gaps: **evidence-workbench-screen** was Wave P1 and shipped 2026-08-05 — see the matrix row
-above and the delivery note under Wave P1.
+Closed gaps: **evidence-workbench-screen** (Wave P1) and **operator-readiness-console** (Wave P2)
+shipped 2026-08-05 — see the matrix rows above and the delivery notes under each wave.
 
 ## Closure Sequence
 
@@ -111,12 +108,23 @@ view model must consume the same shared read model the browser screen consumes.
 
 ### Wave P2 — Operator Readiness Console
 
-- Add `Views/OperatorReadinessConsolePage.xaml` + view model that aggregates the shared readiness
-  read models already used by the Trading and Strategy shells
-  (`TradingWorkspaceShellPresentationService`, operator-inbox client) into one cross-lane console
-  matching `operator-readiness-console.view-model.ts`.
-- Register under a cross-workspace / Home surface; add command-palette entry.
-- Tests: readiness aggregation and route-to-workbench resolution.
+**Delivered 2026-08-05.**
+
+- `Views/OperatorReadinessConsolePage.xaml` + `ViewModels/OperatorReadinessConsoleViewModel.cs`
+  aggregate the shared server-owned readiness contracts — `TradingOperatorReadinessService`
+  (in-process, same contract as `/api/workstation/trading/readiness`), the operator-inbox client,
+  the reconciliation break-queue client, and `StrategyRunWorkspaceService` run summaries — into one
+  cross-lane console matching `operator-readiness-console.view-model.ts`. Sources that are absent or
+  fail surface per-panel error text instead of empty-looking rows, and refreshes use the same
+  supersede-revision cancellation pattern as the Wave P1 Evidence Workbench.
+- Registered on the Home/Launchpad surface (`HomeFeatureModule`, strategy workspace, order -5) as
+  "Operator readiness" with a default command-palette entry; each work item routes to its owning
+  workspace via registered target tags with kind- and workspace-based fallbacks.
+- Tests: `Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs` (readiness
+  aggregation, per-panel degradation, work-item route resolution, supersede race) plus updated
+  `HomeFeatureModuleTests`.
+- Follow-up (tracked, not blocking P2): fund-account scoping via the operating-context resolver,
+  the per-endpoint API source strip, and the next-action hero remain browser-first.
 
 ### Wave P3 — Operations Continuity + Record Release
 
