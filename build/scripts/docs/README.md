@@ -464,10 +464,13 @@ An allow-list naming *only* MCP entries is normally an error, since which server
 property of the host session and the grant would resolve to nothing without them. Declaring
 `mcpServers` lifts that **per server**: `tools: mcp__playwright` alongside `mcpServers: [playwright]`
 resolves, while granting `mcp__github` against that same declaration does not. Each `mcpServers`
-entry must be a server name or a keyed inline definition **whose value is a server config mapping**;
-anything else is reported rather than counted as a declaration. That last clause carries weight
-beyond tidiness — the exemption is only as sound as the declaration it trusts, so `- slack: nope`
-must not buy an MCP-only grant a pass the host would not honour.
+entry must be a server name or a keyed inline definition **whose value is a server config mapping
+declaring a transport** — `command` for stdio, `url` for http and sse. Anything else is reported
+rather than counted as a declaration. That clause carries weight beyond tidiness: the exemption is
+only as sound as the declaration it trusts, so neither `- slack: nope` nor `- slack: {}` may buy an
+MCP-only grant a pass the host would not honour. The transport keys are the whole of the check —
+every documented remote example also pairs `url` with `type`, but the reference never says `type` is
+required, and guessing at the rest of the schema would reject definitions that work.
 
 `WebFetch(domain:...)` scopes are matched with domain semantics rather than the command glob. A
 leading `*.` matches subdomains at any depth but not the bare domain, a bare `*` matches everything,

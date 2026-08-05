@@ -133,6 +133,18 @@ KNOWN_TOOLS = frozenset(
 # server, and an unanchored glob there is skipped with a warning rather than honoured.
 MCP_PATTERN = re.compile(r"^mcp__[A-Za-z0-9_.-]+(?:__[A-Za-z0-9_.\-*]+)?$")
 MCP_ALL_SERVERS = "mcp__*"
+
+# What an inline server config must carry to be reachable at all. Every server example in
+# https://code.claude.com/docs/en/mcp has one or the other: `command` for stdio, `url` for
+# http and sse. A config with neither cannot connect under any reading, so counting it as a
+# declaration would exempt an MCP-only grant the host resolves to nothing.
+#
+# Deliberately *only* the transport. Every documented remote example also pairs `url` with
+# `type`, but the reference never states that `type` is required, and a validator that
+# guesses at the rest of the schema rejects definitions that work - the same over-tightening
+# that made the first version of `KNOWN_FIELDS` block legitimate agents. Reject what
+# provably cannot work; leave the rest to the host.
+MCP_TRANSPORT_KEYS = frozenset({"command", "url"})
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TOOL_FIELDS = ("tools", "disallowedTools")
 ALLOW_LIST_FIELD = "tools"
@@ -604,14 +616,20 @@ def _declared_mcp_servers(value: object) -> tuple[set[str], list[str]]:
             key, config = next(iter(item.items()))
             if not isinstance(key, str) or not key.strip():
                 malformed.append(f"entry key {key!r} is not a server name")
-            elif isinstance(config, dict):
-                names.add(key.strip())
-            else:
+            elif not isinstance(config, dict):
                 malformed.append(
                     f"entry '{key}' has {_render_value(config)} where an inline "
                     "definition needs a server config mapping; drop the colon to "
                     "reference an already configured server by name"
                 )
+            elif not MCP_TRANSPORT_KEYS & config.keys():
+                malformed.append(
+                    f"entry '{key}' declares no transport; an inline definition needs "
+                    f"{' or '.join(sorted(MCP_TRANSPORT_KEYS))} so the host can reach the "
+                    "server"
+                )
+            else:
+                names.add(key.strip())
             continue
         malformed.append(
             f"entry {item!r} is neither a server name nor an inline server definition"

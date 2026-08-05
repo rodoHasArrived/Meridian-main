@@ -564,6 +564,39 @@ class ValidateAgentTests(unittest.TestCase):
         self.assertIn("needs a server config mapping", errors)
         self.assertIn("names only MCP entries", errors)
 
+    def test_inline_mcp_server_config_must_declare_a_transport(self) -> None:
+        # A mapping is not enough: `{}` — or any config with neither `command` nor `url` —
+        # cannot reach a server, so counting it as a declaration would exempt a grant the
+        # host resolves to nothing.
+        for config in ("{}", "{type: http}", "{args: [--port, '8080']}"):
+            with self.subTest(config=config):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\n"
+                    f"tools: mcp__slack\nmcpServers:\n  - slack: {config}",
+                )
+
+                errors = " | ".join(module.validate_agent(path))
+
+                self.assertIn("declares no transport", errors)
+                self.assertIn("names only MCP entries", errors)
+
+    def test_inline_mcp_server_accepts_both_documented_transports(self) -> None:
+        # The boundary the check must not cross. `url` is accepted without `type` — every
+        # documented remote example pairs them, but the reference never says `type` is
+        # required, and rejecting a config that works is the more damaging error.
+        for config in ("{command: slack-mcp}", "{url: 'https://example.com/mcp'}"):
+            with self.subTest(config=config):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\n"
+                    f"tools: mcp__slack\nmcpServers:\n  - slack: {config}",
+                )
+
+                self.assertEqual([], module.validate_agent(path))
+
     def test_inline_mcp_server_with_no_value_is_reported_as_empty(self) -> None:
         # `- slack:` with nothing under it is an inline definition missing its config,
         # not a name reference - the name form has no colon. Say which one it is, since
