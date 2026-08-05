@@ -442,56 +442,60 @@ def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
         if allow_scope is None:
             # A scoped deny narrows an unscoped grant rather than removing it.
             continue
-        if _scope_covers(deny_scope, allow_scope):
+        if _scope_covers(allow_head, deny_scope, allow_scope):
             return True
     return False
 
 
-def _scope_prefix(scope: str) -> tuple[str, bool, bool]:
-    """Split a permission scope into (command prefix, has wildcard, word-bounded).
+# Tools whose parenthesised scope is a *command* rather than a parameter. For these the
+# trailing `:*` suffix is an alternative spelling of a trailing wildcard. For every other
+# tool `param:value` is a parameter match - `Agent(model:opus)`, `WebFetch(domain:*)` -
+# and the colon is part of the pattern, not a separator to strip. The permission reference
+# is explicit that parameter matching cannot target a tool's primary content field, which
+# is exactly `command` for these two.
+COMMAND_SCOPED_TOOLS = frozenset({"Bash", "PowerShell"})
 
-    Two wildcard spellings are in use and both appear in this repository's own
-    `.claude/settings.local.json`: the `command:*` form Claude Code writes when a command
-    is approved permanently (`Bash(cat:*)`, `Bash(gh:*)`), and the glob form the
-    permission reference documents (`Bash(dotnet test *)`, `Bash(gh pr *)`). They mean the
-    same thing, so they have to normalise to the same prefix or a deny written in one
-    spelling silently fails to cancel a grant written in the other.
 
-    The third element records the word boundary. Per
-    https://code.claude.com/docs/en/permissions, a `*` preceded by a space "enforces a
-    word boundary, requiring the prefix to be followed by a space or end-of-string" -
-    `Bash(ls *)` matches `ls -la` but not `lsof`, while `Bash(ls*)` matches both. The
-    `command:*` form is bounded for the same reason: it names a command, not a substring.
+def _scope_regex(head: str, scope: str) -> re.Pattern[str]:
+    """Compile a permission scope into a matcher.
+
+    Wildcards may appear anywhere - the reference documents `Bash(git * main)` and
+    `Bash(* install)` alongside the trailing form - so this is a glob, not a prefix test.
+    An earlier version only recognised a trailing `*`, which silently treated
+    `Bash(git * main)` as an exact command and let it cancel nothing.
+
+    Two spellings mean the same thing at the end of a *command* scope: `Bash(ls *)` and
+    `Bash(ls:*)` match identically. The dialog writes the space-separated form when you
+    choose "Yes, don't ask again"; `:*` is the equivalent suffix, recognised only at the
+    end - in `Bash(git:* push)` the colon is literal.
+
+    Both trailing forms carry a word boundary: `Bash(ls *)` matches `ls -la` but not
+    `lsof`, while `Bash(ls*)` without the space matches both.
     """
-    if scope.endswith(":*"):
-        return scope[:-2].strip(), True, True
+    if head in COMMAND_SCOPED_TOOLS and scope.endswith(":*"):
+        scope = scope[:-2].rstrip() + " *"
+
     if scope.endswith(" *"):
-        return scope[:-2].strip(), True, True
-    if scope.endswith("*"):
-        return scope[:-1], True, False
-    return scope, False, False
+        # Word-bounded: the prefix alone, or the prefix followed by whitespace.
+        return re.compile(re.escape(scope[:-2].rstrip()) + r"(?:\s.*)?\Z", re.DOTALL)
+
+    return re.compile("".join(
+        ".*" if part == "*" else re.escape(part)
+        for part in re.split(r"(\*)", scope)
+    ) + r"\Z", re.DOTALL)
 
 
-def _scope_covers(deny_scope: str, allow_scope: str) -> bool:
+def _scope_covers(head: str, deny_scope: str, allow_scope: str) -> bool:
     """True when a deny scope subsumes an allow scope.
 
-    The earlier version compared raw frontmatter strings, so `Bash(git:*)` did not cancel
+    An earlier version compared raw frontmatter strings, so `Bash(git:*)` did not cancel
     `Bash(git push:*)`: `"git push:*".startswith("git:")` is False. That reported an
     effectively empty grant as surviving - the exact defect class this validator exists to
     catch, in the validator itself.
     """
     if deny_scope == allow_scope:
         return True
-    deny_prefix, deny_wild, deny_bounded = _scope_prefix(deny_scope)
-    if not deny_wild:
-        # An exact deny removes only that one command.
-        return False
-    allow_prefix, _, _ = _scope_prefix(allow_scope)
-    if not deny_bounded:
-        return allow_prefix.startswith(deny_prefix)
-    # Bounded: the allow must be the same command or a sub-command of it, never a
-    # different command that merely shares a leading substring.
-    return allow_prefix == deny_prefix or allow_prefix.startswith(deny_prefix + " ")
+    return _scope_regex(head, deny_scope).match(allow_scope) is not None
 
 
 def _is_near_miss(candidate: str, known: str) -> bool:

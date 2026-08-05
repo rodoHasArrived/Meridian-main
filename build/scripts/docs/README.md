@@ -452,12 +452,23 @@ Four MCP forms are accepted — `mcp__server`, `mcp__server__tool`, `mcp__server
 wildcards such as `mcp__github__get_*`. The all-server `mcp__*` is valid only in `disallowedTools`,
 because an allow rule containing it is skipped with a warning rather than honoured.
 
-Parenthesised scopes such as `Bash(git diff:*)` are supported, in both spellings that appear in
-practice: the `command:*` form Claude Code writes when a command is approved permanently, and the
-`command *` glob form the permission reference documents. They normalise to the same command prefix,
-so a deny written in either spelling cancels a grant written in the other. Coverage respects the
-documented word boundary, so `Bash(git:*)` cancels `Bash(git push:*)` but leaves `Bash(gitfoo:*)`
-alone — the same rule that makes `Bash(ls *)` match `ls -la` but not `lsof`.
+Parenthesised scopes such as `Bash(git diff:*)` are supported, and coverage between a deny and an
+allow is evaluated as a **glob**, not a prefix test. Wildcards may appear anywhere, so
+`Bash(git * main)` and `Bash(* install)` behave as documented rather than being mistaken for exact
+commands.
+
+For `Bash` and `PowerShell`, a trailing `:*` is an equivalent spelling of a trailing wildcard —
+`Bash(ls:*)` matches what `Bash(ls *)` matches. The permission dialog writes the space-separated
+form when you choose "Yes, don't ask again"; `:*` is the alternative suffix, and it is only
+recognised at the end, so the colon in `Bash(git:* push)` is literal. Both trailing forms carry the
+documented word boundary, which is why `Bash(git:*)` cancels `Bash(git push:*)` but leaves
+`Bash(gitfoo:*)` alone — the same rule that makes `Bash(ls *)` match `ls -la` but not `lsof`.
+
+On every other tool `param:value` is a **parameter** match rather than a command prefix, so
+`WebFetch(domain:*)` cancels `WebFetch(domain:example.com)` and `Agent(model:*)` cancels
+`Agent(model:opus)`. Treating that colon as a command separator would have left those denies
+matching nothing. Parameter matching cannot target a tool's primary content field, which is exactly
+why the `:*` command alias is confined to the two shell tools.
 
 The checks fail closed by design: a YAML sequence, an empty or punctuation-only value, an
 MCP-only allow-list, a misspelled permission key, an unterminated scalar, and a missing or empty

@@ -809,6 +809,70 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertTrue(any("cancels every entry" in error for error in errors), errors)
 
+    def test_deny_wildcard_in_the_middle_cancels(self) -> None:
+        # The reference documents `Bash(git * main)` and `Bash(* install)`; wildcards may
+        # appear at any position. An earlier version only recognised a trailing `*`, so a
+        # mid-string deny was treated as an exact command and cancelled nothing.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(git push origin main)\ndisallowedTools: Bash(git * main)",
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_deny_wildcard_at_the_start_cancels(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(npm install)\ndisallowedTools: Bash(* install)",
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_parameter_wildcard_cancels_on_a_non_shell_tool(self) -> None:
+        # `Tool(param:value)` is a parameter match on any tool, and its value supports `*`.
+        # Treating that colon as the shell command-prefix alias left `WebFetch(domain:*)`
+        # matching nothing, because the prefixes became `domain` and `domain:example.com`.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: WebFetch(domain:example.com)\ndisallowedTools: WebFetch(domain:*)",
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_parameter_deny_for_a_different_parameter_does_not_cancel(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Read, Agent(model:opus)\ndisallowedTools: Agent(isolation:*)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_colon_star_is_only_a_command_alias_at_the_end(self) -> None:
+        # "In a pattern like `Bash(git:* push)`, the colon is treated as a literal
+        # character and won't match git commands" - so this grant survives.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(git:* push)\ndisallowedTools: Bash(git:*)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
     def test_word_boundary_keeps_a_similarly_named_command_alive(self) -> None:
         # Per the permission reference, a space before `*` enforces a word boundary:
         # `Bash(ls *)` matches `ls -la` but not `lsof`. A naive prefix fix would swallow
