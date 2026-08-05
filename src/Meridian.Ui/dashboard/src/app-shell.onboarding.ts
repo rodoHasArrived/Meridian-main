@@ -1,5 +1,5 @@
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
-import type { OnboardingState } from "@/lib/onboarding";
+import { DEFAULT_ONBOARDING_JOURNEY_ID, type OnboardingState } from "@/lib/onboarding";
 
 // Declarative "first 10 minutes" tour: a short (<=5), route-anchored path over
 // real screens. Each step is a genuine action the operator takes on the live UI;
@@ -17,40 +17,61 @@ export interface OnboardingStepDefinition {
   actionLabel: string;
 }
 
-export const ONBOARDING_TOUR_STEPS: readonly OnboardingStepDefinition[] = [
+export interface OnboardingJourneyDefinition {
+  id: string;
+  label: string;
+  description: string;
+  steps: readonly OnboardingStepDefinition[];
+}
+
+export const ONBOARDING_JOURNEYS: readonly OnboardingJourneyDefinition[] = [
   {
-    id: "quote",
-    title: "Watch a live quote",
-    description: "Open the quotes lane and watch a symbol stream in real time.",
-    href: workstationRouteWithQuery("dataQuotes", { symbol: "AAPL" }),
-    matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes,
-    actionLabel: "Open quotes"
+    id: DEFAULT_ONBOARDING_JOURNEY_ID,
+    label: "Financial operations",
+    description: "Move source records through validation, reconciliation, approval, and reporting.",
+    steps: [
+      { id: "financial-operations:import", title: "Import source records", description: "Bring a statement into the governed intake workflow.", href: WORKSTATION_ROUTE_CATALOG.accountingStatementImport, matchPath: WORKSTATION_ROUTE_CATALOG.accountingStatementImport, actionLabel: "Open statement import" },
+      { id: "financial-operations:validate", title: "Validate the ledger", description: "Trace balances and inspect the records behind them.", href: WORKSTATION_ROUTE_CATALOG.accountingLedger, matchPath: WORKSTATION_ROUTE_CATALOG.accountingLedger, actionLabel: "Open ledger" },
+      { id: "financial-operations:reconcile", title: "Reconcile breaks", description: "Match source activity and investigate unresolved differences.", href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, actionLabel: "Open reconciliation" },
+      { id: "financial-operations:approve", title: "Review approvals", description: "Resolve controlled decisions before downstream publication.", href: WORKSTATION_ROUTE_CATALOG.accountingApprovals, matchPath: WORKSTATION_ROUTE_CATALOG.accountingApprovals, actionLabel: "Open approvals" },
+      { id: "financial-operations:report", title: "Review report packs", description: "Validate the governed output and its supporting evidence.", href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks, matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks, actionLabel: "Open report packs" }
+    ]
   },
   {
-    id: "backtest",
-    title: "Run a backtest",
-    description: "Take a strategy through the lab and see how it would have performed.",
-    href: WORKSTATION_ROUTE_CATALOG.strategyLab,
-    matchPath: WORKSTATION_ROUTE_CATALOG.strategyLab,
-    actionLabel: "Open strategy lab"
+    id: "trading-portfolio",
+    label: "Trading and portfolio",
+    description: "Establish data trust, review readiness, and follow activity into portfolio records.",
+    steps: [
+      { id: "trading-portfolio:quotes", title: "Check market data", description: "Confirm a live quote and the provider behind it.", href: workstationRouteWithQuery("dataQuotes", { symbol: "AAPL" }), matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes, actionLabel: "Open quotes" },
+      { id: "trading-portfolio:providers", title: "Review provider posture", description: "Check connectivity and data-quality evidence.", href: WORKSTATION_ROUTE_CATALOG.dataProviders, matchPath: WORKSTATION_ROUTE_CATALOG.dataProviders, actionLabel: "Open providers" },
+      { id: "trading-portfolio:trading", title: "Open the trading workspace", description: "Review current readiness and controlled actions.", href: WORKSTATION_ROUTE_CATALOG.trading, matchPath: WORKSTATION_ROUTE_CATALOG.trading, actionLabel: "Open trading" },
+      { id: "trading-portfolio:portfolio", title: "Trace portfolio impact", description: "Follow activity into positions and portfolio evidence.", href: WORKSTATION_ROUTE_CATALOG.portfolio, matchPath: WORKSTATION_ROUTE_CATALOG.portfolio, actionLabel: "Open portfolio" }
+    ]
   },
   {
-    id: "ledger",
-    title: "Trace P&L to the ledger",
-    description: "Follow a result into the accounting ledger — every number ties back.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
-    matchPath: WORKSTATION_ROUTE_CATALOG.accountingLedger,
-    actionLabel: "Open ledger"
+    id: "strategy-research",
+    label: "Strategy and research",
+    description: "Design, test, and promote a strategy through governed evidence gates.",
+    steps: [
+      { id: "strategy-research:design", title: "Design a strategy", description: "Start with a transparent, reviewable strategy definition.", href: WORKSTATION_ROUTE_CATALOG.strategyDesigner, matchPath: WORKSTATION_ROUTE_CATALOG.strategyDesigner, actionLabel: "Open designer" },
+      { id: "strategy-research:test", title: "Run the strategy lab", description: "Evaluate the strategy with reproducible inputs.", href: WORKSTATION_ROUTE_CATALOG.strategyLab, matchPath: WORKSTATION_ROUTE_CATALOG.strategyLab, actionLabel: "Open strategy lab" },
+      { id: "strategy-research:promote", title: "Review promotion gates", description: "Inspect evidence before advancing a strategy.", href: WORKSTATION_ROUTE_CATALOG.strategyPromotions, matchPath: WORKSTATION_ROUTE_CATALOG.strategyPromotions, actionLabel: "Open promotions" }
+    ]
   },
   {
-    id: "connect",
-    title: "Connect your first provider",
-    description: "Wire up a data provider to replace the sample feed with your own.",
-    href: WORKSTATION_ROUTE_CATALOG.dataProviders,
-    matchPath: WORKSTATION_ROUTE_CATALOG.dataProviders,
-    actionLabel: "Open providers"
+    id: "administration",
+    label: "Administration",
+    description: "Configure providers, access, accounting systems, and diagnostic recovery.",
+    steps: [
+      { id: "administration:providers", title: "Configure providers", description: "Connect and verify an operational data provider.", href: WORKSTATION_ROUTE_CATALOG.settingsProviders, matchPath: WORKSTATION_ROUTE_CATALOG.settingsProviders, actionLabel: "Open provider settings" },
+      { id: "administration:access", title: "Review access", description: "Inspect the controls governing operator access.", href: WORKSTATION_ROUTE_CATALOG.settingsAccess, matchPath: WORKSTATION_ROUTE_CATALOG.settingsAccess, actionLabel: "Open access settings" },
+      { id: "administration:accounting", title: "Connect accounting systems", description: "Configure the governed downstream accounting connection.", href: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems, matchPath: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems, actionLabel: "Open accounting systems" },
+      { id: "administration:diagnostics", title: "Learn recovery diagnostics", description: "Find actionable health and recovery evidence.", href: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics, matchPath: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics, actionLabel: "Open diagnostics" }
+    ]
   }
 ] as const;
+
+export const ONBOARDING_TOUR_STEPS: readonly OnboardingStepDefinition[] = ONBOARDING_JOURNEYS[0].steps;
 
 export type OnboardingStepStatus = "complete" | "active" | "upcoming";
 
@@ -80,6 +101,10 @@ export interface OnboardingTourViewModel {
   progressFraction: number;
   allComplete: boolean;
   dismissed: boolean;
+  journeys: readonly Pick<OnboardingJourneyDefinition, "id" | "label" | "description">[];
+  journeyId: string;
+  journeyLabel: string;
+  journeyDescription: string;
 }
 
 function normalizePath(pathname: string): string {
@@ -90,30 +115,32 @@ function normalizePath(pathname: string): string {
 }
 
 /** The step whose route matches the current location, or null. */
-export function resolveVisitedStepId(pathname: string): string | null {
+export function resolveVisitedStepId(pathname: string, journeyId = DEFAULT_ONBOARDING_JOURNEY_ID): string | null {
   const path = normalizePath(pathname);
-  return ONBOARDING_TOUR_STEPS.find((step) => step.matchPath === path)?.id ?? null;
+  return resolveOnboardingJourney(journeyId).steps.find((step) => step.matchPath === path)?.id ?? null;
 }
 
 export function buildOnboardingTourViewModel({
   pathname,
   state,
-  steps = ONBOARDING_TOUR_STEPS
+  steps
 }: {
   pathname: string;
   state: OnboardingState;
   steps?: readonly OnboardingStepDefinition[];
 }): OnboardingTourViewModel {
+  const journey = resolveOnboardingJourney(state.journeyId);
+  const selectedSteps = steps ?? journey.steps;
   const path = normalizePath(pathname);
   const completedSet = new Set(state.completedStepIds);
   const activeIndex = Math.max(
     0,
-    steps.findIndex((step) => !completedSet.has(step.id))
+    selectedSteps.findIndex((step) => !completedSet.has(step.id))
   );
-  const completedCount = steps.reduce((count, step) => (completedSet.has(step.id) ? count + 1 : count), 0);
-  const allComplete = completedCount === steps.length;
+  const completedCount = selectedSteps.reduce((count, step) => (completedSet.has(step.id) ? count + 1 : count), 0);
+  const allComplete = completedCount === selectedSteps.length;
 
-  const stepViewModels: OnboardingStepViewModel[] = steps.map((step, index) => {
+  const stepViewModels: OnboardingStepViewModel[] = selectedSteps.map((step, index) => {
     const complete = completedSet.has(step.id);
     const status: OnboardingStepStatus = complete ? "complete" : index === activeIndex ? "active" : "upcoming";
     return {
@@ -133,10 +160,18 @@ export function buildOnboardingTourViewModel({
     steps: stepViewModels,
     activeIndex,
     completedCount,
-    totalCount: steps.length,
-    progressLabel: `${completedCount} / ${steps.length}`,
-    progressFraction: steps.length === 0 ? 1 : completedCount / steps.length,
+    totalCount: selectedSteps.length,
+    progressLabel: `${completedCount} / ${selectedSteps.length}`,
+    progressFraction: selectedSteps.length === 0 ? 1 : completedCount / selectedSteps.length,
     allComplete,
-    dismissed: state.dismissed
+    dismissed: state.dismissed,
+    journeys: ONBOARDING_JOURNEYS.map(({ id, label, description }) => ({ id, label, description })),
+    journeyId: journey.id,
+    journeyLabel: journey.label,
+    journeyDescription: journey.description
   };
+}
+
+export function resolveOnboardingJourney(journeyId: string): OnboardingJourneyDefinition {
+  return ONBOARDING_JOURNEYS.find((journey) => journey.id === journeyId) ?? ONBOARDING_JOURNEYS[0];
 }

@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -83,6 +84,13 @@ DERIVED_SUFFIXES = {
     "Summary": ("_sum", "_count"),
 }
 
+# These trees cannot contain canonical C# sources and may contain Windows junctions back to
+# the repository (for example dashboard/node_modules/meridian-tools). They must be removed
+# from os.walk's directory list before traversal; filtering rglob results afterward is too late.
+SOURCE_SCAN_EXCLUDED_DIRECTORIES = frozenset(
+    {"node_modules", "bin", "obj", ".git", ".claude", "worktrees"}
+)
+
 
 class Finding:
     """A single gate violation, rendered as one actionable line."""
@@ -109,7 +117,29 @@ def slugify_heading(text: str) -> str:
 
 
 def iter_source_files(root: Path) -> list[Path]:
-    return sorted(p for p in (root / "src").rglob("*.cs") if "/obj/" not in p.as_posix() and "/bin/" not in p.as_posix())
+    source_files: list[Path] = []
+
+    def raise_walk_error(error: OSError) -> None:
+        raise error
+
+    for directory, directory_names, file_names in os.walk(
+        root / "src",
+        topdown=True,
+        onerror=raise_walk_error,
+        followlinks=False,
+    ):
+        directory_names[:] = sorted(
+            name
+            for name in directory_names
+            if name.casefold() not in SOURCE_SCAN_EXCLUDED_DIRECTORIES
+        )
+        source_files.extend(
+            Path(directory) / name
+            for name in sorted(file_names)
+            if name.endswith(".cs")
+        )
+
+    return sorted(source_files)
 
 
 def strip_comments(text: str) -> str:

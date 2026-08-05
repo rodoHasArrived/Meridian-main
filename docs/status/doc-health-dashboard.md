@@ -25,7 +25,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 | Orphaned files | 256 |
 | Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 220 |
+| TODO/FIXME markers | 221 |
 | **Health score** | **80/100** |
 
 ### Score Breakdown

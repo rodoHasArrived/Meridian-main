@@ -19,10 +19,16 @@ module private NullableHelpers =
         | None -> Unchecked.defaultof<'T>
 
 type SecurityIdentifierSnapshot(identifier: Identifier) =
+    do
+        if not (SecurityIdentifier.providerMetadataMatchesKind identifier) then
+            invalidArg
+                (nameof identifier.Provider)
+                "ProviderSymbol metadata must match the authoritative provider namespace carried by Identifier.Kind."
+
     let provider =
         match identifier.Kind with
-        | IdentifierKind.ProviderSymbol provider -> provider
-        | _ -> null
+        | IdentifierKind.ProviderSymbol authoritativeProvider -> authoritativeProvider
+        | _ -> identifier.Provider |> toNullableRef
 
     let kind =
         match identifier.Kind with

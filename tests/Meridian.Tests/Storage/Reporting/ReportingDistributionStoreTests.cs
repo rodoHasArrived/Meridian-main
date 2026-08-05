@@ -11,7 +11,9 @@ using Xunit;
 namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
-public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArtifactDatabaseFixture>
+public sealed class ReportingDistributionStoreTests :
+    IClassFixture<ReportingArtifactDatabaseFixture>,
+    IAsyncLifetime
 {
     private static readonly DateTimeOffset FixedNow = new(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
     private readonly ReportingArtifactDatabaseFixture _database;
@@ -24,6 +26,10 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         _grantStore = new PostgresReportingAccessGrantStore(database.Options);
         _deliveryStore = new PostgresReportingDeliveryStore(database.Options);
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task ReportingDistributionMigration_RetainsReadIndexAndGrantConsumptionAuthority()
@@ -136,7 +142,8 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         };
         (await _grantStore.TryUpdateAsync(grant.GrantId, first.Version, second))
             .Should().BeTrue();
-        (await _grantStore.GetAsync(grant.GrantId)).Should().Be(second);
+        (await _grantStore.GetAsync(grant.GrantId)).Should()
+            .BeEquivalentTo(second, options => options.WithStrictOrdering());
 
         Func<Task> removeConsumedArtifact = () => ExecuteAsync(
             $"""
@@ -189,7 +196,8 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         };
         (await _grantStore.TryUpdateAsync(legacy.GrantId, legacy.Version, initialized))
             .Should().BeTrue();
-        (await _grantStore.GetAsync(legacy.GrantId)).Should().Be(initialized);
+        (await _grantStore.GetAsync(legacy.GrantId)).Should()
+            .BeEquivalentTo(initialized, options => options.WithStrictOrdering());
     }
 
     [ReportingDatabaseFact]
@@ -334,7 +342,8 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
             Version = 1
         };
         (await _grantStore.TryUpdateAsync(grant.GrantId, 0, revoked)).Should().BeTrue();
-        (await _grantStore.GetAsync(grant.GrantId)).Should().Be(revoked);
+        (await _grantStore.GetAsync(grant.GrantId)).Should()
+            .BeEquivalentTo(revoked, options => options.WithStrictOrdering());
 
         Func<Task> mutateTenant = () => ExecuteAsync(
             $"update {QualifiedGrantTable} set tenant_id = @value where grant_id = @id;",
@@ -406,8 +415,10 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
                 deliveryWithReceipt));
 
         status.Should().Be(ReportingDeliveryGrantDownloadCommitStatus.Committed);
-        (await _grantStore.GetAsync(grant.GrantId)).Should().Be(consumedGrant);
-        (await _deliveryStore.GetAsync(job.JobId)).Should().Be(deliveryWithReceipt);
+        (await _grantStore.GetAsync(grant.GrantId)).Should()
+            .BeEquivalentTo(consumedGrant, options => options.WithStrictOrdering());
+        (await _deliveryStore.GetAsync(job.JobId)).Should()
+            .BeEquivalentTo(deliveryWithReceipt, options => options.WithStrictOrdering());
     }
 
     [ReportingDatabaseFact]
@@ -836,7 +847,8 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         };
 
         (await _deliveryStore.TryUpdateAsync(job.JobId, retry.Version, failed)).Should().BeTrue();
-        (await _deliveryStore.GetAsync(job.JobId))!.Should().Be(failed);
+        (await _deliveryStore.GetAsync(job.JobId))!.Should()
+            .BeEquivalentTo(failed, options => options.WithStrictOrdering());
         (await _deliveryStore.ListPendingAccessGrantRevocationsAsync(10))
             .Should().ContainSingle(candidate =>
                 candidate.JobId == job.JobId

@@ -78,6 +78,7 @@ export function buildWorkflowContinuityViewModel(
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   }, pathname);
   const subjectSymbol = operatingScope.subjectSymbol;
+  const isShellHome = pathname === "/";
   const currentRoute = `${pathname}${search}${hash}`;
   const routeResolution = resolveWorkflowContinuityRoute(pathname, hash);
   const trail = routeResolution.trail;
@@ -107,11 +108,12 @@ export function buildWorkflowContinuityViewModel(
     : routeResolution.mode === "choose-task"
       ? `No continuity step is selected for ${activeWorkspace.label}. Choose a task from the local workspace navigation; the current operating scope will be preserved.`
       : "The requested route is not part of a Meridian workspace. Open the Daily Control Tower to choose a task.";
+  const contextOwnerLabel = isShellHome ? "Daily Control Tower" : activeWorkspace.label;
   const contextValue = subjectSymbol
-    ? `${activeWorkspace.label} / ${subjectSymbol}`
+    ? `${contextOwnerLabel} / ${subjectSymbol}`
     : operatingScope.hasScope
-      ? `${activeWorkspace.label} / Scoped workflow`
-      : `${activeWorkspace.label} / ${activeStep?.label ?? "Choose a task"}`;
+      ? `${contextOwnerLabel} / Scoped workflow`
+      : `${contextOwnerLabel} / ${activeStep?.label ?? "Choose a task"}`;
   const nextActionLabel = routeResolution.mode === "matched"
     ? activeStep && nextStep && activeStep.id === nextStep.id
       ? `Stay on ${activeStep.label}`
@@ -156,8 +158,8 @@ export function buildWorkflowContinuityViewModel(
     clearSubjectAriaLabel: operatingScope.clearAriaLabel,
     operatingScope,
     routeLabel: currentRoute || "/",
-    stepsLabel: trail ? `${trail.title} workflow steps` : `${activeWorkspace.label} task workflow steps`,
-    ariaLabel: trail ? `${trail.title} continuity` : `${activeWorkspace.label} task choice`,
+    stepsLabel: trail ? `${trail.title} workflow steps` : `${contextOwnerLabel} task workflow steps`,
+    ariaLabel: trail ? `${trail.title} continuity` : `${contextOwnerLabel} task choice`,
     nextActionLabel,
     nextActionAriaLabel,
     nextActionHref,

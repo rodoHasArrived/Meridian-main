@@ -334,7 +334,37 @@ let private createPrimaryTicker effectiveFrom = {
     IsPrimary = true
     ValidFrom = effectiveFrom
     ValidTo = None
+    Provider = None
 }
+
+[<Fact>]
+let ``Identifier source-provider metadata does not change canonical identity`` () =
+    let now = DateTimeOffset.UtcNow
+    let left = { createPrimaryTicker now with Provider = Some "XNAS" }
+    let right = { createPrimaryTicker now with Provider = Some "REFINITIV" }
+
+    SecurityIdentifier.sameIdentity left right |> should equal true
+
+[<Fact>]
+let ``ProviderSymbol snapshot rejects provider metadata that contradicts its discriminant`` () =
+    let identifier = {
+        createPrimaryTicker DateTimeOffset.UtcNow with
+            Kind = IdentifierKind.ProviderSymbol "XNAS"
+            Provider = Some "REFINITIV"
+    }
+
+    (fun () -> SecurityIdentifierSnapshot(identifier) |> ignore)
+    |> should throw typeof<ArgumentException>
+
+[<Fact>]
+let ``ProviderSymbol snapshot uses the authoritative discriminant for equivalent metadata`` () =
+    let identifier = {
+        createPrimaryTicker DateTimeOffset.UtcNow with
+            Kind = IdentifierKind.ProviderSymbol "XNAS"
+            Provider = Some " xnas "
+    }
+
+    SecurityIdentifierSnapshot(identifier).Provider |> should equal "XNAS"
 
 let private createConvertiblePreferredClassification () =
     let preferredTerms = {
@@ -376,6 +406,22 @@ let private createEquityCreateCommand classification =
         EffectiveFrom = effectiveFrom
         Provenance = createBaseProvenance effectiveFrom
     }
+
+[<Fact>]
+let ``SecurityMasterCommandFacade rejects contradictory ProviderSymbol metadata`` () =
+    let baseCommand = createEquityCreateCommand None
+    let identifier = {
+        createPrimaryTicker baseCommand.EffectiveFrom with
+            Kind = IdentifierKind.ProviderSymbol "XNAS"
+            Provider = Some "REFINITIV"
+    }
+    let result = SecurityMasterCommandFacade.Create({ baseCommand with Identifiers = [ identifier ] })
+
+    result.IsSuccess |> should equal false
+    obj.ReferenceEquals(result.Snapshot, null) |> should equal true
+    result.ErrorDetails
+    |> Array.exists (fun error -> error.Code = "identifier_provider_mismatch")
+    |> should equal true
 
 let private createSecurityRecord (classification: EquityClassification option) : SecurityMasterRecord =
     match SecurityMaster.create (createEquityCreateCommand classification) with

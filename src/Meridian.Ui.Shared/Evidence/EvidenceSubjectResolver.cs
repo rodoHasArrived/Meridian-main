@@ -2,7 +2,9 @@ using Meridian.Contracts.Workstation;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Evidence;
@@ -110,7 +112,14 @@ public sealed class EvidenceSubjectResolver
         var runService = _services.GetService<StrategyRunReadService>();
         if (runService is not null)
         {
-            var runs = await runService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+            var scope = ResolveStrategyRunReadScope();
+            var runs = scope is null
+                ? await runService.GetRunsAsync(ct: ct).ConfigureAwait(false)
+                : await runService.GetRunsAsync(
+                    strategyId: null,
+                    runType: null,
+                    scope: scope,
+                    ct: ct).ConfigureAwait(false);
             subjects.AddRange(runs.Take(100).Select(run => new EvidenceSubjectDto(
                 SubjectId: run.RunId,
                 SubjectKind: StrategyRunKind,
@@ -224,7 +233,10 @@ public sealed class EvidenceSubjectResolver
                 return null;
             }
 
-            var run = await runService.GetRunDetailAsync(subjectId, ct).ConfigureAwait(false);
+            var scope = ResolveStrategyRunReadScope();
+            var run = scope is null
+                ? await runService.GetRunDetailAsync(subjectId, ct).ConfigureAwait(false)
+                : await runService.GetRunDetailAsync(subjectId, scope, ct).ConfigureAwait(false);
             return run is null
                 ? null
                 : new EvidenceSubjectDto(
@@ -317,6 +329,21 @@ public sealed class EvidenceSubjectResolver
                 PageTag: "EvidenceWorkbench"),
             _ => null
         };
+    }
+
+    private StrategyRunReadScope? ResolveStrategyRunReadScope()
+    {
+        var httpContext = _services.GetService<IHttpContextAccessor>()?.HttpContext;
+        if (httpContext is null)
+        {
+            return null;
+        }
+
+        var trustedScope = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        return string.IsNullOrWhiteSpace(trustedScope.TenantId)
+            || string.IsNullOrWhiteSpace(trustedScope.CompanyId)
+                ? null
+                : new StrategyRunReadScope(trustedScope.TenantId, trustedScope.CompanyId);
     }
 
     private EvidenceSubjectDto? ResolveReportPackDeliverySubject(string subjectId)

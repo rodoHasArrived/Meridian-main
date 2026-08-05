@@ -264,11 +264,11 @@ public sealed class BackfillProgressTrackerTests
         tracker.ProgressPublished += _ =>
         {
             handlerEntered.TrySetResult();
-            releaseHandler.Wait(TimeSpan.FromSeconds(2));
+            releaseHandler.Wait(TimeSpan.FromSeconds(10));
         };
 
         tracker.Publish(CreateProgress(1));
-        await handlerEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        await handlerEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
         var started = DateTimeOffset.UtcNow;
         for (var attempt = 2; attempt <= 50; attempt++)

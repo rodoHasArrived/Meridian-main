@@ -4,6 +4,7 @@
   "selected_scripts": [
     "scan-todos",
     "validate-docs-structure",
+    "validate-agent-definitions",
     "generate-structure-docs",
     "generate-health-dashboard",
     "validate-examples",
@@ -46,6 +47,18 @@
         "python3",
         "build/scripts/docs/validate-docs-structure.py",
         "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "validate-agent-definitions",
+      "command": [
+        "python3",
+        "build/scripts/docs/validate-agent-definitions.py"
       ],
       "return_code": 0,
       "duration_seconds": 0.0,

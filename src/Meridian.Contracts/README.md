@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-03
 ---
 
 # src/Meridian.Contracts
@@ -109,6 +109,18 @@ publish `OperationsClosePackagePublicationDto` with close-package id, retained m
 evidence hash, sign-off actor/rationale, report pack id, evidence links, checklist approvals, and
 frozen vault document snapshots so clients can inspect close-package publication without rebuilding
 package metadata locally.
+Strategy-run detail payloads add a read-only acceptance checklist for the bounded Covered Call W6
+path. Each item carries its canonical checklist id, server-derived status, keyed evidence link,
+operator, decision time, audit reference, and blocker. Consumers must treat unknown or missing
+items as review-required and must not infer completion from retained declarations, metric
+eligibility, or a locally created Paper session. Evidence Vault identities and document/query
+payloads carry additive tenant/company scope; legacy unscoped store calls remain obsolete,
+source-visible fail-closed compatibility shims.
+`Workstation/EvidenceVaultReference.cs` owns the server-side canonical Vault reference grammar:
+`evidence://evidence-vault/ev-` plus 24 hexadecimal characters, normalized to lowercase, with no
+port, user info, query, fragment, extra/encoded path, or traversal. Browser validation mirrors this
+contract and its shared malformed-vector proof; storage, Covered Call admission, and Paper
+promotion must call the contract helper rather than maintain separate parsers.
 Strategy-run trial-balance and journal DTOs expose the canonical `LedgerDimensionSetDto` beside
 legacy account/entity/sleeve/vehicle scope fields so browser and WPF ledger drill-throughs can use
 the same dimensional accounting vocabulary as rules, drafts, period reports, and external GL
@@ -1372,6 +1384,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 

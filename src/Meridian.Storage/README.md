@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Storage
@@ -190,6 +190,10 @@ Canonical symbol resolution is Storage-owned because it wraps the durable symbol
 identifier indexes. Application composition registers the Storage implementation behind
 `Meridian.Contracts.Catalog.ICanonicalSymbolRegistry` for canonicalization and Security Master seed
 workflows.
+Security Master identifier lookup preserves provider authority: a provider-bound canonical
+identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
+is available only for providerless records that have no authoritative identifier row, so an omitted
+or incorrect provider cannot select a provider-bound security.
 The optional atomic-migration capability builds the complete candidate registry and lookup caches
 off to the side, persists that candidate through `AtomicFileWriter`, and publishes it only after
 the durable replacement succeeds. Conflict, cancellation, or write failure leaves both the live
@@ -409,8 +413,11 @@ across tenant/company boundaries.
 Governed reporting persistence stores each series revision under its immutable tenant and scope
 identity while lifecycle state advances through compare-and-swap aggregate versions. State payloads
 retain a SHA-256 checksum and are hydrated only when their indexed identity, tenant, lifecycle
-state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction;
-database triggers require contiguous versions and the retained previous hash, and reject later
+state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction.
+Optional immutable-array fields are canonicalized from their default value to an empty collection
+before source-generated JSON persistence and after hydration, keeping equivalent reporting state
+serializable and deterministic across callers. Database triggers require contiguous versions and
+the retained previous hash, and reject later
 updates or deletes. Restatement approval updates the request and creates the next report revision in
 one transaction, so a failed revision insert cannot leave an approved request without its draft.
 Reporting delivery persistence also keeps run and package identity separately, lists grants and

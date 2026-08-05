@@ -169,7 +169,8 @@ internal static class SecurityMasterMapping
             identifier.Value,
             identifier.IsPrimary,
             identifier.ValidFrom,
-            ToOption(identifier.ValidTo));
+            ToOption(identifier.ValidTo),
+            ToOption(identifier.Provider));
 
     private static IdentifierKind ToIdentifierKind(SecurityIdentifierKind kind, string? provider)
         => kind switch

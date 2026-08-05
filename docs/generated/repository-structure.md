@@ -1164,6 +1164,7 @@ Meridian-main
 │       │   ├── render-source-diagrams.py
 │       │   ├── render-source-docs.py
 │       │   ├── repair-links.py
+│       │   ├── requirements.txt
 │       │   ├── rules-engine.py
 │       │   ├── run-docs-automation.py
 │       │   ├── scan-source-todos.py
@@ -1172,6 +1173,7 @@ Meridian-main
 │       │   ├── sync-source-readmes.py
 │       │   ├── test-scripts.py
 │       │   ├── update-claude-md.py
+│       │   ├── validate-agent-definitions.py
 │       │   ├── validate-api-docs.py
 │       │   ├── validate-design-document-adaptation.py
 │       │   ├── validate-design-module-conformance.py
@@ -1699,7 +1701,8 @@ Meridian-main
 │   │   ├── blueprints
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
 │   │   │   ├── README.md
-│   │   │   └── risk-engine-severity-and-decision-journal-blueprint.md
+│   │   │   ├── risk-engine-severity-and-decision-journal-blueprint.md
+│   │   │   └── w10-mark-001-fail-closed-marks.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── free-development-tools.md
 │   │   ├── live-trading-engine.md
@@ -3352,6 +3355,7 @@ Meridian-main
 │   │   │   ├── BankingStartup.cs
 │   │   │   ├── CircuitBreakerCallbackRouter.cs
 │   │   │   ├── DatabaseMigrationReadinessReceipt.cs
+│   │   │   ├── DefaultProviderSetupHandlerRegistration.cs
 │   │   │   ├── DirectLendingStartup.cs
 │   │   │   ├── FundAccountsStartup.cs
 │   │   │   ├── FundStructureStartup.cs
@@ -3998,6 +4002,7 @@ Meridian-main
 │   │   │   ├── DailyValuationScheduleDtos.cs
 │   │   │   ├── DataOperationsAssuranceDtos.cs
 │   │   │   ├── DataUploadDtos.cs
+│   │   │   ├── EvidenceVaultReference.cs
 │   │   │   ├── EvidenceWorkflowDtos.cs
 │   │   │   ├── FeatureCapabilityDtos.cs
 │   │   │   ├── FinancialOperationsCommandCenterDtos.cs
@@ -5523,6 +5528,7 @@ Meridian-main
 │   │   │   ├── ReportingDistributionStoreGuard.cs
 │   │   │   ├── ReportingGovernanceJsonContext.cs
 │   │   │   ├── ReportingGovernanceLegacyContracts.cs
+│   │   │   ├── ReportingGovernancePersistenceJson.cs
 │   │   │   ├── ReportingMigrationRunner.cs
 │   │   │   └── ReportingReconciliationEvidenceJsonContext.cs
 │   │   ├── Runtime
@@ -6110,6 +6116,7 @@ Meridian-main
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
+│   │   │   │   │   │   ├── promotion.contracts.ts
 │   │   │   │   │   │   ├── provider-modules.api.test.ts
 │   │   │   │   │   │   ├── provider-modules.api.ts
 │   │   │   │   │   │   ├── reporting-runs.api.test.ts
@@ -6296,6 +6303,7 @@ Meridian-main
 │   │   │   │   │   ├── cash-ladder-screen.tsx
 │   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
 │   │   │   │   │   ├── cash-ladder-screen.view-model.ts
+│   │   │   │   │   ├── covered-call-screen.formatters.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -6465,6 +6473,7 @@ Meridian-main
 │   │   │   │   │   ├── strategy-designer-screen.view-model.ts
 │   │   │   │   │   ├── strategy-screen.a11y.test.tsx
 │   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
+│   │   │   │   │   ├── strategy-screen.formatters.ts
 │   │   │   │   │   ├── strategy-screen.operator-focus.ts
 │   │   │   │   │   ├── strategy-screen.status-announcement.ts
 │   │   │   │   │   ├── strategy-screen.test.tsx
@@ -6866,6 +6875,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.StatementReconciliationReport.cs
 │   │   │   ├── WorkstationEndpoints.Strategy.cs
 │   │   │   ├── WorkstationEndpoints.StrategyBriefing.cs
+│   │   │   ├── WorkstationEndpoints.StrategyWorkspace.cs
 │   │   │   ├── WorkstationEndpoints.Stream.cs
 │   │   │   ├── WorkstationEndpoints.StructuredReportingExport.cs
 │   │   │   ├── WorkstationEndpoints.Trading.cs
@@ -6884,6 +6894,7 @@ Meridian-main
 │   │   │   ├── FileEvidenceArtifactStore.cs
 │   │   │   ├── FileEvidenceArtifactStore.DocumentReview.cs
 │   │   │   ├── FileEvidenceArtifactStore.Models.cs
+│   │   │   ├── FileEvidenceArtifactStore.VaultAccess.cs
 │   │   │   ├── FileStatementReconciliationReportAuthorityStore.cs
 │   │   │   ├── ReconciliationEvidenceContributor.StatementRuns.cs
 │   │   │   ├── ReportingStatementImportEvidenceRetainer.cs
@@ -6893,7 +6904,8 @@ Meridian-main
 │   │   │   ├── StatementReconciliationReportWorkflowService.Authority.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.Reconciliation.cs
-│   │   │   └── StatementToReportWorkflowService.Compatibility.cs
+│   │   │   ├── StatementToReportWorkflowService.Compatibility.cs
+│   │   │   └── StrategyRunEvidenceContributor.cs
 │   │   ├── Extensibility
 │   │   │   ├── ExtensibilityCatalogService.cs
 │   │   │   ├── ExtensibilityConfigurationService.cs
@@ -7079,6 +7091,7 @@ Meridian-main
 │   │   │   ├── StrategyRunReviewPacketService.cs
 │   │   │   ├── TradingOperatorLiveOrderReadinessGate.cs
 │   │   │   ├── TradingOperatorReadinessService.cs
+│   │   │   ├── TradingOperatorReadinessService.Strategy.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── Streaming
@@ -7345,6 +7358,7 @@ Meridian-main
 │   │   │   ├── DesktopLaunchArguments.cs
 │   │   │   ├── DesktopLaunchTicketClient.cs
 │   │   │   ├── DropImportService.cs
+│   │   │   ├── EvidenceWorkbenchApiClient.cs
 │   │   │   ├── ExportFormat.cs
 │   │   │   ├── ExportPresetService.cs
 │   │   │   ├── FirstRunService.cs
@@ -7502,6 +7516,7 @@ Meridian-main
 │   │   │   ├── DiagnosticsPageViewModel.cs
 │   │   │   ├── DirectLendingViewModel.cs
 │   │   │   ├── EventReplayViewModel.cs
+│   │   │   ├── EvidenceWorkbenchViewModel.cs
 │   │   │   ├── ExportPresetsViewModel.cs
 │   │   │   ├── FinancialRecordExplorerViewModel.cs
 │   │   │   ├── FundAccountProviderPanelModels.cs
@@ -7654,6 +7669,8 @@ Meridian-main
 │   │   │   ├── EnvironmentDesignerPage.xaml.cs
 │   │   │   ├── EventReplayPage.xaml
 │   │   │   ├── EventReplayPage.xaml.cs
+│   │   │   ├── EvidenceWorkbenchPage.xaml
+│   │   │   ├── EvidenceWorkbenchPage.xaml.cs
 │   │   │   ├── ExportPresetsPage.xaml
 │   │   │   ├── ExportPresetsPage.xaml.cs
 │   │   │   ├── FinancialRecordExplorerPage.xaml
@@ -7848,6 +7865,7 @@ Meridian-main
 │   │   │   │   └── WorkstationLayoutControls.cs
 │   │   │   ├── Models
 │   │   │   │   ├── EvidenceVaultPresentationModels.cs
+│   │   │   │   ├── EvidenceWorkbenchPresentationModels.cs
 │   │   │   │   └── WorkstationPresentationModels.cs
 │   │   │   ├── Primitives
 │   │   │   │   └── WorkstationPrimitiveControls.cs
@@ -8580,14 +8598,17 @@ Meridian-main
 │   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigDirectLendingAuthorizationTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
+│   │   │   │   ├── CoveredCallEndpointAuthorizationTests.cs
 │   │   │   │   ├── DirectLendingEndpointMutationTests.cs
 │   │   │   │   ├── EndpointGuardTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointMetadataTests.cs
 │   │   │   │   ├── EndpointTestCollection.cs
 │   │   │   │   ├── EndpointTestFixture.cs
+│   │   │   │   ├── EndpointTestFixtureProviderCatalogLifetimeTests.cs
 │   │   │   │   ├── EnvironmentDesignerEndpointTests.cs
 │   │   │   │   ├── FailoverEndpointTests.cs
+│   │   │   │   ├── FundStructureEndpointTestFixture.cs
 │   │   │   │   ├── FundStructureEndpointTests.cs
 │   │   │   │   ├── HealthEndpointTests.cs
 │   │   │   │   ├── HistoricalEndpointTests.cs
@@ -8934,6 +8955,7 @@ Meridian-main
 │   │   │   └── XlsxWorkbookWriterTests.cs
 │   │   ├── Strategies
 │   │   │   ├── CoveredCall
+│   │   │   │   ├── CoveredCallBacktestServiceTests.cs
 │   │   │   │   ├── CoveredCallChainProviderAdapterTests.cs
 │   │   │   │   ├── CoveredCallChainProviderFactoryConvertCallsTests.cs
 │   │   │   │   └── CoveredCallRunProjectionTests.cs
@@ -8998,7 +9020,9 @@ Meridian-main
 │   │   │   └── TestArtifactDirectory.cs
 │   │   ├── TestSupport
 │   │   │   ├── ControllableReportingReleaseConsistencyGate.cs
-│   │   │   └── ImmediateReportingReleaseConsistencyGate.cs
+│   │   │   ├── ImmediateReportingReleaseConsistencyGate.cs
+│   │   │   ├── PostgresTestSchemaTests.cs
+│   │   │   └── ProviderCatalogTestLease.cs
 │   │   ├── Treasury
 │   │   │   ├── MmfFamilyNormalizationTests.cs
 │   │   │   ├── MmfLiquidityServiceTests.cs
@@ -9153,6 +9177,8 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
+│   │   │   ├── WorkstationEndpointsTests.StrategyTenantScope.cs
+│   │   │   ├── WorkstationEndpointsTests.TradingTenantScope.cs
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
@@ -9182,6 +9208,7 @@ Meridian-main
 │   │   ├── Meridian.TestSupport.csproj
 │   │   ├── PostgresTestContainerOptions.cs
 │   │   ├── PostgresTestSchema.cs
+│   │   ├── PostgresTestSchemaEnvironmentScope.cs
 │   │   └── PostgresTestServer.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
@@ -9377,6 +9404,7 @@ Meridian-main
 │   │   │   ├── DataSamplingViewModelTests.cs
 │   │   │   ├── DataSourcesViewModelTests.cs
 │   │   │   ├── DirectLendingViewModelTests.cs
+│   │   │   ├── EvidenceWorkbenchViewModelTests.cs
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FinancialRecordExplorerViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
@@ -9561,6 +9589,7 @@ Meridian-main
 │   │   ├── test_summarize_desktop_workflow_bundle.py
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
+│   │   ├── test_validate_agent_definitions.py
 │   │   ├── test_validate_npm_audit.py
 │   │   ├── test_validate_observability_contract.py
 │   │   ├── test_validate_screenshot_captures.py

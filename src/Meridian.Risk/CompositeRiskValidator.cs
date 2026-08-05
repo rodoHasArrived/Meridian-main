@@ -272,8 +272,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 // Critical is documented to reject and halt; an approval cannot undo a halt.
                 if ((result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
                     && rule.Severity != RiskRuleSeverity.Critical
-                    && !result.IsUnmeasurable
-                    && !hasBlockingBreach)
+                    && !result.IsUnmeasurable)
                 {
                     // A consumed approval satisfies only the escalation it was parked for;
                     // any other escalate-capable rule still parks its own approval. An
@@ -284,6 +283,14 @@ public sealed class CompositeRiskValidator : IRiskValidator
                         _logger.LogInformation(
                             "Escalation from rule {RuleName} released by governed approval",
                             rule.RuleName);
+                        continue;
+                    }
+
+                    // A hard breach elsewhere decides the order. Parking this escalation would
+                    // offer an approval that cannot release the order, so retain the finding and
+                    // let the actual blocker own the refusal below.
+                    if (hasBlockingBreach)
+                    {
                         continue;
                     }
 

@@ -214,7 +214,7 @@ function buildProofPassportItems({
   const freshness = proof?.timestampLabel ?? "No timestamped evidence";
   const reconciliation = linkedContext?.statusLabel ?? viewModel.linkedContextPostureLabel;
   const approvals = approvalsLabelForTone(item.tone);
-  const evidencePacket = proof?.label ?? viewModel.decisionBrief.evidenceLabel ?? "No evidence packet linked";
+  const evidencePacket = proof?.label ?? "No evidence packet linked";
   const auditTrail = proof?.timestampIso ?? "Audit timestamp unavailable";
 
   return [
@@ -258,7 +258,7 @@ function buildProofPassportItems({
       id: "evidence-packet",
       label: "Evidence Packet",
       value: evidencePacket,
-      detail: proof?.ariaLabel ?? viewModel.evidenceTimelineSummary
+      detail: proof?.ariaLabel ?? "No correlated evidence packet is linked to this queue item."
     },
     {
       id: "audit-trail",
@@ -273,12 +273,10 @@ function findProofForItem(
   item: AppShellOperatorFocusItem,
   evidenceItems: AppShellEvidenceTimelineItem[]
 ): AppShellEvidenceTimelineItem | null {
-  return evidenceItems.find((proof) => proof.id === item.id)
-    ?? evidenceItems.find((proof) => routeFingerprint(proof.route) === routeFingerprint(item.route))
-    ?? evidenceItems.find((proof) => proof.workspaceLabel === item.workspaceLabel && proof.tone === item.tone)
-    ?? evidenceItems.find((proof) => proof.workspaceLabel === item.workspaceLabel)
-    ?? evidenceItems[0]
-    ?? null;
+  // Evidence association is deliberately fail-closed. Route, workspace, tone,
+  // and list position are presentation attributes, not durable correlation
+  // keys, so they must never be used to attach a different event to this row.
+  return evidenceItems.find((proof) => proof.id === item.id) ?? null;
 }
 
 function findLinkedContextForItem(

@@ -14,8 +14,7 @@ namespace Meridian.Tests.PortfolioRecords.FundAccounts;
 /// unavailable.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection(nameof(FundAccountDatabaseCollection))]
-public sealed class PostgresFundAccountServiceContractTests : FundAccountServiceContractTests
+public sealed class PostgresFundAccountServiceContractTests : FundAccountServiceContractTests, IClassFixture<FundAccountDatabaseFixture>
 {
     private readonly FundAccountDatabaseFixture _fixture;
 

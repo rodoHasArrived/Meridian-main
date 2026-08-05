@@ -10,7 +10,8 @@ namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
 public sealed class StatementReconciliationReportAuthorityStoreTests :
-    IClassFixture<ReportingArtifactDatabaseFixture>
+    IClassFixture<ReportingArtifactDatabaseFixture>,
+    IAsyncLifetime
 {
     private const string MigrationFileName =
         "013_reporting_statement_reconciliation_authority.sql";
@@ -22,6 +23,10 @@ public sealed class StatementReconciliationReportAuthorityStoreTests :
     {
         _database = database;
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task ImmutableDocument_ExactRetryIsIdempotentAndRetainsOneRevision()

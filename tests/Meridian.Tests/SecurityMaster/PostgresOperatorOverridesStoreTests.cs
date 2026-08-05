@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
@@ -21,8 +22,7 @@ namespace Meridian.Tests.SecurityMaster;
 ///   • IOperatorOverridesStore.RecordApprovalDecisionAsync is added.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection(nameof(SecurityMasterDatabaseCollection))]
-public sealed class PostgresOperatorOverridesStoreTests
+public sealed class PostgresOperatorOverridesStoreTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private readonly SecurityMasterDatabaseFixture _fixture;
 
@@ -45,7 +45,7 @@ public sealed class PostgresOperatorOverridesStoreTests
     public async Task PatchAsync_ThenGetAsync_PersistsPendingStatusAndAuditEntry()
     {
         var store = NewStore();
-        var securityId = Guid.NewGuid();
+        var securityId = await CreateCanonicalSecurityAsync();
 
         await store.PatchAsync(securityId, Patch("rating", "AA", "annotation-correction"), "operator-1");
 
@@ -67,7 +67,7 @@ public sealed class PostgresOperatorOverridesStoreTests
     public async Task PatchAsync_AfterApproval_ResetsToPendingAndKeepsPriorAudit()
     {
         var store = NewStore();
-        var securityId = Guid.NewGuid();
+        var securityId = await CreateCanonicalSecurityAsync();
 
         await store.PatchAsync(securityId, Patch("rating", "AA", "initial"), "operator-1");
         await store.RecordApprovalDecisionAsync(
@@ -91,7 +91,7 @@ public sealed class PostgresOperatorOverridesStoreTests
     public async Task RecordApprovalDecisionAsync_Approved_StampsReviewerAndReviewedAt()
     {
         var store = NewStore();
-        var securityId = Guid.NewGuid();
+        var securityId = await CreateCanonicalSecurityAsync();
         var before = DateTimeOffset.UtcNow.AddSeconds(-1);
 
         await store.PatchAsync(securityId, Patch("sector", "Tech", "reclassification"), "operator-1");
@@ -120,7 +120,7 @@ public sealed class PostgresOperatorOverridesStoreTests
     public async Task RecordApprovalDecisionAsync_Rejected_StampsReviewerAndAppendsRejectedAudit()
     {
         var store = NewStore();
-        var securityId = Guid.NewGuid();
+        var securityId = await CreateCanonicalSecurityAsync();
 
         await store.PatchAsync(securityId, Patch("rating", "AA", "correction"), "operator-1");
 
@@ -153,7 +153,7 @@ public sealed class PostgresOperatorOverridesStoreTests
     public async Task RecordApprovalDecisionAsync_NonPending_ThrowsInvalidOperation()
     {
         var store = NewStore();
-        var securityId = Guid.NewGuid();
+        var securityId = await CreateCanonicalSecurityAsync();
 
         await store.PatchAsync(securityId, Patch("rating", "AA", "correction"), "operator-1");
         await store.RecordApprovalDecisionAsync(
@@ -172,7 +172,7 @@ public sealed class PostgresOperatorOverridesStoreTests
     public async Task RecordApprovalDecisionAsync_InvalidDecision_ThrowsArgument()
     {
         var store = NewStore();
-        var securityId = Guid.NewGuid();
+        var securityId = await CreateCanonicalSecurityAsync();
 
         await store.PatchAsync(securityId, Patch("rating", "AA", "correction"), "operator-1");
 
@@ -188,7 +188,7 @@ public sealed class PostgresOperatorOverridesStoreTests
     public async Task GetAsync_LegacyRowMissingApprovalColumns_DefaultsToNotRequested()
     {
         var store = NewStore();
-        var securityId = Guid.NewGuid();
+        var securityId = await CreateCanonicalSecurityAsync();
 
         // Simulate a pre-Track-C row: insert only the base columns and let the migration-added
         // approval columns fall back to their defaults (NotRequested / empty trail).
@@ -200,6 +200,49 @@ public sealed class PostgresOperatorOverridesStoreTests
         loaded.ReviewedBy.Should().BeNull();
         loaded.ReviewedAt.Should().BeNull();
         loaded.AuditTrail.Should().BeEmpty();
+    }
+
+    private async Task<Guid> CreateCanonicalSecurityAsync()
+    {
+        var securityId = Guid.NewGuid();
+        var identifierValue = $"OVERRIDE-{securityId:N}";
+        var effectiveFrom = DateTimeOffset.UtcNow.AddMinutes(-1);
+        var identifier = new SecurityIdentifierDto(
+            SecurityIdentifierKind.InternalCode,
+            identifierValue,
+            true,
+            effectiveFrom);
+        var projection = new SecurityProjectionRecord(
+            securityId,
+            "Equity",
+            SecurityStatusDto.Active,
+            $"Operator override fixture {securityId:N}",
+            "USD",
+            SecurityIdentifierKind.InternalCode.ToString(),
+            identifierValue,
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = $"Operator override fixture {securityId:N}",
+                currency = "USD",
+                exchange = "XNAS",
+                lotSize = 1,
+                tickSize = 0.01m
+            }),
+            JsonSerializer.SerializeToElement(new { shareClass = "Common" }),
+            JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "integration-test",
+                updatedBy = "operator-override-fixture"
+            }),
+            1,
+            effectiveFrom,
+            null,
+            [identifier],
+            []);
+
+        await new PostgresSecurityMasterStore(_fixture.Options)
+            .UpsertProjectionAsync(projection);
+        return securityId;
     }
 
     private async Task InsertBaseOnlyRowAsync(Guid securityId)

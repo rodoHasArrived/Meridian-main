@@ -1,17 +1,36 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
-import { evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
+import type { ApprovePromotionRequest } from "@/lib/api";
+import { appendRouteQuery, evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
+import {
+  countBy,
+  distinctFormattedValues,
+  formatCount,
+  formatMoney,
+  formatNullableNumber,
+  formatOptionalNotes,
+  formatPromotionState,
+  formatSignedCount,
+  formatSignedNullableNumber,
+  formatSignedPercent,
+  formatText,
+  isLiveAdjacentMode,
+  parseDecimalToken,
+  parsePercentToken
+} from "@/screens/strategy-screen.formatters";
 import { buildStrategyStatusAnnouncement } from "@/screens/strategy-screen.status-announcement";
 import type {
   MetricSnapshot,
   MetricsDiff,
-  PaperSessionSummary,
   ParameterDiff,
   PositionDiffEntry,
+  PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
+  StrategyRunAcceptanceChecklistItem,
+  StrategyRunEvidenceLoop,
   StrategyRunRecord,
+  StrategyRunReviewPacket,
   StrategyPlotToolPayload,
   StrategyWorkspaceResponse,
   RunComparisonRow,
@@ -26,10 +45,11 @@ export interface StrategyRunLibraryServices {
   diffRuns: (baseRunId: string, targetRunId: string) => Promise<RunDiff>;
   getPromotionHistory: () => Promise<PromotionRecord[]>;
   evaluatePromotion: (runId: string) => Promise<PromotionEvaluationResult>;
-  createPaperSession: (strategyId: string, strategyName: string | null, initialCash: number) => Promise<PaperSessionSummary>;
+  approvePromotion: (request: ApprovePromotionRequest) => Promise<PromotionDecisionResult>;
+  getRunReviewPacket: (runId: string) => Promise<StrategyRunReviewPacket>;
 }
 
-export type PromoteState = "idle" | "evaluating" | "evaluated" | "creating" | "done";
+export type PromoteState = "idle" | "evaluating" | "evaluated" | "approving" | "done";
 export const STRATEGY_RUN_DETAIL_PANEL_ID = "strategy-run-library-selected-run-detail";
 export const STRATEGY_COMPARISON_DETAIL_PANEL_ID = "strategy-run-comparison-selected-detail";
 export const STRATEGY_PROMOTION_HISTORY_DETAIL_PANEL_ID = "strategy-promotion-history-selected-detail";
@@ -83,10 +103,10 @@ export interface StrategyRunLibraryState {
   promoteState: PromoteState;
   promotionEval: PromotionEvaluationResult | null;
   promotionPanel: StrategyPromotionPanelState;
-  promotionSession: PaperSessionSummary | null;
+  promotionDecision: PromotionDecisionResult | null;
   showPromotePanel: boolean;
   promoteError: string | null;
-  promotionCashForm: StrategyPromotionCashFormState;
+  promotionApprovalForm: StrategyPromotionApprovalFormState;
   selectionText: string;
   selectionDetail: string;
   evidenceAction: StrategyEvidenceAction | null;
@@ -123,8 +143,8 @@ export interface StrategyPromotionPanelState {
   statusRole: "status" | "alert";
   statusLive: "polite" | "assertive";
   evaluation: StrategyPromotionEvaluationState | null;
-  sessionCreated: StrategyPromotionSessionState | null;
-  showCashForm: boolean;
+  approval: StrategyPromotionDecisionState | null;
+  showApprovalForm: boolean;
   showIneligibleDismiss: boolean;
 }
 
@@ -155,26 +175,16 @@ export interface StrategyPromotionBlockingReason {
   text: string;
 }
 
-export interface StrategyPromotionSessionState {
+export interface StrategyPromotionDecisionState {
   title: string;
-  sessionId: string;
+  targetRunId: string;
   detail: string;
   actionLabel: string;
   actionAriaLabel: string;
   actionHref: string;
 }
 
-export interface StrategyPromotionCashFormState {
-  inputId: string;
-  inputHelpId: string;
-  label: string;
-  value: string;
-  min: number;
-  step: number;
-  inputDisabled: boolean;
-  inputDisabledReason: string | null;
-  inputDisabledReasonId: string | null;
-  inputDescribedBy: string;
+export interface StrategyPromotionApprovalFormState {
   acknowledgementId: string;
   acknowledgementLabel: string;
   acknowledgementChecked: boolean;
@@ -182,9 +192,6 @@ export interface StrategyPromotionCashFormState {
   acknowledgementDisabledReason: string | null;
   acknowledgementDisabledReasonId: string | null;
   acknowledgementDescribedBy: string | undefined;
-  helpText: string;
-  errorText: string | null;
-  describedBy: string;
   canSubmit: boolean;
   disabledReason: string | null;
   submitLabel: string;
@@ -286,7 +293,18 @@ export interface StrategyRunDetailState {
   closeButtonLabel: string;
   closeButtonAriaLabel: string;
   biasDisclosure: import("@/types/workstation-6").BiasDisclosure | null;
+  acceptanceCriteriaLabel: string;
+  acceptanceCriteria: string[];
+  acceptanceCriteriaStatus: StrategyRunEvidenceLoadStatus;
+  acceptanceCriteriaMessage: string;
+  acceptanceChecklistLabel: string;
+  acceptanceChecklist: StrategyRunAcceptanceChecklistItem[];
+  acceptanceChecklistStatus: StrategyRunEvidenceLoadStatus;
+  acceptanceChecklistMessage: string;
+  evidenceAction: StrategyEvidenceAction;
 }
+
+export type StrategyRunEvidenceLoadStatus = "idle" | "loading" | "ready" | "unavailable";
 
 export type StrategyRunDetailBadgeVariant = "research" | "paper" | "live";
 
@@ -695,7 +713,8 @@ const defaultStrategyServices: StrategyRunLibraryServices = {
   diffRuns: (baseRunId, targetRunId) => workstationApi.diffRuns(baseRunId, targetRunId),
   getPromotionHistory: () => workstationApi.getPromotionHistory(),
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
-  createPaperSession: (strategyId, strategyName, initialCash) => workstationApi.createPaperSession(strategyId, strategyName, initialCash)
+  approvePromotion: (request) => workstationApi.approvePromotion(request),
+  getRunReviewPacket: (runId) => workstationApi.getRunReviewPacket(runId)
 };
 
 export function useStrategyRunLibraryViewModel(
@@ -703,6 +722,9 @@ export function useStrategyRunLibraryViewModel(
   services: StrategyRunLibraryServices = defaultStrategyServices
 ) {
   const [selectedRun, setSelectedRun] = useState<StrategyRunRecord | null>(null);
+  const [selectedRunEvidenceLoop, setSelectedRunEvidenceLoop] = useState<StrategyRunEvidenceLoop | null>(null);
+  const [selectedRunAcceptanceChecklist, setSelectedRunAcceptanceChecklist] = useState<StrategyRunAcceptanceChecklistItem[]>([]);
+  const [selectedRunEvidenceStatus, setSelectedRunEvidenceStatus] = useState<StrategyRunEvidenceLoadStatus>("idle");
   const [inspectedRunId, setInspectedRunId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
@@ -721,13 +743,13 @@ export function useStrategyRunLibraryViewModel(
   const [selectedPlotStudyId, setSelectedPlotStudyId] = useState<string | null>(null);
   const [promoteState, setPromoteState] = useState<PromoteState>("idle");
   const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
-  const [promotionSession, setPromotionSession] = useState<PaperSessionSummary | null>(null);
+  const [promotionDecision, setPromotionDecision] = useState<PromotionDecisionResult | null>(null);
   const [promoteError, setPromoteError] = useState<string | null>(null);
-  const [promotionInitialCashInput, setPromotionInitialCashInput] = useState("100000");
   const [promotionAcknowledged, setPromotionAcknowledged] = useState(false);
   const runScopedCommandRequestId = useRef(0);
   const promotionRequestId = useRef(0);
-  const promotionCreateInFlightRef = useRef(false);
+  const promotionApprovalInFlightRef = useRef(false);
+  const reviewPacketRequestId = useRef(0);
 
   const metrics = data?.metrics ?? [];
   const runs = data?.runs ?? [];
@@ -740,6 +762,9 @@ export function useStrategyRunLibraryViewModel(
       selectedIds,
       inspectedRunId,
       selectedRun,
+      selectedRunEvidenceLoop,
+      selectedRunAcceptanceChecklist,
+      selectedRunEvidenceStatus,
       comparison,
       selectedComparisonRowId,
       runDiff,
@@ -756,9 +781,8 @@ export function useStrategyRunLibraryViewModel(
       selectedPlotStudyId,
       promoteState,
       promotionEval,
-      promotionSession,
+      promotionDecision,
       promoteError,
-      promotionInitialCashInput,
       promotionAcknowledged
     }),
     [
@@ -780,13 +804,15 @@ export function useStrategyRunLibraryViewModel(
       selectedIds,
       inspectedRunId,
       selectedRun,
+      selectedRunEvidenceLoop,
+      selectedRunAcceptanceChecklist,
+      selectedRunEvidenceStatus,
       activePlotToolView,
       selectedPlotStudyId,
       promoteState,
       promotionEval,
-      promotionSession,
+      promotionDecision,
       promoteError,
-      promotionInitialCashInput,
       promotionAcknowledged
     ]
   );
@@ -794,7 +820,6 @@ export function useStrategyRunLibraryViewModel(
   const toggleRun = useCallback((runId: string) => {
     runScopedCommandRequestId.current += 1;
     promotionRequestId.current += 1;
-    promotionCreateInFlightRef.current = false;
     setInspectedRunId(runId);
     setSelectedIds((current) => toggleRunSelection(current, runId));
     setComparison([]);
@@ -806,17 +831,42 @@ export function useStrategyRunLibraryViewModel(
     setRunDiffLoaded(false);
     setPromoteState("idle");
     setPromotionEval(null);
-    setPromotionSession(null);
+    setPromotionDecision(null);
     setPromoteError(null);
-    setPromotionInitialCashInput("100000");
     setPromotionAcknowledged(false);
     setActionError(null);
     setActiveCommand((current) => current === "history" ? current : null);
   }, []);
 
   const openRunDetail = useCallback((run: StrategyRunRecord) => {
+    const requestId = reviewPacketRequestId.current + 1;
+    reviewPacketRequestId.current = requestId;
     setSelectedRun(run);
-  }, []);
+    setSelectedRunEvidenceLoop(null);
+    setSelectedRunAcceptanceChecklist([]);
+    setSelectedRunEvidenceStatus("loading");
+
+    void services.getRunReviewPacket(run.id)
+      .then((packet) => {
+        if (reviewPacketRequestId.current !== requestId) {
+          return;
+        }
+
+        const evidenceLoop = packet.run.evidenceLoop ?? null;
+        setSelectedRunEvidenceLoop(evidenceLoop);
+        setSelectedRunAcceptanceChecklist(packet.run.acceptanceChecklist ?? []);
+        setSelectedRunEvidenceStatus("ready");
+      })
+      .catch(() => {
+        if (reviewPacketRequestId.current !== requestId) {
+          return;
+        }
+
+        setSelectedRunEvidenceLoop(null);
+        setSelectedRunAcceptanceChecklist([]);
+        setSelectedRunEvidenceStatus("unavailable");
+      });
+  }, [services]);
 
   const selectRunDetail = useCallback((runId: string) => {
     setInspectedRunId(runId);
@@ -825,19 +875,27 @@ export function useStrategyRunLibraryViewModel(
   const openRunDetailById = useCallback((runId: string) => {
     const run = runs.find((candidate) => candidate.id === runId);
     if (run) {
-      setSelectedRun(run);
+      openRunDetail(run);
     }
-  }, [runs]);
+  }, [openRunDetail, runs]);
 
   const closeRunDetail = useCallback(() => {
+    reviewPacketRequestId.current += 1;
     setSelectedRun(null);
+    setSelectedRunEvidenceLoop(null);
+    setSelectedRunAcceptanceChecklist([]);
+    setSelectedRunEvidenceStatus("idle");
   }, []);
 
   const closeRunDetailForKey = useCallback((key: string) => {
     if (!shouldCloseRunDetailForKey(key)) {
       return false;
     }
+    reviewPacketRequestId.current += 1;
     setSelectedRun(null);
+    setSelectedRunEvidenceLoop(null);
+    setSelectedRunAcceptanceChecklist([]);
+    setSelectedRunEvidenceStatus("idle");
     return true;
   }, []);
 
@@ -949,12 +1007,10 @@ export function useStrategyRunLibraryViewModel(
     if (!run) return;
     const requestId = promotionRequestId.current + 1;
     promotionRequestId.current = requestId;
-    promotionCreateInFlightRef.current = false;
     setPromoteState("evaluating");
     setPromoteError(null);
     setPromotionEval(null);
-    setPromotionSession(null);
-    setPromotionInitialCashInput("100000");
+    setPromotionDecision(null);
     setPromotionAcknowledged(false);
     try {
       const result = await services.evaluatePromotion(run.id);
@@ -975,75 +1031,67 @@ export function useStrategyRunLibraryViewModel(
   }, [services, state.selectedRuns]);
 
   const confirmPromotion = useCallback(async () => {
-    if (promotionCreateInFlightRef.current || promoteState === "creating") {
+    if (promotionApprovalInFlightRef.current || promoteState === "approving") {
       return;
     }
 
     const run = state.selectedRuns[0];
     if (!run || !promotionEval?.isEligible) return;
-    const initialCash = parsePromotionInitialCashInput(promotionInitialCashInput);
-    if (initialCash === null) {
-      setPromoteError("Enter initial cash of at least $1,000 before starting a paper session.");
-      return;
-    }
     if (!promotionAcknowledged) {
-      setPromoteError("Acknowledge the evaluated gates and paper-capital impact before starting a paper session.");
+      setPromoteError("Acknowledge the canonical checklist and retained source evidence before approving Paper promotion.");
       return;
     }
 
     const requestId = promotionRequestId.current + 1;
     promotionRequestId.current = requestId;
-    promotionCreateInFlightRef.current = true;
-    setPromoteState("creating");
+    promotionApprovalInFlightRef.current = true;
+    setPromoteState("approving");
     setPromoteError(null);
     try {
-      const session = await services.createPaperSession(run.id, run.strategyName, initialCash);
+      const reviewPacket = await services.getRunReviewPacket(run.id);
       if (promotionRequestId.current !== requestId) {
         return;
       }
 
-      setPromotionSession(session);
+      const request = buildPaperPromotionApprovalRequest(run.id, reviewPacket);
+      const decision = await services.approvePromotion(request);
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
+      if (!decision.success || !decision.newRunId) {
+        throw new Error(decision.reason || "The governed promotion approval did not retain a Paper target run.");
+      }
+
+      setPromotionDecision(decision);
       setPromoteState("done");
     } catch (err) {
       if (promotionRequestId.current !== requestId) {
         return;
       }
 
-      setPromoteError(err instanceof Error ? err.message : "Paper session creation failed.");
+      setPromoteError(err instanceof Error ? err.message : "Governed Paper promotion approval failed.");
       setPromoteState("evaluated");
     } finally {
-      if (promotionRequestId.current === requestId) {
-        promotionCreateInFlightRef.current = false;
-      }
+      promotionApprovalInFlightRef.current = false;
     }
-  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput, promotionAcknowledged, promoteState]);
+  }, [services, state.selectedRuns, promotionEval, promotionAcknowledged, promoteState]);
 
   const cancelPromotion = useCallback(() => {
-    if (promotionCreateInFlightRef.current || promoteState === "creating") {
+    if (promotionApprovalInFlightRef.current || promoteState === "approving") {
       return;
     }
 
     promotionRequestId.current += 1;
-    promotionCreateInFlightRef.current = false;
     setPromoteState("idle");
     setPromotionEval(null);
-    setPromotionSession(null);
+    setPromotionDecision(null);
     setPromoteError(null);
-    setPromotionInitialCashInput("100000");
     setPromotionAcknowledged(false);
   }, [promoteState]);
 
-  const updatePromotionInitialCash = useCallback((value: string) => {
-    if (promotionCreateInFlightRef.current) {
-      return;
-    }
-
-    setPromotionInitialCashInput(value);
-    setPromotionAcknowledged(false);
-  }, []);
-
   const updatePromotionAcknowledgement = useCallback((checked: boolean) => {
-    if (promotionCreateInFlightRef.current) {
+    if (promotionApprovalInFlightRef.current) {
       return;
     }
 
@@ -1071,7 +1119,6 @@ export function useStrategyRunLibraryViewModel(
     selectDiffPositionChange: setSelectedDiffPositionKey,
     selectDiffParameterChange: setSelectedDiffParameterKey,
     selectPlotStudy: setSelectedPlotStudyId,
-    setPromotionInitialCash: updatePromotionInitialCash,
     setPromotionAcknowledgement: updatePromotionAcknowledgement
   };
 }
@@ -1082,6 +1129,9 @@ export function buildStrategyRunLibraryState({
   selectedIds,
   inspectedRunId,
   selectedRun,
+  selectedRunEvidenceLoop = null,
+  selectedRunAcceptanceChecklist = [],
+  selectedRunEvidenceStatus = "idle",
   comparison,
   selectedComparisonRowId = null,
   runDiff,
@@ -1098,9 +1148,8 @@ export function buildStrategyRunLibraryState({
   selectedPlotStudyId = null,
   promoteState = "idle",
   promotionEval = null,
-  promotionSession = null,
+  promotionDecision = null,
   promoteError = null,
-  promotionInitialCashInput = "100000",
   promotionAcknowledged = false
 }: {
   metrics?: MetricSnapshot[];
@@ -1109,6 +1158,9 @@ export function buildStrategyRunLibraryState({
   selectedIds: string[];
   inspectedRunId?: string | null;
   selectedRun: StrategyRunRecord | null;
+  selectedRunEvidenceLoop?: StrategyRunEvidenceLoop | null;
+  selectedRunAcceptanceChecklist?: StrategyRunAcceptanceChecklistItem[];
+  selectedRunEvidenceStatus?: StrategyRunEvidenceLoadStatus;
   comparison: RunComparisonRow[];
   selectedComparisonRowId?: string | null;
   runDiff: RunDiff | null;
@@ -1125,9 +1177,8 @@ export function buildStrategyRunLibraryState({
   selectedPlotStudyId?: string | null;
   promoteState?: PromoteState;
   promotionEval?: PromotionEvaluationResult | null;
-  promotionSession?: PaperSessionSummary | null;
+  promotionDecision?: PromotionDecisionResult | null;
   promoteError?: string | null;
-  promotionInitialCashInput?: string;
   promotionAcknowledged?: boolean;
 }): StrategyRunLibraryState {
   const selectedRuns = selectedIds
@@ -1142,9 +1193,8 @@ export function buildStrategyRunLibraryState({
     selectedRuns[0]?.mode === "backtest" &&
     selectedRuns[0]?.status === "Completed";
   const busy = activeCommand !== null;
-  const promoteBusy = promoteState === "evaluating" || promoteState === "creating";
-  const promotionCashForm = buildPromotionCashForm({
-    input: promotionInitialCashInput,
+  const promoteBusy = promoteState === "evaluating" || promoteState === "approving";
+  const promotionApprovalForm = buildPromotionApprovalForm({
     eligible: promotionEval?.isEligible === true,
     promoteState,
     acknowledged: promotionAcknowledged
@@ -1152,7 +1202,7 @@ export function buildStrategyRunLibraryState({
   const promotionPanel = buildPromotionPanelState({
     promoteState,
     promotionEval,
-    promotionSession
+    promotionDecision
   });
   const runTable = buildRunTable(runs, {
     selectedIds,
@@ -1220,7 +1270,13 @@ export function buildStrategyRunLibraryState({
     inspectedRunId: resolvedInspectedRunId,
     inspectedRunDetail: inspectedRun ? buildInlineRunDetail(inspectedRun, STRATEGY_RUN_DETAIL_PANEL_ID) : null,
     selectedRun,
-    selectedRunDetail: selectedRun ? buildRunDetail(selectedRun) : null,
+    selectedRunDetail: selectedRun
+      ? buildRunDetail(
+          selectedRun,
+          selectedRunEvidenceLoop,
+          selectedRunEvidenceStatus,
+          selectedRunAcceptanceChecklist)
+      : null,
     comparison,
     comparisonTable,
     selectedComparisonRowId: resolvedComparisonRowId,
@@ -1253,10 +1309,10 @@ export function buildStrategyRunLibraryState({
     promoteState,
     promotionEval,
     promotionPanel,
-    promotionSession,
+    promotionDecision,
     showPromotePanel: promoteState !== "idle",
     promoteError,
-    promotionCashForm,
+    promotionApprovalForm,
     selectionText: buildSelectionText(selectedRuns),
     selectionDetail: hasTwoRuns
       ? "Ready to compare or diff the selected run pair."
@@ -1359,21 +1415,23 @@ export function buildRunHistorySummary(runs: StrategyRunRecord[]): StrategyRunHi
 export function buildPromotionPanelState({
   promoteState,
   promotionEval,
-  promotionSession
+  promotionDecision
 }: {
   promoteState: PromoteState;
   promotionEval: PromotionEvaluationResult | null;
-  promotionSession: PaperSessionSummary | null;
+  promotionDecision: PromotionDecisionResult | null;
 }): StrategyPromotionPanelState {
   const evaluation = promotionEval ? buildPromotionEvaluationState(promotionEval) : null;
-  const sessionCreated = promoteState === "done" && promotionSession
+  const approval = promoteState === "done" && promotionDecision?.success && promotionDecision.newRunId
     ? {
-      title: `Paper session created - session ${promotionSession.sessionId}`,
-      sessionId: promotionSession.sessionId,
-      detail: `${promotionSession.strategyName ?? "Selected strategy"} is active with ${formatMoney(promotionSession.initialCash)} paper capital.`,
-      actionLabel: "Go to Trading cockpit",
-      actionAriaLabel: `Go to Trading cockpit for paper session ${promotionSession.sessionId}`,
-      actionHref: workspacePath("trading")
+      title: `Paper promotion approved - target run ${promotionDecision.newRunId}`,
+      targetRunId: promotionDecision.newRunId,
+      detail: `${promotionDecision.reason} Durable promotion ${promotionDecision.promotionId ?? "record"} is retained with audit ${promotionDecision.auditReference ?? "pending"}.`,
+      actionLabel: "Open governed Trading record",
+      actionAriaLabel: `Open governed Trading promotion record for target run ${promotionDecision.newRunId}`,
+      actionHref: appendRouteQuery(`${workspacePath("trading")}#promotion-gate-panel`, {
+        runId: promotionDecision.newRunId
+      })
     }
     : null;
 
@@ -1382,8 +1440,8 @@ export function buildPromotionPanelState({
     statusRole: evaluation?.titleTone === "danger" ? "alert" : "status",
     statusLive: evaluation?.titleTone === "danger" ? "assertive" : "polite",
     evaluation,
-    sessionCreated,
-    showCashForm: (promoteState === "evaluated" || promoteState === "creating") && promotionEval?.isEligible === true,
+    approval,
+    showApprovalForm: (promoteState === "evaluated" || promoteState === "approving") && promotionEval?.isEligible === true,
     showIneligibleDismiss: promoteState === "evaluated" && promotionEval?.isEligible === false
   };
 }
@@ -1421,17 +1479,17 @@ export function buildStrategyCommandStates({
       : `Select exactly two runs before using this command. ${selectedRuns.length} selected.`;
   const promoteLabel = promoteState === "evaluating"
     ? "Evaluating..."
-    : promoteState === "creating"
-      ? "Creating session..."
+    : promoteState === "approving"
+      ? "Approving promotion..."
       : promoteState === "done"
-        ? "Session created"
+        ? "Promotion approved"
         : "Promote to Paper";
   const promoteDisabledReason = busy
     ? "Wait for the current Strategy command to finish."
     : promoteBusy
       ? "Paper-promotion workflow is already running."
       : promoteState === "done"
-        ? "A paper session was already created for this promotion."
+        ? "A durable Paper promotion was already approved for this run."
         : hasOneBacktestRun
           ? null
           : selectedRuns.length === 1
@@ -1522,131 +1580,114 @@ export function buildPromotionEvaluationState(
   };
 }
 
-export function buildPromotionCashForm({
-  input,
+export function buildPromotionApprovalForm({
   eligible,
   promoteState,
   acknowledged = false
 }: {
-  input: string;
   eligible: boolean;
   promoteState: PromoteState;
   acknowledged?: boolean;
-}): StrategyPromotionCashFormState {
-  const normalizedInput = input.trim();
-  const parsed = parsePromotionInitialCashInput(input);
-  const isCreating = promoteState === "creating";
-  const shouldValidate = eligible && promoteState === "evaluated";
-  const errorText = shouldValidate && normalizedInput.length > 0 && parsed === null
-    ? "Enter at least $1,000 in whole dollars."
-    : null;
-  const disabledReason = buildPromotionCashFormDisabledReason({
+}): StrategyPromotionApprovalFormState {
+  const isApproving = promoteState === "approving";
+  const disabledReason = buildPromotionApprovalFormDisabledReason({
     eligible,
     promoteState,
-    parsed,
-    normalizedInput,
     acknowledged
   });
-  const helpText = errorText ?? disabledReason ?? "Minimum $1,000. Use whole-dollar paper capital.";
-  const inputDisabledReason = isCreating ? "Paper-session creation is already running; wait before changing capital." : null;
-  const acknowledgementDisabledReason = isCreating
-    ? "Paper-session creation is already running; wait before changing acknowledgement."
+  const acknowledgementDisabledReason = isApproving
+    ? "Governed promotion approval is already running; wait before changing acknowledgement."
     : null;
-  const cancelDisabledReason = isCreating
-    ? "Paper-session creation is already running; wait for the session result before closing setup."
+  const cancelDisabledReason = isApproving
+    ? "Governed promotion approval is already running; wait for the durable decision before closing review."
     : null;
-  const inputHelpId = "promote-initial-cash-help";
-  const inputDisabledReasonId = inputDisabledReason ? "promote-initial-cash-disabled-reason" : null;
   const acknowledgementDisabledReasonId = acknowledgementDisabledReason
-    ? "promote-paper-session-acknowledgement-disabled-reason"
+    ? "promote-paper-approval-acknowledgement-disabled-reason"
     : null;
 
   return {
-    inputId: "promote-initial-cash",
-    inputHelpId,
-    label: "Initial cash ($)",
-    value: input,
-    min: 1000,
-    step: 1000,
-    inputDisabled: isCreating,
-    inputDisabledReason,
-    inputDisabledReasonId,
-    inputDescribedBy: [inputHelpId, inputDisabledReasonId].filter(Boolean).join(" "),
-    acknowledgementId: "promote-paper-session-acknowledgement",
-    acknowledgementLabel: "I reviewed the promotion gates and paper-capital impact.",
+    acknowledgementId: "promote-paper-approval-acknowledgement",
+    acknowledgementLabel: "I reviewed the four canonical promotion checks and the exact retained Evidence Vault source.",
     acknowledgementChecked: acknowledged,
-    acknowledgementDisabled: isCreating,
+    acknowledgementDisabled: isApproving,
     acknowledgementDisabledReason,
     acknowledgementDisabledReasonId,
     acknowledgementDescribedBy: acknowledgementDisabledReasonId ?? undefined,
-    helpText,
-    errorText,
-    describedBy: inputHelpId,
-    canSubmit: eligible && promoteState === "evaluated" && parsed !== null && acknowledged && !isCreating,
+    canSubmit: eligible && promoteState === "evaluated" && acknowledged && !isApproving,
     disabledReason,
-    submitLabel: isCreating ? "Starting paper session..." : "Start paper session",
+    submitLabel: isApproving ? "Approving Paper promotion..." : "Approve Paper promotion",
     submitAriaLabel: disabledReason
-      ? `Start paper session unavailable: ${disabledReason}`
-      : "Start paper session from selected strategy run",
+      ? `Approve Paper promotion unavailable: ${disabledReason}`
+      : "Approve governed Paper promotion from selected strategy run",
     cancelLabel: "Cancel",
-    cancelAriaLabel: cancelDisabledReason ?? "Cancel paper promotion setup",
-    cancelDisabled: isCreating,
+    cancelAriaLabel: cancelDisabledReason ?? "Cancel Paper promotion review",
+    cancelDisabled: isApproving,
     cancelDisabledReason
   };
 }
 
-function buildPromotionCashFormDisabledReason({
+function buildPromotionApprovalFormDisabledReason({
   eligible,
   promoteState,
-  parsed,
-  normalizedInput,
   acknowledged
 }: {
   eligible: boolean;
   promoteState: PromoteState;
-  parsed: number | null;
-  normalizedInput: string;
   acknowledged: boolean;
 }): string | null {
-  if (promoteState === "creating") {
-    return "Paper-session creation is already running.";
+  if (promoteState === "approving") {
+    return "Governed promotion approval is already running.";
   }
 
   if (promoteState !== "evaluated") {
-    return "Evaluate an eligible completed backtest before starting a paper session.";
+    return "Evaluate an eligible completed backtest before approving Paper promotion.";
   }
 
   if (!eligible) {
-    return "The selected strategy run is not eligible for paper-session promotion.";
-  }
-
-  if (normalizedInput.length === 0) {
-    return "Enter initial paper capital of at least $1,000.";
-  }
-
-  if (parsed === null) {
-    return "Enter at least $1,000 in whole-dollar paper capital.";
+    return "The selected strategy run is not eligible for governed Paper promotion.";
   }
 
   if (!acknowledged) {
-    return "Acknowledge the evaluated gates and paper-capital impact before starting a paper session.";
+    return "Acknowledge the canonical checklist and retained source evidence before approving Paper promotion.";
   }
 
   return null;
 }
 
-export function parsePromotionInitialCashInput(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return null;
+export function buildPaperPromotionApprovalRequest(
+  sourceRunId: string,
+  reviewPacket: StrategyRunReviewPacket
+): ApprovePromotionRequest {
+  const normalizedRunId = sourceRunId.trim();
+  if (!normalizedRunId || reviewPacket.run.summary.runId !== normalizedRunId) {
+    throw new Error("The retained review packet does not match the selected source run.");
   }
 
-  const parsed = Number(trimmed);
-  if (!Number.isFinite(parsed) || parsed < 1000 || !Number.isInteger(parsed)) {
-    return null;
+  const retainedEvidenceReference = reviewPacket.run.evidenceLoop?.retainedEvidenceReferences
+    .map((reference) => reference.trim())
+    .find(isCanonicalEvidenceVaultReference);
+  if (!retainedEvidenceReference) {
+    throw new Error(
+      "Paper promotion requires an exact evidence://evidence-vault/{vaultId} reference retained on the source run. Open Evidence Workbench and retain the promotion source before approval."
+    );
   }
 
-  return parsed;
+  const approvalChecklist = [...workstationApi.PAPER_PROMOTION_APPROVAL_CHECKLIST];
+  return {
+    runId: normalizedRunId,
+    approvalReason: "Operator reviewed the canonical Backtest-to-Paper controls and retained source evidence.",
+    reviewNotes: `Strategy review used exact source-retained Evidence Vault reference ${retainedEvidenceReference}.`,
+    approvalChecklist,
+    evidenceReferences: approvalChecklist.map((checklistId) => `${checklistId}:${retainedEvidenceReference}`)
+  };
+}
+
+function isCanonicalEvidenceVaultReference(reference: string): boolean {
+  // Keep this grammar aligned with the shared server-side EvidenceVaultReference parser:
+  // an exact authority plus an ev- prefix and exactly 24 hexadecimal characters. A raw,
+  // anchored expression deliberately rejects ports, credentials, encoding, traversal,
+  // queries, and fragments before URL normalization can obscure them.
+  return /^evidence:\/\/evidence-vault\/ev-[0-9a-f]{24}$/i.test(reference);
 }
 
 export function buildPlotToolTabs(activeView: StrategyPlotToolView): StrategyPlotToolTab[] {
@@ -2748,10 +2789,35 @@ function formatOptionalPromotionReason(value: string | null | undefined): string
   return trimmed && trimmed.length > 0 ? trimmed : "No approval reason was recorded.";
 }
 
-export function buildRunDetail(run: StrategyRunRecord): StrategyRunDetailState {
+export function buildRunDetail(
+  run: StrategyRunRecord,
+  evidenceLoop: StrategyRunEvidenceLoop | null = null,
+  evidenceStatus: StrategyRunEvidenceLoadStatus = "idle",
+  acceptanceChecklist: StrategyRunAcceptanceChecklistItem[] = []
+): StrategyRunDetailState {
   const title = formatText(run.strategyName);
   const modeLabel = formatText(run.mode).toUpperCase();
   const statusText = formatText(run.status);
+  const acceptanceCriteria = (evidenceLoop?.operatorAcceptanceCriteria ?? [])
+    .map((criterion) => criterion.trim())
+    .filter((criterion, index, criteria) => criterion.length > 0 && criteria.indexOf(criterion) === index);
+  const acceptanceCriteriaStatus = evidenceStatus === "ready" && acceptanceCriteria.length === 0
+    ? "unavailable"
+    : evidenceStatus;
+  const acceptanceCriteriaMessage = acceptanceCriteriaStatus === "loading"
+    ? "Loading operator acceptance criteria."
+    : acceptanceCriteriaStatus === "ready"
+      ? `${acceptanceCriteria.length} required operator acceptance ${acceptanceCriteria.length === 1 ? "criterion" : "criteria"}. These are requirements, not recorded acceptance decisions.`
+      : "No operator acceptance criteria are available for this run.";
+  const acceptanceChecklistStatus = evidenceStatus === "ready" && acceptanceChecklist.length === 0
+    ? "unavailable"
+    : evidenceStatus;
+  const readyChecklistCount = acceptanceChecklist.filter((item) => item.status === "Ready").length;
+  const acceptanceChecklistMessage = acceptanceChecklistStatus === "loading"
+    ? "Loading the durable paper-promotion checklist."
+    : acceptanceChecklistStatus === "ready"
+      ? `${readyChecklistCount} of ${acceptanceChecklist.length} paper-promotion requirements have a durable decision and keyed evidence. Eligibility alone does not complete this checklist.`
+      : "No canonical paper-promotion checklist is available for this run.";
 
   return {
     runId: run.id,
@@ -2777,7 +2843,16 @@ export function buildRunDetail(run: StrategyRunRecord): StrategyRunDetailState {
     notesText: formatOptionalNotes(run.notes),
     closeButtonLabel: "Close",
     closeButtonAriaLabel: `Close ${title} run detail`,
-    biasDisclosure: run.biasDisclosure ?? null
+    biasDisclosure: run.biasDisclosure ?? null,
+    acceptanceCriteriaLabel: "Operator acceptance requirements",
+    acceptanceCriteria,
+    acceptanceCriteriaStatus,
+    acceptanceCriteriaMessage,
+    acceptanceChecklistLabel: "Paper-promotion acceptance checklist",
+    acceptanceChecklist,
+    acceptanceChecklistStatus,
+    acceptanceChecklistMessage,
+    evidenceAction: buildStrategyEvidenceAction(run)!
   };
 }
 
@@ -2859,11 +2934,6 @@ function buildSelectionText(selectedRuns: StrategyRunRecord[]): string {
   return `${selectedRuns[0].strategyName} vs ${selectedRuns[1].strategyName}`;
 }
 
-function formatText(value: string | null | undefined): string {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : "Unavailable";
-}
-
 function buildPlotExpression(
   activeRun: StrategyRunRecord | null,
   companionRun: StrategyRunRecord | null
@@ -2878,136 +2948,6 @@ function buildPlotExpression(
   }
 
   return `${primaryKey}.spread() vs ${primaryKey}.implied_volatility(3m, forward, 100)`;
-}
-
-function formatOptionalNotes(value: string | null | undefined): string {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : "No operator notes were recorded for this run.";
-}
-
-function formatNullableNumber(value: number | null | undefined, digits: number): string {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value.toFixed(digits)
-    : "Unavailable";
-}
-
-function formatSignedNullableNumber(value: number | null | undefined, digits: number): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  const formatted = Math.abs(value).toFixed(digits);
-  return value > 0 ? `+${formatted}` : value < 0 ? `-${formatted}` : formatted;
-}
-
-function countBy<T>(items: T[], selector: (item: T) => string): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const item of items) {
-    const key = selector(item);
-    counts.set(key, (counts.get(key) ?? 0) + 1);
-  }
-
-  return counts;
-}
-
-function distinctFormattedValues(values: Array<string | null | undefined>): string[] {
-  return [...new Set(values.map((value) => formatText(value)).filter((value) => value !== "Unavailable"))].sort();
-}
-
-function isLiveAdjacentMode(mode: string | null | undefined): boolean {
-  return mode?.toLowerCase() === "paper" || mode?.toLowerCase() === "live";
-}
-
-function formatMoney(value: number | null | undefined, signed = false): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  const amount = formatCurrencyAmount(Math.abs(value), { maximumFractionDigits: 0 });
-
-  if (!signed) {
-    return value < 0 ? `-${amount}` : amount;
-  }
-
-  if (value > 0) {
-    return `+${amount}`;
-  }
-
-  if (value < 0) {
-    return `-${amount}`;
-  }
-
-  return amount;
-}
-
-function formatSignedCount(value: number | null | undefined): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toLocaleString()}`;
-}
-
-function formatCount(value: number | null | undefined): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  return value.toLocaleString();
-}
-
-function formatSignedPercent(value: number | null | undefined): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  const formatted = `${Math.abs(value * 100).toFixed(2)}%`;
-  if (value > 0) {
-    return `+${formatted}`;
-  }
-
-  if (value < 0) {
-    return `-${formatted}`;
-  }
-
-  return formatted;
-}
-
-function formatPromotionState(value: string | null | undefined): string {
-  const text = formatText(value);
-  if (text === "Unavailable") {
-    return text;
-  }
-
-  const normalized = text
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  return normalized
-    ? `${normalized.charAt(0).toUpperCase()}${normalized.slice(1).toLowerCase()}`
-    : "Unavailable";
-}
-
-function parseDecimalToken(value: string | null | undefined): number | null {
-  if (!value) {
-    return null;
-  }
-
-  const normalized = value.replace(/[^0-9.+-]/g, "");
-  if (!normalized) {
-    return null;
-  }
-
-  const parsed = Number.parseFloat(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function parsePercentToken(value: string | null | undefined): number | null {
-  const parsed = parseDecimalToken(value);
-  return parsed === null ? null : parsed / 100;
 }
 
 function buildComparisonEvidenceText(row: RunComparisonRow): string {

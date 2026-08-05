@@ -364,12 +364,14 @@ describe("App", () => {
     });
     expect(confidence).toHaveTextContent("4 ranked items");
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Review all scopes" }));
+    expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
     }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
 
-    const evidenceSummary = screen.getByRole("region", { name: "Report pack approval waiting Evidence summary" });
+    const evidenceSummary = screen.getByRole("region", { name: /Report pack approval waiting evidence summary/i });
     const moreEvidence = within(evidenceSummary).getByText("More evidence").closest("details");
     expect(moreEvidence).not.toHaveAttribute("open");
     await user.click(within(evidenceSummary).getByText("More evidence"));

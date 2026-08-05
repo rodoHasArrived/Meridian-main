@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-28
+**Reviewed:** 2026-08-04
 **Scope:** the six evidence-gated P0 rows in the
 [production-readiness tracker](../product/implementation-todo-list.md) — what evidence exists,
 what an agent can still generate, and exactly which decisions and activations require a human.
@@ -20,9 +20,9 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 | `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | None — both ADRs remain **Proposed** | **Sign-off decision** (see [PRD-000 approval package](#prd-000-adr-019adr-020-approval-package)) |
 | `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets. Eight hosted attempts drove out the full defect chain (publish contract, PostgreSQL discovery, elevated initdb ACLs, exit mutex affinity, unbounded pg_ctl pipe drain, first-boot budgets, lifecycle-bridge DI); every fix is receipt-evidenced | **First green run exists:** [run #15 / 30347353295](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30347353295) on candidate `d64506650` (2026-07-28) — publish, install, supervised dedicated-database startup, and all endpoint probes passed | Re-dispatch on the frozen release commit and keep that run link here |
 | `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | None — no release tag has run the hardened workflow | **Provision secrets + ARM64 runner, then tag** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
-| `PRD-015` | Dated `production-recovery-drill-*` artifact on the release commit plus operator replay/reconciliation review | `invoke-production-recovery.ps1` drill is exercised by the `Production Certification` recovery job; the connection-string parsing defect that failed every earlier drill was fixed in `ff620a73e` (after run #4) | Failed drill artifacts only (runs #1–#4 predate the fix) | **Operator review** of the first green drill receipt (see [PRD-015 review](#prd-015-recovery-drill-operator-review)) |
-| `PRD-016` | Green hosted `Production Certification` run on the release commit; repository administrator activates it as a required release check | Workflow runs deterministic PostgreSQL integrations with Cobertura coverage, zero-skip TRX gate, schema evidence, NuGet/npm scans; npm advisories now gate through the reviewed acceptance register | 4 runs, all failed (see [hosted-run diagnosis](#hosted-run-diagnosis-production-certification-run-4-2026-07-27)) | **Required-check activation** after first green run (see [PRD-016 activation](#prd-016-required-check-activation)); the deterministic-integrations job additionally blocks on the [PostgreSQL harness-debt lanes](production-readiness-audit-2026-07-27.md) |
-| `PRD-017` | Local docs/hash validators and the hosted documentation evidence job green on the final candidate commit | `run-docs-automation.py --profile core` plus drift rejection runs inside `Production Certification` | Run #4's documentation job failed on generated-doc drift that has since been regenerated on `main`; local core profile is green on this candidate | None beyond keeping the final candidate drift-free (agent-runnable; commands below) |
+| `PRD-015` | Dated `production-recovery-drill-*` artifact on the release commit plus operator replay/reconciliation review | `invoke-production-recovery.ps1` drill is exercised by the `Production Certification` recovery job; the connection-string parsing defect that failed every earlier drill was fixed in `ff620a73e` (after run #4) | Green candidate drill receipts now exist, including [first all-green certification run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on `b3bd557876523b81a2791f4bfd814647035f389a` | **Operator review** of the frozen-release drill receipt (see [PRD-015 review](#prd-015-recovery-drill-operator-review)) |
+| `PRD-016` | Green hosted `Production Certification` run on the release commit; repository administrator activates it as a required release check | The workflow runs deterministic PostgreSQL integrations with Cobertura coverage, a zero-skip TRX gate, post-test schema capture, and NuGet/npm scans. Candidate `b3bd557876523b81a2791f4bfd814647035f389a` completed the ordered harness repair without narrowing either integration filter | **First all-green candidate run:** [#19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on 2026-08-05 — `Meridian.Tests` 781/0/0, Direct Lending 7/0/0, zero-skip aggregate 788/0/0 with `certifiable: true`, and all four jobs green. The successful post-test schema capture produced header-only table and migration-ledger inventories after teardown, proving cleanup rather than substantive migrated-schema coverage | Re-dispatch on the frozen release commit, then **required-check activation** by a repository administrator (see [PRD-016 activation](#prd-016-required-check-activation)) |
+| `PRD-017` | Local docs/hash validators and the hosted documentation evidence job green on the final candidate commit | `run-docs-automation.py --profile core` plus drift rejection runs inside `Production Certification` | The same-commit documentation job passed in [run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on candidate `b3bd557876523b81a2791f4bfd814647035f389a` | None beyond keeping the frozen release commit drift-free (agent-runnable; commands below) |
 
 ## Hosted-Run Diagnosis: Production Certification run #4 (2026-07-27)
 
@@ -32,13 +32,14 @@ dispositions:
 
 | Job | Root cause in run #4 | Disposition |
 | --- | --- | --- |
-| deterministic PostgreSQL integration and coverage evidence | 541 failed / 218 passed / 759 total in 10s — the main-wide PostgreSQL test-harness debt (shared-fixture poisoning, destructive tests, reference-equality assertions) documented in the [2026-07-27 audit §2](production-readiness-audit-2026-07-27.md). Failure modes are heterogeneous (missing relations, FK violations, NREs, assertion failures), not one root cause. | **Open.** Blocked on the audit's remediation lanes (isolated per-class databases/schemas first). Do not narrow the `Category=Integration` filter to force green; that would hollow out the gate. |
+| deterministic PostgreSQL integration and coverage evidence | 541 failed / 218 passed / 759 total in 10s — the main-wide PostgreSQL test-harness debt (shared-fixture poisoning, destructive tests, reference-equality assertions) documented in the [2026-07-27 audit §2](production-readiness-audit-2026-07-27.md). Failure modes are heterogeneous (missing relations, FK violations, NREs, assertion failures), not one root cause. | **Remediated on candidate `b3bd557876523b81a2791f4bfd814647035f389a`.** [Run 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) first proved both unchanged integration filters and the zero-skip gate green. The 541/218/759 result remains the historical baseline. |
 | NuGet and npm dependency evidence | `npm audit --audit-level=high` exits non-zero while the risk-accepted `react-router` advisory (GHSA-qwww-vcr4-c8h2, no patched 7.x, unreachable server-side path) exists — the job could never pass as written, which would also have hidden any new advisory behind the expected failure. | **Fixed in this candidate.** Advisories now gate through `build/scripts/ci/validate-npm-audit.py` against the reviewed register `build/config/security/npm-audit-accepted-advisories.json` (mirroring `KV-2026-002` in [known-vulnerabilities](../security/known-vulnerabilities.md)). Fail-closed: unlisted, expired, or ceiling-exceeding advisories and missing/error audit reports all fail; stale acceptances fail until pruned. |
 | encrypted backup and clean restore drill | `invoke-production-recovery.ps1` connection-string parsing defect (`DbConnectionStringBuilder` property assignment adapted as a dictionary write) — every backup/restore/drill failed at preflight. | **Fixed on `main`** in `ff620a73e` (after run #4); `ProductionRecoveryScriptTests` proves the parse end-to-end. Candidate run #5 then surfaced the next defect in the chain: the runner image ships PostgreSQL 16 client tools and `pg_dump` 16 refuses to dump the `postgres:17` service. **Fixed in this candidate** by installing `postgresql-client-17` (PATH-pinned) in both PostgreSQL-service jobs — the same skew would have voided the integrations job's schema-evidence capture once its tests pass. |
 | same-commit documentation evidence | Generated-doc drift on `main` @ `104171091` (`ai-inventory-report.json`, `doc-health-dashboard.md` stale against sources). | **Fixed on `main`** by the subsequent regeneration commits; the core profile is drift-free on this candidate. |
 
 Earlier context: runs #1 (2026-07-21), #2 (scheduled, 2026-07-26), and #3 (2026-07-27, branch)
-also failed; run #4 is the authoritative current-state diagnosis.
+also failed; run #4 remains the authoritative historical baseline diagnosis, while run 30967937407
+is the first all-green candidate evidence.
 `Publish Smoke` history: 7 runs; the two green runs
 ([#6](https://github.com/rodoHasArrived/Meridian-main/actions/runs/29457840313),
 [#7](https://github.com/rodoHasArrived/Meridian-main/actions/runs/29458571835), 2026-07-15)
@@ -117,7 +118,7 @@ drain/flush ordering, and lifecycle receipts.
 
 **Actor:** operations owner.
 
-1. After the next green `Production Certification` run, download the dated
+1. After a green `Production Certification` run on the frozen release commit, download the dated
    `production-recovery-drill-<run id>` artifact (drill receipt JSON plus restored-state
    verification) from the run page.
 2. Review the receipt's RPO/RTO measurements against the declared objectives and the restored
@@ -131,12 +132,11 @@ drain/flush ordering, and lifecycle receipts.
 
 **Actor:** repository administrator.
 
-1. First green `Production Certification` run on the release commit is a precondition; the
-   deterministic-integrations job stays red until the
-   [PostgreSQL harness-debt lanes](production-readiness-audit-2026-07-27.md) land (audit §2:
-   per-class isolated databases/schemas, destructive-test sweep, value-based record
-   assertions — in that order). Do not activate the check while it cannot pass; do not narrow
-   the test filter to force it.
+1. A green `Production Certification` run on the release commit remains the precondition.
+   Candidate `b3bd557876523b81a2791f4bfd814647035f389a` completed the
+   [PostgreSQL harness-debt lanes](production-readiness-audit-2026-07-27.md) in the documented
+   order, and run 30967937407 first proved all four jobs green without narrowing either integration
+   filter. Re-dispatch on the frozen release commit before activation.
 2. Then: repository **Settings → Rules → Rulesets** (or classic branch protection on `main`),
    add the workflow's job check runs as required status checks — `deterministic PostgreSQL
    integration and coverage evidence`, `NuGet and npm dependency evidence`, `encrypted backup
@@ -160,6 +160,16 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-08-05** — `Production Certification` **FIRST ALL-GREEN RUN**
+  ([run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407),
+  candidate `b3bd557876523b81a2791f4bfd814647035f389a`): all four jobs passed.
+  The unchanged filters produced `Meridian.Tests` **781 passed / 0 failed / 0 skipped** and
+  `Meridian.DirectLending.Tests` **7 passed / 0 failed / 0 skipped**; the zero-skip validator
+  reported **788 passed / 0 failed / 0 skipped** with `certifiable: true`. Dependency evidence,
+  the encrypted recovery drill, and same-commit documentation were also green. Post-test schema
+  capture completed successfully, but deterministic teardown left the table and migration-ledger
+  inventories header-only; this is cleanup evidence, not substantive migrated-schema coverage.
+  The frozen-release rerun, operator review, and repository-administrator activation remain open.
 - **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` **FIRST GREEN RUN**
   ([run #15 / 30347353295](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30347353295),
   follow-up candidate `d64506650`): the all-fixes head passed end to end — dashboard built

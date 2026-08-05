@@ -88,6 +88,7 @@ export type {
 
 export interface AppShellViewState {
   activeWorkspace: WorkspaceSummary;
+  location: AppShellLocation;
   statusPanel: ShellStatusPanel | null;
   canRenderRoutes: boolean;
   routeFocus: AppShellRouteFocusState;
@@ -95,6 +96,10 @@ export interface AppShellViewState {
   workflowContinuity: AppShellWorkflowContinuityViewModel;
   commandPaletteTrigger: AppShellCommandPaletteTriggerState;
 }
+
+export type AppShellLocation =
+  | { kind: "home" }
+  | { kind: "workspace"; workspaceKey: WorkspaceKey };
 
 export interface AppShellWorkspacePayload {
   session: SessionInfo | null;
@@ -142,6 +147,7 @@ export function buildAppShellViewState({
   payload
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
+  const location = resolveAppShellLocation(pathname);
   const failedItems = buildShellFailureItems(workspaceErrors, workflowError);
   const hasAnyPayload = Boolean(
     payload.session
@@ -158,6 +164,7 @@ export function buildAppShellViewState({
 
   return {
     activeWorkspace,
+    location,
     statusPanel: buildShellStatusPanel({
       loading,
       error,
@@ -192,6 +199,13 @@ export function buildAppShellViewState({
     ),
     commandPaletteTrigger: buildCommandPaletteTriggerState(commandPaletteOpen)
   };
+}
+
+export function resolveAppShellLocation(pathname: string): AppShellLocation {
+  const normalized = pathname.split(/[?#]/, 1)[0]?.replace(/\/+$/, "") || "/";
+  return normalized === "/"
+    ? { kind: "home" }
+    : { kind: "workspace", workspaceKey: normalizeWorkspacePath(pathname) };
 }
 
 export function getWorkspaceForPath(pathname: string): WorkspaceSummary {

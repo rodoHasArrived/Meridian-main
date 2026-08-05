@@ -15,10 +15,10 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `75748f865323`
+- Source fingerprint: `037e0eae915d`
 - Baseline date for open Gantt tasks: `2026-06-17`
-- Registered WPF screens: `93`
-- Open automated tasks: `1`
+- Registered WPF screens: `94`
+- Open automated tasks: `2`
 
 ## Workspace Summary
 
@@ -27,7 +27,7 @@ This tracker is generated from the live WPF shell registry, the maintained deskt
 | Trading | 6 | 5 | 1 | 0 | 6 | 6 | 0 |
 | Portfolio | 9 | 4 | 4 | 1 | 9 | 9 | 0 |
 | Accounting | 14 | 6 | 8 | 0 | 14 | 14 | 0 |
-| Reporting | 8 | 5 | 3 | 0 | 8 | 8 | 0 |
+| Reporting | 9 | 6 | 3 | 0 | 8 | 9 | 1 |
 | Strategy | 13 | 6 | 3 | 3 | 13 | 13 | 0 |
 | Data | 25 | 6 | 9 | 10 | 25 | 25 | 0 |
 | Settings | 18 | 6 | 6 | 6 | 17 | 18 | 1 |
@@ -77,6 +77,7 @@ gantt
     Reporting Workspace evidence :done, reporting_reportingshell, 2026-06-26, 1d
     Fund report pack evidence :done, reporting_fundreportpack, 2026-06-26, 1d
     Report run status evidence :done, reporting_reportrunstatus, 2026-06-26, 1d
+    Evidence packets Needs screenshot :crit, active, reporting_evidenceworkbench, 2026-06-17, 3d
     Reporting dashboard evidence :done, reporting_dashboard, 2026-06-26, 1d
     Analysis export evidence :done, reporting_analysisexport, 2026-06-26, 1d
     Report-line provenance evidence :done, reporting_reportlineprovenanceexplorer, 2026-06-26, 1d
@@ -373,7 +374,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundAuditTrail (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-audit-trail.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +12 more.
 
 #### Security and instrument explorer (`SecurityInstrumentExplorer`)
 
@@ -408,6 +409,14 @@ gantt
 - [x] Registered in the WPF shell registry as ReportRunStatus (DashboardPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-run-status.png (2026-06-26).
 - [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, +2 more.
+
+#### Evidence packets (`EvidenceWorkbench`)
+
+- Workspace section: `Report Packs`; visibility: `Primary`; page class: `EvidenceWorkbenchPage`.
+- Status: `Needs screenshot`.
+- [x] Registered in the WPF shell registry as EvidenceWorkbench (EvidenceWorkbenchPage).
+- [ ] Capture a fixture-mode desktop screenshot for EvidenceWorkbench or record an explicit non-capture decision.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +5 more.
 
 #### Reporting dashboard (`Dashboard`)
 
@@ -497,7 +506,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as StrategyRuns (StrategyRunsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-runs.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, +9 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, +10 more.
 
 #### Run detail (`RunDetail`)
 
@@ -603,7 +612,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Options (OptionsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-options.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +33 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +34 more.
 
 #### Add provider wizard (`AddProviderWizard`)
 
@@ -675,7 +684,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Storage (StoragePage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +38 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +39 more.
 
 #### Data export (`DataExport`)
 

@@ -88,7 +88,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 50m));
 
-        result.Should().BeNull();
+        result.IsApproved.Should().BeTrue();
     }
 
     [Fact]
@@ -99,8 +99,8 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 150m));
 
-        result.Should().NotBeNull();
-        result!.Message.Should().NotBeNullOrWhiteSpace();
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 30m));
 
-        result.Should().BeNull();
+        result.IsApproved.Should().BeTrue();
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 30m));
 
-        result.Should().NotBeNull();
+        result.IsApproved.Should().BeFalse();
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateSellOrder(quantity: 60m));
 
-        result.Should().BeNull();
+        result.IsApproved.Should().BeTrue();
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateSellOrder(quantity: 200m));
 
-        result.Should().NotBeNull();
+        result.IsApproved.Should().BeFalse();
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateSellOrder(quantity: 120m));
 
-        result.Should().BeNull();
+        result.IsApproved.Should().BeTrue();
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 100m));
 
-        result.Should().BeNull();
+        result.IsApproved.Should().BeTrue();
     }
 
     [Fact]
@@ -200,6 +200,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 200m));
 
-        result!.Message.Should().Contain(DefaultSymbol);
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Contain(DefaultSymbol);
     }
 }

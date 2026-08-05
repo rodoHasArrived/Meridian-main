@@ -132,10 +132,9 @@ public sealed class PortfolioStatePositionTrackerTests
         // Current 80 long, buy 40 → projected 120 > 100 → reject.
         var rejected = await rule.EvaluateAsync(BuildOrder("AAPL", OrderSide.Buy, 40m));
 
-        // A satisfied rule reports no finding; a breach reports one.
-        approved.Should().BeNull();
-        rejected.Should().NotBeNull();
-        rejected!.Message.Should().NotBeNullOrWhiteSpace();
+        approved.IsApproved.Should().BeTrue();
+        rejected.IsApproved.Should().BeFalse();
+        rejected.RejectReason.Should().NotBeNullOrWhiteSpace();
         // Evidence must be the projected position the rule compared, not the current one.
         rejected.ObservedValue.Should().Be(120m);
         rejected.LimitValue.Should().Be(100m);
@@ -158,8 +157,8 @@ public sealed class PortfolioStatePositionTrackerTests
         var tripped = await tightBreaker.EvaluateAsync(BuildOrder("MSFT", OrderSide.Buy, 1m));
         var allowed = await looseBreaker.EvaluateAsync(BuildOrder("MSFT", OrderSide.Buy, 1m));
 
-        tripped.Should().NotBeNull("a 10% drawdown breaches the 5% kill-switch");
-        allowed.Should().BeNull("a 10% drawdown is within the 20% threshold");
+        tripped.IsApproved.Should().BeFalse("a 10% drawdown breaches the 5% kill-switch");
+        allowed.IsApproved.Should().BeTrue("a 10% drawdown is within the 20% threshold");
         // Observed and limit are both percentages, so the recorded evidence is comparable.
         tripped!.ObservedValue.Should().Be(10m);
         tripped.LimitValue.Should().Be(5m);

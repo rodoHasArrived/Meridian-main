@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-13
+**Reviewed:** 2026-08-05
 
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
@@ -54,7 +54,7 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | finance-standard-pages-screen (evidence-detail stub retired per `W8-UX-CONSOL-001`; `/accounting/evidence/detail` redirects into the reporting evidence workbench) | `Views/AnalysisExportPage.xaml` + Reporting shell | Partial |
 | strategy-designer-screen | `Views/QuantScriptPage.xaml` + `Views/BacktestPage.xaml` | Partial — authoring present, no designer canvas |
 | operations-continuity-screen | `Services/OperationsControlCenterClient.cs` (surfaced as a Settings tab) | **Gap-leaning** — no dedicated page |
-| evidence-workbench-screen (canonical mount `/reporting/evidence` per `W8-UX-CONSOL-001`; former `/accounting/evidence` and `/data/evidence` mounts redirect there) | `Views/FinancialRecordExplorerPage.xaml` + evidence strips | **Gap** — `EvidenceWorkbench` is a wired nav target with no page (see below) |
+| evidence-workbench-screen (canonical mount `/reporting/evidence` per `W8-UX-CONSOL-001`; former `/accounting/evidence` and `/data/evidence` mounts redirect there) | `Views/EvidenceWorkbenchPage.xaml` + `ViewModels/EvidenceWorkbenchViewModel.cs` (Wave P1, delivered 2026-08-05) | Partial — subjects, packet completeness, proof chain, lineage, vault request lists/documents, validate, and manifest export ship over the shared evidence endpoints; document intake and reviewer accept/reject remain browser-first |
 | operator-readiness-console | `Views/DashboardPage.xaml` / `Views/SystemHealthPage.xaml` (tangential) | **Gap** — no cross-lane readiness console |
 | operations-record-release-screen | none (adjacent: `Views/RetentionAssurancePage.xaml`, `Views/ArchiveHealthPage.xaml`) | **Gap** — no record-release / publish-gating page |
 | covered-call-screen | `Views/OptionsPage.xaml` (chain viewer only) | **Gap** — no covered-call writing/roll workflow |
@@ -65,26 +65,23 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 1. **operator-readiness-console** — the operator's cross-lane daily cockpit that rolls up readiness
    across strategy, trading, data, accounting, and reporting. WPF `DashboardPage`/`SystemHealthPage`
    are only tangential. Web source: `screens/operator-readiness-console.tsx` + `.view-model.ts`.
-2. **evidence-workbench-screen** — central to the governance/audit workflow (evidence lineage, proof
-   chains, SLA assessment, packet actions). Confirmed wiring gap: `EvidenceWorkbench` is already used
-   as a navigation *target* (e.g. `FundLedgerViewModel` emits `EvidenceWorkbench:{subject}` routes,
-   and `FundAuditTrail` lists it as a related tag), and `ShellNavigationCatalog.NormalizeParameterizedPageTag`
-   special-cases the `EvidenceWorkbench:` prefix — but **no `EvidenceWorkbenchPage` exists**, so the
-   tag currently resolves to fallback content. Web source: `screens/evidence-workbench-screen.tsx` + `.view-model.ts`.
-3. **operations-record-release-screen** — period-close record release / publish gating with readiness
+2. **operations-record-release-screen** — period-close record release / publish gating with readiness
    and evidence gates. No WPF page. Web source: `screens/operations-record-release-screen.tsx` + `.view-model.ts`.
-4. **operations-continuity-screen** — cross-lane operational continuity / approval-policy /
+3. **operations-continuity-screen** — cross-lane operational continuity / approval-policy /
    close-calendar. WPF surfaces only a fraction through `OperationsControlCenterClient` as a Settings
    tab; no dedicated page. Web source: `screens/operations-continuity-screen.tsx` + `.view-model.ts`.
-5. **covered-call-screen** — a staged covered-call income-strategy workflow (chain preview, trade
+4. **covered-call-screen** — a staged covered-call income-strategy workflow (chain preview, trade
    timeline, run history). WPF `OptionsPage` is a read-only chain viewer. Web source:
    `screens/covered-call-screen.tsx` + `.view-model.ts`.
-6. **data-operations-assurance-workstreams** — add Data workspace pages for the browser-first
+5. **data-operations-assurance-workstreams** — add Data workspace pages for the browser-first
    Ingestion Operations Center and Storage & Data Assurance. Consume
    `DataOperationsAssuranceDtos` and the shared workstation endpoints; do not reconstruct job
    transitions, maintenance permissions, preview fingerprints, or assurance summaries in WPF.
-7. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
+6. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
    WPF covers authoring via `QuantScriptPage`/`BacktestPage` but has no designer canvas.
+
+Closed gaps: **evidence-workbench-screen** was Wave P1 and shipped 2026-08-05 — see the matrix row
+above and the delivery note under Wave P1.
 
 ## Closure Sequence
 
@@ -96,13 +93,21 @@ view model must consume the same shared read model the browser screen consumes.
 
 ### Wave P1 — Wire the already-referenced Evidence Workbench (highest leverage, lowest ambiguity)
 
-- Add `Views/EvidenceWorkbenchPage.xaml` + `ViewModels/EvidenceWorkbenchViewModel.cs` bound to the
-  Evidence Vault read models (`Workstation/Models/EvidenceVaultPresentationModels.cs`) and the same
-  workstation evidence endpoints the browser `evidence-workbench-screen` uses.
-- Register the `EvidenceWorkbench` tag (Reporting/Accounting workspace) so existing
-  `EvidenceWorkbench:{subject}` deep links from `FundLedgerViewModel` and `WorkflowLibraryViewModel`
-  resolve to a real page and parse the `:{subject}` parameter via `LoadFromParameterAsync`.
-- Tests: `Meridian.Wpf.Tests` view-model projection + deep-link subject parsing.
+**Delivered 2026-08-05.**
+
+- `Views/EvidenceWorkbenchPage.xaml` + `ViewModels/EvidenceWorkbenchViewModel.cs` bind the shared
+  evidence endpoints (`/api/workstation/evidence/*`) through the thin
+  `Services/EvidenceWorkbenchApiClient.cs`, and reuse the Evidence Vault read models
+  (`Workstation/Models/EvidenceVaultPresentationModels.cs`) for the retained-document queue plus the
+  new packet projections in `Workstation/Models/EvidenceWorkbenchPresentationModels.cs`.
+- The `EvidenceWorkbench` tag is registered in the Reporting workspace ("Report Packs" section), so
+  existing `EvidenceWorkbench:{subject}` deep links from `FundLedgerViewModel` and
+  `WorkflowLibraryViewModel` resolve to the real page; `NavigationService` passes the
+  `{subjectKind}/{subjectId}` subject through the page's navigation `Parameter`.
+- Tests: `Meridian.Wpf.Tests/ViewModels/EvidenceWorkbenchViewModelTests.cs` (projection, deep-link
+  parsing, validate/export flows) plus updated shell routing tests.
+- Follow-up (tracked, not blocking P1): document intake and reviewer accept/reject actions remain
+  browser-first; add them when the desktop lane needs write-side vault parity.
 
 ### Wave P2 — Operator Readiness Console
 
@@ -159,7 +164,7 @@ python3 build/scripts/docs/validate-docs-structure.py --summary
 
 - Every browser workstation screen has a WPF equivalent page/view model or an explicitly sequenced
   wave item in this plan (matrix above is the tracker).
-- The `EvidenceWorkbench` navigation target resolves to a real page (Wave P1).
+- The `EvidenceWorkbench` navigation target resolves to a real page (Wave P1 — delivered 2026-08-05).
 - New parity surfaces consume shared contracts, read models, and workstation endpoints; no
   desktop-local product state, DTOs, or readiness rules are introduced.
 - Desktop build and desktop-focused service tests pass on the authoritative CI gate.
