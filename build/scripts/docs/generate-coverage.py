@@ -46,8 +46,15 @@ STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
 DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
+# Generated reports echo names verbatim, so counting them as documentation lets coverage rise
+# with nothing written. `docs/generated/repository-structure.md` is the worst case: it lists every
+# path in the repository, and C# files are conventionally named for the single public type they
+# hold, so a type counted as documented purely because its own source file exists. The sibling
+# api-contract dashboard already excludes both roots for this reason; this generator excluded only
+# the first.
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
+    "docs/generated/",
 )
 
 # Regex: public (static )?(sealed )?(partial )?(class|interface|record|enum) Name
@@ -214,10 +221,23 @@ def _check_type_documentation(
     items: List[SourceItem],
     doc_contents: Dict[str, str],
 ) -> CategoryResult:
-    """Mark items as documented if any doc file mentions their name."""
+    """Mark items as documented if any doc file names them.
+
+    The test used to be `item.name in content`, so a name counted whenever its characters
+    appeared anywhere. Adding a design blueprint that merely *mentions* `MarkPriceQuote`,
+    `MarkPriceQualityPolicy`, or `DailyMarkToMarketRequest` dropped all three off the
+    undocumented list without a line of reference documentation being written — making
+    documentation debt look paid by incidental mentions, and moving the metric in the
+    reassuring direction while nothing improved.
+
+    A boundary check does not distinguish a reference doc from a design doc — a blueprint
+    naming a type on its own still counts. What it removes is the accidental hit: a name
+    inside a longer name, inside a file path, or inside a member it does not own.
+    """
     for item in items:
+        pattern = re.compile(r"(?<![0-9A-Za-z_])" + re.escape(item.name) + r"(?![0-9A-Za-z_])")
         for _doc_path, content in doc_contents.items():
-            if item.name in content:
+            if pattern.search(content):
                 item.documented = True
                 break
 

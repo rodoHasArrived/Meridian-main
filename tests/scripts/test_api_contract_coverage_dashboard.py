@@ -84,5 +84,43 @@ class GeneratorContractTests(unittest.TestCase):
         self.assertEqual(("docs/status", "docs/generated"), module.GENERATED_DOC_ROOTS)
 
 
+
+class CoverageReportBoundaryTests(unittest.TestCase):
+    """`generate-coverage.py` had the same substring defect on public type names."""
+
+    def setUp(self) -> None:
+        path = SCRIPTS / "generate-coverage.py"
+        spec_cov = importlib.util.spec_from_file_location("generate_coverage", path)
+        assert spec_cov is not None and spec_cov.loader is not None
+        self.cov = importlib.util.module_from_spec(spec_cov)
+        sys.modules[spec_cov.name] = self.cov
+        spec_cov.loader.exec_module(self.cov)
+
+    def _documented(self, name: str, doc_text: str) -> bool:
+        item = self.cov.SourceItem(name=name, file_path="x.cs", line=1)
+        self.cov._check_type_documentation([item], {"d.md": doc_text})
+        return item.documented
+
+    def test_a_type_inside_a_longer_type_is_not_documented(self) -> None:
+        # Observed: `PriceMark`, `RunResult`, and `ExportPackage` were credited by
+        # `DailyPortfolioPriceMark.cs`, `ScriptRunResult.cs`, and
+        # `LedgerScheduledReportExportPackageBuilder.cs` appearing in a generated file tree.
+        self.assertFalse(self._documented("PriceMark", "see DailyPortfolioPriceMark.cs"))
+        self.assertFalse(self._documented("RunResult", "see ScriptRunResult.cs"))
+        self.assertFalse(self._documented("ScheduleState", "`AutomatedJournalScheduleStateDto`"))
+
+    def test_a_named_type_is_still_documented(self) -> None:
+        self.assertTrue(self._documented("PriceMark", "The `PriceMark` record carries"))
+        self.assertTrue(self._documented("PriceMark", "PriceMark."))
+
+    def test_generated_roots_are_excluded_from_the_doc_corpus(self) -> None:
+        # `docs/generated/repository-structure.md` lists every path in the repository, and C#
+        # files are named for the type they hold — so without this a type counts as documented
+        # because its own source file exists. Currently a no-op given the boundary check above,
+        # kept because it is the sibling dashboard's rule and the boundary check does not cover
+        # a type whose name matches a file stem exactly.
+        self.assertIn("docs/generated/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
+        self.assertIn("docs/status/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
+
 if __name__ == "__main__":
     unittest.main()
