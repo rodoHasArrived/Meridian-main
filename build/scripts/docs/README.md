@@ -445,9 +445,9 @@ resolves to a known built-in or a valid `mcp__<server>` pattern. Parenthesised s
 
 The checks fail closed by design: a YAML sequence, an empty or punctuation-only value, an
 MCP-only allow-list, a misspelled permission key, an unterminated scalar, and a missing or empty
-agent directory are all errors rather than silent passes. PyYAML is **not** required at runtime —
-it is optional in this repository — so the frontmatter subset is parsed directly and one code path
-runs in every environment.
+agent directory are all errors rather than silent passes. The validator requires PyYAML at runtime.
+Before running the commands below, install it with
+`python3 -m pip install --requirement build/scripts/docs/requirements.txt`.
 
 ```bash
 python3 build/scripts/docs/validate-agent-definitions.py
