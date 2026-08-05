@@ -1,0 +1,175 @@
+<Page x:Class="Meridian.Wpf.Views.OperationsRecordReleasePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="{Binding Title}"
+      AutomationProperties.AutomationId="OperationsRecordReleasePage">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
+        <Grid MaxWidth="1320">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource WorkspaceContextStripStyle}"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="OperationsRecordReleaseActionStrip">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding Title}"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        <TextBlock Text="{Binding Subtitle}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,10,0,0">
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding Summary.StatusLabel}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="OperationsRecordReleaseSummaryChip" />
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}" Margin="8,0,0,0">
+                                <TextBlock Text="{Binding WorkflowLabel}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="OperationsRecordReleaseWorkflowChip" />
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Refresh"
+                                    Command="{Binding RefreshCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    AutomationProperties.AutomationId="OperationsRecordReleaseRefreshButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Open continuity"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="OperationsContinuity"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="OperationsRecordReleaseOpenContinuityButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Open report packs"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="FundReportPack"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="OperationsRecordReleaseOpenReportPacksButton"
+                                    Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding StatusText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="OperationsRecordReleaseStatusText" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperationsRecordReleasePathPanel">
+                        <StackPanel>
+                            <TextBlock Text="Release path" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding Summary.StatusDetail}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0" />
+                            <TextBlock Text="{Binding WorkflowErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasWorkflowError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperationsRecordReleaseWorkflowError" />
+                            <ItemsControl ItemsSource="{Binding Steps}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperationsRecordReleaseStepList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource WorkspaceToneQueueCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <WrapPanel>
+                                                    <TextBlock Text="{Binding Index}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding StatusText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                </WrapPanel>
+                                                <TextBlock Text="{Binding Detail}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                                <WrapPanel Margin="0,8,0,0">
+                                                    <Button Content="Inspect step"
+                                                            Command="{Binding DataContext.SelectStepCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            MinWidth="110"
+                                                            Margin="0,0,8,0" />
+                                                    <Button Content="Open step page"
+                                                            Command="{Binding DataContext.OpenPageCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                            CommandParameter="{Binding RouteText}"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            MinWidth="110" />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperationsRecordReleaseInspectorPanel">
+                        <StackPanel>
+                            <TextBlock Text="Selected step" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding SelectedStep.Label}"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0"
+                                       AutomationProperties.AutomationId="OperationsRecordReleaseSelectedStepLabel" />
+                            <TextBlock Text="{Binding SelectedStep.StatusText}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       Margin="0,2,0,0" />
+                            <TextBlock Text="{Binding SelectedStep.Detail}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0" />
+                            <TextBlock Text="{Binding SelectedStep.RouteText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

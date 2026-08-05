@@ -7,17 +7,17 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "c9288978c77b",
+  "sourceFingerprint": "9236debf10b4",
   "baselineDate": "2026-06-17",
   "summary": {
-    "screenCount": 95,
+    "screenCount": 97,
     "workspaceCount": 7,
     "screenshotCount": 92,
-    "testReferenceCount": 95,
-    "openTaskCount": 3,
+    "testReferenceCount": 97,
+    "openTaskCount": 5,
     "statusCounts": {
       "evidence-current": 92,
-      "needs-screenshot": 3
+      "needs-screenshot": 5
     },
     "workspaces": [
       {
@@ -42,23 +42,23 @@
       },
       {
         "name": "Accounting",
-        "screenCount": 14,
-        "primaryCount": 6,
+        "screenCount": 15,
+        "primaryCount": 7,
         "secondaryCount": 8,
         "overflowCount": 0,
         "screenshotCount": 14,
-        "testReferenceCount": 14,
-        "openTaskCount": 0
+        "testReferenceCount": 15,
+        "openTaskCount": 1
       },
       {
         "name": "Reporting",
-        "screenCount": 9,
-        "primaryCount": 6,
+        "screenCount": 10,
+        "primaryCount": 7,
         "secondaryCount": 3,
         "overflowCount": 0,
         "screenshotCount": 8,
-        "testReferenceCount": 9,
-        "openTaskCount": 1
+        "testReferenceCount": 10,
+        "openTaskCount": 2
       },
       {
         "name": "Strategy",
@@ -885,6 +885,49 @@
     },
     {
       "workspace": "Accounting",
+      "pageTag": "OperationsContinuity",
+      "title": "Operations continuity",
+      "section": "Fund Ops",
+      "visibilityTier": "Primary",
+      "order": 12,
+      "pageType": "OperationsContinuityPage",
+      "screenshotIndexRow": true,
+      "screenshotPath": null,
+      "screenshotExists": false,
+      "refreshedDate": null,
+      "fixtureMode": "TBI",
+      "screenshotGap": "New W8-WPF-PARITY-001 Wave P3 surface has no retained PNG yet.",
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs",
+        "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/OperationsRecordReleaseViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SettingsViewModelOperationsControlTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs"
+      ],
+      "status": "needs-screenshot",
+      "tasks": [
+        {
+          "done": true,
+          "text": "Registered in the WPF shell registry as OperationsContinuity (OperationsContinuityPage)."
+        },
+        {
+          "done": false,
+          "text": "Capture a fixture-mode desktop screenshot for OperationsContinuity or record an explicit non-capture decision."
+        },
+        {
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs, +7 more."
+        }
+      ],
+      "openTaskCount": 1
+    },
+    {
+      "workspace": "Accounting",
       "pageTag": "RunLedger",
       "title": "Run ledger",
       "section": "Run Inspectors",
@@ -1510,6 +1553,41 @@
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +5 more."
+        }
+      ],
+      "openTaskCount": 1
+    },
+    {
+      "workspace": "Reporting",
+      "pageTag": "OperationsRecordRelease",
+      "title": "Operations record release",
+      "section": "Report Packs",
+      "visibilityTier": "Primary",
+      "order": 17,
+      "pageType": "OperationsRecordReleasePage",
+      "screenshotIndexRow": true,
+      "screenshotPath": null,
+      "screenshotExists": false,
+      "refreshedDate": null,
+      "fixtureMode": "TBI",
+      "screenshotGap": "New W8-WPF-PARITY-001 Wave P3 surface has no retained PNG yet.",
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/OperationsRecordReleaseViewModelTests.cs"
+      ],
+      "status": "needs-screenshot",
+      "tasks": [
+        {
+          "done": true,
+          "text": "Registered in the WPF shell registry as OperationsRecordRelease (OperationsRecordReleasePage)."
+        },
+        {
+          "done": false,
+          "text": "Capture a fixture-mode desktop screenshot for OperationsRecordRelease or record an explicit non-capture decision."
+        },
+        {
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/OperationsRecordReleaseViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -3360,6 +3438,8 @@
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundAccountsViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/OperationsRecordReleaseViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterEditViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
@@ -3385,7 +3465,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, +26 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, +28 more."
         }
       ],
       "openTaskCount": 0
