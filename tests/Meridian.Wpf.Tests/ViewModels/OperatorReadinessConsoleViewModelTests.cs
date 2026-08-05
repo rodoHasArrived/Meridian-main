@@ -436,6 +436,31 @@ public sealed class OperatorReadinessConsoleViewModelTests
     }
 
     [Fact]
+    public void ResolveWorkItemPageTag_PrefersSharedWorkflowCatalogResolution()
+    {
+        var item = new OperatorWorkItemDto(
+            WorkItemId: "wi-trust",
+            Kind: OperatorWorkItemKindDto.ProviderTrustGate,
+            Label: "DK1 operator sign-off pending",
+            Detail: "Trust gate needs sign-off.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-08-05T05:00:00Z"),
+            Workspace: "Trading",
+            TargetRoute: Meridian.Contracts.Api.UiApiRoutes.WorkstationTradingReadiness,
+            TargetPageTag: "TradingShell");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered, new FakeWorkflowActionCatalog())
+            .Should().Be(
+                "TradingShell",
+                "the shared workflow catalog's answer is the workflow's deliberate entry surface and outranks the kind fallback");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered)
+            .Should().Be(
+                "FundAuditTrail",
+                "without a catalog the routeless desktop fallback for trust items still applies");
+    }
+
+    [Fact]
     public void ResolveWorkItemPageTag_HonorsTargetRouteBeforeKindFallback()
     {
         var item = CreateWorkItem(
@@ -777,6 +802,41 @@ public sealed class OperatorReadinessConsoleViewModelTests
                 DetectedAt: DateTimeOffset.Parse("2026-08-04T04:30:00Z"),
                 LastUpdatedAt: DateTimeOffset.Parse("2026-08-04T05:40:00Z"))
         ];
+
+    private sealed class FakeWorkflowActionCatalog : Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog
+    {
+        private static readonly WorkflowActionDto ReadinessAction = new(
+            ActionId: "trading.review-paper-candidate",
+            Label: "Review Candidate for Paper",
+            Detail: "Continue the Strategy to Trading handoff.",
+            TargetPageTag: "TradingShell",
+            Tone: "Primary",
+            WorkItemKind: null,
+            RoutePrefixes: [Meridian.Contracts.Api.UiApiRoutes.WorkstationTradingReadiness],
+            RouteContains: [],
+            Aliases: []);
+
+        public IReadOnlyList<WorkflowDefinitionDto> GetWorkflowDefinitions() => [];
+
+        public IReadOnlyList<WorkflowActionDto> GetActions() => [ReadinessAction];
+
+        public WorkflowActionDto? ResolveAction(string? actionId)
+            => actionId == ReadinessAction.ActionId ? ReadinessAction : null;
+
+        public WorkflowActionDto? ResolveOperatorWorkItem(OperatorWorkItemDto? workItem)
+            => ResolveRoute(workItem?.TargetRoute);
+
+        public WorkflowActionDto? ResolveRoute(string? targetRoute)
+            => targetRoute is not null
+                && targetRoute.StartsWith(
+                    Meridian.Contracts.Api.UiApiRoutes.WorkstationTradingReadiness,
+                    StringComparison.OrdinalIgnoreCase)
+                ? ReadinessAction
+                : null;
+
+        public string ResolveTargetPageTag(string? actionId, string fallbackPageTag)
+            => ResolveAction(actionId)?.TargetPageTag ?? fallbackPageTag;
+    }
 
     private sealed class FakeReadinessProvider : ITradingOperatorReadinessProvider
     {

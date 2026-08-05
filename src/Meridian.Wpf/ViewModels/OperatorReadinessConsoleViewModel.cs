@@ -21,6 +21,7 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
     private readonly IWorkstationOperatorInboxApiClient? _inboxClient;
     private readonly IWorkstationReconciliationApiClient? _reconciliationClient;
     private readonly StrategyRunWorkspaceService? _runWorkspaceService;
+    private readonly Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? _workflowActionCatalog;
     private readonly Func<string, bool> _isRegisteredPageTag;
     private readonly CancellationTokenSource _cts = new();
     private bool _isDisposed;
@@ -43,12 +44,14 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
         IWorkstationOperatorInboxApiClient? inboxClient = null,
         IWorkstationReconciliationApiClient? reconciliationClient = null,
         StrategyRunWorkspaceService? runWorkspaceService = null,
-        Func<string, bool>? isRegisteredPageTag = null)
+        Func<string, bool>? isRegisteredPageTag = null,
+        Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog = null)
     {
         _readinessProvider = readinessProvider;
         _inboxClient = inboxClient;
         _reconciliationClient = reconciliationClient;
         _runWorkspaceService = runWorkspaceService;
+        _workflowActionCatalog = workflowActionCatalog;
         _isRegisteredPageTag = isRegisteredPageTag ?? (static tag => ShellNavigationCatalog.GetPage(tag) is not null);
         RefreshCommand = new AsyncRelayCommand(
             () => _isDisposed ? Task.CompletedTask : RefreshAsync(_cts.Token),
@@ -488,7 +491,8 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
             OperatorReadinessConsoleMapper.BuildWorkItemRows(
                 inbox?.Items ?? [],
                 readiness?.WorkItems ?? [],
-                _isRegisteredPageTag));
+                _isRegisteredPageTag,
+                _workflowActionCatalog));
 
     private void ApplySummaryFacts(
         TradingOperatorReadinessDto? readiness,

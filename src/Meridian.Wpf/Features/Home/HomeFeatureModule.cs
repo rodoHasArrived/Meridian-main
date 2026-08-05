@@ -52,7 +52,8 @@ public sealed class HomeFeatureModule : IDesktopFeatureModule
             sp.GetService<TradingOperatorReadinessService>(),
             sp.GetService<IWorkstationOperatorInboxApiClient>(),
             sp.GetService<IWorkstationReconciliationApiClient>(),
-            sp.GetService<StrategyRunWorkspaceService>()));
+            sp.GetService<StrategyRunWorkspaceService>(),
+            workflowActionCatalog: sp.GetService<Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog>()));
         services.AddTransient<OperatorReadinessConsolePage>();
     }
 

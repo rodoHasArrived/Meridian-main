@@ -333,7 +333,8 @@ public static class OperatorReadinessConsoleMapper
     public static IReadOnlyList<OperatorReadinessWorkItemRowModel> BuildWorkItemRows(
         IReadOnlyList<OperatorWorkItemDto> inboxItems,
         IReadOnlyList<OperatorWorkItemDto> readinessItems,
-        Func<string, bool> isRegisteredPageTag)
+        Func<string, bool> isRegisteredPageTag,
+        Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(inboxItems);
         ArgumentNullException.ThrowIfNull(readinessItems);
@@ -370,7 +371,7 @@ public static class OperatorReadinessConsoleMapper
                     ToWorkspaceTone(tone),
                     item.Workspace ?? "Workstation",
                     FormatTimestamp(item.CreatedAt),
-                    ResolveWorkItemPageTag(item, isRegisteredPageTag),
+                    ResolveWorkItemPageTag(item, isRegisteredPageTag, workflowActionCatalog),
                     item.PriorityScore,
                     item.PriorityExplanation);
             })
@@ -388,10 +389,22 @@ public static class OperatorReadinessConsoleMapper
         "StrategyShell", "DataShell", "SettingsShell"
     };
 
-    public static string ResolveWorkItemPageTag(OperatorWorkItemDto item, Func<string, bool> isRegisteredPageTag)
+    public static string ResolveWorkItemPageTag(
+        OperatorWorkItemDto item,
+        Func<string, bool> isRegisteredPageTag,
+        Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(isRegisteredPageTag);
+
+        // The shared workflow catalog resolves first, mirroring the main shell's inbox chain: its
+        // answer is the workflow's deliberate entry surface, so it is never demoted as coarse —
+        // e.g. a routed DK1 trust item lands on the trading readiness surface, not audit history.
+        var catalogTag = workflowActionCatalog?.ResolveOperatorWorkItem(item)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogTag) && isRegisteredPageTag(catalogTag))
+        {
+            return catalogTag;
+        }
 
         var hasRegisteredTarget = !string.IsNullOrWhiteSpace(item.TargetPageTag) && isRegisteredPageTag(item.TargetPageTag);
         if (hasRegisteredTarget && !CoarseWorkspaceShellTags.Contains(item.TargetPageTag!))
