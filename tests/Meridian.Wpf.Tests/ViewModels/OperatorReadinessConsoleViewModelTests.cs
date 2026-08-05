@@ -576,6 +576,29 @@ public sealed class OperatorReadinessConsoleViewModelTests
     }
 
     [Fact]
+    public void ResolveWorkItemPageTag_PromotionReviews_OpenRunReviewOverTheReadinessRoute()
+    {
+        var item = new OperatorWorkItemDto(
+            WorkItemId: "wi-promotion",
+            Kind: OperatorWorkItemKindDto.PromotionReview,
+            Label: "Promotion decision required",
+            Detail: "Record the paper promotion decision.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-08-05T05:00:00Z"),
+            Workspace: "Trading",
+            TargetRoute: Meridian.Contracts.Api.UiApiRoutes.WorkstationTradingReadiness,
+            TargetPageTag: "TradingShell");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered, new FakeWorkflowActionCatalog())
+            .Should().Be(
+                "StrategyRuns",
+                "the promotion decision surface is run review; the generic readiness route names the data source, not the recovery workflow");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered)
+            .Should().Be("StrategyRuns", "the promotion special does not depend on the catalog being present");
+    }
+
+    [Fact]
     public void ResolveWorkItemPageTag_LedgerPeriodClose_OpensReconciliationLikeTheMainShell()
     {
         var item = new OperatorWorkItemDto(
