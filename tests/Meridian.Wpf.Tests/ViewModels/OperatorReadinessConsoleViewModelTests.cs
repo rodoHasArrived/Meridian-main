@@ -70,7 +70,7 @@ public sealed class OperatorReadinessConsoleViewModelTests
     [InlineData("ProviderConnectionCenter", OperatorWorkItemKindDto.BrokerageSync, "settings", "AccountPortfolio")]
     [InlineData("TradingShell", OperatorWorkItemKindDto.PaperReplay, "trading", "FundAuditTrail")]
     [InlineData(null, OperatorWorkItemKindDto.ExecutionControl, "trading", "RunRisk")]
-    [InlineData(null, OperatorWorkItemKindDto.LedgerPeriodClose, null, "FundAccountingClose")]
+    [InlineData(null, OperatorWorkItemKindDto.LedgerPeriodClose, null, "FundReconciliation")]
     [InlineData(null, (OperatorWorkItemKindDto)999, "reporting", "ReportingShell")]
     [InlineData(null, (OperatorWorkItemKindDto)999, "unknown-lane", "HomeWorkspace")]
     public void ResolveWorkItemPageTag_PrefersRegisteredTargetThenKindThenWorkspace(
@@ -502,6 +502,53 @@ public sealed class OperatorReadinessConsoleViewModelTests
             "a settings provider link names the credential workflow, not account holdings");
     }
 
+    [Theory]
+    [InlineData("/settings#alpaca-provider-setup")]
+    [InlineData("/settings#provider-connection-center")]
+    public void ResolveWorkItemPageTag_SettingsProviderRoutes_BeatTheCatalogKindFallback(string targetRoute)
+    {
+        var item = new OperatorWorkItemDto(
+            WorkItemId: "wi-credentials",
+            Kind: OperatorWorkItemKindDto.BrokerageSync,
+            Label: "Link provider credentials",
+            Detail: "Provider credentials are missing.",
+            Tone: OperatorWorkItemToneDto.Critical,
+            CreatedAt: DateTimeOffset.Parse("2026-08-05T05:00:00Z"),
+            Workspace: "Settings",
+            TargetRoute: targetRoute,
+            TargetPageTag: "ProviderConnectionCenter");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered, new FakeWorkflowActionCatalog())
+            .Should().Be(
+                "Provider",
+                "the explicit settings provider route outranks the catalog's brokerage-sync kind binding to account holdings");
+    }
+
+    [Fact]
+    public void ResolveWorkItemPageTag_LedgerPeriodClose_OpensReconciliationLikeTheMainShell()
+    {
+        var item = new OperatorWorkItemDto(
+            WorkItemId: "wi-period-close",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "Sign off period close",
+            Detail: "The ledger period is ready for close sign-off.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-08-05T05:00:00Z"),
+            Workspace: "Accounting",
+            TargetRoute: Meridian.Contracts.Api.UiApiRoutes.LedgerPeriods,
+            TargetPageTag: "AccountingShell");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered, new FakeWorkflowActionCatalog())
+            .Should().Be(
+                "FundReconciliation",
+                "period-close sign-off opens the reconciliation queue ahead of the generic ledger route mapping, matching the main shell");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered)
+            .Should().Be(
+                "FundReconciliation",
+                "the close special does not depend on the catalog being present");
+    }
+
     [Fact]
     public void BuildWorkItemRows_SameToneDuplicate_KeepsTheScoredInboxCopy()
     {
@@ -888,15 +935,45 @@ public sealed class OperatorReadinessConsoleViewModelTests
             RouteContains: [],
             Aliases: []);
 
+        private static readonly WorkflowActionDto BrokerageSyncAction = new(
+            ActionId: "portfolio.review-brokerage-sync",
+            Label: "Review Brokerage Sync",
+            Detail: "Open account portfolio sync status and exception detail.",
+            TargetPageTag: "AccountPortfolio",
+            Tone: "Warning",
+            WorkItemKind: OperatorWorkItemKindDto.BrokerageSync,
+            RoutePrefixes: [],
+            RouteContains: ["/brokerage-sync"],
+            Aliases: []);
+
         public IReadOnlyList<WorkflowDefinitionDto> GetWorkflowDefinitions() => [];
 
-        public IReadOnlyList<WorkflowActionDto> GetActions() => [ReadinessAction, ReplayEvidenceAction];
+        public IReadOnlyList<WorkflowActionDto> GetActions()
+            => [ReadinessAction, ReplayEvidenceAction, BrokerageSyncAction];
 
         public WorkflowActionDto? ResolveAction(string? actionId)
             => actionId == ReadinessAction.ActionId ? ReadinessAction : null;
 
         public WorkflowActionDto? ResolveOperatorWorkItem(OperatorWorkItemDto? workItem)
-            => ResolveRoute(workItem?.TargetRoute);
+        {
+            if (workItem is null)
+            {
+                return null;
+            }
+
+            var routeMatch = ResolveRoute(workItem.TargetRoute);
+            if (routeMatch is not null)
+            {
+                return routeMatch;
+            }
+
+            return workItem.Kind switch
+            {
+                OperatorWorkItemKindDto.PaperReplay => ReplayEvidenceAction,
+                OperatorWorkItemKindDto.BrokerageSync => BrokerageSyncAction,
+                _ => null
+            };
+        }
 
         public WorkflowActionDto? ResolveRoute(string? targetRoute)
             => targetRoute is not null

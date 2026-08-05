@@ -408,23 +408,48 @@ public static class OperatorReadinessConsoleMapper
             return item.TargetPageTag!;
         }
 
-        // Route resolution comes before kind fallbacks (the browser is route-first): the shared
-        // workflow catalog first — its answer is the workflow's deliberate entry surface and is
-        // never demoted as coarse, e.g. a routed DK1 trust item lands on the trading readiness
-        // surface — then the desktop route map for routes the catalog does not know (such as
-        // settings provider-setup links).
+        // Explicit route resolution comes before every kind fallback (the browser is route-first,
+        // and honors the item's explicit destination over kind defaults): the shared workflow
+        // catalog's route bindings first — a route match is the workflow's deliberate entry
+        // surface and is never demoted as coarse, e.g. a routed DK1 trust item lands on the
+        // trading readiness surface. The catalog's kind binding is consulted only after the
+        // desktop route map below, so an explicit settings provider link is not preempted by a
+        // kind default such as brokerage-sync's account-portfolio landing.
         if (!isReplayItem)
         {
-            var catalogTag = workflowActionCatalog?.ResolveOperatorWorkItem(item)?.TargetPageTag;
-            if (!string.IsNullOrWhiteSpace(catalogTag) && isRegisteredPageTag(catalogTag))
+            var catalogRouteTag = workflowActionCatalog?.ResolveRoute(item.TargetRoute)?.TargetPageTag;
+            if (!string.IsNullOrWhiteSpace(catalogRouteTag) && isRegisteredPageTag(catalogRouteTag))
             {
-                return catalogTag;
+                return catalogRouteTag;
             }
+        }
 
+        // Kind specials mirror the main shell exactly: report-pack approvals open the report-pack
+        // queue and ledger period-close sign-off opens the reconciliation queue, ahead of the
+        // generic route map (a period-close item's ledger route names its data, not its recovery
+        // workflow).
+        if (item.Kind == OperatorWorkItemKindDto.ReportPackApproval && isRegisteredPageTag("FundReportPack"))
+        {
+            return "FundReportPack";
+        }
+
+        if (item.Kind == OperatorWorkItemKindDto.LedgerPeriodClose && isRegisteredPageTag("FundReconciliation"))
+        {
+            return "FundReconciliation";
+        }
+
+        if (!isReplayItem)
+        {
             var routeTag = Services.OperatorInboxRouteMap.ResolvePageTag(item.TargetRoute);
             if (routeTag is not null && isRegisteredPageTag(routeTag))
             {
                 return routeTag;
+            }
+
+            var catalogKindTag = workflowActionCatalog?.ResolveOperatorWorkItem(item)?.TargetPageTag;
+            if (!string.IsNullOrWhiteSpace(catalogKindTag) && isRegisteredPageTag(catalogKindTag))
+            {
+                return catalogKindTag;
             }
         }
 
@@ -436,10 +461,8 @@ public static class OperatorReadinessConsoleMapper
             OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
-            OperatorWorkItemKindDto.ReportPackApproval => "FundReportPack",
             OperatorWorkItemKindDto.ProviderTrustGate => "FundAuditTrail",
             OperatorWorkItemKindDto.ExecutionControl => "RunRisk",
-            OperatorWorkItemKindDto.LedgerPeriodClose => "FundAccountingClose",
             OperatorWorkItemKindDto.BrokerExecutionReconciliation => "TradingShell",
             _ => null
         };

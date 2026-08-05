@@ -1719,10 +1719,14 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return null;
         }
 
-        var catalogTarget = _workflowActionCatalog?.ResolveOperatorWorkItem(workItem)?.TargetPageTag;
-        if (!string.IsNullOrWhiteSpace(catalogTarget))
+        // Explicit route resolution outranks every kind fallback: the catalog's route bindings
+        // first, then the kind specials, then the desktop route map. The catalog's kind binding
+        // waits until after the route map so an explicit settings provider link is not preempted
+        // by a kind default such as brokerage-sync's account-portfolio landing.
+        var catalogRouteTarget = _workflowActionCatalog?.ResolveRoute(workItem.TargetRoute)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogRouteTarget))
         {
-            return catalogTarget;
+            return catalogRouteTarget;
         }
 
         if (workItem.Kind == OperatorWorkItemKindDto.ReportPackApproval)
@@ -1739,6 +1743,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         if (!string.IsNullOrWhiteSpace(routeTarget))
         {
             return routeTarget;
+        }
+
+        var catalogKindTarget = _workflowActionCatalog?.ResolveOperatorWorkItem(workItem)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogKindTarget))
+        {
+            return catalogKindTarget;
         }
 
         var kindTarget = workItem.Kind switch
