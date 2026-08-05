@@ -8,8 +8,14 @@ export function formatDecimal(value: number, digits: number): string {
   return value.toFixed(digits);
 }
 
-/** Input is already in percent units (42.5 -> "42.5%"). For fractions use `formatRatioAsPercent`. */
-export function formatPercent(value: number): string {
+/**
+ * Input is a fraction of 1 (0.425 -> "42.5%"), not percent units.
+ *
+ * Implied volatility and CAGR arrive from the covered-call API as fractions.
+ * Kept local rather than delegating to `@/lib/format` because these render
+ * ungrouped (`toFixed`); the shared helper adds thousands separators.
+ */
+export function formatRatioAsPercent(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return `${(value * 100).toFixed(1)}%`;
 }
