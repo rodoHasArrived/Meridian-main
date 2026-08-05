@@ -19,10 +19,12 @@ public static class OperatorInboxRouteMap
 
         var normalizedRoute = targetRoute.Split('?', 2)[0].TrimEnd('/');
 
-        // Settings provider-setup links (e.g. /settings#alpaca-provider-setup) name the
+        // Settings provider links (e.g. /settings#alpaca-provider-setup or the
+        // /settings#provider-connection-center fallback for unlinked providers) name the
         // credential/integration workflow; the desktop's provider configuration page owns it.
         if (normalizedRoute.StartsWith("/settings", StringComparison.OrdinalIgnoreCase)
-            && normalizedRoute.Contains("provider-setup", StringComparison.OrdinalIgnoreCase))
+            && (normalizedRoute.Contains("provider-setup", StringComparison.OrdinalIgnoreCase)
+                || normalizedRoute.Contains("provider-connection-center", StringComparison.OrdinalIgnoreCase)))
         {
             return "Provider";
         }

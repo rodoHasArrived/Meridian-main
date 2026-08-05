@@ -480,18 +480,20 @@ public sealed class OperatorReadinessConsoleViewModelTests
                 "replay items ignore shared targets and routes (the browser makes the same exception) and keep the replay-evidence surface");
     }
 
-    [Fact]
-    public void ResolveWorkItemPageTag_SettingsProviderSetupRoute_OpensProviderPage()
+    [Theory]
+    [InlineData("/settings#alpaca-provider-setup")]
+    [InlineData("/settings#provider-connection-center")]
+    public void ResolveWorkItemPageTag_SettingsProviderRoutes_OpenProviderPage(string targetRoute)
     {
         var item = CreateWorkItem(
             "wi-credentials",
             OperatorWorkItemToneDto.Critical,
             DateTimeOffset.Parse("2026-08-05T05:00:00Z"),
-            targetRoute: "/settings#alpaca-provider-setup");
+            targetRoute: targetRoute);
 
         OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered).Should().Be(
             "Provider",
-            "a settings provider-setup link names the credential workflow, not account holdings");
+            "a settings provider link names the credential workflow, not account holdings");
     }
 
     [Fact]
