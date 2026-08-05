@@ -82,7 +82,14 @@ across 17 classes including the alternative-asset set.
 
 ## What is at risk
 
-### R1 — Schedules and legs are written narrower than they are read (highest severity)
+### R1 — Schedules and legs are written narrower than they are read (highest severity) — *addressed*
+
+> **Status:** fixed in this branch. `StructuredCreditTerms.FactorSchedule` is now a typed
+> `FactorScheduleEntry list` and `SwapLeg` carries the full per-leg economics; both serialize into
+> the shapes their readers accept, the schedule now also reaches the economic-terms paydown reader,
+> and `SecurityAssetTermsSchema` declares the element shapes so the codec tests can catch this class
+> of drift. The analysis below is retained as the record of what was wrong and why.
+
 
 The read side models a full economic shape. The write side does not produce it. Nothing fails.
 
@@ -200,13 +207,14 @@ computable check.
 
 ## Top priorities
 
-**1 — Close the write/read term-shape gap (R1).** Change `StructuredCreditTerms.FactorSchedule` to a
-typed entry list mirroring `PrincipalPaymentEntry`, and widen `SwapLeg` to the fields
-`StructuredCashFlowLeg` already models. Then extend `SecurityAssetTermsSchema` to declare inner
-shapes for `Array` / `Object` fields and assert them in `SecurityMasterProjectionCodecTests` — the
-codec test can only catch this class of drift once the schema describes the nesting. Highest
-severity: it silently breaks paydown and swap accrual accounting on instruments the platform claims
-to support.
+**1 — Close the write/read term-shape gap (R1).** *Done in this branch.*
+`StructuredCreditTerms.FactorSchedule` is a typed entry list mirroring `PrincipalPaymentEntry`, and
+`SwapLeg` carries the fields `StructuredCashFlowLeg` models. The schedule also flows into the
+economic-terms `structuredProduct` block as `{asOfDate, priorFactor, currentFactor}` transitions,
+which is what the accounting-event adapter actually reads — fixing only the asset-terms side would
+have left the paydown coverage gate unsatisfiable. `SecurityAssetTermsSchema` now declares element
+shapes for economically meaningful arrays, and `SecurityMasterTermScheduleCodecTests` measures the
+serializer against those declarations end-to-end.
 
 **2 — Separate read tolerance from write tolerance (R2).** Keep the `_ =>` fallback on the read
 path; on the amend path, either preserve the original class and terms verbatim or fail loudly. Give

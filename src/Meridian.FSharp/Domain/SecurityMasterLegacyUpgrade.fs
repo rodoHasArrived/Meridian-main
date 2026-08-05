@@ -36,6 +36,30 @@ module SecurityMasterLegacyUpgrade =
 
     let private mapSweepFrequency = Option.map PaymentFrequency.OtherFrequency
 
+    /// Converts the domain's dated factor *levels* into the *transitions* the accounting-event
+    /// adapter reads. A level says what the factor is; a paydown event needs to know what it moved
+    /// from, so consecutive levels are paired into (prior, current).
+    ///
+    /// The first point pairs against 1.0 — original face, by definition of a pool factor — so an
+    /// opening paydown is not lost. Points that do not move the factor emit no transition: they
+    /// carry no principal and would otherwise raise empty paydown events.
+    let private toFactorSchedulePoints (schedule: FactorScheduleEntry list) : FactorSchedulePoint list =
+        schedule
+        |> List.sortBy (fun entry -> entry.AsOfDate)
+        |> List.fold
+            (fun (priorFactor, points) entry ->
+                let nextPoints =
+                    if entry.Factor = priorFactor then points
+                    else
+                        { AsOfDate = entry.AsOfDate
+                          PriorFactor = priorFactor
+                          Factor = entry.Factor } :: points
+
+                entry.Factor, nextPoints)
+            (1m, [])
+        |> snd
+        |> List.rev
+
     /// Builds the canonical classification for a legacy kind from the single
     /// <see cref="AssetClassRegistry"/> source of truth, layering on the two
     /// instrument-data-dependent sub-type refinements the registry cannot express
@@ -125,6 +149,7 @@ module SecurityMasterLegacyUpgrade =
                     Some {
                         Factor = None
                         FactorDate = None
+                        FactorSchedule = []
                         WeightedAvgCoupon = None
                         WeightedAvgMaturityMonths = None
                         WeightedAvgLoanAgeMos = None
@@ -425,21 +450,37 @@ module SecurityMasterLegacyUpgrade =
                         Some {
                             CouponType = Some (CouponKind.OtherCoupon terms.CouponOrIndex)
                             CouponRate = None
-                            PaymentFrequency = terms.FactorSchedule |> Option.map PaymentFrequency.OtherFrequency
+                            // The factor schedule used to be routed here as a payment frequency and
+                            // below as a reset frequency, because it was the only string on the
+                            // record. It is neither; it now lands in StructuredProduct.FactorSchedule
+                            // where the paydown reader looks for it.
+                            PaymentFrequency = None
                             DayCount = None
                         }
                     FloatingRate =
                         Some {
                             ReferenceIndex = Some terms.CouponOrIndex
                             SpreadBps = None
-                            ResetFrequency = terms.FactorSchedule
+                            ResetFrequency = None
                             FloorRate = None
                             CapRate = None
                         }
                     StructuredProduct =
                         Some {
-                            Factor = terms.CurrentFactor
-                            FactorDate = None
+                            // The scalar stays authoritative where it exists — it may have been
+                            // updated more recently than the schedule, and it carries no date to
+                            // compare against. The schedule supplies the current factor only for a
+                            // tranche that has no scalar, in which case its date is known too.
+                            // Factor and FactorDate are always derived from the same source so they
+                            // cannot describe different points in the paydown.
+                            Factor =
+                                terms.CurrentFactor
+                                |> Option.orElse (terms.FactorSchedule |> List.tryLast |> Option.map (fun entry -> entry.Factor))
+                            FactorDate =
+                                match terms.CurrentFactor with
+                                | Some _ -> None
+                                | None -> terms.FactorSchedule |> List.tryLast |> Option.map (fun entry -> entry.AsOfDate)
+                            FactorSchedule = toFactorSchedulePoints terms.FactorSchedule
                             WeightedAvgCoupon = None
                             WeightedAvgMaturityMonths = None
                             WeightedAvgLoanAgeMos = None

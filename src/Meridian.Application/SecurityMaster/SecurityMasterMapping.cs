@@ -331,7 +331,8 @@ internal static class SecurityMasterMapping
                 GetRequiredDecimal(terms, "originalFace"),
                 ToOption(GetOptionalDecimal(terms, "currentFactor")),
                 GetRequiredString(terms, "couponOrIndex"),
-                ToOption(GetOptionalString(terms, "factorSchedule")))),
+                ToFSharpList(ToFactorSchedule(terms)),
+                ToOption(GetFactorScheduleNote(terms)))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -460,12 +461,64 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")));
     }
 
+    // Reads are alias-tolerant on the fields vendors spell differently, and every field beyond
+    // legType/currency is optional, so a leg persisted under the pre-widening shape (legType,
+    // currency, index, fixedRate only) still deserializes — it simply carries no per-leg
+    // economics, exactly as before.
     private static SwapLeg ToSwapLeg(JsonElement json)
         => new(
+            ToOption(GetFirstOptionalString(json, "legId", "id", "name")),
             GetRequiredString(json, "legType"),
             GetRequiredString(json, "currency"),
-            ToOption(GetOptionalString(json, "index")),
-            ToOption(GetOptionalDecimal(json, "fixedRate")));
+            ToOption(GetFirstOptionalString(json, "direction", "payReceive", "payOrReceive", "side")),
+            ToOption(GetFirstOptionalString(json, "index", "indexName", "referenceIndex")),
+            ToOption(GetOptionalDecimal(json, "fixedRate")),
+            ToOption(GetOptionalDecimal(json, "spreadBps")),
+            ToOption(GetFirstOptionalDecimal(json, "currentIndexRate", "lastFixing", "currentRate", "indexRate")),
+            ToOption(GetFirstOptionalDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
+            ToOption(GetFirstOptionalString(json, "paymentFrequency", "frequency")),
+            ToOption(GetFirstOptionalString(json, "dayCount", "dayCountConvention", "dayCountBasis")),
+            GetOptionalBoolean(json, "exchangesPrincipal") ?? false);
+
+    /// <summary>
+    /// Reads one dated pool-factor point. Rows missing either half of the pair are dropped by the
+    /// caller rather than defaulted — a factor of zero or a date of today would both restate face
+    /// wrongly and silently.
+    /// </summary>
+    private static FactorScheduleEntry? ToFactorScheduleEntry(JsonElement json)
+    {
+        if (json.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var asOf = GetFirstOptionalDateOnly(json, "asOfDate", "factorDate", "effectiveDate", "date");
+        var factor = GetFirstOptionalDecimal(json, "factor", "currentFactor");
+        return asOf is null || factor is null
+            ? null
+            : new FactorScheduleEntry(asOf.Value, factor.Value);
+    }
+
+    /// <summary>
+    /// Reads the typed factor schedule, tolerating the pre-typed shape where <c>factorSchedule</c>
+    /// held a free-text string. That string was never machine-readable — the cash-flow resolver has
+    /// always skipped non-array values — so it is preserved verbatim in <c>factorScheduleNote</c>
+    /// by <see cref="GetFactorScheduleNote"/> instead of being silently dropped on re-write.
+    /// </summary>
+    private static IEnumerable<FactorScheduleEntry> ToFactorSchedule(JsonElement json)
+        => GetOptionalArrayItems(json, "factorSchedule")
+            .Select(ToFactorScheduleEntry)
+            .Where(static entry => entry is not null)
+            .Select(static entry => entry!)
+            .GroupBy(static entry => entry.AsOfDate)
+            .Select(static group => group.Last())
+            .OrderBy(static entry => entry.AsOfDate);
+
+    private static string? GetFactorScheduleNote(JsonElement json)
+        => GetOptionalString(json, "factorScheduleNote")
+           ?? (json.TryGetProperty("factorSchedule", out var legacy) && legacy.ValueKind == JsonValueKind.String
+               ? legacy.GetString()
+               : null);
 
     private static Covenant ToCovenant(JsonElement json)
         => new(
@@ -602,6 +655,48 @@ internal static class SecurityMasterMapping
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
+
+    // Alias-priority readers: the first spelling that resolves wins, matching how
+    // StructuredCashFlowTermsResolver ranks its vendor aliases. Used where a term has more than one
+    // known key so both sides accept the same inputs.
+    private static string? GetFirstOptionalString(JsonElement json, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (GetOptionalString(json, propertyName) is { } value && !string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static decimal? GetFirstOptionalDecimal(JsonElement json, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (GetOptionalDecimal(json, propertyName) is { } value)
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static DateOnly? GetFirstOptionalDateOnly(JsonElement json, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (GetOptionalDateOnly(json, propertyName) is { } value)
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
 
     private static decimal GetRequiredDecimal(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.TryGetDecimal(out var decimalValue)

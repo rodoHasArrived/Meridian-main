@@ -192,6 +192,18 @@ internal static class SecurityEconomicDefinitionAdapter
             {
                 factor = definition.Terms.StructuredProduct.Value.Factor,
                 factorDate = definition.Terms.StructuredProduct.Value.FactorDate,
+                // Key spellings are the ones SecurityMasterAccountingEventSourceAdapter reads. It
+                // requires asOfDate, priorFactor, and currentFactor together — a row missing any of
+                // the three is skipped — so the paydown between consecutive factors is emitted
+                // explicitly rather than left for a consumer to difference.
+                factorSchedule = definition.Terms.StructuredProduct.Value.FactorSchedule
+                    .Select(point => new
+                    {
+                        asOfDate = point.AsOfDate,
+                        priorFactor = point.PriorFactor,
+                        currentFactor = point.Factor
+                    })
+                    .ToArray(),
                 weightedAvgCoupon = definition.Terms.StructuredProduct.Value.WeightedAvgCoupon,
                 weightedAvgMaturityMonths = definition.Terms.StructuredProduct.Value.WeightedAvgMaturityMonths,
                 weightedAvgLoanAgeMos = definition.Terms.StructuredProduct.Value.WeightedAvgLoanAgeMos,

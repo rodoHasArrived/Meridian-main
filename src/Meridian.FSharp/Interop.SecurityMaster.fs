@@ -246,13 +246,24 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                 {| schemaVersion = schemaVersion
                    effectiveDate = terms.EffectiveDate
                    maturityDate = terms.MaturityDate
+                   // Key spellings are the primary aliases StructuredCashFlowTermsResolver probes
+                   // for. A leg written here must be readable by that resolver without falling
+                   // back to a vendor alias, so any rename must move in lock-step with it.
                    legs =
                         terms.Legs
                         |> List.map (fun leg ->
-                            {| legType = leg.LegType
+                            {| legId = leg.LegId
+                               legType = leg.LegType
                                currency = leg.Currency
+                               direction = leg.Direction
                                index = leg.Index
-                               fixedRate = leg.FixedRate |}) |})
+                               fixedRate = leg.FixedRate
+                               spreadBps = leg.SpreadBps
+                               currentIndexRate = leg.CurrentIndexRate
+                               notional = leg.Notional
+                               paymentFrequency = leg.PaymentFrequency
+                               dayCount = leg.DayCount
+                               exchangesPrincipal = leg.ExchangesPrincipal |}) |})
         | SecurityKind.DirectLoan terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -283,7 +294,16 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    originalFace = terms.OriginalFace
                    currentFactor = terms.CurrentFactor
                    couponOrIndex = terms.CouponOrIndex
-                   factorSchedule = terms.FactorSchedule |})
+                   // Emitted as an array of {asOfDate, factor} rows — the shape
+                   // StructuredCashFlowTermsResolver.ReadFactorSchedule accepts. This term was
+                   // previously serialized as a free-text string, which that reader skips, so
+                   // factor-based tranches restated face off the scalar currentFactor alone.
+                   factorSchedule =
+                        terms.FactorSchedule
+                        |> List.map (fun entry ->
+                            {| asOfDate = entry.AsOfDate
+                               factor = entry.Factor |})
+                   factorScheduleNote = terms.FactorScheduleNote |})
         | SecurityKind.PrivateFundInterest terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion

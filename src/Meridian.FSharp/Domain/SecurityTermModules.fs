@@ -333,6 +333,18 @@ type PrepaymentModel =
     /// Single Monthly Mortality — monthly equivalent of CPR.
     | Smm of monthlyRate: decimal
 
+/// One pool-factor transition: the factor moved from <c>PriorFactor</c> to <c>Factor</c> on
+/// <c>AsOfDate</c>. The paydown between the two is what the accounting-event adapter turns into a
+/// principal event, which is why this is a transition rather than a bare level — a level alone
+/// cannot say how much principal was returned.
+type FactorSchedulePoint = {
+    AsOfDate: DateOnly
+    /// Factor in effect immediately before <c>AsOfDate</c>.
+    PriorFactor: decimal
+    /// Factor in effect from <c>AsOfDate</c>.
+    Factor: decimal
+}
+
 /// Analytics and pool-level data for factorable structured-credit instruments
 /// (MBS, CMO, CLO, ABS, PO strips, IO strips, CMO residuals, etc.).
 type StructuredProductTerms = {
@@ -341,6 +353,10 @@ type StructuredProductTerms = {
     Factor: decimal option
     /// As-of date for the current Factor.
     FactorDate: DateOnly option
+    /// Dated paydown history, ascending. Empty when the instrument carries only a scalar factor.
+    /// This is the series the accounting-event adapter reads to raise principal paydown events;
+    /// without it a factor instrument is permanently short of the factor-schedule coverage gate.
+    FactorSchedule: FactorSchedulePoint list
     /// Weighted-average coupon of the underlying loan pool (%).
     WeightedAvgCoupon: decimal option
     /// Weighted-average remaining maturity of the pool loans in months.

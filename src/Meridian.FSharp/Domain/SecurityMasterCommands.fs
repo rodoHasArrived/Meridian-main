@@ -139,7 +139,17 @@ module SecurityMaster =
                |> List.collect (fun leg ->
                    []
                    @ requireNotBlank "swap_leg_type_required" "SwapLeg.LegType" leg.LegType
-                   @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency))
+                   @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency
+                   @ require (leg.Notional |> Option.forall (fun notional -> notional > 0m))
+                       (error "swap_leg_notional_invalid" "SwapLeg Notional must be greater than zero when present.")
+                   @ require (leg.SpreadBps |> Option.forall (fun spread -> spread >= 0m))
+                       (error "swap_leg_spread_invalid" "SwapLeg SpreadBps must be zero or greater when present.")
+                   @ require
+                       (leg.Direction
+                        |> Option.forall (fun direction ->
+                            String.Equals(direction, "Pay", StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(direction, "Receive", StringComparison.OrdinalIgnoreCase)))
+                       (error "swap_leg_direction_invalid" "SwapLeg Direction must be either 'Pay' or 'Receive' when present.")))
         | SecurityKind.DirectLoan terms ->
             []
             @ requireNotBlank "direct_loan_borrower_required" "Borrower" terms.Borrower
@@ -157,6 +167,20 @@ module SecurityMaster =
             @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m))
                 (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be zero or greater when present.")
             @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
+            // A factor outside (0, 1] restates face to zero or above original — both silently wrong
+            // in the amortization the schedule feeds, so they are rejected rather than normalized.
+            @ (terms.FactorSchedule
+               |> List.collect (fun entry ->
+                   require (entry.Factor > 0m && entry.Factor <= 1m)
+                       (error "structured_credit_factor_schedule_factor_invalid"
+                              "StructuredCredit FactorSchedule factors must be greater than zero and no greater than one.")))
+            @ require
+                (terms.FactorSchedule
+                 |> List.map (fun entry -> entry.AsOfDate)
+                 |> List.distinct
+                 |> List.length = terms.FactorSchedule.Length)
+                (error "structured_credit_factor_schedule_duplicate_date"
+                       "StructuredCredit FactorSchedule must not carry two points for the same date.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor
