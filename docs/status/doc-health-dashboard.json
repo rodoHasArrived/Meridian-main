@@ -1,11 +1,11 @@
 {
-  "total_files": 642,
-  "total_lines": 123494,
-  "orphaned_count": 255,
+  "total_files": 643,
+  "total_lines": 123754,
+  "orphaned_count": 256,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 221,
-  "average_lines": 192.4,
+  "average_lines": 192.5,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -208,6 +208,7 @@
     "docs/ai/model-routing-telemetry.md",
     "docs/architecture/operator-observability-dashboard.md",
     "docs/architecture/runtime-component-state-boundaries.md",
+    "docs/architecture/security-master-architecture-review.md",
     "docs/architecture/workstation-continuity-payload-profile.md",
     "docs/architecture/write-path-invariants.md",
     "docs/development/fund-account-traversal.md",
@@ -1601,6 +1602,14 @@
       "stale": false
     },
     {
+      "path": "docs/architecture/security-master-architecture-review.md",
+      "line_count": 248,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/architecture/storage-design.md",
       "line_count": 3280,
       "has_heading": true,
@@ -2410,7 +2419,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
-      "line_count": 597,
+      "line_count": 598,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2586,7 +2595,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9711,
+      "line_count": 9715,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5314,7 +5323,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1358,
+      "line_count": 1365,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
