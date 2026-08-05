@@ -32,6 +32,7 @@ WINDOWS_ONLY_TEST_PROJECTS = [
 
 # Projects that are shared support libraries, not runnable test projects.
 SUPPORT_TEST_PROJECTS = {
+    "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj",
     "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
 }
 

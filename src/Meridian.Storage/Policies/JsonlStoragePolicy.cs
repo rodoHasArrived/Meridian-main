@@ -13,11 +13,13 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
 {
     private readonly StorageOptions _options;
     private readonly ISourceRegistry? _sourceRegistry;
+    private readonly string _filePrefix;
 
     public JsonlStoragePolicy(StorageOptions options, ISourceRegistry? sourceRegistry = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _sourceRegistry = sourceRegistry;
+        _filePrefix = ValidateAndFormatFilePrefix(options.FilePrefix);
     }
 
     /// <summary>
@@ -26,27 +28,29 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
     public string GetPath(MarketEvent evt)
     {
         var root = string.IsNullOrWhiteSpace(_options.RootPath) ? "data" : _options.RootPath;
-        var symbol = Sanitize(evt.EffectiveSymbol);
+        var symbol = StoragePathSegmentCodec.EncodeSymbol(evt.EffectiveSymbol);
         var type = evt.Type.ToString();
         var dateStr = FormatDate(evt.Timestamp.UtcDateTime);
         var ext = GetExtension();
-        var prefix = string.IsNullOrWhiteSpace(_options.FilePrefix) ? "" : $"{_options.FilePrefix}_";
-        var source = Sanitize(evt.Source);
-        var assetClass = GetAssetClass(evt.EffectiveSymbol, evt.Type);
+        var source = StoragePathSegmentCodec.Encode(evt.Source);
+        var assetClass = StoragePathSegmentCodec.Encode(GetAssetClass(evt.EffectiveSymbol, evt.Type));
 
         // Build path based on naming convention
-        return _options.NamingConvention switch
+        var path = _options.NamingConvention switch
         {
-            FileNamingConvention.Flat => BuildFlatPath(root, symbol, type, dateStr, prefix, ext, source),
-            FileNamingConvention.BySymbol => BuildBySymbolPath(root, symbol, type, dateStr, prefix, ext),
-            FileNamingConvention.ByDate => BuildByDatePath(root, symbol, type, dateStr, prefix, ext),
-            FileNamingConvention.ByType => BuildByTypePath(root, symbol, type, dateStr, prefix, ext),
-            FileNamingConvention.BySource => BuildBySourcePath(root, source, symbol, type, dateStr, prefix, ext),
-            FileNamingConvention.ByAssetClass => BuildByAssetClassPath(root, assetClass, symbol, type, dateStr, prefix, ext),
-            FileNamingConvention.Hierarchical => BuildHierarchicalPath(root, source, assetClass, symbol, type, dateStr, prefix, ext),
-            FileNamingConvention.Canonical => BuildCanonicalPath(root, evt.Timestamp.UtcDateTime, source, symbol, type, prefix, ext),
-            _ => BuildBySymbolPath(root, symbol, type, dateStr, prefix, ext)
+            FileNamingConvention.Flat => BuildFlatPath(root, symbol, type, dateStr, _filePrefix, ext, source),
+            FileNamingConvention.BySymbol => BuildBySymbolPath(root, symbol, type, dateStr, _filePrefix, ext),
+            FileNamingConvention.ByDate => BuildByDatePath(root, symbol, type, dateStr, _filePrefix, ext),
+            FileNamingConvention.ByType => BuildByTypePath(root, symbol, type, dateStr, _filePrefix, ext),
+            FileNamingConvention.BySource => BuildBySourcePath(root, source, symbol, type, dateStr, _filePrefix, ext),
+            FileNamingConvention.ByAssetClass => BuildByAssetClassPath(root, assetClass, symbol, type, dateStr, _filePrefix, ext),
+            FileNamingConvention.Hierarchical => BuildHierarchicalPath(root, source, assetClass, symbol, type, dateStr, _filePrefix, ext),
+            FileNamingConvention.Canonical => BuildCanonicalPath(root, evt.Timestamp.UtcDateTime, source, symbol, type, _filePrefix, ext),
+            _ => BuildBySymbolPath(root, symbol, type, dateStr, _filePrefix, ext)
         };
+
+        EnsurePathIsWithinRoot(root, path);
+        return path;
     }
 
     /// <summary>
@@ -56,7 +60,6 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
     {
         var root = string.IsNullOrWhiteSpace(_options.RootPath) ? "data" : _options.RootPath;
         var ext = GetExtension();
-        var prefix = string.IsNullOrWhiteSpace(_options.FilePrefix) ? "" : $"{_options.FilePrefix}_";
         var dateExample = _options.DatePartition switch
         {
             DatePartition.None => "",
@@ -68,28 +71,28 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         return _options.NamingConvention switch
         {
             FileNamingConvention.Flat => string.IsNullOrEmpty(dateExample)
-                ? $"{root}/{prefix}AAPL_Trade{ext}"
-                : $"{root}/{prefix}AAPL_Trade_{dateExample}{ext}",
+                ? $"{root}/{_filePrefix}AAPL_Trade{ext}"
+                : $"{root}/{_filePrefix}AAPL_Trade_{dateExample}{ext}",
             FileNamingConvention.BySymbol => string.IsNullOrEmpty(dateExample)
-                ? $"{root}/AAPL/Trade/{prefix}data{ext}"
-                : $"{root}/AAPL/Trade/{prefix}{dateExample}{ext}",
+                ? $"{root}/AAPL/Trade/{_filePrefix}data{ext}"
+                : $"{root}/AAPL/Trade/{_filePrefix}{dateExample}{ext}",
             FileNamingConvention.ByDate => string.IsNullOrEmpty(dateExample)
-                ? $"{root}/AAPL/{prefix}Trade{ext}"
-                : $"{root}/{dateExample}/AAPL/{prefix}Trade{ext}",
+                ? $"{root}/AAPL/{_filePrefix}Trade{ext}"
+                : $"{root}/{dateExample}/AAPL/{_filePrefix}Trade{ext}",
             FileNamingConvention.ByType => string.IsNullOrEmpty(dateExample)
-                ? $"{root}/Trade/AAPL/{prefix}data{ext}"
-                : $"{root}/Trade/AAPL/{prefix}{dateExample}{ext}",
+                ? $"{root}/Trade/AAPL/{_filePrefix}data{ext}"
+                : $"{root}/Trade/AAPL/{_filePrefix}{dateExample}{ext}",
             FileNamingConvention.BySource => string.IsNullOrEmpty(dateExample)
-                ? $"{root}/alpaca/AAPL/Trade/{prefix}data{ext}"
-                : $"{root}/alpaca/AAPL/Trade/{prefix}{dateExample}{ext}",
+                ? $"{root}/alpaca/AAPL/Trade/{_filePrefix}data{ext}"
+                : $"{root}/alpaca/AAPL/Trade/{_filePrefix}{dateExample}{ext}",
             FileNamingConvention.ByAssetClass => string.IsNullOrEmpty(dateExample)
-                ? $"{root}/equity/AAPL/Trade/{prefix}data{ext}"
-                : $"{root}/equity/AAPL/Trade/{prefix}{dateExample}{ext}",
+                ? $"{root}/equity/AAPL/Trade/{_filePrefix}data{ext}"
+                : $"{root}/equity/AAPL/Trade/{_filePrefix}{dateExample}{ext}",
             FileNamingConvention.Hierarchical => string.IsNullOrEmpty(dateExample)
-                ? $"{root}/alpaca/equity/AAPL/Trade/{prefix}data{ext}"
-                : $"{root}/alpaca/equity/AAPL/Trade/{prefix}{dateExample}{ext}",
-            FileNamingConvention.Canonical => $"{root}/2024/01/15/alpaca/AAPL/{prefix}Trade{ext}",
-            _ => $"{root}/AAPL/Trade/{prefix}{dateExample}{ext}"
+                ? $"{root}/alpaca/equity/AAPL/Trade/{_filePrefix}data{ext}"
+                : $"{root}/alpaca/equity/AAPL/Trade/{_filePrefix}{dateExample}{ext}",
+            FileNamingConvention.Canonical => $"{root}/2024/01/15/alpaca/AAPL/{_filePrefix}Trade{ext}",
+            _ => $"{root}/AAPL/Trade/{_filePrefix}{dateExample}{ext}"
         };
     }
 
@@ -125,7 +128,7 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         {
             var symbolInfo = _sourceRegistry.GetSymbolInfo(symbol);
             if (symbolInfo?.AssetClass != null)
-                return Sanitize(symbolInfo.AssetClass);
+                return symbolInfo.AssetClass;
         }
 
         // Default to equity
@@ -219,22 +222,6 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         };
     }
 
-    private static string Sanitize(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s))
-            return "_unknown";
-        Span<char> buf = stackalloc char[s.Length];
-        int j = 0;
-        foreach (var ch in s)
-        {
-            if (char.IsLetterOrDigit(ch) || ch == '-' || ch == '.')
-                buf[j++] = ch;
-            else
-                buf[j++] = '_';
-        }
-        return new string(buf[..j]);
-    }
-
     /// <summary>
     /// Attempts to parse metadata from a file path based on the configured naming convention.
     /// This is the inverse of GetPath() and provides a centralized parser for storage search/indexing.
@@ -258,7 +245,7 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
 
         return _options.NamingConvention switch
         {
-            FileNamingConvention.Flat => ParseFlatPath(fileName, parts),
+            FileNamingConvention.Flat => ParseFlatPath(fileName),
             FileNamingConvention.BySymbol => ParseBySymbolPath(parts, fileName),
             FileNamingConvention.ByDate => ParseByDatePath(parts, fileName),
             FileNamingConvention.ByType => ParseByTypePath(parts, fileName),
@@ -284,20 +271,34 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
     }
 
     // Flat: {root}/{prefix}{symbol}_{type}_{date}[_{source}].ext
-    private ParsedPathMetadata? ParseFlatPath(string fileName, string[] parts)
+    private ParsedPathMetadata? ParseFlatPath(string fileName)
     {
-        var prefix = string.IsNullOrWhiteSpace(_options.FilePrefix) ? "" : $"{_options.FilePrefix}_";
-        if (!string.IsNullOrEmpty(prefix) && fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            fileName = fileName[prefix.Length..];
+        if (!string.IsNullOrEmpty(_filePrefix) && fileName.StartsWith(_filePrefix, StringComparison.OrdinalIgnoreCase))
+            fileName = fileName[_filePrefix.Length..];
 
         var segments = fileName.Split('_');
         if (segments.Length < 2)
             return null;
 
-        var symbol = segments[0];
-        var eventType = segments.Length > 1 ? segments[1] : "Unknown";
-        var date = TryExtractDate(segments.Length > 2 ? segments[2] : null);
-        var source = _options.IncludeProvider && segments.Length > 3 ? segments[^1] : "Unknown";
+        var symbol = StoragePathSegmentCodec.Decode(segments[0]);
+        var eventType = segments[1];
+        var nextSegment = 2;
+        DateTimeOffset? date = null;
+
+        if (_options.DatePartition == DatePartition.Hourly && segments.Length >= nextSegment + 2)
+        {
+            date = TryExtractDate($"{segments[nextSegment]}_{segments[nextSegment + 1]}");
+            nextSegment += 2;
+        }
+        else if (_options.DatePartition != DatePartition.None && segments.Length > nextSegment)
+        {
+            date = TryExtractDate(segments[nextSegment]);
+            nextSegment++;
+        }
+
+        var source = _options.IncludeProvider && segments.Length > nextSegment
+            ? StoragePathSegmentCodec.Decode(string.Join('_', segments[nextSegment..]))
+            : "Unknown";
 
         return new ParsedPathMetadata(symbol, eventType, source, date);
     }
@@ -308,7 +309,7 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         if (parts.Length < 2)
             return null;
 
-        var symbol = parts[0];
+        var symbol = StoragePathSegmentCodec.Decode(parts[0]);
         var eventType = parts.Length > 1 ? parts[1] : "Unknown";
         var dateStr = StripPrefix(fileName);
         var date = TryExtractDate(dateStr);
@@ -322,10 +323,18 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         if (parts.Length < 2)
             return null;
 
-        var dateStr = parts[0];
-        var symbol = parts.Length > 1 ? parts[1] : "Unknown";
         var eventType = StripPrefix(fileName);
-        var date = TryExtractDate(dateStr);
+        if (_options.DatePartition == DatePartition.None)
+        {
+            return new ParsedPathMetadata(
+                StoragePathSegmentCodec.Decode(parts[0]),
+                eventType,
+                "Unknown",
+                null);
+        }
+
+        var date = TryExtractDate(parts[0]);
+        var symbol = StoragePathSegmentCodec.Decode(parts[1]);
 
         return new ParsedPathMetadata(symbol, eventType, "Unknown", date);
     }
@@ -337,7 +346,7 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
             return null;
 
         var eventType = parts[0];
-        var symbol = parts.Length > 1 ? parts[1] : "Unknown";
+        var symbol = parts.Length > 1 ? StoragePathSegmentCodec.Decode(parts[1]) : "Unknown";
         var dateStr = StripPrefix(fileName);
         var date = TryExtractDate(dateStr);
 
@@ -350,8 +359,8 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         if (parts.Length < 3)
             return null;
 
-        var source = parts[0];
-        var symbol = parts[1];
+        var source = StoragePathSegmentCodec.Decode(parts[0]);
+        var symbol = StoragePathSegmentCodec.Decode(parts[1]);
         var eventType = parts.Length > 2 ? parts[2] : "Unknown";
         var dateStr = StripPrefix(fileName);
         var date = TryExtractDate(dateStr);
@@ -366,7 +375,7 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
             return null;
 
         // Asset class is parts[0], not needed for metadata
-        var symbol = parts[1];
+        var symbol = StoragePathSegmentCodec.Decode(parts[1]);
         var eventType = parts.Length > 2 ? parts[2] : "Unknown";
         var dateStr = StripPrefix(fileName);
         var date = TryExtractDate(dateStr);
@@ -380,9 +389,9 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         if (parts.Length < 4)
             return null;
 
-        var source = parts[0];
+        var source = StoragePathSegmentCodec.Decode(parts[0]);
         // Asset class is parts[1], not needed for metadata
-        var symbol = parts[2];
+        var symbol = StoragePathSegmentCodec.Decode(parts[2]);
         var eventType = parts.Length > 3 ? parts[3] : "Unknown";
         var dateStr = StripPrefix(fileName);
         var date = TryExtractDate(dateStr);
@@ -399,8 +408,8 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         var year = parts[0];
         var month = parts[1];
         var day = parts[2];
-        var source = parts[3];
-        var symbol = parts.Length > 4 ? parts[4] : "Unknown";
+        var source = StoragePathSegmentCodec.Decode(parts[3]);
+        var symbol = parts.Length > 4 ? StoragePathSegmentCodec.Decode(parts[4]) : "Unknown";
         var eventType = StripPrefix(fileName);
 
         DateTimeOffset? date = null;
@@ -425,24 +434,26 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         // Try to extract from path segments using common patterns
         foreach (var part in parts)
         {
+            var decodedPart = StoragePathSegmentCodec.Decode(part);
+
             // Symbol pattern (1-5 uppercase letters)
-            if (symbol == null && Regex.IsMatch(part, @"^[A-Z]{1,5}$"))
-                symbol = part;
+            if (symbol == null && Regex.IsMatch(decodedPart, @"^[A-Z]{1,5}$"))
+                symbol = decodedPart;
 
             // Event type pattern
-            if (eventType == null && Enum.TryParse<MarketEventType>(part, true, out _))
-                eventType = part;
+            if (eventType == null && Enum.TryParse<MarketEventType>(decodedPart, true, out _))
+                eventType = decodedPart;
 
             // Date pattern (yyyy-MM-dd)
-            if (date == null && Regex.IsMatch(part, @"^\d{4}-\d{2}-\d{2}"))
-                date = TryExtractDate(part);
+            if (date == null && Regex.IsMatch(decodedPart, @"^\d{4}-\d{2}-\d{2}"))
+                date = TryExtractDate(decodedPart);
 
             // Known source names
             if (source == null)
             {
-                var lowered = part.ToLowerInvariant();
+                var lowered = decodedPart.ToLowerInvariant();
                 if (new[] { "alpaca", "ib", "interactivebrokers", "polygon", "stooq", "yahoo", "tiingo", "finnhub" }.Contains(lowered))
-                    source = part;
+                    source = decodedPart;
             }
         }
 
@@ -450,12 +461,13 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
         var fileSegments = fileName.Split('_');
         foreach (var seg in fileSegments)
         {
-            if (symbol == null && Regex.IsMatch(seg, @"^[A-Z]{1,5}$"))
-                symbol = seg;
-            if (eventType == null && Enum.TryParse<MarketEventType>(seg, true, out _))
-                eventType = seg;
-            if (date == null && Regex.IsMatch(seg, @"^\d{4}-\d{2}-\d{2}"))
-                date = TryExtractDate(seg);
+            var decodedSegment = StoragePathSegmentCodec.Decode(seg);
+            if (symbol == null && Regex.IsMatch(decodedSegment, @"^[A-Z]{1,5}$"))
+                symbol = decodedSegment;
+            if (eventType == null && Enum.TryParse<MarketEventType>(decodedSegment, true, out _))
+                eventType = decodedSegment;
+            if (date == null && Regex.IsMatch(decodedSegment, @"^\d{4}-\d{2}-\d{2}"))
+                date = TryExtractDate(decodedSegment);
         }
 
         return new ParsedPathMetadata(
@@ -467,10 +479,44 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
 
     private string StripPrefix(string fileName)
     {
-        var prefix = string.IsNullOrWhiteSpace(_options.FilePrefix) ? "" : $"{_options.FilePrefix}_";
-        if (!string.IsNullOrEmpty(prefix) && fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            return fileName[prefix.Length..];
+        if (!string.IsNullOrEmpty(_filePrefix) && fileName.StartsWith(_filePrefix, StringComparison.OrdinalIgnoreCase))
+            return fileName[_filePrefix.Length..];
         return fileName;
+    }
+
+    private static string ValidateAndFormatFilePrefix(string? filePrefix)
+    {
+        if (string.IsNullOrWhiteSpace(filePrefix))
+            return string.Empty;
+
+        foreach (var character in filePrefix)
+        {
+            var isAsciiLetter = character is >= 'A' and <= 'Z' or >= 'a' and <= 'z';
+            var isAsciiDigit = character is >= '0' and <= '9';
+            if (!isAsciiLetter && !isAsciiDigit && character is not '_' and not '-')
+            {
+                throw new ArgumentException(
+                    "FilePrefix may contain only ASCII letters, digits, underscores, and hyphens.",
+                    nameof(StorageOptions.FilePrefix));
+            }
+        }
+
+        return $"{filePrefix}_";
+    }
+
+    private static void EnsurePathIsWithinRoot(string root, string path)
+    {
+        var fullRoot = Path.GetFullPath(root);
+        var fullPath = Path.GetFullPath(path);
+        var relativePath = Path.GetRelativePath(fullRoot, fullPath);
+
+        if (Path.IsPathRooted(relativePath) ||
+            relativePath.Equals("..", StringComparison.Ordinal) ||
+            relativePath.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal) ||
+            relativePath.StartsWith($"..{Path.AltDirectorySeparatorChar}", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("The generated storage path escapes the configured storage root.");
+        }
     }
 
     private static DateTimeOffset? TryExtractDate(string? dateStr)

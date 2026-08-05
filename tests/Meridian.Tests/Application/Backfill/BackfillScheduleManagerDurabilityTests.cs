@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Scheduling;
+using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -77,6 +78,74 @@ public sealed class BackfillScheduleManagerDurabilityTests : IDisposable
     }
 
     [Fact]
+    public async Task LoadSchedulesAsync_InvalidEnabledSchedule_PersistsDisabledRepairEvidence()
+    {
+        var schedule = CreateSchedule("Invalid retained recovery");
+        schedule.CronExpression = "0 0 30 2 *";
+        await WriteScheduleAsync(_dataRoot, schedule, CancellationToken.None);
+        var manager = CreateManager(_dataRoot);
+
+        await manager.LoadSchedulesAsync();
+
+        var loaded = manager.GetSchedule(schedule.ScheduleId);
+        loaded.Should().NotBeNull();
+        loaded!.Enabled.Should().BeFalse();
+        loaded.NextExecutionAt.Should().BeNull();
+        loaded.LastRepairReason.Should().Contain("no valid future occurrence");
+        loaded.LastRepairedAt.Should().NotBeNull();
+        loaded.ModifiedAt.Should().Be(loaded.LastRepairedAt);
+
+        var persisted = await ReadPersistedScheduleAsync(
+            _dataRoot,
+            schedule.ScheduleId,
+            CancellationToken.None);
+        persisted.Enabled.Should().BeFalse();
+        persisted.LastRepairReason.Should().Be(loaded.LastRepairReason);
+        persisted.LastRepairedAt.Should().Be(loaded.LastRepairedAt);
+    }
+
+    [Fact]
+    public async Task LoadSchedulesAsync_LegacyMonthlyPreset_MigratesOnlyRecognizedFingerprint()
+    {
+        var preset = BackfillSchedulePresets.MonthlyDeepBackfill("Legacy monthly preset");
+        preset.CronExpression = "0 1 1-7 * 0";
+        var custom = new BackfillSchedule
+        {
+            Name = "Custom POSIX schedule",
+            Description = "Custom schedule that intentionally uses POSIX day-field OR semantics",
+            CronExpression = "0 1 1-7 * 0",
+            BackfillType = ScheduledBackfillType.FullBackfill,
+            LookbackDays = 365,
+            Priority = BackfillPriority.Deferred
+        };
+        await WriteScheduleAsync(_dataRoot, preset, CancellationToken.None);
+        await WriteScheduleAsync(_dataRoot, custom, CancellationToken.None);
+        var manager = CreateManager(_dataRoot);
+
+        await manager.LoadSchedulesAsync();
+
+        var migrated = manager.GetSchedule(preset.ScheduleId);
+        migrated.Should().NotBeNull();
+        migrated!.CronExpression.Should().Be("0 1 * * 0#1");
+        migrated.LastRepairReason.Should().Contain("first-Sunday");
+        (await ReadPersistedScheduleAsync(
+                _dataRoot,
+                preset.ScheduleId,
+                CancellationToken.None))
+            .CronExpression.Should().Be("0 1 * * 0#1");
+
+        var retainedCustom = manager.GetSchedule(custom.ScheduleId);
+        retainedCustom.Should().NotBeNull();
+        retainedCustom!.CronExpression.Should().Be("0 1 1-7 * 0");
+        retainedCustom.LastRepairReason.Should().BeNull();
+        (await ReadPersistedScheduleAsync(
+                _dataRoot,
+                custom.ScheduleId,
+                CancellationToken.None))
+            .CronExpression.Should().Be("0 1 1-7 * 0");
+    }
+
+    [Fact]
     public async Task CreateScheduleAsync_PreCanceled_DoesNotExposeOrPersistSchedule()
     {
         var manager = CreateManager(_dataRoot);
@@ -111,6 +180,20 @@ public sealed class BackfillScheduleManagerDurabilityTests : IDisposable
         await act.Should().ThrowAsync<IOException>();
         manager.GetSchedule(schedule.ScheduleId).Should().BeNull();
         createdEvents.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CreateScheduleAsync_EnabledImpossibleCron_IsRejectedWithoutPersistence()
+    {
+        var manager = CreateManager(_dataRoot);
+        var schedule = CreateSchedule("Impossible close recovery");
+        schedule.CronExpression = "0 0 30 2 *";
+
+        Func<Task> act = () => manager.CreateScheduleAsync(schedule);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        manager.GetSchedule(schedule.ScheduleId).Should().BeNull();
+        File.Exists(GetSchedulePath(_dataRoot, schedule.ScheduleId)).Should().BeFalse();
     }
 
     [Fact]
@@ -164,6 +247,39 @@ public sealed class BackfillScheduleManagerDurabilityTests : IDisposable
                 isScheduleDirectory: true))
             .Name.Should().Be("Original weekly recovery");
         updatedEvents.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task UpdateScheduleAsync_EnabledImpossibleCron_PreservesPriorMemoryAndDiskState()
+    {
+        var manager = CreateManager(_dataRoot);
+        var created = await manager.CreateScheduleAsync(CreateSchedule("Daily recovery"));
+        created.CronExpression = "0 0 30 2 *";
+
+        Func<Task> act = () => manager.UpdateScheduleAsync(created);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        manager.GetSchedule(created.ScheduleId)!.CronExpression.Should().Be("0 2 * * *");
+        (await ReadPersistedScheduleAsync(_dataRoot, created.ScheduleId, CancellationToken.None))
+            .CronExpression.Should().Be("0 2 * * *");
+    }
+
+    [Fact]
+    public async Task SetScheduleEnabledAsync_ImpossibleDisabledCron_IsRejectedAndRemainsDisabled()
+    {
+        var manager = CreateManager(_dataRoot);
+        var schedule = CreateSchedule("Disabled impossible recovery");
+        schedule.Enabled = false;
+        schedule.CronExpression = "0 0 30 2 *";
+        var created = await manager.CreateScheduleAsync(schedule);
+
+        Func<Task> act = () => manager.SetScheduleEnabledAsync(created.ScheduleId, enabled: true);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        var retained = manager.GetSchedule(created.ScheduleId);
+        retained.Should().NotBeNull();
+        retained!.Enabled.Should().BeFalse();
+        retained.NextExecutionAt.Should().BeNull();
     }
 
     [Fact]
@@ -306,6 +422,25 @@ public sealed class BackfillScheduleManagerDurabilityTests : IDisposable
         var json = await File.ReadAllTextAsync(path, ct);
         return JsonSerializer.Deserialize<BackfillSchedule>(json, PersistedJsonOptions)
             ?? throw new JsonException($"Persisted schedule '{scheduleId}' was null.");
+    }
+
+    private static async Task WriteScheduleAsync(
+        string dataRoot,
+        BackfillSchedule schedule,
+        CancellationToken ct)
+    {
+        Directory.CreateDirectory(GetSchedulesDirectory(dataRoot));
+        var json = JsonSerializer.Serialize(
+            schedule,
+            new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true
+            });
+        await File.WriteAllTextAsync(
+            GetSchedulePath(dataRoot, schedule.ScheduleId),
+            json,
+            ct);
     }
 
     private static string GetSchedulePath(string dataRoot, string scheduleId)

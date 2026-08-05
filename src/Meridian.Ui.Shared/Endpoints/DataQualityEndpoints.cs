@@ -503,7 +503,11 @@ public static class DataQualityEndpoints
             SymbolsWithErrors: statistics.SymbolsWithErrors,
             AverageGapSize: statistics.AverageGapSize,
             MaxGapSize: statistics.MaxGapSize,
-            CalculatedAt: statistics.CalculatedAt);
+            CalculatedAt: statistics.CalculatedAt)
+        {
+            LifetimeTotalErrors = statistics.LifetimeTotalErrors,
+            LifetimeErrorRate = statistics.LifetimeErrorRate
+        };
 
     private static QualityAnomalyStatisticsResponse ToResponse(AnomalyStatistics statistics) =>
         new(

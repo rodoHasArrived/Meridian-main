@@ -93,6 +93,12 @@ collapsed into generic unsupported instruments.
 External-statement input is an optional reconciliation source. When no provider is configured, the
 production-safe null source contributes no statement rows; retained reconciliation run storage and
 the configured portfolio, ledger, and banking inputs remain authoritative.
+Retained reconciliation writes serialize first-observation continuity across workstation processes,
+use repository commit order when concurrent runs share one timestamp, and expose a leased latest
+snapshot callback for governance decisions. Lease callbacks are non-reentrant and fail fast if they
+try to call the same backing repository. Governance holds that lease through its audit append,
+rejects impossible break chronology and invalid policy thresholds, repairs a torn final JSONL record
+before a durable append, and keeps the established PascalCase JSON evidence-export contract.
 Factor rows retain their evidence link and source-content hash, and the Security Master accounting
 event service delegates factor math and deterministic event identity to Instruments
 `FactorPaydownProjectionService`. Reconciliation run ids no longer participate in factor event

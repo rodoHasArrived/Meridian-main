@@ -137,6 +137,10 @@ references that do not name the resolved symbol or Security Master id. Operation
 journal candidate lines also carry optional `LedgerDimensionSetDto` scope so reviewed close,
 reconciliation, or accrual postings can preserve line-level fund/entity/cost-center/counterparty
 and external-GL dimensions through the Financial Operations posting gate.
+Strategy-run reconciliation summaries and rows also carry optional bank-entity/source scope,
+Operations Continuity correlation keys, a versioned logical-break identity, and the retained first
+observation time. These additive fields let shared governance and workstation consumers distinguish
+entity-scoped incidents without changing the legacy positional record constructors.
 Reconciliation break queue items carry optional `LedgerBookId` scope so shared Accounting,
 Reconciliation, and close-readiness surfaces can filter explicit book cases without inferring
 accounting ownership from fund labels, routes, or exception text.

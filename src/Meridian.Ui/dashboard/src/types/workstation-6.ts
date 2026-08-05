@@ -1359,6 +1359,7 @@ export interface StrategyRunCashFlowDigest {
 export interface ReconciliationRunSummary {
   reconciliationRunId: string;
   runId: string;
+  bankEntityId?: string | null;
   createdAt: string;
   portfolioAsOf: string | null;
   ledgerAsOf: string | null;

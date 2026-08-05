@@ -33,6 +33,9 @@ public sealed class QualityEndpointContractTests
         var _r = await CreateHostAsync();
         await using var host = _r.App;
         using var client = host.GetTestClient();
+        var observedAt = new DateTimeOffset(2026, 03, 20, 14, 05, 00, TimeSpan.Zero);
+        _r.QualityService.SequenceTracker.RecordError(CreateSequenceGapError(observedAt, actualSequence: 10));
+        _r.QualityService.SequenceTracker.RecordError(CreateSequenceGapError(observedAt.AddSeconds(1), actualSequence: 20));
 
         var response = await client.GetAsync(UiApiRoutes.QualityDashboard);
 
@@ -43,11 +46,22 @@ public sealed class QualityEndpointContractTests
         payload.RecentGaps.Should().NotBeEmpty();
         payload.RecentAnomalies.Should().NotBeEmpty();
         payload.AnomalyStats.UnacknowledgedCount.Should().BeGreaterThan(0);
+        payload.SequenceStats.TotalErrors.Should().Be(1);
+        payload.SequenceStats.RetainedTotalErrors.Should().Be(1);
+        payload.SequenceStats.LifetimeTotalErrors.Should().Be(2);
+        payload.SequenceStats.RetainedErrorRate.Should().Be(payload.SequenceStats.ErrorRate);
+        payload.SequenceStats.LifetimeErrorRate.Should().BeGreaterThan(payload.SequenceStats.RetainedErrorRate);
 
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         json.RootElement.TryGetProperty("realTimeMetrics", out _).Should().BeTrue();
         json.RootElement.TryGetProperty("recentGaps", out _).Should().BeTrue();
         json.RootElement.TryGetProperty("recentAnomalies", out _).Should().BeTrue();
+        var sequenceStats = json.RootElement.GetProperty("sequenceStats");
+        sequenceStats.GetProperty("totalErrors").GetInt64().Should().Be(1);
+        sequenceStats.GetProperty("retainedTotalErrors").GetInt64().Should().Be(1);
+        sequenceStats.GetProperty("lifetimeTotalErrors").GetInt64().Should().Be(2);
+        sequenceStats.TryGetProperty("retainedErrorRate", out _).Should().BeTrue();
+        sequenceStats.TryGetProperty("lifetimeErrorRate", out _).Should().BeTrue();
     }
 
     [Fact]
@@ -234,7 +248,8 @@ public sealed class QualityEndpointContractTests
             {
                 GapThresholdSeconds = 60,
                 ExpectedEventsPerHour = 1000
-            }
+            },
+            SequenceErrorConfig = new SequenceErrorConfig { MaxErrorsPerSymbol = 1 }
         });
 
         var baseTime = new DateTimeOffset(2026, 03, 20, 14, 00, 00, TimeSpan.Zero);
@@ -249,6 +264,18 @@ public sealed class QualityEndpointContractTests
 
         return service;
     }
+
+    private static SequenceError CreateSequenceGapError(DateTimeOffset timestamp, long actualSequence) =>
+        new(
+            Timestamp: timestamp,
+            Symbol: "AAPL",
+            EventType: "Trade",
+            ErrorType: SequenceErrorType.Gap,
+            ExpectedSequence: actualSequence - 1,
+            ActualSequence: actualSequence,
+            GapSize: 1,
+            StreamId: null,
+            Provider: "Provider1");
 
     private sealed class StubCompositeQualityService : ICompositeDataQualityReadService
     {

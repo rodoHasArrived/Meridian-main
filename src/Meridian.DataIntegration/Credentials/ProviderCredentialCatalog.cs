@@ -91,6 +91,26 @@ public static class ProviderCredentialCatalog
             AffectedWorkflows: ["Historical backfill", "Symbol search", "Market data validation"],
             RecommendedActionWhenMissing: "Add the Twelve Data API key before routing backfill or symbol-search repair through Twelve Data."),
         new(
+            ProviderId: "fred",
+            DisplayName: "Federal Reserve Economic Data",
+            Capability: ProviderConnectionCapabilityDto.Data,
+            RequiredFields:
+            [
+                new ProviderCredentialFieldDefinition("ApiKey", ["FRED_API_KEY"])
+            ],
+            AffectedWorkflows: ["Economic reference data", "Historical backfill", "Symbol search"],
+            RecommendedActionWhenMissing: "Add the FRED API key before routing economic-data lookup or backfill through FRED."),
+        new(
+            ProviderId: "robinhood",
+            DisplayName: "Robinhood",
+            Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
+            RequiredFields:
+            [
+                new ProviderCredentialFieldDefinition("AccessToken", ["ROBINHOOD_ACCESS_TOKEN"])
+            ],
+            AffectedWorkflows: ["Trading readiness", "Brokerage sync", "Historical backfill", "Market data validation"],
+            RecommendedActionWhenMissing: "Add the Robinhood access token before routing data or brokerage workflows through Robinhood."),
+        new(
             ProviderId: "openfigi",
             DisplayName: "OpenFIGI",
             Capability: ProviderConnectionCapabilityDto.Data,
@@ -187,13 +207,32 @@ public static class ProviderCredentialCatalog
 
     private static readonly IReadOnlyDictionary<string, string> Aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
+        ["alpaca-brokerage"] = "alpaca",
+        ["alpaca-corp-actions"] = "alpaca",
+        ["alpaca-options"] = "alpaca",
         ["alphaVantage"] = "alphavantage",
         ["alpha-vantage"] = "alphavantage",
+        ["alphavantage-corp-actions"] = "alphavantage",
+        ["alphavantage-symbols"] = "alphavantage",
+        ["finnhub-corp-actions"] = "finnhub",
+        ["finnhub-symbols"] = "finnhub",
         ["nasdaq"] = "nasdaqdatalink",
+        ["nasdaq-corp-actions"] = "nasdaqdatalink",
         ["nasdaq-data-link"] = "nasdaqdatalink",
+        ["nasdaq-symbols"] = "nasdaqdatalink",
+        ["polygon-options"] = "polygon",
+        ["fred-symbols"] = "fred",
+        ["robinhood-brokerage"] = "robinhood",
+        ["robinhood-live"] = "robinhood",
+        ["robinhood-options"] = "robinhood",
+        ["robinhood-symbols"] = "robinhood",
+        ["tiingo-corp-actions"] = "tiingo",
+        ["tiingo-symbols"] = "tiingo",
         ["twelve-data"] = "twelvedata",
         ["twelve_data"] = "twelvedata",
         ["twelveData"] = "twelvedata",
+        ["twelvedata-corp-actions"] = "twelvedata",
+        ["twelvedata-symbols"] = "twelvedata",
         ["interactivebrokers"] = "ib",
         ["interactive-brokers"] = "ib",
         ["plaid-api"] = "plaid",

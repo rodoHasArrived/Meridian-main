@@ -191,7 +191,26 @@ public sealed record QualitySequenceErrorStatisticsResponse(
     int SymbolsWithErrors,
     double AverageGapSize,
     long MaxGapSize,
-    DateTimeOffset CalculatedAt);
+    DateTimeOffset CalculatedAt)
+{
+    /// <summary>
+    /// Number of error records currently retained after per-stream caps and retention cleanup.
+    /// This additive alias preserves the existing meaning of <see cref="TotalErrors"/>.
+    /// </summary>
+    public long RetainedTotalErrors => TotalErrors;
+
+    /// <summary>
+    /// Error rate calculated from retained records. This additive alias preserves the existing
+    /// meaning of <see cref="ErrorRate"/>.
+    /// </summary>
+    public double RetainedErrorRate => ErrorRate;
+
+    /// <summary>Total errors detected over the lifetime of the tracker generation.</summary>
+    public long LifetimeTotalErrors { get; init; }
+
+    /// <summary>Lifetime errors as a percentage of all checked events.</summary>
+    public double LifetimeErrorRate { get; init; }
+}
 
 /// <summary>
 /// Anomaly statistics payload returned by the dashboard.

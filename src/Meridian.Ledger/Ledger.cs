@@ -23,6 +23,7 @@ namespace Meridian.Ledger;
 public sealed class Ledger : IReadOnlyLedger
 {
     private readonly List<JournalEntry> _journal = [];
+    private readonly IReadOnlyList<JournalEntry> _journalView;
     private readonly HashSet<Guid> _journalEntryIds = [];
     private readonly HashSet<Guid> _ledgerEntryIds = [];
     private readonly Dictionary<LedgerAccount, AccountTotals> _accountTotals = [];
@@ -39,8 +40,13 @@ public sealed class Ledger : IReadOnlyLedger
     private long _ledgerLineSequence;
     private long _journalPostingSequence;
 
+    public Ledger()
+    {
+        _journalView = _journal.AsReadOnly();
+    }
+
     /// <summary>All journal entries in chronological posting order.</summary>
-    public IReadOnlyList<JournalEntry> Journal => _journal;
+    public IReadOnlyList<JournalEntry> Journal => _journalView;
 
     /// <summary>All accounts that have been posted to, in first-seen order.</summary>
     public IReadOnlyCollection<LedgerAccount> Accounts => _accountTotals.Keys;
