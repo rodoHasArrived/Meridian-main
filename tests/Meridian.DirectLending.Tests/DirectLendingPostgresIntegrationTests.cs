@@ -272,7 +272,13 @@ public sealed class DirectLendingPostgresIntegrationTests
                 CommitmentFeeRate: 0.03m,
                 DefaultRateSpreadBps: 200m,
                 PrepaymentAllowed: true,
-                CovenantsJson: "{\"leverage\": \"<= 4.5x\"}"));
+                CovenantsJson: "{\"leverage\": \"<= 4.5x\"}",
+                SecurityMasterReference: new DirectLendingSecurityMasterReferenceDto(
+                    DirectLendingPostgresTestDatabase.TestSecurityId,
+                    DirectLendingPostgresTestDatabase.TestSecuritySymbol,
+                    "integration-test-security-master",
+                    "integration-test-approval",
+                    "integration-test-ledger-map")));
 
     private static OperationsWorkflowAuditAppendRequest BuildAuditAppendRequest(
         string workflowId,
