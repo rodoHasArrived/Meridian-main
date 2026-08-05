@@ -522,28 +522,29 @@ internal static class SecurityMasterMapping
         // Dropping it would let a create or amend report success while silently discarding a vendor
         // paydown observation — and the security would then fail its coverage gate for a reason
         // nothing in the write path ever reported.
+        // `?? throw` already unwraps the nullable, so these are DateOnly and decimal, not DateOnly?
+        // and decimal? — no .Value access.
         var asOf = GetFirstOptionalDateOnly(json, "asOfDate", "factorDate", "effectiveDate", "date")
             ?? throw new InvalidOperationException("Missing required date 'asOfDate' in a factorSchedule entry.");
         var factor = GetFirstOptionalDecimal(json, "factor", "currentFactor")
             ?? throw new InvalidOperationException("Missing required decimal 'factor' in a factorSchedule entry.");
         return new FactorScheduleEntry(
-                asOf.Value,
-                factor.Value,
+                asOf,
+                factor,
                 ToOption(GetOptionalString(json, "source")),
                 ToOption(GetFirstOptionalString(json, "evidenceLink", "evidenceId", "evidenceRoute")),
                 ToOption(GetFirstOptionalString(json, "sourceContentHash", "contentHash", "sourceHash")));
     }
 
     /// <summary>
-    /// Reads the typed factor schedule, tolerating the pre-typed shape where <c>factorSchedule</c>
-    /// held a free-text string. That string was never machine-readable — the cash-flow resolver has
-    /// always skipped non-array values — so it is preserved verbatim in <c>factorScheduleNote</c>
-    /// by <see cref="GetFactorScheduleNote"/> instead of being silently dropped on re-write.
-    /// </summary>
-    /// <summary>
     /// Reads the typed factor schedule from either declared container spelling. The resolver accepts
     /// both <c>factorSchedule</c> and <c>factorSchedules</c>; reading only the canonical one here
     /// would round-trip a payload the read side understands into an empty schedule.
+    /// <para>
+    /// The pre-typed shape, where <c>factorSchedule</c> held a free-text string, yields no entries
+    /// here; that string is preserved verbatim by <see cref="GetFactorScheduleNote"/> rather than
+    /// being dropped on re-write.
+    /// </para>
     /// </summary>
     private static IEnumerable<FactorScheduleEntry> ToFactorSchedule(JsonElement json)
         => (GetOptionalArrayItems(json, "factorSchedule").Any()
