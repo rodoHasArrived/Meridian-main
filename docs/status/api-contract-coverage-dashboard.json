@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.0,
+  "score_percent": 29.1,
   "endpoint_coverage_percent": 40.0,
-  "contract_coverage_percent": 12.4,
+  "contract_coverage_percent": 12.8,
   "summary": {
     "endpoint_count": 617,
     "documented_endpoint_count": 247,
     "undocumented_endpoint_count": 370,
     "workstation_contract_count": 906,
-    "documented_workstation_contract_count": 112,
-    "undocumented_workstation_contract_count": 794
+    "documented_workstation_contract_count": 116,
+    "undocumented_workstation_contract_count": 790
   },
   "endpoints": [
     {
