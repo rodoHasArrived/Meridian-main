@@ -440,8 +440,104 @@ opening them.
 Per file it verifies that the frontmatter parses with no duplicate keys, that `name` matches the
 filename, that `description` is present and non-empty, that every frontmatter key is one the host
 supports and carries a value of the right shape, and that every `tools` / `disallowedTools` entry
-resolves to a known built-in or a valid `mcp__<server>` pattern. Parenthesised scopes such as
-`Bash(git diff:*)` are supported.
+resolves to a known built-in or a valid MCP pattern.
+
+Both the field allowlist and the permission-mode set are checked against the "Supported frontmatter
+fields" table at <https://code.claude.com/docs/en/sub-agents> and pinned by tests that assert a
+literal set. That is deliberate: each set *rejects* anything it omits, so an incomplete one blocks
+legitimate work, and a test that iterates the constant passes no matter what the constant leaves
+out. Re-derive from that table when the host adds a field rather than appending one name at a time.
+
+MCP entries accept `mcp__server` and `mcp__server__tool`, with the tool segment treated as a glob so
+`*` may appear anywhere in it — `mcp__github__*`, `mcp__github__get_*`, `mcp__github__*_issue`. The
+**server** segment stays glob-free, because an allow rule has to name a specific configured server;
+the all-server `mcp__*` is therefore valid only in `disallowedTools`, where it is honoured rather
+than skipped with a warning.
+
+MCP names are also **hierarchical** when a deny is matched against an allow, unlike built-ins, which
+match exactly. `disallowedTools: mcp__github` removes every tool that server provides,
+`mcp__github__get_*` removes the matching subset, and `mcp__*` removes all of them. Direction is
+preserved as it is for scopes: a per-tool deny narrows a whole-server grant instead of erasing it,
+and a wildcard on the *allow* side is compared literally rather than expanded.
+
+An allow-list naming *only* MCP entries is normally an error, since which servers exist is a
+property of the host session and the grant would resolve to nothing without them. Declaring
+`mcpServers` lifts that **per server**: `tools: mcp__playwright` alongside `mcpServers: [playwright]`
+resolves, while granting `mcp__github` against that same declaration does not. Each `mcpServers`
+entry must be a server name or a keyed inline definition **whose value is a server config mapping
+declaring a transport** — `command` for stdio, `url` for http and sse. Anything else is reported
+rather than counted as a declaration. That clause carries weight beyond tidiness: the exemption is
+only as sound as the declaration it trusts, so neither `- slack: nope` nor `- slack: {}` may buy an
+MCP-only grant a pass the host would not honour. The transport keys are the whole of the check —
+every documented remote example also pairs `url` with `type`, but the reference never says `type` is
+required, and guessing at the rest of the schema would reject definitions that work.
+
+`WebFetch(domain:...)` scopes are matched with domain semantics rather than the command glob. A
+leading `*.` matches subdomains at any depth but not the bare domain, a bare `*` matches everything,
+and a wildcard anywhere else is confined to one label — so `WebFetch(domain:example.*)` covers
+`example.org` but not `example.evil.com`, which is what stops a trailing wildcard from reaching
+domains an attacker could register. Whitespace around the colon is ignored on **both** sides before
+that branch is chosen — testing the deny raw let `WebFetch(domain : example.*)` skip the domain
+rules and fall through to the generic glob, whose `.*` does cross a dot.
+
+Parenthesised scopes such as `Bash(git diff:*)` are supported, and coverage between a deny and an
+allow is evaluated as a **glob**, not a prefix test. Wildcards may appear anywhere, so
+`Bash(git * main)` and `Bash(* install)` behave as documented rather than being mistaken for exact
+commands.
+
+`Read` and `Edit` scopes are **gitignore path patterns**, not shell globs: `*` stays inside one path
+segment and only `**` crosses directories, so `Read(src/*.json)` does not cancel `Read(src/a/b.json)`.
+Anchoring (`//`, `~/`, a leading `/`), the rule that a bare filename matches at any depth, and the
+allow-versus-deny depth difference for single-segment directory patterns are not modelled — resolving
+them needs the settings source an agent file does not have — so some genuine cancellations go
+unreported. That is the safe direction here.
+
+Only those two. "Claude Code checks file permissions against `Edit(path)` and `Read(path)` rules
+only" — a path rule on `Write`, `NotebookEdit`, or `Glob` is accepted, warned about at startup, and
+**never consulted**, so a scoped deny on one of them cancels nothing at all. The unscoped form still
+does: a bare `Write` deny "matches that rule at the tool level everywhere".
+
+Deny entries may carry a **tool-name glob** matching the full name — `*`, `B*`, `mcp__*`,
+`mcp__github*` — because "deny and ask rules also accept glob patterns in the tool-name position".
+Allow entries may not: an unanchored allow glob "is skipped with a warning and doesn't auto-approve
+anything", which makes it an empty grant rather than a broad one, so `tools: B*` is still an error.
+Typo detection is unaffected, since an entry with no `*` still has to resolve.
+
+A deny scope that covers everything the tool can do is treated as equal to no scope, so
+`WebFetch(domain:*)` — which "matches every domain and is equivalent to a bare `WebFetch` rule" —
+cancels a bare `WebFetch` grant, while `WebFetch(domain:example.com)` only narrows it.
+
+For `Bash`, the wrappers the host strips before matching are reproduced on the **command** side:
+`timeout`, `time`, `nice`, `nohup`, `stdbuf`, `command`, `builtin`, `noglob`, and bare `xargs`, plus
+any leading environment assignment — a deny rule "matches past any leading assignment", which is the
+only direction this comparison ever runs. So `Bash(npm test *)` correctly cancels
+`Bash(timeout 30 npm test)`. The documented exclusions are honoured too: `command -v` looks a command
+up rather than running one, `nocorrect` is not on the list, `xargs` is stripped only when it carries
+no flags, and environment runners (`devbox run`, `npx`, `docker exec`, …) are explicitly excluded.
+Stripping is deliberately not applied to the deny side — a rule literally reading
+`Bash(timeout 30 npm test)` matches nothing, because commands reach it already stripped.
+
+`PowerShell` scopes match case-insensitively, and the three aliases the reference names — `gci`,
+`ls`, `dir` — are canonicalised to `Get-ChildItem` before comparison, so a deny written with any of
+them covers a grant written with another. Only those three: the host's alias table is not
+enumerable from the documentation, and a guessed entry would invent a cancellation the host never
+applies, which is the more damaging direction for a check that decides whether a grant survives.
+Canonicalisation rewrites the command token only, so `PowerShell(ls*)` keeps its glob — it also
+covers `lsof` — and an argument that happens to spell an alias is left alone. `Bash` gets none of
+this; `ls` and `dir` are unrelated commands in a POSIX shell.
+
+For `Bash` and `PowerShell`, a trailing `:*` is an equivalent spelling of a trailing wildcard —
+`Bash(ls:*)` matches what `Bash(ls *)` matches. The permission dialog writes the space-separated
+form when you choose "Yes, don't ask again"; `:*` is the alternative suffix, and it is only
+recognised at the end, so the colon in `Bash(git:* push)` is literal. Both trailing forms carry the
+documented word boundary, which is why `Bash(git:*)` cancels `Bash(git push:*)` but leaves
+`Bash(gitfoo:*)` alone — the same rule that makes `Bash(ls *)` match `ls -la` but not `lsof`.
+
+On every other tool `param:value` is a **parameter** match rather than a command prefix, so
+`WebFetch(domain:*)` cancels `WebFetch(domain:example.com)` and `Agent(model:*)` cancels
+`Agent(model:opus)`. Treating that colon as a command separator would have left those denies
+matching nothing. Parameter matching cannot target a tool's primary content field, which is exactly
+why the `:*` command alias is confined to the two shell tools.
 
 The checks fail closed by design: a YAML sequence, an empty or punctuation-only value, an
 MCP-only allow-list, a misspelled permission key, an unterminated scalar, and a missing or empty

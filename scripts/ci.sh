@@ -210,6 +210,13 @@ verify_docs() {
   run_step "Validate status doc staleness" \
     "$python_cmd" scripts/check_status_doc_staleness.py
 
+  # The agent validator needs PyYAML. Check for it here and name the install command
+  # rather than pip-installing: this script runs against a developer's own interpreter,
+  # and silently mutating it is worse than a failure that says what to do. The hosted
+  # lanes install it explicitly instead.
+  run_step "Check docs automation dependencies" \
+    bash -c '"$0" -c "import yaml" 2>/dev/null || { echo "PyYAML is required by build/scripts/docs/validate-agent-definitions.py." >&2; echo "  $0 -m pip install --requirement build/scripts/docs/requirements.txt" >&2; exit 1; }' "$python_cmd"
+
   # Runs here rather than only in the docs-automation profile: the Documentation
   # Automation workflow is path-filtered, so a change touching only .claude/agents/**
   # would otherwise land without any hosted check resolving its tool declarations.
