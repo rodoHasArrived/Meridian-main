@@ -59,7 +59,8 @@ DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
 # (`docs/generated/README.md`), and pages like
 # `docs/generated/database/contracts/ledger-contracts-page-01.md` carry real field-level reference
 # documentation for types such as `AccountingApprovalQueueConfigurationDto`. An earlier revision
-# excluded the whole subtree and marked 1,880 genuinely documented types as gaps.
+# excluded the whole subtree: 41 files left the corpus and 763 genuinely documented types were
+# marked as gaps.
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
     "docs/generated/documentation-coverage.md",

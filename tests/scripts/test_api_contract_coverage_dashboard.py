@@ -118,7 +118,7 @@ class CoverageReportBoundaryTests(unittest.TestCase):
         # `documentation-coverage.md` is this generator's own output, so both would let a type
         # count as documented for existing or for being reported undocumented. Excluding the
         # whole `docs/generated/` subtree instead — which an earlier revision of this branch did —
-        # marked 1,880 genuinely documented types as gaps.
+        # dropped 41 files and marked 763 genuinely documented types as gaps.
         self.assertEqual(
             (
                 "docs/status/",
