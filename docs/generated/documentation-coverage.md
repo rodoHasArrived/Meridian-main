@@ -5,10 +5,10 @@
 
 ## Overall Coverage
 
-**2755 / 8641** items documented (**31.9%**) &mdash; Grade: **F**
+**2745 / 8641** items documented (**31.8%**) &mdash; Grade: **F**
 
 ```text
-[======--------------] 31.9%
+[======--------------] 31.8%
 ```
 
 ## Coverage by Category
@@ -16,8 +16,8 @@
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
 | Public Classes / Interfaces | 2621 | 8169 | 32.1% | F |
-| API Endpoints | 120 | 319 | 37.6% | F |
-| Configuration Options | 3 | 142 | 2.1% | F |
+| API Endpoints | 112 | 319 | 35.1% | F |
+| Configuration Options | 1 | 142 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
@@ -79,7 +79,7 @@
 | `PersistenceStatusSnapshot` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:11` |
 | ... and 5498 more | |
 
-### API Endpoints (199 undocumented)
+### API Endpoints (207 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -107,6 +107,7 @@
 | `/{loanId:guid}/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:129` |
 | `/{loanId:guid}/projections/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:143` |
 | `/{loanId:guid}/terms` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:157` |
+| `/{loanId:guid}/activate` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:188` |
 | `/{loanId:guid}/servicing-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:211` |
 | `/{loanId:guid}/projections/servicing` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:226` |
 | `/{loanId:guid}/projections/drawdown-lots` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:241` |
@@ -132,10 +133,9 @@
 | `/{loanId:guid}/status-transitions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:690` |
 | `/{loanId:guid}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:720` |
 | `/{loanId:guid}/restructures` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:750` |
-| `/{loanId:guid}/amortization/discount-premium` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:780` |
-| ... and 149 more | |
+| ... and 157 more | |
 
-### Configuration Options (139 undocumented)
+### Configuration Options (141 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -189,13 +189,13 @@
 | `Backfill.ProviderPriority` | `config/appsettings.sample.json` |
 | `Backfill.EnableRateLimitRotation` | `config/appsettings.sample.json` |
 | `Backfill.RateLimitRotationThreshold` | `config/appsettings.sample.json` |
-| ... and 89 more | |
+| ... and 91 more | |
 
 ## Recommendations
 
 1. **Public Classes / Interfaces**: 5548 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 199 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
-3. **Configuration Options**: 139 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+2. **API Endpoints**: 207 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
 

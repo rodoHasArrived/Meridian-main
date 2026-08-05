@@ -177,8 +177,8 @@ class GeneratorContractTests(unittest.TestCase):
         self.assertIn("_index_docs(", build)
 
 
-class CoverageReportBoundaryTests(unittest.TestCase):
-    """`generate-coverage.py` had the same substring defect on public type names."""
+class _CoverageModuleTestCase(unittest.TestCase):
+    """Loads `generate-coverage.py`, which is not importable by name."""
 
     def setUp(self) -> None:
         path = SCRIPTS / "generate-coverage.py"
@@ -187,6 +187,95 @@ class CoverageReportBoundaryTests(unittest.TestCase):
         self.cov = importlib.util.module_from_spec(spec_cov)
         sys.modules[spec_cov.name] = self.cov
         spec_cov.loader.exec_module(self.cov)
+
+
+class NamesTermTests(_CoverageModuleTestCase):
+    """The shared boundary rule, stated once and used by three checks."""
+
+    def test_a_term_inside_a_longer_one_is_not_named(self) -> None:
+        self.assertFalse(self.cov._names_term("DailyPortfolioPriceMark", "PriceMark"))
+        self.assertFalse(self.cov._names_term("see /api/backfill/runs", "/api/backfill/run"))
+
+    def test_a_slash_is_a_boundary_before_but_not_after(self) -> None:
+        # A doc writing `docs/api-reference` is referring to the thing after the slash, so `/` on
+        # the leading side is a boundary. On the trailing side it is not: `/api/backfill/run/{id}`
+        # is a different endpoint, reported separately, and must not credit `/api/backfill/run`.
+        self.assertTrue(self.cov._names_term("see docs/api-reference here", "api-reference"))
+        self.assertFalse(self.cov._names_term("see /api/backfill/run/{id}", "/api/backfill/run"))
+
+    def test_a_named_term_counts_at_either_edge_of_the_text(self) -> None:
+        for text in ("PriceMark", "PriceMark trails", "leads PriceMark"):
+            with self.subTest(text=text):
+                self.assertTrue(self.cov._names_term(text, "PriceMark"))
+
+    def test_an_empty_term_is_never_named(self) -> None:
+        # `_check_endpoint_documentation` strips parameter segments, and a route that is nothing
+        # but parameters reduces to "". Without this guard `str.find("")` returns 0 and every such
+        # route would count as documented by any text at all.
+        self.assertFalse(self.cov._names_term("any text", ""))
+
+
+class EndpointBoundaryTests(_CoverageModuleTestCase):
+    """`_check_endpoint_documentation` matched routes as substrings."""
+
+    def _documented(self, route: str, doc_text: str) -> bool:
+        # The check reads two fixed files, so the doc text is supplied by patching the reader.
+        self.cov._read_text_safe = lambda _path, _t=doc_text: _t
+        item = self.cov.SourceItem(name=route, file_path="x.cs", line=1)
+        self.cov._check_endpoint_documentation([item], Path("/nonexistent"))
+        return item.documented
+
+    def test_a_route_fragment_is_not_credited_by_a_longer_path(self) -> None:
+        # Observed. This scan collects relative fragments from route groups, and a fragment is a
+        # substring of almost any documented path: `/complete`, `/reject`, `/{loanId}/activate`,
+        # `/{runId}/govern` and four others counted as documented with no doc naming them.
+        self.assertFalse(self._documented("/complete", "POST /api/reconciliation/complete-run"))
+        self.assertFalse(self._documented("/reject", "see /api/approvals/rejection-policy"))
+
+    def test_a_route_documented_on_its_own_still_counts(self) -> None:
+        self.assertTrue(self._documented("/api/backfill/run", "`POST /api/backfill/run` starts"))
+        self.assertTrue(self._documented("/api/backfill/run", "documented as api/backfill/run."))
+
+    def test_a_parameterised_route_is_still_credited_by_its_base(self) -> None:
+        # Deliberately kept: a section describing the collection is taken to document the item
+        # route. Only the *matching* changed, not this rule.
+        self.assertTrue(
+            self._documented("/api/backfill/schedules/{id}", "see `/api/backfill/schedules`")
+        )
+
+    def test_the_base_path_must_also_be_named(self) -> None:
+        # The fallback used to substring-match the stripped base, so `/api/backfill/schedules/{id}`
+        # was credited by any longer path starting the same way.
+        self.assertFalse(
+            self._documented("/api/backfill/schedules/{id}", "see `/api/backfill/schedules-legacy`")
+        )
+
+
+class ConfigBoundaryTests(_CoverageModuleTestCase):
+    """`_check_config_documentation` matched the last dotted segment as a substring."""
+
+    def _documented(self, key: str, doc_text: str) -> bool:
+        self.cov._read_text_safe = lambda _path, _t=doc_text: _t
+        item = self.cov.SourceItem(name=key, file_path="x.json", line=1)
+        self.cov._check_config_documentation([item], Path("/nonexistent"))
+        return item.documented
+
+    def test_a_leaf_segment_is_not_the_key(self) -> None:
+        # Observed: `IB.Port` counted as documented because something said "Port". Config leaves
+        # are ordinary English — `Enabled`, `Timeout`, `Path` — so a leaf match asks whether a doc
+        # mentions a word, not whether it documents a setting.
+        self.assertFalse(self._documented("IB.Port", "bind the Port before starting"))
+        self.assertFalse(self._documented("Storage.Enabled", "the feature is Enabled by default"))
+
+    def test_the_full_key_counts(self) -> None:
+        self.assertTrue(self._documented("IB.Port", "`IB.Port` defaults to 7497"))
+
+    def test_a_key_inside_a_longer_key_is_not_the_key(self) -> None:
+        self.assertFalse(self._documented("IB.Port", "see `IB.PortOverride` instead"))
+
+
+class CoverageReportBoundaryTests(_CoverageModuleTestCase):
+    """`generate-coverage.py` had the same substring defect on public type names."""
 
     def _documented(self, name: str, doc_text: str) -> bool:
         item = self.cov.SourceItem(name=name, file_path="x.cs", line=1)

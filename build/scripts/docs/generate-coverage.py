@@ -229,6 +229,38 @@ def _scan_public_types(root: Path) -> List[SourceItem]:
 
 _IDENTIFIER_TOKEN_RE = re.compile(r"[0-9A-Za-z_]+")
 
+# Characters that continue a name or a route, so a hit touching one of them is a hit on something
+# longer. `/` counts only on the trailing side: `docs/api-reference` refers to the thing after the
+# slash, while `/api/backfill/run` inside `/api/backfill/run/{id}` is a different route.
+_NAME_BEFORE = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-")
+_NAME_AFTER = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-/")
+
+
+def _names_term(text: str, term: str) -> bool:
+    """True when `text` names `term` itself, rather than containing it inside something longer.
+
+    The single statement of the boundary rule for the checks that scan a small, fixed set of
+    documents. `_check_type_documentation` cannot use it — ~8,000 types against the whole corpus
+    has to be decided by the index below, or the generator times out — but endpoints, config keys,
+    and providers are a few hundred items against two or three files, where a walk is cheaper than
+    building an index that models routes and dotted keys as well as identifiers.
+
+    Walks occurrences with `find` rather than compiling a regex per term: `re.search` with
+    lookarounds costs a full corpus rescan for every item, which is the shape of the regression
+    that made the earlier per-item scan untenable.
+    """
+    if not term:
+        return False
+    start = text.find(term)
+    while start != -1:
+        end = start + len(term)
+        if (start == 0 or text[start - 1] not in _NAME_BEFORE) and (
+            end == len(text) or text[end] not in _NAME_AFTER
+        ):
+            return True
+        start = text.find(term, start + 1)
+    return False
+
 
 def _documented_name_index(doc_contents: Dict[str, str]) -> frozenset:
     """Every identifier the documentation corpus names, tokenized in one pass.
@@ -311,7 +343,17 @@ def _check_endpoint_documentation(
     items: List[SourceItem],
     root: Path,
 ) -> CategoryResult:
-    """Check endpoints against docs/reference/api-reference.md and CLAUDE.md."""
+    """Check endpoints against docs/reference/api-reference.md and CLAUDE.md.
+
+    The match must land on a route boundary. A plain substring test credited a route for appearing
+    inside a longer one, which matters most for the fragments this scan collects from route groups:
+    `/complete`, `/reject`, `/{loanId}/activate` and similar are substrings of almost any documented
+    path, so eight endpoints counted as documented without the doc naming them at all.
+
+    The parameterised fallback is kept — a doc describing `/api/backfill/schedules` is taken to
+    document `/api/backfill/schedules/{id}` — but it is boundary-checked too, so the base path has
+    to be named rather than merely appear.
+    """
     api_ref = root / "docs" / "reference" / "api-reference.md"
     claude_md = root / "CLAUDE.md"
 
@@ -320,16 +362,17 @@ def _check_endpoint_documentation(
         combined_text += _read_text_safe(doc_path) + "\n"
 
     for item in items:
-        # Normalise route for matching (strip leading /)
+        # Routes are recorded with and without the leading slash across the docs, so both spellings
+        # count; the boundary check is what stops either from matching inside a longer path.
         route = item.name.lstrip("/")
-        # Check if the route (or its non-parameterised prefix) appears in docs
-        if route in combined_text or f"/{route}" in combined_text:
+        if _names_term(combined_text, route) or _names_term(combined_text, f"/{route}"):
             item.documented = True
         else:
-            # Try matching parameterised routes: /api/backfill/schedules/{id}
-            # Strip parameter segments and try the base path
+            # Parameterised routes: /api/backfill/schedules/{id} -> /api/backfill/schedules
             base = re.sub(r"/\{[^}]+\}", "", item.name)
-            if base and (base in combined_text or base.lstrip("/") in combined_text):
+            if base and (
+                _names_term(combined_text, base) or _names_term(combined_text, base.lstrip("/"))
+            ):
                 item.documented = True
 
     documented = sum(1 for i in items if i.documented)
@@ -419,7 +462,14 @@ def _check_config_documentation(
     items: List[SourceItem],
     root: Path,
 ) -> CategoryResult:
-    """Check config keys against configuration-schema.md and CLAUDE.md."""
+    """Check config keys against configuration-schema.md and CLAUDE.md.
+
+    The key has to be named in full. Matching the last dotted segment instead — as this did — asks
+    whether a doc mentions a word, not whether it documents a setting: `IB.Port` counted because
+    something, somewhere, said "Port", and the same held for any key ending in `Enabled`, `Timeout`,
+    or `Path`. That is the same defect as crediting `ApprovalDecision` to a doc that says
+    `Decision`, and a leaf is a weaker claim still, because config leaves are ordinary English.
+    """
     schema_doc = root / "docs" / "generated" / "configuration-schema.md"
     claude_md = root / "CLAUDE.md"
 
@@ -428,10 +478,7 @@ def _check_config_documentation(
         combined += _read_text_safe(doc_path) + "\n"
 
     for item in items:
-        # Match the key name or the dotted path
-        key_leaf = item.name.split(".")[-1]
-        if key_leaf in combined or item.name in combined:
-            item.documented = True
+        item.documented = _names_term(combined, item.name)
 
     documented = sum(1 for i in items if i.documented)
     return CategoryResult(
@@ -481,7 +528,12 @@ def _check_provider_documentation(
     items: List[SourceItem],
     root: Path,
 ) -> CategoryResult:
-    """Check if providers are mentioned in docs/providers/ or CLAUDE.md."""
+    """Check if providers are named in docs/providers/ or CLAUDE.md.
+
+    Boundary-checked for the same reason as the checks above, though nothing moves today: the scan
+    currently finds no providers, so this carried the substring defect latently rather than
+    visibly. Fixed together with its siblings so the file states the rule once.
+    """
     provider_docs_dir = root / "docs" / "providers"
     claude_md = root / "CLAUDE.md"
 
@@ -490,11 +542,12 @@ def _check_provider_documentation(
         for md_file in provider_docs_dir.glob("*.md"):
             combined += "\n" + _read_text_safe(md_file)
 
+    lowered = combined.lower()
     for item in items:
-        # Extract short provider name (e.g. "Alpaca" from "Streaming/Alpaca")
-        provider_name = item.name.split("/")[-1]
-        if provider_name.lower() in combined.lower():
-            item.documented = True
+        # Short provider name, e.g. "Alpaca" from "Streaming/Alpaca". Case-insensitive because
+        # provider docs use prose capitalisation, unlike the C# type names above.
+        provider_name = item.name.split("/")[-1].lower()
+        item.documented = _names_term(lowered, provider_name)
 
     documented = sum(1 for i in items if i.documented)
     return CategoryResult(
