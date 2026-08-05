@@ -1,11 +1,11 @@
 {
   "total_files": 642,
-  "total_lines": 122533,
+  "total_lines": 122666,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 222,
-  "average_lines": 190.9,
+  "average_lines": 191.1,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2170,7 +2170,7 @@
     },
     {
       "path": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
-      "line_count": 2195,
+      "line_count": 2328,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
