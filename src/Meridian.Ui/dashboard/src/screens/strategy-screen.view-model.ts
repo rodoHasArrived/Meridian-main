@@ -1546,7 +1546,14 @@ function formatDecimal(value: number | null | undefined, digits: number): string
   return value.toFixed(digits);
 }
 
-function formatPercent(value: number | null | undefined, digits: number): string {
+/**
+ * Input is a fraction of 1 (0.425 -> "42.5%"), not percent units.
+ *
+ * Kept local rather than delegating to `@/lib/format` because these promotion
+ * metrics render ungrouped (`toFixed`) — the shared helper adds thousands
+ * separators, which would change existing output.
+ */
+function formatRatioAsPercent(value: number | null | undefined, digits: number): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "Unavailable";
   }
@@ -1571,8 +1578,8 @@ export function buildPromotionEvaluationState(
     reason: promotionEval.reason.trim() || "Promotion evaluation returned no reason.",
     metricRows: [
       { id: "sharpe", label: "Sharpe", value: formatDecimal(promotionEval.sharpeRatio, 2) },
-      { id: "drawdown", label: "Max DD", value: formatPercent(promotionEval.maxDrawdownPercent, 1) },
-      { id: "return", label: "Return", value: formatPercent(promotionEval.totalReturn, 1) }
+      { id: "drawdown", label: "Max DD", value: formatRatioAsPercent(promotionEval.maxDrawdownPercent, 1) },
+      { id: "return", label: "Return", value: formatRatioAsPercent(promotionEval.totalReturn, 1) }
     ],
     blockingReasons,
     hasBlockingReasons: blockingReasons.length > 0,
@@ -2659,8 +2666,8 @@ function buildPromotionHistoryRow(
   const routeText = `${source} to ${target}`;
   const decisionText = formatPromotionDecision(record);
   const qualifyingSharpeText = formatNullableNumber(record.qualifyingSharpe, 3);
-  const qualifyingMaxDrawdownText = formatPercent(record.qualifyingMaxDrawdownPercent, 1);
-  const qualifyingTotalReturnText = formatPercent(record.qualifyingTotalReturn, 1);
+  const qualifyingMaxDrawdownText = formatRatioAsPercent(record.qualifyingMaxDrawdownPercent, 1);
+  const qualifyingTotalReturnText = formatRatioAsPercent(record.qualifyingTotalReturn, 1);
   const promotedAtText = formatText(record.promotedAt);
   const detailExpanded = record.promotionId === selectedPromotionId;
 
@@ -2711,8 +2718,8 @@ export function buildPromotionHistoryDetail(
       { label: "Target run", value: formatText(record.targetRunId ?? null) },
       { label: "Decision", value: decisionText },
       { label: "Sharpe", value: formatNullableNumber(record.qualifyingSharpe, 3) },
-      { label: "Max drawdown", value: formatPercent(record.qualifyingMaxDrawdownPercent, 1) },
-      { label: "Total return", value: formatPercent(record.qualifyingTotalReturn, 1) },
+      { label: "Max drawdown", value: formatRatioAsPercent(record.qualifyingMaxDrawdownPercent, 1) },
+      { label: "Total return", value: formatRatioAsPercent(record.qualifyingTotalReturn, 1) },
       { label: "Approved by", value: approvedBy },
       { label: "Audit ref", value: auditReference }
     ]

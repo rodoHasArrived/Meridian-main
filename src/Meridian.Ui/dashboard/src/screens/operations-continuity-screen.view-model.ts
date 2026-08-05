@@ -8,7 +8,7 @@ import {
   type ApiRequestOptions,
   type PrivateCapitalCloseCockpitQuery
 } from "@/lib/api";
-import { describeApiError } from "@/lib/api-errors";
+import { describeApiError, isAbortError } from "@/lib/api-errors";
 import { humanizeStatus } from "@/components/operations/status";
 import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
 import {
@@ -3938,10 +3938,6 @@ function formatError(err: unknown, fallback: string): string {
   return display.summary || (err instanceof Error ? err.message : fallback);
 }
 
-function isAbortError(err: unknown): boolean {
-  return err instanceof DOMException && err.name === "AbortError";
-}
-
 function splitEnumLabel(value: string): string {
   return value
     .replace(/[-_]+/g, " ")
@@ -4019,6 +4015,7 @@ function formatCurrency(value: number | null | undefined, currency: string): str
   return formatCurrencyAmount(value, { currency });
 }
 
+/** Input is already in percent units (readiness scores are 0-100). For fractions use `formatRatioAsPercent`. */
 function formatPercent(value: number | null | undefined): string {
   return typeof value === "number" && Number.isFinite(value)
     ? `${Math.round(value)}%`
