@@ -1,6 +1,6 @@
 {
   "total_files": 641,
-  "total_lines": 120320,
+  "total_lines": 120334,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -3546,7 +3546,7 @@
     },
     {
       "path": "docs/source/generated/stale-docs.md",
-      "line_count": 40,
+      "line_count": 39,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5306,7 +5306,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1343,
+      "line_count": 1358,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
