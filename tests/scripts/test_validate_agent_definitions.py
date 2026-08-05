@@ -12,7 +12,18 @@ spec = importlib.util.spec_from_file_location("validate_agent_definitions", MODU
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = module
-spec.loader.exec_module(module)
+try:
+    spec.loader.exec_module(module)
+except SystemExit as exit_signal:  # pragma: no cover - only without PyYAML
+    # The validator exits 2 rather than raising when PyYAML is absent, which is right for a
+    # CLI and wrong to inherit here: an uncaught SystemExit during `unittest` discovery
+    # aborts the **whole** `tests/scripts` lane, so one unprovisioned dependency takes out
+    # ~700 unrelated tests. Converting it to a module-level skip keeps the rest of the lane
+    # running and still reports this module as unrun rather than silently passing.
+    raise unittest.SkipTest(
+        "validate-agent-definitions requires PyYAML; install it with "
+        "`python3 -m pip install --requirement build/scripts/docs/requirements.txt`"
+    ) from exit_signal
 
 
 def write_agent(directory: Path, stem: str, frontmatter: str, body: str = "\n# Agent\n") -> Path:
@@ -851,12 +862,109 @@ class ValidateAgentTests(unittest.TestCase):
             self.directory,
             "sample-agent",
             "name: sample-agent\ndescription: Does a thing.\n"
-            "tools: Write(src/config.json)\ndisallowedTools: Write(src/*.json)",
+            "tools: Edit(src/config.json)\ndisallowedTools: Edit(src/*.json)",
         )
 
         errors = " | ".join(module.validate_agent(path))
 
         self.assertIn("cancels every entry", errors)
+
+    def test_path_rules_on_unchecked_tools_cancel_nothing(self) -> None:
+        # "Claude Code checks file permissions against `Edit(path)` and `Read(path)` rules
+        # only. If you write a path rule for `Write`, `NotebookEdit`, `Glob` … Claude Code
+        # accepts the rule but never consults it." So a scoped deny on one of these removes
+        # nothing at all - this asserted the opposite until the reference was checked.
+        for tool in ("Write", "NotebookEdit", "Glob"):
+            with self.subTest(tool=tool):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\n"
+                    f"tools: {tool}(src/config.json)\ndisallowedTools: {tool}(src/*.json)",
+                )
+
+                self.assertEqual([], module.validate_agent(path))
+
+    def test_unscoped_deny_on_those_tools_still_cancels(self) -> None:
+        # The other half of the same rule: Claude Code "doesn't warn about a tool-name rule
+        # with no path, such as a deny rule for `Write`; it matches that rule at the tool
+        # level everywhere."
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Write(src/config.json)\ndisallowedTools: Write",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
+
+    def test_domain_star_cancels_a_bare_webfetch_grant(self) -> None:
+        # "`WebFetch(domain:*)` matches every domain and is equivalent to a bare `WebFetch`
+        # rule", so it is not a narrowing of an unscoped grant - it is the whole tool.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: WebFetch\ndisallowedTools: WebFetch(domain:*)",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
+
+    def test_a_narrow_domain_deny_still_narrows_a_bare_grant(self) -> None:
+        # The boundary: only a scope covering everything collapses to the bare tool.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: WebFetch\ndisallowedTools: WebFetch(domain:example.com)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_deny_side_tool_name_globs_are_accepted_and_applied(self) -> None:
+        # "Deny and ask rules also accept glob patterns in the tool-name position. The
+        # pattern must match the full tool name."
+        for deny in ("*", "B*", "mcp__*", "mcp__git*"):
+            with self.subTest(deny=deny):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\n"
+                    f"tools: Bash, mcp__github__get_issue\nmcpServers:\n  - github\n"
+                    f"disallowedTools: Bash, mcp__github__get_issue, {deny}",
+                )
+
+                errors = " | ".join(module.validate_agent(path))
+
+                self.assertNotIn("is not a known tool", errors)
+
+    def test_an_allow_side_glob_is_still_rejected(self) -> None:
+        # "An unanchored allow glob such as `*`, `B*`, or `mcp__*` is skipped with a warning
+        # and doesn't auto-approve anything", so it is an empty grant, not a broad one.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: B*",
+        )
+
+        self.assertNotEqual([], module.validate_agent(path))
+
+    def test_deny_side_typos_are_still_caught(self) -> None:
+        # Glob acceptance is keyed on the `*`; a bare misspelling has to keep failing.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Read\ndisallowedTools: Raed",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("is not a known tool", errors)
 
     def test_bash_wrappers_are_stripped_before_matching(self) -> None:
         # "Before matching Bash rules, Claude Code strips a fixed set of wrappers, so a rule

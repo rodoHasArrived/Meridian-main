@@ -485,12 +485,27 @@ allow is evaluated as a **glob**, not a prefix test. Wildcards may appear anywhe
 `Bash(git * main)` and `Bash(* install)` behave as documented rather than being mistaken for exact
 commands.
 
-`Read`, `Edit`, and `Write` scopes are **gitignore path patterns**, not shell globs: `*` stays inside
-one path segment and only `**` crosses directories, so `Read(src/*.json)` does not cancel
-`Read(src/a/b.json)`. Anchoring (`//`, `~/`, a leading `/`), the rule that a bare filename matches at
-any depth, and the allow-versus-deny depth difference for single-segment directory patterns are not
-modelled — resolving them needs the settings source an agent file does not have — so some genuine
-cancellations go unreported. That is the safe direction here.
+`Read` and `Edit` scopes are **gitignore path patterns**, not shell globs: `*` stays inside one path
+segment and only `**` crosses directories, so `Read(src/*.json)` does not cancel `Read(src/a/b.json)`.
+Anchoring (`//`, `~/`, a leading `/`), the rule that a bare filename matches at any depth, and the
+allow-versus-deny depth difference for single-segment directory patterns are not modelled — resolving
+them needs the settings source an agent file does not have — so some genuine cancellations go
+unreported. That is the safe direction here.
+
+Only those two. "Claude Code checks file permissions against `Edit(path)` and `Read(path)` rules
+only" — a path rule on `Write`, `NotebookEdit`, or `Glob` is accepted, warned about at startup, and
+**never consulted**, so a scoped deny on one of them cancels nothing at all. The unscoped form still
+does: a bare `Write` deny "matches that rule at the tool level everywhere".
+
+Deny entries may carry a **tool-name glob** matching the full name — `*`, `B*`, `mcp__*`,
+`mcp__github*` — because "deny and ask rules also accept glob patterns in the tool-name position".
+Allow entries may not: an unanchored allow glob "is skipped with a warning and doesn't auto-approve
+anything", which makes it an empty grant rather than a broad one, so `tools: B*` is still an error.
+Typo detection is unaffected, since an entry with no `*` still has to resolve.
+
+A deny scope that covers everything the tool can do is treated as equal to no scope, so
+`WebFetch(domain:*)` — which "matches every domain and is equivalent to a bare `WebFetch` rule" —
+cancels a bare `WebFetch` grant, while `WebFetch(domain:example.com)` only narrows it.
 
 For `Bash`, the wrappers the host strips before matching are reproduced on the **command** side:
 `timeout`, `time`, `nice`, `nohup`, `stdbuf`, `command`, `builtin`, `noglob`, and bare `xargs`, plus

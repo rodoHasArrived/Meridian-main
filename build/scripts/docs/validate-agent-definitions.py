@@ -157,7 +157,17 @@ ENV_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 DURATION = re.compile(r"\d+(?:\.\d+)?[smhd]?")
 
 # Tools whose scopes are file paths in gitignore syntax rather than shell commands.
-PATH_SCOPED_TOOLS = frozenset({"Read", "Edit", "Write"})
+# `Read` and `Edit` only: "Claude Code checks file permissions against `Edit(path)` and
+# `Read(path)` rules only."
+PATH_SCOPED_TOOLS = frozenset({"Read", "Edit"})
+
+# Tools where a *path* rule is accepted and then never consulted - the host "warns at
+# startup" and matches nothing. A scoped deny on one of these therefore cancels no grant,
+# while the unscoped form still "matches that rule at the tool level everywhere". An earlier
+# revision put `Write` in PATH_SCOPED_TOOLS, which made `Write(src/*.json)` cancel
+# `Write(src/config.json)` - a grant the host leaves entirely alone, since it never reads
+# the deny at all.
+IGNORED_PATH_SCOPE_TOOLS = frozenset({"Write", "NotebookEdit", "Glob"})
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TOOL_FIELDS = ("tools", "disallowedTools")
 ALLOW_LIST_FIELD = "tools"
@@ -469,13 +479,24 @@ def _head_covers(deny_head: str, allow_head: str) -> bool:
     """
     if deny_head == allow_head:
         return True
-    if not deny_head.startswith("mcp__") or not allow_head.startswith("mcp__"):
+    if not deny_head.startswith("mcp__"):
+        # "Deny and ask rules also accept glob patterns in the tool-name position. The
+        # pattern must match the full tool name" - so `B*` cancels `Bash` and `*` cancels
+        # everything. Allow rules get no such licence, which is why this is keyed on the
+        # deny side alone.
+        if "*" in deny_head:
+            return re.fullmatch(_glob_to_regex(deny_head), allow_head) is not None
         return False
-    if deny_head == MCP_ALL_SERVERS:
-        return True  # every MCP tool, on every server
+    if not allow_head.startswith("mcp__"):
+        return False
     deny_server, _, deny_tool = deny_head[len("mcp__") :].partition("__")
     allow_server, _, allow_tool = allow_head[len("mcp__") :].partition("__")
-    if deny_server != allow_server:
+    if "*" in deny_server:
+        # A glob in the server segment is legal on the deny side; `mcp__*` is its most
+        # common spelling, not a special case.
+        if not re.fullmatch(_glob_to_regex(deny_server), allow_server):
+            return False
+    elif deny_server != allow_server:
         return False
     if not deny_tool:
         return True  # a bare server deny covers every tool that server provides
@@ -507,12 +528,31 @@ def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
         deny_scope = _entry_scope(deny)
         if deny_scope is None:
             return True  # unscoped deny cancels every scope of that tool
+        if allow_head in IGNORED_PATH_SCOPE_TOOLS:
+            # The host "accepts the rule but never consults it" for a path rule on these
+            # tools, so a scoped deny here removes nothing. Only the unscoped form above
+            # cancels, which the reference confirms: a bare `Write` deny "matches that rule
+            # at the tool level everywhere".
+            continue
+        if _universal_scope(allow_head, deny_scope):
+            # `WebFetch(domain:*)` "matches every domain and is equivalent to a bare
+            # WebFetch rule", so it is not a narrowing of an unscoped grant - it is the
+            # whole tool, and the direction guard below must not skip it.
+            return True
         if allow_scope is None:
             # A scoped deny narrows an unscoped grant rather than removing it.
             continue
         if _scope_covers(allow_head, deny_scope, allow_scope):
             return True
     return False
+
+
+def _universal_scope(head: str, scope: str) -> bool:
+    """True when a scope covers everything the tool can do, making it equal to no scope."""
+    scope = _normalize_scope(head, scope)
+    if head == "WebFetch" and scope.startswith("domain:"):
+        return scope[len("domain:"):].strip() == "*"
+    return scope == "*"
 
 
 # Tools whose parenthesised scope is a *command* rather than a parameter. For these the
@@ -933,7 +973,13 @@ def validate_agent(path: Path) -> list[str]:
                 continue
             if MCP_PATTERN.match(head):
                 continue
-            if head == MCP_ALL_SERVERS and field != ALLOW_LIST_FIELD:
+            if "*" in head and field != ALLOW_LIST_FIELD:
+                # Deny and ask rules accept a tool-name glob matching the full name - `*`,
+                # `B*`, `mcp__*`, `mcp__github*`. Allow rules accept one only after a
+                # literal `mcp__<server>__` prefix, which `MCP_PATTERN` already covers, and
+                # an unanchored allow glob "is skipped with a warning and doesn't
+                # auto-approve anything". Typo detection survives, because an entry with no
+                # `*` still has to resolve.
                 continue
             errors.append(
                 f"{path.name}: `{field}` entry '{head}' is not a known tool"
