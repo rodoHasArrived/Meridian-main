@@ -132,6 +132,81 @@ public sealed class SecurityMasterMappingInteropTests
         terms.GetProperty("pricingSource").GetString().Should().Be("Bloomberg");
     }
 
+    [Theory]
+    [InlineData("FullVoting")]
+    [InlineData("LimitedVoting")]
+    [InlineData("NonVoting")]
+    [InlineData("DualClass")]
+    [InlineData("SuperVoting")]
+    // Unrecognized tokens are carried verbatim by VotingRightsCat.OtherVotingRights, so a vendor's
+    // own spelling must survive the loop exactly as the five canonical cases do.
+    [InlineData("Restricted")]
+    public void EquityTerms_SerializeDeserialize_PreservesVotingRightsCat(string votingRightsCat)
+    {
+        var terms = RoundTripAssetSpecificTerms("Equity", new
+        {
+            shareClass = "A",
+            votingRightsCat,
+            classification = "Common"
+        });
+
+        terms.GetProperty("shareClass").GetString().Should().Be("A");
+        terms.GetProperty("classification").GetString().Should().Be("Common");
+
+        // Asserted via TryGetProperty rather than GetProperty so a dropped field reports as a
+        // readable expectation failure instead of a bare KeyNotFoundException.
+        //
+        // Note the byte-stability check inside RoundTripAssetSpecificTerms cannot catch this on its
+        // own: a field the serializer never emits is stably absent from both passes, so first and
+        // second pass agree. Only comparing against the *input* value surfaces the loss.
+        terms.TryGetProperty("votingRightsCat", out var emitted).Should().BeTrue(
+            "the F# snapshot serializer must emit votingRightsCat - SecurityMasterMapping.ToSecurityKind "
+            + "reads it back into EquityTerms and PostgresSecurityMasterStore projects it into the "
+            + "voting_rights_cat column, so dropping it on write silently nulls that column");
+        emitted.GetString().Should().Be(votingRightsCat);
+    }
+
+    [Fact]
+    public void ToCreateCommand_EquityVotingRightsCat_IsReadIntoTheDomain()
+    {
+        // Localizes the round-trip expectation above. The read side already parses votingRightsCat
+        // into EquityTerms, so if the serialized payload lacks the key the gap is on the write side
+        // (Interop.SecurityMaster.fs) rather than the field being unsupported end to end.
+        var now = DateTimeOffset.UtcNow;
+        var request = new CreateSecurityRequest(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: "Equity",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Voting rights read-side check",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                shareClass = "B",
+                votingRightsCat = "SuperVoting",
+                classification = "Common"
+            }),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "VOTE", true, now)
+            ],
+            EffectiveFrom: now,
+            SourceSystem: "interop-tests",
+            UpdatedBy: "interop-tests",
+            SourceRecordId: "equity-voting-rights-read",
+            Reason: "Voting rights must reach the domain from the request payload");
+
+        var command = SecurityMasterMapping.ToCreateCommand(request);
+
+        var equity = command.Kind.Should().BeOfType<SecurityKind.Equity>().Subject;
+        equity.Item.ShareClass.Should().NotBeNull();
+        equity.Item.ShareClass!.Value.Should().Be("B");
+        equity.Item.VotingRightsCat.Should().NotBeNull(
+            "the deserializer maps the votingRightsCat token onto the VotingRightsCat DU");
+        equity.Item.VotingRightsCat!.Value.IsSuperVoting.Should().BeTrue();
+    }
+
     [Fact]
     public void ToCreateCommand_UnknownAssetClass_DegradesToOtherSecurityPreservingRawClass()
     {
