@@ -515,7 +515,12 @@ def validate_agent(path: Path) -> list[str]:
         # An allow-list made only of MCP patterns therefore resolves to nothing on
         # any session without that server, which is the empty grant that made the
         # whole agent layer inert. A deny-list has no such failure mode.
-        if field == ALLOW_LIST_FIELD and entries and builtin_count == 0:
+        if (
+            field == ALLOW_LIST_FIELD
+            and entries
+            and builtin_count == 0
+            and all(MCP_PATTERN.match(entry_head(entry)[0]) for entry in entries)
+        ):
             errors.append(
                 f"{path.name}: `{field}` names only MCP entries; an MCP server is a "
                 "property of the host session, so this grants nothing on a session "
