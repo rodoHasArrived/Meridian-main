@@ -388,6 +388,24 @@ def _receiver_before(text: str, dot: int) -> str:
     return text[start:end]
 
 
+def _route_spellings(route: str) -> Tuple[str, ...]:
+    """The spellings of `route` a document may legitimately use.
+
+    The reference writes most routes with a leading slash but not all — `api/backfill/run` appears
+    bare — so both forms count for a full path. The slashless form is **not** offered for anything
+    else, because for an unresolved relative fragment it degrades to a bare word: `/rules` becomes
+    `rules`, which matches the last segment of `/api/risk/rules` and credits a route this scan
+    could not resolve. That is worse than a wrong number, because it hides exactly the
+    unresolved-prefix gap the group composition above exists to expose.
+    """
+    stripped = route.strip().lstrip("/")
+    if not stripped:
+        return ()
+    if stripped.startswith("api/"):
+        return (f"/{stripped}", stripped)
+    return (f"/{stripped}",)
+
+
 def _lookup_prefix(declarations: List[Tuple[int, str, str]], variable: str, before: int) -> str:
     """The prefix bound to `variable` by the nearest declaration above `before`.
 
@@ -452,6 +470,12 @@ def _scan_endpoints(root: Path) -> List[SourceItem]:
     at the time of writing: 6 endpoints of 325 — the `/rules` and `/escalations` families — read as
     undocumented although `api-reference.md` documents them under `/api/risk/…`. Of the 26 routes
     that stay relative, the rest are mapped on `app` directly and are correct as they stand.
+
+    That undercount is the honest failure mode and is deliberately preferred to the alternative.
+    Until `_route_spellings` stopped offering the slashless form for relative routes, those same 6
+    were reported as *documented*: `/rules` degraded to the bare word `rules`, which matches the
+    last segment of `/api/risk/rules`. A limitation that inflates coverage hides itself; one that
+    deflates it shows up as a gap somebody can act on.
     """
     src_dir = root / "src"
     if not src_dir.is_dir():
@@ -530,8 +554,6 @@ def _check_endpoint_documentation(
     combined_text = ROUTE_CONSTRAINT_RE.sub(r"{\1}", combined_text)
 
     for item in items:
-        # Routes are recorded with and without the leading slash across the docs, so both spellings
-        # count; the boundary check is what stops either from matching inside a longer path.
         route = item.name.strip().lstrip("/")
 
         # A relative route of `/` carries no path of its own — its real path is the enclosing
@@ -542,13 +564,13 @@ def _check_endpoint_documentation(
         if not route:
             continue
 
-        if _names_term(combined_text, route) or _names_term(combined_text, f"/{route}"):
+        if any(_names_term(combined_text, spelling) for spelling in _route_spellings(item.name)):
             item.documented = True
         else:
             # Parameterised routes: /api/backfill/schedules/{id} -> /api/backfill/schedules
             base = re.sub(r"/\{[^}]+\}", "", item.name)
-            if base and (
-                _names_term(combined_text, base) or _names_term(combined_text, base.lstrip("/"))
+            if base and any(
+                _names_term(combined_text, spelling) for spelling in _route_spellings(base)
             ):
                 item.documented = True
 

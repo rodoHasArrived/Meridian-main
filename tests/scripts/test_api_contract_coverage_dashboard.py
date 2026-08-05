@@ -283,6 +283,28 @@ class EndpointBoundaryTests(_CoverageModuleTestCase):
             )
         )
 
+    def test_an_unresolved_relative_route_is_not_credited_by_a_bare_segment(self) -> None:
+        # `RiskEndpoints.cs` passes its group as a method argument, which the scan cannot resolve,
+        # so `/rules` and `/escalations` stay relative. Offering the slashless spelling for them
+        # degraded the term to the bare word `rules`, matching the last segment of
+        # `/api/risk/rules` — crediting a route the scan could not resolve, and hiding the very
+        # unresolved-prefix gap group composition exists to expose.
+        self.assertFalse(self._documented("/rules", "| GET | `/api/risk/rules` | List rules |"))
+        self.assertFalse(
+            self._documented("/escalations", "see `/api/risk/escalations` for the queue")
+        )
+
+    def test_a_full_path_still_counts_in_either_spelling(self) -> None:
+        # The slashless form exists because the reference writes some routes bare.
+        self.assertTrue(self._documented("/api/backfill/run", "documented as api/backfill/run."))
+        self.assertTrue(self._documented("/api/backfill/run", "documented as /api/backfill/run."))
+
+    def test_a_root_route_mapped_on_the_app_still_counts(self) -> None:
+        # `/health` and `/workstation` are full paths, not fragments — `api-reference.md:650` and
+        # `:690` document them as rows of their own.
+        self.assertTrue(self._documented("/health", "| GET | `/health` | Health status |"))
+        self.assertTrue(self._documented("/workstation", "| GET | `/workstation` | Shell entry |"))
+
     def test_a_root_relative_route_is_never_credited(self) -> None:
         # `DirectLendingEndpoints.cs:37` maps `/` inside a route group. Its real path is the group
         # prefix, which this scan does not resolve, so all that is left to match is a bare slash —
