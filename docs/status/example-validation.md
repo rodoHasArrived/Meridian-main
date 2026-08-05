@@ -8,10 +8,10 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 988 |
-| Valid | 568 |
+| Total code blocks | 990 |
+| Valid | 569 |
 | Invalid | 0 |
-| Skipped | 420 |
+| Skipped | 421 |
 
 ## Summary by Language
 
@@ -21,7 +21,7 @@
 | `bash` | 157 | 157 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 318 | 318 | 0 | 0 |
+| `csharp` | 319 | 319 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 62 | 62 | 0 | 0 |
@@ -34,7 +34,7 @@
 | `powershell` | 84 | 0 | 0 | 84 |
 | `python` | 3 | 3 | 0 | 0 |
 | `sql` | 8 | 0 | 0 | 8 |
-| `text` | 63 | 0 | 0 | 63 |
+| `text` | 64 | 0 | 0 | 64 |
 | `toml` | 31 | 0 | 0 | 31 |
 | `ts` | 8 | 0 | 0 | 8 |
 | `xml` | 9 | 9 | 0 | 0 |
@@ -114,7 +114,7 @@ No invalid code examples found.
 | `docs/engineering/README.md` | 1 |
 | `docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md` | 9 |
 | `docs/engineering/blueprints/risk-engine-severity-and-decision-journal-blueprint.md` | 7 |
-| `docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md` | 14 |
+| `docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md` | 15 |
 | `docs/engineering/live-trading-engine.md` | 1 |
 | `docs/engineering/production-certification-evidence-chain.md` | 2 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |
