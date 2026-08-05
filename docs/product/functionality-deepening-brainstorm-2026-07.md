@@ -618,13 +618,14 @@ makes `W9-SAFETY-007`'s rules land in an engine worthy of them.
   statement expectations (#8), and expected-session logic for the certificate (#7). One
   implementation, four consumers.
 
-**Cross-cutting theme: retire "declared but dead."** Dead `RiskContext` fields (since landed —
-see the Status Update), a never-produced `Escalate` outcome, a legacy three-threshold promotion
-helper out of step with the enforced policy path, an unregistered backfill scheduler, guardrail
-copy describing nonexistent controls, `Var95: "—"` — each is a small truthfulness debt, and
-together they are the same defect `W9-TRUTH-001` targets at the simulation boundary. A one-day
-sweep that wires-or-deletes each of these is the cheapest credibility purchase available to the
-program.
+**Cross-cutting theme: retire "declared but dead."** The survey's risk-lane examples — dead
+`RiskContext` fields, a never-produced `Escalate`, guardrail copy describing nonexistent
+controls — have since landed or been removed (see the Status Update), which itself proves the
+sweep's value. The residual items as of 2026-08-05: the legacy three-threshold promotion
+helper out of step with the enforced policy path, the unhosted backfill scheduler, the
+`Var95: "—"` placeholder, and the unread `RecentOrderRate` field. Each is a small truthfulness
+debt of the same kind `W9-TRUTH-001` targets at the simulation boundary; a short sweep that
+wires-or-deletes each remaining one is still the cheapest credibility purchase available.
 
 **Sequencing.**
 
