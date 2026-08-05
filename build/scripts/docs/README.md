@@ -448,9 +448,16 @@ literal set. That is deliberate: each set *rejects* anything it omits, so an inc
 legitimate work, and a test that iterates the constant passes no matter what the constant leaves
 out. Re-derive from that table when the host adds a field rather than appending one name at a time.
 
-Four MCP forms are accepted — `mcp__server`, `mcp__server__tool`, `mcp__server__*`, and partial tool
-wildcards such as `mcp__github__get_*`. The all-server `mcp__*` is valid only in `disallowedTools`,
-because an allow rule containing it is skipped with a warning rather than honoured.
+MCP entries accept `mcp__server` and `mcp__server__tool`, with the tool segment treated as a glob so
+`*` may appear anywhere in it — `mcp__github__*`, `mcp__github__get_*`, `mcp__github__*_issue`. The
+**server** segment stays glob-free, because an allow rule has to name a specific configured server;
+the all-server `mcp__*` is therefore valid only in `disallowedTools`, where it is honoured rather
+than skipped with a warning.
+
+An allow-list naming *only* MCP entries is normally an error, since which servers exist is a
+property of the host session and the grant would resolve to nothing without them. Declaring
+`mcpServers` lifts that: it makes the servers a property of the definition, so `tools: mcp__playwright`
+alongside an `mcpServers` entry is a grant that resolves.
 
 Parenthesised scopes such as `Bash(git diff:*)` are supported, and coverage between a deny and an
 allow is evaluated as a **glob**, not a prefix test. Wildcards may appear anywhere, so

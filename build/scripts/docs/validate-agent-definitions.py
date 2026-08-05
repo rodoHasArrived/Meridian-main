@@ -126,7 +126,12 @@ KNOWN_TOOLS = frozenset(
 # entry is not. The all-server `mcp__*` is handled separately because an allow rule
 # containing it is skipped with a warning rather than honoured, so it is meaningful only
 # in `disallowedTools`.
-MCP_PATTERN = re.compile(r"^mcp__[A-Za-z0-9_.-]+(?:__(?:\*|[A-Za-z0-9_.-]+\*?))?$")
+# The tool segment is a glob, so `*` may appear anywhere in it - `mcp__github__get_*`,
+# `mcp__github__*_issue`, `mcp__github__get_*_issue`. Only accepting a trailing star was
+# the same too-narrow reading that broke the Bash scope matcher. The **server** segment
+# stays glob-free: the reference requires an allow rule to name a specific configured
+# server, and an unanchored glob there is skipped with a warning rather than honoured.
+MCP_PATTERN = re.compile(r"^mcp__[A-Za-z0-9_.-]+(?:__[A-Za-z0-9_.\-*]+)?$")
 MCP_ALL_SERVERS = "mcp__*"
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TOOL_FIELDS = ("tools", "disallowedTools")
@@ -456,6 +461,14 @@ def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
 COMMAND_SCOPED_TOOLS = frozenset({"Bash", "PowerShell"})
 
 
+def _glob_to_regex(pattern: str) -> str:
+    """Expand `*` wildcards, escaping everything else. Any number, at any position."""
+    return "".join(
+        ".*" if part == "*" else re.escape(part)
+        for part in re.split(r"(\*)", pattern)
+    )
+
+
 def _scope_regex(head: str, scope: str) -> re.Pattern[str]:
     """Compile a permission scope into a matcher.
 
@@ -476,13 +489,13 @@ def _scope_regex(head: str, scope: str) -> re.Pattern[str]:
         scope = scope[:-2].rstrip() + " *"
 
     if scope.endswith(" *"):
-        # Word-bounded: the prefix alone, or the prefix followed by whitespace.
-        return re.compile(re.escape(scope[:-2].rstrip()) + r"(?:\s.*)?\Z", re.DOTALL)
+        # Word-bounded: the prefix alone, or the prefix followed by whitespace. The prefix
+        # is still glob-expanded - `Bash(* --help *)` carries an internal wildcard as well
+        # as the trailing one, and escaping the whole prefix literally made that pattern
+        # match nothing.
+        return re.compile(_glob_to_regex(scope[:-2].rstrip()) + r"(?:\s.*)?\Z", re.DOTALL)
 
-    return re.compile("".join(
-        ".*" if part == "*" else re.escape(part)
-        for part in re.split(r"(\*)", scope)
-    ) + r"\Z", re.DOTALL)
+    return re.compile(_glob_to_regex(scope) + r"\Z", re.DOTALL)
 
 
 def _scope_covers(head: str, deny_scope: str, allow_scope: str) -> bool:
@@ -592,15 +605,23 @@ def validate_agent(path: Path) -> list[str]:
                 f"{describe_unknown(field, head)}"
             )
 
-        # Which MCP servers exist is a property of the host session, not of this
-        # repository - the same reason this file's guidance discourages naming one.
-        # An allow-list made only of MCP patterns therefore resolves to nothing on
-        # any session without that server, which is the empty grant that made the
+        # Which MCP servers exist is normally a property of the host session, not of
+        # this repository - the same reason this file's guidance discourages naming
+        # one. An allow-list made only of MCP patterns therefore resolves to nothing
+        # on any session without that server, which is the empty grant that made the
         # whole agent layer inert. A deny-list has no such failure mode.
+        #
+        # `mcpServers` is the exception, and it is why this guard is conditional: an
+        # agent that declares or references its own servers has made them a property
+        # of the *definition*, so `tools: mcp__playwright` alongside an `mcpServers`
+        # entry is a grant that resolves. Keeping the guard unconditional would reject
+        # that valid shape - and the shape only became expressible because this same
+        # change added `mcpServers` to the recognised fields.
         if (
             field == ALLOW_LIST_FIELD
             and entries
             and builtin_count == 0
+            and not frontmatter.get("mcpServers")
             and all(MCP_PATTERN.match(entry_head(entry)[0]) for entry in entries)
         ):
             errors.append(

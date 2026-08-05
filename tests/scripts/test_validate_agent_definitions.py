@@ -403,6 +403,43 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertEqual([], module.validate_agent(path))
 
+    def test_mcp_tool_globs_are_accepted_at_any_position(self) -> None:
+        # The tool segment is a glob, so `*` may sit anywhere in it. Accepting only a
+        # trailing star rejected valid single-server declarations - the same too-narrow
+        # reading that broke the Bash scope matcher.
+        for entry in ("mcp__github__get_*", "mcp__github__*_issue", "mcp__github__get_*_issue"):
+            with self.subTest(entry=entry):
+                self.assertTrue(module.MCP_PATTERN.match(entry), entry)
+
+    def test_mcp_server_segment_stays_glob_free(self) -> None:
+        # An allow rule must name a specific configured server; an unanchored glob there
+        # is skipped with a warning rather than honoured, so it would grant nothing.
+        self.assertIsNone(module.MCP_PATTERN.match("mcp__*"))
+
+    def test_mcp_only_grant_is_accepted_when_the_agent_declares_its_servers(self) -> None:
+        # The guard assumes MCP availability is a host-session property. `mcpServers`
+        # makes it a property of the definition, so this grant resolves - and the shape
+        # only became expressible because the same change recognised that field.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__playwright\nmcpServers:\n  - playwright",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_mcp_only_grant_without_declared_servers_is_still_rejected(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: mcp__playwright",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("names only MCP entries", errors)
+
     def test_bare_server_entry_stays_valid(self) -> None:
         # Reviewed and deliberately kept: `mcp__puppeteer` "matches any tool provided by
         # the puppeteer server", so it resolves. This validator exists to catch grants
@@ -818,6 +855,21 @@ class ValidateAgentTests(unittest.TestCase):
             "sample-agent",
             "name: sample-agent\ndescription: Does a thing.\n"
             "tools: Bash(git push origin main)\ndisallowedTools: Bash(git * main)",
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_deny_with_internal_and_trailing_wildcards_cancels(self) -> None:
+        # `Bash(* --help *)` carries a wildcard inside the prefix as well as the trailing
+        # one. The word-boundary branch escaped its whole prefix literally, so the leading
+        # `*` was matched as a literal asterisk and the pattern cancelled nothing.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(npm --help now)\ndisallowedTools: Bash(* --help *)",
         )
 
         errors = module.validate_agent(path)
