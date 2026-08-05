@@ -622,6 +622,15 @@
       "sha256": "14e9c693511e29048eefb7dd4be8c07b4bd5ab6fd783edf7cc873841402d5375"
     },
     {
+      "filename": "V_ledger_028__wash_sale_activation.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_028__wash_sale_activation.sql",
+      "schema": "ledger",
+      "sha256": "e61c5802322fe591aa8892d5a3ac476a11f03f90fad42e5ed75eb5d56dd030ff"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -793,6 +802,42 @@
       "sha256": "d695b69e1f716ad8e30b7b5cb6f51bccedd4f987e18a353042ea709a03067922"
     },
     {
+      "filename": "010_reporting_operational_state.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/010_reporting_operational_state.sql",
+      "schema": "reporting",
+      "sha256": "0254c805dded4fd479db02418c748129497d3ce72cb9ab3ac5f662f40c196b9d"
+    },
+    {
+      "filename": "011_reporting_delivery_run_read_index.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/011_reporting_delivery_run_read_index.sql",
+      "schema": "reporting",
+      "sha256": "f23b02df27b3eeb0d2240e7ce0bb9cc073c98fbfca99b5bb5578bc617d58f32d"
+    },
+    {
+      "filename": "012_reporting_access_grant_artifact_consumption.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/012_reporting_access_grant_artifact_consumption.sql",
+      "schema": "reporting",
+      "sha256": "076a790726d9a216a400d5e47fb92cd2e41a339b91a28801805c9a08a6eeaa4c"
+    },
+    {
+      "filename": "013_reporting_statement_reconciliation_authority.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/013_reporting_statement_reconciliation_authority.sql",
+      "schema": "reporting",
+      "sha256": "d263b7c9ebb519957950ff2a8f5a1826f003fc64a020ba00ad0a4a3d09e2a02e"
+    },
+    {
       "filename": "001_user_access_assignment.sql",
       "immutable": true,
       "migration_set_id": "identity-access",
@@ -803,7 +848,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "db8ca7b6b496f9f97f45702a69bdd6151b2be49949c8808757d858a14ebcbcb1",
+  "fingerprint": "3e3e5a160e8d2305c5c4bbe4513ddc07f7292ae10c4c2fb5a43971778c95882d",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1041,7 +1086,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 89,
+    "files": 94,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

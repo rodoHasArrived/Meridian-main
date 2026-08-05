@@ -18,7 +18,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class BackfillEndpointTests : IDisposable
+public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
     private readonly EndpointTestFixture _fixture;

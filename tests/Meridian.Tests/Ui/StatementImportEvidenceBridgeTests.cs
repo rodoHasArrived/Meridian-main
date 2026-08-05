@@ -67,7 +67,11 @@ public sealed class StatementImportEvidenceBridgeTests : IDisposable
                 ExternalAccountId: "U-100",
                 PeriodStart: new DateOnly(2026, 6, 1),
                 PeriodEnd: new DateOnly(2026, 6, 30),
-                ImportedBy: "controller"));
+                ImportedBy: "controller")
+            {
+                TenantId = "tenant-test",
+                CompanyId = "company-test"
+            });
 
         retained.EvidenceVaultIdentity.Should().NotBeNull();
         retained.EvidenceVaultIdentity!.SubjectKind.Should().Be("statement-run");
@@ -109,7 +113,11 @@ public sealed class StatementImportEvidenceBridgeTests : IDisposable
             RunId: "stmt-run-77",
             PeriodId: null,
             ReportPackId: null,
-            ReconciliationCaseId: null));
+            ReconciliationCaseId: null)
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         matches.Should().ContainSingle(match => match.VaultId == retained.EvidenceVaultIdentity.VaultId);
 
         var caseMatches = await store.FindByLinkageAsync(new EvidenceVaultLookupRequestDto(
@@ -117,7 +125,11 @@ public sealed class StatementImportEvidenceBridgeTests : IDisposable
             RunId: null,
             PeriodId: null,
             ReportPackId: null,
-            ReconciliationCaseId: "case:break-position-2"));
+            ReconciliationCaseId: "case:break-position-2")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         caseMatches.Should().ContainSingle(match => match.VaultId == retained.EvidenceVaultIdentity.VaultId);
     }
 

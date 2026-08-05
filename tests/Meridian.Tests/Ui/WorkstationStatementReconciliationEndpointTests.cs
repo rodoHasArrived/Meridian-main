@@ -77,6 +77,8 @@ public sealed partial class WorkstationEndpointsTests
                     StatementReportLedgerBookId,
                     StatementReportPeriodId,
                     new DateOnly(2026, 6, 30)));
+            result.EvidenceWorkbenchRoute.Should().Be(
+                "/reporting/evidence?subjectKind=statement-run&subjectId=statement-run-endpoint&documentClassification=Statement");
             intake.ResolveCount.Should().Be(1);
             intake.PublishCount.Should().Be(1);
             intake.LastTenantId.Should().Be("tenant-test");
@@ -807,7 +809,11 @@ public sealed partial class WorkstationEndpointsTests
                     DateTimeOffset.Parse("2026-07-20T12:00:00Z"),
                     new string('A', 64),
                     1,
-                    "File")
+                    "File"),
+                EvidenceWorkbenchRoute =
+                    $"/reporting/evidence?subjectKind=statement-run&subjectId={Uri.EscapeDataString(result.RunId)}&documentClassification=Statement",
+                ReconciliationRoute =
+                    $"/accounting/reconciliation/match?runId={Uri.EscapeDataString(result.RunId)}"
             });
     }
 

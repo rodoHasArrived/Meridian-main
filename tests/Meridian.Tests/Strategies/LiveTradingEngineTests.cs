@@ -28,6 +28,8 @@ namespace Meridian.Tests.Strategies;
 /// </summary>
 public sealed class LiveTradingEngineTests
 {
+    private const string CanonicalPromotionVaultReference =
+        "evidence://evidence-vault/ev-0123456789abcdef01234567";
     private static readonly TimeSpan WaitBudget = TimeSpan.FromSeconds(10);
 
     // ---- Full trading loop ----
@@ -210,18 +212,25 @@ public sealed class LiveTradingEngineTests
             new InMemoryPromotionRecordStore(),
             NullLogger<PromotionService>.Instance,
             runLauncher: launcher);
-        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
-        {
-            EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
-        };
+        var approvalChecklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+        var run = StrategyRunEntry.StartWithEvidence(
+                "s1",
+                "Strategy One",
+                RunType.Backtest,
+                runId: "promotion-launch-source",
+                engine: "MeridianNative",
+                retainedEvidenceReferences: [CanonicalPromotionVaultReference])
+            .Complete(BuildPassingResult());
         await store.RecordRunAsync(run);
 
         var result = await service.ApproveAsync(new PromotionApprovalRequest(
             run.RunId,
             ApprovedBy: "ops",
             ApprovalReason: "Metrics cleared for paper.",
-            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
+            ApprovalChecklist: approvalChecklist,
+            EvidenceReferences: approvalChecklist
+                .Select(item => $"{item}:{CanonicalPromotionVaultReference}")
+                .ToArray()));
 
         result.Success.Should().BeTrue(result.Reason);
         launcher.LaunchedRuns.Should().ContainSingle(
@@ -478,6 +487,7 @@ public sealed class LiveTradingEngineTests
     private sealed class InMemoryPromotionRecordStore : IPromotionRecordStore
     {
         private readonly List<StrategyPromotionRecord> _records = [];
+        private readonly SemaphoreSlim _decisionGate = new(1, 1);
 
         public Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default)
         {
@@ -487,5 +497,30 @@ public sealed class LiveTradingEngineTests
 
         public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<StrategyPromotionRecord>>(_records.ToArray());
+
+        public async Task<PromotionDecisionReservation> ReserveFirstDecisionAsync(
+            StrategyPromotionRecord record,
+            CancellationToken ct = default)
+        {
+            await _decisionGate.WaitAsync(ct);
+            var existing = _records.FirstOrDefault(candidate =>
+                candidate.SourceRunId == record.SourceRunId &&
+                candidate.SourceRunType == record.SourceRunType &&
+                candidate.TargetRunType == record.TargetRunType);
+            var wasAppended = existing is null;
+            if (wasAppended)
+            {
+                _records.Add(record);
+            }
+
+            return new PromotionDecisionReservation(
+                existing ?? record,
+                wasAppended,
+                () =>
+                {
+                    _decisionGate.Release();
+                    return ValueTask.CompletedTask;
+                });
+        }
     }
 }

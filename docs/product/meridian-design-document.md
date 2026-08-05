@@ -2,11 +2,11 @@
 
 **Status:** canonical
 **Owner:** core-team
-**Reviewed:** 2026-07-28
+**Reviewed:** 2026-08-03
 **Supersedes:** Version 0.25 (full text preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](../../archive/docs/design/meridian-design-document-v0.25.md))
 **Source:** Ground-up rewrite of the 0.15–0.25 charter lineage. Grounded in the roadmap registry
-(`docs/roadmap/data/*.yml`, snapshot 2026-07-21), the program state and P0 readiness tracker, the
+(`docs/roadmap/data/*.yml`, snapshot 2026-08-03), the program state and P0 readiness tracker, the
 source-module registry, repository measurements taken 2026-07-28, the 2026-07 adversarial program
 review (`docs/product/adversarial-program-review-2026-07.md`), and the accepted W9 priority slate
 (`docs/product/product-roadmap-priorities-2026-07.md`, decision `DEC-PRIORITY-SLATE-001`). The
@@ -387,7 +387,7 @@ it, not to widen it.
 
 Implementation claims in this section are grounded in:
 
-* `docs/roadmap/data/*.yml` and `docs/roadmap/generated/ROADMAP_SUMMARY.md` (registry snapshot 2026-07-21),
+* `docs/roadmap/data/*.yml` and `docs/roadmap/generated/ROADMAP_SUMMARY.md` (registry snapshot 2026-08-03),
 * `docs/source/data/source-modules.yml` and registered `src/**/README.md` files,
 * `docs/architecture/module-map.md` and `docs/architecture/project-structure.md`,
 * repository measurements taken 2026-07-28 (project, route, and test counts below).
@@ -431,6 +431,8 @@ operational record baseline:
 | W5X `W5X-FREX-001` | Shared Financial Record Explorers (Ledger, Portfolio, Security & Instrument, Report-Line Provenance) |
 | W5X `W5X-FINOPS-001` | Financial Operations control center (Operations Continuity, close readiness, approval policy, close calendar, breaks, checklists, audit evidence, governed reopen) |
 | W5X `W5X-CONNECT-001` | Statement connector library with preview, confidence, drift detection, idempotency, retained source evidence |
+| W5X `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001` | Bounded browser-first Evidence Vault productization and statement reconciliation onboarding, including production-authority projection into queryable Statement evidence |
+| W6 `W6-BTSTUDIO-001` | Bounded governed evidence loop on the host-composed browser Covered Call path: scoped retained Evidence Vault authority before queueing, exact strategy-run lineage, governed Backtest-to-Paper promotion, and four fail-closed checklist projections backed by durable operator/audit authority and a matching same-scope Paper child; broader Studio UX remains deferred |
 | W7 `W7-LIVE-001` | Bounded live-readiness governance gate: paper-to-live promotion requires the full evidence set plus a manual override; broader live execution productization remains outside this completion claim |
 | W9 `W9-ASSET-010` | Asset Accounting Event Spine: one governed event spine from acquisition to disposal; Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states; lot creation and versioned selected-lot disposal joined to the immutable journal in one idempotent, serializable transaction |
 
@@ -438,13 +440,11 @@ operational record baseline:
 
 | ID | Capability |
 | --- | --- |
-| `W5X-EVIDENCE-001` | Evidence Vault productization (identity, intake, request/document lists, extracted-field review, object links, immutable manifests, audit state) |
-| `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge (browser-first import → commit → retained Evidence Vault proof) |
 | `W8-WPF-PARITY-001` | WPF desktop workstation web-UI parity over shared contracts (`docs/development/wpf-web-ui-alignment-plan.md`) |
 | `W8-UX-CONSOL-001` | Browser workstation screen consolidation behind the seven charter roots (retired routes remain redirects) |
 
 **Planned** (registry status `planned`): `W5X-OEG-001` (Operational Evidence Graph product
-surface), `W6-BTSTUDIO-001` (Backtesting Studio evidence loop), and the ranked W9 slate:
+surface) and the ranked W9 slate:
 
 | Rank | ID | Improvement |
 | --- | --- | --- |
@@ -514,14 +514,14 @@ product is not complete. "Planned productization" must never be presented as shi
 | Alternative Asset Management | Supported foundation | Private-credit models, governed custom asset profiles, structured/private asset coverage |
 | Financing & Capital Structure Analysis | Design-led foundation | Partial support through fund, vehicle, account, and ledger models |
 | Planning, Forecasting & Decision Support | Design-led foundation | Strategy, run comparison, and reporting evidence exist; engines remain future work |
-| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, backtesting runtime with realistic fill models, promotion evidence; `W6-BTSTUDIO-001` planned |
+| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, realistic backtesting runtime, promotion evidence, and the bounded `W6-BTSTUDIO-001` Covered Call scoped-Vault-to-governed-Paper evidence loop; broader Studio UX remains deferred |
 | Risk Management | Supported foundation | Pre-trade risk rules, live-readiness controls; enterprise risk remains expansion work |
 | Client & Stakeholder Reporting | Implemented evidence | Governed report packs, provenance, export evidence, publication/restatement lifecycle |
 | Collaboration & Communication | Design-led foundation | Workflow assignment, comments, audit events, queue state |
 | Administration & Governance | Implemented evidence | Settings, policy, provider setup, audit trail, approval controls, governed stage gates |
 | Audit, Compliance & Regulatory | Implemented evidence | Audit events, evidence manifests, report provenance, approval history, controlled close/report workflows |
 | Workflow & Process Automation | Supported foundation | Shared workflow DTOs, operator queues, lifecycle transitions, acceptance gates |
-| Document & Knowledge Management | Active productization | Evidence Vault primitives and statement-import evidence bridge exist; `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001` in progress |
+| Document & Knowledge Management | Implemented evidence | Evidence Vault identity/intake/query/review/manifest/audit baseline and browser-first statement onboarding are closed; broader document portal and collaboration remain deferred |
 | Reporting & Analytics Platform | Implemented evidence | Report-pack workflow, line provenance, trial-balance reporting, export evidence; client-grade rendering activation tracked as `W9-REPORT-005` |
 
 ---
@@ -648,9 +648,20 @@ linked to cash, budget, close, and report objects. Engines remain future work.
 
 Investment research and strategy development: notes, watchlists, screening, QuantScript notebooks,
 backtesting with realistic fill and cost models, walk-forward analysis, paper portfolios, strategy
-run comparison, and promotion evidence. The Backtesting Studio evidence loop (`W6-BTSTUDIO-001`)
-links backtest results to strategy lineage and operator acceptance before paper-promotion
-expansion.
+run comparison, and promotion evidence. The bounded W6 path starts from the browser Covered Call
+form, applies count/value/aggregate budgets, resolves a strict canonical retained Evidence Vault
+manifest inside the authenticated tenant/company scope, records the pre-execution entry through the
+shared strategy-run repository, and preserves exact scope and lineage through replay, review, and
+Trading readiness.
+
+Operator acceptance text remains a requirement until the governed Backtest-to-Paper promotion
+records a durable approved decision with operator, time, audit authority, every canonical Paper
+checklist id, keyed evidence exactly matching the source run, and an exact same-scope Paper child
+whose parent and strategy identities match. Missing, rejected, foreign, or mismatched evidence or
+lineage remains review-required or rejected; metric eligibility and generic paper-session creation
+cannot satisfy the checklist.
+`BacktestStudioRunOrchestrator` is not host-composed, and the Strategy Designer currently fails
+closed when its production compiler captures no result, so neither is evidence for W6 closure.
 
 ### 6.12 Risk Management
 
@@ -1243,11 +1254,12 @@ Instrument, Contract, Transaction, Position, Reconciliation, Exception, Journal 
 Account, Report Package, Delivery Record, and Audit Event. Required metadata includes hash,
 retention class, confidentiality class, evidence tag, access policy, and approval status.
 
-The **Evidence Vault** (`W5X-EVIDENCE-001`, active) productizes retained-document identity, intake,
+The **Evidence Vault** (`W5X-EVIDENCE-001`, completed as a bounded browser-first baseline) productizes retained-document identity, intake,
 request lists by event/close/audit/tax/report package, document lists, extracted-field review with
 confidence and reviewer state, object links, immutable manifests, and audit state as a reusable
-shared evidence layer. Statement onboarding (`W5X-STMT-ONBOARD-001`, active) connects browser-first
-statement import to committed reconciliation with retained vault proof. Document extraction becomes
+shared evidence layer. Statement onboarding (`W5X-STMT-ONBOARD-001`, completed) connects browser-first
+statement import to committed reconciliation with retained vault proof, including an authority-verified
+Statement projection in production composition. Document extraction becomes
 accounting-grade evidence only after it is validated, linked to events or journals, reviewed, and
 frozen into close, tax, audit, or reporting manifests. Legal holds override disposal and remain
 visible wherever the held evidence appears.
@@ -1403,7 +1415,7 @@ promotion review; portfolio ledger reconciliation and close-lane casework; gover
 approval, provenance, and export evidence; accounting record summaries linking source data through
 report-pack lineage; multi-asset operational coverage; shared Financial Record Explorers; browser
 and WPF read models over shared contracts (desktop parity tracked as `W8-WPF-PARITY-001`);
-completed statement connectors with active Evidence Vault and statement-onboarding routes; and the
+completed statement connectors with completed Evidence Vault and statement-onboarding routes; and the
 shared manual journal entry workbench over retained private-capital fund events.
 
 **Remaining expansion work** (explicitly not implied complete): full treasury payment execution;
@@ -1453,9 +1465,11 @@ against activation and activation usually wins.
 **Deferred lanes** (each reopens only through an explicit registry decision with its minimum
 evidence defined in `docs/product/deferred-expansion-boundaries.md`): native live payment
 execution; full alternative-asset operations beyond the accepted multi-asset baseline; enterprise
-risk; forecasting and scenario engines; complex capital-structure modeling; broad client portal;
-no-code workflow designer; document-portal collaboration beyond the Evidence Vault boundary;
-broad collaboration tooling; mobile (closed).
+risk; forecasting and scenario engines; complex capital-structure modeling; broad administration
+dashboards; broader self-service reporting and analytics beyond the governed platform baseline
+(including planned `W9-REPORT-005` client-grade output work); broad client portal; no-code workflow
+designer; document-portal collaboration beyond the Evidence Vault boundary; broad collaboration
+tooling; mobile (closed).
 
 **Prohibited as scope creep** from external inspiration: full cap-table system, outsourced services
 operation, live payment processor, broad investor portal, autonomous-agent workflows bypassing
@@ -1468,7 +1482,7 @@ operator evidence.
 ### 25.1 Rewrite Discipline
 
 Version 1.0 is a consolidation, not an expansion: it adds **no** new product scope. It sharpens the
-value proposition (Sections 1–2), incorporates registry facts through snapshot 2026-07-21 (the W9
+value proposition (Sections 1–2), incorporates registry facts through snapshot 2026-08-03 (the W9
 slate, `W8-UX-CONSOL-001`, `W9-ASSET-010`), and encodes the activation-over-expansion, proven-slice,
 and truth-discipline doctrines motivated by the 2026-07 adversarial program review. Scope changes
 enter through the roadmap registry, never through this document alone. Detailed execution tracking
@@ -1495,5 +1509,3 @@ addenda in their original form — is preserved at
 | 0.24 | WPF product/UI work marked deferred |
 | 0.25 | WPF desktop workstation reactivated as a co-equal lane focused on web-UI parity (`W8-WPF-PARITY-001`), superseding all earlier WPF-deferral statements |
 | **1.0** | **Ground-up rewrite: proven-numbers value proposition; activation-over-expansion, proven-slice, and truth-discipline doctrines; W9 slate and current registry posture incorporated; structure consolidated from 27 sections to 25 with all normative invariants preserved** |
-
-

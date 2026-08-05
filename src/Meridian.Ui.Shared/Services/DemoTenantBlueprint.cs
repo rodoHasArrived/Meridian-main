@@ -28,6 +28,10 @@ public static class DemoTenantBlueprint
     /// <summary>The provenance label onboarding renders for the seeded workspace.</summary>
     public const string SeededProvenanceLabel = "Seeded";
 
+    /// <summary>Fixed tenant/company authority for the isolated seeded demo workspace.</summary>
+    public const string TenantId = "meridian-seeded-demo";
+    public const string CompanyId = "meridian-seeded-demo";
+
     public const string PortfolioName = "Northstar Sample Portfolio";
     public const decimal Cash = 125_000m;
 

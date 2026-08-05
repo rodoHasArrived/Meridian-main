@@ -1,3 +1,4 @@
+using Meridian.Execution.Logging;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Meridian.Contracts.SecurityMaster;
@@ -104,7 +105,7 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
                         .BuildNoReferencePriceRejectReason(request.Symbol);
                     _logger.LogWarning(
                         "Paper order rejected: {Symbol} {Side} {Quantity} — {RejectReason}",
-                        request.Symbol, request.Side, request.Quantity, rejectReason);
+                        LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, LogSanitizer.Sanitize(rejectReason));
 
                     return new ExecutionReport
                     {
@@ -140,7 +141,7 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
             };
 
             _logger.LogInformation("Paper fill: {Symbol} {Side} {Quantity} @ {Price}",
-                request.Symbol, request.Side, request.Quantity, report.FillPrice);
+                LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, report.FillPrice);
 
             return report;
         }

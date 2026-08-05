@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v3",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-07-31",
+  "snapshotDate": "2026-08-03",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -16,9 +16,11 @@
       "Governed report packs",
       "Operational record workflow backed by shared services and contracts, delivered across both the browser workstation and the reactivated WPF desktop workstation",
       "WPF desktop workstation reactivation and web-UI parity over shared contracts and read models",
+      "Browser workstation screen consolidation behind the seven charter roots",
       "Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence",
       "Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records",
-      "Evidence Vault productization and statement reconciliation onboarding over governed connector evidence",
+      "Completed Evidence Vault and statement reconciliation onboarding over governed connector and production authority evidence",
+      "Bounded Covered Call evidence loop with scoped Evidence Vault authority, durable strategy lineage, governed Paper promotion, and fail-closed acceptance checklist projection",
       "Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention",
       "Ranked W9 first-order improvement slate - truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, fund economics, execution safety, governance hardening, and institutional statement ingestion",
       "W10 depth slate - fail-closed valuation freshness, durable break lineage, amount-level provenance behind one shared proof drawer, one close-readiness projection consumed by both workstation lanes, reconciliation break economics, durable recurring journals, tax-character surfacing, return measurement, and consolidated-view elimination"
@@ -150,13 +152,13 @@
       "Wave": "W5X",
       "Title": "Evidence Vault productization",
       "Workspaces": "Accounting; Reporting; Data",
-      "Status": "in_progress",
+      "Status": "done",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "in_progress",
-      "Evidence": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs; src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs; src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs; src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx; tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs; tests/Meridian.Tests/Ui/StatementImportEvidenceBridgeTests.cs",
-      "Last Reviewed": "2026-07-02"
+      "Evidence Posture": "complete",
+      "Evidence": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs; src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs; src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs; src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs; src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx; src/Meridian.Ui/dashboard/src/app.tsx; src/Meridian.Ui/dashboard/src/lib/workspace.test.ts; tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs; tests/Meridian.Tests/Ui/Evidence/SecurityMasterAndVaultEvidenceContributorTests.cs; tests/Meridian.Tests/Ui/StatementImportEvidenceBridgeTests.cs; tests/Meridian.Tests/Ui/StatementReconciliationProductionAuthorityTests.cs",
+      "Last Reviewed": "2026-08-03"
     },
     {
       "ID": "W5X-FINOPS-001",
@@ -202,26 +204,26 @@
       "Wave": "W5X",
       "Title": "Statement reconciliation onboarding wedge",
       "Workspaces": "Accounting",
-      "Status": "in_progress",
+      "Status": "done",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "in_progress",
-      "Evidence": "src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs; src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs; src/Meridian.Ui/dashboard/src/screens/statement-import-panel.tsx; tests/Meridian.Tests/Ui/StatementImportEvidenceBridgeTests.cs; src/Meridian.Ui/dashboard/src/screens/statement-import-panel.test.tsx",
-      "Last Reviewed": "2026-07-02"
+      "Evidence Posture": "complete",
+      "Evidence": "src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs; src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs; src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs; src/Meridian.Ui/dashboard/src/screens/statement-import-panel.tsx; tests/Meridian.Tests/Ui/StatementImportEvidenceBridgeTests.cs; tests/Meridian.Tests/Ui/StatementReconciliationProductionAuthorityTests.cs; tests/Meridian.Tests/Ui/WorkstationStatementReconciliationEndpointTests.cs; src/Meridian.Ui/dashboard/src/screens/statement-import-panel.test.tsx",
+      "Last Reviewed": "2026-08-03"
     },
     {
       "ID": "W6-BTSTUDIO-001",
       "Wave": "W6",
       "Title": "Backtesting studio evidence loop",
       "Workspaces": "Strategy",
-      "Status": "planned",
+      "Status": "done",
       "Health": "green",
       "Priority": "medium",
       "Owner Lane": "Strategy Analytics",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-06-04"
+      "Evidence Posture": "complete",
+      "Evidence": "src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts; src/Meridian.Contracts/Workstation/EvidenceVaultReference.cs; src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallRunProjection.cs; src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs; src/Meridian.Strategies/Storage/StrategyRunStore.cs; src/Meridian.Strategies/Services/StrategyRunReadService.cs; src/Meridian.Strategies/Services/PromotionService.cs; src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs; src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs; src/Meridian.Ui/dashboard/src/screens/strategy-screen.view-model.ts; src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.test.ts; src/Meridian.Ui/dashboard/src/screens/covered-call-screen.test.tsx; tests/Meridian.Tests/Strategies/CoveredCall/CoveredCallRunProjectionTests.cs; tests/Meridian.Tests/Strategies/CoveredCall/CoveredCallBacktestServiceTests.cs; tests/Meridian.Tests/Integration/EndpointTests/CoveredCallEndpointAuthorizationTests.cs; tests/Meridian.Tests/Strategies/StrategyRunStoreTests.cs; tests/Meridian.Tests/Strategies/StrategyRunReadServiceTests.cs; tests/Meridian.Tests/Strategies/PromotionServiceTests.cs; tests/Meridian.Tests/Ui/ExecutionWriteEndpointsTests.cs; tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.StrategyTenantScope.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.TradingTenantScope.cs; src/Meridian.Ui/dashboard/src/screens/strategy-screen.view-model.test.ts; src/Meridian.Ui/dashboard/src/screens/strategy-screen.test.tsx; src/Meridian.Ui/dashboard/src/screens/trading-screen.view-model.test.ts",
+      "Last Reviewed": "2026-08-03"
     },
     {
       "ID": "W7-LIVE-001",

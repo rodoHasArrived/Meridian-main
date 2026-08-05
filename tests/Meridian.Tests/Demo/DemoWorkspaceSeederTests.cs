@@ -62,12 +62,16 @@ public sealed class DemoWorkspaceSeederTests
         var breaks = new FileReconciliationBreakQueueRepository(
             Path.Combine(seeder.DemoRoot, "workstation"),
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-        var reloaded = await breaks.GetAllAsync();
+        var reloaded = await breaks.GetAllAsync(new ReconciliationBreakQueueScope(
+            DemoTenantBlueprint.TenantId,
+            DemoTenantBlueprint.CompanyId));
 
         reloaded.Should().HaveCount(DemoTenantBlueprint.BreakDefinitions.Count);
         reloaded.Should().OnlyContain(item =>
             item.SourceType == DemoTenantBlueprint.SeededSourceType &&
-            item.SourceSystem == DemoTenantBlueprint.SeededSourceSystem);
+            item.SourceSystem == DemoTenantBlueprint.SeededSourceSystem &&
+            item.TenantId == DemoTenantBlueprint.TenantId &&
+            item.CompanyId == DemoTenantBlueprint.CompanyId);
 
         var strategy = new StrategyRunStore(new FileOperationalCaseHistoryStore(seeder.DemoRoot));
         var run = await strategy.GetRunByIdAsync(DemoTenantBlueprint.StrategyRunId);

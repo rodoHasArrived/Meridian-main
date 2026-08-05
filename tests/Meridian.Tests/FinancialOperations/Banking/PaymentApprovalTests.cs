@@ -173,6 +173,56 @@ public sealed class PaymentApprovalTests
     }
 
     [Fact]
+    public async Task RecordPaymentBankEvidenceAsync_ReversedBankTransfer_ShouldNormalizeVoidAndRetainAttribution()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
+
+        var pending = await service.InitiatePaymentAsync(
+            entityId,
+            new InitiatePaymentRequest(
+                7_500m,
+                new DateOnly(2026, 1, 15),
+                ExternalRef: "payment-intent-reversed-1",
+                Notes: "Vendor settlement"),
+            cts.Token);
+        await service.ApprovePaymentAsync(
+            pending.PendingPaymentId,
+            new ApprovePaymentRequest(
+                ReviewNotes: "Released by treasury",
+                ReviewedBy: "treasurer@example.com"),
+            cts.Token);
+
+        var reversal = await service.RecordPaymentBankEvidenceAsync(
+            pending.PendingPaymentId,
+            new RecordPaymentBankEvidenceRequest(
+                EvidenceType: " reversed ",
+                TransactionDate: new DateOnly(2026, 1, 16),
+                SettlementDate: new DateOnly(2026, 1, 17),
+                Amount: 7_500m,
+                Currency: "usd",
+                ExternalRef: "bank-reversal-advice-1",
+                RecordedBy: " treasury-operations@example.com "),
+            cts.Token);
+
+        reversal.Should().NotBeNull();
+        reversal!.TransactionType.Should().Be("BankReversal");
+        reversal.IsVoided.Should().BeTrue();
+        reversal.RecordedBy.Should().Be("treasury-operations@example.com");
+        reversal.ExternalRef.Should().Be("bank-reversal-advice-1");
+
+        var retainedTransactions = await service.GetBankTransactionsAsync(entityId, cts.Token);
+        retainedTransactions.Should().ContainSingle();
+        var retainedReversal = retainedTransactions.Single();
+        retainedReversal.BankTransactionId.Should().Be(reversal.BankTransactionId);
+        retainedReversal.TransactionType.Should().Be("BankReversal");
+        retainedReversal.IsVoided.Should().BeTrue();
+        retainedReversal.RecordedBy.Should().Be("treasury-operations@example.com");
+        retainedReversal.ExternalRef.Should().Be("bank-reversal-advice-1");
+    }
+
+    [Fact]
     public async Task RecordPaymentBankEvidenceAsync_ShouldIgnoreBlankRecordedBy()
     {
         var service = BuildService();

@@ -107,6 +107,18 @@ public sealed class RiskRuleRuntimeService
     public int MaxOrdersPerMinute => GetMaxOrdersPerMinute();
 
     /// <summary>
+    /// Reads live consumed rate capacity from the throttle instance that actually enforces the
+    /// ceiling. Set by the composition root; null when no reserving throttle is composed, in which
+    /// case the status falls back to counting audit entries.
+    /// <para>
+    /// The fallback cannot see reservations taken for orders still in flight, so it under-reports
+    /// exactly when the desk is closest to the ceiling — the dashboard would show room the gate
+    /// will refuse to give. The probe reports the number the gate itself compares.
+    /// </para>
+    /// </summary>
+    public Func<int>? OrderRateUsageProbe { get; set; }
+
+    /// <summary>
     /// Operator-tuned portfolio-wide gross exposure ceiling, read per evaluation by the
     /// enforced gross-exposure rule. Null when unconfigured (the rule approves).
     /// </summary>
@@ -572,17 +584,77 @@ public sealed class RiskRuleRuntimeService
             Severity: "Critical");
     }
 
+    /// <summary>
+    /// True when this audit entry represents capacity the throttle is still holding.
+    /// <list type="bullet">
+    /// <item><description>A submission the gateway accepted — the slot was committed.</description></item>
+    /// <item><description>An amendment the gateway accepted — it revalidated through the same
+    /// reserving rules and committed its own slot.</description></item>
+    /// <item><description>A submission that threw after dispatch — ambiguous, so the slot was
+    /// deliberately over-counted rather than released.</description></item>
+    /// </list>
+    /// A submission the broker rejected reached no venue and had its slot rolled back, so it does
+    /// not count however it was recorded.
+    /// </summary>
+    private static bool CountsAgainstOrderRate(ExecutionAuditEntry entry)
+    {
+        // A routed amendment revalidates through the same reserving rules and commits its own
+        // slot, so it counts exactly as a submission does. Recognising only OrderSubmitted made
+        // accepted amendments vanish from reported utilization while still consuming capacity.
+        if (string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(entry.Action, "OrderModified", StringComparison.OrdinalIgnoreCase))
+        {
+            return !string.Equals(entry.Outcome, "Rejected", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return string.Equals(entry.Action, "OrderRejected", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                entry.Reason,
+                OrderManagementSystem.AmbiguousSubmissionReason,
+                StringComparison.Ordinal);
+    }
+
+    private int? ReadOrderRateUsage()
+    {
+        var probe = OrderRateUsageProbe;
+        if (probe is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return probe();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Order-rate usage probe failed; falling back to audit reconstruction");
+            return null;
+        }
+    }
+
     private RiskRuleStatusDto BuildOrderRateStatus(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         DateTimeOffset asOf)
     {
         var maxOrdersPerMinute = GetMaxOrdersPerMinute();
         var cutoff = asOf.AddMinutes(-1);
-        var recentOrderCount = auditEntries.Count(entry =>
-            entry.OccurredAt >= cutoff &&
-            string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase));
 
-        var breached = recentOrderCount > maxOrdersPerMinute;
+        // Prefer the enforcing instance. Audit reconstruction counts only orders that were
+        // submitted, so it misses capacity held for in-flight submissions and reports room the
+        // gate will not honour.
+        // The fallback reconstructs *committed slots*, not submissions. The throttle releases
+        // capacity for anything that did not reach a venue, so counting every OrderSubmitted entry
+        // regardless of outcome over-reports a desk whose orders the broker refused, while
+        // ignoring the ambiguous rejections under-reports one whose slots are still held. Both
+        // errors point the wrong way at once.
+        var recentOrderCount = ReadOrderRateUsage() ?? auditEntries.Count(entry =>
+            entry.OccurredAt >= cutoff && CountsAgainstOrderRate(entry));
+
+        // At the ceiling the throttle already refuses, so the dashboard has to say Constrained at
+        // the same count rather than one above it. Reporting Observe on an order the gate would
+        // reject is the disagreement this probe exists to remove.
+        var breached = recentOrderCount >= maxOrdersPerMinute;
         var state = breached
             ? "Constrained"
             : recentOrderCount >= (int)Math.Ceiling(maxOrdersPerMinute * 0.8m) ? "Observe" : "Healthy";
@@ -623,7 +695,7 @@ public sealed class RiskRuleRuntimeService
         var grossExposure = snapshot?.GrossExposure ?? 0m;
 
         var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure");
-        var violations = DescribeViolations(violationEntries);
+        var violations = DescribeViolations(violationEntries, "gross exposure");
         // Live state follows current exposure plus breaches inside the liveness window;
         // older rejections stay as evidence without pinning the rule Constrained.
         var liveViolation = HasLiveViolation(violationEntries, asOf);
@@ -680,7 +752,7 @@ public sealed class RiskRuleRuntimeService
         }
 
         var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "concentration");
-        var violations = DescribeViolations(violationEntries);
+        var violations = DescribeViolations(violationEntries, "concentration");
         var liveViolation = HasLiveViolation(violationEntries, asOf);
         var utilization = ComputeUtilization(topPercent, maxPercent);
         var breached = maxPercent.HasValue && topPercent > maxPercent.Value;
@@ -733,7 +805,7 @@ public sealed class RiskRuleRuntimeService
             .ToList();
 
         var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "notional");
-        var violations = DescribeViolations(violationEntries);
+        var violations = DescribeViolations(violationEntries, "notional");
         var configured = maxNotional.HasValue || escalateAt.HasValue;
         var breached = HasLiveViolation(violationEntries, asOf);
         var state = breached
@@ -816,16 +888,65 @@ public sealed class RiskRuleRuntimeService
             .Where(entry =>
                 string.Equals(entry.Action, actionHint, StringComparison.OrdinalIgnoreCase) &&
                 ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                 (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false)))
+                 (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 MatchesViolationMetadata(entry, textHint)))
             .OrderByDescending(static entry => entry.OccurredAt)
             .Take(5)
             .ToList();
     }
 
-    private static List<string> DescribeViolations(IEnumerable<ExecutionAuditEntry> entries) =>
+    /// <summary>
+    /// Searches the structured violation set the rejection audit carries, not just its headline.
+    /// <para>
+    /// Every rule is evaluated before a decision is taken, so one rejection can record several
+    /// breaches while only the most severe becomes the message. Matching on the headline alone made
+    /// every other rule's breach invisible to rule status and history — a position-limit breach
+    /// behind a drawdown headline simply disappeared.
+    /// </para>
+    /// </summary>
+    private static bool MatchesViolationMetadata(ExecutionAuditEntry entry, string textHint) =>
+        entry.Metadata is { } metadata &&
+        metadata.Any(pair =>
+            pair.Key.StartsWith(ViolationMetadataPrefix, StringComparison.Ordinal) &&
+            (pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
+             pair.Key.EndsWith(".code", StringComparison.Ordinal)) &&
+            pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Reports the message belonging to the matched breach rather than the entry's headline, so a
+    /// rule's status quotes what that rule found instead of what a more severe rule found.
+    /// </summary>
+    private static List<string> DescribeViolations(IEnumerable<ExecutionAuditEntry> entries, string textHint) =>
         entries
-            .Select(static entry => entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.")
+            .Select(entry => DescribeViolation(entry, textHint))
             .ToList();
+
+    private static string DescribeViolation(ExecutionAuditEntry entry, string textHint)
+    {
+        if (entry.Metadata is { } metadata)
+        {
+            var matched = metadata
+                .Where(pair =>
+                    pair.Key.StartsWith(ViolationMetadataPrefix, StringComparison.Ordinal) &&
+                    (pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
+                     pair.Key.EndsWith(".code", StringComparison.Ordinal)) &&
+                    pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase))
+                .Select(pair => pair.Key[..pair.Key.LastIndexOf('.')])
+                .FirstOrDefault();
+
+            if (matched is not null &&
+                metadata.TryGetValue($"{matched}.message", out var message) &&
+                !string.IsNullOrWhiteSpace(message))
+            {
+                return message;
+            }
+        }
+
+        return entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.";
+    }
+
+    /// <summary>Prefix for the per-violation audit metadata keys, e.g. <c>violation.0.rule</c>.</summary>
+    private const string ViolationMetadataPrefix = "violation.";
 
     private static bool HasLiveViolation(IReadOnlyList<ExecutionAuditEntry> entries, DateTimeOffset asOf) =>
         entries.Any(entry => asOf - entry.OccurredAt <= ViolationLivenessWindow);
@@ -834,7 +955,7 @@ public sealed class RiskRuleRuntimeService
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         string actionHint,
         string textHint) =>
-        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint));
+        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint), textHint);
 
     /// <summary>
     /// Drawdown as a percentage of the capital the P&amp;L was earned on, i.e. the starting

@@ -9,8 +9,7 @@ using Xunit;
 namespace Meridian.Tests.Storage.FundStructure;
 
 [Trait("Category", "Integration")]
-[Collection(nameof(FundAccountDatabaseCollection))]
-public sealed class PostgresFundStructureStoreTests
+public sealed class PostgresFundStructureStoreTests : IClassFixture<FundAccountDatabaseFixture>
 {
     private readonly FundAccountDatabaseFixture _fixture;
 

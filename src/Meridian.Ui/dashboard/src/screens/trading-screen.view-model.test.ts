@@ -88,6 +88,10 @@ const livePromotionEvidenceReferences = [
   "LIVE_OVERRIDE_REVIEWED:manual-override/override-9"
 ];
 
+const paperPromotionEvidenceReferences = paperPromotionApprovalChecklist.map(
+  (checklistId) => `${checklistId}:evidence://evidence-vault/ev-0123456789abcdef01234567`
+);
+
 function createDeferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -1695,6 +1699,7 @@ describe("trading promotion gate view model", () => {
         runId: " run-1 ",
         approvedBy: " operator-7 ",
         approvalReason: " Meets risk constraints ",
+        evidenceReferences: paperPromotionEvidenceReferences.join("\n"),
         approvalChecklist: paperPromotionApprovalChecklist
       },
       busy: false,
@@ -1736,7 +1741,7 @@ describe("trading promotion gate view model", () => {
       label: "Evidence references",
       placeholder: "TOKEN:evidence-path, one per line",
       describedBy: "promotion-evidence-references-help",
-      helpText: "Live approvals require retained evidence references for every live checklist item."
+      helpText: "Paper and live approvals require one CHECKLIST_ID:<retained-reference> entry for every canonical checklist item. Gate eligibility does not record acceptance."
     });
     expect(validatePromotionApproval(ready.form, eligibleEvaluation)).toBeNull();
   });
@@ -1984,6 +1989,7 @@ describe("trading promotion gate view model", () => {
           runId: "run-from-session-001",
           approvedBy: "operator-qa",
           approvalReason: "Session replay verified and portfolio consistent",
+          evidenceReferences: paperPromotionEvidenceReferences.join("\n"),
           approvalChecklist: paperPromotionApprovalChecklist
         },
         busy: false,
@@ -2109,7 +2115,8 @@ describe("trading promotion gate view model", () => {
       expect(checklist[2].label).toBe("Risk metrics");
       expect(checklist[3].label).toBe("Portfolio/Ledger continuity");
 
-      // Verify status based on evaluation
+      // Eligibility is informative; it does not record an acceptance decision.
+      expect(checklist.every((item) => item.status === "review")).toBe(true);
       expect(checklist[1].description).toContain("S1"); // strategyName
       expect(checklist[2].description).toContain("1.20"); // Sharpe ratio formatted
     });
@@ -2136,7 +2143,7 @@ describe("trading promotion gate view model", () => {
       ]);
       expect(checklist.find((item) => item.id === "broker-execution-reconciliation")).toMatchObject({
         label: "Broker order parity",
-        status: "ready",
+        status: "review",
         description: "Broker and OMS open-order reconciliation evidence reviewed"
       });
     });
@@ -2634,7 +2641,7 @@ describe("trading readiness work-item action routing", () => {
 // ─── Milestone 4: Approval checklist field + validation ──────────────────────
 
 describe("promotion approval checklist", () => {
-  it("validates that an empty checklist blocks the approval", () => {
+  it("validates that missing paper evidence blocks approval even after eligibility", () => {
     const formWithChecklist = {
       ...emptyPromotionGateForm,
       runId: "run-1",
@@ -2644,7 +2651,8 @@ describe("promotion approval checklist", () => {
     };
 
     const error = validatePromotionApproval(formWithChecklist, eligibleEvaluation);
-    expect(error).toContain("checklist");
+    expect(error).toContain("Paper promotion evidence references are incomplete");
+    expect(error).toContain("DK1_TRUST_PACKET_REVIEWED");
   });
 
   it("allows promotion when the checklist is fully populated", () => {
@@ -2653,6 +2661,7 @@ describe("promotion approval checklist", () => {
       runId: "run-1",
       approvedBy: "operator-1",
       approvalReason: "Meets risk criteria",
+      evidenceReferences: paperPromotionEvidenceReferences.join("\n"),
       approvalChecklist: paperPromotionApprovalChecklist
     };
 
@@ -2770,7 +2779,7 @@ describe("promotion approval checklist", () => {
     expect(request.approvalChecklist).toBeUndefined();
   });
 
-  it("auto-populates the checklist from the evaluation result when gate is eligible", async () => {
+  it("does not auto-populate checklist decisions from an eligible evaluation", async () => {
     const deferred = createDeferred<PromotionEvaluationResult>();
     const services: PromotionGateServices = {
       evaluatePromotion: () => deferred.promise,
@@ -2796,14 +2805,11 @@ describe("promotion approval checklist", () => {
       await deferred.promise;
     });
 
-    await waitFor(() => {
-      expect(result.current.form.approvalChecklist).toHaveLength(4);
-    });
-    expect(result.current.form.approvalChecklist).toContain("DK1_TRUST_PACKET_REVIEWED");
-    expect(result.current.form.approvalChecklist).toContain("RISK_CONTROLS_REVIEWED");
+    await waitFor(() => expect(result.current.evaluation?.isEligible).toBe(true));
+    expect(result.current.form.approvalChecklist).toHaveLength(0);
   });
 
-  it("auto-populates the live checklist from an eligible live evaluation result", async () => {
+  it("does not auto-populate live checklist decisions from an eligible evaluation", async () => {
     const deferred = createDeferred<PromotionEvaluationResult>();
     const services: PromotionGateServices = {
       evaluatePromotion: () => deferred.promise,
@@ -2826,10 +2832,8 @@ describe("promotion approval checklist", () => {
       await deferred.promise;
     });
 
-    await waitFor(() => {
-      expect(result.current.form.approvalChecklist).toEqual(livePromotionApprovalChecklist);
-    });
-    expect(result.current.form.approvalChecklist).toContain("BROKER_EXECUTION_RECONCILIATION_REVIEWED");
+    await waitFor(() => expect(result.current.evaluation?.isEligible).toBe(true));
+    expect(result.current.form.approvalChecklist).toHaveLength(0);
   });
 
   it("clears the approval checklist when the runId field changes", async () => {
@@ -2853,7 +2857,8 @@ describe("promotion approval checklist", () => {
       deferred.resolve(eligibleEvaluation);
       await deferred.promise;
     });
-    await waitFor(() => expect(result.current.form.approvalChecklist.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.evaluation?.isEligible).toBe(true));
+    expect(result.current.form.approvalChecklist).toHaveLength(0);
 
     act(() => {
       result.current.updateField("runId", "run-2");

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
@@ -89,7 +89,7 @@ function renderScreen({
   onEditOperatingScope = vi.fn(),
   onRefresh = vi.fn(),
   refreshing = false,
-  search = ""
+  search = "?symbol=MSFT"
 }: {
   onEditOperatingScope?: () => void;
   onRefresh?: () => void;
@@ -123,13 +123,13 @@ describe("DailyControlTowerScreen", () => {
       screen.getByRole("heading", { name: "What needs an operator decision now" })
     ).toBeInTheDocument();
 
-    // Each queue row exposes a selection control; the top-ranked row's evidence
-    // shows without any interaction.
+    // The shared dense table exposes the selected row and its controlled detail
+    // panel without adding a second, mouse-only selection control.
     expect(
-      screen.getByRole("button", { name: "Show evidence for Report pack approval waiting" })
-    ).toHaveAttribute("aria-pressed", "true");
+      screen.getByRole("row", { name: "Report pack approval waiting" })
+    ).toHaveAttribute("aria-selected", "true");
     expect(
-      screen.getByRole("region", { name: /Report pack approval waiting Evidence summary/ })
+      screen.getByRole("region", { name: /Report pack approval waiting evidence summary/i })
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 ranked items");
     expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Stale update");
@@ -143,7 +143,7 @@ describe("DailyControlTowerScreen", () => {
     const user = userEvent.setup();
     const onEditOperatingScope = vi.fn();
     const onRefresh = vi.fn();
-    renderScreen({ onEditOperatingScope, onRefresh });
+    renderScreen({ onEditOperatingScope, onRefresh, search: "" });
 
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
     expect(within(confidence).getByText("Connectivity")).toBeInTheDocument();
@@ -169,22 +169,54 @@ describe("DailyControlTowerScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    const brokerageButton = screen.getByRole("button", {
-      name: "Show evidence for Brokerage sync failed"
+    const brokerageRow = screen.getByRole("row", {
+      name: "Brokerage sync failed"
     });
-    expect(brokerageButton).toHaveAttribute("aria-pressed", "false");
+    expect(brokerageRow).not.toHaveAttribute("aria-selected", "true");
 
-    await user.click(brokerageButton);
+    await user.click(brokerageRow);
 
     // Selection moved without navigating away: the evidence region now reflects
     // the clicked row, and the pressed state follows it.
-    expect(brokerageButton).toHaveAttribute("aria-pressed", "true");
+    expect(brokerageRow).toHaveAttribute("aria-selected", "true");
     expect(
-      screen.getByRole("region", { name: /Brokerage sync failed Evidence summary/ })
+      screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Show evidence for Report pack approval waiting" })
-    ).toHaveAttribute("aria-pressed", "false");
+      screen.getByRole("row", { name: "Report pack approval waiting" })
+    ).not.toHaveAttribute("aria-selected", "true");
+  });
+
+  it("requires an explicit scope choice before showing the combined queue", async () => {
+    const user = userEvent.setup();
+    renderScreen({ search: "" });
+
+    expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Daily control tower finance queue" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Review all scopes" }));
+
+    expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+  });
+
+  it("supports keyboard selection and detail focus through the shared dense-row contract", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    const leadingRow = screen.getByRole("row", { name: "Report pack approval waiting" });
+    leadingRow.focus();
+    await user.keyboard("{ArrowDown}");
+
+    const providerRow = screen.getByRole("row", { name: "Alpaca provider warning" });
+    expect(providerRow).toHaveAttribute("aria-selected", "true");
+    providerRow.focus();
+    await user.keyboard("{Enter}");
+    await waitFor(() => {
+      expect(screen.getByRole("region", { name: /Alpaca provider warning evidence summary/i })).toHaveFocus();
+    });
+
+    await user.keyboard("{Escape}");
+    expect(screen.getByRole("row", { name: "Alpaca provider warning" })).toHaveFocus();
   });
 
   it("reveals secondary proof only when the operator expands more evidence", async () => {

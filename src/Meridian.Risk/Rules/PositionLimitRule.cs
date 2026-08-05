@@ -1,4 +1,5 @@
 using Meridian.Execution;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -41,8 +42,14 @@ public sealed class PositionLimitRule : IRiskRule
     public string RuleName => "PositionLimit";
 
     /// <inheritdoc />
+    public RiskRuleSeverity Severity => RiskRuleSeverity.Error;
+
+    /// <inheritdoc />
     public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
         var maxPositionSize = _maxPositionSize();
         if (maxPositionSize is null)
         {
@@ -63,9 +70,33 @@ public sealed class PositionLimitRule : IRiskRule
 
         if (!decision.Approved)
         {
-            var reason = decision.Reasons.FirstOrDefault() ?? "Position limit exceeded.";
-            _logger.LogWarning("Position limit rule rejected order for {Symbol}: {Reason}", request.Symbol, reason);
-            return Task.FromResult(RiskValidationResult.Rejected(reason));
+            // The interop returns an array of reasons and a decision kind. Keep both: joining the
+            // reasons stops the tail being silently dropped, and the kind distinguishes a policy
+            // rejection from one flagged for manual review.
+            var reason = decision.Reasons.Length > 0
+                ? string.Join(" ", decision.Reasons)
+                : "Position limit exceeded.";
+            var escalated = string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase);
+            _logger.LogWarning(
+                "Position limit rule rejected order for {Symbol}: {Reason}",
+                LogSanitizer.Sanitize(request.Symbol),
+                LogSanitizer.Sanitize(reason));
+
+            // Report the projected position the rule actually evaluated, not the current one.
+            // A long 50 followed by a sell of 200 is rejected at -150 against a limit of 100;
+            // recording 50 would make the evidence look like it was inside the limit.
+            var currentQuantity = currentPosition?.Quantity ?? 0m;
+            var signedOrderQuantity = request.Side == OrderSide.Sell
+                ? -request.Quantity
+                : request.Quantity;
+
+            return Task.FromResult(RiskValidationResult.Rejected(reason) with
+            {
+                Code = escalated ? "POSITION_LIMIT_ESCALATED" : "POSITION_LIMIT_EXCEEDED",
+                ObservedValue = currentQuantity + signedOrderQuantity,
+                LimitValue = maxPositionSize.Value,
+                RequiresApproval = escalated,
+            });
         }
 
         return Task.FromResult(RiskValidationResult.Approved());

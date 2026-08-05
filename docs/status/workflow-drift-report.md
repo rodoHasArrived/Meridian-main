@@ -62,6 +62,7 @@
 - `build/scripts/ai/tests/test_ai_edit_tool.py`
 - `build/scripts/ai/tests/test_context_budget.py`
 - `build/scripts/ai/tests/test_promptfoo_adapter.py`
+- `build/scripts/check-execution-log-sanitization.py`
 - `build/scripts/ci/check-apiclient-callers.py`
 - `build/scripts/ci/check-dashboard-type-barrel.py`
 - `build/scripts/ci/check-file-size.py`
@@ -72,4 +73,3 @@
 - `build/scripts/ci/generate-release-evidence-manifest.py`
 - `build/scripts/ci/run-dotnet-ci-tests.py`
 - `build/scripts/ci/run-script-tests.py`
-- `build/scripts/ci/summarize-ci-artifacts.py`

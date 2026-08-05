@@ -166,6 +166,9 @@ public static class WorkstationTenantCompanyScopeEndpointFilters
     public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder)
     {
         builder.AddEndpointFilter(RequireTenantAndCompanyScopeAsync);
+        // The stricter tenant+company gate also satisfies the discoverable tenant-scope contract
+        // used by endpoint coverage and authorization tooling.
+        builder.WithMetadata(new WorkstationTenantScopeMetadata());
         return builder;
     }
 

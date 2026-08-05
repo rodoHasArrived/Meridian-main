@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Reporting
@@ -62,6 +62,9 @@ artifact, governance, restatement, and distribution contracts plus deterministic
 UI Shared adapts authenticated workstation requests and server-owned accounting sources; Storage
 implements PostgreSQL persistence. Browser and WPF remain thin consumers of shared DTOs and
 server-returned action availability.
+Canonical governance comparisons treat default and empty immutable permission/principal arrays as
+the same empty authority set, matching persisted round trips while retaining ordered value
+comparison for populated authority evidence.
 The host reporting-schedule adapter is the only due-work discovery and lease authority. It resolves
 the exact access scope, readiness, certification, and delivery handoff before calling
 `IReportingOrchestrationService.ExecuteAsync` with one certified job contract. The retained

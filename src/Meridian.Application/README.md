@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Application
@@ -33,7 +33,9 @@ and UI presentation concerns in their owning layers.
   `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
   store contracts. Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
-  discovery in Application services.
+  discovery in Application services. Default provider setup handlers are registered through one
+  idempotent composition helper so layered workstation composition retains every catalog entry and
+  alias exactly once, including entries that share a generic handler implementation type.
 - ETL commands, composition, and orchestration services consume
   `Meridian.DataIntegration.Etl` contracts, normalization services, and job service/orchestrator.
   Application composes Data Integration-owned ETL behavior through `IEtlIngestionJobCoordinator`
@@ -277,12 +279,19 @@ and UI presentation concerns in their owning layers.
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
   validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
   validation rules still enforce approved profile-version pinning, typed no-code field values,
-  profile approval metadata, and identifier coverage. Security Master create/amend orchestration preserves pinned
+  profile approval metadata, and identifier coverage. The C# to F# identifier seam preserves
+  optional provider/source metadata without changing standard-identifier identity; a
+  `ProviderSymbol` kind remains the authoritative namespace and contradictory metadata fails
+  validation. Security Master create/amend orchestration preserves pinned
   profile-backed `CustomAsset` and `OtherSecurity` payloads in projection and event evidence while
   reusing the existing generic-security domain backing model. The query service keeps ordinary text
   search delegated to the storage index and uses the projected Security Master universe only when
-  custom profile id, version, field-key, or field-value filters are supplied. Profile definitions
-  are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
+  custom profile id, version, field-key, or field-value filters are supplied. Identifier fallback
+  applies the same provider authority as the durable store: provider-bound
+  identifiers and aliases require the exact normalized provider, while providerless legacy primary
+  fields remain eligible only when no matching authoritative identifier row exists. Profile
+  definitions are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter
+  definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
   Security Master validation messages use operator-review wording for override audit remediation so
   application-layer guidance does not expose legacy Governance workspace language. Corporate-action

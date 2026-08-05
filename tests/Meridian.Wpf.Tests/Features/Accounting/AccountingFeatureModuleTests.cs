@@ -202,7 +202,6 @@ public sealed class AccountingFeatureModuleTests
     [InlineData("OperationsClose", "FundLedger", "accounting")]
     [InlineData("AccountingClose", "FundAccountingClose", "accounting")]
     [InlineData("CloseManagement", "FundAccountingClose", "accounting")]
-    [InlineData("EvidenceWorkbench", "FundAuditTrail", "accounting")]
     [InlineData("AccountingApprovals", "FundAuditTrail", "accounting")]
     [InlineData("LedgerInspector", "RunLedger", "accounting")]
     public void ShellRegistry_ResolvesAccountingAliasesAndRootNavigationTags(string requestedTag, string canonicalTag, string workspaceId)

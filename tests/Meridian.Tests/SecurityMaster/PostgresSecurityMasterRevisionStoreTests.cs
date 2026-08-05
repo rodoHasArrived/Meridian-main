@@ -11,8 +11,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// lifecycle state across process instances so publish authority survives restarts.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection(nameof(SecurityMasterDatabaseCollection))]
-public sealed class PostgresSecurityMasterRevisionStoreTests
+public sealed class PostgresSecurityMasterRevisionStoreTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private readonly SecurityMasterDatabaseFixture _fixture;
 

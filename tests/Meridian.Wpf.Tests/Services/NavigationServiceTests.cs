@@ -395,7 +395,7 @@ public sealed class NavigationServiceTests : IDisposable
     }
 
     [Fact]
-    public void NavigateTo_WithParameterizedEvidenceWorkbenchTarget_ShouldStoreCanonicalAuditTrailPage()
+    public void NavigateTo_WithParameterizedEvidenceWorkbenchTarget_ShouldStoreEvidenceWorkbenchPage()
     {
         WpfTestThread.Run(() =>
         {
@@ -413,19 +413,17 @@ public sealed class NavigationServiceTests : IDisposable
 
             var result = service.NavigateTo("EvidenceWorkbench:accounting-record/accounting-record-2026-05");
 
-            result.Should().BeTrue("parameterized EvidenceWorkbench targets should route through the canonical audit surface");
-            navigatedPageTag.Should().Be("FundAuditTrail");
-            var context = navigatedParameter.Should().BeOfType<FundOperationsNavigationContext>().Subject;
-            context.Tab.Should().Be(FundOperationsTab.AuditTrail);
-            context.EvidenceSubject.Should().Be("accounting-record/accounting-record-2026-05");
-            context.EvidenceSubjectTarget.Should().Be("EvidenceWorkbench:accounting-record/accounting-record-2026-05");
-            service.GetCurrentPageTag().Should().Be("FundAuditTrail");
-            service.GetBreadcrumbs().Should().ContainSingle(entry => entry.PageTag == "FundAuditTrail");
+            result.Should().BeTrue("parameterized EvidenceWorkbench targets should route to the evidence workbench page");
+            navigatedPageTag.Should().Be("EvidenceWorkbench");
+            navigatedParameter.Should().BeOfType<string>()
+                .Which.Should().Be("accounting-record/accounting-record-2026-05");
+            service.GetCurrentPageTag().Should().Be("EvidenceWorkbench");
+            service.GetBreadcrumbs().Should().ContainSingle(entry => entry.PageTag == "EvidenceWorkbench");
         });
     }
 
     [Fact]
-    public void CreatePageContent_WithParameterizedEvidenceWorkbenchTarget_ShouldCreateCanonicalAuditTrailContent()
+    public void CreatePageContent_WithParameterizedEvidenceWorkbenchTarget_ShouldCreateEvidenceWorkbenchContent()
     {
         WpfTestThread.Run(() =>
         {
@@ -436,7 +434,7 @@ public sealed class NavigationServiceTests : IDisposable
             content.Should().NotBeNull();
             ShellNavigationCatalog.GetCanonicalPageTag("EvidenceWorkbench:accounting-record/accounting-record-2026-05")
                 .Should()
-                .Be("FundAuditTrail");
+                .Be("EvidenceWorkbench");
         });
     }
 

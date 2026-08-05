@@ -1,3 +1,4 @@
+using Meridian.Execution.Logging;
 using System.Collections.Concurrent;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -144,7 +145,7 @@ public sealed class PaperSessionPersistenceService
 
         _logger.LogInformation(
             "Created paper session {SessionId} for strategy {StrategyId} with {InitialCash:C} initial capital",
-            sessionId, request.StrategyId, request.InitialCash);
+            sessionId, LogSanitizer.Sanitize(request.StrategyId), request.InitialCash);
 
         return ToSummary(session);
     }
