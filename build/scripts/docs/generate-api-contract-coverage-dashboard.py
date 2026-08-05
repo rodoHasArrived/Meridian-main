@@ -190,6 +190,33 @@ def _load_docs_text(root: Path) -> str:
     return ROUTE_CONSTRAINT_RE.sub(r"{\1}", normalized).casefold()
 
 
+def _mentions(term: str, docs_text: str) -> bool:
+    """True when `docs_text` names `term` itself, rather than merely containing its characters.
+
+    A plain `in` test counted any substring hit, which credits a name for appearing inside a
+    longer one. Observed on the repository's own docs: `ApprovalDecision` counted as documented
+    because a design blueprint named a `RecordApprovalDecisionAsync` method; `SettlementInstruction`
+    and `WorkflowLibraryDto` counted because a **file path** — `SettlementInstructionCommands.fs`,
+    `WorkflowLibraryDtos.cs` — appeared in a doc; and `StartWorkflow` and `RecommendedActionDto`
+    counted because a *different* contract, `OperationsStartWorkflowRequestDto` and
+    `SecurityMasterRecommendedActionDto`, was documented and separately gets its own credit.
+
+    This is the same failure the generated-doc exclusion above already guards against: coverage
+    rising without any contract being documented. It is worse than a wrong number, because the
+    metric moves in the reassuring direction — adding a document that merely *mentions* a name is
+    enough, and nothing in the output shows why.
+
+    So a hit must sit on an identifier boundary. `/` is a boundary before the term but not after:
+    a doc writing `Workstation/ApprovalDecision` is referring to the contract, while
+    `/api/backfill/run` inside `/api/backfill/run/{id}` is a different endpoint that is scanned and
+    credited on its own.
+    """
+    return re.search(
+        r"(?<![0-9a-z_-])" + re.escape(term) + r"(?![0-9a-z_/-])",
+        docs_text,
+    ) is not None
+
+
 def build_dashboard(root: Path) -> dict:
     root = root.resolve()
     docs_text = _load_docs_text(root)
@@ -198,10 +225,10 @@ def build_dashboard(root: Path) -> dict:
 
     for endpoint in endpoints:
         route = _normalize_route(str(endpoint["path"]))
-        endpoint["documented"] = route in docs_text
+        endpoint["documented"] = _mentions(route, docs_text)
 
     for contract in contracts:
-        contract["documented"] = str(contract["name"]).casefold() in docs_text
+        contract["documented"] = _mentions(str(contract["name"]).casefold(), docs_text)
 
     endpoint_total = len(endpoints)
     endpoint_documented = sum(1 for endpoint in endpoints if endpoint["documented"])

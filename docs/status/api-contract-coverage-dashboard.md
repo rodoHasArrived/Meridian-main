@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 29.6% |
-| Endpoint coverage | 41.2% |
-| Workstation contract coverage | 12.3% |
-| Endpoints documented | 254 / 617 |
-| Workstation contracts documented | 111 / 906 |
+| Weighted score | 28.7% |
+| Endpoint coverage | 40.0% |
+| Workstation contract coverage | 11.7% |
+| Endpoints documented | 247 / 617 |
+| Workstation contracts documented | 106 / 906 |
 
 ## Endpoint Coverage
 
@@ -113,8 +113,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/backfill/schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:236` |
 | `POST` | `/api/backfill/schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:258` |
 | `GET` | `/api/backfill/schedules/templates` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:471` |
-| `DELETE` | `/api/backfill/schedules/{id}` | Documented | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:321` |
-| `GET` | `/api/backfill/schedules/{id}` | Documented | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:300` |
+| `DELETE` | `/api/backfill/schedules/{id}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:321` |
+| `GET` | `/api/backfill/schedules/{id}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:300` |
 | `POST` | `/api/backfill/schedules/{id}/disable` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:367` |
 | `POST` | `/api/backfill/schedules/{id}/enable` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:344` |
 | `GET` | `/api/backfill/schedules/{id}/history` | Gap | `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:452` |
@@ -276,7 +276,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:57` |
 | `POST` | `/api/ledger/journal-automation/monthly-schedules/run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:196` |
 | `POST` | `/api/ledger/journal-automation/period-close-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:558` |
-| `GET` | `/api/ledger/journal-entry-workbench` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1249` |
+| `GET` | `/api/ledger/journal-entry-workbench` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1249` |
 | `POST` | `/api/ledger/journal-entry-workbench/drafts` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1570` |
 | `POST` | `/api/ledger/journal-entry-workbench/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1720` |
 | `POST` | `/api/ledger/journal-entry-workbench/lifecycle-action` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1763` |
@@ -314,7 +314,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/maintenance/schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:20` |
 | `POST` | `/api/maintenance/schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:35` |
 | `GET` | `/api/maintenance/schedules/summary` | Documented | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:225` |
-| `GET` | `/api/maintenance/schedules/{id}` | Documented | `src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:49` |
+| `GET` | `/api/maintenance/schedules/{id}` | Gap | `src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:49` |
 | `DELETE` | `/api/maintenance/schedules/{id}/delete` | Gap | `src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:59` |
 | `POST` | `/api/maintenance/schedules/{id}/disable` | Gap | `src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:87` |
 | `POST` | `/api/maintenance/schedules/{id}/enable` | Gap | `src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:73` |
@@ -509,7 +509,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/sampling/{sampleId}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:177` |
 | `POST` | `/api/schedules/cron/next-runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:42` |
 | `POST` | `/api/schedules/cron/validate` | Gap | `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:20` |
-| `POST` | `/api/security-master` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:343` |
+| `POST` | `/api/security-master` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:343` |
 | `POST` | `/api/security-master/aliases/upsert` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:427` |
 | `POST` | `/api/security-master/amend` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:371` |
 | `GET` | `/api/security-master/asset-profiles` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:77` |
@@ -537,7 +537,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/security-master/quality-report/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1367` |
 | `POST` | `/api/security-master/resolve` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:248` |
 | `POST` | `/api/security-master/search` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:285` |
-| `GET` | `/api/security-master/{securityId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:42` |
+| `GET` | `/api/security-master/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:42` |
 | `GET` | `/api/security-master/{securityId:guid}/cashflow-projections` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1262` |
 | `GET` | `/api/security-master/{securityId:guid}/cashflow-source` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1221` |
 | `PUT` | `/api/security-master/{securityId:guid}/cashflow-source` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1234` |
@@ -623,7 +623,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/symbols/search` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:363` |
 | `GET` | `/api/symbols/statistics` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:232` |
 | `POST` | `/api/symbols/validate` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:264` |
-| `DELETE` | `/api/symbols/{symbol}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:525` |
+| `DELETE` | `/api/symbols/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:525` |
 | `POST` | `/api/symbols/{symbol}/archive` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:283` |
 | `GET` | `/api/symbols/{symbol}/depth` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:207` |
 | `POST` | `/api/symbols/{symbol}/remove` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:162` |
@@ -648,7 +648,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ActivationOutcomeDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:76` |
 | `AlpacaBrokerageConnectionRequestDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:103` |
 | `ApprovalDecision` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:30` |
-| `ApprovalPolicy` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:22` |
+| `ApprovalPolicy` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:22` |
 | `ApprovalStep` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:21` |
 | `ApproveSecurityMasterOverrides` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:22` |
 | `ApproveSecurityMasterRevisionRequest` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:85` |
@@ -1056,7 +1056,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ProviderShadowBookComparisonDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:412` |
 | `ProviderShadowBookComparisonLineDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:401` |
 | `PublishSecurityMasterRevisionRequest` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:103` |
-| `RecommendedActionDto` | Documented | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:84` |
+| `RecommendedActionDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:84` |
 | `ReconciliationBreakCategory` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:54` |
 | `ReconciliationBreakDispositionDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:386` |
 | `ReconciliationBreakDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:124` |
@@ -1281,8 +1281,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `SecurityMasterTrustSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:48` |
 | `SecurityMasterTrustTone` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:7` |
 | `SecurityMasterWorkstationDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:43` |
-| `SettlementInstruction` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:19` |
-| `StartWorkflow` | Documented | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:18` |
+| `SettlementInstruction` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:19` |
+| `StartWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:18` |
 | `StarterWorkspaceDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:69` |
 | `StatementBreakDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:175` |
 | `StatementBreakType` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:53` |
@@ -1447,7 +1447,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `WorkflowBlockerSummary` | Gap | `src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42` |
 | `WorkflowDefinitionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:14` |
 | `WorkflowEvidenceBadge` | Gap | `src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:52` |
-| `WorkflowLibraryDto` | Documented | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6` |
+| `WorkflowLibraryDto` | Gap | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6` |
 | `WorkflowNextAction` | Gap | `src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:33` |
 | `WorkflowPresetDto` | Gap | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:43` |
 | `WorkflowPresetLibraryDto` | Gap | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:64` |
@@ -1552,8 +1552,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 363 mapped endpoint gap(s).
-- Document or intentionally suppress 795 workstation contract gap(s).
+- Document or intentionally suppress 370 mapped endpoint gap(s).
+- Document or intentionally suppress 800 workstation contract gap(s).
 
 ---
 

@@ -1,10 +1,10 @@
 {
   "total_files": 641,
-  "total_lines": 120418,
+  "total_lines": 120462,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 222,
+  "todo_count": 221,
   "average_lines": 187.9,
   "health_score": 80,
   "orphaned_files": [
@@ -2202,7 +2202,7 @@
     },
     {
       "path": "docs/engineering/production-certification-evidence-chain.md",
-      "line_count": 297,
+      "line_count": 307,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2210,7 +2210,7 @@
     },
     {
       "path": "docs/engineering/production-readiness-audit-2026-07-27.md",
-      "line_count": 111,
+      "line_count": 130,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2578,7 +2578,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9708,
+      "line_count": 9710,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2924,7 +2924,7 @@
       "path": "docs/product/implementation-todo-list.md",
       "line_count": 443,
       "has_heading": true,
-      "todo_count": 7,
+      "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
