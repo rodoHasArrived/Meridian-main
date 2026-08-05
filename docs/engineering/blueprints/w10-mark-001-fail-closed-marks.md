@@ -1639,7 +1639,7 @@ permanently with no supported way to authorise it.
 The mismatch path therefore transitions the row to **`EvidenceSuperseded`** and appends the audit
 entry inside the same transaction as the comparison, before returning null. That frees the index slot
 so a new request can be made against the new mark, and the trail distinguishes a re-quote from a
-lapse of time. This is the same argument as "Expiry is a transition, not a filter" below, applied to
+lapse of time. This is the same argument as "Expiry is a transition, not a filter" above, applied to
 the other way an approval can stop being valid — and it is the reason `EvidenceSuperseded` exists as
 a distinct state rather than reusing `Expired`.
 
@@ -2706,7 +2706,11 @@ the *implementations* they front still arrive later.
       a per-book preview alone lets the gate be marked reviewed on a sample of one.
 - [ ] **Default posture unchanged in this phase** — `DailyPortfolioPricingPolicy` still defaults to
       the permissive policy, so the preview can be run against production data without blocking it.
-- [ ] Write the twelve policy tests and the two preview tests.
+- [ ] Write the policy and preview tests listed in the test plan — **every row in those two
+      tables**, not a count quoted here. An earlier revision said "the twelve policy tests"
+      when the table had grown to twenty-one, which reads as licence to stop at twelve. A
+      number in prose that has to track a table is a maintenance trap; the table is the
+      contract.
 
 ### Phase 2 — Consolidation, enforcement, and the default flip (PR 2)
 
