@@ -443,6 +443,9 @@ def validate_agent(path: Path) -> list[str]:
         return [f"{path.name}: {exc}"]
 
     for key, value in frontmatter.items():
+        if not isinstance(key, str):
+            errors.append(f"{path.name}: frontmatter key {key!r} is not a string")
+            continue
         if key in KNOWN_FIELDS:
             expected = FIELD_TYPES.get(key)
             # A recognised key is not the same as a usable value: `background: maybe`
