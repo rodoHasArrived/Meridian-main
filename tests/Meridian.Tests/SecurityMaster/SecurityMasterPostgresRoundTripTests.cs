@@ -8,8 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Meridian.Tests.SecurityMaster;
 
 [Trait("Category", "Integration")]
-[Collection(nameof(SecurityMasterDatabaseCollection))]
-public sealed class SecurityMasterPostgresRoundTripTests
+public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private readonly SecurityMasterDatabaseFixture _fixture;
 
@@ -194,6 +193,12 @@ public sealed class SecurityMasterPostgresRoundTripTests
             null,
             DateTimeOffset.UtcNow,
             includeInactive: false);
+        var resolvedWithWrongProvider = await store.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US0378331005",
+            "BLOOMBERG",
+            DateTimeOffset.UtcNow,
+            includeInactive: false);
 
         resolvedByIdentifier.Should().NotBeNull();
         resolvedByIdentifier!.SecurityId.Should().Be(securityId);
@@ -205,5 +210,6 @@ public sealed class SecurityMasterPostgresRoundTripTests
         resolvedByAlias!.SecurityId.Should().Be(securityId);
 
         resolvedWithoutProvider.Should().BeNull();
+        resolvedWithWrongProvider.Should().BeNull();
     }
 }

@@ -17,7 +17,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class AdminEndpointPermissionTests
+public sealed class AdminEndpointPermissionTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
 

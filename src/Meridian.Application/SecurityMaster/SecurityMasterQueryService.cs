@@ -399,8 +399,12 @@ public sealed class SecurityMasterQueryService :
             return true;
         }
 
-        return string.Equals(candidate.PrimaryIdentifierKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
-               && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
+        return MatchesLegacyPrimaryIdentifier(
+            candidate,
+            identifierKind,
+            identifierKind.ToString(),
+            normalizedValue,
+            normalizedProvider);
     }
 
     private static bool MatchesIdentifierIgnoringWindow(
@@ -427,17 +431,55 @@ public sealed class SecurityMasterQueryService :
             return true;
         }
 
-        return string.Equals(candidate.PrimaryIdentifierKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
-               && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
+        return MatchesLegacyPrimaryIdentifier(
+            candidate,
+            identifierKind,
+            identifierKindText,
+            normalizedValue,
+            normalizedProvider);
     }
 
     private static bool ProviderMatches(string? provider, string normalizedProvider)
-        => normalizedProvider.Length == 0
-           || SecurityIdentifierNormalizer.NormalizeProvider(provider).Equals(normalizedProvider, StringComparison.Ordinal);
+    {
+        var candidateProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
+        return normalizedProvider.Length == 0
+            ? candidateProvider.Length == 0
+            : candidateProvider.Equals(normalizedProvider, StringComparison.Ordinal);
+    }
 
     private static bool ProviderMatches(string? provider, string? normalizedProvider, string expectedNormalizedProvider)
-        => expectedNormalizedProvider.Length == 0
-           || SecurityIdentifierNormalizer.NormalizeProvider(normalizedProvider ?? provider).Equals(expectedNormalizedProvider, StringComparison.Ordinal);
+    {
+        var candidateProvider = string.IsNullOrWhiteSpace(normalizedProvider)
+            ? SecurityIdentifierNormalizer.NormalizeProvider(provider)
+            : SecurityIdentifierNormalizer.NormalizeProvider(normalizedProvider);
+        return expectedNormalizedProvider.Length == 0
+            ? candidateProvider.Length == 0
+            : candidateProvider.Equals(expectedNormalizedProvider, StringComparison.Ordinal);
+    }
+
+    private static bool MatchesLegacyPrimaryIdentifier(
+        SecurityProjectionRecord candidate,
+        SecurityIdentifierKind identifierKind,
+        string identifierKindText,
+        string normalizedValue,
+        string normalizedProvider)
+    {
+        if (normalizedProvider.Length != 0
+            || !string.Equals(candidate.PrimaryIdentifierKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
+            || !SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue)
+                .Equals(normalizedValue, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        // The denormalized primary fields predate authoritative identifier rows and carry no
+        // provider namespace. Use them only for genuinely legacy projections. Once a matching
+        // identifier row exists, its provider and validity window must remain authoritative.
+        return !candidate.Identifiers.Any(identifier =>
+            identifier.Kind == identifierKind
+            && SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier)
+                .Equals(normalizedValue, StringComparison.Ordinal));
+    }
 
     private static bool HasProfileSearchCriteria(SecuritySearchRequest request)
         => !string.IsNullOrWhiteSpace(request.CustomProfileId)

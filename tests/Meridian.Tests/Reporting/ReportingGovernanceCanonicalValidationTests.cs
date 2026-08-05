@@ -36,6 +36,31 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     }
 
     [Fact]
+    public async Task GovernedLifecycle_TreatsDefaultAndEmptyPrincipalAudiencesAsEquivalent()
+    {
+        var scenario = NewScenario();
+        var authorityWithoutAudience = scenario.Creator with
+        {
+            PrincipalIds = default
+        };
+        var run = await scenario.Service.CreateRunAsync(
+            scenario.Request,
+            authorityWithoutAudience);
+        run = await scenario.Service.BeginExecutionAsync(
+            run.RunId,
+            run.Version,
+            authorityWithoutAudience with { PrincipalIds = [] });
+
+        var validate = () =>
+            ReportingGovernanceCanonicalValidation.ValidateGovernedRun(run);
+
+        validate.Should().NotThrow(
+            "default ImmutableArray values deserialize as the same empty authority audience");
+        run.CreationAuthority.PrincipalIds.IsDefault.Should().BeTrue();
+        run.AuditTrail[^1].Authority.PrincipalIds.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GovernedLifecycle_RejectsReceiptScopeAndMakerCheckerDrift()
     {
         var scenario = NewScenario();

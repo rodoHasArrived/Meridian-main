@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-03
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Ui.Shared
@@ -21,6 +21,11 @@ one-use bootstrap token.
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
 and desktop surfaces.
+
+`DemoTenantProvisioner` publishes its deterministic reconciliation casework through the same
+tenant/company-scoped queue contract as production workflows. Seeded demo breaks carry the fixed
+`DemoTenantBlueprint` tenant and company identifiers; authenticated demo hosts must resolve that
+scope to read the cases, and legacy unscoped queue rows remain inaccessible.
 
 ## Layer responsibility
 
@@ -1279,6 +1284,11 @@ Reporting startup also integrity-reloads the one reconciliation queue shared by 
 casework, Operations Continuity, hard close, and Final evidence; readiness requires that receipt and
 the running schedule and secure-delivery workers with valid options. PostgreSQL-shaped source
 registrations without those completed source migrations remain blocked.
+During the delivery worker's explicit one-time initial-start state, the schedule worker excludes
+only the two worker-liveness receipts so independently starting workers do not deadlock on startup
+order. Once delivery succeeds, fails, stops, or becomes stale, its liveness blocks schedule polling
+again; every durable store, migration, configuration, and non-worker blocker always remains
+fail-closed.
 `GET /api/workstation/reporting` returns `503`
 when any component is missing instead of inheriting Accounting health or a fallback Reporting
 payload; workstation structured Reporting exports apply the same fail-closed posture. A successful

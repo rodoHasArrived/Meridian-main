@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-03
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Ui/dashboard

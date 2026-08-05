@@ -82,7 +82,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-08-04
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -259,7 +259,7 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-08-04
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -440,7 +440,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-08-04
 
   - id: SRC-FSHARP-DIRECTLENDING
     path: src/Meridian.FSharp.DirectLending.Aggregates
@@ -833,7 +833,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-08-04
 
   - id: SRC-DESIGN-DOCUMENTS
     path: src/Meridian.Documents
@@ -956,7 +956,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-07-18
+    last_reviewed: 2026-08-04
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -994,7 +994,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-07-18
+    last_reviewed: 2026-08-04
 
   - id: SRC-WPF
     path: src/Meridian.Wpf

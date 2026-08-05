@@ -5,6 +5,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Execution.Services;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
@@ -15,6 +16,7 @@ using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -30,6 +32,44 @@ namespace Meridian.Tests.Ui;
 [Collection("Sequential")]
 public sealed class WorkstationServiceCollectionExtensionsTests
 {
+    [Fact]
+    public void AddUiSharedServices_DefaultProviderCatalog_ResolvesEveryProviderAndAliasExactlyOnce()
+    {
+        using var quietProductionEnvironment =
+            new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Test");
+        using var inMemoryGovernance = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_USE_INMEMORY_GOVERNANCE",
+            "true");
+        var expectedHandlers = DefaultProviderSetupHandlers.Create();
+        var services = CreateMinimalWorkstationServices();
+
+        services.AddUiSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProviderSetupRegistry>();
+        registry.Handlers
+            .Select(static handler => handler.Descriptor.ProviderId)
+            .Should()
+            .Equal(expectedHandlers.Select(static handler => handler.Descriptor.ProviderId));
+
+        foreach (var expectedHandler in expectedHandlers)
+        {
+            var expectedProviderId = expectedHandler.Descriptor.ProviderId;
+            var supportedLookups = expectedHandler.Descriptor.Aliases
+                .Prepend(expectedProviderId);
+
+            foreach (var lookup in supportedLookups)
+            {
+                registry.Find(lookup)?.Descriptor.ProviderId
+                    .Should()
+                    .Be(expectedProviderId, $"'{lookup}' must resolve to its advertised provider setup handler");
+            }
+        }
+    }
+
     [Fact]
     public void ReportingAuthoritativeSource_NonPostgresDependencies_ShouldNotClaimDurableConfiguration()
     {
