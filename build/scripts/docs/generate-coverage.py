@@ -46,15 +46,24 @@ STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
 DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
-# Generated reports echo names verbatim, so counting them as documentation lets coverage rise
-# with nothing written. `docs/generated/repository-structure.md` is the worst case: it lists every
-# path in the repository, and C# files are conventionally named for the single public type they
-# hold, so a type counted as documented purely because its own source file exists. The sibling
-# api-contract dashboard already excludes both roots for this reason; this generator excluded only
-# the first.
+# Two *self-referential* reports are excluded, not the whole generated tree.
+#
+# `docs/generated/repository-structure.md` lists every path in the repository, and a C# file is
+# conventionally named for the single public type it holds — so a type counted as documented
+# purely because its own source file exists. `docs/generated/documentation-coverage.md` is this
+# generator's own output, which names every undocumented item it finds: counting it would let a
+# type become documented by being reported as undocumented.
+#
+# The rest of `docs/generated/` stays in the corpus, and that distinction matters:
+# `docs/generated/database/**` is the PostgreSQL data-object catalog
+# (`docs/generated/README.md`), and pages like
+# `docs/generated/database/contracts/ledger-contracts-page-01.md` carry real field-level reference
+# documentation for types such as `AccountingApprovalQueueConfigurationDto`. An earlier revision
+# excluded the whole subtree and marked 1,880 genuinely documented types as gaps.
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
-    "docs/generated/",
+    "docs/generated/documentation-coverage.md",
+    "docs/generated/repository-structure.md",
 )
 
 # Regex: public (static )?(sealed )?(partial )?(class|interface|record|enum) Name
@@ -217,6 +226,23 @@ def _scan_public_types(root: Path) -> List[SourceItem]:
     return items
 
 
+_IDENTIFIER_TOKEN_RE = re.compile(r"[0-9A-Za-z_]+")
+
+
+def _documented_name_index(doc_contents: Dict[str, str]) -> frozenset:
+    """Every identifier the documentation corpus names, tokenized in one pass.
+
+    Splitting on non-identifier characters is the boundary rule expressed as membership:
+    `DailyPortfolioPriceMark` is one token, so `PriceMark` is absent, while `` `PriceMark` `` and
+    `PriceMark.` both yield it. Doing this per type instead — one regex scan of the corpus for each
+    of ~8,000 public types — pushed this generator past its docs-automation timeout.
+    """
+    names: set = set()
+    for content in doc_contents.values():
+        names.update(_IDENTIFIER_TOKEN_RE.findall(content))
+    return frozenset(names)
+
+
 def _check_type_documentation(
     items: List[SourceItem],
     doc_contents: Dict[str, str],
@@ -234,12 +260,9 @@ def _check_type_documentation(
     naming a type on its own still counts. What it removes is the accidental hit: a name
     inside a longer name, inside a file path, or inside a member it does not own.
     """
+    documented_names = _documented_name_index(doc_contents)
     for item in items:
-        pattern = re.compile(r"(?<![0-9A-Za-z_])" + re.escape(item.name) + r"(?![0-9A-Za-z_])")
-        for _doc_path, content in doc_contents.items():
-            if pattern.search(content):
-                item.documented = True
-                break
+        item.documented = item.name in documented_names
 
     documented = sum(1 for i in items if i.documented)
     return CategoryResult(

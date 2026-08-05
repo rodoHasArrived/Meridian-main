@@ -113,14 +113,37 @@ class CoverageReportBoundaryTests(unittest.TestCase):
         self.assertTrue(self._documented("PriceMark", "The `PriceMark` record carries"))
         self.assertTrue(self._documented("PriceMark", "PriceMark."))
 
-    def test_generated_roots_are_excluded_from_the_doc_corpus(self) -> None:
-        # `docs/generated/repository-structure.md` lists every path in the repository, and C#
-        # files are named for the type they hold — so without this a type counts as documented
-        # because its own source file exists. Currently a no-op given the boundary check above,
-        # kept because it is the sibling dashboard's rule and the boundary check does not cover
-        # a type whose name matches a file stem exactly.
-        self.assertIn("docs/generated/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
-        self.assertIn("docs/status/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
+    def test_only_the_self_referential_reports_are_excluded(self) -> None:
+        # Narrow on purpose. `repository-structure.md` lists every path in the repository and
+        # `documentation-coverage.md` is this generator's own output, so both would let a type
+        # count as documented for existing or for being reported undocumented. Excluding the
+        # whole `docs/generated/` subtree instead — which an earlier revision of this branch did —
+        # marked 1,880 genuinely documented types as gaps.
+        self.assertEqual(
+            (
+                "docs/status/",
+                "docs/generated/documentation-coverage.md",
+                "docs/generated/repository-structure.md",
+            ),
+            self.cov.DOC_CONTENT_EXCLUDE_PREFIXES,
+        )
+
+    def test_the_generated_database_catalog_stays_in_the_corpus(self) -> None:
+        # `docs/generated/database/**` is the PostgreSQL data-object catalog named in
+        # `docs/generated/README.md`, and its pages carry field-level reference documentation.
+        # A loader-level check, because the bug this pins was in *what gets loaded*, not in the
+        # matching — asserting the prefix tuple alone would not have caught it.
+        loaded = self.cov._load_doc_contents(ROOT)
+        catalog = [k for k in loaded if k.startswith("docs/generated/database/")]
+        self.assertTrue(catalog, "the generated database catalog must remain documentation")
+
+        excluded = [
+            k for k in loaded
+            if k in ("docs/generated/documentation-coverage.md",
+                     "docs/generated/repository-structure.md")
+            or k.startswith("docs/status/")
+        ]
+        self.assertEqual([], excluded)
 
 if __name__ == "__main__":
     unittest.main()

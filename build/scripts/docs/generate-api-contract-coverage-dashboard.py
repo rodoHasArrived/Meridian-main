@@ -190,6 +190,35 @@ def _load_docs_text(root: Path) -> str:
     return ROUTE_CONSTRAINT_RE.sub(r"{\1}", normalized).casefold()
 
 
+_IDENTIFIER_TOKEN_RE = re.compile(r"[0-9a-z_]+")
+_PATH_TOKEN_RE = re.compile(r"/[0-9a-z_{}:./-]*")
+
+
+def _index_docs(docs_text: str) -> tuple[frozenset[str], frozenset[str]]:
+    """Tokenize the corpus **once** into the names and paths it mentions.
+
+    The boundary rule below is a property of the corpus, not of the term, so it can be decided by
+    membership instead of by a scan. An earlier revision ran one `re.search` per item over the
+    whole concatenated corpus — 906 contracts plus 617 routes against roughly ten megabytes — and
+    turned a 6.8s generator into a 106s one, which is a regression in routine docs automation
+    however correct the answer is. Indexing is one pass and the lookups are O(1).
+
+    Splitting on non-identifier characters *is* the boundary rule: `recordapprovaldecisionasync`
+    is a single token, so `approvaldecision` is absent, while `Workstation/ApprovalDecision` and
+    `ApprovalDecision.` both yield it. Paths are tokenized separately because `/` and `{}` are part
+    of a route; `/api/backfill/run` is absent from a corpus that only mentions
+    `/api/backfill/run/{id}`, which is a different endpoint that is scanned on its own.
+    """
+    identifiers = set(_IDENTIFIER_TOKEN_RE.findall(docs_text))
+    paths: set[str] = set()
+    for token in _PATH_TOKEN_RE.findall(docs_text):
+        paths.add(token)
+        trimmed = token.rstrip("./-")       # sentence punctuation, not part of the route
+        if trimmed:
+            paths.add(trimmed)
+    return frozenset(identifiers), frozenset(paths)
+
+
 def _mentions(term: str, docs_text: str) -> bool:
     """True when `docs_text` names `term` itself, rather than merely containing its characters.
 
@@ -223,12 +252,14 @@ def build_dashboard(root: Path) -> dict:
     endpoints = _scan_endpoints(root)
     contracts = _scan_workstation_contracts(root)
 
+    documented_names, documented_paths = _index_docs(docs_text)
+
     for endpoint in endpoints:
         route = _normalize_route(str(endpoint["path"]))
-        endpoint["documented"] = _mentions(route, docs_text)
+        endpoint["documented"] = route in documented_paths
 
     for contract in contracts:
-        contract["documented"] = _mentions(str(contract["name"]).casefold(), docs_text)
+        contract["documented"] = str(contract["name"]).casefold() in documented_names
 
     endpoint_total = len(endpoints)
     endpoint_documented = sum(1 for endpoint in endpoints if endpoint["documented"])
