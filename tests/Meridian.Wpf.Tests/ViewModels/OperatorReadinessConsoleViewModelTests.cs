@@ -33,8 +33,9 @@ public sealed class OperatorReadinessConsoleViewModelTests
 
         await viewModel.RefreshAsync();
 
-        viewModel.OverallStatusText.Should().Be("Review required");
-        viewModel.OverallTone.Should().Be(WorkstationReadinessTone.SignoffRequired);
+        viewModel.OverallStatusText.Should().Be(
+            "Blocked", "a critical inbox item and a blocked acceptance gate escalate the headline past the server's Review required status");
+        viewModel.OverallTone.Should().Be(WorkstationReadinessTone.Blocked);
         viewModel.AsOfText.Should().Be("2026-08-05 06:00 UTC");
         viewModel.GateRows.Should().HaveCount(3);
         viewModel.GateRows[0].Label.Should().Be("Overall readiness");
@@ -48,7 +49,7 @@ public sealed class OperatorReadinessConsoleViewModelTests
             .Which.ReadinessTone.Should().Be(WorkstationReadinessTone.SignoffRequired);
         viewModel.BreakRows.Should().HaveCount(2, "resolved break-queue items are excluded");
         viewModel.WorkItemRows.Should().HaveCount(3, "inbox and readiness feeds merge with duplicate ids deduplicated");
-        viewModel.WorkItemRows[0].WorkItemId.Should().Be("wi-critical", "highest priority score sorts first");
+        viewModel.WorkItemRows[0].WorkItemId.Should().Be("wi-critical", "the most severe tone sorts first");
         viewModel.WorkItemRows[0].TargetPageTag.Should().Be("FundReconciliation");
         viewModel.Warnings.Should().Equal("One readiness warning was retained.");
         viewModel.SummaryFacts.Should().HaveCount(6);
@@ -115,7 +116,8 @@ public sealed class OperatorReadinessConsoleViewModelTests
         await viewModel.RefreshAsync();
 
         viewModel.ReadinessErrorText.Should().Be("Readiness projection failed.");
-        viewModel.OverallStatusText.Should().Be("Unavailable");
+        viewModel.OverallStatusText.Should().Be(
+            "Blocked", "a critical inbox item escalates the headline even when the readiness payload is missing");
         viewModel.HasInboxError.Should().BeFalse("the inbox loaded independently of the readiness failure");
         viewModel.WorkItemRows.Should().NotBeEmpty("inbox work items still project when readiness fails");
         viewModel.BreakRows.Should().NotBeEmpty();
@@ -145,9 +147,174 @@ public sealed class OperatorReadinessConsoleViewModelTests
         gate.SetResult(CreateReadiness());
         await firstRefresh;
 
-        viewModel.Warnings.Should().Equal("Second-round warning.",
+        viewModel.Warnings.Should().Equal(
+            new[] { "Second-round warning." },
             "the superseded first refresh must not overwrite the newer projection");
         viewModel.IsRefreshing.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ReadyReadinessWithCriticalInbox_EscalatesHeadlineToBlocked()
+    {
+        var readiness = CreateReadiness() with
+        {
+            OverallStatus = TradingAcceptanceGateStatusDto.Ready,
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto("gate-replay", "Replay parity", TradingAcceptanceGateStatusDto.Ready, "Replay matches persisted state."),
+                new TradingAcceptanceGateDto("gate-signoff", "Operator sign-off", TradingAcceptanceGateStatusDto.Ready, "Sign-off is recorded.")
+            ]
+        };
+        using var viewModel = CreateViewModel(
+            new FakeReadinessProvider { Readiness = readiness },
+            new FakeInboxClient { Inbox = CreateInbox() },
+            new FakeReconciliationClient { Breaks = CreateBreaks() },
+            runWorkspaceService: null);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.OverallStatusText.Should().Be("Blocked", "a critical inbox item overrides a Ready server status");
+        viewModel.OverallTone.Should().Be(WorkstationReadinessTone.Blocked);
+        viewModel.GateRows[0].StatusText.Should().Be("Ready", "the gates panel keeps showing the server's raw overall status");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ReadyReadinessWithoutInbox_DemotesHeadlineToReviewPending()
+    {
+        var readiness = CreateReadiness() with
+        {
+            OverallStatus = TradingAcceptanceGateStatusDto.Ready,
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto("gate-replay", "Replay parity", TradingAcceptanceGateStatusDto.Ready, "Replay matches persisted state.")
+            ]
+        };
+        using var viewModel = CreateViewModel(
+            new FakeReadinessProvider { Readiness = readiness },
+            new FakeInboxClient { Inbox = null },
+            new FakeReconciliationClient { Breaks = CreateBreaks() },
+            runWorkspaceService: null);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.OverallStatusText.Should().Be(
+            "Review pending", "a Ready headline is demoted while the operator inbox is unavailable");
+        viewModel.OverallTone.Should().Be(WorkstationReadinessTone.SignoffRequired);
+    }
+
+    [Fact]
+    public void BuildWorkItemRows_DuplicateIds_KeepMoreSevereToneThenNewerTimestamp()
+    {
+        var readinessItems = new[]
+        {
+            CreateWorkItem("wi-dupe", OperatorWorkItemToneDto.Critical, DateTimeOffset.Parse("2026-08-05T05:45:00Z"))
+        };
+        var inboxItems = new[]
+        {
+            CreateWorkItem("wi-dupe", OperatorWorkItemToneDto.Info, DateTimeOffset.Parse("2026-08-05T02:00:00Z"), priorityScore: 250)
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildWorkItemRows(inboxItems, readinessItems, IsRegistered);
+
+        rows.Should().ContainSingle()
+            .Which.ReadinessTone.Should().Be(
+                WorkstationReadinessTone.Blocked,
+                "a stale low-severity inbox copy must not mask the critical readiness copy of the same work item");
+    }
+
+    [Fact]
+    public void BuildWorkItemRows_OrdersSeverityBeforePriorityScore()
+    {
+        var readinessItems = new[]
+        {
+            CreateWorkItem("wi-critical-unscored", OperatorWorkItemToneDto.Critical, DateTimeOffset.Parse("2026-08-04T01:00:00Z"))
+        };
+        var inboxItems = new[]
+        {
+            CreateWorkItem("wi-success-scored", OperatorWorkItemToneDto.Success, DateTimeOffset.Parse("2026-08-05T05:55:00Z"), priorityScore: 300)
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildWorkItemRows(inboxItems, readinessItems, IsRegistered);
+
+        rows.Select(static row => row.WorkItemId).Should().Equal(
+            new[] { "wi-critical-unscored", "wi-success-scored" },
+            "readiness-feed items carry no priority score, so severity must order the merged queue");
+    }
+
+    [Fact]
+    public void BuildBreakRows_PreservesServerOrderAndCapsRows()
+    {
+        var breaks = new[]
+        {
+            CreateBreak("brk-a", ReconciliationBreakQueueStatus.Open, DateTimeOffset.Parse("2026-08-01T00:00:00Z")),
+            CreateBreak("brk-b", ReconciliationBreakQueueStatus.Resolved, DateTimeOffset.Parse("2026-08-05T00:00:00Z")),
+            CreateBreak("brk-c", ReconciliationBreakQueueStatus.InReview, DateTimeOffset.Parse("2026-08-05T02:00:00Z")),
+            CreateBreak("brk-d", ReconciliationBreakQueueStatus.Open, DateTimeOffset.Parse("2026-08-02T00:00:00Z")),
+            CreateBreak("brk-e", ReconciliationBreakQueueStatus.Open, DateTimeOffset.Parse("2026-08-04T00:00:00Z")),
+            CreateBreak("brk-f", ReconciliationBreakQueueStatus.Open, DateTimeOffset.Parse("2026-08-03T00:00:00Z")),
+            CreateBreak("brk-g", ReconciliationBreakQueueStatus.Open, DateTimeOffset.Parse("2026-08-05T03:00:00Z"))
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildBreakRows(breaks);
+
+        rows.Select(static row => row.Id).Should().Equal(
+            new[] { "brk-a", "brk-c", "brk-d", "brk-e", "brk-f" },
+            "the server-provided queue order already encodes priority and must survive filtering and the row cap");
+    }
+
+    [Fact]
+    public void BuildSummaryFacts_CountsFullBreakQueueAndMarksMissingQueueUnavailable()
+    {
+        var breaks = Enumerable.Range(1, 7)
+            .Select(static index => CreateBreak(
+                $"brk-{index}",
+                ReconciliationBreakQueueStatus.Open,
+                DateTimeOffset.Parse("2026-08-05T00:00:00Z")))
+            .ToArray();
+
+        var facts = OperatorReadinessConsoleMapper.BuildSummaryFacts(null, null, breaks, null);
+        facts[3].Value.Should().Be("7 open breaks", "the fact counts the full filtered queue, not the display-capped rows");
+
+        var unavailable = OperatorReadinessConsoleMapper.BuildSummaryFacts(null, null, breaks: null, null);
+        unavailable[3].Value.Should().Be("Unavailable", "a failed reconciliation load must not read as zero breaks");
+    }
+
+    [Fact]
+    public void BuildRunRows_OnlyCompletedRunsEarnSuccessTone()
+    {
+        var summary = new StrategyWorkspaceSummary
+        {
+            RecentRuns =
+            [
+                new StrategyRunSummaryItem { RunId = "run-1", StrategyName = "S1", StatusLabel = "Completed" },
+                new StrategyRunSummaryItem { RunId = "run-2", StrategyName = "S2", StatusLabel = "Failed" },
+                new StrategyRunSummaryItem { RunId = "run-3", StrategyName = "S3", StatusLabel = "Needs Review" }
+            ]
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildRunRows(summary);
+
+        rows.Select(static row => row.ReadinessTone).Should().Equal(
+            new[]
+            {
+                WorkstationReadinessTone.EvidenceLinked,
+                WorkstationReadinessTone.Neutral,
+                WorkstationReadinessTone.SignoffRequired
+            },
+            "a failed run must not render with the success tone");
+    }
+
+    [Fact]
+    public void BuildSessionRows_MissingReplay_EmitsVerifyRow()
+    {
+        var readiness = CreateReadiness() with { Replay = null };
+
+        var rows = OperatorReadinessConsoleMapper.BuildSessionRows(readiness);
+
+        rows.Should().HaveCount(3, "the replay row stays visible as an explicit review state when verification is missing");
+        rows[2].Value.Should().Be("Verify");
+        rows[2].ReadinessTone.Should().Be(WorkstationReadinessTone.SignoffRequired);
+        rows[2].Detail.Should().Be("No replay verification is attached to the active readiness snapshot.");
     }
 
     private static OperatorReadinessConsoleViewModel CreateViewModel(
@@ -295,6 +462,38 @@ public sealed class OperatorReadinessConsoleViewModelTests
             WarningCount: 1,
             ReviewCount: 0,
             Summary: "Two operator work items need attention.");
+
+    private static OperatorWorkItemDto CreateWorkItem(
+        string id,
+        OperatorWorkItemToneDto tone,
+        DateTimeOffset createdAt,
+        int priorityScore = 0)
+        => new(
+            WorkItemId: id,
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: $"Item {id}",
+            Detail: "Detail",
+            Tone: tone,
+            CreatedAt: createdAt)
+        {
+            PriorityScore = priorityScore
+        };
+
+    private static ReconciliationBreakQueueItem CreateBreak(
+        string breakId,
+        ReconciliationBreakQueueStatus status,
+        DateTimeOffset detectedAt)
+        => new(
+            BreakId: breakId,
+            RunId: "recon-run-x",
+            StrategyName: "Covered Call Income",
+            Category: ReconciliationBreakCategory.CashMismatch,
+            Status: status,
+            Variance: 1m,
+            Reason: "Variance.",
+            AssignedTo: null,
+            DetectedAt: detectedAt,
+            LastUpdatedAt: detectedAt);
 
     private static IReadOnlyList<ReconciliationBreakQueueItem> CreateBreaks()
         =>

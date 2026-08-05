@@ -48,9 +48,9 @@ public sealed record OperatorReadinessWorkItemRowModel(
 /// </summary>
 public static class OperatorReadinessConsoleMapper
 {
-    private const int MaxWorkItemRows = 8;
+    private const int MaxWorkItemRows = 6;
     private const int MaxRunRows = 5;
-    private const int MaxBreakRows = 6;
+    private const int MaxBreakRows = 5;
 
     public static WorkstationReadinessTone ToReadinessTone(TradingAcceptanceGateStatusDto status)
         => status switch
@@ -153,20 +153,22 @@ public static class OperatorReadinessConsoleMapper
                 session.PortfolioValue is null ? WorkspaceTone.Warning : WorkspaceTone.Success)
         };
 
-        if (readiness.Replay is not null)
-        {
-            var replayTone = readiness.Replay.IsConsistent
-                ? WorkstationReadinessTone.EvidenceLinked
-                : WorkstationReadinessTone.SignoffRequired;
-            rows.Add(new OperatorReadinessPanelRowModel(
-                "replay-coverage",
-                "Replay coverage",
-                readiness.Replay.IsConsistent ? "Consistent" : "Verify",
-                $"{readiness.Replay.ComparedFillCount} fills · {readiness.Replay.ComparedOrderCount} orders · {readiness.Replay.ComparedLedgerEntryCount} ledger entries compared",
-                readiness.Replay.VerificationAuditId ?? "No verification audit",
-                replayTone,
-                ToWorkspaceTone(replayTone)));
-        }
+        // The replay row is always present so a missing verification reads as an explicit
+        // review state instead of silently disappearing (matches the browser session facts).
+        var replayConsistent = readiness.Replay?.IsConsistent == true;
+        var replayTone = replayConsistent
+            ? WorkstationReadinessTone.EvidenceLinked
+            : WorkstationReadinessTone.SignoffRequired;
+        rows.Add(new OperatorReadinessPanelRowModel(
+            "replay-coverage",
+            "Replay coverage",
+            replayConsistent ? "Consistent" : "Verify",
+            readiness.Replay is null
+                ? "No replay verification is attached to the active readiness snapshot."
+                : $"{readiness.Replay.ComparedFillCount} fills · {readiness.Replay.ComparedOrderCount} orders · {readiness.Replay.ComparedLedgerEntryCount} ledger entries compared",
+            readiness.Replay?.VerificationAuditId ?? "No verification audit",
+            replayTone,
+            ToWorkspaceTone(replayTone)));
 
         return rows;
     }
@@ -261,10 +263,14 @@ public static class OperatorReadinessConsoleMapper
             .Take(MaxRunRows)
             .Select(run =>
             {
-                var needsReview = run.StatusLabel.Contains("review", StringComparison.OrdinalIgnoreCase);
-                var tone = needsReview
+                // Only a completed run earns the success tone; everything else (running, failed,
+                // cancelled) stays neutral like the browser's latest-runs panel, with review
+                // states escalated to a sign-off tone.
+                var tone = run.StatusLabel.Contains("review", StringComparison.OrdinalIgnoreCase)
                     ? WorkstationReadinessTone.SignoffRequired
-                    : WorkstationReadinessTone.EvidenceLinked;
+                    : run.StatusLabel.Equals("Completed", StringComparison.OrdinalIgnoreCase)
+                        ? WorkstationReadinessTone.EvidenceLinked
+                        : WorkstationReadinessTone.Neutral;
                 return new OperatorReadinessPanelRowModel(
                     run.RunId,
                     run.StrategyName,
@@ -282,9 +288,10 @@ public static class OperatorReadinessConsoleMapper
     {
         ArgumentNullException.ThrowIfNull(breaks);
 
+        // Server break-queue order is preserved (it already encodes severity/priority); re-sorting
+        // by detection time here would surface different rows than the browser console shows.
         return breaks
             .Where(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
-            .OrderByDescending(static item => item.DetectedAt)
             .Take(MaxBreakRows)
             .Select(static item =>
             {
@@ -304,8 +311,10 @@ public static class OperatorReadinessConsoleMapper
     }
 
     /// <summary>
-    /// Merges the readiness and inbox work-item feeds (inbox rows win on duplicate ids), keeps the
-    /// server-computed priority ordering, and resolves each row to a registered shell page tag.
+    /// Merges the readiness and inbox work-item feeds and resolves each row to a registered shell
+    /// page tag. Duplicate ids keep the more severe tone (then the newer timestamp) and the queue
+    /// orders severity-first, matching the browser console and the server-side inbox dedup —
+    /// PriorityScore alone cannot order the merge because only inbox items carry a score.
     /// </summary>
     public static IReadOnlyList<OperatorReadinessWorkItemRowModel> BuildWorkItemRows(
         IReadOnlyList<OperatorWorkItemDto> inboxItems,
@@ -316,19 +325,17 @@ public static class OperatorReadinessConsoleMapper
         ArgumentNullException.ThrowIfNull(readinessItems);
         ArgumentNullException.ThrowIfNull(isRegisteredPageTag);
 
-        var merged = new Dictionary<string, OperatorWorkItemDto>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in readinessItems)
+        var merged = new Dictionary<string, OperatorWorkItemDto>(StringComparer.Ordinal);
+        foreach (var item in readinessItems.Concat(inboxItems))
         {
-            merged[item.WorkItemId] = item;
-        }
-
-        foreach (var item in inboxItems)
-        {
-            merged[item.WorkItemId] = item;
+            if (!merged.TryGetValue(item.WorkItemId, out var existing) || ShouldReplaceWorkItem(existing, item))
+            {
+                merged[item.WorkItemId] = item;
+            }
         }
 
         return merged.Values
-            .OrderByDescending(static item => item.PriorityScore)
+            .OrderBy(static item => TonePriority(item.Tone))
             .ThenByDescending(static item => item.CreatedAt)
             .Take(MaxWorkItemRows)
             .Select(item =>
@@ -401,11 +408,15 @@ public static class OperatorReadinessConsoleMapper
     public static IReadOnlyList<OperatorReadinessFactModel> BuildSummaryFacts(
         TradingOperatorReadinessDto? readiness,
         OperatorInboxDto? inbox,
-        IReadOnlyList<OperatorReadinessPanelRowModel> breakRows,
+        IReadOnlyList<ReconciliationBreakQueueItem>? breaks,
         StrategyWorkspaceSummary? runSummary)
     {
         var readyGateCount = readiness?.AcceptanceGates.Count(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready) ?? 0;
         var totalGateCount = readiness?.AcceptanceGates.Count ?? 0;
+        // The fact counts the full filtered queue, not the display-capped break rows, so the
+        // summary stays truthful when more breaks exist than the panel shows.
+        var openBreakCount = breaks?.Count(static item =>
+            item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview);
 
         return
         [
@@ -425,8 +436,10 @@ public static class OperatorReadinessConsoleMapper
                     : $"{inbox.CriticalCount} critical · {inbox.WarningCount} warning · {inbox.ReviewCount} review"),
             new OperatorReadinessFactModel(
                 "Reconciliation",
-                Pluralize(breakRows.Count, "open break"),
-                "Open and in-review break-queue items"),
+                openBreakCount is null ? "Unavailable" : Pluralize(openBreakCount.Value, "open break"),
+                openBreakCount is null
+                    ? "Reconciliation break queue did not load"
+                    : "Open and in-review break-queue items"),
             new OperatorReadinessFactModel(
                 "Strategy runs",
                 runSummary is null ? "Unavailable" : Pluralize(runSummary.PendingReviewCount, "pending review"),
@@ -449,6 +462,31 @@ public static class OperatorReadinessConsoleMapper
 
     public static string FormatTimestamp(DateTimeOffset value)
         => $"{value.UtcDateTime:yyyy-MM-dd HH:mm} UTC";
+
+    /// <summary>
+    /// Replaces a duplicate work item only when the candidate carries a more severe tone, or the
+    /// same tone with an equal-or-newer timestamp — the same precedence the browser console and
+    /// the server-side inbox dedup use, so a stale low-severity copy never masks a critical one.
+    /// </summary>
+    private static bool ShouldReplaceWorkItem(OperatorWorkItemDto existing, OperatorWorkItemDto candidate)
+    {
+        var toneDelta = TonePriority(candidate.Tone) - TonePriority(existing.Tone);
+        if (toneDelta != 0)
+        {
+            return toneDelta < 0;
+        }
+
+        return candidate.CreatedAt >= existing.CreatedAt;
+    }
+
+    private static int TonePriority(OperatorWorkItemToneDto tone)
+        => tone switch
+        {
+            OperatorWorkItemToneDto.Critical => 0,
+            OperatorWorkItemToneDto.Warning => 1,
+            OperatorWorkItemToneDto.Info => 2,
+            _ => 3
+        };
 
     private static string Pluralize(int count, string singular)
         => count == 1 ? $"1 {singular}" : $"{count} {singular}s";

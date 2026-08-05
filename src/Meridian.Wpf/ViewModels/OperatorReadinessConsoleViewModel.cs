@@ -87,7 +87,7 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
 
     public string Title => "Operator readiness";
 
-    public string Subtitle => "Review cross-workspace readiness gates and operator work items before opening deep workspaces.";
+    public string Subtitle => "Review cross-workspace readiness gates and operator work items.";
 
     public string StatusText
     {
@@ -259,17 +259,20 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
 
             ApplyReadiness(readiness);
             ApplyInbox(inbox);
+            ApplyOverallStatus(readiness, inbox);
             ApplyRows(BreakRows, breaks is null ? [] : OperatorReadinessConsoleMapper.BuildBreakRows(breaks));
             ApplyRows(RunRows, runSummary is null ? [] : OperatorReadinessConsoleMapper.BuildRunRows(runSummary));
             ApplyWorkItems(readiness, inbox);
-            ApplySummaryFacts(readiness, inbox, runSummary);
+            ApplySummaryFacts(readiness, inbox, breaks, runSummary);
 
             StatusText = $"Readiness sources refreshed {OperatorReadinessConsoleMapper.FormatTimestamp(DateTimeOffset.UtcNow)}.";
             _hasLoaded = true;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             // Navigation or disposal cancelled the in-flight refresh; leave current state as-is.
+            // A foreign cancellation from a source (ct not requested) falls through to the
+            // generic handler below so it surfaces instead of being silently swallowed.
         }
         catch (Exception ex)
         {
@@ -318,10 +321,22 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
             return (null, "Operator inbox client is not available in this session.");
         }
 
-        var inbox = await _inboxClient.GetInboxAsync(fundAccountId: null, ct).ConfigureAwait(true);
-        return inbox is null
-            ? (null, "Operator inbox failed to load from the shared workstation API.")
-            : (inbox, string.Empty);
+        try
+        {
+            var inbox = await _inboxClient.GetInboxAsync(fundAccountId: null, ct).ConfigureAwait(true);
+            return inbox is null
+                ? (null, "Operator inbox failed to load from the shared workstation API.")
+                : (inbox, string.Empty);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogError("Operator inbox load failed.", ex);
+            return (null, ex.Message);
+        }
     }
 
     private async Task<(IReadOnlyList<ReconciliationBreakQueueItem>? Breaks, string Error)> LoadBreaksAsync(CancellationToken ct)
@@ -372,9 +387,6 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
     {
         if (readiness is null)
         {
-            OverallStatusText = "Unavailable";
-            OverallTone = WorkstationReadinessTone.Neutral;
-            OverallToneText = WorkspaceTone.Neutral;
             AsOfText = "Not loaded";
             ApplyRows(GateRows, []);
             ApplyRows(SessionRows, []);
@@ -384,15 +396,6 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
             return;
         }
 
-        OverallStatusText = OperatorReadinessConsoleMapper.FormatStatus(readiness.OverallStatus);
-        OverallTone = OperatorReadinessConsoleMapper.ToReadinessTone(readiness.OverallStatus);
-        OverallToneText = OverallTone switch
-        {
-            WorkstationReadinessTone.Blocked => WorkspaceTone.Danger,
-            WorkstationReadinessTone.SignoffRequired => WorkspaceTone.Warning,
-            WorkstationReadinessTone.EvidenceLinked => WorkspaceTone.Success,
-            _ => WorkspaceTone.Neutral
-        };
         AsOfText = OperatorReadinessConsoleMapper.FormatTimestamp(readiness.AsOf);
         ApplyRows(GateRows, OperatorReadinessConsoleMapper.BuildGateRows(readiness));
         ApplyRows(SessionRows, OperatorReadinessConsoleMapper.BuildSessionRows(readiness));
@@ -411,6 +414,60 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
             ? "Operator inbox not loaded."
             : $"{inbox.CriticalCount} critical · {inbox.WarningCount} warning · {inbox.ReviewCount} review — {inbox.Summary}";
 
+    /// <summary>
+    /// Derives the headline status from the readiness payload escalated by the operator inbox,
+    /// mirroring the browser console: critical inbox items or a blocked acceptance gate force
+    /// "Blocked" even when the server overall status is Ready, and a Ready status is demoted to
+    /// "Review pending" while the inbox is unavailable or any gate still needs review. The
+    /// server's raw overall status stays visible in the readiness-gates panel.
+    /// </summary>
+    private void ApplyOverallStatus(TradingOperatorReadinessDto? readiness, OperatorInboxDto? inbox)
+    {
+        var criticalCount = inbox?.CriticalCount ?? 0;
+        if (readiness is null)
+        {
+            SetOverallStatus(
+                criticalCount > 0 ? "Blocked" : "Unavailable",
+                criticalCount > 0 ? WorkstationReadinessTone.Blocked : WorkstationReadinessTone.Neutral);
+            return;
+        }
+
+        var serverLabel = OperatorReadinessConsoleMapper.FormatStatus(readiness.OverallStatus);
+        var anyGateBlocked = readiness.AcceptanceGates.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked);
+        if (readiness.OverallStatus == TradingAcceptanceGateStatusDto.Blocked || criticalCount > 0 || anyGateBlocked)
+        {
+            SetOverallStatus("Blocked", WorkstationReadinessTone.Blocked);
+            return;
+        }
+
+        var allGatesReady = readiness.AcceptanceGates.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        if (readiness.OverallStatus == TradingAcceptanceGateStatusDto.Ready
+            && inbox is not null
+            && inbox.WarningCount == 0
+            && allGatesReady)
+        {
+            SetOverallStatus(serverLabel, WorkstationReadinessTone.EvidenceLinked);
+            return;
+        }
+
+        SetOverallStatus(
+            readiness.OverallStatus == TradingAcceptanceGateStatusDto.Ready ? "Review pending" : serverLabel,
+            WorkstationReadinessTone.SignoffRequired);
+    }
+
+    private void SetOverallStatus(string statusText, WorkstationReadinessTone tone)
+    {
+        OverallStatusText = statusText;
+        OverallTone = tone;
+        OverallToneText = tone switch
+        {
+            WorkstationReadinessTone.Blocked => WorkspaceTone.Danger,
+            WorkstationReadinessTone.SignoffRequired => WorkspaceTone.Warning,
+            WorkstationReadinessTone.EvidenceLinked => WorkspaceTone.Success,
+            _ => WorkspaceTone.Neutral
+        };
+    }
+
     private void ApplyWorkItems(TradingOperatorReadinessDto? readiness, OperatorInboxDto? inbox)
         => ApplyRows(
             WorkItemRows,
@@ -422,10 +479,11 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
     private void ApplySummaryFacts(
         TradingOperatorReadinessDto? readiness,
         OperatorInboxDto? inbox,
+        IReadOnlyList<ReconciliationBreakQueueItem>? breaks,
         StrategyWorkspaceSummary? runSummary)
         => ApplyRows(
             SummaryFacts,
-            OperatorReadinessConsoleMapper.BuildSummaryFacts(readiness, inbox, [.. BreakRows], runSummary));
+            OperatorReadinessConsoleMapper.BuildSummaryFacts(readiness, inbox, breaks, runSummary));
 
     private static void ApplyRows<T>(ObservableCollection<T> target, IReadOnlyList<T> rows)
     {

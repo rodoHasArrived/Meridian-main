@@ -124,7 +124,12 @@ view model must consume the same shared read model the browser screen consumes.
   aggregation, per-panel degradation, work-item route resolution, supersede race) plus updated
   `HomeFeatureModuleTests`.
 - Follow-up (tracked, not blocking P2): fund-account scoping via the operating-context resolver,
-  the per-endpoint API source strip, and the next-action hero remain browser-first.
+  the per-endpoint API source strip, and the next-action hero remain browser-first. Three browser
+  panel compositions are also still browser-first: the Data-workspace provider posture rows inside
+  the provider-trust panel, the "Promotion blockers" composite (promotion-under-review plus
+  non-Ready gates plus PromotionReview work items), and the report-pack facts panel; the desktop
+  console surfaces the equivalent truth through its gates, promotion, and work-item panels until
+  those land.
 
 ### Wave P3 — Operations Continuity + Record Release
 
