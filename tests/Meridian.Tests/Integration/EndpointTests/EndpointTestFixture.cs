@@ -215,6 +215,17 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _configureTestServices?.Invoke(builder.Services);
 
         _app = builder.Build();
+        if (LedgerStartup.IsConfigured())
+        {
+            // AddUiSharedServices selects the PostgreSQL ledger adapter when the hosted
+            // certification lane publishes a database URL, but this direct TestServer host does
+            // not pass through HostStartup's database-readiness phase. Migrate the fixture-owned
+            // schema before workspace endpoints can resolve the ledger store.
+            await LedgerStartup
+                .EnsureDatabaseReadyAsync(_app.Services)
+                .ConfigureAwait(false);
+        }
+
         if (FundAccountsStartup.IsConfigured())
         {
             // AddUiSharedServices selects the PostgreSQL fund-account adapter when the hosted
