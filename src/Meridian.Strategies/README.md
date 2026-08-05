@@ -131,6 +131,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `W7-LIVE-001` | Live-readiness governance |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
