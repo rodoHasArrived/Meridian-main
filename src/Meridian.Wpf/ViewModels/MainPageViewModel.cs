@@ -1719,6 +1719,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return null;
         }
 
+        // Promotion reviews always open run review: every kind-level authority (the catalog's
+        // PromotionReview binding, the trading shell's queue, the kind fallbacks) targets
+        // StrategyRuns, and the generic trading-readiness route stamped on readiness-emitted
+        // promotion items names the data source, not the decision surface.
+        if (workItem.Kind == OperatorWorkItemKindDto.PromotionReview)
+        {
+            return "StrategyRuns";
+        }
+
         // Explicit route resolution outranks every kind fallback: the catalog's route bindings
         // first, then the kind specials, then the desktop route map. The catalog's kind binding
         // waits until after the route map so an explicit settings provider link is not preempted
@@ -1754,7 +1763,6 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var kindTarget = workItem.Kind switch
         {
             OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
-            OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
             OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",

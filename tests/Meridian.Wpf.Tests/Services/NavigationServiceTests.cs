@@ -330,7 +330,7 @@ public sealed class NavigationServiceTests : IDisposable
     [InlineData("ResearchShell", "StrategyShell")]
     [InlineData("DataOperationsShell", "DataShell")]
     [InlineData("GovernanceShell", "AccountingShell")]
-    [InlineData("OperationsContinuity", "FundLedger")]
+    [InlineData("OperationsContinuity", "OperationsContinuity")]
     [InlineData("OperationsClose", "FundLedger")]
     [InlineData("BacktestStudio", "Backtest")]
     [InlineData("RunBrowser", "StrategyRuns")]

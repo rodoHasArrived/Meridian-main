@@ -408,6 +408,15 @@ public static class OperatorReadinessConsoleMapper
             return item.TargetPageTag!;
         }
 
+        // Promotion reviews always open run review, mirroring the main shell: every kind-level
+        // authority (the catalog's PromotionReview binding, the trading shell's queue, the kind
+        // fallbacks) targets StrategyRuns, and the generic trading-readiness route stamped on
+        // readiness-emitted promotion items names the data source, not the decision surface.
+        if (item.Kind == OperatorWorkItemKindDto.PromotionReview && isRegisteredPageTag("StrategyRuns"))
+        {
+            return "StrategyRuns";
+        }
+
         // Explicit route resolution comes before every kind fallback (the browser is route-first,
         // and honors the item's explicit destination over kind defaults): the shared workflow
         // catalog's route bindings first — a route match is the workflow's deliberate entry
@@ -457,7 +466,6 @@ public static class OperatorReadinessConsoleMapper
         var kindTag = item.Kind switch
         {
             OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
-            OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
             OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",

@@ -15,10 +15,10 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `125d81e00033`
+- Source fingerprint: `e689f9e329a3`
 - Baseline date for open Gantt tasks: `2026-06-17`
-- Registered WPF screens: `95`
-- Open automated tasks: `3`
+- Registered WPF screens: `97`
+- Open automated tasks: `5`
 
 ## Workspace Summary
 
@@ -26,8 +26,8 @@ This tracker is generated from the live WPF shell registry, the maintained deskt
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Trading | 6 | 5 | 1 | 0 | 6 | 6 | 0 |
 | Portfolio | 9 | 4 | 4 | 1 | 9 | 9 | 0 |
-| Accounting | 14 | 6 | 8 | 0 | 14 | 14 | 0 |
-| Reporting | 9 | 6 | 3 | 0 | 8 | 9 | 1 |
+| Accounting | 15 | 7 | 8 | 0 | 14 | 15 | 1 |
+| Reporting | 10 | 7 | 3 | 0 | 8 | 10 | 2 |
 | Strategy | 14 | 6 | 3 | 3 | 13 | 14 | 1 |
 | Data | 25 | 6 | 9 | 10 | 25 | 25 | 0 |
 | Settings | 18 | 6 | 6 | 6 | 17 | 18 | 1 |
@@ -62,6 +62,7 @@ gantt
     Accounting Workspace evidence :done, accounting_accountingshell, 2026-06-26, 1d
     Entity setup evidence :done, accounting_fundstructuresetup, 2026-06-26, 1d
     Fund operations evidence :done, accounting_fundledger, 2026-06-26, 1d
+    Operations continuity Needs screenshot :crit, active, accounting_operationscontinuity, 2026-06-17, 3d
     Run ledger evidence :done, accounting_runledger, 2026-06-26, 1d
     Run cash flow evidence :done, accounting_runcashflow, 2026-06-26, 1d
     Fund reconciliation evidence :done, accounting_fundreconciliation, 2026-06-26, 1d
@@ -78,6 +79,7 @@ gantt
     Fund report pack evidence :done, reporting_fundreportpack, 2026-06-26, 1d
     Report run status evidence :done, reporting_reportrunstatus, 2026-06-26, 1d
     Evidence packets Needs screenshot :crit, active, reporting_evidenceworkbench, 2026-06-17, 3d
+    Operations record release Needs screenshot :crit, active, reporting_operationsrecordrelease, 2026-06-17, 3d
     Reporting dashboard evidence :done, reporting_dashboard, 2026-06-26, 1d
     Analysis export evidence :done, reporting_analysisexport, 2026-06-26, 1d
     Report-line provenance evidence :done, reporting_reportlineprovenanceexplorer, 2026-06-26, 1d
@@ -297,6 +299,14 @@ gantt
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-ledger.png (2026-06-26).
 - [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more.
 
+#### Operations continuity (`OperationsContinuity`)
+
+- Workspace section: `Fund Ops`; visibility: `Primary`; page class: `OperationsContinuityPage`.
+- Status: `Needs screenshot`.
+- [x] Registered in the WPF shell registry as OperationsContinuity (OperationsContinuityPage).
+- [ ] Capture a fixture-mode desktop screenshot for OperationsContinuity or record an explicit non-capture decision.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs, +5 more.
+
 #### Run ledger (`RunLedger`)
 
 - Workspace section: `Run Inspectors`; visibility: `Primary`; page class: `RunLedgerPage`.
@@ -418,6 +428,14 @@ gantt
 - [x] Registered in the WPF shell registry as EvidenceWorkbench (EvidenceWorkbenchPage).
 - [ ] Capture a fixture-mode desktop screenshot for EvidenceWorkbench or record an explicit non-capture decision.
 - [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +5 more.
+
+#### Operations record release (`OperationsRecordRelease`)
+
+- Workspace section: `Report Packs`; visibility: `Primary`; page class: `OperationsRecordReleasePage`.
+- Status: `Needs screenshot`.
+- [x] Registered in the WPF shell registry as OperationsRecordRelease (OperationsRecordReleasePage).
+- [ ] Capture a fixture-mode desktop screenshot for OperationsRecordRelease or record an explicit non-capture decision.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs.
 
 #### Reporting dashboard (`Dashboard`)
 
