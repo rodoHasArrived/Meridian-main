@@ -270,6 +270,48 @@ public sealed class SecurityMasterTermScheduleCodecTests
     }
 
     [Fact]
+    public void StructuredCredit_DifferentlyCasedScheduleContainer_IsStillRead()
+    {
+        // SecurityTermReader matches container names case-insensitively, so the cash-flow resolver
+        // reads this payload. An exact-match probe on the write path would round-trip it into an
+        // empty schedule — the same write-narrower-than-read gap, one level up from the row fields.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            FactorSchedule = new object[]
+            {
+                new { asOfDate = "2026-02-01", factor = 0.9912m }
+            }
+        });
+
+        var emitted = projection.AssetSpecificTerms.GetProperty("factorSchedule");
+        emitted.GetArrayLength().Should().Be(1);
+        emitted[0].GetProperty("factor").GetDecimal().Should().Be(0.9912m);
+    }
+
+    [Fact]
+    public void StructuredCredit_MalformedScheduleContainer_IsRejectedRatherThanEmptied()
+    {
+        // A single object where the array belongs is a vendor mistake, not an absent schedule.
+        // Persisting an empty list would report success while dropping the paydown observation.
+        var act = () => RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new { asOfDate = "2026-02-01", factor = 0.9912m }
+        });
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*array*");
+    }
+
+    [Fact]
     public void Swap_LegEconomics_SurviveTheDomainRoundTripAndReachTheResolver()
     {
         // A leg carrying only a rate label is not projectable: the read side has no notional to

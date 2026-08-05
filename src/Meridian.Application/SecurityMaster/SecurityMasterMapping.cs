@@ -551,9 +551,9 @@ internal static class SecurityMasterMapping
     /// </para>
     /// </summary>
     private static IEnumerable<FactorScheduleEntry> ToFactorSchedule(JsonElement json)
-        => (GetOptionalArrayItems(json, "factorSchedule").Any()
-                ? GetOptionalArrayItems(json, "factorSchedule")
-                : GetOptionalArrayItems(json, "factorSchedules"))
+        => (ReadFactorScheduleContainer(json, "factorSchedule")
+                ?? ReadFactorScheduleContainer(json, "factorSchedules")
+                ?? Enumerable.Empty<JsonElement>())
             .Select(ToFactorScheduleEntry)
             // Deliberately no de-duplication: the domain rejects two points on the same date, and
             // collapsing them here would sanitize the input before that validator ever saw it,
@@ -561,11 +561,49 @@ internal static class SecurityMasterMapping
             // amend reported success. Ordering is safe — it changes no content.
             .OrderBy(static entry => entry.AsOfDate);
 
+    /// <summary>
+    /// Reads one declared container spelling for the typed factor schedule.
+    /// </summary>
+    /// <returns>
+    /// The container's rows, or <c>null</c> when the container is absent, empty, or holds the
+    /// pre-typed free-text string — all three cases let the alternate spelling be probed, and the
+    /// string is carried forward by <see cref="GetFactorScheduleNote"/> rather than treated as an
+    /// error.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The container is present but holds some other JSON type. Treating that as an absent schedule
+    /// would persist an empty list while the create or amend reported success, losing a vendor
+    /// paydown observation with nothing in the write path ever reporting it — the same silent-drop
+    /// failure the per-row validation above rejects.
+    /// </exception>
+    private static List<JsonElement>? ReadFactorScheduleContainer(JsonElement json, string propertyName)
+    {
+        if (!SecurityTermReader.TryGetProperty(json, propertyName, out var value))
+        {
+            return null;
+        }
+
+        switch (value.ValueKind)
+        {
+            case JsonValueKind.Array:
+                var rows = value.EnumerateArray().ToList();
+                return rows.Count > 0 ? rows : null;
+            case JsonValueKind.String:
+            case JsonValueKind.Null:
+            case JsonValueKind.Undefined:
+                return null;
+            default:
+                throw new InvalidOperationException(
+                    $"Property '{propertyName}' must be an array of factor schedule entries.");
+        }
+    }
+
     private static string? GetFactorScheduleNote(JsonElement json)
         => GetOptionalString(json, "factorScheduleNote")
-           ?? (json.TryGetProperty("factorSchedule", out var legacy) && legacy.ValueKind == JsonValueKind.String
-               ? legacy.GetString()
-               : null);
+           ?? (SecurityTermReader.TryGetProperty(json, "factorSchedule", out var legacy)
+               && legacy.ValueKind == JsonValueKind.String
+                   ? legacy.GetString()
+                   : null);
 
     private static Covenant ToCovenant(JsonElement json)
         => new(
@@ -680,9 +718,14 @@ internal static class SecurityMasterMapping
             ? value
             : throw new InvalidOperationException($"Missing required array '{propertyName}'.");
 
+    // Container names are matched the same case-insensitive way the read side matches them. The
+    // exact-match overload would round-trip a payload spelling its container `FactorSchedule` into
+    // an empty list even though the cash-flow resolver reads it — the same write-narrower-than-read
+    // gap this change exists to close, one level up from the row fields.
     private static IEnumerable<JsonElement> GetOptionalArrayItems(JsonElement json, string propertyName)
     {
-        if (!json.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
+        if (!SecurityTermReader.TryGetProperty(json, propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Array)
         {
             yield break;
         }
