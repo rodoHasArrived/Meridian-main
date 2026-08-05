@@ -229,6 +229,56 @@ public sealed class DirectLendingPostgresIntegrationTests
     }
 
     [DirectLendingDatabaseFact]
+    public async Task AppendOperationsWorkflowAuditAsync_ShouldFollowHashChainWhenStorageTimestampsAreOutOfOrder()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var workflowId = $"{WorkflowIdPrefix}{Guid.NewGuid():N}";
+        var fundAccountId = Guid.NewGuid();
+        const string periodId = "2026-Q2";
+
+        var first = await db.Store.AppendOperationsWorkflowAuditAsync(
+            BuildAuditAppendRequest(
+                workflowId,
+                fundAccountId,
+                periodId,
+                eventType: "state_transition",
+                fromState: "draft",
+                toState: "ready"));
+        var second = await db.Store.AppendOperationsWorkflowAuditAsync(
+            BuildAuditAppendRequest(
+                workflowId,
+                fundAccountId,
+                periodId,
+                eventType: "gate_change",
+                gate: "readiness",
+                fromGateStatus: "pending",
+                toGateStatus: "ready"));
+
+        await SetWorkflowAuditCreatedAtAsync(db, first.AuditId, new DateTimeOffset(2030, 1, 1, 0, 0, 0, TimeSpan.Zero));
+        await SetWorkflowAuditCreatedAtAsync(db, second.AuditId, new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+        var third = await db.Store.AppendOperationsWorkflowAuditAsync(
+            BuildAuditAppendRequest(
+                workflowId,
+                fundAccountId,
+                periodId,
+                eventType: "approval_action",
+                fromState: "ready",
+                toState: "approved"));
+        var stream = await db.Store.GetOperationsWorkflowAuditAsync(workflowId);
+
+        third.PreviousHash.Should().Be(second.Hash);
+        stream.Select(static entry => entry.AuditId).Should().Equal(first.AuditId, second.AuditId, third.AuditId);
+        stream[1].PreviousHash.Should().Be(stream[0].Hash);
+        stream[2].PreviousHash.Should().Be(stream[1].Hash);
+    }
+
+    [DirectLendingDatabaseFact]
     public async Task AppendOperationsWorkflowAuditAsync_ShouldRejectUnsupportedEventType()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
@@ -247,6 +297,23 @@ public sealed class DirectLendingPostgresIntegrationTests
 
         var exception = await act.Should().ThrowAsync<PostgresException>();
         exception.Which.SqlState.Should().Be(PostgresErrorCodes.CheckViolation);
+    }
+
+    private static async Task SetWorkflowAuditCreatedAtAsync(
+        DirectLendingPostgresTestDatabase db,
+        Guid auditId,
+        DateTimeOffset createdAt)
+    {
+        await using var connection = new NpgsqlConnection(db.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"update {db.Schema}.operations_workflow_audit set created_at = @created_at where audit_id = @audit_id;";
+        command.Parameters.AddWithValue("created_at", createdAt.UtcDateTime);
+        command.Parameters.AddWithValue("audit_id", auditId);
+
+        var affected = await command.ExecuteNonQueryAsync();
+        affected.Should().Be(1);
     }
 
     private static CreateLoanRequest BuildCreateRequest() =>
