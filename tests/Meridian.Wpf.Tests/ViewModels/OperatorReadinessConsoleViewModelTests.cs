@@ -164,6 +164,57 @@ public sealed class OperatorReadinessConsoleViewModelTests
     }
 
     [Fact]
+    public async Task Deactivate_KeepsTheConsoleUsableForAJournaledReturn()
+    {
+        var provider = new FakeReadinessProvider { Readiness = CreateReadiness() };
+        using var viewModel = CreateViewModel(
+            provider,
+            new FakeInboxClient { Inbox = CreateInbox() },
+            new FakeReconciliationClient { Breaks = CreateBreaks() },
+            runWorkspaceService: null);
+
+        await viewModel.RefreshAsync();
+        viewModel.AsOfText.Should().Be("2026-08-05 06:00 UTC");
+
+        viewModel.Deactivate();
+        viewModel.IsRefreshing.Should().BeFalse();
+
+        provider.Readiness = CreateReadiness() with { AsOf = DateTimeOffset.Parse("2026-08-05T07:30:00Z") };
+        await viewModel.RefreshAsync();
+
+        viewModel.AsOfText.Should().Be(
+            "2026-08-05 07:30 UTC",
+            "a journaled page re-load must refresh fresh rows instead of leaving a dead console");
+    }
+
+    [Fact]
+    public async Task Deactivate_SupersedesTheInFlightRefresh()
+    {
+        var provider = new FakeReadinessProvider { Readiness = CreateReadiness() };
+        var gate = new TaskCompletionSource<TradingOperatorReadinessDto>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        provider.PendingReadiness = gate.Task;
+        using var viewModel = CreateViewModel(
+            provider,
+            new FakeInboxClient { Inbox = CreateInbox() },
+            new FakeReconciliationClient { Breaks = CreateBreaks() },
+            runWorkspaceService: null);
+
+        var inFlight = viewModel.RefreshAsync();
+        viewModel.IsRefreshing.Should().BeTrue("the readiness load is still pending");
+
+        viewModel.Deactivate();
+        viewModel.IsRefreshing.Should().BeFalse("unload must not leave the console stuck refreshing");
+
+        gate.SetResult(CreateReadiness());
+        await inFlight;
+
+        viewModel.AsOfText.Should().Be(
+            "Not loaded",
+            "a load completing after deactivation is stale and must not apply its rows");
+    }
+
+    [Fact]
     public async Task RefreshAsync_ReadyReadinessWithCriticalInbox_EscalatesHeadlineToBlocked()
     {
         var readiness = CreateReadiness() with

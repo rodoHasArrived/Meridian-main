@@ -20,5 +20,5 @@ public partial class OperatorReadinessConsolePage : Page
         => _viewModel.Activate();
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
-        => _viewModel.Dispose();
+        => _viewModel.Deactivate();
 }

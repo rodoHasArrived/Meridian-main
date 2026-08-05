@@ -23,7 +23,7 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
     private readonly StrategyRunWorkspaceService? _runWorkspaceService;
     private readonly Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? _workflowActionCatalog;
     private readonly Func<string, bool> _isRegisteredPageTag;
-    private readonly CancellationTokenSource _cts = new();
+    private CancellationTokenSource _cts = new();
     private bool _isDisposed;
     private bool _hasLoaded;
     private int _loadRevision;
@@ -202,6 +202,40 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
         {
             _ = RefreshAsync(_cts.Token);
         }
+    }
+
+    /// <summary>
+    /// Cancels any in-flight refresh when the hosting page unloads while keeping the view model
+    /// usable. The navigation journal keeps the page instance alive, so a Back navigation
+    /// re-loads the same page and expects <see cref="Activate"/> to reload fresh rows — terminal
+    /// disposal here would leave the journaled console stuck with stale data and a dead refresh
+    /// command.
+    /// </summary>
+    public void Deactivate()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        // Supersede the in-flight load so a late completion cannot apply stale rows, then swap
+        // the token source so the next activation refreshes with an uncancelled token.
+        _loadRevision++;
+        try
+        {
+            _cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(OperatorReadinessConsoleViewModel)));
+        }
+
+        _cts.Dispose();
+        _cts = new CancellationTokenSource();
+        _hasLoaded = false;
+        IsRefreshing = false;
     }
 
     public void Dispose()
