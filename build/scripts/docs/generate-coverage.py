@@ -84,9 +84,28 @@ PUBLIC_TYPE_RE = re.compile(
 ROUTE_ATTRIBUTE_RE = re.compile(
     r'\[\s*(?:Http(?:Get|Post|Put|Delete|Patch)|Route)\s*\(\s*"([^"]+)"\s*\)',
 )
+# The receiver is captured because minimal-API routes are written relative to a `MapGroup`, and
+# the group has to be composed back on before the route can be compared with a document. Empty
+# route strings are allowed — `group.MapGet("", …)` maps the group's own path.
+# Anchored on a literal `.` so the engine can skip between candidates. Capturing the receiver in
+# the pattern instead — `(\w*)\s*\.\s*…` — removes that anchor, because `\w*` matches empty at
+# every position; that alone took this generator from 1.2s to 7s. The receiver is recovered by
+# walking backwards from the match, which is bounded by the identifier's own length.
 MAP_ENDPOINT_RE = re.compile(
-    r'\.(?:MapGet|MapPost|MapPut|MapDelete|MapPatch)\s*\(\s*"([^"]+)"',
+    r'\.(?:MapGet|MapPost|MapPut|MapDelete|MapPatch)\s*\(\s*"([^"]*)"',
 )
+# `var group = app.MapGroup("/api/banking")`, or `.MapGroup(UiApiRoutes.HistoricalData)`. Groups
+# nest, so the receiver is captured too and prefixes are composed transitively.
+MAP_GROUP_RE = re.compile(
+    r'var\s+(\w+)\s*=\s*(\w+)\s*\.\s*MapGroup\s*\(\s*(?:"([^"]*)"|([\w.]+))\s*\)',
+)
+ROUTE_CONST_RE = re.compile(
+    r'(?:public|private|internal|protected)?\s*(?:static\s+)?const\s+string\s+(\w+)\s*=\s*"([^"]*)"',
+)
+# `{versionId:guid}` in source is `{versionId}` in the API reference. The sibling api-contract
+# dashboard already normalises this; without it a boundary-checked route can never match its own
+# documented spelling.
+ROUTE_CONSTRAINT_RE = re.compile(r"\{([^}:]+):[^}]+\}")
 
 # ADR reference in source: [ImplementsAdr("ADR-001", ...)]
 ADR_REF_RE = re.compile(r'ImplementsAdr\s*\(\s*"(ADR-\d+)"')
@@ -234,9 +253,25 @@ _IDENTIFIER_TOKEN_RE = re.compile(r"[0-9A-Za-z_]+")
 # slash, while `/api/backfill/run` inside `/api/backfill/run/{id}` is a different route.
 _NAME_BEFORE = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-")
 _NAME_AFTER = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-/")
+_SEGMENT_CHARS = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_")
 
 
-def _names_term(text: str, term: str) -> bool:
+def _joins_another_segment(text: str, at: int, step: int, separator: Optional[str]) -> bool:
+    """True when `text[at]` is a separator binding the term to a further segment.
+
+    Only meaningful for keys built from segments — `IB.Port` is one key and `IB.Port.Timeout` is a
+    different one, so the dot between them continues a name rather than ending it. The same dot at
+    the end of a sentence does not, which is why this asks what lies on the *far* side of the
+    separator instead of adding `.` to the boundary sets: `set IB.Port.` names the key, while
+    `IB.Port.Timeout` and `Parent.IB.Port` name something else.
+    """
+    if separator is None or not 0 <= at < len(text) or text[at] != separator:
+        return False
+    neighbour = at + step
+    return 0 <= neighbour < len(text) and text[neighbour] in _SEGMENT_CHARS
+
+
+def _names_term(text: str, term: str, segment_separator: Optional[str] = None) -> bool:
     """True when `text` names `term` itself, rather than containing it inside something longer.
 
     The single statement of the boundary rule for the checks that scan a small, fixed set of
@@ -244,6 +279,10 @@ def _names_term(text: str, term: str) -> bool:
     has to be decided by the index below, or the generator times out — but endpoints, config keys,
     and providers are a few hundred items against two or three files, where a walk is cheaper than
     building an index that models routes and dotted keys as well as identifiers.
+
+    `segment_separator` extends the rule for names built from segments; see
+    `_joins_another_segment`. Routes pass none, because `/` is already handled asymmetrically by
+    the boundary sets — a leading slash is a boundary, a trailing one continues the path.
 
     Walks occurrences with `find` rather than compiling a regex per term: `re.search` with
     lookarounds costs a full corpus rescan for every item, which is the shape of the regression
@@ -254,9 +293,15 @@ def _names_term(text: str, term: str) -> bool:
     start = text.find(term)
     while start != -1:
         end = start + len(term)
-        if (start == 0 or text[start - 1] not in _NAME_BEFORE) and (
-            end == len(text) or text[end] not in _NAME_AFTER
-        ):
+        before_ok = start == 0 or (
+            text[start - 1] not in _NAME_BEFORE
+            and not _joins_another_segment(text, start - 1, -1, segment_separator)
+        )
+        after_ok = end == len(text) or (
+            text[end] not in _NAME_AFTER
+            and not _joins_another_segment(text, end, 1, segment_separator)
+        )
+        if before_ok and after_ok:
             return True
         start = text.find(term, start + 1)
     return False
@@ -310,22 +355,137 @@ def _check_type_documentation(
 # Analysis: API endpoints
 # ---------------------------------------------------------------------------
 
+def _load_route_constants(root: Path) -> Dict[str, str]:
+    """`UiApiRoutes` constants, so `MapGroup(UiApiRoutes.HistoricalData)` resolves to its path."""
+    text = _read_text_safe(root / "src" / "Meridian.Contracts" / "Api" / "UiApiRoutes.cs")
+    return {name: value for name, value in ROUTE_CONST_RE.findall(text)}
+
+
+def _join_route(prefix: str, route: str) -> str:
+    """Compose a group prefix with a route relative to it."""
+    combined = f"{prefix.rstrip('/')}/{route.strip().lstrip('/')}" if prefix else route.strip()
+    combined = re.sub(r"/{2,}", "/", combined)
+    if len(combined) > 1:
+        combined = combined.rstrip("/")
+    if combined and not combined.startswith("/"):
+        combined = "/" + combined
+    return ROUTE_CONSTRAINT_RE.sub(r"{\1}", combined)
+
+
+def _receiver_before(text: str, dot: int) -> str:
+    """The identifier immediately left of the `.` at `dot`, or "" when there is none.
+
+    `group.MapGet(…)` yields `group`; `app.MapGroup("/x").MapGet(…)` yields "" because the
+    receiver is an expression rather than a name, and an unnamed receiver correctly resolves to no
+    prefix. Reads backwards over the identifier only, so it costs the identifier's length.
+    """
+    end = dot
+    while end > 0 and text[end - 1] in " \t":
+        end -= 1
+    start = end
+    while start > 0 and (text[start - 1].isalnum() or text[start - 1] == "_"):
+        start -= 1
+    return text[start:end]
+
+
+def _lookup_prefix(declarations: List[Tuple[int, str, str]], variable: str, before: int) -> str:
+    """The prefix bound to `variable` by the nearest declaration above `before`.
+
+    Position matters because one file routinely declares `var group` once per mapping method:
+    `HistoricalEndpoints.cs` binds it to `/api/historical` at line 20 and to `""` at line 173.
+    Keying by name alone lets the last declaration in the file claim every endpoint above it.
+    """
+    best = ""
+    best_at = -1
+    for at, name, prefix in declarations:
+        if name == variable and best_at < at < before:
+            best, best_at = prefix, at
+    return best
+
+
+def _group_prefixes(text: str, route_constants: Dict[str, str]) -> List[Tuple[int, str, str]]:
+    """Every `MapGroup` declaration in a file, as (offset, variable, full path).
+
+    Groups nest — `var sub = group.MapGroup("/runtime")` — so a prefix is resolved against the
+    receiver's own prefix at that point in the file.
+    """
+    declarations: List[Tuple[int, str, str]] = []
+    for match in MAP_GROUP_RE.finditer(text):
+        variable, receiver, literal, constant = match.groups()
+        if literal is not None:
+            own: Optional[str] = literal
+        elif constant in ("string.Empty", "String.Empty"):
+            # A group that adds nothing but still nests: `group.MapGroup(string.Empty)` in
+            # `FundStructureEndpoints.cs:25` inherits `/api/fund-structure`. Treating it as
+            # unresolved would drop the parent prefix with it.
+            own = ""
+        else:
+            # `UiApiRoutes.HistoricalData` is stored under its bare name, and several files declare
+            # their own `const string RoutePrefix`, so the last segment is what resolves.
+            own = route_constants.get(constant.rsplit(".", 1)[-1])
+
+        if own is None:
+            # An unresolved constant would silently compose a wrong path, so the group is skipped
+            # and its endpoints keep their relative routes rather than being mis-composed.
+            continue
+        parent = _lookup_prefix(declarations, receiver, match.start())
+        declarations.append((match.start(), variable, _join_route(parent, own)))
+    return declarations
+
+
 def _scan_endpoints(root: Path) -> List[SourceItem]:
-    """Scan source for HTTP API route definitions."""
+    """Scan source for HTTP API route definitions, composing `MapGroup` prefixes.
+
+    Minimal-API routes are written relative to their group: `EnvironmentDesignerEndpoints` maps
+    `/api/environment-designer` and then `/runtime/versions/{versionId:guid}` beneath it, while
+    `docs/reference/api-reference.md` documents the full `/api/environment-designer/runtime/...`.
+    Recording only the child made 263 of 319 endpoints unmatchable against the documents they are
+    checked against — a substring test papered over that by matching the fragment anywhere inside
+    the full path, which credits `/complete` to any documented route containing it and, once the
+    match is boundary-checked, credits nothing at all. Composing the prefix is what makes the two
+    sides comparable; the matching rule is then free to be strict.
+
+    Known limitation: a group passed as a *method argument* is not resolved. `RiskEndpoints.cs:78`
+    calls `MapRiskRoutes(app.MapGroup("/api/risk"), …)`, so the routes inside that method keep
+    their relative form. Following it needs the callee's signature, and the same file maps the
+    same routes again under `/api/v1/risk`, so there is no single prefix to choose. Measured cost
+    at the time of writing: 6 endpoints of 325 — the `/rules` and `/escalations` families — read as
+    undocumented although `api-reference.md` documents them under `/api/risk/…`. Of the 26 routes
+    that stay relative, the rest are mapped on `app` directly and are correct as they stand.
+    """
     src_dir = root / "src"
     if not src_dir.is_dir():
         return []
 
+    route_constants = _load_route_constants(root)
     items: List[SourceItem] = []
     seen: Set[str] = set()
 
     for cs_file in _collect_files(src_dir, CS_FILE_EXTENSIONS):
         text = _read_text_safe(cs_file)
 
+        # Only files that declare a group need the constant sweep. Scanning every `.cs` file for
+        # `const string` — and copying the 855-entry shared table for each — took this generator
+        # from 1.2s to 12.2s; barely 60 files in the repository call `MapGroup` at all.
+        if "MapGroup" in text:
+            # File-local `const string RoutePrefix = "…"` shadows the shared table, which is how
+            # `MoneyMarketFundEndpoints` and `WorkstationEndpoints.SecurityMasterWorkbench`
+            # declare their group paths.
+            local_constants = dict(route_constants)
+            local_constants.update(dict(ROUTE_CONST_RE.findall(text)))
+            prefixes = _group_prefixes(text, local_constants)
+        else:
+            prefixes = []
+
         for pattern in (ROUTE_ATTRIBUTE_RE, MAP_ENDPOINT_RE):
             for match in pattern.finditer(text):
-                route = match.group(1)
-                if route in seen:
+                if pattern is MAP_ENDPOINT_RE:
+                    receiver = _receiver_before(text, match.start())
+                    prefix = _lookup_prefix(prefixes, receiver, match.start()) if receiver else ""
+                    route = _join_route(prefix, match.group(1))
+                else:
+                    route = match.group(1)
+                if not route or route in seen:
                     continue
                 seen.add(route)
                 line_num = text[:match.start()].count("\n") + 1
@@ -364,7 +524,16 @@ def _check_endpoint_documentation(
     for item in items:
         # Routes are recorded with and without the leading slash across the docs, so both spellings
         # count; the boundary check is what stops either from matching inside a longer path.
-        route = item.name.lstrip("/")
+        route = item.name.strip().lstrip("/")
+
+        # A relative route of `/` carries no path of its own — its real path is the enclosing
+        # `MapGroup` prefix, which this scan does not resolve. Matching what is left credits it for
+        # any standalone slash in prose (the corpus has `` `Spread`/`Imbalance` ``), so it stays
+        # undocumented: the scan cannot show that a doc names it. One endpoint is affected today,
+        # `DirectLendingEndpoints.cs:37`.
+        if not route:
+            continue
+
         if _names_term(combined_text, route) or _names_term(combined_text, f"/{route}"):
             item.documented = True
         else:
@@ -478,7 +647,7 @@ def _check_config_documentation(
         combined += _read_text_safe(doc_path) + "\n"
 
     for item in items:
-        item.documented = _names_term(combined, item.name)
+        item.documented = _names_term(combined, item.name, segment_separator=".")
 
     documented = sum(1 for i in items if i.documented)
     return CategoryResult(
