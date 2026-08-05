@@ -23,13 +23,14 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 {
     private const string EnvVar = "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING";
     private const string DisableDockerEnvVar = "MERIDIAN_DISABLE_DOCKER_TESTS";
-    private static readonly ITransactionalLedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
-    private static readonly Meridian.Application.SecurityMaster.ISecurityMasterQueryService _securityMasterQueryService =
-        new DeterministicSecurityMasterQueryService();
 
     internal static Guid TestSecurityId { get; } = Guid.Parse("d1643625-caa0-4fa5-98fb-64e202915a28");
 
     internal const string TestSecuritySymbol = "DL-TEST";
+
+    private static readonly ITransactionalLedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
+    private static readonly Meridian.Application.SecurityMaster.ISecurityMasterQueryService _securityMasterQueryService =
+        new DeterministicSecurityMasterQueryService();
 
     private readonly PostgresTestServer _server;
 
