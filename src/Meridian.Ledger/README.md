@@ -237,6 +237,11 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W10-TAX-001` | Tax character, wash-sale, and lot-relief operator surface |
+| `W10-PERF-001` | Portfolio and investor return measurement |
+| `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
