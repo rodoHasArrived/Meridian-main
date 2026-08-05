@@ -23,7 +23,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 {
     private const string EnvVar = "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING";
     private const string DisableDockerEnvVar = "MERIDIAN_DISABLE_DOCKER_TESTS";
-    private static readonly ILedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
+    private static readonly ITransactionalLedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
     private static readonly Meridian.Application.SecurityMaster.ISecurityMasterQueryService _securityMasterQueryService =
         new DeterministicSecurityMasterQueryService();
 
@@ -46,7 +46,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             CurrentEventSchemaVersion = 1
         };
 
-        Store = new PostgresDirectLendingStateStore(Options);
+        Store = new PostgresDirectLendingStateStore(Options, _noOpLedgerJournalStore);
         Rebuilder = new DirectLendingEventRebuilder();
         QueryService = new PostgresDirectLendingQueryService(Store, Store, Rebuilder);
         CommandService = new PostgresDirectLendingCommandService(
@@ -139,7 +139,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
         await _server.DisposeAsync().ConfigureAwait(false);
     }
 
-    private sealed class InMemoryNoOpLedgerJournalStore : ILedgerJournalStore
+    private sealed class InMemoryNoOpLedgerJournalStore : ITransactionalLedgerJournalStore
     {
         private static readonly LedgerAccountingPeriod TestAccountingPeriod = new(
             PeriodId: Guid.Parse("58190d5b-2306-4e0d-a818-a2fb5e087bbf"),
@@ -155,6 +155,13 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             Version: 0);
 
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task AppendAsync(
+            NpgsqlConnection connection,
+            NpgsqlTransaction transaction,
+            LedgerJournalEntryWrite entry,
+            CancellationToken ct = default) =>
+            Task.CompletedTask;
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
@@ -178,6 +185,13 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             LedgerAccountingPeriod period,
             long expectedVersion,
             PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default) =>
+            Task.FromResult(period);
+
+        public Task<LedgerAccountingPeriod> SaveHardClosedPeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord closeEvent,
             CancellationToken ct = default) =>
             Task.FromResult(period);
 
