@@ -269,8 +269,13 @@ platform notices, demotes, or even annotates.
   promotion contract quietly weakens.
 - **Then the monitor:** a post-promotion conformance service that periodically compares the
   live envelope (rolling Sharpe, realized drawdown, slippage vs. paper assumptions, hit rate)
-  from `LiveRunMetricsTracker` against the qualifying thresholds pinned in the strategy's
-  `StrategyPromotionRecord`. Grace periods and minimum-sample rules prevent day-two
+  from `LiveRunMetricsTracker` against the promotion envelope. One prerequisite the current
+  record does not cover: `StrategyPromotionRecord` persists the qualifying *result metrics*
+  (`QualifyingSharpe`, `QualifyingMaxDrawdownPercent`, `QualifyingTotalReturn`) but not the
+  `PromotionCriteria` thresholds in effect at approval — so the monitor starts by persisting
+  those criteria on the record (or explicitly defining conformance against the stored
+  qualifying metrics), so the envelope survives later configuration changes. Grace periods and
+  minimum-sample rules prevent day-two
   overreaction. Breaches emit through the alerting spine (idea 2); a sustained breach
   auto-pauses via `StrategyLifecycleManager` and writes a **demotion record** — symmetric to
   the promotion record, with the evidence that triggered it — after which re-promotion goes
