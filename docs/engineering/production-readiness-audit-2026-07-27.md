@@ -2,14 +2,14 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-27
+**Reviewed:** 2026-08-04
 **Scope:** reporting deployment readiness composition, recovery tooling, PostgreSQL test-harness
 debt, and browser-workstation dependency advisories.
 
 This record captures the ranked findings of the July 2026 production-readiness review, what was
-remediated on `claude/prod-readiness-test-debt-nebv2w`, and the debt that remains open with owners
-and recommended lanes. Numbers reported from earlier investigation runs are labeled with their
-provenance; re-verify before relying on them for release decisions.
+remediated on `claude/prod-readiness-test-debt-nebv2w`, the later deterministic PostgreSQL harness
+closure, and the debt that remains open with owners and recommended lanes. Numbers reported from
+earlier investigation runs remain labeled with their provenance.
 
 ## 1. Reporting deployment readiness composition (remediated)
 
@@ -34,17 +34,17 @@ Remediation in this change:
   readiness stays fail-closed. The exact-instance checks are intentionally preserved; do not relax
   them to make an environment "go green".
 
-## 2. PostgreSQL test-harness debt (open, main-wide)
+## 2. PostgreSQL test-harness debt (remediated on candidate; release activation pending)
 
-Evidence from the July 2026 investigation runs (provenance: pre-merge feature SHA and the then
-current `main`, both executed against a live PostgreSQL harness; not re-run in this change's
-environment, which has no PostgreSQL service):
+Historical evidence from the July 2026 investigation runs (provenance: pre-merge feature SHA and
+the then current `main`, both executed against a live PostgreSQL harness; not re-run in this
+change's environment, which has no PostgreSQL service):
 
 - Both revisions produced identical results: **541 failed / 218 passed / 759 total** in the
   PostgreSQL-backed test population — the failures are main-wide harness debt, not regressions
   introduced by any single branch.
-- An older `main` run had already shown 405 failures, so the debt is growing as PostgreSQL-backed
-  coverage grows.
+- An older `main` run had already shown 405 failures, so the debt was growing as PostgreSQL-backed
+  coverage grew.
 
 Failure classes identified by the investigation:
 
@@ -56,7 +56,7 @@ Failure classes identified by the investigation:
    reference (or rely on identity) instead of value equality, failing once rows round-trip through
    the database.
 
-Recommended remediation lanes (in order):
+Documented remediation lanes (completed in this order):
 
 1. Introduce per-test-class isolated databases or schemas (create/drop per fixture) so no state is
    shared between classes; this addresses classes 1 and 2 structurally.
@@ -66,8 +66,27 @@ Recommended remediation lanes (in order):
 4. Only after the harness is deterministic, burn down remaining behavioral failures and make the
    PostgreSQL lane a required gate.
 
-Do not treat the 541 count as a release blocker attributable to a feature branch; do treat it as a
+At the time, the 541 count was not a release blocker attributable to a feature branch; it was a
 blocker for making PostgreSQL-backed tests part of any required gate.
+
+Remediation outcome:
+
+- Candidate `b3bd557876523b81a2791f4bfd814647035f389a` completed the ordered repair: test classes
+  own isolated fixture schemas with deterministic teardown, destructive database tests use
+  disposable scopes, database-round-trip assertions compare values, and the genuine migration,
+  lifecycle, and domain-behavior failure tail was corrected without narrowing either integration
+  filter.
+- [Production Certification run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407)
+  on 2026-08-05 was the first all-green run. `Meridian.Tests` reported **781 passed / 0 failed /
+  0 skipped** and `Meridian.DirectLending.Tests` reported **7 passed / 0 failed / 0 skipped**; the
+  zero-skip validator reported **788 passed / 0 failed / 0 skipped** with `certifiable: true`, and
+  all four certification jobs passed.
+- The post-test schema-capture step also completed, but deterministic fixture teardown left its
+  table and migration-ledger inventories header-only. That outcome proves cleanup, not substantive
+  migrated-schema coverage.
+- This closes the main-wide harness implementation debt only. `PRD-016` remains evidence-gated:
+  the workflow must still pass on the frozen release commit, and a repository administrator must
+  activate the required checks.
 
 ## 3. Recovery tooling (remediated)
 
