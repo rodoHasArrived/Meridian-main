@@ -5,10 +5,10 @@
 
 ## Overall Coverage
 
-**2718 / 8647** items documented (**31.4%**) &mdash; Grade: **F**
+**2724 / 8647** items documented (**31.5%**) &mdash; Grade: **F**
 
 ```text
-[======--------------] 31.4%
+[======--------------] 31.5%
 ```
 
 ## Coverage by Category
@@ -16,7 +16,7 @@
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
 | Public Classes / Interfaces | 2621 | 8169 | 32.1% | F |
-| API Endpoints | 85 | 325 | 26.2% | F |
+| API Endpoints | 91 | 325 | 28.0% | F |
 | Configuration Options | 1 | 142 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
@@ -79,7 +79,7 @@
 | `PersistenceStatusSnapshot` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:11` |
 | ... and 5498 more | |
 
-### API Endpoints (240 undocumented)
+### API Endpoints (234 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -133,7 +133,7 @@
 | `/api/loans/servicer-statements/{batchId}/apply` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:566` |
 | `/api/loans/{loanId}/collateral` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:590` |
 | `/api/loans/{loanId}/collateral/remove` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:630` |
-| ... and 190 more | |
+| ... and 184 more | |
 
 ### Configuration Options (141 undocumented)
 
@@ -194,7 +194,7 @@
 ## Recommendations
 
 1. **Public Classes / Interfaces**: 5548 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+2. **API Endpoints**: 234 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---

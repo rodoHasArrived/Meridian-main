@@ -269,6 +269,20 @@ class EndpointBoundaryTests(_CoverageModuleTestCase):
             self._documented("/api/backfill/schedules/{id}", "see `/api/backfill/schedules-legacy`")
         )
 
+    def test_a_doc_that_keeps_the_constraint_syntax_still_counts(self) -> None:
+        # Both sides get normalised, or neither works. `_scan_endpoints` rewrites
+        # `{projectionRunId:guid}` to `{projectionRunId}`, and seven routes in `api-reference.md`
+        # are written with the constraint kept — line 270 documents
+        # `/api/projections/{projectionRunId:guid}/flows` exactly. Normalising only the scan left
+        # those unmatchable, and the parameter-stripped fallback then reduced the route to
+        # `/api/projections/flows`, reporting a documented endpoint as a gap.
+        self.assertTrue(
+            self._documented(
+                "/api/projections/{projectionRunId}/flows",
+                "| `/api/projections/{projectionRunId:guid}/flows` | GET | Direct Lending |",
+            )
+        )
+
     def test_a_root_relative_route_is_never_credited(self) -> None:
         # `DirectLendingEndpoints.cs:37` maps `/` inside a route group. Its real path is the group
         # prefix, which this scan does not resolve, so all that is left to match is a bare slash —

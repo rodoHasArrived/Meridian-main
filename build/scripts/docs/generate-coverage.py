@@ -521,6 +521,14 @@ def _check_endpoint_documentation(
     for doc_path in (api_ref, claude_md):
         combined_text += _read_text_safe(doc_path) + "\n"
 
+    # Both sides, or neither. `_scan_endpoints` normalises `{projectionRunId:guid}` to
+    # `{projectionRunId}`, and seven routes in `api-reference.md` are written with the constraint
+    # kept — `/api/projections/{projectionRunId:guid}/flows` at line 270 among them. Normalising
+    # only the scan makes those unmatchable, and the parameter-stripped fallback then reduces the
+    # route to `/api/projections/flows`, so a documented endpoint reads as a gap. The sibling
+    # api-contract dashboard already normalises its corpus for this reason.
+    combined_text = ROUTE_CONSTRAINT_RE.sub(r"{\1}", combined_text)
+
     for item in items:
         # Routes are recorded with and without the leading slash across the docs, so both spellings
         # count; the boundary check is what stops either from matching inside a longer path.
