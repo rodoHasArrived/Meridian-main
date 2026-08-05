@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**1959 / 8641** items documented (**22.7%**) &mdash; Grade: **F**
+**3859 / 8641** items documented (**44.7%**) &mdash; Grade: **D**
 
 ```text
-[=====---------------] 22.7%
+[=========-----------] 44.7%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1825 | 8169 | 22.3% | F |
+| Public Classes / Interfaces | 3725 | 8169 | 45.6% | D |
 | API Endpoints | 120 | 319 | 37.6% | F |
 | Configuration Options | 3 | 142 | 2.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,29 +23,16 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (6344 undocumented)
+### Public Classes / Interfaces (4444 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
 | `MarkToMarketPosition` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:11` |
-| `MarkPriceQuote` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:24` |
-| `MarkPriceQualityPolicy` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:60` |
-| `MarkPriceRejection` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:93` |
-| `IMarkPriceSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:105` |
-| `MarkToMarketCarryingValueKey` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:115` |
-| `MarkToMarketCarryingValue` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:149` |
 | `MarkToMarketCarryingValueRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:178` |
 | `IMarkToMarketCarryingValueSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:190` |
-| `DailyMarkToMarketRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:200` |
-| `DailyMarkToMarketRun` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:216` |
-| `HistoricalCloseMarkPriceSource` | `src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:14` |
-| `RegisteredHistoricalCloseMarkPriceSource` | `src/Meridian.Application/Accounting/RegisteredHistoricalCloseMarkPriceSource.cs:10` |
 | `PriceSourceTier` | `src/Meridian.Application/Accounting/WaterfallMarkPriceSource.cs:15` |
-| `AutoRemediationOutcome` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:14` |
-| `AutoRemediationTriggerSource` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:24` |
 | `IDataQualityGapRemediationService` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:36` |
 | `AutoGapRemediationRequestResult` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:47` |
-| `AutoGapRemediationPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:83` |
 | `BackfillRemediationSlaTier` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:123` |
 | `BackfillRemediationSlaDecision` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:129` |
 | `BackfillRemediationSlaMetadata` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:141` |
@@ -53,11 +40,6 @@
 | `BackfillRemediationSlaStatusItem` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:158` |
 | `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:175` |
 | `BackfillRemediationSlaPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:194` |
-| `QualityAlertRemediationSignal` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:276` |
-| `BackfillCoordinatorExecutionGateway` | `src/Meridian.Application/Backfill/BackfillCoordinatorExecutionGateway.cs:8` |
-| `BackfillCostRequest` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:237` |
-| `BackfillCostEstimate` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:247` |
-| `ProviderCostEstimate` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:271` |
 | `BackfillPartitionEstimate` | `src/Meridian.Application/Backfill/BackfillPartitionPlanner.cs:147` |
 | `BackfillPreviewResult` | `src/Meridian.Application/Backfill/BackfillPreview.cs:9` |
 | `SymbolPreview` | `src/Meridian.Application/Backfill/BackfillPreview.cs:24` |
@@ -70,14 +52,32 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| `IBackfillExecutionGateway` | `src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs:9` |
 | `EtlInspectionMode` | `src/Meridian.Application/Commands/EtlCommands.cs:263` |
-| `StatementImportCommands` | `src/Meridian.Application/Commands/StatementImportCommands.cs:8` |
-| `DatabaseMigrationReadinessReceipt` | `src/Meridian.Application/Composition/DatabaseMigrationReadinessReceipt.cs:7` |
-| `DefaultProviderSetupHandlerRegistration` | `src/Meridian.Application/Composition/DefaultProviderSetupHandlerRegistration.cs:9` |
-| `IHostAdapter` | `src/Meridian.Application/Composition/HostAdapters.cs:16` |
-| `ConsoleHostAdapter` | `src/Meridian.Application/Composition/HostAdapters.cs:35` |
-| ... and 6294 more | |
+| `MeridianDeploymentPostureDeclaration` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:25` |
+| `MeridianDataProvenanceDeclaration` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:33` |
+| `MeridianDeploymentPostureServiceCollectionExtensions` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:34` |
+| `PersistenceStatusSnapshot` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:11` |
+| `ProductionRegistrationGuardServiceCollectionExtensions` | `src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs:85` |
+| `ProductionSafeImplementationAttribute` | `src/Meridian.Application/Composition/ProductionServiceRegistrationPolicy.cs:18` |
+| `IRuntimeReadinessService` | `src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:18` |
+| `DelegateRuntimeReadinessCheck` | `src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:23` |
+| `IRuntimeShutdownSequence` | `src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:17` |
+| `RuntimeShutdownOptions` | `src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:22` |
+| `LifecycleControlPlaneHostedService` | `src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:150` |
+| `ICompositeDataQualityReadService` | `src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:19` |
+| `CompositeDataQualityGap` | `src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:29` |
+| `IProviderIntegrationHostResolver` | `src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:249` |
+| `ProviderIntegrationSetupValidationIssue` | `src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs:10` |
+| `ProviderIntegrationSetupValidationException` | `src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs:21` |
+| `DualPathPipelineStopStatus` | `src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:16` |
+| `DualPathPipelineStopOutcome` | `src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:28` |
+| `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:523` |
+| `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543` |
+| `ScheduledBackfillType` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:187` |
+| `BackfillSchedulePresets` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:213` |
+| `ScheduleStatusSummary` | `src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:564` |
+| `ScheduledBackfillOptions` | `src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:630` |
+| ... and 4394 more | |
 
 ### API Endpoints (199 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 6344 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4444 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 199 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 139 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
