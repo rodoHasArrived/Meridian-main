@@ -72,7 +72,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             (ReconciliationCalibrationSummaryDto?)null,
             ct);
         var breakQueueTask = ReadOptionalWorkstationAsync<IReadOnlyList<ReconciliationBreakQueueItem>>(
-            token => _apiClient.GetBreakQueueAsync(token),
+            async token => await _apiClient.GetBreakQueueAsync(token).ConfigureAwait(false)
+                ?? Array.Empty<ReconciliationBreakQueueItem>(),
             Array.Empty<ReconciliationBreakQueueItem>(),
             ct);
         var runsTask = _runWorkspaceService.GetRecordedRunsAsync(ct);

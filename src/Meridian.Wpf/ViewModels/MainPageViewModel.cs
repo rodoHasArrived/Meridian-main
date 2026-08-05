@@ -1719,10 +1719,14 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return null;
         }
 
-        var catalogTarget = _workflowActionCatalog?.ResolveOperatorWorkItem(workItem)?.TargetPageTag;
-        if (!string.IsNullOrWhiteSpace(catalogTarget))
+        // Explicit route resolution outranks every kind fallback: the catalog's route bindings
+        // first, then the kind specials, then the desktop route map. The catalog's kind binding
+        // waits until after the route map so an explicit settings provider link is not preempted
+        // by a kind default such as brokerage-sync's account-portfolio landing.
+        var catalogRouteTarget = _workflowActionCatalog?.ResolveRoute(workItem.TargetRoute)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogRouteTarget))
         {
-            return catalogTarget;
+            return catalogRouteTarget;
         }
 
         if (workItem.Kind == OperatorWorkItemKindDto.ReportPackApproval)
@@ -1739,6 +1743,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         if (!string.IsNullOrWhiteSpace(routeTarget))
         {
             return routeTarget;
+        }
+
+        var catalogKindTarget = _workflowActionCatalog?.ResolveOperatorWorkItem(workItem)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogKindTarget))
+        {
+            return catalogKindTarget;
         }
 
         var kindTarget = workItem.Kind switch
@@ -1763,49 +1773,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     private static string? ResolveOperatorInboxRoutePageTag(string? targetRoute)
-    {
-        if (string.IsNullOrWhiteSpace(targetRoute))
-        {
-            return null;
-        }
-
-        var normalizedRoute = targetRoute.Split('?', 2)[0].TrimEnd('/');
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ReconciliationBreakQueue))
-        {
-            return "FundReconciliation";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.OperationsContinuity))
-        {
-            return "OperationsContinuity";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
-        {
-            return "SecurityMaster";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerBooks) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerPeriods))
-        {
-            return "FundTrialBalance";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||
-            normalizedRoute.Contains("/brokerage-sync", StringComparison.OrdinalIgnoreCase))
-        {
-            return "AccountPortfolio";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationTradingReadiness) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionSessions) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls))
-        {
-            return "TradingShell";
-        }
-
-        return null;
-    }
+        => OperatorInboxRouteMap.ResolvePageTag(targetRoute);
 
     private static bool RouteEqualsOrStartsWith(string route, string knownRoute)
     {
