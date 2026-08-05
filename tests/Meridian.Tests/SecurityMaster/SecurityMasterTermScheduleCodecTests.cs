@@ -143,11 +143,12 @@ public sealed class SecurityMasterTermScheduleCodecTests
 
         schedule.GetArrayLength().Should().Be(2);
 
-        // The first point pairs against 1.0 — original face, by definition of a pool factor — so the
-        // opening paydown is not lost.
+        // The first observation is an opening level, not a paydown: it pairs against itself. Seeding
+        // it from par would read a mid-life import starting at 0.9912 as a 0.88% principal paydown
+        // that never happened.
         var first = schedule[0];
         first.GetProperty("asOfDate").GetString().Should().StartWith("2026-02-01");
-        first.GetProperty("priorFactor").GetDecimal().Should().Be(1.0m);
+        first.GetProperty("priorFactor").GetDecimal().Should().Be(0.9912m);
         first.GetProperty("currentFactor").GetDecimal().Should().Be(0.9912m);
 
         var second = schedule[1];
@@ -195,6 +196,77 @@ public sealed class SecurityMasterTermScheduleCodecTests
         unchanged.GetProperty("priorFactor").GetDecimal().Should().Be(0.9912m);
         unchanged.GetProperty("currentFactor").GetDecimal().Should().Be(0.9912m);
         unchanged.GetProperty("evidenceLink").GetString().Should().Be("evidence://factor/mar");
+    }
+
+    [Fact]
+    public void StructuredCredit_ExplicitOpeningParPoint_ProducesTheOpeningPaydown()
+    {
+        // The counterpart to the rule above: a schedule that genuinely starts at issuance says so
+        // with an explicit 1.0 row, and the first real paydown is then a 1.0 -> 0.9912 transition.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[]
+            {
+                new { asOfDate = "2026-01-01", factor = 1.0m, evidenceLink = "evidence://factor/jan" },
+                new { asOfDate = "2026-02-01", factor = 0.9912m, evidenceLink = "evidence://factor/feb" }
+            }
+        });
+
+        var schedule = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection)
+            .EconomicTerms.GetProperty("structuredProduct").GetProperty("factorSchedule");
+
+        schedule[0].GetProperty("priorFactor").GetDecimal().Should().Be(1.0m);
+        schedule[0].GetProperty("currentFactor").GetDecimal().Should().Be(1.0m);
+        schedule[1].GetProperty("priorFactor").GetDecimal().Should().Be(1.0m);
+        schedule[1].GetProperty("currentFactor").GetDecimal().Should().Be(0.9912m);
+    }
+
+    [Fact]
+    public void StructuredCredit_IncompleteFactorRow_IsRejectedRatherThanDropped()
+    {
+        // Silently skipping a malformed row would report success while discarding a vendor paydown
+        // observation, and the security would then fail its coverage gate for a reason the write
+        // path never surfaced.
+        var act = () => RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[] { new { asOfDate = "2026-02-01" } }
+        });
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*factor*");
+    }
+
+    [Fact]
+    public void StructuredCredit_VendorAliasesAndNumericStrings_SurviveTheWritePath()
+    {
+        // The resolver accepts the factorSchedules container alias and coerces numeric strings; the
+        // write path must too, or a payload the read side understands round-trips to nothing.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedules = new object[]
+            {
+                new { factorDate = "2026-02-01", currentFactor = "0.9912", evidenceRoute = "evidence://factor/feb" }
+            }
+        });
+
+        var emitted = projection.AssetSpecificTerms.GetProperty("factorSchedule");
+        emitted.GetArrayLength().Should().Be(1);
+        emitted[0].GetProperty("factor").GetDecimal().Should().Be(0.9912m);
+        emitted[0].GetProperty("evidenceLink").GetString().Should().Be("evidence://factor/feb");
     }
 
     [Fact]

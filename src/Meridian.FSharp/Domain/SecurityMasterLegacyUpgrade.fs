@@ -40,8 +40,12 @@ module SecurityMasterLegacyUpgrade =
     /// adapter reads. A level says what the factor is; a paydown event needs to know what it moved
     /// from, so consecutive levels are paired into (prior, current).
     ///
-    /// The first point pairs against 1.0 — original face, by definition of a pool factor — so an
-    /// opening paydown is not lost.
+    /// The first observation establishes an opening *level*, not a paydown: it pairs against itself.
+    /// Seeding it from par instead would be an assumption that the security was issued immediately
+    /// before that row, and it is wrong for every partial-history import — a schedule onboarded
+    /// mid-life whose first available trustee row is 0.80 would be read as a 20% principal paydown
+    /// in that period, overstating principal returned. A caller who genuinely wants the opening
+    /// paydown recorded says so by including the explicit 1.0 row at issuance.
     ///
     /// Every observation is emitted, including ones where the factor did not move. It is tempting
     /// to drop those as empty paydowns, but the coverage check in SecurityMasterAccountingEventService
@@ -55,16 +59,18 @@ module SecurityMasterLegacyUpgrade =
         |> List.sortBy (fun entry -> entry.AsOfDate)
         |> List.fold
             (fun (priorFactor, points) entry ->
+                // None only for the first observation, which therefore reports no movement.
+                let effectivePrior = defaultArg priorFactor entry.Factor
                 let point =
                     { AsOfDate = entry.AsOfDate
-                      PriorFactor = priorFactor
+                      PriorFactor = effectivePrior
                       Factor = entry.Factor
                       Source = entry.Source
                       EvidenceLink = entry.EvidenceLink
                       SourceContentHash = entry.SourceContentHash }
 
-                entry.Factor, point :: points)
-            (1m, [])
+                Some entry.Factor, point :: points)
+            (None, [])
         |> snd
         |> List.rev
 

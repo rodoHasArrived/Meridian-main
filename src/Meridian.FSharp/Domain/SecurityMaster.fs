@@ -413,7 +413,8 @@ type PrincipalPaymentEntry = {
 /// with only a current factor restates face at one static level for its whole life.
 type FactorScheduleEntry = {
     AsOfDate: DateOnly
-    /// Outstanding pool factor in effect from <c>AsOfDate</c>, in (0, 1].
+    /// Outstanding pool factor in effect from <c>AsOfDate</c>, in [0, 1]. Zero is a fully paid-down
+    /// pool, not a missing value.
     Factor: decimal
     /// Where the observation came from (e.g. "custodian-factor-file", "trustee-report").
     Source: string option

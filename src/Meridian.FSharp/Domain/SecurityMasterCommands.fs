@@ -169,13 +169,16 @@ module SecurityMaster =
             @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m))
                 (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be zero or greater when present.")
             @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
-            // A factor outside (0, 1] restates face to zero or above original — both silently wrong
-            // in the amortization the schedule feeds, so they are rejected rather than normalized.
+            // A negative factor, or one above par, restates face to a nonsense level. Zero is
+            // allowed: a fully paid-down pool legitimately reports a final factor of 0, the scalar
+            // CurrentFactor path already accepts it, and FactorPaydownProjectionService treats
+            // CurrentFactor = 0 as valid — rejecting it here would make the final paydown of every
+            // pool unrecordable.
             @ (terms.FactorSchedule
                |> List.collect (fun entry ->
-                   require (entry.Factor > 0m && entry.Factor <= 1m)
+                   require (entry.Factor >= 0m && entry.Factor <= 1m)
                        (error "structured_credit_factor_schedule_factor_invalid"
-                              "StructuredCredit FactorSchedule factors must be greater than zero and no greater than one.")))
+                              "StructuredCredit FactorSchedule factors must be between zero and one inclusive.")))
             @ require
                 (terms.FactorSchedule
                  |> List.map (fun entry -> entry.AsOfDate)

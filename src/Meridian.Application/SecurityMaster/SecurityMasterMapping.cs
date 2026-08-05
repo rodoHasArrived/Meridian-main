@@ -508,22 +508,25 @@ internal static class SecurityMasterMapping
     }
 
     /// <summary>
-    /// Reads one dated pool-factor point. Rows missing either half of the pair are dropped by the
-    /// caller rather than defaulted — a factor of zero or a date of today would both restate face
-    /// wrongly and silently.
+    /// Reads one dated pool-factor point. Both halves are required; see the body for why a partial
+    /// row is rejected rather than skipped.
     /// </summary>
-    private static FactorScheduleEntry? ToFactorScheduleEntry(JsonElement json)
+    private static FactorScheduleEntry ToFactorScheduleEntry(JsonElement json)
     {
         if (json.ValueKind != JsonValueKind.Object)
         {
-            return null;
+            throw new InvalidOperationException("Each factorSchedule entry must be a JSON object.");
         }
 
-        var asOf = GetFirstOptionalDateOnly(json, "asOfDate", "factorDate", "effectiveDate", "date");
-        var factor = GetFirstOptionalDecimal(json, "factor", "currentFactor");
-        return asOf is null || factor is null
-            ? null
-            : new FactorScheduleEntry(
+        // Both halves are required, and a row missing either is rejected rather than skipped.
+        // Dropping it would let a create or amend report success while silently discarding a vendor
+        // paydown observation — and the security would then fail its coverage gate for a reason
+        // nothing in the write path ever reported.
+        var asOf = GetFirstOptionalDateOnly(json, "asOfDate", "factorDate", "effectiveDate", "date")
+            ?? throw new InvalidOperationException("Missing required date 'asOfDate' in a factorSchedule entry.");
+        var factor = GetFirstOptionalDecimal(json, "factor", "currentFactor")
+            ?? throw new InvalidOperationException("Missing required decimal 'factor' in a factorSchedule entry.");
+        return new FactorScheduleEntry(
                 asOf.Value,
                 factor.Value,
                 ToOption(GetOptionalString(json, "source")),
@@ -537,11 +540,16 @@ internal static class SecurityMasterMapping
     /// always skipped non-array values — so it is preserved verbatim in <c>factorScheduleNote</c>
     /// by <see cref="GetFactorScheduleNote"/> instead of being silently dropped on re-write.
     /// </summary>
+    /// <summary>
+    /// Reads the typed factor schedule from either declared container spelling. The resolver accepts
+    /// both <c>factorSchedule</c> and <c>factorSchedules</c>; reading only the canonical one here
+    /// would round-trip a payload the read side understands into an empty schedule.
+    /// </summary>
     private static IEnumerable<FactorScheduleEntry> ToFactorSchedule(JsonElement json)
-        => GetOptionalArrayItems(json, "factorSchedule")
+        => (GetOptionalArrayItems(json, "factorSchedule").Any()
+                ? GetOptionalArrayItems(json, "factorSchedule")
+                : GetOptionalArrayItems(json, "factorSchedules"))
             .Select(ToFactorScheduleEntry)
-            .Where(static entry => entry is not null)
-            .Select(static entry => entry!)
             // Deliberately no de-duplication: the domain rejects two points on the same date, and
             // collapsing them here would sanitize the input before that validator ever saw it,
             // silently discarding one of two disagreeing vendor observations while the create or
@@ -690,47 +698,22 @@ internal static class SecurityMasterMapping
             ? value.GetString()
             : null;
 
-    // Alias-priority readers: the first spelling that resolves wins, matching how
-    // StructuredCashFlowTermsResolver ranks its vendor aliases. Used where a term has more than one
-    // known key so both sides accept the same inputs.
+    // Alias-priority readers, delegated to the same SecurityTermReader the cash-flow resolver uses.
+    //
+    // These were briefly hand-rolled here, which quietly recreated the defect this whole change is
+    // about: the write path accepted a narrower set of inputs than the read path; a leg whose
+    // notional arrived as the string "25000000" resolved fine for projection but persisted as null.
+    // Sharing one reader is what actually keeps the two sides at parity — alias order, case
+    // handling, and numeric-string coercion all come from a single implementation rather than two
+    // that agree only until someone edits one.
     private static string? GetFirstOptionalString(JsonElement json, params string[] propertyNames)
-    {
-        foreach (var propertyName in propertyNames)
-        {
-            if (GetOptionalString(json, propertyName) is { } value && !string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
+        => SecurityTermReader.ReadString(json, propertyNames);
 
     private static decimal? GetFirstOptionalDecimal(JsonElement json, params string[] propertyNames)
-    {
-        foreach (var propertyName in propertyNames)
-        {
-            if (GetOptionalDecimal(json, propertyName) is { } value)
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
+        => SecurityTermReader.ReadDecimal(json, propertyNames);
 
     private static DateOnly? GetFirstOptionalDateOnly(JsonElement json, params string[] propertyNames)
-    {
-        foreach (var propertyName in propertyNames)
-        {
-            if (GetOptionalDateOnly(json, propertyName) is { } value)
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
+        => SecurityTermReader.ReadDate(json, propertyNames);
 
     private static bool? GetFirstOptionalBoolean(JsonElement json, params string[] propertyNames)
     {
