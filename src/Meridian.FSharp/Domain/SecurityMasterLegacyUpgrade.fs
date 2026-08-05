@@ -36,6 +36,14 @@ module SecurityMasterLegacyUpgrade =
 
     let private mapSweepFrequency = Option.map PaymentFrequency.OtherFrequency
 
+    /// The observation with the latest <c>AsOfDate</c>, independent of the order the caller supplied.
+    /// Every other reader of a factor schedule sorts by date first; this exists so the scalar
+    /// current-factor derivation agrees with them rather than trusting insertion order.
+    let private latestFactorObservation (schedule: FactorScheduleEntry list) =
+        match schedule with
+        | [] -> None
+        | entries -> entries |> List.maxBy (fun entry -> entry.AsOfDate) |> Some
+
     /// Converts the domain's dated factor *levels* into the *transitions* the accounting-event
     /// adapter reads. A level says what the factor is; a paydown event needs to know what it moved
     /// from, so consecutive levels are paired into (prior, current).
@@ -487,13 +495,18 @@ module SecurityMasterLegacyUpgrade =
                             // tranche that has no scalar, in which case its date is known too.
                             // Factor and FactorDate are always derived from the same source so they
                             // cannot describe different points in the paydown.
+                            // Latest by date, not by insertion order. The monotonicity validator and
+                            // toFactorSchedulePoints both sort before they read, so taking List.tryLast
+                            // on the raw list here would let a non-chronological input produce a
+                            // correct transition schedule beside a scalar factor pointing at an older
+                            // observation — stale face and exposure for anything reading the scalar.
                             Factor =
                                 terms.CurrentFactor
-                                |> Option.orElse (terms.FactorSchedule |> List.tryLast |> Option.map (fun entry -> entry.Factor))
+                                |> Option.orElse (latestFactorObservation terms.FactorSchedule |> Option.map (fun entry -> entry.Factor))
                             FactorDate =
                                 match terms.CurrentFactor with
                                 | Some _ -> None
-                                | None -> terms.FactorSchedule |> List.tryLast |> Option.map (fun entry -> entry.AsOfDate)
+                                | None -> latestFactorObservation terms.FactorSchedule |> Option.map (fun entry -> entry.AsOfDate)
                             FactorSchedule = toFactorSchedulePoints terms.FactorSchedule
                             WeightedAvgCoupon = None
                             WeightedAvgMaturityMonths = None
