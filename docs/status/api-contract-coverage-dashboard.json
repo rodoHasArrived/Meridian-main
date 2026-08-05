@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.9,
-  "endpoint_coverage_percent": 41.2,
-  "contract_coverage_percent": 13.0,
+  "score_percent": 29.0,
+  "endpoint_coverage_percent": 40.0,
+  "contract_coverage_percent": 12.4,
   "summary": {
     "endpoint_count": 617,
-    "documented_endpoint_count": 254,
-    "undocumented_endpoint_count": 363,
+    "documented_endpoint_count": 247,
+    "undocumented_endpoint_count": 370,
     "workstation_contract_count": 906,
-    "documented_workstation_contract_count": 118,
-    "undocumented_workstation_contract_count": 788
+    "documented_workstation_contract_count": 112,
+    "undocumented_workstation_contract_count": 794
   },
   "endpoints": [
     {
@@ -636,13 +636,13 @@
       "method": "GET",
       "path": "/api/backfill/schedules/{id}",
       "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:300",
-      "documented": true
+      "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/backfill/schedules/{id}",
       "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:321",
-      "documented": true
+      "documented": false
     },
     {
       "method": "POST",
@@ -2136,7 +2136,7 @@
       "method": "GET",
       "path": "/api/ledger/journal-entry-workbench",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1249",
-      "documented": true
+      "documented": false
     },
     {
       "method": "GET",
@@ -2334,7 +2334,7 @@
       "method": "GET",
       "path": "/api/maintenance/schedules/{id}",
       "source": "src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:49",
-      "documented": true
+      "documented": false
     },
     {
       "method": "DELETE",
@@ -3012,7 +3012,7 @@
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:42",
-      "documented": true
+      "documented": false
     },
     {
       "method": "GET",
@@ -3078,7 +3078,7 @@
       "method": "POST",
       "path": "/api/security-master",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:343",
-      "documented": true
+      "documented": false
     },
     {
       "method": "POST",
@@ -3678,7 +3678,7 @@
       "method": "DELETE",
       "path": "/api/symbols/{symbol}",
       "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:525",
-      "documented": true
+      "documented": false
     },
     {
       "method": "GET",
@@ -4021,7 +4021,7 @@
     {
       "name": "SettlementInstruction",
       "source": "src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:19",
-      "documented": true
+      "documented": false
     },
     {
       "name": "CouponEvent",
@@ -4036,12 +4036,12 @@
     {
       "name": "ApprovalPolicy",
       "source": "src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:22",
-      "documented": true
+      "documented": false
     },
     {
       "name": "ApprovalDecision",
       "source": "src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:30",
-      "documented": true
+      "documented": false
     },
     {
       "name": "FxConversionReference",
@@ -4776,7 +4776,7 @@
     {
       "name": "RecommendedActionDto",
       "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:84",
-      "documented": true
+      "documented": false
     },
     {
       "name": "CompleteFirstRunRequestDto",
@@ -5706,7 +5706,7 @@
     {
       "name": "StartWorkflow",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:18",
-      "documented": true
+      "documented": false
     },
     {
       "name": "ImportBrokerData",
@@ -7731,7 +7731,7 @@
     {
       "name": "WorkflowLibraryDto",
       "source": "src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6",
-      "documented": true
+      "documented": false
     },
     {
       "name": "WorkflowDefinitionDto",
