@@ -18,7 +18,7 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 | Row | Evidence gate (tracker) | Automation state | Hosted evidence to date | Remaining human action |
 | --- | --- | --- | --- | --- |
 | `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | None — both ADRs remain **Proposed** | **Sign-off decision** (see [PRD-000 approval package](#prd-000-adr-019adr-020-approval-package)) |
-| `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets. The first hosted attempts proved the publish contract was broken on a clean checkout — the gitignored workstation bundle never reached the artifact; `publish.ps1` now builds, includes, and verifies `wwwroot/workstation` in the output and the installer accepts the artifact's own bundle | No green `web-workstation`/`win-x64` run exists yet; the only green runs (#6, #7 on 2026-07-15) published `collector`/`win-x64` | Re-dispatch on the frozen release commit once one exists; keep the run link here |
+| `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets. Eight hosted attempts drove out the full defect chain (publish contract, PostgreSQL discovery, elevated initdb ACLs, exit mutex affinity, unbounded pg_ctl pipe drain, first-boot budgets, lifecycle-bridge DI); every fix is receipt-evidenced | **First green run exists:** [run #15 / 30347353295](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30347353295) on candidate `d64506650` (2026-07-28) — publish, install, supervised dedicated-database startup, and all endpoint probes passed | Re-dispatch on the frozen release commit and keep that run link here |
 | `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | None — no release tag has run the hardened workflow | **Provision secrets + ARM64 runner, then tag** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-015` | Dated `production-recovery-drill-*` artifact on the release commit plus operator replay/reconciliation review | `invoke-production-recovery.ps1` drill is exercised by the `Production Certification` recovery job; the connection-string parsing defect that failed every earlier drill was fixed in `ff620a73e` (after run #4) | Failed drill artifacts only (runs #1–#4 predate the fix) | **Operator review** of the first green drill receipt (see [PRD-015 review](#prd-015-recovery-drill-operator-review)) |
 | `PRD-016` | Green hosted `Production Certification` run on the release commit; repository administrator activates it as a required release check | Workflow runs deterministic PostgreSQL integrations with Cobertura coverage, zero-skip TRX gate, schema evidence, NuGet/npm scans; npm advisories now gate through the reviewed acceptance register | 4 runs, all failed (see [hosted-run diagnosis](#hosted-run-diagnosis-production-certification-run-4-2026-07-27)) | **Required-check activation** after first green run (see [PRD-016 activation](#prd-016-required-check-activation)); the deterministic-integrations job additionally blocks on the [PostgreSQL harness-debt lanes](production-readiness-audit-2026-07-27.md) |
@@ -160,6 +160,87 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` **FIRST GREEN RUN**
+  ([run #15 / 30347353295](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30347353295),
+  follow-up candidate `d64506650`): the all-fixes head passed end to end — dashboard built
+  and verified inside the publish, artifact installed from its own bundle, lifecycle
+  supervisor started, dedicated PostgreSQL initialized and served, the Meridian host
+  reached exact Ready, and the smoke fetched `startupz`, `healthz`, `/workstation/`, and a
+  referenced asset with required authentication before a clean shutdown. This is the first
+  successful `web-workstation` publish-smoke evidence in the repository's history; the
+  `PRD-013` gate now needs only the same run repeated on the frozen release commit.
+  Supporting proof: Targeted Test runs 86–88 (windows-latest) green across the supervisor
+  ACL, runtime, and pipe-drain regression suites.
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` sixth attempt
+  ([30346070925](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30346070925),
+  follow-up candidate `33f08690e`): **the pipe-drain fix is proven — the Meridian host was
+  spawned for the first time in any hosted run**, and the supervisor fail-fasted in 16s
+  with a receipt naming the real defect: the host exited with code 1, and the host's own
+  log (also a first — `_logs/meridian-*.log` now exists in the artifact) shows
+  `LifecycleSupervisorBridgeHostedService` failing DI activation because it demanded
+  `Serilog.ILogger`, which the workstation graph does not register. The bridge only
+  registers when the supervisor pipe is present, which is why no dev run ever constructed
+  it. Fixed on the candidate by moving the bridge to the composition's
+  `ILogger<T>`/`LogWarning` idiom; a sweep confirmed it was the only DI-activated hosted
+  service with a bare Serilog dependency. Automated review also drove two budget-contract
+  fixes: the installed readiness ceiling now covers first boot (300s), and the smoke's
+  outer budget is derived from every configured deadline on the valid cold-start path
+  (initdb 60 + pg_ctl 65 + drain grace 5 + readiness 300 + launcher overhead 30 = 460).
+- **2026-07-28** — review follow-up on the follow-up candidate: with the pipe-drain fix in
+  place, startup can now actually reach `WaitForReadinessAsync`, whose deadline comes from
+  the installed manifest's `startupTimeoutSeconds = 60` — too tight for a first boot that
+  self-extracts the compressed single-file host and runs first migrations, and the exact
+  wall a 300s outer probe cannot help with (flagged by automated review on PR #2540). The
+  installer-written lifecycle manifest now sets a 300s first-boot readiness ceiling; the
+  deadline remains hard and fail-closed.
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` fifth attempt
+  ([30344404735](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30344404735),
+  follow-up candidate `b6ff1da2b`): the supervisor exit crash is gone (empty stderr — the
+  mutex guard held) and the database again ran perfectly for the whole session, but the
+  host never bound in 300s. Cross-referencing the receipt timing (blocked-at-stop at
+  probe-budget+3s in both run 11 and run 12) against the supervisor source pinned the real
+  defect: `RunToolAsync` bounds the tool's exit wait but then awaits a full stdout/stderr
+  drain — and `pg_ctl start` hands its redirected pipe write-handles to the `postgres.exe`
+  daemon it spawns, so the drain blocks for the database's entire lifetime. Startup froze
+  before the host was ever spawned, no deadline could fire, and only the stop request's
+  cancellation released the await. Fixed on the candidate with a grace-bounded drain
+  (failing tools have no surviving child, so their pipes close and full diagnostics still
+  arrive), plus a grandchild-holds-pipe regression test.
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` fourth attempt
+  ([30343467051](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30343467051),
+  follow-up candidate `fdebfe711`): **the elevated-initdb ACE fix is proven** — the
+  dedicated PostgreSQL initialized, started on its manifest port in ~2s, served for the
+  whole session, and shut down cleanly (`postgresql.log` retained; receipt
+  `databaseOutcome: Succeeded`). The 90s `startupz` budget then expired while host startup
+  was legitimately still in progress (no host logs yet — the compressed single-file host
+  self-extracts and runs first migrations before Kestrel binds), and the receipt recorded
+  `SucceededWithWarnings: startup blocked by a requested stop`. The stop also exposed a
+  real supervisor exit defect: `Mutex.ReleaseMutex` throws `ApplicationException` from the
+  post-await finally (thread affinity), turning clean shutdown into an unhandled exception.
+  Fixed on the candidate: guarded release (process exit plus the existing
+  `AbandonedMutexException` ownership path make release semantically safe) and a 300s
+  first-boot probe budget (probes still exit early on success).
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` third attempt
+  ([30339833870](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339833870),
+  merged content `7d6ccd1ff`): the bundle-carrying publish, the artifact-bundle install, and
+  the supervisor launch all succeeded; the run reached the final `startupz` probe, which
+  refused for 90s. The preserved diagnostics (first run with failure-time artifact upload)
+  contain the lifecycle receipt that pins the cause: the supervisor session failed in 0.4s
+  because `initdb.exe` exited 1 — "could not change permissions of directory
+  `.../data.initializing-*`: Permission denied". On an elevated context (CI runner,
+  admin-run installer) initdb re-executes with a restricted token that drops the
+  Administrators group, so a directory reachable only through group ACEs fails its
+  permission fixup. Fixed in the post-merge follow-up candidate:
+  `LifecycleSupervisorDatabase` now grants an explicit inheritable current-user ACE on the
+  `postgresql` root before initdb (explicit user ACEs survive token restriction), with
+  focused ACL tests. Also the installed-startup defect class `PRD-000`'s clean
+  publish/start receipts exist to catch — the fix equally covers real elevated installs.
+- **2026-07-28** — `Production Certification` run #8
+  ([30339835410](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339835410),
+  merged content `7d6ccd1ff`): recovery drill green for the second consecutive run;
+  dependency evidence and documentation evidence green for the third consecutive run;
+  deterministic-integrations red only at the harness-debt test step with schema evidence
+  captured. The 3-of-4-green pattern is stable on the merged content.
 - **2026-07-28** — `Production Certification` run #7
   ([30339057032](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339057032),
   candidate `d10d5c003`): **first-ever green recovery drill** — encrypted backup, hash

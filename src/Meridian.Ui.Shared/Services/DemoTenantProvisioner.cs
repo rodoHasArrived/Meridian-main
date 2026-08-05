@@ -39,6 +39,9 @@ public sealed class DemoTenantProvisioner(
         }
 
         var now = DateTimeOffset.UtcNow;
+        var authorityScope = new ReconciliationBreakQueueScope(
+            DemoTenantBlueprint.TenantId,
+            DemoTenantBlueprint.CompanyId);
         var seeded = 0;
         var loaded = true;
         foreach (var definition in DemoTenantBlueprint.BreakDefinitions)
@@ -60,9 +63,15 @@ public sealed class DemoTenantProvisioner(
                     Severity: definition.Severity,
                     ExplainabilitySummary: definition.Summary,
                     SourceType: DemoTenantBlueprint.SeededSourceType,
-                    SourceSystem: DemoTenantBlueprint.SeededSourceSystem);
+                    SourceSystem: DemoTenantBlueprint.SeededSourceSystem)
+                {
+                    TenantId = DemoTenantBlueprint.TenantId,
+                    CompanyId = DemoTenantBlueprint.CompanyId
+                };
 
-                if (await reconciliationBreaks.CreateIfMissingAsync(item, ct).ConfigureAwait(false))
+                if (await reconciliationBreaks
+                        .CreateIfMissingAsync(authorityScope, item, ct)
+                        .ConfigureAwait(false))
                 {
                     seeded++;
                 }

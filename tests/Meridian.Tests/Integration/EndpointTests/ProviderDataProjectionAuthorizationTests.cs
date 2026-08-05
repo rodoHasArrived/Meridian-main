@@ -10,7 +10,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ProviderDataProjectionAuthorizationTests : IDisposable
+public sealed class ProviderDataProjectionAuthorizationTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private const string Route = "/api/providers/data-projection";
     private readonly EndpointTestFixture _fixture;

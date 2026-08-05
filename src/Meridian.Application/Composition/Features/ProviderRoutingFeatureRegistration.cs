@@ -19,10 +19,7 @@ internal sealed class ProviderRoutingFeatureRegistration : IServiceFeatureRegist
 
         services.TryAddSingleton<ProviderConnectionService>();
         services.TryAddSingleton<ProviderBindingService>();
-        foreach (var handler in DefaultProviderSetupHandlers.Create())
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IProviderSetupHandler), handler));
-        }
+        services.AddDefaultProviderSetupHandlers();
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
         services.TryAddSingleton<ProviderSetupService>();
         services.TryAddSingleton<KernelObservabilityService>();

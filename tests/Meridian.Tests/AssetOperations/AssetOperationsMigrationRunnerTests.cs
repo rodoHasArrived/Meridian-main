@@ -20,7 +20,7 @@ public sealed class AssetOperationsMigrationRunnerTests : IAsyncLifetime
         _options = new AssetOperationsOptions
         {
             ConnectionString = _server.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("asset_ops")
+            Schema = _server.CreateSchemaName("asset_ops")
         };
     }
 
@@ -85,8 +85,21 @@ public sealed class AssetOperationsMigrationRunnerTests : IAsyncLifetime
 
         await using var migrationLedgerCommand = connection.CreateCommand();
         migrationLedgerCommand.CommandText =
-            $"select count(*) from \"{_options.Schema}\".asset_operations_schema_migrations;";
-        ((long)(await migrationLedgerCommand.ExecuteScalarAsync() ?? 0L)).Should().Be(3);
+            $"select migration_id from \"{_options.Schema}\".asset_operations_schema_migrations order by migration_id;";
+        var appliedMigrations = new List<string>();
+        await using (var migrationReader = await migrationLedgerCommand.ExecuteReaderAsync())
+        {
+            while (await migrationReader.ReadAsync())
+            {
+                appliedMigrations.Add(migrationReader.GetString(0));
+            }
+        }
+
+        appliedMigrations.Should().Equal(
+            "001_asset_operations.sql",
+            "002_instrument_position_projections.sql",
+            "003_instrument_position_projection_guards.sql",
+            "004_asset_accounting_event_spine.sql");
 
         await using var guardColumnCommand = connection.CreateCommand();
         guardColumnCommand.CommandText =

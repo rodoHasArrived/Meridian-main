@@ -135,6 +135,9 @@ public sealed class PortfolioStatePositionTrackerTests
         approved.IsApproved.Should().BeTrue();
         rejected.IsApproved.Should().BeFalse();
         rejected.RejectReason.Should().NotBeNullOrWhiteSpace();
+        // Evidence must be the projected position the rule compared, not the current one.
+        rejected.ObservedValue.Should().Be(120m);
+        rejected.LimitValue.Should().Be(100m);
     }
 
     [Fact]
@@ -156,6 +159,9 @@ public sealed class PortfolioStatePositionTrackerTests
 
         tripped.IsApproved.Should().BeFalse("a 10% drawdown breaches the 5% kill-switch");
         allowed.IsApproved.Should().BeTrue("a 10% drawdown is within the 20% threshold");
+        // Observed and limit are both percentages, so the recorded evidence is comparable.
+        tripped!.ObservedValue.Should().Be(10m);
+        tripped.LimitValue.Should().Be(5m);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

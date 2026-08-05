@@ -13,7 +13,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ResponseSchemaValidationTests : IDisposable
+public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
     // SEC-001: /api/config reads now require a configuration permission.

@@ -1555,6 +1555,7 @@ public sealed partial class WorkstationEndpointsTests
     {
         var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness", Guid.NewGuid().ToString("N"));
         var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+        const string promotionEvidenceReference = "evidence://evidence-vault/ev-000000000000000000000001";
         WriteReadyDk1Packet(automationRoot);
 
         await using var app = await CreateAppAsync(services =>
@@ -1607,7 +1608,13 @@ public sealed partial class WorkstationEndpointsTests
             RunId = "run-wave2-backtest",
             AuditReference = "audit-run-wave2-backtest",
             FundProfileId = fundProfileId,
-            FundDisplayName = "Wave 2 Readiness Fund"
+            FundDisplayName = "Wave 2 Readiness Fund",
+            ParameterSet = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-test",
+                ["workstationCompanyId"] = "tenant-test"
+            },
+            RetainedEvidenceReferences = [promotionEvidenceReference]
         });
 
         var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
@@ -1630,7 +1637,9 @@ public sealed partial class WorkstationEndpointsTests
             RunId: "run-wave2-backtest",
             ApprovedBy: "ops.lead",
             ApprovalReason: "Replay, audit, and paper controls accepted for Wave 2.",
-            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: BuildPaperPromotionEvidenceReferences(promotionEvidenceReference)),
+            new StrategyRunReadScope("tenant-test", "tenant-test"));
 
         decision.Success.Should().BeTrue();
         var reportPackRepository = app.Services.GetRequiredService<IGovernanceReportPackRepository>();
@@ -1814,6 +1823,7 @@ public sealed partial class WorkstationEndpointsTests
     public async Task Scenario_BacktestToPaperCockpitReadiness_ApiPromotionSessionReplayAndStaleRecoveryStayTraceable()
     {
         var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-backtest-paper", Guid.NewGuid().ToString("N"));
+        const string promotionEvidenceReference = "evidence://evidence-vault/ev-000000000000000000000002";
 
         await using var app = await CreateAppAsync(
             services =>
@@ -1860,7 +1870,13 @@ public sealed partial class WorkstationEndpointsTests
             feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")) with
         {
             RunId = "run-api-backtest",
-            AuditReference = "audit-run-api-backtest"
+            AuditReference = "audit-run-api-backtest",
+            ParameterSet = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-test",
+                ["workstationCompanyId"] = "tenant-test"
+            },
+            RetainedEvidenceReferences = [promotionEvidenceReference]
         });
 
         var client = app.GetTestClient();
@@ -1872,7 +1888,8 @@ public sealed partial class WorkstationEndpointsTests
                 ReviewNotes: "Backtest qualifies for paper acceptance.",
                 ApprovedBy: "spoofed",
                 ApprovalReason: "Backtest evidence approved for paper cockpit validation.",
-                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+                EvidenceReferences: BuildPaperPromotionEvidenceReferences(promotionEvidenceReference))));
         approveResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var approval = await ReadAsync<PromotionDecisionResult>(approveResponse);
         approval.Success.Should().BeTrue();
@@ -1960,7 +1977,14 @@ public sealed partial class WorkstationEndpointsTests
             gate.GateId == "promotion" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
             gate.RunId == "run-api-backtest" &&
-            gate.AuditReference == approval.AuditReference);
+            gate.AuditReference == approval.AuditReference,
+            "actual promotion gates: {0}",
+            string.Join(
+                " | ",
+                readyReadiness.AcceptanceGates
+                    .Where(static gate => gate.GateId == "promotion")
+                    .Select(static gate =>
+                        $"status={gate.Status},run={gate.RunId},audit={gate.AuditReference},detail={gate.Detail}")));
 
         await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-api-2", "AAPL", 2m));
         await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-api-2", "AAPL", 2m, 191m));
@@ -2015,6 +2039,7 @@ public sealed partial class WorkstationEndpointsTests
     {
         var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-refresh", Guid.NewGuid().ToString("N"));
         var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+        const string promotionEvidenceReference = "evidence://evidence-vault/ev-000000000000000000000003";
         WriteReadyDk1Packet(automationRoot);
 
         await using var app = await CreateAppAsync(services =>
@@ -2043,7 +2068,10 @@ public sealed partial class WorkstationEndpointsTests
             runType: RunType.Backtest,
             startedAt: new DateTimeOffset(2026, 4, 28, 14, 0, 0, TimeSpan.Zero),
             datasetReference: "dataset/us/equities",
-            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")) with
+        {
+            RetainedEvidenceReferences = [promotionEvidenceReference]
+        });
 
         var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
         var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("strat-refresh", "Refresh Strategy", 100_000m, ["AAPL"]));
@@ -2075,6 +2103,7 @@ public sealed partial class WorkstationEndpointsTests
             PromotedAt: new DateTimeOffset(2026, 4, 28, 16, 0, 0, TimeSpan.Zero),
             ApprovalReason: "Ready after review.",
             ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: BuildPaperPromotionEvidenceReferences(promotionEvidenceReference),
             AuditReference: "audit-refresh-promotion",
             ApprovedBy: "ops.refresh"));
         WriteReadyDk1Packet(
@@ -2108,6 +2137,8 @@ public sealed partial class WorkstationEndpointsTests
             "meridian-tests",
             "promotion-history",
             Guid.NewGuid().ToString("N"));
+        const string stalePromotionEvidenceReference = "evidence://evidence-vault/ev-000000000000000000000004";
+        const string currentRunEvidenceReference = "evidence://evidence-vault/ev-000000000000000000000005";
 
         await using var app = await CreateAppAsync(services =>
         {
@@ -2123,7 +2154,10 @@ public sealed partial class WorkstationEndpointsTests
             runType: RunType.Backtest,
             startedAt: new DateTimeOffset(2026, 4, 22, 14, 0, 0, TimeSpan.Zero),
             datasetReference: "dataset/us/equities",
-            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("MSFT")));
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("MSFT")) with
+        {
+            RetainedEvidenceReferences = [stalePromotionEvidenceReference]
+        });
 
         await app.Services.GetRequiredService<IPromotionRecordStore>().AppendAsync(new StrategyPromotionRecord(
             PromotionId: "promotion-stale-backtest",
@@ -2140,6 +2174,7 @@ public sealed partial class WorkstationEndpointsTests
             PromotedAt: new DateTimeOffset(2026, 4, 22, 15, 0, 0, TimeSpan.Zero),
             ApprovalReason: "Older promotion was approved for a previous cockpit run.",
             ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: BuildPaperPromotionEvidenceReferences(stalePromotionEvidenceReference),
             AuditReference: "audit-stale-promotion",
             ApprovedBy: "ops.archive"));
 
@@ -2150,7 +2185,10 @@ public sealed partial class WorkstationEndpointsTests
             runType: RunType.Backtest,
             startedAt: new DateTimeOffset(2026, 4, 24, 14, 0, 0, TimeSpan.Zero),
             datasetReference: "dataset/us/equities",
-            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")) with
+        {
+            RetainedEvidenceReferences = [currentRunEvidenceReference]
+        });
 
         var readiness = await app
             .GetTestClient()
@@ -2759,7 +2797,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
         var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
@@ -3958,6 +3996,8 @@ public sealed partial class WorkstationEndpointsTests
         });
 
         var repository = app.Services.GetRequiredService<IReconciliationRunRepository>();
+        var strategyRuns = app.Services.GetRequiredService<IStrategyRepository>();
+        await strategyRuns.RecordRunAsync(BuildReconciliationReadyRun("run-history"));
         await repository.SaveAsync(BuildReconciliationDetail(
             reconciliationRunId: "recon-1",
             runId: "run-history",
@@ -4749,7 +4789,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var runId = $"run-cross-surface-continuity-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -4831,11 +4871,16 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var runId = $"run-review-packet-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildContinuityRun(runId));
+        await store.RecordRunAsync(BuildContinuityRun(runId) with
+        {
+            OperatorAcceptanceCriteria = ["Operator approved the review-packet evidence."],
+            RetainedEvidenceReferences = [$"evidence://strategy-runs/{runId}"],
+            ApprovalReferences = [$"approval://strategy-runs/{runId}"]
+        });
 
         var client = app.GetTestClient();
         var first = await client.GetFromJsonAsync<StrategyRunReviewPacketDto>(
@@ -4847,7 +4892,14 @@ public sealed partial class WorkstationEndpointsTests
 
         first.Should().NotBeNull();
         second.Should().NotBeNull();
-        first!.WorkItems.Should().NotBeEmpty();
+        first!.Run.EvidenceLoop.Should().NotBeNull();
+        first.Run.EvidenceLoop!.OperatorAcceptanceCriteria.Should()
+            .ContainSingle("Operator approved the review-packet evidence.");
+        first.Run.EvidenceLoop.RetainedEvidenceReferences.Should()
+            .ContainSingle($"evidence://strategy-runs/{runId}");
+        first.Run.EvidenceLoop.ApprovalReferences.Should()
+            .ContainSingle($"approval://strategy-runs/{runId}");
+        first.WorkItems.Should().NotBeEmpty();
         first.WorkItems.Select(static item => item.WorkItemId)
             .Should()
             .Equal(second!.WorkItems.Select(static item => item.WorkItemId));
@@ -4878,7 +4930,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
-        });
+        }, currentUserPermissions: UserPermission.ViewStrategies);
 
         var response = await app.GetTestClient().GetAsync("/api/workstation/runs/no-such-run/review-packet");
 
@@ -5999,10 +6051,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapStrategyRunsCompare_ShouldReturnBadRequestWhenTooManyRunIdsProvided()
     {
-        await using var app = await CreateAppAsync(services =>
-        {
-            RegisterRunReadServices(services);
-        });
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: UserPermission.ViewStrategies);
 
         var ids = string.Join(',', Enumerable.Range(1, 11).Select(index => $"cmp-{index}"));
         var client = app.GetTestClient();
@@ -7699,6 +7750,14 @@ public sealed partial class WorkstationEndpointsTests
     private static StringContent JsonContent(object payload) =>
         new(JsonSerializer.Serialize(payload, ServerJsonOptions), Encoding.UTF8, "application/json");
 
+    private static string[] BuildPaperPromotionEvidenceReferences(string retainedEvidenceReference) =>
+    [
+        $"{PromotionApprovalChecklist.Dk1TrustPacketReviewed}:{retainedEvidenceReference}",
+        $"{PromotionApprovalChecklist.RunLineageReviewed}:{retainedEvidenceReference}",
+        $"{PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed}:{retainedEvidenceReference}",
+        $"{PromotionApprovalChecklist.RiskControlsReviewed}:{retainedEvidenceReference}"
+    ];
+
     private static bool ContainsStringValue(JsonElement element, string expectedValue)
     {
         return element.ValueKind switch
@@ -8883,7 +8942,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_GetStrategyRunsRoute_ShouldReturnRunsForStrategy()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun("strat-run-1", "strat-alpha", "Alpha Strategy", RunType.Backtest, DateTimeOffset.UtcNow.AddHours(-2)));
         await store.RecordRunAsync(BuildRun("strat-run-2", "strat-alpha", "Alpha Strategy", RunType.Paper, DateTimeOffset.UtcNow.AddHours(-1)));
@@ -8902,7 +8963,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_GetStrategyRunsRoute_ShouldFilterByType()
     {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(
+            RegisterRunReadServices,
+            currentUserPermissions: UserPermission.ViewStrategies);
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildRun("typed-run-1", "strat-gamma", "Gamma Strategy", RunType.Backtest, DateTimeOffset.UtcNow.AddHours(-2)));
         await store.RecordRunAsync(BuildRun("typed-run-2", "strat-gamma", "Gamma Strategy", RunType.Paper, DateTimeOffset.UtcNow.AddHours(-1)));

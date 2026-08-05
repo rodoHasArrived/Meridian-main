@@ -2,7 +2,7 @@ using System.IO.Pipes;
 using System.Text.Json;
 using Meridian.Contracts.Lifecycle;
 using Microsoft.Extensions.Hosting;
-using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Composition.Startup;
 
@@ -15,14 +15,16 @@ public sealed class LifecycleSupervisorBridgeHostedService : BackgroundService
     public const string PipeEnvironmentVariable = "MDC_LIFECYCLE_PIPE";
 
     private readonly IRuntimeLifecycleControlPlane _lifecycle;
-    private readonly ILogger _log;
+    private readonly ILogger<LifecycleSupervisorBridgeHostedService> _log;
     private readonly string _pipeName;
     private readonly SemaphoreSlim _writeGate = new(1, 1);
 
-    public LifecycleSupervisorBridgeHostedService(IRuntimeLifecycleControlPlane lifecycle, ILogger log)
+    public LifecycleSupervisorBridgeHostedService(
+        IRuntimeLifecycleControlPlane lifecycle,
+        ILogger<LifecycleSupervisorBridgeHostedService> log)
     {
         _lifecycle = lifecycle;
-        _log = log.ForContext<LifecycleSupervisorBridgeHostedService>();
+        _log = log;
         _pipeName = Environment.GetEnvironmentVariable(PipeEnvironmentVariable) ?? string.Empty;
     }
 
@@ -45,7 +47,7 @@ public sealed class LifecycleSupervisorBridgeHostedService : BackgroundService
             }
             catch (Exception ex)
             {
-                _log.Warning(ex, "Lifecycle supervisor pipe {PipeName} disconnected; retrying", _pipeName);
+                _log.LogWarning(ex, "Lifecycle supervisor pipe {PipeName} disconnected; retrying", _pipeName);
                 await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken).ConfigureAwait(false);
             }
         }

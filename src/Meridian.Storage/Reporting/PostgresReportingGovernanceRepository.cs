@@ -410,13 +410,17 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                 ?? throw new ReportingGovernanceConcurrencyException(
                     $"Reporting run '{run.RunId}' version conflict: expected {expectedVersion}.");
             var current = await HydrateRunAsync(currentRow, cancellationToken).ConfigureAwait(false);
-            if (current.Version != expectedVersion
-                || !StringComparer.Ordinal.Equals(
-                    ReportingGovernanceCanonicalValidation.ComputeImmutableRunFingerprint(current),
-                    ReportingGovernanceCanonicalValidation.ComputeImmutableRunFingerprint(run)))
+            if (current.Version != expectedVersion)
             {
                 throw new ReportingGovernanceConcurrencyException(
-                    $"Reporting run '{run.RunId}' replacement attempted to change its immutable creation binding or stale version {expectedVersion}.");
+                    $"Reporting run '{run.RunId}' version conflict: expected {expectedVersion}, actual {current.Version}.");
+            }
+            if (!StringComparer.Ordinal.Equals(
+                ReportingGovernanceCanonicalValidation.ComputeImmutableRunFingerprint(current),
+                ReportingGovernanceCanonicalValidation.ComputeImmutableRunFingerprint(run)))
+            {
+                throw new ReportingGovernanceConcurrencyException(
+                    $"Reporting run '{run.RunId}' replacement attempted to change its immutable creation binding.");
             }
 
             var payload = SerializeRun(run with { AuditTrail = [] });
@@ -719,6 +723,8 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             {
                 throw Integrity("reporting run", row.RunId, "the retained state payload contains mutable audit history");
             }
+
+            ValidateRunShape(run, requireAudit: false);
 
             if (!StringComparer.Ordinal.Equals(run.Scope.TenantId, row.TenantId)
                 || !StringComparer.Ordinal.Equals(run.RunId, row.RunId)
@@ -1816,14 +1822,13 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         }
 
         private static string SerializeRun(GovernedReportingRun run) =>
-            JsonSerializer.Serialize(run, ReportingGovernanceJsonContext.Default.GovernedReportingRun);
+            ReportingGovernancePersistenceJson.SerializeRun(run);
 
         private static GovernedReportingRun DeserializeRun(string payload, string id)
         {
             try
             {
-                return JsonSerializer.Deserialize(payload, ReportingGovernanceJsonContext.Default.GovernedReportingRun)
-                    ?? throw Integrity("reporting run", id, "the retained state payload is null");
+                return ReportingGovernancePersistenceJson.DeserializeRun(payload);
             }
             catch (JsonException exception)
             {
@@ -1851,16 +1856,13 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         }
 
         private static string SerializeRestatement(ReportingRestatementRequest request) =>
-            JsonSerializer.Serialize(request, ReportingGovernanceJsonContext.Default.ReportingRestatementRequest);
+            ReportingGovernancePersistenceJson.SerializeRestatement(request);
 
         private static ReportingRestatementRequest DeserializeRestatement(string payload, string id)
         {
             try
             {
-                return JsonSerializer.Deserialize(
-                        payload,
-                        ReportingGovernanceJsonContext.Default.ReportingRestatementRequest)
-                    ?? throw Integrity("reporting restatement request", id, "the retained state payload is null");
+                return ReportingGovernancePersistenceJson.DeserializeRestatement(payload);
             }
             catch (JsonException exception)
             {
@@ -1891,16 +1893,13 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
         }
 
         private static string SerializeAudit(ReportingGovernanceAuditEntry entry) =>
-            JsonSerializer.Serialize(entry, ReportingGovernanceJsonContext.Default.ReportingGovernanceAuditEntry);
+            ReportingGovernancePersistenceJson.SerializeAudit(entry);
 
         private static ReportingGovernanceAuditEntry DeserializeAudit(string payload, string id)
         {
             try
             {
-                return JsonSerializer.Deserialize(
-                        payload,
-                        ReportingGovernanceJsonContext.Default.ReportingGovernanceAuditEntry)
-                    ?? throw Integrity("reporting governance audit event", id, "the retained event payload is null");
+                return ReportingGovernancePersistenceJson.DeserializeAudit(payload);
             }
             catch (JsonException exception)
             {

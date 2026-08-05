@@ -189,6 +189,19 @@ public sealed record OrderResult
 
     /// <summary>Approval-queue entry id when <see cref="RequiresApproval"/> is true.</summary>
     public string? EscalationId { get; init; }
+
+    /// <summary>
+    /// Pre-trade risk findings for this submission, when the risk gate produced any. Populated on
+    /// both the admitted and the rejected path so an order ticket can render the decision without
+    /// a second query — the asynchronous decision history offers no deterministic read-back for
+    /// the submission that just returned.
+    /// </summary>
+    /// <remarks>
+    /// Structured counterpart to <see cref="RiskWarnings"/>: the same breaches carrying the rule
+    /// name, severity, and stable code rather than a rendered sentence. Both are populated because
+    /// <see cref="RiskWarnings"/> is already on the wire and rendered by shipped clients.
+    /// </remarks>
+    public RiskDecisionSummary? RiskDecision { get; init; }
 }
 
 /// <summary>Current state of an order tracked by the OMS.</summary>

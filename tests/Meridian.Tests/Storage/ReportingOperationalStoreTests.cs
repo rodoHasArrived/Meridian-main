@@ -10,7 +10,9 @@ using Xunit;
 namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
-public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArtifactDatabaseFixture>
+public sealed class ReportingOperationalStoreTests :
+    IClassFixture<ReportingArtifactDatabaseFixture>,
+    IAsyncLifetime
 {
     private static readonly DateTimeOffset FixedNow =
         new(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
@@ -21,6 +23,10 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
     {
         _database = database;
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task RunStore_IsTenantScopedAndExactRetriesAreIdempotent()
@@ -162,8 +168,8 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
                 update {{QualifiedRunTable}}
                 set manifest_payload = jsonb_set(
                     manifest_payload,
-                    '{templateId}',
-                    to_jsonb('tampered-template'::text))
+                    '{attemptCount}',
+                    to_jsonb(2::integer))
                 where tenant_id = @tenant_id
                   and run_id_key = @identity_key;
                 """,

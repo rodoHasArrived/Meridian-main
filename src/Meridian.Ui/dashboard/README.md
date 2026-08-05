@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Ui/dashboard
@@ -973,6 +973,25 @@ Strategy wording while retained `Research*` DTO and component names remain compa
 Strategy Builder promotion-review warnings use risk/control wording in the browser view model,
 matching the shared strategy-service validation copy while retained cell kinds remain compatibility
 inputs.
+The host-composed W6 browser path is the Covered Call form in
+`covered-call-screen.view-model.ts`. Before calling the Covered Call API it requires operator
+acceptance text as a future review requirement and at least one bounded, strict
+`evidence://evidence-vault/{vaultId}` reference. The server resolves the retained manifest inside
+the authenticated tenant/company scope before queueing and records the pre-execution entry through
+the shared strategy-run repository. Covered Call results deep-link to that exact strategy run and
+Vault artifact. The browser treats `PersistenceDegraded` as a terminal run phase, stops status
+polling, and tells the operator that no Completed, Failed, or Cancelled lifecycle outcome is
+authoritative when a durable lifecycle append fails.
+
+The Strategy screen sends Paper promotion through the governed promotion endpoint. Its four
+read-only acceptance checks are ready only when the server projects a durable operator/audit
+decision, keyed evidence matching the source run, and the exact same-scope Paper child lineage;
+metric eligibility, acknowledgement, or a caller-created paper session cannot satisfy them. The
+corresponding UI contract proof lives in `covered-call-screen.view-model.test.ts`,
+`covered-call-screen.test.tsx`, `strategy-screen.view-model.test.ts`, and
+`strategy-screen.test.tsx`;
+Strategy Designer and the uncomposed Backtesting Studio orchestrator are not evidence for this
+bounded browser path.
 The browser `DataScreen` owns the canonical Data workspace module under `src/screens/data-screen*`.
 Retained `DataOperations*` DTO, endpoint, and fixture names are compatibility seams only. Data
 workspace navigation and command-palette discovery surface `/data/providers` as the canonical
@@ -1272,6 +1291,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

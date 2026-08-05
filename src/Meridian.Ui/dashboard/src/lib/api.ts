@@ -3,6 +3,10 @@ import {
   quantContextToParameters,
   quantDataIntervalMinutes,
 } from "./quant-api-mappers";
+import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
+
+export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
+export type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
 
 import type {
   BackfillPreviewResult,
@@ -216,6 +220,7 @@ import type {
   StrategyDesignTemplate,
   StrategyDesignValidationResult,
   StrategyRunContinuityDto,
+  StrategyRunReviewPacket,
   TradingActionResult,
   TradingOperatorReadiness,
   TradingParameters,
@@ -2681,26 +2686,8 @@ export function evaluatePromotion(runId: string) {
   return getJson<PromotionEvaluationResult>(promotionEvaluateEndpoint(runId));
 }
 
-export interface ApprovePromotionRequest {
-  runId: string;
-  approvedBy: string;
-  approvalReason: string;
-  approvalChecklist?: string[];
-  evidenceReferences?: string[];
-  reviewNotes?: string;
-  manualOverrideId?: string;
-}
-
 export function approvePromotion(request: ApprovePromotionRequest) {
   return postJson<PromotionDecisionResult>(PROMOTION_API_ENDPOINTS.approve, request);
-}
-
-export interface RejectPromotionRequest {
-  runId: string;
-  reason: string;
-  rejectedBy?: string;
-  reviewNotes?: string;
-  manualOverrideId?: string;
 }
 
 export function rejectPromotion(request: RejectPromotionRequest) {
@@ -2912,7 +2899,7 @@ export function getRunReviewPacketPath(runId: string, fundAccountId?: string) {
 }
 
 export function getRunReviewPacket(runId: string, fundAccountId?: string) {
-  return getJson<unknown>(getRunReviewPacketPath(runId, fundAccountId));
+  return getJson<StrategyRunReviewPacket>(getRunReviewPacketPath(runId, fundAccountId));
 }
 
 export function getRunReconciliation(runId: string) {

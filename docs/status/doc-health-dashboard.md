@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [########################------] 79/100
+  [########################------] 80/100
   Rating: Good
 ```
 
@@ -25,8 +25,8 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 | Orphaned files | 255 |
 | Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 220 |
-| **Health score** | **79/100** |
+| TODO/FIXME markers | 222 |
+| **Health score** | **80/100** |
 
 ### Score Breakdown
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 79 | 640 | 255 | 0 |
+| 1970-01-01 | 80 | 641 | 255 | 0 |
 
 ---
 

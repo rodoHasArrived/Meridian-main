@@ -6,8 +6,7 @@ using Meridian.Storage.SecurityMaster;
 namespace Meridian.Tests.SecurityMaster;
 
 [Trait("Category", "Integration")]
-[Collection(nameof(SecurityMasterDatabaseCollection))]
-public sealed class SecurityMasterSnapshotStoreTests
+public sealed class SecurityMasterSnapshotStoreTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private readonly SecurityMasterDatabaseFixture _fixture;
 

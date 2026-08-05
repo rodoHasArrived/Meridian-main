@@ -182,6 +182,13 @@ function renderCoveredCallScreen() {
   );
 }
 
+function fillRequiredRunFields() {
+  fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+  fireEvent.change(screen.getByLabelText(/Evidence reference declaration/i), {
+    target: { value: "evidence://evidence-vault/ev-0123456789abcdef01234567" }
+  });
+}
+
 describe("CoveredCallScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -235,7 +242,7 @@ describe("CoveredCallScreen", () => {
     expect(screen.getByText("Cannot run yet: Minimum strike must be greater than zero.")).toBeInTheDocument();
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+      fillRequiredRunFields();
     });
 
     await waitFor(() => {
@@ -296,17 +303,22 @@ describe("CoveredCallScreen", () => {
 
     const scoringMode = screen.getByLabelText("Scoring mode");
     const depthBonusWeight = screen.getByLabelText("Depth bonus weight");
+    const acceptanceCriterion = screen.getByLabelText(/Operator acceptance criterion/i);
+    const retainedEvidenceReference = screen.getByLabelText(/Evidence reference declaration/i);
 
     expect(scoringMode).toHaveAttribute("id", "cc-scoringMode");
     expect(scoringMode).toHaveAttribute("aria-describedby", "cc-scoringMode-help");
     expect(screen.getByText("Relative ranks candidates by liquidity, depth, and premium quality; Basic keeps the plain filter score.")).toBeInTheDocument();
     expect(depthBonusWeight).toHaveAttribute("id", "cc-depthBonusWeight");
     expect(depthBonusWeight).toHaveAttribute("aria-describedby", "cc-depthBonusWeight-help");
+    expect(acceptanceCriterion).toHaveValue("Operator must review the covered-call backtest evidence before promotion.");
+    expect(retainedEvidenceReference).toHaveValue("");
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+      fillRequiredRunFields();
       fireEvent.change(scoringMode, { target: { value: "Basic" } });
       fireEvent.change(depthBonusWeight, { target: { value: "0.12" } });
+      fireEvent.change(retainedEvidenceReference, { target: { value: "evidence://evidence-vault/ev-0123456789abcdef01234567" } });
     });
     await waitFor(() => expect(screen.getByRole("button", { name: "Run covered-call backtest" })).not.toBeDisabled());
 
@@ -317,7 +329,9 @@ describe("CoveredCallScreen", () => {
     expect(coveredCallApi.startCoveredCallBacktest).toHaveBeenCalledWith(expect.objectContaining({
       minStrike: 500,
       scoringMode: "Basic",
-      depthBonusWeight: 0.12
+      depthBonusWeight: 0.12,
+      operatorAcceptanceCriteria: ["Operator must review the covered-call backtest evidence before promotion."],
+      retainedEvidenceReferences: ["evidence://evidence-vault/ev-0123456789abcdef01234567"]
     }));
   });
 
@@ -373,7 +387,7 @@ describe("CoveredCallScreen", () => {
     renderCoveredCallScreen();
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+      fillRequiredRunFields();
     });
     await waitFor(() => expect(screen.getByRole("button", { name: "Run covered-call backtest" })).not.toBeDisabled());
     await act(async () => {
@@ -428,7 +442,7 @@ describe("CoveredCallScreen", () => {
     renderCoveredCallScreen();
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+      fillRequiredRunFields();
     });
     await waitFor(() => expect(screen.getByRole("button", { name: "Run covered-call backtest" })).not.toBeDisabled());
     await act(async () => {
@@ -476,7 +490,7 @@ describe("CoveredCallScreen", () => {
     renderCoveredCallScreen();
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+      fillRequiredRunFields();
     });
     await waitFor(() => expect(screen.getByRole("button", { name: "Run covered-call backtest" })).not.toBeDisabled());
     await act(async () => {

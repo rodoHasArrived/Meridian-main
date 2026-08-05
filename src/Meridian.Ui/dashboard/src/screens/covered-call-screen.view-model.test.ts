@@ -29,9 +29,16 @@ import type {
   CoveredCallTrade
 } from "@/lib/covered-call";
 
+const VALID_EVIDENCE_REFERENCE = "evidence://evidence-vault/ev-0123456789abcdef01234567";
+const VALID_COVERED_CALL_FORM = {
+  ...DEFAULT_COVERED_CALL_FORM,
+  minStrike: "500",
+  retainedEvidenceReference: VALID_EVIDENCE_REFERENCE
+};
+
 describe("validateForm", () => {
   it("returns empty when form is valid", () => {
-    const errors = validateForm({ ...DEFAULT_COVERED_CALL_FORM, minStrike: "500" });
+    const errors = validateForm(VALID_COVERED_CALL_FORM);
     expect(errors).toEqual({});
   });
 
@@ -54,15 +61,75 @@ describe("validateForm", () => {
     });
     expect(errors.to).toBeDefined();
   });
+
+  it("requires an acceptance criterion and categorized evidence-reference declaration", () => {
+    const errors = validateForm({
+      ...DEFAULT_COVERED_CALL_FORM,
+      minStrike: "500",
+      operatorAcceptanceCriterion: " ",
+      retainedEvidenceReference: "not-a-reference"
+    });
+
+    expect(errors.operatorAcceptanceCriterion).toBeDefined();
+    expect(errors.retainedEvidenceReference).toBeDefined();
+  });
+
+  it.each([
+    "evidence://evidence-vault/ev-0123456789abcdef01234567/extra",
+    "evidence://evidence-vault/%2e%2e",
+    "evidence://evidence-vault/%252e%252e",
+    "evidence://evidence-vault/ev-0123456789abcdef012345%2f",
+    "evidence://evidence-vault/ev-0123456789abcdef012345%252f",
+    "evidence://evidence-vault/vault-covered-call",
+    "evidence://evidence-vault/ev-0123456789abcdef0123456g",
+    "evidence://evidence-vault:444/ev-0123456789abcdef01234567",
+    "evidence://operator@evidence-vault/ev-0123456789abcdef01234567",
+    "evidence://evidence-vault/ev-0123456789abcdef01234567?download=true",
+    "evidence://evidence-vault/ev-0123456789abcdef01234567#fragment"
+  ])("rejects malformed Evidence Vault reference %s", (retainedEvidenceReference) => {
+    const errors = validateForm({
+      ...VALID_COVERED_CALL_FORM,
+      retainedEvidenceReference
+    });
+
+    expect(errors.retainedEvidenceReference).toBeDefined();
+  });
+
+  it("accepts an uppercase production VaultId and rejects evidence values above the browser budget", () => {
+    expect(validateForm({
+      ...VALID_COVERED_CALL_FORM,
+      retainedEvidenceReference: VALID_EVIDENCE_REFERENCE.toUpperCase()
+    })).toEqual({});
+
+    const errors = validateForm({
+      ...VALID_COVERED_CALL_FORM,
+      operatorAcceptanceCriterion: "c".repeat(1_025),
+      retainedEvidenceReference: `evidence://evidence-vault/${"e".repeat(2_049)}`
+    });
+    expect(errors.operatorAcceptanceCriterion).toContain("1024");
+    expect(errors.retainedEvidenceReference).toContain("2048");
+  });
 });
 
 describe("formToRequest", () => {
   it("maps numeric fields and uppercases the symbol", () => {
-    const req = formToRequest({ ...DEFAULT_COVERED_CALL_FORM, underlyingSymbol: "spy", minStrike: "500", label: "  q1  " });
+    const req = formToRequest({
+      ...DEFAULT_COVERED_CALL_FORM,
+      underlyingSymbol: "spy",
+      minStrike: "500",
+      label: "  q1  ",
+      retainedEvidenceReference: " evidence://evidence-vault/ev-0123456789abcdef01234567 "
+    });
     expect(req.underlyingSymbol).toBe("SPY");
     expect(req.minStrike).toBe(500);
     expect(req.label).toBe("q1");
     expect(typeof req.overwriteRatio).toBe("number");
+    expect(req.operatorAcceptanceCriteria).toEqual([
+      "Operator must review the covered-call backtest evidence before promotion."
+    ]);
+    expect(req.retainedEvidenceReferences).toEqual([
+      "evidence://evidence-vault/ev-0123456789abcdef01234567"
+    ]);
   });
 
   it("converts empty maxDte to null", () => {
@@ -104,7 +171,21 @@ describe("covered-call form field view models", () => {
       label: "Depth bonus weight",
       helperText: "Extra score weight for deeper option-chain liquidity when Relative scoring is selected."
     });
+    expect(fields.operatorAcceptanceCriterion).toMatchObject({
+      id: "cc-operatorAcceptanceCriterion",
+      label: "Operator acceptance criterion",
+      required: true
+    });
+    expect(fields.retainedEvidenceReference).toMatchObject({
+      id: "cc-retainedEvidenceReference",
+      label: "Evidence reference declaration",
+      required: true
+    });
     expect(groups.map((group) => group.id)).toContain("scoring");
+    expect(groups.find((group) => group.id === "evidence-loop")?.fields.map((field) => field.key)).toEqual([
+      "operatorAcceptanceCriterion",
+      "retainedEvidenceReference"
+    ]);
     expect(groups.find((group) => group.id === "scoring")?.fields.map((field) => field.key)).toEqual([
       "scoringMode",
       "depthBonusWeight"
@@ -113,7 +194,7 @@ describe("covered-call form field view models", () => {
 });
 
 describe("isTerminalPhase", () => {
-  it.each(["Completed", "Failed", "Cancelled"] as const)("treats %s as terminal", (phase) => {
+  it.each(["Completed", "Failed", "Cancelled", "PersistenceDegraded"] as const)("treats %s as terminal", (phase) => {
     expect(isTerminalPhase(phase)).toBe(true);
   });
   it.each(["Queued", "WarmingUp", "Running"] as const)("treats %s as non-terminal", (phase) => {
@@ -142,7 +223,7 @@ describe("covered-call run command view models", () => {
       busy: false
     });
 
-    expect(buildCoveredCallRunCommandState({ ...DEFAULT_COVERED_CALL_FORM, minStrike: "500" }, false)).toMatchObject({
+    expect(buildCoveredCallRunCommandState(VALID_COVERED_CALL_FORM, false)).toMatchObject({
       label: "Run backtest",
       ariaLabel: "Run covered-call backtest",
       disabled: false,
@@ -153,7 +234,7 @@ describe("covered-call run command view models", () => {
   });
 
   it("exposes submission and cancellation busy states for the shared button primitive", () => {
-    expect(buildCoveredCallRunCommandState({ ...DEFAULT_COVERED_CALL_FORM, minStrike: "500" }, true)).toMatchObject({
+    expect(buildCoveredCallRunCommandState(VALID_COVERED_CALL_FORM, true)).toMatchObject({
       label: "Submitting...",
       ariaLabel: "Submitting covered-call backtest",
       disabled: false,
@@ -220,6 +301,33 @@ describe("covered-call run command view models", () => {
       percentComplete: 42,
       ariaValueText: "Running 42% complete.",
       ariaBusy: true
+    });
+
+    const persistenceFailure =
+      "The run stopped after engine completion, but the durable Completed lifecycle append failed.";
+    const persistenceDegradedRun: CoveredCallRunState = {
+      ...idleRun,
+      runId: "run-1",
+      status: {
+        runId: "run-1",
+        phase: "PersistenceDegraded",
+        percentComplete: 0.84,
+        currentBacktestDate: "2024-05-31",
+        failureMessage: persistenceFailure
+      }
+    };
+
+    expect(buildCoveredCallCancelCommandState(persistenceDegradedRun)).toMatchObject({
+      disabled: true,
+      disabledReason: "Run cannot be cancelled because its lifecycle persistence is degraded.",
+      feedbackText: "Run cannot be cancelled because its lifecycle persistence is degraded."
+    });
+    expect(buildCoveredCallRunProgressPanel(persistenceDegradedRun)).toEqual({
+      title: "Backtest lifecycle persistence degraded",
+      description: persistenceFailure,
+      percentComplete: 84,
+      ariaValueText: "Persistence degraded at 84% complete. No durable terminal outcome is authoritative.",
+      ariaBusy: undefined
     });
   });
 
@@ -326,6 +434,14 @@ describe("covered-call run command view models", () => {
       description: "Use the SPY backtest evidence while the context is fresh."
     });
     expect(panel.actions).toEqual([
+      expect.objectContaining({
+        id: "run-checklist",
+        href: "/strategy/promotions?runId=abc"
+      }),
+      expect.objectContaining({
+        id: "evidence-workbench",
+        href: "/reporting/evidence?subjectKind=strategy-run&subjectId=abc"
+      }),
       expect.objectContaining({
         id: "live-quote",
         href: "/data/quotes?symbol=SPY",
@@ -727,7 +843,10 @@ describe("useCoveredCallScreenViewModel", () => {
     });
     expect(result.current.formErrors.minStrike).toBeDefined();
 
-    act(() => result.current.setField("minStrike", "500"));
+    act(() => {
+      result.current.setField("minStrike", "500");
+      result.current.setField("retainedEvidenceReference", VALID_EVIDENCE_REFERENCE);
+    });
     expect(result.current.form.minStrike).toBe("500");
     expect(result.current.formErrors.minStrike).toBeUndefined();
   });
@@ -749,7 +868,10 @@ describe("useCoveredCallScreenViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 5, chainPreviewDebounceMs: 100000 }));
 
-    act(() => result.current.setField("minStrike", "500"));
+    act(() => {
+      result.current.setField("minStrike", "500");
+      result.current.setField("retainedEvidenceReference", VALID_EVIDENCE_REFERENCE);
+    });
 
     await act(async () => {
       await result.current.startRun();
@@ -767,6 +889,46 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(services.getResult).toHaveBeenCalled();
   });
 
+  it("stops polling and surfaces durable-lifecycle failure when persistence is degraded", async () => {
+    const persistenceFailure =
+      "The run stopped after engine completion, but the durable Completed lifecycle append failed.";
+    const services = makeServices({
+      getStatus: vi.fn(async (): Promise<CoveredCallRunStatus> => ({
+        runId: "abc",
+        phase: "PersistenceDegraded",
+        percentComplete: 1,
+        currentBacktestDate: "2024-06-30",
+        failureMessage: persistenceFailure
+      }))
+    });
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({
+      services,
+      pollIntervalMs: 5,
+      chainPreviewDebounceMs: 100000
+    }));
+
+    act(() => {
+      result.current.setField("minStrike", "500");
+      result.current.setField("retainedEvidenceReference", VALID_EVIDENCE_REFERENCE);
+    });
+
+    await act(async () => {
+      await result.current.startRun();
+    });
+
+    await waitFor(() => {
+      expect(result.current.run.status?.phase).toBe("PersistenceDegraded");
+      expect(result.current.errorBanner).toEqual({
+        summary: persistenceFailure,
+        details: ["No Completed, Failed, or Cancelled lifecycle outcome was durably recorded for this run."]
+      });
+    });
+
+    expect(services.getResult).not.toHaveBeenCalled();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(services.getStatus).toHaveBeenCalledTimes(1);
+  });
+
   it("startRun exposes a submitting command state and blocks duplicate submissions", async () => {
     let resolveStart: ((value: CoveredCallRunHandle) => void) | undefined;
     const services = makeServices({
@@ -776,7 +938,10 @@ describe("useCoveredCallScreenViewModel", () => {
     });
     const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
 
-    act(() => result.current.setField("minStrike", "500"));
+    act(() => {
+      result.current.setField("minStrike", "500");
+      result.current.setField("retainedEvidenceReference", VALID_EVIDENCE_REFERENCE);
+    });
 
     act(() => {
       void result.current.startRun();
@@ -814,7 +979,10 @@ describe("useCoveredCallScreenViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
 
-    act(() => result.current.setField("minStrike", "500"));
+    act(() => {
+      result.current.setField("minStrike", "500");
+      result.current.setField("retainedEvidenceReference", VALID_EVIDENCE_REFERENCE);
+    });
     await act(async () => {
       await result.current.startRun();
     });
@@ -834,6 +1002,49 @@ describe("useCoveredCallScreenViewModel", () => {
     });
 
     expect(services.cancelRun).toHaveBeenCalledWith("abc");
+  });
+
+  it("surfaces lifecycle persistence degradation returned by cancellation", async () => {
+    const persistenceFailure =
+      "Cancellation was observed locally, but the durable Cancelled lifecycle append failed.";
+    const services = makeServices({
+      cancelRun: vi.fn(async (): Promise<CoveredCallRunStatus> => ({
+        runId: "abc",
+        phase: "PersistenceDegraded",
+        percentComplete: 0.35,
+        currentBacktestDate: "2024-03-01",
+        failureMessage: persistenceFailure
+      }))
+    });
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({
+      services,
+      pollIntervalMs: 1000000,
+      chainPreviewDebounceMs: 100000
+    }));
+
+    act(() => {
+      result.current.setField("minStrike", "500");
+      result.current.setField("retainedEvidenceReference", VALID_EVIDENCE_REFERENCE);
+    });
+    await act(async () => {
+      await result.current.startRun();
+    });
+    await act(async () => {
+      await result.current.cancelRun();
+    });
+    await act(async () => {
+      await result.current.cancelRun();
+    });
+
+    expect(result.current.run.status?.phase).toBe("PersistenceDegraded");
+    expect(result.current.errorBanner).toEqual({
+      summary: persistenceFailure,
+      details: ["No Completed, Failed, or Cancelled lifecycle outcome was durably recorded for this run."]
+    });
+    expect(result.current.cancelRunCommand).toMatchObject({
+      disabled: true,
+      disabledReason: "Run cannot be cancelled because its lifecycle persistence is degraded."
+    });
   });
 
   it("loadHistory populates history", async () => {
@@ -921,7 +1132,10 @@ describe("useCoveredCallScreenViewModel", () => {
     });
     const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
 
-    act(() => result.current.setField("minStrike", "500"));
+    act(() => {
+      result.current.setField("minStrike", "500");
+      result.current.setField("retainedEvidenceReference", VALID_EVIDENCE_REFERENCE);
+    });
     await act(async () => {
       await result.current.startRun();
     });
