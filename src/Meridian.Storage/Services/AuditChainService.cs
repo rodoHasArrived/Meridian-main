@@ -69,10 +69,8 @@ public sealed class AuditChainService : IAuditChainService
     // ImmutableAuditLogService guards the same race with a lock; this async path needs a
     // SemaphoreSlim because the sequence spans awaits (file hashing and chain I/O).
     //
-    // This serializes appends within one process only; a single writer per chain log is assumed.
-    // Coordinating separate processes/instances on a shared chainLogPath would need a cross-process
-    // lock held across the tail read and the append — a separate design not handled here.
     private readonly SemaphoreSlim _appendLock = new(1, 1);
+    private static readonly TimeSpan CrossProcessLockTimeout = TimeSpan.FromSeconds(30);
 
     public AuditChainService(ILogger? log = null)
     {
@@ -110,6 +108,7 @@ public sealed class AuditChainService : IAuditChainService
         await _appendLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var crossProcessLock = await AcquireCrossProcessLockAsync(chainLogPath, ct).ConfigureAwait(false);
             // Read the previous hash from the last entry in the chain
             var previousHash = "";
             if (File.Exists(chainLogPath))
@@ -178,6 +177,33 @@ public sealed class AuditChainService : IAuditChainService
         finally
         {
             _appendLock.Release();
+        }
+    }
+
+    private static async Task<FileStream> AcquireCrossProcessLockAsync(
+        string chainLogPath,
+        CancellationToken ct)
+    {
+        var lockPath = $"{chainLogPath}.lock";
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(CrossProcessLockTimeout);
+        while (true)
+        {
+            timeout.Token.ThrowIfCancellationRequested();
+            try
+            {
+                return new FileStream(
+                    lockPath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None,
+                    bufferSize: 1,
+                    options: FileOptions.Asynchronous | FileOptions.WriteThrough);
+            }
+            catch (IOException)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(25), timeout.Token).ConfigureAwait(false);
+            }
         }
     }
 

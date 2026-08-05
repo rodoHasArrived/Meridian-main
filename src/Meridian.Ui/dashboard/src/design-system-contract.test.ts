@@ -6,6 +6,53 @@ function readDashboardStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
 }
 
+function readDashboardStyleBundle() {
+  const stylesPath = resolve(process.cwd(), "src/styles");
+  return readdirSync(stylesPath)
+    .filter((file) => file.endsWith(".css"))
+    .map((file) => readFileSync(resolve(stylesPath, file), "utf8"))
+    .join("\n");
+}
+
+function readManualDarkHexToken(styles: string, token: string) {
+  const darkScope = styles.match(/:root\[data-theme="dark"\]\s*\{([\s\S]*?)\n {2}\}/)?.[1];
+  if (!darkScope) {
+    throw new Error("Manual dark-theme scope is missing");
+  }
+
+  const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const value = darkScope.match(new RegExp(`${escapedToken}:\\s*(#[0-9A-F]{6})`, "i"))?.[1];
+  if (!value) {
+    throw new Error(`Dark-theme token ${token} is missing or is not a six-digit hex color`);
+  }
+
+  return value.toUpperCase();
+}
+
+function relativeLuminance(hexColor: string) {
+  const channels = hexColor
+    .slice(1)
+    .match(/.{2}/g)
+    ?.map((channel) => Number.parseInt(channel, 16) / 255);
+  if (!channels || channels.length !== 3 || channels.some(Number.isNaN)) {
+    throw new Error(`Invalid six-digit hex color: ${hexColor}`);
+  }
+
+  const [red, green, blue] = channels.map((channel) =>
+    channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+  );
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrastRatio(foreground: string, background: string) {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 function readWorkspaceSurfaceStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/workspace-surface.css"), "utf8");
 }
@@ -219,6 +266,56 @@ describe("dashboard design-system contract", () => {
     expect(styles.match(/--ws-masthead-bg:/g)).toHaveLength(4);
   });
 
+  it("keeps dark readiness and inactive navigation text above WCAG AA contrast", () => {
+    const styles = readDashboardStyles();
+    const readinessPanel = readRepositoryFile(
+      "src/Meridian.Ui/dashboard/src/components/operations/readiness-panel.tsx"
+    );
+
+    expect(styles).toContain("--theme-primary-text: var(--ws-text)");
+    expect(styles).toContain("--theme-secondary-text: var(--ws-text-secondary)");
+    expect(styles).toContain("--theme-muted-text: var(--ws-text-muted)");
+    expect(styles).toContain("--text-primary: var(--theme-primary-text)");
+    expect(styles).toContain("--text-secondary: var(--theme-secondary-text)");
+    expect(styles).toContain("--text-muted: var(--theme-muted-text)");
+    expect(styles).toContain("--nav-item: var(--text-secondary)");
+    expect(styles.match(/--ws-text-muted: #8F9AA7/g)).toHaveLength(2);
+    expect(styles).not.toContain("--ws-text-muted: #8893A0");
+    expect(readinessPanel).toContain(
+      "var(--text-primary,var(--ws-text,#22272E))"
+    );
+    expect(readinessPanel).toContain(
+      "var(--text-muted,var(--ws-text-muted,#59636F))"
+    );
+
+    const panelBackground = readManualDarkHexToken(styles, "--ws-surface");
+    const railBackground = readManualDarkHexToken(styles, "--ws-rail-bg");
+    const contrastPairs = [
+      {
+        label: "readiness title",
+        foreground: readManualDarkHexToken(styles, "--ws-text"),
+        background: panelBackground
+      },
+      {
+        label: "readiness detail",
+        foreground: readManualDarkHexToken(styles, "--ws-text-muted"),
+        background: panelBackground
+      },
+      {
+        label: "inactive navigation",
+        foreground: readManualDarkHexToken(styles, "--ws-text-secondary"),
+        background: railBackground
+      }
+    ];
+
+    for (const { label, foreground, background } of contrastPairs) {
+      expect(
+        contrastRatio(foreground, background),
+        `${label} (${foreground} on ${background})`
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it("unifies workstation radii to Concrete 2px and keeps surfaces flat", () => {
     const styles = readDashboardStyles();
 
@@ -258,6 +355,17 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--cyan-focus: var(--ws-accent)");
     expect(styles).toContain(".focus-visible\\:ring-primary\\/40:focus-visible");
     expect(styles).toContain("--tw-ring-color: var(--cyan-focus)");
+  });
+
+  it("preserves legible metadata and explicit Windows forced-colors states", () => {
+    const styles = readDashboardStyles();
+    const styleBundle = readDashboardStyleBundle();
+
+    expect(styleBundle).not.toMatch(/font-size:\s*0\.(?:5625|59375|625)rem/);
+    expect(styles).toContain("@media (forced-colors: active)");
+    expect(styles).toContain('outline: 2px solid Highlight');
+    expect(styles).toContain('[aria-selected="true"]');
+    expect(styles).toContain("border-color: CanvasText");
   });
 
   it("uses the paper canvas background from the design-system documentation", () => {

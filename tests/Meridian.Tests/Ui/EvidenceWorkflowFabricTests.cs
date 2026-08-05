@@ -1,10 +1,14 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Backtesting.Sdk;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Application.SecurityMaster;
@@ -12,6 +16,12 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
@@ -19,6 +29,7 @@ using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -1156,6 +1167,8 @@ public sealed class EvidenceWorkflowFabricTests
         export.VaultIdentity.ManifestRoute.Should().Be(export.ManifestRoute);
         export.VaultIdentity.ContentHashSha256.Should().HaveLength(64);
         export.VaultIdentity.StorageKind.Should().Be("file-manifest");
+        export.VaultIdentity.TenantId.Should().Be("tenant-test");
+        export.VaultIdentity.Scope.Should().Be("company-test");
         export.WarningCount.Should().Be(0);
         File.Exists(Path.Combine(root, export.ManifestPath.Replace('/', Path.DirectorySeparatorChar))).Should().BeTrue();
         var indexPath = Path.Combine(root, "workstation", "evidence", "_vault", $"{export.VaultIdentity.VaultId}.json");
@@ -1169,7 +1182,7 @@ public sealed class EvidenceWorkflowFabricTests
         manifestResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
         var manifestJson = await manifestResponse.Content.ReadAsStringAsync();
         manifestJson.Should().Contain("\"manifestOnly\": true");
-        manifestJson.Should().Contain("\"requestedBy\": \"operator\"");
+        manifestJson.Should().Contain("\"requestedBy\": \"evidence-controller\"");
         manifestJson.Should().Contain("\"vaultIdentity\": {");
         manifestJson.Should().Contain(export.VaultIdentity.VaultId);
 
@@ -1371,7 +1384,7 @@ public sealed class EvidenceWorkflowFabricTests
 
         var manifestJson = await client.GetStringAsync(export.ManifestRoute);
         manifestJson.Should().Contain("\"subjectKind\": \"accounting-record\"");
-        manifestJson.Should().Contain("\"requestedBy\": \"controller\"");
+        manifestJson.Should().Contain("\"requestedBy\": \"evidence-controller\"");
         manifestJson.Should().Contain($"\"evidenceSubject\": \"{EvidenceSubjectResolver.AccountingRecordKind}/{subjectId}\"");
         manifestJson.Should().Contain($"\"accountingRecordId\": \"{subjectId}\"");
 
@@ -1401,6 +1414,197 @@ public sealed class EvidenceWorkflowFabricTests
             match.SubjectKind == EvidenceSubjectResolver.AccountingRecordKind &&
             match.SubjectId == subjectId &&
             match.VaultId == export.VaultIdentity.VaultId);
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_DuringScopedStrategyEvidenceReview_HidesForeignAndMalformedRunsBeforeContributors()
+    {
+        var store = new StrategyRunStore();
+        var startedAt = new DateTimeOffset(2026, 8, 3, 12, 0, 0, TimeSpan.Zero);
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "owned-scoped-run",
+            "covered-call-overwrite:tenant-alpha:company-alpha",
+            "Owned Covered Call Strategy",
+            RunType.Backtest,
+            startedAt.AddMinutes(3),
+            startedAt.AddHours(1),
+            null,
+            ParameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-alpha",
+                ["workstationCompanyId"] = "company-alpha"
+            })
+        {
+            OperatorAcceptanceCriteria = ["Operator must review the retained covered-call evidence before promotion."],
+            RetainedEvidenceReferences = ["evidence://evidence-vault/ev-0123456789abcdef01234567"]
+        });
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "owned-paper-run",
+            "covered-call-overwrite:tenant-alpha:company-alpha",
+            "Owned Covered Call Strategy",
+            RunType.Paper,
+            startedAt.AddHours(2),
+            null,
+            null,
+            ParameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-alpha",
+                ["workstationCompanyId"] = "company-alpha"
+            },
+            ParentRunId: "owned-scoped-run"));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "foreign-scoped-run",
+            "strategy-foreign",
+            "Foreign Strategy",
+            RunType.Backtest,
+            startedAt.AddMinutes(2),
+            null,
+            null,
+            ParameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-beta",
+                ["workstationCompanyId"] = "company-beta"
+            }));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "malformed-scoped-run",
+            "strategy-malformed",
+            "Malformed Strategy",
+            RunType.Backtest,
+            startedAt.AddMinutes(1),
+            null,
+            null,
+            ParameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-alpha"
+            }));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "legacy-unscoped-run",
+            "legacy-strategy",
+            "Legacy Strategy",
+            RunType.Backtest,
+            startedAt,
+            null,
+            null));
+
+        var paperChecklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+        var promotionDecision = new StrategyPromotionRecord(
+            "promotion-owned-scoped-run",
+            "covered-call-overwrite:tenant-alpha:company-alpha",
+            "Owned Covered Call Strategy",
+            RunType.Backtest,
+            RunType.Paper,
+            "owned-scoped-run",
+            "owned-paper-run",
+            1.2,
+            0.05m,
+            0.12m,
+            PromotionDecisionKinds.Approved,
+            startedAt.AddHours(2),
+            ApprovalReason: "Approved for paper review.",
+            ApprovalChecklist: paperChecklist,
+            EvidenceReferences: paperChecklist
+                .Select(static id => $"{id}:evidence://evidence-vault/ev-0123456789abcdef01234567")
+                .ToArray(),
+            AuditReference: "audit-owned-scoped-run",
+            ApprovedBy: "portfolio-manager");
+        var runReadService = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService(),
+            new StaticPromotionRecordStore([promotionDecision]));
+        var sentinelContributor = new CountingStrategyRunContributor();
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-strategy-scope-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "company-alpha",
+            strategyRunReadService: runReadService,
+            additionalContributor: sentinelContributor);
+        var client = app.GetTestClient();
+
+        var subjectsResponse = await client.GetAsync("/api/workstation/evidence/subjects");
+        subjectsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var subjects = await subjectsResponse.Content
+            .ReadFromJsonAsync<IReadOnlyList<EvidenceSubjectDto>>(ServerJsonOptions);
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.StrategyRunKind
+            && subject.SubjectId == "owned-scoped-run");
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.StrategyRunKind
+            && subject.SubjectId == "legacy-unscoped-run");
+        subjects.Should().NotContain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.StrategyRunKind
+            && (subject.SubjectId == "foreign-scoped-run" || subject.SubjectId == "malformed-scoped-run"));
+
+        foreach (var hiddenRunId in new[] { "foreign-scoped-run", "malformed-scoped-run" })
+        {
+            foreach (var representation in new[] { "packet", "graph" })
+            {
+                var response = await client.GetAsync(
+                    $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.StrategyRunKind}/{hiddenRunId}/{representation}");
+                response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+                (await response.Content.ReadAsStringAsync()).Should().NotContain(CountingStrategyRunContributor.Sentinel);
+            }
+        }
+
+        sentinelContributor.InvocationCount.Should().Be(0);
+
+        var ownedPacketResponse = await client.GetAsync(
+            $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.StrategyRunKind}/owned-scoped-run/packet");
+        ownedPacketResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var ownedPacket = await ownedPacketResponse.Content
+            .ReadFromJsonAsync<EvidencePacketDto>(ServerJsonOptions);
+        ownedPacket.Should().NotBeNull();
+        ownedPacket!.Subject.SubjectId.Should().Be("owned-scoped-run");
+        var ownedDetailId = $"{EvidenceSubjectResolver.StrategyRunKind}:owned-scoped-run:detail";
+        var ownedLedgerId = $"{EvidenceSubjectResolver.StrategyRunKind}:owned-scoped-run:ledger";
+        ownedPacket.Nodes.Should().ContainSingle(node =>
+            node.EvidenceId == ownedDetailId
+            && node.Kind == "strategy-run-detail"
+            && node.Summary.Contains("owned-scoped-run", StringComparison.Ordinal));
+        ownedPacket.Nodes.Should().Contain(node =>
+            node.EvidenceId == ownedLedgerId
+            && node.Kind == "run-ledger");
+        ownedPacket.Edges.Should().Contain(edge =>
+            edge.FromId == ownedDetailId
+            && edge.ToId == ownedLedgerId
+            && edge.Relationship == "supports");
+        var checklistNodes = ownedPacket.Nodes
+            .Where(node => node.Kind == "strategy-promotion-checklist")
+            .ToArray();
+        checklistNodes.Should().HaveCount(4);
+        checklistNodes.Should().OnlyContain(node =>
+            node.Status == EvidenceStatusDto.Ready
+            && node.SourceSystem == "StrategyPromotionRecord"
+            && node.Metadata["decidedBy"] == "portfolio-manager"
+            && node.Metadata["auditReference"] == "audit-owned-scoped-run"
+            && node.Metadata["evidenceReference"].EndsWith(
+                ":evidence://evidence-vault/ev-0123456789abcdef01234567",
+                StringComparison.Ordinal));
+        ownedPacket.Edges.Should().Contain(edge =>
+            edge.FromId == ownedDetailId
+            && checklistNodes.Any(node => node.EvidenceId == edge.ToId)
+            && edge.Relationship == "governed-by");
+
+        var ownedGraphResponse = await client.GetAsync(
+            $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.StrategyRunKind}/owned-scoped-run/graph");
+        ownedGraphResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var ownedGraph = await ownedGraphResponse.Content
+            .ReadFromJsonAsync<EvidenceGraphDto>(ServerJsonOptions);
+        ownedGraph.Should().NotBeNull();
+        ownedGraph!.Nodes.Should().Contain(node =>
+            node.EvidenceId == ownedDetailId
+            && node.Kind == "strategy-run-detail");
+        ownedGraph.Nodes.Count(node => node.Kind == "strategy-promotion-checklist").Should().Be(4);
+        ownedGraph.Edges.Should().Contain(edge =>
+            edge.FromId == ownedDetailId
+            && edge.ToId == ownedLedgerId
+            && edge.Relationship == "supports");
+
+        (await client.GetAsync(
+            $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.StrategyRunKind}/legacy-unscoped-run/graph"))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        sentinelContributor.InvocationCount.Should().Be(3);
     }
 
     [Fact]
@@ -1444,7 +1648,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: ["This warning should be excluded."]);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "safe export", IncludeWarnings: false));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "safe export", IncludeWarnings: false)
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
         var manifestJson = await File.ReadAllTextAsync(manifestPath);
 
@@ -1453,7 +1661,10 @@ public sealed class EvidenceWorkflowFabricTests
         response.VaultIdentity.Should().NotBeNull();
         response.VaultIdentity!.SubjectId.Should().Be("Review Jan/../2026");
         response.WarningCount.Should().Be(0);
-        var retainedManifest = await store.TryOpenManifestByVaultIdAsync(response.VaultIdentity.VaultId);
+        var retainedManifest = await store.TryOpenManifestByVaultIdAsync(
+            response.VaultIdentity.VaultId,
+            "tenant-test",
+            "company-test");
         retainedManifest.Should().NotBeNull();
         using (var reader = new StreamReader(retainedManifest!.Content))
         {
@@ -1500,7 +1711,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "metadata linkage"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "metadata linkage")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
         var manifestJson = await File.ReadAllTextAsync(manifestPath);
@@ -1512,7 +1727,11 @@ public sealed class EvidenceWorkflowFabricTests
             null,
             null,
             null,
-            ReportPackDeliveryPackageId: "pkg-metadata-only"));
+            ReportPackDeliveryPackageId: "pkg-metadata-only")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         matches.Should().ContainSingle(match =>
             match.SubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
             match.SubjectId == subjectId &&
@@ -1562,7 +1781,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "support package freeze"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "support package freeze")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         response.VaultIdentity.Should().NotBeNull();
         var requestLists = response.VaultIdentity!.RequestLists;
@@ -1633,7 +1856,11 @@ public sealed class EvidenceWorkflowFabricTests
             RequestListKind: "AuditRequestList",
             TargetKind: "audit",
             TargetId: "close-2026-05",
-            Status: "Open"));
+            Status: "Open")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         var indexedRequestList = requestListIndex.Should().ContainSingle().Subject;
         indexedRequestList.VaultId.Should().Be(response.VaultIdentity.VaultId);
         indexedRequestList.RequestListKindCode.Should().Be(EvidenceRequestListKindDto.Audit);
@@ -1712,7 +1939,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "typed request-list freeze"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "typed request-list freeze")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         response.VaultIdentity.Should().NotBeNull();
         var requestLists = response.VaultIdentity!.RequestLists;
@@ -1743,7 +1974,11 @@ public sealed class EvidenceWorkflowFabricTests
 
         var eventLists = await store.ListRequestListsAsync(new EvidenceVaultRequestListQueryDto(
             RequestListKindCode: EvidenceRequestListKindDto.OperationalEvent,
-            Status: "Open"));
+            Status: "Open")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         eventLists.Should().ContainSingle(entry =>
             entry.VaultId == response.VaultIdentity.VaultId &&
             entry.RequestListKindCode == EvidenceRequestListKindDto.OperationalEvent &&
@@ -1784,7 +2019,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "report support package"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "report support package")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         response.VaultIdentity.Should().NotBeNull();
         response.VaultIdentity!.ManifestSnapshot.Should().NotBeNull();
@@ -1809,9 +2048,18 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "safe export"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "safe export")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         var generatedFileName = Uri.UnescapeDataString(response.ManifestRoute.Split('/')[^1]);
-        var validManifest = await store.TryOpenManifestAsync("report-pack", "current", generatedFileName);
+        var validManifest = await store.TryOpenManifestAsync(
+            "report-pack",
+            "current",
+            generatedFileName,
+            "tenant-test",
+            "company-test");
         validManifest.Should().NotBeNull();
         await validManifest!.Content.DisposeAsync();
 
@@ -1820,9 +2068,12 @@ public sealed class EvidenceWorkflowFabricTests
         var escapedManifestPath = Path.Combine(evidenceRoot, "secret-manifest.json");
         await File.WriteAllTextAsync(escapedManifestPath, """{"schemaVersion":1}""");
 
-        var subjectIdTraversal = await store.TryOpenManifestAsync("report-pack", "..", "secret-manifest.json");
-        var subjectKindTraversal = await store.TryOpenManifestAsync("..", "report-pack", "secret-manifest.json");
-        var encodedSeparatorTraversal = await store.TryOpenManifestAsync("report-pack", "current/..", "secret-manifest.json");
+        var subjectIdTraversal = await store.TryOpenManifestAsync(
+            "report-pack", "..", "secret-manifest.json", "tenant-test", "company-test");
+        var subjectKindTraversal = await store.TryOpenManifestAsync(
+            "..", "report-pack", "secret-manifest.json", "tenant-test", "company-test");
+        var encodedSeparatorTraversal = await store.TryOpenManifestAsync(
+            "report-pack", "current/..", "secret-manifest.json", "tenant-test", "company-test");
 
         subjectIdTraversal.Should().BeNull();
         subjectKindTraversal.Should().BeNull();
@@ -1868,7 +2119,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "ledger proof export"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "ledger proof export")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
         await using var stream = File.OpenRead(manifestPath);
         using var manifest = await JsonDocument.ParseAsync(stream);
@@ -1949,7 +2204,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         response.VaultIdentity.Should().NotBeNull();
         response.VaultIdentity!.StorageKind.Should().Be("file-bundle");
@@ -2035,7 +2294,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "close checklist screenshot retention"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "close checklist screenshot retention")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         response.VaultIdentity.Should().NotBeNull();
         response.VaultIdentity!.StorageKind.Should().Be("file-bundle");
@@ -2082,9 +2345,16 @@ public sealed class EvidenceWorkflowFabricTests
             Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["statement-node"], ["statement-node"], [], [], []),
             Actions: [],
             Warnings: []);
-        var exported = await store.WriteManifestAsync(sourcePacket, new EvidencePacketExportRequest("operator", "vault workbench coverage"));
+        var exported = await store.WriteManifestAsync(sourcePacket, new EvidencePacketExportRequest("operator", "vault workbench coverage")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
+        var requestContext = new DefaultHttpContext();
+        BindReportingRequestContext(requestContext);
         var services = new ServiceCollection()
             .AddSingleton<IEvidenceArtifactStore>(store)
+            .AddSingleton<IHttpContextAccessor>(new HttpContextAccessor { HttpContext = requestContext })
             .BuildServiceProvider();
         var graph = new EvidenceGraphService(
             new EvidenceSubjectResolver(services),
@@ -2140,7 +2410,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention"));
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         await act.Should().ThrowAsync<FileNotFoundException>()
             .WithMessage("*statement-artifact-missing*source file was not found*");
@@ -2173,7 +2447,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention"));
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*statement-artifact-orphan*missing canonical subject linkage*");
@@ -2208,7 +2486,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention"));
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*statement-artifact-unsupported-subject*unsupported canonical subject kind 'scratchpad'*");
@@ -2237,7 +2519,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "approval retention"));
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "approval retention")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*approval-route-only*missing canonical subject linkage*");
@@ -2268,7 +2554,11 @@ public sealed class EvidenceWorkflowFabricTests
             Actions: [],
             Warnings: []);
 
-        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "approval retention"));
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "approval retention")
+        {
+            TenantId = "tenant-test",
+            Scope = "company-test"
+        });
         var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
         var manifestJson = await File.ReadAllTextAsync(manifestPath);
 
@@ -2298,7 +2588,10 @@ public sealed class EvidenceWorkflowFabricTests
     public async Task EvidenceEndpoints_VaultDocuments_QuerySupportsAdminAndTaxAuditSupportVocabulary()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-support-vocabulary-{Guid.NewGuid():N}");
-        await using var app = await CreateEvidenceAppAsync(root);
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "fund-alpha");
         var client = app.GetTestClient();
         var bytes = Encoding.UTF8.GetBytes("support_id,status\r\naudit-2026-06,missing-admin-confirmation\r\n");
 
@@ -2331,10 +2624,12 @@ public sealed class EvidenceWorkflowFabricTests
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var documents = await client.GetFromJsonAsync<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(
-            "/api/workstation/evidence/vault/documents?classification=TaxAuditSupport&extractionStatus=Pending&linkKind=Fund&objectId=fund-alpha&tenantId=tenant-alpha&scope=fund-alpha",
+            "/api/workstation/evidence/vault/documents?classification=TaxAuditSupport&extractionStatus=NotExtracted&linkKind=Fund&objectId=fund-alpha&tenantId=tenant-alpha&scope=fund-alpha",
             ServerJsonOptions);
         var entry = documents.Should().ContainSingle().Subject;
         entry.Document.Classification.Should().Be(EvidenceDocumentClassificationDto.TaxAuditSupport);
+        entry.Document.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.NotExtracted);
+        entry.Document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.Unreviewed);
         entry.Document.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.Upload);
         entry.Document.ObjectLinks.Should().Contain(link =>
             link.LinkKind == EvidenceDocumentLinkKindDto.Fund &&
@@ -2367,6 +2662,586 @@ public sealed class EvidenceWorkflowFabricTests
             entry.Document.Classification == EvidenceDocumentClassificationDto.AdminPackage &&
             entry.Document.ChannelKind == EvidenceDocumentIntakeChannelDto.PortalDownload);
     }
+
+    [Fact]
+    public async Task EvidenceEndpoints_VaultDocuments_AuthenticatedScopeCannotBeOmittedOrOverridden()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-tenant-isolation-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IEvidenceArtifactStore>();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var owned = await store.WriteIntakeArtifactAsync(
+            new EvidenceVaultIntakeRequestDto(
+                "statement-run",
+                "statement-run-alpha",
+                "imported-file",
+                "statement-alpha.csv",
+                ContentBase64: Convert.ToBase64String("account,balance\nA,100\n"u8.ToArray()))
+            {
+                Classification = EvidenceDocumentClassificationDto.Statement,
+                ExtractionStatus = EvidenceExtractionStatusDto.NeedsReview,
+                ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview),
+                TenantId = "tenant-alpha",
+                Scope = "company-alpha"
+            },
+            cts.Token);
+        var foreign = await store.WriteIntakeArtifactAsync(
+            new EvidenceVaultIntakeRequestDto(
+                "statement-run",
+                "statement-run-beta",
+                "imported-file",
+                "statement-beta.csv",
+                ContentBase64: Convert.ToBase64String("account,balance\nB,200\n"u8.ToArray()))
+            {
+                Classification = EvidenceDocumentClassificationDto.Statement,
+                ExtractionStatus = EvidenceExtractionStatusDto.NeedsReview,
+                ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview),
+                TenantId = "tenant-beta",
+                Scope = "company-beta"
+            },
+            cts.Token);
+
+        var omittedScopeResponse = await client.GetAsync(
+            "/api/workstation/evidence/vault/documents?classification=Statement",
+            cts.Token);
+        omittedScopeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var omittedScopeEntries = await omittedScopeResponse.Content
+            .ReadFromJsonAsync<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(ServerJsonOptions, cts.Token);
+        omittedScopeEntries.Should().ContainSingle(entry => entry.VaultId == owned.VaultIdentity.VaultId);
+
+        var spoofedScopeResponse = await client.GetAsync(
+            "/api/workstation/evidence/vault/documents?classification=Statement&tenantId=tenant-beta&scope=company-beta",
+            cts.Token);
+        spoofedScopeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var spoofedScopeEntries = await spoofedScopeResponse.Content
+            .ReadFromJsonAsync<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(ServerJsonOptions, cts.Token);
+        spoofedScopeEntries.Should().ContainSingle(entry => entry.VaultId == owned.VaultIdentity.VaultId);
+
+        var foreignReviewResponse = await client.PostAsJsonAsync(
+            $"/api/workstation/evidence/vault/{Uri.EscapeDataString(foreign.VaultIdentity.VaultId)}/documents/{Uri.EscapeDataString(foreign.Document!.DocumentId)}/review",
+            new EvidenceVaultDocumentReviewRequestDto(
+                EvidenceDocumentReviewStatusDto.Rejected,
+                "evidence-controller",
+                "Cross-company document must remain inaccessible."),
+            ServerJsonOptions,
+            cts.Token);
+        foreignReviewResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var foreignIdentity = await store.TryGetVaultIdentityAsync(
+            foreign.VaultIdentity.VaultId,
+            "tenant-beta",
+            "company-beta",
+            cts.Token);
+        foreignIdentity.Should().NotBeNull();
+        foreignIdentity!.Documents.Should().ContainSingle(document =>
+            document.DocumentId == foreign.Document.DocumentId
+            && document.ReviewerState.Status == EvidenceDocumentReviewStatusDto.NeedsReview
+            && document.AuditTrail.All(audit => audit.Action != "DocumentReviewRecorded"));
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_VaultIntake_AuthenticatedScopeCannotBeOverridden()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-intake-tenant-isolation-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                "statement-run",
+                "statement-run-spoof-attempt",
+                "imported-file",
+                "statement-spoof-attempt.csv",
+                ContentBase64: Convert.ToBase64String("account,balance\nA,100\n"u8.ToArray()),
+                ReceivedBy: "spoofed-receiver")
+            {
+                Classification = EvidenceDocumentClassificationDto.Statement,
+                Actor = "spoofed-cfo",
+                TenantId = "tenant-beta",
+                Scope = "company-beta",
+                ExtractionStatus = EvidenceExtractionStatusDto.Accepted,
+                ExtractorId = "spoofed-extractor",
+                ReviewerState = new EvidenceDocumentReviewStateDto(
+                    EvidenceDocumentReviewStatusDto.Accepted,
+                    "spoofed-cfo",
+                    new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                {
+                    ConfirmedFields =
+                    [
+                        new EvidenceDocumentConfirmedFieldDto(
+                            "balance",
+                            "100",
+                            "spoofed-cfo",
+                            new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                    ]
+                }
+            },
+            ServerJsonOptions,
+            cts.Token);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var retained = await response.Content.ReadFromJsonAsync<EvidenceVaultIntakeResponseDto>(
+            ServerJsonOptions,
+            cts.Token);
+        retained.Should().NotBeNull();
+        retained!.Document.Should().NotBeNull();
+        retained.Document!.TenantId.Should().Be("tenant-alpha");
+        retained.Document.Scope.Should().Be("company-alpha");
+        retained.Document.Actor.Should().Be("evidence-controller");
+        retained.Document.SourceRecord!.Actor.Should().Be("evidence-controller");
+        retained.Document.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.NotExtracted);
+        retained.Document.ExtractorId.Should().Be(ManualEvidenceDocumentExtractor.ExtractorId);
+        retained.Document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.Unreviewed);
+        retained.Document.ReviewerState.Reviewer.Should().BeNull();
+        retained.Document.ReviewerState.ReviewedAt.Should().BeNull();
+        retained.Document.ReviewerState.ConfirmedFields.Should().BeEmpty();
+        retained.VaultIdentity.TenantId.Should().Be("tenant-alpha");
+        retained.VaultIdentity.Scope.Should().Be("company-alpha");
+
+        var store = app.Services.GetRequiredService<IEvidenceArtifactStore>();
+        var owned = await store.ListDocumentsAsync(
+            new EvidenceVaultDocumentQueryDto(
+                Classification: EvidenceDocumentClassificationDto.Statement,
+                SubjectKind: "statement-run",
+                SubjectId: "statement-run-spoof-attempt",
+                TenantId: "tenant-alpha",
+                Scope: "company-alpha"),
+            cts.Token);
+        var foreign = await store.ListDocumentsAsync(
+            new EvidenceVaultDocumentQueryDto(
+                Classification: EvidenceDocumentClassificationDto.Statement,
+                SubjectKind: "statement-run",
+                SubjectId: "statement-run-spoof-attempt",
+                TenantId: "tenant-beta",
+                Scope: "company-beta"),
+            cts.Token);
+        owned.Should().ContainSingle();
+        foreign.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(EvidenceDocumentIntakeSourceKindDto.LocalFile)]
+    [InlineData(EvidenceDocumentIntakeSourceKindDto.ImportedFileReference)]
+    public async Task EvidenceEndpoints_VaultIntake_RejectsServerLocalFileSources(
+        EvidenceDocumentIntakeSourceKindDto sourceKind)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-local-source-rejection-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+        var serverLocalPath = Path.Combine(root, "server-local-secret.txt");
+        await File.WriteAllTextAsync(serverLocalPath, "must not be read through workstation intake");
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                "statement-run",
+                "statement-run-local-source-attempt",
+                "imported-file",
+                "server-local-secret.txt")
+            {
+                IntakeSource = new EvidenceDocumentIntakeSourceDto(
+                    sourceKind,
+                    Path: serverLocalPath)
+            },
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await response.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        error!.Code.Should().Be("invalid-evidence-vault-intake-source");
+        error.Message.Should().Contain("cannot read a server-local file path");
+        Directory.Exists(Path.Combine(root, "workstation", "evidence", "_vault")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_VaultReads_EnforceAuthenticatedIdentityScopeAndHideLegacyEntries()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-read-isolation-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IEvidenceArtifactStore>();
+
+        var ownedSubject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-owned");
+        var foreignSubject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-foreign");
+        var legacySubject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-legacy");
+        var owned = await store.WriteManifestAsync(
+            BlockedAuditSupportPacket(ownedSubject),
+            new EvidencePacketExportRequest("owned-operator", "owned evidence")
+            {
+                TenantId = "tenant-alpha",
+                Scope = "company-alpha"
+            });
+        var foreign = await store.WriteManifestAsync(
+            BlockedAuditSupportPacket(foreignSubject),
+            new EvidencePacketExportRequest("foreign-operator", "foreign evidence")
+            {
+                TenantId = "tenant-beta",
+                Scope = "company-beta"
+            });
+        var legacy = await store.WriteManifestAsync(
+            BlockedAuditSupportPacket(legacySubject),
+            new EvidencePacketExportRequest("legacy-operator", "legacy unscoped evidence fixture")
+            {
+                TenantId = "tenant-alpha",
+                Scope = "company-alpha"
+            });
+        var ownedIdentity = owned.VaultIdentity!;
+        var foreignIdentity = foreign.VaultIdentity!;
+        var legacyIdentity = legacy.VaultIdentity!;
+
+        // Model a pre-scope persisted record without keeping an unscoped write path open.
+        var legacyIndexPath = Path.Combine(
+            root,
+            "workstation",
+            "evidence",
+            "_vault",
+            $"{legacyIdentity.VaultId}.json");
+        var legacyManifestPath = Path.Combine(
+            root,
+            legacy.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        foreach (var legacyPath in new[] { legacyIndexPath, legacyManifestPath })
+        {
+            var legacyJson = JsonNode.Parse(await File.ReadAllTextAsync(legacyPath))!.AsObject();
+            legacyJson.Remove("tenantId");
+            legacyJson.Remove("scope");
+            if (legacyJson["vaultIdentity"] is JsonObject embeddedIdentity)
+            {
+                embeddedIdentity.Remove("tenantId");
+                embeddedIdentity.Remove("scope");
+            }
+
+            await File.WriteAllTextAsync(legacyPath, legacyJson.ToJsonString(ServerJsonOptions));
+        }
+
+        var spoofedOwnedSearch = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(
+                $"{ownedSubject.SubjectKind}/{ownedSubject.SubjectId}",
+                null,
+                null,
+                null,
+                null)
+            {
+                TenantId = "tenant-beta",
+                Scope = "company-beta"
+            },
+            ServerJsonOptions);
+        spoofedOwnedSearch.StatusCode.Should().Be(HttpStatusCode.OK);
+        var ownedMatches = await spoofedOwnedSearch.Content
+            .ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+        ownedMatches.Should().ContainSingle(match => match.VaultId == ownedIdentity.VaultId);
+
+        foreach (var hiddenSubject in new[] { foreignSubject, legacySubject })
+        {
+            var hiddenSearch = await client.PostAsJsonAsync(
+                "/api/workstation/evidence/vault/search",
+                new EvidenceVaultLookupRequestDto(
+                    $"{hiddenSubject.SubjectKind}/{hiddenSubject.SubjectId}",
+                    null,
+                    null,
+                    null,
+                    null),
+                ServerJsonOptions);
+            hiddenSearch.StatusCode.Should().Be(HttpStatusCode.OK);
+            var hiddenMatches = await hiddenSearch.Content
+                .ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+            hiddenMatches.Should().BeEmpty();
+        }
+
+        var requestListsResponse = await client.GetAsync("/api/workstation/evidence/vault/request-lists");
+        requestListsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var requestLists = await requestListsResponse.Content
+            .ReadFromJsonAsync<IReadOnlyList<EvidenceVaultRequestListEntryDto>>(ServerJsonOptions);
+        requestLists.Should().NotBeNull();
+        requestLists!.Should().OnlyContain(entry => entry.VaultId == ownedIdentity.VaultId);
+        requestLists.Should().NotBeEmpty();
+
+        (await client.GetAsync(owned.ManifestRoute)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.GetAsync($"/workstation/evidence/vault/{ownedIdentity.VaultId}"))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.GetAsync(foreign.ManifestRoute)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync($"/workstation/evidence/vault/{foreignIdentity.VaultId}"))
+            .StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync(legacy.ManifestRoute)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync($"/workstation/evidence/vault/{legacyIdentity.VaultId}"))
+            .StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var ownedVaultSubjectRoute =
+            $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.EvidenceVaultKind}/{ownedIdentity.VaultId}";
+        (await client.GetAsync($"{ownedVaultSubjectRoute}/packet")).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.GetAsync($"{ownedVaultSubjectRoute}/graph")).StatusCode.Should().Be(HttpStatusCode.OK);
+        foreach (var hiddenVaultId in new[] { foreignIdentity.VaultId, legacyIdentity.VaultId })
+        {
+            var hiddenVaultSubjectRoute =
+                $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.EvidenceVaultKind}/{hiddenVaultId}";
+            (await client.GetAsync($"{hiddenVaultSubjectRoute}/packet"))
+                .StatusCode.Should().Be(HttpStatusCode.NotFound);
+            (await client.GetAsync($"{hiddenVaultSubjectRoute}/graph"))
+                .StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_VaultDocuments_MissingCompanyScope_IsForbidden()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-missing-company-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: null);
+        var client = app.GetTestClient();
+
+        var listResponse = await client.GetAsync("/api/workstation/evidence/vault/documents");
+        var reviewResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/ev-missing/documents/missing/review",
+            new EvidenceVaultDocumentReviewRequestDto(
+                EvidenceDocumentReviewStatusDto.Rejected,
+                "evidence-controller"),
+            ServerJsonOptions);
+        var intakeResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                "statement-run",
+                "statement-run-missing-company",
+                "imported-file",
+                "statement-missing-company.csv",
+                ContentBase64: Convert.ToBase64String("account,balance\nA,100\n"u8.ToArray())),
+            ServerJsonOptions);
+        var searchResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto("report-pack/close", null, null, null, null),
+            ServerJsonOptions);
+        var requestListsResponse = await client.GetAsync("/api/workstation/evidence/vault/request-lists");
+        var manifestResponse = await client.GetAsync(
+            "/workstation/evidence/report-pack/current/20260101T000000000Z-manifest.json");
+        var vaultManifestResponse = await client.GetAsync(
+            "/workstation/evidence/vault/ev-000000000000000000000000");
+        var exportResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
+            new EvidencePacketExportRequest("spoofed-operator", "missing scope"),
+            ServerJsonOptions);
+        var vaultPacketResponse = await client.GetAsync(
+            $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.EvidenceVaultKind}/ev-missing/packet");
+        var vaultGraphResponse = await client.GetAsync(
+            $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.EvidenceVaultKind}/ev-missing/graph");
+        var subjectsResponse = await client.GetAsync("/api/workstation/evidence/subjects");
+
+        listResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        reviewResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        intakeResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        searchResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        requestListsResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        manifestResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        vaultManifestResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        vaultPacketResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        vaultGraphResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        subjectsResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_DeclareReportingPermissionsAndTenantCompanyScope()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-route-authority-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var expected = new Dictionary<string, UserPermission>(StringComparer.Ordinal)
+        {
+            ["GetWorkstationEvidenceManifest"] = UserPermission.ViewReporting,
+            ["GetWorkstationEvidenceVaultManifest"] = UserPermission.ViewReporting,
+            ["GetWorkstationEvidenceSubjects"] = UserPermission.ViewReporting,
+            ["GetWorkstationEvidencePacket"] = UserPermission.ViewReporting,
+            ["GetWorkstationEvidenceGraph"] = UserPermission.ViewReporting,
+            ["ValidateWorkstationEvidencePacket"] = UserPermission.ManageReporting,
+            ["ExportWorkstationEvidenceManifest"] = UserPermission.ManageReporting,
+            ["GetWorkstationEvidenceTemplates"] = UserPermission.ViewReporting,
+            ["IntakeWorkstationEvidenceVaultArtifact"] = UserPermission.ManageReporting,
+            ["SearchWorkstationEvidenceVault"] = UserPermission.ViewReporting,
+            ["ListWorkstationEvidenceVaultRequestLists"] = UserPermission.ViewReporting,
+            ["ListWorkstationEvidenceVaultDocuments"] = UserPermission.ViewReporting,
+            ["ReviewWorkstationEvidenceVaultDocument"] = UserPermission.ApproveReporting
+        };
+        var endpoints = app.Services.GetRequiredService<EndpointDataSource>().Endpoints;
+
+        foreach (var (endpointName, permission) in expected)
+        {
+            var endpoint = endpoints.Single(candidate => string.Equals(
+                candidate.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName,
+                endpointName,
+                StringComparison.Ordinal));
+            var authorization = endpoint.Metadata.GetMetadata<EndpointAuthorizationMetadata>();
+
+            authorization.Should().NotBeNull($"{endpointName} must declare an explicit reporting permission");
+            authorization!.RequireAll.Should().BeTrue();
+            authorization.Permissions.Should().ContainSingle().Which.Should().Be(permission);
+            endpoint.Metadata.GetMetadata<WorkstationTenantScopeMetadata>()
+                .Should().NotBeNull($"{endpointName} must retain tenant-and-company scope metadata");
+        }
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_Reads_ScopedActorWithoutViewReporting_IsForbidden()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-read-permission-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "company-alpha",
+            requestPermissions: UserPermission.ManageReporting);
+        var client = app.GetTestClient();
+
+        var subjects = await client.GetAsync("/api/workstation/evidence/subjects");
+        var templates = await client.GetAsync("/api/workstation/evidence/templates");
+        var documents = await client.GetAsync("/api/workstation/evidence/vault/documents");
+        var search = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto("report-pack/current", null, null, null, null),
+            ServerJsonOptions);
+
+        subjects.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        templates.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        documents.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        search.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_Mutations_ScopedActorWithViewReportingOnly_IsForbidden()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-mutation-permission-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "company-alpha",
+            requestPermissions: UserPermission.ViewReporting);
+        var client = app.GetTestClient();
+
+        var validate = await client.PostAsync(
+            "/api/workstation/evidence/subjects/report-pack/current/validate",
+            content: null);
+        var export = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
+            new EvidencePacketExportRequest("spoofed-operator", "permission test"),
+            ServerJsonOptions);
+        var intake = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                "statement-run",
+                "statement-run-permission-test",
+                "upload",
+                "statement.csv",
+                ContentBase64: Convert.ToBase64String("account,balance\nA,100\n"u8.ToArray())),
+            ServerJsonOptions);
+
+        validate.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        export.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        intake.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        Directory.Exists(Path.Combine(root, "workstation", "evidence")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_Review_ScopedActorWithoutApproveReporting_IsForbidden()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-review-permission-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "company-alpha",
+            requestPermissions: UserPermission.ManageReporting);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/ev-missing/documents/document-missing/review",
+            new EvidenceVaultDocumentReviewRequestDto(
+                EvidenceDocumentReviewStatusDto.Rejected,
+                "spoofed-reviewer"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_WritesWithoutCompleteScope_FailBeforePersistence()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-write-scope-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var packet = BlockedAuditSupportPacket(Subject(EvidenceSubjectResolver.ReportPackKind, "close-scope-test"));
+
+        foreach (var (tenantId, scope) in new[]
+                 {
+                     ((string?)null, (string?)"company-alpha"),
+                     ((string?)"tenant-alpha", (string?)null),
+                     ((string?)"  ", (string?)"company-alpha"),
+                     ((string?)"tenant-alpha", (string?)"  ")
+                 })
+        {
+            var export = () => store.WriteManifestAsync(
+                packet,
+                new EvidencePacketExportRequest("operator", "scope boundary")
+                {
+                    TenantId = tenantId,
+                    Scope = scope
+                });
+            var intake = () => store.WriteIntakeArtifactAsync(
+                new EvidenceVaultIntakeRequestDto(
+                    "statement-run",
+                    "statement-run-scope-test",
+                    "upload",
+                    "statement.csv",
+                    ContentBase64: Convert.ToBase64String("account,balance\nA,100\n"u8.ToArray()))
+                {
+                    TenantId = tenantId,
+                    Scope = scope
+                });
+
+            await export.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*tenant and company scope*");
+            await intake.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*tenant and company scope*");
+        }
+
+        Directory.Exists(Path.Combine(root, "workstation", "evidence")).Should().BeFalse();
+    }
+
+#pragma warning disable CS0618 // Compatibility test intentionally invokes obsolete fail-closed slots.
+    [Fact]
+    public async Task FileEvidenceArtifactStore_ConcreteLegacyUnscopedSlots_FailClosed()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-legacy-slots-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        Func<Task>[] legacyCalls =
+        [
+            () => store.TryOpenManifestAsync("report-pack", "current", "manifest.json"),
+            () => store.TryOpenManifestByVaultIdAsync("ev-000000000000000000000000"),
+            () => store.TryGetVaultIdentityAsync("ev-000000000000000000000000"),
+            () => store.ReviewDocumentAsync(
+                "ev-000000000000000000000000",
+                "document-missing",
+                new EvidenceVaultDocumentReviewRequestDto(
+                    EvidenceDocumentReviewStatusDto.Rejected,
+                    "legacy-reviewer"))
+        ];
+
+        foreach (var legacyCall in legacyCalls)
+        {
+            await legacyCall.Should().ThrowAsync<NotSupportedException>()
+                .WithMessage("*requires an authenticated tenant and company scope*");
+        }
+    }
+#pragma warning restore CS0618
 
     [Fact]
     public async Task FileEvidenceArtifactStore_DuringVaultApiIntake_RetainsCapturedDocumentWithReviewMetadata()
@@ -2469,7 +3344,10 @@ public sealed class EvidenceWorkflowFabricTests
         File.Exists(retainedPath).Should().BeTrue();
         (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(bytes);
 
-        var identity = await store.TryGetVaultIdentityAsync(response.VaultIdentity.VaultId);
+        var identity = await store.TryGetVaultIdentityAsync(
+            response.VaultIdentity.VaultId,
+            "tenant-alpha",
+            "fund-alpha");
         identity.Should().NotBeNull();
         var artifact = identity!.Artifacts.Should().ContainSingle().Subject;
         artifact.ContentHashSha256.Should().Be(expectedHash);
@@ -2564,14 +3442,22 @@ public sealed class EvidenceWorkflowFabricTests
             null,
             null,
             null,
-            null));
+            null)
+        {
+            TenantId = "tenant-alpha",
+            Scope = "fund-alpha"
+        });
         matches.Should().ContainSingle(match => match.VaultId == response.VaultIdentity.VaultId);
 
         var requestLists = await store.ListRequestListsAsync(new EvidenceVaultRequestListQueryDto(
             RequestListKind: "AuditRequestList",
             TargetKind: "audit",
             TargetId: subjectId,
-            Status: "Open"));
+            Status: "Open")
+        {
+            TenantId = "tenant-alpha",
+            Scope = "fund-alpha"
+        });
         requestLists.Should().ContainSingle(entry =>
             entry.VaultId == response.VaultIdentity.VaultId &&
             entry.OpenRequestCount == 1 &&
@@ -2621,9 +3507,17 @@ public sealed class EvidenceWorkflowFabricTests
             IntakeChannel: "api",
             FileName: "unclassified-support.txt",
             ContentBase64: Convert.ToBase64String(bytes),
-            ReceivedBy: "fund-controller"), cts.Token);
+            ReceivedBy: "fund-controller")
+        {
+            TenantId = "tenant-alpha",
+            Scope = "fund-alpha"
+        }, cts.Token);
 
-        var identity = await store.TryGetVaultIdentityAsync(response.VaultIdentity.VaultId, cts.Token);
+        var identity = await store.TryGetVaultIdentityAsync(
+            response.VaultIdentity.VaultId,
+            "tenant-alpha",
+            "fund-alpha",
+            cts.Token);
         identity.Should().NotBeNull();
         identity!.SupportRequests.Should().ContainSingle(request =>
             request.RequestKind == "ValidationIssue" &&
@@ -2634,7 +3528,11 @@ public sealed class EvidenceWorkflowFabricTests
             request.RequestKind == "ValidationIssue" &&
             request.Severity == EvidenceValidationSeverityDto.Warning);
 
-        await using var manifest = (await store.TryOpenManifestByVaultIdAsync(response.VaultIdentity.VaultId, cts.Token))!.Content;
+        await using var manifest = (await store.TryOpenManifestByVaultIdAsync(
+            response.VaultIdentity.VaultId,
+            "tenant-alpha",
+            "fund-alpha",
+            cts.Token))!.Content;
         using var manifestDocument = await JsonDocument.ParseAsync(manifest, cancellationToken: cts.Token);
         var completeness = manifestDocument.RootElement.GetProperty("completeness");
         completeness.GetProperty("status").GetString().Should().Be("ReviewRequired");
@@ -2664,13 +3562,17 @@ public sealed class EvidenceWorkflowFabricTests
         {
             Classification = EvidenceDocumentClassificationDto.BankEvidence,
             ExtractionStatus = EvidenceExtractionStatusDto.NeedsReview,
-            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview)
+            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview),
+            TenantId = "tenant-alpha",
+            Scope = "fund-alpha"
         }, cts.Token);
         var originalContentHash = intake.VaultIdentity.ContentHashSha256;
 
         var review = await store.ReviewDocumentAsync(
             intake.VaultIdentity.VaultId,
             intake.Document!.DocumentId,
+            "tenant-alpha",
+            "fund-alpha",
             new EvidenceVaultDocumentReviewRequestDto(
                 EvidenceDocumentReviewStatusDto.Accepted,
                 "controller",
@@ -2717,7 +3619,11 @@ public sealed class EvidenceWorkflowFabricTests
         review.AuditEvent.CorrelationId.Should().Be("corr-review-1");
         review.AuditEvent.Summary.Should().Contain("1 human-confirmed field");
 
-        var identity = await store.TryGetVaultIdentityAsync(intake.VaultIdentity.VaultId, cts.Token);
+        var identity = await store.TryGetVaultIdentityAsync(
+            intake.VaultIdentity.VaultId,
+            "tenant-alpha",
+            "fund-alpha",
+            cts.Token);
         identity.Should().NotBeNull();
         identity!.Documents.Should().ContainSingle(document =>
             document.DocumentId == intake.Document.DocumentId &&
@@ -2738,7 +3644,11 @@ public sealed class EvidenceWorkflowFabricTests
         identity.ContentHashSha256.Should().NotBe(originalContentHash);
         identity.ManifestSnapshot.ContentHashSha256.Should().Be(identity.ContentHashSha256);
 
-        await using var manifest = (await store.TryOpenManifestByVaultIdAsync(intake.VaultIdentity.VaultId, cts.Token))!.Content;
+        await using var manifest = (await store.TryOpenManifestByVaultIdAsync(
+            intake.VaultIdentity.VaultId,
+            "tenant-alpha",
+            "fund-alpha",
+            cts.Token))!.Content;
         using var reader = new StreamReader(manifest);
         var manifestJson = await reader.ReadToEndAsync(cts.Token);
         manifestJson.Should().Contain("\"action\": \"DocumentReviewRecorded\"");
@@ -2749,10 +3659,307 @@ public sealed class EvidenceWorkflowFabricTests
         var unconfirmedReview = () => store.ReviewDocumentAsync(
             intake.VaultIdentity.VaultId,
             intake.Document.DocumentId,
+            "tenant-alpha",
+            "fund-alpha",
             new EvidenceVaultDocumentReviewRequestDto(EvidenceDocumentReviewStatusDto.Accepted, "controller"),
             cts.Token);
         await unconfirmedReview.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*require at least one human-confirmed field*");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringSplitReviewWrite_UsesManifestSemanticsAndRejectsUnhashedTampering()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-split-review-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var intake = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            SubjectKind: "account",
+            SubjectId: "fund-alpha-cash",
+            IntakeChannel: "api",
+            FileName: "bank-statement.csv",
+            ContentBase64: Convert.ToBase64String("account,balance\nfund-alpha,100\n"u8.ToArray()),
+            ReceivedBy: "fund-controller")
+        {
+            Classification = EvidenceDocumentClassificationDto.BankStatement,
+            TenantId = "tenant-alpha",
+            Scope = "fund-alpha",
+            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview)
+        });
+        var indexPath = Path.Combine(
+            root,
+            "workstation",
+            "evidence",
+            "_vault",
+            $"{intake.VaultIdentity.VaultId}.json");
+        var staleIndexJson = await File.ReadAllTextAsync(indexPath);
+
+        var review = await store.ReviewDocumentAsync(
+            intake.VaultIdentity.VaultId,
+            intake.Document!.DocumentId,
+            "tenant-alpha",
+            "fund-alpha",
+            new EvidenceVaultDocumentReviewRequestDto(
+                EvidenceDocumentReviewStatusDto.Accepted,
+                "controller-alpha",
+                "Reviewed against retained statement bytes.")
+            {
+                ConfirmedFields =
+                [
+                    new EvidenceDocumentConfirmedFieldDto(
+                        "balance",
+                        "100",
+                        "controller-alpha",
+                        default)
+                ]
+            });
+        review.Should().NotBeNull();
+
+        // Simulate a process stop after the atomic manifest write but before the locator-index
+        // write. The older index must not leak its stale NeedsReview semantics.
+        await File.WriteAllTextAsync(indexPath, staleIndexJson);
+        var query = new EvidenceVaultDocumentQueryDto(
+            Classification: EvidenceDocumentClassificationDto.BankStatement,
+            ReviewStatus: EvidenceDocumentReviewStatusDto.Accepted,
+            SubjectKind: "account",
+            SubjectId: "fund-alpha-cash",
+            TenantId: "tenant-alpha",
+            Scope: "fund-alpha");
+        var entry = (await store.ListDocumentsAsync(query)).Should().ContainSingle().Subject;
+        entry.Document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.Accepted);
+        entry.Document.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.Accepted);
+        entry.Document.ReviewerState.ConfirmedFields.Should().ContainSingle(field =>
+            field.FieldName == "balance" && field.ConfirmedValue == "100");
+        entry.Document.AuditTrail.Should().Contain(audit => audit.Action == "DocumentReviewRecorded");
+        var identity = await store.TryGetVaultIdentityAsync(
+            intake.VaultIdentity.VaultId,
+            "tenant-alpha",
+            "fund-alpha");
+        identity!.Documents.Should().ContainSingle(document =>
+            document.ReviewerState.Status == EvidenceDocumentReviewStatusDto.Accepted);
+
+        var manifestPath = Path.Combine(
+            root,
+            identity.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var manifestJson = await File.ReadAllTextAsync(manifestPath);
+        manifestJson.Should().Contain("\"status\": \"Accepted\"");
+        await File.WriteAllTextAsync(
+            manifestPath,
+            manifestJson.Replace(
+                "\"status\": \"Accepted\"",
+                "\"status\": \"Rejected\"",
+                StringComparison.Ordinal));
+
+        (await store.ListDocumentsAsync(query)).Should().BeEmpty(
+            "manifest semantic tampering without a matching retained content hash must fail closed");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringSplitReviewWrite_RanksCompetingRecordsByManifestSemantics()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-split-ranking-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var reviewRequired = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            "account",
+            "review-required",
+            "api",
+            "z-review-required.txt",
+            ContentBase64: Convert.ToBase64String("review-required"u8.ToArray()))
+        {
+            TenantId = "tenant-alpha",
+            Scope = "company-alpha",
+            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview)
+        });
+        var laterAccepted = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            "account",
+            "later-accepted",
+            "api",
+            "a-later-accepted.txt",
+            ContentBase64: Convert.ToBase64String("later-accepted"u8.ToArray()))
+        {
+            TenantId = "tenant-alpha",
+            Scope = "company-alpha",
+            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview)
+        });
+        var laterIndexPath = Path.Combine(
+            root,
+            "workstation",
+            "evidence",
+            "_vault",
+            $"{laterAccepted.VaultIdentity.VaultId}.json");
+        var staleNeedsReviewIndex = await File.ReadAllTextAsync(laterIndexPath);
+        var review = await store.ReviewDocumentAsync(
+            laterAccepted.VaultIdentity.VaultId,
+            laterAccepted.Document!.DocumentId,
+            "tenant-alpha",
+            "company-alpha",
+            new EvidenceVaultDocumentReviewRequestDto(
+                EvidenceDocumentReviewStatusDto.Accepted,
+                "controller-alpha")
+            {
+                ConfirmedFields =
+                [
+                    new EvidenceDocumentConfirmedFieldDto(
+                        "reviewState",
+                        "accepted",
+                        "controller-alpha",
+                        default)
+                ]
+            });
+        review.Should().NotBeNull();
+        await File.WriteAllTextAsync(laterIndexPath, staleNeedsReviewIndex);
+
+        var entries = await store.ListDocumentsAsync(new EvidenceVaultDocumentQueryDto(
+            TenantId: "tenant-alpha",
+            Scope: "company-alpha",
+            MaxResults: 1));
+
+        entries.Should().ContainSingle(entry =>
+            entry.VaultId == reviewRequired.VaultIdentity.VaultId
+            && entry.Document.ReviewerState.Status == EvidenceDocumentReviewStatusDto.NeedsReview,
+            "manifest-owned review priority must win even when a newer stale index still says NeedsReview");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringBoundedDocumentList_StopsBeforeLowerRankedArtifact()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-list-bound-{Guid.NewGuid():N}");
+        var logger = new RecordingLogger<FileEvidenceArtifactStore>();
+        var store = new FileEvidenceArtifactStore(root, logger);
+        var first = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            "account",
+            "first",
+            "api",
+            "first.txt",
+            ContentBase64: Convert.ToBase64String("first"u8.ToArray()))
+        {
+            TenantId = "tenant-alpha",
+            Scope = "company-alpha",
+            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview)
+        });
+        var lowerRanked = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            "account",
+            "lower-ranked",
+            "api",
+            "lower-ranked.txt",
+            ContentBase64: Convert.ToBase64String("lower"u8.ToArray()))
+        {
+            TenantId = "tenant-alpha",
+            Scope = "company-alpha",
+            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.Unreviewed)
+        });
+        var lockedArtifactPath = Path.Combine(
+            root,
+            lowerRanked.VaultIdentity.Artifacts.Single().RelativePath
+                .Replace('/', Path.DirectorySeparatorChar));
+        await using var lockedArtifact = new FileStream(
+            lockedArtifactPath,
+            FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.None);
+
+        var entries = await store.ListDocumentsAsync(new EvidenceVaultDocumentQueryDto(
+            TenantId: "tenant-alpha",
+            Scope: "company-alpha",
+            MaxResults: 1));
+
+        entries.Should().ContainSingle(entry => entry.VaultId == first.VaultIdentity.VaultId);
+        logger.Entries.Should().NotContain(entry =>
+            entry.Message.Contains(lockedArtifactPath, StringComparison.OrdinalIgnoreCase),
+            "once the requested result is integrity-verified, lower candidates must not be opened");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringBoundedDocumentList_ReturnsPartialPageAtAbsoluteByteLimit()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-list-byte-bound-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(
+            root,
+            NullLogger<FileEvidenceArtifactStore>.Instance,
+            documentVerificationByteLimit: 4);
+        var first = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            "account",
+            "first",
+            "api",
+            "first.bin",
+            ContentBase64: Convert.ToBase64String([1, 2, 3, 4]))
+        {
+            TenantId = "tenant-alpha",
+            Scope = "company-alpha",
+            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview)
+        });
+        await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            "account",
+            "second",
+            "api",
+            "second.bin",
+            ContentBase64: Convert.ToBase64String([5, 6, 7, 8]))
+        {
+            TenantId = "tenant-alpha",
+            Scope = "company-alpha",
+            ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.Unreviewed)
+        });
+
+        var entries = await store.ListDocumentsAsync(new EvidenceVaultDocumentQueryDto(
+            TenantId: "tenant-alpha",
+            Scope: "company-alpha",
+            MaxResults: 2));
+
+        entries.Should().ContainSingle(entry => entry.VaultId == first.VaultIdentity.VaultId,
+            "the absolute verification-byte budget may intentionally underfill a requested page");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringBoundedLocatorDiscovery_DoesNotReadTailIndexes()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-index-discovery-bound-{Guid.NewGuid():N}");
+        var logger = new RecordingLogger<FileEvidenceArtifactStore>();
+        var store = new FileEvidenceArtifactStore(
+            root,
+            logger,
+            documentVerificationByteLimit: 1,
+            documentLocatorInspectionLimit: 1);
+        var vaultDirectory = Path.Combine(root, "workstation", "evidence", "_vault");
+        Directory.CreateDirectory(vaultDirectory);
+        await File.WriteAllTextAsync(Path.Combine(vaultDirectory, "first-invalid.json"), "{invalid-first");
+        await File.WriteAllTextAsync(Path.Combine(vaultDirectory, "tail-invalid.json"), "{invalid-tail");
+
+        var entries = await store.ListDocumentsAsync(new EvidenceVaultDocumentQueryDto(
+            TenantId: "tenant-alpha",
+            Scope: "company-alpha",
+            MaxResults: 1));
+
+        entries.Should().BeEmpty();
+        logger.Entries.Count(entry =>
+                entry.Message.Contains("Evidence vault index", StringComparison.Ordinal)
+                && entry.Message.Contains("could not be deserialized", StringComparison.Ordinal))
+            .Should().Be(1,
+                "the hard locator-inspection cap must stop before deserializing the tail index");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringMissingVaultDocumentReviews_DoesNotRetainVaultLocks()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-missing-review-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        for (var index = 0; index < 32; index++)
+        {
+            var result = await store.ReviewDocumentAsync(
+                $"ev-{index:x24}",
+                "missing-document",
+                "tenant-alpha",
+                "company-alpha",
+                new EvidenceVaultDocumentReviewRequestDto(EvidenceDocumentReviewStatusDto.Rejected, "controller"),
+                cts.Token);
+
+            result.Should().BeNull();
+        }
+
+        var locks = (ConcurrentDictionary<string, SemaphoreSlim>)typeof(FileEvidenceArtifactStore)
+            .GetField("_vaultWriteLocks", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(store)!;
+        locks.Should().BeEmpty();
     }
 
     [Fact]
@@ -2783,6 +3990,8 @@ public sealed class EvidenceWorkflowFabricTests
                 null))
         {
             Classification = EvidenceDocumentClassificationDto.CustodianFile,
+            TenantId = "tenant-alpha",
+            Scope = "fund-alpha",
             IntakeSource = new EvidenceDocumentIntakeSourceDto(
                 EvidenceDocumentIntakeSourceKindDto.LocalFile,
                 Path: sourcePath,
@@ -2817,7 +4026,10 @@ public sealed class EvidenceWorkflowFabricTests
         File.Exists(retainedPath).Should().BeTrue();
         (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(bytes);
 
-        var identity = await store.TryGetVaultIdentityAsync(response.VaultIdentity.VaultId);
+        var identity = await store.TryGetVaultIdentityAsync(
+            response.VaultIdentity.VaultId,
+            "tenant-alpha",
+            "fund-alpha");
         identity.Should().NotBeNull();
         var artifact = identity!.Artifacts.Should().ContainSingle().Subject;
         artifact.SourcePath.Should().Be(Path.GetFullPath(sourcePath));
@@ -2894,6 +4106,8 @@ public sealed class EvidenceWorkflowFabricTests
             IntakeChannel: "email",
             FileName: "missing-content.csv")
         {
+            TenantId = "tenant-alpha",
+            Scope = "fund-alpha",
             IntakeSource = new EvidenceDocumentIntakeSourceDto(
                 EvidenceDocumentIntakeSourceKindDto.Email,
                 Uri: "mailbox://ap/fund-alpha/missing-content.eml")
@@ -2938,7 +4152,10 @@ public sealed class EvidenceWorkflowFabricTests
     public async Task EvidenceEndpoints_VaultIntake_RetainsUploadedEvidenceAndRejectsInvalidPayload()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-intake-endpoint-{Guid.NewGuid():N}");
-        await using var app = await CreateEvidenceAppAsync(root);
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "fund-alpha");
         var client = app.GetTestClient();
         var subjectId = "payment:fund-alpha:capital-call:20260630";
         var bytes = Encoding.UTF8.GetBytes("settlement_id,amount,currency\r\nsettle-001,1250.00,USD\r\n");
@@ -3062,7 +4279,10 @@ public sealed class EvidenceWorkflowFabricTests
     public async Task EvidenceEndpoints_VaultIntake_RetainsAdapterSeamSourceRecord()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-adapter-intake-endpoint-{Guid.NewGuid():N}");
-        await using var app = await CreateEvidenceAppAsync(root);
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "fund-alpha");
         var client = app.GetTestClient();
         var subjectId = "fund-alpha-admin-package-202606";
         var bytes = Encoding.UTF8.GetBytes("package,period,status\r\nadmin-package,2026-06,received\r\n");
@@ -3115,7 +4335,7 @@ public sealed class EvidenceWorkflowFabricTests
         intake.Document.SourceRecord.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.PortalDownload);
         intake.Document.SourceRecord.SourceSystem.Should().Be("fund-admin-portal");
         intake.Document.SourceRecord.SourceReference.Should().Be("portal://fund-admin/fund-alpha/admin-package-202606");
-        intake.Document.SourceRecord.Actor.Should().Be("fund-admin-operator");
+        intake.Document.SourceRecord.Actor.Should().Be("evidence-controller");
         intake.Document.SourceRecord.TenantId.Should().Be("tenant-alpha");
         intake.Document.SourceRecord.Scope.Should().Be("fund-alpha");
         intake.VaultIdentity.ManifestSnapshot.Should().NotBeNull();
@@ -3156,7 +4376,10 @@ public sealed class EvidenceWorkflowFabricTests
     public async Task EvidenceEndpoints_VaultIntake_WithFixtureMetadata_UsesDeterministicFixtureExtraction()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-fixture-intake-{Guid.NewGuid():N}");
-        await using var app = await CreateEvidenceAppAsync(root);
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "fund-alpha");
         var client = app.GetTestClient();
         var bytes = Encoding.UTF8.GetBytes("account,ending_cash\r\nfund-alpha-cash,1024.50\r\n");
 
@@ -3217,7 +4440,10 @@ public sealed class EvidenceWorkflowFabricTests
     public async Task EvidenceEndpoints_VaultDocumentReview_RetainsOperatorReviewWithoutAccountingMutation()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-endpoint-review-{Guid.NewGuid():N}");
-        await using var app = await CreateEvidenceAppAsync(root);
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            requestTenantId: "tenant-alpha",
+            requestCompanyId: "fund-alpha");
         var client = app.GetTestClient();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var bytes = Encoding.UTF8.GetBytes("invoice,total\r\nINV-1,125.00\r\n");
@@ -3248,12 +4474,13 @@ public sealed class EvidenceWorkflowFabricTests
         var intake = await intakeResponse.Content.ReadFromJsonAsync<EvidenceVaultIntakeResponseDto>(ServerJsonOptions, cts.Token);
         intake.Should().NotBeNull();
         intake!.Document.Should().NotBeNull();
+        var spoofedConfirmedAt = new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         var reviewResponse = await client.PostAsJsonAsync(
             $"/api/workstation/evidence/vault/{Uri.EscapeDataString(intake.VaultIdentity.VaultId)}/documents/{Uri.EscapeDataString(intake.Document!.DocumentId)}/review",
             new EvidenceVaultDocumentReviewRequestDto(
                 EvidenceDocumentReviewStatusDto.Accepted,
-                "controller",
+                "spoofed-admin",
                 "Invoice support reviewed for retained package.",
                 CorrelationId: "corr-endpoint-review")
             {
@@ -3262,8 +4489,8 @@ public sealed class EvidenceWorkflowFabricTests
                     new EvidenceDocumentConfirmedFieldDto(
                         "invoiceTotal",
                         "125.00",
-                        "controller",
-                        default,
+                        "spoofed-cfo",
+                        spoofedConfirmedAt,
                         "total",
                         "Confirmed invoice total before accepting evidence.")
                 ]
@@ -3277,10 +4504,13 @@ public sealed class EvidenceWorkflowFabricTests
         review!.Entry.VaultId.Should().Be(intake.VaultIdentity.VaultId);
         review.Entry.Document.DocumentId.Should().Be(intake.Document.DocumentId);
         review.Entry.Document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.Accepted);
+        review.Entry.Document.ReviewerState.Reviewer.Should().Be("evidence-controller");
         review.Entry.Document.ReviewerState.ConfirmedFields.Should().ContainSingle(field =>
             field.FieldName == "invoiceTotal" &&
             field.ConfirmedValue == "125.00" &&
-            field.ConfirmedBy == "controller");
+            field.ConfirmedBy == "evidence-controller" &&
+            field.ConfirmedAt == review.AuditEvent.RecordedAt &&
+            field.ConfirmedAt != spoofedConfirmedAt);
         review.Entry.Document.Authority.CanSupport.Should().BeTrue();
         review.Entry.Document.Authority.CanBlock.Should().BeTrue();
         review.Entry.Document.Authority.CanSuggest.Should().BeTrue();
@@ -3292,7 +4522,7 @@ public sealed class EvidenceWorkflowFabricTests
         review.Entry.Document.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.Accepted);
         review.Entry.Document.AuditTrail.Should().Contain(evt =>
             evt.Action == "DocumentReviewRecorded" &&
-            evt.Actor == "controller" &&
+            evt.Actor == "evidence-controller" &&
             evt.CorrelationId == "corr-endpoint-review");
 
         var acceptedDocuments = await client.GetFromJsonAsync<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(
@@ -3329,7 +4559,11 @@ public sealed class EvidenceWorkflowFabricTests
         var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
         var export = await store.WriteManifestAsync(
             BlockedAuditSupportPacket(subject),
-            new EvidencePacketExportRequest("operator", "seed request-list index"));
+            new EvidencePacketExportRequest("operator", "seed request-list index")
+            {
+                TenantId = "tenant-test",
+                Scope = "company-test"
+            });
 
         var response = await client.GetAsync(
             "/api/workstation/evidence/vault/request-lists?targetKind=audit&targetId=close-2026-05&status=Open");
@@ -3857,7 +5091,12 @@ public sealed class EvidenceWorkflowFabricTests
         string root,
         IOperationsContinuityWorkflowService? operationsWorkflowService = null,
         IReportPackDeliveryRecordStore? deliveryRecordStore = null,
-        IManualJournalEntryWorkbenchService? manualJournalService = null)
+        IManualJournalEntryWorkbenchService? manualJournalService = null,
+        string? requestTenantId = "tenant-test",
+        string? requestCompanyId = "company-test",
+        StrategyRunReadService? strategyRunReadService = null,
+        IEvidenceContributor? additionalContributor = null,
+        UserPermission? requestPermissions = null)
     {
         Directory.CreateDirectory(root);
         var configPath = Path.Combine(root, "appsettings.json");
@@ -3891,12 +5130,26 @@ public sealed class EvidenceWorkflowFabricTests
             builder.Services.AddSingleton(manualJournalService);
         }
 
+        if (strategyRunReadService is not null)
+        {
+            builder.Services.AddSingleton(strategyRunReadService);
+        }
+
+        if (additionalContributor is not null)
+        {
+            builder.Services.AddSingleton(additionalContributor);
+        }
+
         builder.Services.AddEvidenceWorkflowFabric();
 
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            BindReportingRequestContext(context);
+            BindReportingRequestContext(
+                context,
+                requestTenantId,
+                requestCompanyId,
+                requestPermissions);
             await next();
         });
         app.MapEvidenceEndpoints(ServerJsonOptions);
@@ -3914,12 +5167,27 @@ public sealed class EvidenceWorkflowFabricTests
         services.AddSingleton(BuildBoundReportPackWorkflowService(reportIds));
     }
 
-    private static void BindReportingRequestContext(HttpContext context)
+    private static void BindReportingRequestContext(
+        HttpContext context,
+        string? tenantId = "tenant-test",
+        string? companyId = "company-test",
+        UserPermission? permissions = null)
     {
         context.Items[LoginSessionMiddleware.CurrentUserKey] = "evidence-controller";
         context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Controller;
-        context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
-        context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+        if (permissions.HasValue)
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions.Value;
+        }
+        if (!string.IsNullOrWhiteSpace(companyId))
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = companyId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(tenantId))
+        {
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = tenantId;
+        }
     }
 
     private static ReportPackWorkflowService BuildBoundReportPackWorkflowService(
@@ -4338,6 +5606,39 @@ public sealed class EvidenceWorkflowFabricTests
             context.CancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(_contribute(context));
         }
+    }
+
+    private sealed class CountingStrategyRunContributor : IEvidenceContributor
+    {
+        public const string Sentinel = "secondary-contributor-confidential-data";
+
+        private int _invocationCount;
+
+        public string ContributorId => "strategy-run-scope-sentinel";
+
+        public int InvocationCount => Volatile.Read(ref _invocationCount);
+
+        public bool Supports(EvidenceSubjectDto subject)
+            => string.Equals(
+                subject.SubjectKind,
+                EvidenceSubjectResolver.StrategyRunKind,
+                StringComparison.OrdinalIgnoreCase);
+
+        public Task<EvidenceContribution> ContributeAsync(EvidenceContributionContext context)
+        {
+            context.CancellationToken.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref _invocationCount);
+            return Task.FromResult(new EvidenceContribution([], [], [], [], [Sentinel]));
+        }
+    }
+
+    private sealed class StaticPromotionRecordStore(IReadOnlyList<StrategyPromotionRecord> records) : IPromotionRecordStore
+    {
+        public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default)
+            => Task.FromResult(records);
+
+        public Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default)
+            => Task.CompletedTask;
     }
 
     private sealed class InMemoryReportPackRepository(FundReportPackSnapshotDto snapshot) : IGovernanceReportPackRepository

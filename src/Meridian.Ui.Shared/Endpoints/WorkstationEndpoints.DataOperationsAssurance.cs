@@ -66,7 +66,16 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Idempotency key and rationale are required." });
             try
             {
-                var result = await service.ApplyActionAsync(jobId, action, request, actor, ct).ConfigureAwait(false);
+                var trustedScope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.ApplyActionAsync(
+                        jobId,
+                        action,
+                        request,
+                        actor,
+                        trustedScope.TenantId!,
+                        trustedScope.CompanyId!,
+                        ct)
+                    .ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Ok(result);
             }
             catch (InvalidOperationException ex)
@@ -80,7 +89,8 @@ public static partial class WorkstationEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStorageAssurance), async (
             HttpContext context,
@@ -142,12 +152,19 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
                 return Results.BadRequest(new { error = "Idempotency key is required." });
-            var action = service.GetPreviewAction(request.PreviewId);
+            var action = service.GetExecuteAction(request.PreviewId, request.IdempotencyKey);
             if (action.HasValue && !CanExecuteStorageAction(context, action.Value))
                 return EndpointHelpers.Forbidden();
             try
             {
-                var result = await service.ExecuteAsync(request, actor, ct).ConfigureAwait(false);
+                var trustedScope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.ExecuteAsync(
+                        request,
+                        actor,
+                        trustedScope.TenantId!,
+                        trustedScope.CompanyId!,
+                        ct)
+                    .ConfigureAwait(false);
                 return Results.Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -170,7 +187,8 @@ public static partial class WorkstationEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status410Gone)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireWorkstationTenantCompanyScope();
     }
 
     private static bool CanPreviewStorageAction(HttpContext context, StorageMaintenanceActionDto action) =>

@@ -1,3 +1,4 @@
+import { fixtureTradingRisk } from "./dev-fixtures.trading-risk";
 import type {
   CoveredCallChainPreview,
   CoveredCallRunResult,
@@ -641,16 +642,7 @@ const fixtureTradingWorkspace: TradingWorkspaceResponse = {
       timestamp: "09:40:10 ET"
     }
   ],
-  risk: {
-    state: "Observe",
-    summary: "Guardrails are active.",
-    netExposure: "$120,000",
-    grossExposure: "$150,000",
-    var95: "$9,000",
-    maxDrawdown: "-1.1%",
-    buyingPowerUsed: "58%",
-    activeGuardrails: ["Cap per single-name", "Throttle at 70%"]
-  },
+  risk: fixtureTradingRisk,
   brokerage: {
     provider: "Interactive Brokers",
     account: "DU1009034",
@@ -6395,7 +6387,7 @@ const fixtures = {
   [PROVIDER_ROUTING_API_ENDPOINTS.bindings]: fixtureProviderRoutingBindings,
   [PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots]: fixtureProviderRoutingTrustSnapshots,
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
-  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
+  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace.reporting,
   [WORKSTATION_API_ENDPOINTS.accountingConfiguration]: fixtureAccountingConfiguration,
   [WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun]: fixtureAccountingRuleDryRun,
   [WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan]: fixtureLedgerClosePeriodPlan,

@@ -6,7 +6,7 @@ module_id: SRC-LIFECYCLE-SUPERVISOR
 path: src/Meridian.LifecycleSupervisor
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.LifecycleSupervisor
@@ -17,6 +17,10 @@ Persistent per-user owner for the installed Meridian host and its dedicated loca
 instance. It exposes `start`, `run`, `stop`, `restart`, `status`, and `preflight` commands over a
 current-user-only named pipe. External-database mode validates configuration but never starts,
 stops, or force-terminates the external database.
+
+Browser launch is gated on a successful `/readyz` response whose lifecycle snapshot is exactly
+`Ready` and accepting work. `Degraded` remains observable runtime state but does not satisfy the
+consumer workstation launch gate.
 
 ## Layer responsibility
 
@@ -31,12 +35,33 @@ identity that it started.
 - `LifecycleSupervisorDatabase.cs` - dedicated PostgreSQL preflight, initialization, and ownership.
 - `LifecycleSupervisorPipe.cs` - current-user-only command channel.
 - `LifecycleSupervisorConfiguration.cs` - manifest validation, paths, and per-install identity.
+- `LifecycleStartupOutcome.cs` - verified startup outcomes, evidence locations, and stable exit
+  codes.
 
 ## Important workflows
 
 The consumer-facing `Meridian.exe` launcher is a thin shim over this executable. Runtime identity
 and session receipts live below the configured data root; the compatibility HTTP shutdown token is
 stored only as a DPAPI-protected sidecar and is never written into runtime JSON.
+
+Every initial startup and forwarded `open` request retains a request-bound terminal
+`VerifiedOperationOutcome` under
+`%LOCALAPPDATA%\Meridian\service\receipts`. Preflight failures are `Blocked`; timeout, early host
+exit, and failed readiness are `Failed`; browser-launch failure is
+`CompletedWithWarnings` with a safe manual URL and retry guidance. A separate readiness-gate
+receipt is flushed before browser opening, while the final terminal receipt records the browser
+attempt. Request IDs have independent completion gates, and attempts use immutable numbered files
+so a retry cannot overwrite prior warning or recovery evidence. Neither receipt retains the
+one-time setup token. Evidence uses honest URI references to the supervisor log, the configured
+`<data-root>\_logs` host directory, PostgreSQL log, exact readiness endpoint, and repair/retry
+instructions; it does not label a metadata digest as a content hash.
+
+When a second launcher forwards `open` to an existing supervisor, the pipe response remains pending
+on that request's completion gate until its validated terminal receipt is retained. A not-yet-ready
+supervisor therefore cannot return an early success, another concurrent request cannot complete its
+gate, and a browser warning returns the receipt state and path before the helper process exits.
+Malformed or unreadable lifecycle configuration is caught at the process boundary, logged, and
+retained as a request-bound `Blocked` outcome.
 
 The dedicated cluster is initialized with SCRAM authentication. Its generated password is retained
 in a separate current-user DPAPI sidecar and injected only into the owned host process environment.

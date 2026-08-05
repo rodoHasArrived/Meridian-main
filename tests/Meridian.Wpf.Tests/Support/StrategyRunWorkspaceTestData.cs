@@ -105,7 +105,12 @@ internal static class StrategyRunWorkspaceTestData
             LedgerReference = "recon-ledger",
             AuditReference = $"audit-{runId}",
             FundProfileId = "alpha-fund",
-            FundDisplayName = "Alpha Fund"
+            FundDisplayName = "Alpha Fund",
+            // Start() bakes an input hash from its own default portfolio/ledger/etc.; the fields
+            // mutated above are part of the canonical hash (commit 1aae6a9b), so clear the baked hash
+            // and let the durable store recompute it from the retained inputs, exactly as production
+            // StrategyRunWorkspaceService.RecordBacktestRunAsync does (it never sets InputHashSha256).
+            InputHashSha256 = null
         };
     }
 

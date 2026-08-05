@@ -40,7 +40,7 @@ const noopActivityLog: ActivityLogApi = {
 };
 
 export interface UseActivityLogServiceOptions {
-  /** Injectable storage for tests; defaults to localStorage. */
+  /** Injectable storage for tests; defaults to sessionStorage. */
   storage?: StorageLike | null;
   /** Injectable clock for deterministic tests. */
   now?: () => number;

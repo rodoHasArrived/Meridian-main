@@ -35,7 +35,7 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     protected override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
     protected override TimeSpan MinRequestDelay => TimeSpan.FromMilliseconds(300);
 
-    public override IReadOnlyList<string> SupportedAssetTypes => new[] { "us_equity", "crypto" };
+    public override IReadOnlyList<string> SupportedAssetTypes => new[] { "us_equity", "crypto", "us_option", "fixed_income" };
     public override IReadOnlyList<string> SupportedExchanges => new[] { "NASDAQ", "NYSE", "ARCA", "AMEX", "BATS" };
 
     public AlpacaSymbolSearchProvider(
@@ -69,18 +69,22 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     {
         var url = $"{BaseUrl}/assets?status=active";
 
-        if (!string.IsNullOrEmpty(assetType))
+        if (!string.IsNullOrWhiteSpace(assetType))
         {
             var assetClass = assetType.ToLowerInvariant() switch
             {
                 "us_equity" or "stock" or "equity" => "us_equity",
                 "crypto" => "crypto",
-                _ => "us_equity"
+                "us_option" or "option" or "options" => "us_option",
+                "fixed_income" or "bond" or "bonds" => "fixed_income",
+                _ => throw new ArgumentOutOfRangeException(nameof(assetType), assetType, "Unsupported Alpaca asset class.")
             };
             url += $"&asset_class={assetClass}";
         }
         else
         {
+            // The endpoint has no server-side query or pagination parameter. Keep the
+            // unfiltered path bounded by its standard equity asset class.
             url += "&asset_class=us_equity";
         }
 
@@ -157,7 +161,12 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
             Cusip: null,
             Source: Name,
             LastUpdated: DateTimeOffset.UtcNow
-        );
+        )
+        {
+            TradingEligibility = new SymbolTradingEligibility(asset.Tradable, asset.Marginable, asset.Shortable,
+                asset.EasyToBorrow, asset.Fractionable, asset.MaintenanceMarginRequirement, asset.MinOrderSize,
+                asset.MinTradeIncrement, asset.PriceIncrement, Name)
+        };
 
         return Task.FromResult<SymbolDetails?>(details);
     }
@@ -180,6 +189,8 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         {
             "us_equity" => "Stock",
             "crypto" => "Crypto",
+            "us_option" => "Option",
+            "fixed_income" => "FixedIncome",
             _ => assetClass
         };
     }

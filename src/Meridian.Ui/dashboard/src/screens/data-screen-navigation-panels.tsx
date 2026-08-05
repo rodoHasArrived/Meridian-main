@@ -52,7 +52,7 @@ export function DataOverviewHub({
       id: "evidence",
       title: "Evidence workbench",
       description: "Inspect retained documents, request lists, lineage, and completeness.",
-      href: WORKSTATION_ROUTE_CATALOG.dataEvidence,
+      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
       status: "Governed"
     }
   ];

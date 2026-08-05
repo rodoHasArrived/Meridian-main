@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
+import { hasDevelopmentFixtureUsage, resetDevelopmentFixtureUsage } from "@/lib/api";
 import type { ReferenceDataEndpointProbeResult, ReferenceDataEndpointProbeStatus } from "@/lib/api";
 import {
   buildCalibrationSummaryViewState,
@@ -33,7 +34,6 @@ import {
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
 import {
-  accountingTaskModeLauncherLinks,
   buildAccountingTaskMode,
   resolveAccountingWorkstream
 } from "@/screens/accounting-screen.task-mode-view-model";
@@ -837,22 +837,13 @@ describe("accounting-screen view model", () => {
     const taskModeSource = readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.task-mode-view-model.ts"), "utf8");
 
     expect(taskModeSource).toContain("const accountingTaskModeDefinitions");
-    expect(taskModeSource).toContain("export const accountingTaskModeLauncherLinks");
     expect(taskModeSource).toContain("export function resolveAccountingWorkstream");
     expect(taskModeSource).toContain("export function buildAccountingTaskMode");
     expect(taskModeSource).toContain("export function accountingWorkstreamHref");
     expect(viewModelSource).not.toContain("const accountingTaskModeDefinitions");
     expect(viewModelSource).not.toContain("function normalizeAccountingTaskModePath");
     expect(viewModelSource).not.toContain("function buildAccountingTaskModeViewModel");
-    expect(accountingTaskModeLauncherLinks.map((mode) => [mode.id, mode.href])).toEqual([
-      ["reconciliation-casework", "/accounting/reconciliation"],
-      ["external-gl-reconciliation", "/accounting/reconciliation/external-gl"],
-      ["ledger-explorer", "/accounting/ledger"],
-      ["journal-entry", "/accounting/journal-entries"],
-      ["capital-accounts", "/accounting/capital-accounts"],
-      ["delivery-evidence", "/reporting/evidence"],
-      ["governance", "/accounting/configure"]
-    ]);
+    expect(taskModeSource).not.toContain("accountingTaskModeLauncherLinks");
   });
 
   it("derives the accounting workstream and selected reconciliation run", () => {
@@ -1264,7 +1255,7 @@ describe("accounting-screen view model", () => {
         { accountName: "Broker Statement Variance", accountType: "Liability", symbol: "BOOKS", balanceDelta: -100, explanation: "delta -" }
       ],
       reconciliationExpectation: {
-        expectedState: "ReadyForReconciliation",
+        expectedState: "ProjectedForReconciliation",
         expectedBreakType: "broker-statement-break",
         detail: "ready",
         evidenceIds: ["reconciliation-run:run-42", "statement-line:1"],
@@ -1333,10 +1324,12 @@ describe("accounting-screen view model", () => {
       sourceRunId: "run-42",
       previewMode: "BooksBeforeBroker"
     }));
-    expect(result.current.transactionLabView.requestSummaryLabel).toBe("Preview ready");
+    expect(result.current.transactionLabView.requestSummaryLabel).toBe("Projection ready");
+    expect(result.current.transactionLabView.statusText).toContain("Expected accounting projection");
+    expect(result.current.transactionLabView.statusText).toContain("no journal has been posted");
     expect(result.current.transactionLabView.journalLineCountLabel).toBe("2 lines");
     expect(result.current.transactionLabView.ledgerImpactLabel).toBe("$0");
-    expect(result.current.transactionLabView.reconciliationLabel).toBe("ReadyForReconciliation");
+    expect(result.current.transactionLabView.reconciliationLabel).toBe("ProjectedForReconciliation");
     expect(result.current.transactionLabView.evidenceLabel).toBe("2 evidence items");
     expect(result.current.transactionLabView.impactRows).toEqual([
       expect.objectContaining({ label: "Reconciliation Suspense", value: "+$100.00", tone: "success" }),
@@ -1978,9 +1971,34 @@ describe("accounting-screen view model", () => {
     ]));
   });
 
+  it("resolves DEV-only schedule fixtures and marks demo-data usage for the banner", () => {
+    resetDevelopmentFixtureUsage();
+
+    expect(resolveSecurityScheduleEvents("unknown-security")).toEqual([]);
+    expect(hasDevelopmentFixtureUsage()).toBe(false);
+
+    expect(resolveSecurityScheduleEvents("sec-dev-004")).toHaveLength(3);
+    expect(hasDevelopmentFixtureUsage()).toBe(true);
+
+    resetDevelopmentFixtureUsage();
+  });
+
+  it("returns an empty schedule in production instead of fabricated fixture rows", () => {
+    vi.stubEnv("DEV", false);
+    resetDevelopmentFixtureUsage();
+    try {
+      expect(resolveSecurityScheduleEvents("sec-dev-004")).toEqual([]);
+      expect(hasDevelopmentFixtureUsage()).toBe(false);
+    } finally {
+      vi.unstubAllEnvs();
+      resetDevelopmentFixtureUsage();
+    }
+  });
+
   it("keeps cash-flow schedule empty states and fixture resolution deterministic", () => {
     expect(resolveSecurityScheduleEvents("sec-dev-004")).toHaveLength(3);
     expect(resolveSecurityScheduleEvents("unknown-security")).toEqual([]);
+    resetDevelopmentFixtureUsage();
 
     const state = buildSecuritySchedulesViewState({
       securityId: "unknown-security",

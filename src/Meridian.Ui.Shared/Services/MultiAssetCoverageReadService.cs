@@ -10,6 +10,7 @@ public interface IMultiAssetCoverageReadService
         string? fundAccountId,
         string? entity,
         string? assetClass,
+        ReconciliationBreakQueueScope scope,
         CancellationToken ct = default);
 }
 
@@ -33,9 +34,11 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
         string? fundAccountId,
         string? entity,
         string? assetClass,
+        ReconciliationBreakQueueScope scope,
         CancellationToken ct = default)
     {
-        var evidenceSnapshot = await BuildEvidenceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(scope);
+        var evidenceSnapshot = await BuildEvidenceSnapshotAsync(fundAccountId, scope, ct).ConfigureAwait(false);
         return await _readinessService.GetReadinessAsync(
                 new SecurityMasterOperationalReadinessRequest(fundAccountId, entity, assetClass, evidenceSnapshot),
                 ct)
@@ -44,6 +47,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
 
     private async Task<SecurityMasterOperationalEvidenceSnapshot?> BuildEvidenceSnapshotAsync(
         string? fundAccountId,
+        ReconciliationBreakQueueScope scope,
         CancellationToken ct)
     {
         if (!Guid.TryParse(fundAccountId, out var accountId))
@@ -55,7 +59,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
         var route = BuildRoute(UiApiRoutes.FundAccountBrokerageSyncReconciliationLatest, accountId);
         var latest = _providerLedgerReconciliation is null
             ? null
-            : await _providerLedgerReconciliation.GetLatestAsync(accountId, ct).ConfigureAwait(false);
+            : await _providerLedgerReconciliation.GetLatestAsync(accountId, scope, ct).ConfigureAwait(false);
 
         if (latest is not null)
         {
@@ -186,7 +190,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
 
         var closeReadiness = _closeReadiness is null
             ? null
-            : await _closeReadiness.GetAsync(accountId, ct).ConfigureAwait(false);
+            : await _closeReadiness.GetAsync(accountId, scope, ct).ConfigureAwait(false);
         if (closeReadiness is not null)
         {
             foreach (var component in closeReadiness.Components)

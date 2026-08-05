@@ -1,7 +1,12 @@
-import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
+import {
+  normalizeLocalWorkstationRoute,
+  WORKSTATION_ROUTE_CATALOG,
+  workspaceForPath
+} from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
 
 export type WorkflowContinuityStepStatusTone = "ready" | "review" | "blocked" | "pending";
+export type WorkflowContinuityRouteMode = "matched" | "choose-task" | "hidden";
 
 export interface WorkflowContinuityStepStatus {
   label: string;
@@ -23,6 +28,12 @@ export interface WorkflowContinuityTrailDefinition {
   title: string;
   summary: string;
   steps: WorkflowContinuityTrailStepDefinition[];
+}
+
+export interface WorkflowContinuityRouteResolution {
+  mode: WorkflowContinuityRouteMode;
+  trail: WorkflowContinuityTrailDefinition | null;
+  activeStepIndex: number | null;
 }
 
 export type PrimaryOperatorWorkflowStepId = "import" | "validate" | "reconcile" | "investigate" | "approve" | "report";
@@ -77,29 +88,14 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   {
     id: "market-data-to-paper",
     title: "Market Data To Paper",
-    summary: "Move from symbol selection through quote validation, alert monitoring, paper readiness, and provider repair without memorizing route order.",
+    summary: "Move from the Market Data desk through paper readiness and provider repair without memorizing route order.",
     steps: [
       {
-        id: "watchlist",
-        label: "Watchlist",
-        description: "Choose the monitored universe and starter packs before market-data validation.",
-        href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
-        matchPath: WORKSTATION_ROUTE_CATALOG.dataWatchlist
-      },
-      {
-        id: "quotes",
-        label: "Live quotes",
-        description: "Inspect quote, tape, depth, and historical trend evidence for the active symbol.",
+        id: "market-data",
+        label: "Market data",
+        description: "Manage the watchlist, validate live quotes, and track price alerts from one desk.",
         href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
         matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes,
-        preserveSymbol: true
-      },
-      {
-        id: "alerts",
-        label: "Price alerts",
-        description: "Track threshold triggers and validate the quote feed behind watched symbols.",
-        href: WORKSTATION_ROUTE_CATALOG.dataAlerts,
-        matchPath: WORKSTATION_ROUTE_CATALOG.dataAlerts,
         preserveSymbol: true
       },
       {
@@ -324,9 +320,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   }
 ];
 
-export const defaultWorkflowContinuityTrail = workflowContinuityTrails[0];
-
-export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryOperatorWorkflowStepId {
+export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryOperatorWorkflowStepId | null {
   const route = pathname.toLowerCase();
 
   if (route.startsWith(WORKSTATION_ROUTE_CATALOG.reporting)) {
@@ -347,7 +341,7 @@ export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryO
 
   if (route.startsWith(WORKSTATION_ROUTE_CATALOG.dataOperations)
     || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataQuotes)
-    || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataAlerts)) {
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataAlertsLegacy)) {
     return "validate";
   }
 
@@ -361,10 +355,30 @@ export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryO
     return "investigate";
   }
 
-  return "import";
+  return null;
 }
 
-export function selectWorkflowContinuityTrail(pathname: string, hash: string): WorkflowContinuityTrailDefinition {
+export function resolveWorkflowContinuityRoute(pathname: string, hash: string): WorkflowContinuityRouteResolution {
+  const trail = selectWorkflowContinuityTrail(pathname, hash);
+  if (trail) {
+    return {
+      mode: "matched",
+      trail,
+      activeStepIndex: findActiveWorkflowStepIndex(trail.steps, pathname, hash)
+    };
+  }
+
+  return {
+    mode: normalizeLocalWorkstationRoute(pathname) ? "choose-task" : "hidden",
+    trail: null,
+    activeStepIndex: null
+  };
+}
+
+export function selectWorkflowContinuityTrail(
+  pathname: string,
+  hash: string
+): WorkflowContinuityTrailDefinition | null {
   const workspaceKey = workspaceForPath(pathname).key;
   const scoredTrails = workflowContinuityTrails
     .map((trail, index) => ({
@@ -376,24 +390,7 @@ export function selectWorkflowContinuityTrail(pathname: string, hash: string): W
     .filter((match) => match.score > 0)
     .sort((left, right) => right.score - left.score || right.workspaceAffinity - left.workspaceAffinity || left.index - right.index);
 
-  if (scoredTrails.length > 0) {
-    return scoredTrails[0].trail;
-  }
-
-  switch (workspaceKey) {
-    case "accounting":
-    case "reporting":
-      return workflowContinuityTrails.find((trail) => trail.id === "accounting-closeout") ?? defaultWorkflowContinuityTrail;
-    case "strategy":
-      return workflowContinuityTrails.find((trail) => trail.id === "strategy-to-paper") ?? defaultWorkflowContinuityTrail;
-    case "trading":
-    case "portfolio":
-      return workflowContinuityTrails.find((trail) => trail.id === "trading-accounting") ?? defaultWorkflowContinuityTrail;
-    case "data":
-    case "settings":
-    default:
-      return defaultWorkflowContinuityTrail;
-  }
+  return scoredTrails[0]?.trail ?? null;
 }
 
 export function findActiveWorkflowStepIndex(
@@ -409,7 +406,7 @@ export function findActiveWorkflowStepIndex(
     .filter((match) => match.score > 0)
     .sort((left, right) => right.score - left.score || left.index - right.index);
 
-  return scoredSteps[0]?.index ?? 0;
+  return scoredSteps[0]?.index ?? null;
 }
 
 function scoreWorkflowTrailWorkspaceAffinity(trailId: string, workspaceKey: WorkspaceKey): number {

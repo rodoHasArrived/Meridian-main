@@ -22,7 +22,7 @@ public sealed class IBBrokerageGatewayTests
     {
         var sut = CreateSut(new FakeIbBrokerageClient());
 
-        sut.GatewayId.Should().Be("ib");
+        sut.GatewayId.Should().Be("ibkr");
         sut.BrokerDisplayName.Should().Contain("Interactive Brokers");
         sut.BrokerageCapabilities.SupportedAssetClasses.Should().Contain(["equity", "bond"]);
         sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnOpen);
@@ -127,7 +127,7 @@ public sealed class IBBrokerageGatewayTests
 
         await act.Should().ThrowAsync<NotSupportedException>()
             .WithMessage("*EnableIbApiVendor=true*")
-            .WithMessage("*interactive-brokers-setup.md*");
+            .WithMessage("*provider-onboarding-interactive-brokers.md*");
     }
 #endif
 
@@ -364,6 +364,33 @@ public sealed class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task GetActivitySnapshotAsync_OnlyReturnsOpenOrdersForRequestedAccount()
+    {
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(7101),
+            OnRequestOpenOrders = c =>
+            {
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    7101, "AAPL", "STK", "BUY", "LMT", 10m, 0m,
+                    200d, null, "Submitted", "account-a-order", "DU111111", null, null, null, DateTimeOffset.UtcNow));
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    7102, "TSLA", "STK", "SELL", "LMT", 5m, 0m,
+                    250d, null, "Submitted", "account-b-order", "DU222222", null, null, null, DateTimeOffset.UtcNow));
+                c.RaiseOpenOrdersCompleted();
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("DU111111");
+
+        activity.Orders.Should().ContainSingle(order => order.OrderId == "7101");
+        activity.Orders.Should().NotContain(order => order.OrderId == "7102");
+    }
+
+    [Fact]
     public async Task GetAccountInfoAsync_MapsAccountSummaryCallbacks()
     {
         var client = new FakeIbBrokerageClient
@@ -392,6 +419,45 @@ public sealed class IBBrokerageGatewayTests
         account.Cash.Should().Be(25000.25m);
         account.BuyingPower.Should().Be(50000.75m);
         account.Status.Should().Be("paper");
+    }
+
+    [Fact]
+    public async Task ReadSideSync_MapsAccountPortfolioAndSessionExecutionEvidence()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(9001),
+            OnRequestAccountSummary = (c, requestId) =>
+            {
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "NetLiquidation", "125000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "TotalCashValue", "25000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "BuyingPower", "50000", "USD", now));
+                c.RaiseAccountSummaryCompleted(requestId);
+            },
+            OnRequestPositions = c =>
+            {
+                c.RaisePosition(new IBPositionUpdate("DU123456", "IEF", "BOND", 5m, 99.5d, "USD", "SMART", null, now));
+                c.RaisePositionsCompleted();
+            },
+            OnRequestOpenOrders = c => c.RaiseOpenOrdersCompleted()
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        client.RaiseExecution(new IBExecutionUpdate(
+            9001, "IEF", "BOT", 5m, 99.5d, 5m, 99.5d, "exec-9001", "DU123456", "SMART", 17L,
+            new Dictionary<string, string> { ["conId"] = "1234" }, now));
+
+        var accounts = await ((IBrokerageAccountCatalog)sut).GetAccountsAsync();
+        var portfolio = await ((IBrokeragePortfolioSync)sut).GetPortfolioSnapshotAsync("DU123456");
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("DU123456", now.AddMinutes(-1));
+
+        accounts.Should().ContainSingle(account => account.ProviderId == "ibkr" && account.AccountId == "DU123456");
+        portfolio.Positions.Should().ContainSingle(position => position.Symbol == "IEF" && position.AssetClass == "bond");
+        activity.Fills.Should().ContainSingle(fill =>
+            fill.FillId == "exec-9001" && fill.OrderId == "9001" && fill.Venue == "SMART");
+        activity.CashTransactions.Should().BeEmpty("cash, fee, dividend, and FX evidence is supplied by the controlled Flex backstop");
     }
 
     private static async Task<ExecutionReport> ReadUntilAsync(
@@ -461,12 +527,10 @@ public sealed class IBBrokerageGatewayTests
             return Task.CompletedTask;
         }
 
-        public int RequestAccountSummary()
-        {
-            var requestId = Interlocked.Increment(ref _nextRequestId);
+        public int ReserveAccountSummaryRequestId() => Interlocked.Increment(ref _nextRequestId);
+
+        public void RequestAccountSummary(int requestId) =>
             OnRequestAccountSummary?.Invoke(this, requestId);
-            return requestId;
-        }
 
         public void CancelAccountSummary(int requestId)
         {

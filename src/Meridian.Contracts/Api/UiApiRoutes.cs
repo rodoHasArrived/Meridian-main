@@ -79,6 +79,7 @@ public static class UiApiRoutes
     public const string BackfillProviderConfigAudit = "/api/backfill/providers/audit";
 
     // Provider endpoints
+    public const string ProviderDataProjection = "/api/providers/data-projection";
     public const string ProviderComparison = "/api/providers/comparison";
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
@@ -144,6 +145,7 @@ public static class UiApiRoutes
     public const string IBStatus = "/api/providers/ib/status";
     public const string IBErrorCodes = "/api/providers/ib/error-codes";
     public const string IBLimits = "/api/providers/ib/limits";
+    public const string IBResults = "/api/workstation/ib/results";
 
     // Failover endpoints
     public const string FailoverConfig = "/api/failover/config";
@@ -611,6 +613,7 @@ public static class UiApiRoutes
     public const string PromotionApprove = "/api/promotion/approve";
     public const string PromotionReject = "/api/promotion/reject";
     public const string PromotionHistory = "/api/promotion/history";
+    public const string PromotionWalkForwardEvidence = "/api/promotion/runs/{runId}/walk-forward-evidence";
 
     // Workstation root and compatibility workspace endpoints
     public const string WorkstationSession = "/api/workstation/session";
@@ -745,6 +748,16 @@ public static class UiApiRoutes
     public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";
     public const string ReconciliationStatementImportPreview = "/api/workstation/reconciliation/statement-imports/preview";
     public const string ReconciliationStatementImportCommit = "/api/workstation/reconciliation/statement-imports/commit";
+    public const string ReconciliationStatementReconciliationReport = "/api/workstation/reconciliation/statement-reconciliation-report";
+    public const string ReconciliationStatementReconciliationReportById = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}";
+    public const string ReconciliationStatementReconciliationReportResume = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume";
+    public const string ReconciliationStatementReconciliationReportArtifact = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/artifacts/{artifactId}";
+    // Compatibility aliases keep retained pre-rename status/resume/download links recoverable.
+    // New clients and all newly persisted workflow projections use the truthful reconciliation-report name.
+    public const string ReconciliationStatementToReport = "/api/workstation/reconciliation/statement-to-report";
+    public const string ReconciliationStatementToReportById = "/api/workstation/reconciliation/statement-to-report/{workflowId}";
+    public const string ReconciliationStatementToReportResume = "/api/workstation/reconciliation/statement-to-report/{workflowId}/resume";
+    public const string ReconciliationStatementToReportArtifact = "/api/workstation/reconciliation/statement-to-report/{workflowId}/artifacts/{artifactId}";
     public const string ReconciliationStatementFetchPreview = "/api/workstation/reconciliation/statement-imports/fetch-preview";
     public const string ReconciliationStatementFetchSchedules = "/api/workstation/reconciliation/statement-fetch-schedules";
     public const string ReconciliationStatementFetchScheduleById = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}";
@@ -786,6 +799,9 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPreview = "/api/ledger/accounting-configuration/preview";
     public const string LedgerAccountingConfigurationPostingRuleDryRun = "/api/ledger/accounting-configuration/posting-rules/dry-run";
     public const string LedgerAccountingConfigurationPostingRuleCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates";
+    public const string LedgerAccountingConfigurationAssetAccountingCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting";
+    public const string LedgerAssetAccountingEventProjections = "/api/ledger/accounting-configuration/asset-accounting/events/project";
+    public const string LedgerAssetAccountingEventLifecycle = "/api/ledger/accounting-configuration/asset-accounting/events/lifecycle";
     public const string LedgerAccountingConfigurationPostingRuleCandidatePosts = "/api/ledger/accounting-configuration/posting-rules/candidates/post";
     public const string LedgerAccountingConfigurationPostingRuleProjectionSets = "/api/ledger/accounting-configuration/posting-rules/projection-sets";
     public const string LedgerAccountingConfigurationPostingRuleTests = "/api/ledger/accounting-configuration/posting-rules/tests";
@@ -864,6 +880,8 @@ public static class UiApiRoutes
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
     public const string ReconciliationBreakAssign = "/api/workstation/reconciliation/break-queue/{breakId}/assign";
     public const string ReconciliationBreakTransition = "/api/workstation/reconciliation/break-queue/{breakId}/transition";
+    public const string ReconciliationBreakWaive = "/api/workstation/reconciliation/break-queue/{breakId}/waive";
+    public const string ReconciliationBreakSupersede = "/api/workstation/reconciliation/break-queue/{breakId}/supersede";
     public const string ReconciliationBreakComments = "/api/workstation/reconciliation/break-queue/{breakId}/comments";
     public const string ReconciliationBreakComment = "/api/workstation/reconciliation/break-queue/{breakId}/comments/{commentId}";
     public const string ReconciliationBreakRootCause = "/api/workstation/reconciliation/break-queue/{breakId}/root-cause";

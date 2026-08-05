@@ -9,7 +9,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class EnvironmentDesignerEndpointTests
+public sealed class EnvironmentDesignerEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
 

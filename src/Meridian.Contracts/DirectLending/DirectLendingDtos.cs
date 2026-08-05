@@ -208,7 +208,8 @@ public sealed record DailyAccrualEntryDto(
     decimal CommitmentFeeAmount,
     decimal PenaltyAmount,
     decimal AnnualRateApplied,
-    DateTimeOffset RecordedAt);
+    DateTimeOffset RecordedAt,
+    decimal PikInterestAmount = 0m);
 
 public sealed record LoanServicingStateDto(
     Guid LoanId,

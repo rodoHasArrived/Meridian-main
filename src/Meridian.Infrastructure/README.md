@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Infrastructure
@@ -30,6 +30,25 @@ This layer owns external integration details while depending on lower contracts 
 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
+Backfill worker shutdown closes intake, cancels and observes every admitted provider attempt,
+atomically releases queue ownership, and retains a restart-safe job transition before owned
+providers and queue resources are disposed. Its bounded completion reader remains live until every
+admitted producer has quiesced, then drains every retained notification without loss before
+shutdown completes; cleanup failures remain part of the terminal stop result.
+
+Streaming failover uses a two-phase runtime handoff. The coordinator proposes a transition, the
+client connects and restores the required subscriptions, and only then does the coordinator commit
+the active provider; rejected or cancelled handoffs retain the prior provider and state.
+Transitions fail closed when no live runtime handler is registered, and caller cancellation remains
+attached while connection failure retries advance through candidate providers. Subscription changes
+are reconciled with an in-progress handoff, and disposal rejects pending transition tickets before
+disposing each provider instance exactly once.
+
+Broker statement adapters capture bounded raw and canonical artifacts, compute authoritative hashes,
+and parse those same immutable bytes. Interactive Brokers durable callbacks require tenant/company
+ownership captured before transport; persisted keys include tenant, company, provider connection,
+request correlation, and request ID, while unscoped legacy rows fail closed.
+
 Every `IMarketDataClient` now inherits the ProviderSdk-owned
 `IProviderConnectionDiagnosticsSource` contract. Adapters without a lifecycle supervisor receive a
 conservative compatibility snapshot that never claims a live connection; supervised adapters must
@@ -39,6 +58,18 @@ from `PollingProviderBase`; NYSE and Interactive Brokers retain subscription-hea
 transport-specific lifecycle evidence. For polling, raw-socket, simulation, and fallback
 diagnostics, `WebSocketState` is `None`. Consumers should use this contract instead of reaching
 into provider-specific transport internals.
+
+Alpaca streaming keeps equities, options, crypto, and news as explicit adapters with their own
+WebSocket endpoints. Consumers resolve them through the capability-aware Alpaca asset-stream router, which
+fails closed when a requested stream has no usable entitlement rather than falling back to equities. Its diagnostics carry a per-stream selected feed and entitlement (for
+example, IEX versus SIP and indicative versus OPRA), so a connected price socket cannot be
+misrepresented as consolidated or OPRA-entitled data.
+
+Alpaca reference-data search preserves broker-supplied marginability, shortability,
+easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Unfiltered
+searches default to equities to keep the non-paginated asset response bounded; callers can
+explicitly select crypto, options, or fixed-income assets when the configured Alpaca API
+entitlement exposes them.
 
 The public diagnostics interface, lifecycle/failure enums, and snapshot record retain their
 existing namespaces but are owned by ProviderSdk so plugin contracts do not depend on concrete
@@ -104,7 +135,39 @@ corporate-action, and factor evidence without placing orders. Adapter readiness 
 any write-capable live execution path back to the shared execution governance gates.
 Interactive Brokers contract construction resolves default SecType values from the Contracts-owned
 `InstrumentTypeDescriptorCatalog`, while still honoring explicit provider SecType overrides such
-as `GOVT` for government bonds.
+as `GOVT` for government bonds. The IBKR gateway exposes its actual execution mode to the shared
+OMS, so guidance or smoke builds are simulation-only and cannot be promoted into live routing by
+configuration. It also owns account catalog, portfolio snapshot, and connected-session execution
+sync: source-identified TWS execution callbacks provide fills and open-order evidence, while
+account-scoped Flex imports remain the controlled reconciliation backstop for fees, cash,
+dividends, interest, FX conversions, corporate actions, and prior-session activity.
+TWS account summaries and positions remain keyed by provider account, including identical symbols
+held in multiple accounts; an unknown requested account fails closed instead of inheriting another
+account's balances or positions. Account-summary request correlation is registered before dispatch
+so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
+Alpaca trade-update streaming accumulates complete WebSocket messages across fragmented frames,
+bounds each message before UTF-8 decoding, and reconnects after an incomplete oversized payload.
+Failover cleanup remains best effort, but failed depth or trade unsubscriptions are logged with the
+provider and subscription identity so leaked quota-consuming streams remain observable.
+The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam for scanner discovery,
+contract details, option chains, news, fundamentals, tick-by-tick data, account P&L, market rules,
+and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB
+live/frozen/delayed status, exchange, market rules, and subscription descriptor alongside any
+materialized result. `IBDataResultMaterializer` is the Infrastructure-to-storage composition seam:
+each worker requires an explicit tenant and company, consumes only that scoped source stream, and
+commits each update to the same-scoped `IIBDataResultStore` before caching or publishing it to
+operator readers. Unscoped materializer snapshots and streams fail closed; successful request
+submission is not evidence of a live entitlement.
+`IBDataServices` persists and publishes the initial owner-bound `Requested` state before transport
+submission so a synchronous vendor callback cannot be overwritten by a stale initial projection.
+Its legacy unscoped request/lineage snapshots, watches, and public update events expose only
+explicitly ownerless requests; owner-bound requests remain visible solely through the matching
+tenant/company snapshot/watch overloads and durable materialization paths.
+Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
+option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
+rules. Each returned request and observation carries required provenance: provider and configured
+connection identity, source and receipt times, reported entitlement/feed/availability, request descriptor,
+provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let
@@ -127,12 +190,25 @@ ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts
 only owns transport connection, pinned host-key verification, directory creation, and upload
 mechanics. SFTP source and destination definitions must provide a SHA-256 host-key fingerprint so
 imports and exports fail closed before trusting a remote server identity.
-SFTP source imports now resolve credentials through `ISftpCredentialResolver` before opening a
-session, expose `ISftpCapabilityService` for runtime readiness diagnostics, and support explicit
-post-import source handling (`leave`, `delete`, `archive`, `error`, or `.done` marker) without
-weakening the pinned-host-key requirement. SFTP locations are strict `sftp://` URIs with a host and
-absolute remote path; user info, query strings, fragments, traversal segments, and files outside the
-configured source root are rejected before opening a session. Local and SFTP ETL source readers
+SFTP imports **and exports** resolve credentials through the same `ISftpCredentialResolver`:
+`ResolveAsync` has source and destination overloads that share one secret model, so an `env:`
+reference resolves identically on both sides. Before this the publisher passed
+`destination.SecretRef` through verbatim, sending the literal text `env:VARIABLE` as the password
+on the write side while the read side resolved it correctly.
+
+`ISftpCapabilityService` provides runtime readiness diagnostics for sources and destinations alike
+and exposes `RealSftpEnabled`, the build-time `EnableSftp` state. `SftpFilePublisher` evaluates
+capability *before* opening any connection, so a default `EnableSftp=false` build reports the
+readiness issues rather than surfacing the disabled stub's `NotSupportedException` as a transport
+failure. Readiness delegates location validation to `SftpRemoteLocation.ParseRequired`, the same
+parser the transfer path uses, so a destination cannot be reported ready and then rejected before
+connecting. Readiness also rejects a malformed host-key fingerprint and an `env:` reference whose
+variable is unset or empty, both of which would otherwise fail only after a job was accepted.
+
+Sources additionally support explicit post-import handling (`leave`, `delete`, `archive`, `error`,
+or `.done` marker) without weakening the pinned-host-key requirement. SFTP locations are strict
+`sftp://` URIs with a host and absolute remote path; user info, query strings, fragments, traversal
+segments, and files outside the configured source root are rejected before opening a session. Local and SFTP ETL source readers
 discover both CSV and XLSX partner files by default, with semicolon-delimited file patterns for
 scoped exchanges. Publisher uploads use temporary remote names and rename into place so readers do
 not observe partial exports; the SSH.NET transfer calls remain synchronous, with cancellation

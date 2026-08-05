@@ -341,7 +341,9 @@ describe("ReportRunParametersScreen", () => {
 
     expect(screen.getByRole("heading", { name: "Report Parameters" })).toBeInTheDocument();
     expect(screen.getByLabelText("Fund profile")).toHaveValue("fund-alpha");
-    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("AllEntities");
+    const entityScopeSelect = screen.getByLabelText("Entity / fund / portfolio");
+    expect(entityScopeSelect).toHaveAttribute("id", "report-entity-scope");
+    expect(entityScopeSelect).toHaveValue("AllEntities");
     expect(screen.getByLabelText("Ledger book code")).toHaveValue("Primary GL");
     expect(screen.getByLabelText("Accounting basis")).toHaveValue("Gaap");
     expect(screen.getByLabelText("Output format")).toHaveValue("Pdf");
@@ -437,7 +439,7 @@ describe("ReportRunParametersScreen", () => {
     await user.clear(screen.getByLabelText("Presentation currency"));
     await user.type(screen.getByLabelText("Presentation currency"), "eur");
     await user.selectOptions(screen.getByLabelText("Consolidation level"), "Portfolio");
-    await user.selectOptions(screen.getByLabelText("Output format"), "Xlsx");
+    await user.selectOptions(screen.getByLabelText("Output format"), "ClientPackage");
     await user.click(screen.getByLabelText("Include supporting schedules"));
     await user.click(screen.getByLabelText("Include evidence appendix"));
     fireEvent.change(screen.getByLabelText("Ledger dimensions (JSON)"), {
@@ -485,7 +487,7 @@ describe("ReportRunParametersScreen", () => {
         accountingBasis: "Statutory",
         presentationCurrency: "EUR",
         consolidationLevel: "Portfolio",
-        outputFormat: "Xlsx",
+        outputFormat: "ClientPackage",
         finality: "Draft",
         includeSupportingSchedules: false,
         includeEvidenceAppendix: false,

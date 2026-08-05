@@ -18,8 +18,27 @@ public interface IOrderManager
     /// <summary>Gets all currently open orders.</summary>
     IReadOnlyList<OrderState> GetOpenOrders();
 
+    /// <summary>
+    /// Orders whose exposure must still be reserved by pre-trade risk: the open book plus
+    /// any fill whose accounting handoff has not yet reached the portfolio. Without the
+    /// latter, a fill briefly belongs to neither the order book nor the position book, and
+    /// a concurrent validation in that window measures understated exposure.
+    /// Implementations without handoff tracking return the open book.
+    /// </summary>
+    IReadOnlyList<OrderState> GetExposureReservingOrders() => GetOpenOrders();
+
     /// <summary>Gets order state by ID.</summary>
     OrderState? GetOrder(string orderId);
+
+    /// <summary>
+    /// True when <paramref name="orderId"/> was parked for governed risk approval and that
+    /// approval ended without the order ever routing. A released order re-enters the report
+    /// stream under the same id, but a declined one produces no further report at all, so
+    /// callers holding per-order bookkeeping need this to retire it instead of waiting for
+    /// a terminal report that never arrives. Implementations without a governed approval
+    /// queue never park orders and report false.
+    /// </summary>
+    bool WasRiskApprovalDeclined(string orderId) => false;
 
     /// <summary>Cancels all open orders.</summary>
     Task CancelAllAsync(CancellationToken ct = default);

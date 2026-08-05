@@ -77,6 +77,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
+        // decision below reads the per-domain variables.
+        MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         SecurityMasterStartup.EnsureEnvironmentDefaults();
         AssetOperationsStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
@@ -85,10 +89,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         var securityMasterOptions = CreateSecurityMasterOptions();
         var assetOperationsOptions = CreateAssetOperationsOptions();
         var directLendingOptions = CreateDirectLendingOptions();
-        var ledgerOptions = CreateLedgerOptions();
+        var ledgerOptions = CreateLedgerOptions(
+            ProductionServiceRegistrationPolicy.IsProductionComposition(services));
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
+        services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
         services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults
@@ -108,7 +114,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationDryRunService>();
         services.TryAddSingleton<IProviderIntegrationHttpTransport>(sp =>
             new ProviderIntegrationHttpClientTransport(
-                new HttpClient(),
+                new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ProviderIntegrationHttpClientTransport>>()));
         services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
         services.TryAddSingleton<ProviderIntegrationOpenApiImportService>();
@@ -136,7 +142,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>()));
             services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
                 sp.GetRequiredService<PostgresScopedAccessAssignmentStore>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ScopedAccessAssignmentStoreMigrationHostedService>());
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IHostedService, ScopedAccessAssignmentStoreMigrationHostedService>());
+            }
         }
         else
         {
@@ -238,7 +248,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<AnalysisExportService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            return new AnalysisExportService(storageOptions.RootPath);
+            return new AnalysisExportService(storageOptions);
         });
 
         services.AddSingleton<RateLimiter>(sp => new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5)));
@@ -297,9 +307,17 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ICertificateOfDepositReferenceService, CertificateOfDepositProjectionService>();
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
-            services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
-            services.AddSingleton<PolygonCorporateActionFetcher>(sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
-            services.AddHostedService<PolygonCorporateActionFetcher>(sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
+            if (options.EnableHttpClientFactory)
+            {
+                services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
+                services.AddSingleton<PolygonCorporateActionFetcher>(
+                    sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
+                if (options.EnableProcessWideHostedServices)
+                {
+                    services.AddHostedService<PolygonCorporateActionFetcher>(
+                        sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
+                }
+            }
             services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
 
             // Security Master bulk import services
@@ -307,11 +325,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
 
-            // Migrate-on-read upcaster for asset-specific-terms payloads, shared by the projection
-            // store (queryable schema_version column + read normalization).
+            // Migrate-on-read upcaster pipeline for asset-specific-terms payloads, shared by the
+            // projection store (queryable schema_version column + read normalization). Registering the
+            // composed pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening) rather
+            // than the bare v0->current upcaster keeps the store's schema_version promotion consistent
+            // with the mapping guard: a v2 economic-terms document is flattened to the accepted legacy
+            // version instead of being promoted as an unsupported version the guard would reject.
             services.AddSingleton<
                 Meridian.Contracts.Schema.ISchemaUpcaster<Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms>,
-                Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster>();
+                Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline>();
 
             // Durable audit/versioning spine: the golden-record conflict store and the governed
             // revision-lifecycle store are Postgres-backed so resolutions and approval state survive
@@ -362,6 +384,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
             services.AddSingleton<IInstrumentPositionProjectionStore>(sp =>
                 sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
+            services.AddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
         }
 
         // Register null/stub implementations as fallbacks when Security Master is not configured.
@@ -406,6 +430,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
             services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
                 sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            services.TryAddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
         }
         services.TryAddSingleton<AssetObligationProjectionService>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
@@ -427,8 +453,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
-            services.AddHostedService<DirectLendingOutboxDispatcher>();
-            services.AddHostedService<DailyAccrualWorker>();
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.AddHostedService<DirectLendingOutboxDispatcher>();
+                services.AddHostedService<DailyAccrualWorker>();
+            }
         }
 
         var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
@@ -582,7 +611,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
             services.AddSingleton<IDomainProjectionReconciliationJob>(
                 _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+            }
         }
         return services;
     }
@@ -603,7 +636,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         throw new InvalidOperationException(
             "Production-safe startup requires persistence-backed governance domain services. " +
-            $"Configure {string.Join(", ", missing)} or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
+            $"Configure {string.Join(", ", missing)} (or set {MeridianDatabaseEnvironment.UnifiedVariable} to cover all store domains at once), " +
+            "or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
     }
 
     private static bool IsInMemoryGovernanceProfileEnabled()
@@ -660,12 +694,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             Schema = Environment.GetEnvironmentVariable(AssetOperationsStartup.SchemaVariable) ?? AssetOperationsStartup.DefaultSchema
         };
 
-    private static LedgerJournalStoreOptions CreateLedgerOptions()
+    private static LedgerJournalStoreOptions CreateLedgerOptions(bool requireGovernedProductionWrites)
         => new()
         {
             ConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
             SchemaName = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? LedgerStartup.DefaultSchema,
-            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true)
+            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true),
+            RequireGovernedPostingCommand = requireGovernedProductionWrites,
+            RequireExpectedVersion = requireGovernedProductionWrites
         };
 
     private static bool IsScopedAccessPostgresConfigured()

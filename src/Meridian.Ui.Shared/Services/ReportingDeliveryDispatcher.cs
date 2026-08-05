@@ -165,58 +165,12 @@ public sealed class ReportingDeliveryDispatcher
             ct.ThrowIfCancellationRequested();
             var job = await _store.GetAsync(normalizedJobId, ct).ConfigureAwait(false)
                       ?? throw new KeyNotFoundException("Reporting delivery job was not found.");
-            if (!string.Equals(job.TenantId, normalizedTenantId, StringComparison.Ordinal))
+            var updated = PrepareReceiptAppend(job, normalizedTenantId, receipt);
+            if (updated.Version == job.Version)
             {
-                throw new UnauthorizedAccessException("Reporting delivery job is outside the requested tenant.");
-            }
-
-            if (!string.Equals(job.TransportId, receipt.TransportId, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("Delivery receipt transport does not match the queued transport.");
-            }
-
-            var existingReceipt = job.Receipts.FirstOrDefault(item =>
-                string.Equals(item.ReceiptId, receipt.ReceiptId, StringComparison.Ordinal));
-            if (existingReceipt is not null)
-            {
-                if (!ReceiptEquals(existingReceipt, receipt))
-                {
-                    throw new InvalidDataException(
-                        "A reporting delivery receipt id was replayed with different immutable content.");
-                }
-
                 return job;
             }
 
-            if (receipt.OccurredAtUtc < job.CreatedAtUtc.AddMinutes(-5)
-                || receipt.OccurredAtUtc > _timeProvider.GetUtcNow().AddMinutes(5))
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(receipt),
-                    "Delivery receipt time is outside the retained job window.");
-            }
-
-            var nextState = ApplyReceiptState(job, receipt.Kind);
-            var isFailure = receipt.Kind is ReportingDeliveryReceiptKind.Bounced
-                or ReportingDeliveryReceiptKind.Rejected
-                or ReportingDeliveryReceiptKind.Failed;
-            var resolvesActiveDispatch = job.State == ReportingDeliveryState.Dispatching;
-            var updated = job with
-            {
-                State = nextState,
-                AttemptCount = resolvesActiveDispatch
-                    ? checked(job.AttemptCount + 1)
-                    : job.AttemptCount,
-                UpdatedAtUtc = _timeProvider.GetUtcNow(),
-                NextAttemptAtUtc = null,
-                LeaseOwner = null,
-                LeaseExpiresAtUtc = null,
-                LastErrorCode = isFailure ? receipt.Kind.ToString().ToUpperInvariant() : null,
-                LastError = isFailure ? receipt.Detail : null,
-                ProviderMessageId = receipt.ProviderReference ?? job.ProviderMessageId,
-                Receipts = job.Receipts.Append(receipt).ToArray(),
-                Version = job.Version + 1
-            };
             if (await _store.TryUpdateAsync(job.JobId, job.Version, updated, ct).ConfigureAwait(false))
             {
                 return updated;
@@ -224,6 +178,107 @@ public sealed class ReportingDeliveryDispatcher
         }
 
         throw new InvalidOperationException("Delivery receipt update conflicted repeatedly.");
+    }
+
+    /// <summary>
+    /// Prepares, but does not persist, the append-only receipt transition used by ordinary
+    /// dispatcher paths. Downloaded receipts require the dedicated composite preparation below.
+    /// </summary>
+    internal ReportingDeliveryJobRecord PrepareReceiptAppend(
+        ReportingDeliveryJobRecord job,
+        string tenantId,
+        ReportingDeliveryReceipt receipt) =>
+        PrepareReceiptAppendCore(job, tenantId, receipt, allowDownloaded: false);
+
+    /// <summary>
+    /// Prepares the Downloaded receipt that the delivery-linked grant exchange commits with the
+    /// matching grant use through the PostgreSQL composite boundary.
+    /// </summary>
+    internal ReportingDeliveryJobRecord PrepareGrantDownloadReceiptAppend(
+        ReportingDeliveryJobRecord job,
+        string tenantId,
+        ReportingDeliveryReceipt receipt)
+    {
+        ArgumentNullException.ThrowIfNull(receipt);
+        if (receipt.Kind != ReportingDeliveryReceiptKind.Downloaded)
+        {
+            throw new ArgumentException(
+                "The grant-download receipt preparation boundary accepts only Downloaded receipts.",
+                nameof(receipt));
+        }
+
+        return PrepareReceiptAppendCore(job, tenantId, receipt, allowDownloaded: true);
+    }
+
+    private ReportingDeliveryJobRecord PrepareReceiptAppendCore(
+        ReportingDeliveryJobRecord job,
+        string tenantId,
+        ReportingDeliveryReceipt receipt,
+        bool allowDownloaded)
+    {
+        ArgumentNullException.ThrowIfNull(job);
+        var normalizedTenantId = NormalizeRequired(tenantId, nameof(tenantId));
+        ArgumentNullException.ThrowIfNull(receipt);
+        receipt = NormalizeReceipt(receipt);
+        if (receipt.Kind == ReportingDeliveryReceiptKind.Downloaded && !allowDownloaded)
+        {
+            throw new InvalidOperationException(
+                "Downloaded receipts require the atomic access-grant consumption boundary.");
+        }
+
+        if (!string.Equals(job.TenantId, normalizedTenantId, StringComparison.Ordinal))
+        {
+            throw new UnauthorizedAccessException("Reporting delivery job is outside the requested tenant.");
+        }
+
+        if (!string.Equals(job.TransportId, receipt.TransportId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Delivery receipt transport does not match the queued transport.");
+        }
+
+        var existingReceipt = job.Receipts.FirstOrDefault(item =>
+            string.Equals(item.ReceiptId, receipt.ReceiptId, StringComparison.Ordinal));
+        if (existingReceipt is not null)
+        {
+            if (!ReceiptEquals(existingReceipt, receipt))
+            {
+                throw new InvalidDataException(
+                    "A reporting delivery receipt id was replayed with different immutable content.");
+            }
+
+            return job;
+        }
+
+        var now = _timeProvider.GetUtcNow();
+        if (receipt.OccurredAtUtc < job.CreatedAtUtc.AddMinutes(-5)
+            || receipt.OccurredAtUtc > now.AddMinutes(5))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(receipt),
+                "Delivery receipt time is outside the retained job window.");
+        }
+
+        var nextState = ApplyReceiptState(job, receipt.Kind);
+        var isFailure = receipt.Kind is ReportingDeliveryReceiptKind.Bounced
+            or ReportingDeliveryReceiptKind.Rejected
+            or ReportingDeliveryReceiptKind.Failed;
+        var resolvesActiveDispatch = job.State == ReportingDeliveryState.Dispatching;
+        return job with
+        {
+            State = nextState,
+            AttemptCount = resolvesActiveDispatch
+                ? checked(job.AttemptCount + 1)
+                : job.AttemptCount,
+            UpdatedAtUtc = now,
+            NextAttemptAtUtc = null,
+            LeaseOwner = null,
+            LeaseExpiresAtUtc = null,
+            LastErrorCode = isFailure ? receipt.Kind.ToString().ToUpperInvariant() : null,
+            LastError = isFailure ? receipt.Detail : null,
+            ProviderMessageId = receipt.ProviderReference ?? job.ProviderMessageId,
+            Receipts = job.Receipts.Append(receipt).ToArray(),
+            Version = checked(job.Version + 1)
+        };
     }
 
     public static string BuildIdempotencyKey(
@@ -438,6 +493,12 @@ public sealed class ReportingDeliveryDispatcher
         };
         var receipt = NormalizeReceipt(
             result.Receipt ?? BuildAttemptReceipt(job, normalizedResult, now, attemptCount));
+        if (receipt.Kind == ReportingDeliveryReceiptKind.Downloaded)
+        {
+            throw new InvalidOperationException(
+                "Delivery transports cannot create Downloaded receipts; use the atomic access-grant consumption boundary.");
+        }
+
         var receipts = job.Receipts.Any(item => string.Equals(item.ReceiptId, receipt.ReceiptId, StringComparison.Ordinal))
                 ? job.Receipts
                 : job.Receipts.Append(receipt).ToArray();

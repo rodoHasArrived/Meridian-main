@@ -21,6 +21,8 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Identity.Auth;
+using Meridian.Storage;
+using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
@@ -30,6 +32,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -40,10 +43,13 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// paper-session replay, promotion audit, reconciliation, and governed report-pack lineage.
 /// </summary>
 [Trait("Category", "Integration")]
+[Collection("Sequential")]
 public sealed class PilotAcceptanceHarnessTests
 {
     private const string DatasetEvidenceId = "dataset/pilot/golden-aapl-2026-04-11";
     private const string FeedEvidenceId = "provider-evidence/dk1/unit-ready";
+    private static readonly Guid PilotAccountingPeriodId =
+        Guid.Parse("20260411-0000-4000-8000-000000000001");
 
     private static readonly JsonSerializerOptions ServerJsonOptions = new()
     {
@@ -81,8 +87,15 @@ public sealed class PilotAcceptanceHarnessTests
                 RunId: seed.BacktestRunId,
                 ApprovedBy: "pilot.operator",
                 ApprovalReason: "Pilot harness replay, controls, and dataset evidence accepted.",
-                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
-        promotion.Success.Should().BeTrue();
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+                EvidenceReferences:
+                [
+                    $"{PromotionApprovalChecklist.Dk1TrustPacketReviewed}:{FeedEvidenceId}",
+                    $"{PromotionApprovalChecklist.RunLineageReviewed}:audit-{seed.BacktestRunId}",
+                    $"{PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed}:{seed.StrategyId}-backtest-ledger",
+                    $"{PromotionApprovalChecklist.RiskControlsReviewed}:{DatasetEvidenceId}"
+                ]));
+        promotion.Success.Should().BeTrue(promotion.Reason);
 
         var research = await client.GetFromJsonAsync<ResearchBriefingDto>(
             "/api/workstation/research/briefing",
@@ -157,7 +170,7 @@ public sealed class PilotAcceptanceHarnessTests
                 "audit-evidence-package",
                 Parameters: new ReportingRunParametersDto(
                     new ReportingRunScopeDto(seed.FundProfileId),
-                    "2026-04",
+                    PilotAccountingPeriodId.ToString("D"),
                     new DateOnly(2026, 4, 11),
                     new ReportingLedgerBookSelectionDto(LedgerBookId: seed.AccountId),
                     ReportingAccountingBasisDto.Gaap,
@@ -186,6 +199,7 @@ public sealed class PilotAcceptanceHarnessTests
         draft.Scope.TenantId.Should().Be("pilot-acceptance-tenant");
         draft.Scope.CompanyId.Should().Be("pilot-acceptance-tenant");
         draft.Scope.FundId.Should().Be(seed.FundProfileId);
+        draft.Scope.PeriodId.Should().Be(PilotAccountingPeriodId.ToString("D"));
 
         var validated = await TransitionPilotReportingRunAsync(
             client,
@@ -429,90 +443,200 @@ public sealed class PilotAcceptanceHarnessTests
         gate.SupportEvidenceIds.Should().Contain("evidence-vault/report-pack-001/manifest.json");
     }
 
+    [Fact]
+    public async Task PilotHost_Dispose_StopsHostAndRestoresAmbientProcessState()
+    {
+        var originalEnvironment = CapturePilotHostEnvironment();
+        var originalCatalogProvider = Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogProvider;
+        var originalCatalogEntryProvider = Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogEntryProvider;
+        PilotTestApp? pilot = null;
+
+        try
+        {
+            pilot = await CreatePilotAppAsync();
+            var root = pilot.Root;
+            var applicationLifetime = pilot.App.Services.GetRequiredService<IHostApplicationLifetime>();
+            foreach (var variable in originalEnvironment.Keys)
+            {
+                Environment.GetEnvironmentVariable(variable).Should().BeNull();
+            }
+
+            await pilot.DisposeAsync();
+
+            applicationLifetime.ApplicationStopped.IsCancellationRequested.Should().BeTrue();
+            Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogProvider.Should().BeNull();
+            Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeNull();
+            var readCatalog = () => Meridian.Contracts.Api.ProviderCatalog.GetAll();
+            readCatalog.Should().NotThrow();
+            Directory.Exists(root).Should().BeFalse();
+            foreach (var pair in originalEnvironment)
+            {
+                Environment.GetEnvironmentVariable(pair.Key).Should().Be(pair.Value);
+            }
+        }
+        finally
+        {
+            if (pilot is not null)
+            {
+                await pilot.DisposeAsync();
+            }
+
+            RestorePilotHostEnvironment(originalEnvironment);
+            Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogProvider = originalCatalogProvider;
+            Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogEntryProvider = originalCatalogEntryProvider;
+        }
+    }
+
     private static async Task<PilotTestApp> CreatePilotAppAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "pilot-acceptance", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
-        var configPath = Path.Combine(root, "appsettings.json");
-        await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
-
-        var automationRoot = Path.Combine(root, "provider-validation", "_automation");
-        WriteReadyDk1Packet(automationRoot);
-
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        var originalEnvironment = CapturePilotHostEnvironment();
+        foreach (var variable in originalEnvironment.Keys)
         {
-            EnvironmentName = "Test"
-        });
-        builder.WebHost.UseTestServer();
-
-        builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
-        builder.Services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
-        builder.Services.AddSingleton<IGovernanceReportPackRepository>(_ =>
-            new FileGovernanceReportPackRepository(
-                Path.Combine(root, "report-packs"),
-                NullLogger<FileGovernanceReportPackRepository>.Instance));
-        builder.Services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(root, "break-queue"),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        builder.Services.AddSingleton<IPromotionRecordStore>(_ =>
-            new JsonlPromotionRecordStore(
-                Path.Combine(root, "promotions"),
-                NullLogger<JsonlPromotionRecordStore>.Instance));
-        builder.Services.AddSingleton<IReportingAuthoritativeSource, PilotReportingAuthoritativeSource>();
-        builder.Services.AddSingleton<IReportingReconciliationEvidenceSource, PilotReportingReconciliationEvidenceSource>();
-        builder.Services.AddSingleton<IReportingRunReadinessDependencyEvaluator, PilotReportingReadinessDependencyEvaluator>();
-        builder.Services.AddSingleton<IReportingGovernanceEndpointCoordinator, PilotReportingGovernanceCoordinator>();
-
-        using (InMemoryGovernanceFixtureProfile.Enable())
-        {
-            builder.Services.AddUiSharedServices(configPath);
+            Environment.SetEnvironmentVariable(variable, null);
         }
 
-        builder.Services.AddSingleton(_ => new ExecutionAuditTrailService(
-            new ExecutionAuditTrailOptions(Path.Combine(root, "audit")),
-            NullLogger<ExecutionAuditTrailService>.Instance));
-        builder.Services.AddSingleton<IPaperSessionStore>(_ =>
-            new JsonlFilePaperSessionStore(
-                Path.Combine(root, "sessions"),
-                NullLogger<JsonlFilePaperSessionStore>.Instance));
-        builder.Services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
-            NullLogger<PaperSessionPersistenceService>.Instance,
-            sp.GetRequiredService<IPaperSessionStore>(),
-            sp.GetRequiredService<ExecutionAuditTrailService>()));
-        builder.Services.AddSingleton<ExecutionOperatorControlService>(sp => new ExecutionOperatorControlService(
-            new ExecutionOperatorControlOptions(Path.Combine(root, "controls")),
-            NullLogger<ExecutionOperatorControlService>.Instance,
-            sp.GetRequiredService<ExecutionAuditTrailService>()));
-        builder.Services.AddSingleton<PromotionService>(sp => new PromotionService(
-            sp.GetRequiredService<IStrategyRepository>(),
-            sp.GetRequiredService<BacktestToLivePromoter>(),
-            sp.GetRequiredService<IPromotionRecordStore>(),
-            NullLogger<PromotionService>.Instance,
-            operatorControls: sp.GetRequiredService<ExecutionOperatorControlService>(),
-            auditTrail: sp.GetRequiredService<ExecutionAuditTrailService>()));
-
-        var app = builder.Build();
-        app.Use(async (context, next) =>
+        PilotTestApp? pilot = null;
+        try
         {
-            var actor = context.Request.Headers.TryGetValue("X-Pilot-Actor", out var requestedActor)
-                && !string.IsNullOrWhiteSpace(requestedActor.ToString())
-                    ? requestedActor.ToString().Trim()
-                    : "pilot.operator";
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
-            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "pilot-acceptance-tenant";
-            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "pilot-acceptance-tenant";
-            await next();
-        });
-        app.MapWorkstationEndpoints(ServerJsonOptions);
-        app.MapEvidenceEndpoints(ServerJsonOptions);
-        app.MapExecutionEndpoints(ServerJsonOptions);
-        app.MapFundStructureEndpoints(ServerJsonOptions);
-        app.MapReportingGovernanceEndpoints(ServerJsonOptions);
-        await app.StartAsync();
+            Directory.CreateDirectory(root);
+            var configPath = Path.Combine(root, "appsettings.json");
+            await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
 
-        return new PilotTestApp(app, root);
+            var automationRoot = Path.Combine(root, "provider-validation", "_automation");
+            WriteReadyDk1Packet(automationRoot);
+
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                EnvironmentName = "Test"
+            });
+            builder.WebHost.UseTestServer();
+
+            builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
+            builder.Services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+            builder.Services.AddSingleton<IGovernanceReportPackRepository>(_ =>
+                new FileGovernanceReportPackRepository(
+                    Path.Combine(root, "report-packs"),
+                    NullLogger<FileGovernanceReportPackRepository>.Instance));
+            builder.Services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(root, "break-queue"),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
+            builder.Services.AddSingleton<IPromotionRecordStore>(_ =>
+                new JsonlPromotionRecordStore(
+                    Path.Combine(root, "promotions"),
+                    NullLogger<JsonlPromotionRecordStore>.Instance));
+            builder.Services.AddSingleton<IReportingAuthoritativeSource, PilotReportingAuthoritativeSource>();
+            builder.Services.AddSingleton<IReportingReconciliationEvidenceSource, PilotReportingReconciliationEvidenceSource>();
+            builder.Services.AddSingleton<IReportingRunReadinessDependencyEvaluator, PilotReportingReadinessDependencyEvaluator>();
+            builder.Services.AddSingleton<IReportingGovernanceEndpointCoordinator, PilotReportingGovernanceCoordinator>();
+            builder.Services.AddSingleton<IReportingDeploymentReadinessService, PilotReportingDeploymentReadinessService>();
+
+            using (InMemoryGovernanceFixtureProfile.Enable())
+            {
+                builder.Services.AddUiSharedServices(configPath);
+            }
+
+            builder.Services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(root, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            builder.Services.AddSingleton<IPaperSessionStore>(_ =>
+                new JsonlFilePaperSessionStore(
+                    Path.Combine(root, "sessions"),
+                    NullLogger<JsonlFilePaperSessionStore>.Instance));
+            builder.Services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+            builder.Services.AddSingleton<ExecutionOperatorControlService>(sp => new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(Path.Combine(root, "controls")),
+                NullLogger<ExecutionOperatorControlService>.Instance,
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+            builder.Services.AddSingleton<PromotionService>(sp => new PromotionService(
+                sp.GetRequiredService<IStrategyRepository>(),
+                sp.GetRequiredService<BacktestToLivePromoter>(),
+                sp.GetRequiredService<IPromotionRecordStore>(),
+                NullLogger<PromotionService>.Instance,
+                operatorControls: sp.GetRequiredService<ExecutionOperatorControlService>(),
+                auditTrail: sp.GetRequiredService<ExecutionAuditTrailService>()));
+
+            var app = builder.Build();
+            pilot = new PilotTestApp(app, root, originalEnvironment);
+            pilot.CaptureProviderCatalogLease();
+            app.Use(async (context, next) =>
+            {
+                var actor = context.Request.Headers.TryGetValue("X-Pilot-Actor", out var requestedActor)
+                    && !string.IsNullOrWhiteSpace(requestedActor.ToString())
+                        ? requestedActor.ToString().Trim()
+                        : "pilot.operator";
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Admin);
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "pilot-acceptance-tenant";
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "pilot-acceptance-tenant";
+                await next();
+            });
+            app.MapWorkstationEndpoints(ServerJsonOptions);
+            app.MapEvidenceEndpoints(ServerJsonOptions);
+            app.MapExecutionEndpoints(ServerJsonOptions);
+            app.MapFundStructureEndpoints(ServerJsonOptions);
+            app.MapReportingGovernanceEndpoints(ServerJsonOptions);
+            pilot.MarkStartAttempted();
+            await app.StartAsync();
+
+            return pilot;
+        }
+        catch (Exception initializationError)
+        {
+            try
+            {
+                if (pilot is not null)
+                {
+                    await pilot.DisposeAsync();
+                }
+                else
+                {
+                    RestorePilotHostEnvironment(originalEnvironment);
+                    if (Directory.Exists(root))
+                    {
+                        Directory.Delete(root, recursive: true);
+                    }
+                }
+            }
+            catch (Exception cleanupError)
+            {
+                throw new AggregateException(
+                    "Pilot test host initialization and cleanup failed.",
+                    initializationError,
+                    cleanupError);
+            }
+
+            throw;
+        }
+    }
+
+    private static Dictionary<string, string?> CapturePilotHostEnvironment() =>
+        MeridianDatabaseEnvironment.PropagatedConnectionStringVariables
+            .Concat(
+            [
+                MeridianDatabaseEnvironment.UnifiedVariable,
+                "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING",
+                "MERIDIAN_REPORTING_CONNECTION_STRING",
+                "LEAN_PATH",
+                "LEAN_DATA_PATH",
+                "LEAN_EXPORT_INTERVAL_SECONDS"
+            ])
+            .Distinct(StringComparer.Ordinal)
+            .ToDictionary(
+                static variable => variable,
+                static variable => Environment.GetEnvironmentVariable(variable),
+                StringComparer.Ordinal);
+
+    private static void RestorePilotHostEnvironment(IReadOnlyDictionary<string, string?> environment)
+    {
+        foreach (var pair in environment)
+        {
+            Environment.SetEnvironmentVariable(pair.Key, pair.Value);
+        }
     }
 
     private static async Task<PilotSeed> SeedPilotWorkspaceAsync(IServiceProvider services)
@@ -614,6 +738,8 @@ public sealed class PilotAcceptanceHarnessTests
         var startedAt = new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddMinutes(30);
         var result = BuildPilotBacktestResult(startedAt, completedAt);
+        var ledgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger";
+        var auditReference = $"audit-{runId}";
 
         return StrategyRunEntry.Start(strategyId, strategyName, runType).Complete(result) with
         {
@@ -623,11 +749,22 @@ public sealed class PilotAcceptanceHarnessTests
             DatasetReference = DatasetEvidenceId,
             FeedReference = FeedEvidenceId,
             PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
-            LedgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
-            AuditReference = $"audit-{runId}",
+            LedgerReference = ledgerReference,
+            AuditReference = auditReference,
+            RetainedEvidenceReferences =
+            [
+                DatasetEvidenceId,
+                FeedEvidenceId,
+                ledgerReference,
+                auditReference
+            ],
             ParentRunId = parentRunId,
             FundProfileId = fundProfileId,
-            FundDisplayName = fundDisplayName
+            FundDisplayName = fundDisplayName,
+            // The overrides above change canonical hash inputs (run id, references, lineage),
+            // so the hash captured by Start() is stale. Clearing it lets the run store stamp
+            // the canonical hash instead of rejecting the seeded entry as tampered.
+            InputHashSha256 = null
         };
     }
 
@@ -1326,7 +1463,10 @@ public sealed class PilotAcceptanceHarnessTests
             cancellationToken.ThrowIfCancellationRequested();
             var ledgerBookId = parameters.LedgerBook.LedgerBookId
                 ?? throw new InvalidOperationException("The pilot reporting fixture requires an explicit server-owned ledger book id.");
-            var capturedAt = new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero);
+            // Certification evaluates readiness before capturing the authoritative source. Keep
+            // the fixture capture current so the immutable snapshot cannot predate its readiness
+            // receipt; the source cutoff remains pinned to the requested accounting as-of date.
+            var capturedAt = DateTimeOffset.UtcNow;
             var checkpointId = $"pilot-ledger-checkpoint-{ledgerBookId:N}";
             var checkpointHash = PilotHash(
                 $"{accessContext.TenantId}|{accessContext.CompanyId}|{parameters.Scope.FundProfileId}|{ledgerBookId:D}|{parameters.PeriodId}|{parameters.AsOfDate:yyyy-MM-dd}");
@@ -1816,11 +1956,144 @@ public sealed class PilotAcceptanceHarnessTests
     private static string PilotHash(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
-    private sealed record PilotTestApp(WebApplication App, string Root) : IAsyncDisposable
+    /// <summary>
+    /// The pilot harness supplies deterministic in-memory authorities so it can verify evidence
+    /// continuity independently of the PostgreSQL deployment probe. Production composition and
+    /// fail-closed deployment posture are covered by dedicated reporting readiness tests.
+    /// </summary>
+    private sealed class PilotReportingDeploymentReadinessService
+        : IReportingDeploymentReadinessService
     {
+        public ReportingDeploymentCapabilityDto Evaluate() =>
+            new(
+                IsReady: true,
+                DurableGovernance: true,
+                DurableArtifacts: true,
+                DurableReconciliationEvidence: true,
+                DurableRuns: true,
+                DurableScheduling: true,
+                DurableDelivery: true,
+                RecipientDestinationsConfigured: true,
+                ClientDocumentsConfigured: true,
+                MigrationsManaged: true,
+                Components:
+                [
+                    new ReportingDeploymentComponentDto(
+                        "pilot-harness",
+                        "Pilot harness",
+                        IsReady: true,
+                        "Deterministic in-memory pilot authorities are configured.")
+                ],
+                BlockingReasons: []);
+    }
+
+    private sealed class PilotTestApp : IAsyncDisposable
+    {
+        private readonly IReadOnlyDictionary<string, string?> _originalEnvironment;
+        private ProviderCatalogTestLease? _providerCatalogLease;
+        private bool _startAttempted;
+        private bool _appStopped;
+        private bool _appDisposed;
+        private bool _environmentRestored;
+
+        public PilotTestApp(
+            WebApplication app,
+            string root,
+            IReadOnlyDictionary<string, string?> originalEnvironment)
+        {
+            App = app;
+            Root = root;
+            _originalEnvironment = originalEnvironment;
+        }
+
+        public WebApplication App { get; }
+
+        public string Root { get; }
+
+        public void CaptureProviderCatalogLease() =>
+            _providerCatalogLease = ProviderCatalogTestLease.Capture(App.Services);
+
+        public void MarkStartAttempted() => _startAttempted = true;
+
         public async ValueTask DisposeAsync()
         {
-            await App.DisposeAsync();
+            var cleanupErrors = new List<Exception>();
+
+            if (_startAttempted && !_appStopped)
+            {
+                var applicationLifetime = App.Services.GetRequiredService<IHostApplicationLifetime>();
+                try
+                {
+                    using var stopTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                    await App.StopAsync(stopTimeout.Token);
+                    _appStopped = true;
+                }
+                catch (Exception stopError)
+                {
+                    if (!applicationLifetime.ApplicationStopped.IsCancellationRequested)
+                    {
+                        throw new AggregateException(
+                            "Pilot test host did not stop; owned resources were retained.",
+                            stopError);
+                    }
+
+                    _appStopped = true;
+                    cleanupErrors.Add(stopError);
+                }
+            }
+
+            try
+            {
+                _providerCatalogLease?.Dispose();
+                _providerCatalogLease = null;
+            }
+            catch (Exception ex)
+            {
+                cleanupErrors.Add(ex);
+            }
+
+            if (!_appDisposed)
+            {
+                try
+                {
+                    await App.DisposeAsync();
+                    _appDisposed = true;
+                }
+                catch (Exception ex)
+                {
+                    cleanupErrors.Add(ex);
+                }
+            }
+
+            if (!_environmentRestored)
+            {
+                try
+                {
+                    RestorePilotHostEnvironment(_originalEnvironment);
+                    _environmentRestored = true;
+                }
+                catch (Exception ex)
+                {
+                    cleanupErrors.Add(ex);
+                }
+            }
+
+            if (Directory.Exists(Root))
+            {
+                try
+                {
+                    Directory.Delete(Root, recursive: true);
+                }
+                catch (Exception ex)
+                {
+                    cleanupErrors.Add(ex);
+                }
+            }
+
+            if (cleanupErrors.Count > 0)
+            {
+                throw new AggregateException("Pilot test host cleanup failed.", cleanupErrors);
+            }
         }
     }
 

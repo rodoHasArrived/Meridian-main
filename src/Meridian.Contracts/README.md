@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-17
+last_reviewed: 2026-08-03
 ---
 
 # src/Meridian.Contracts
@@ -26,7 +26,13 @@ or provider implementations.
 
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
-- `Workstation/` - workstation and operator workflow DTOs.
+- `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
+  case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
+  or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
+  actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
+- `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
+  reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
+  superseded-generation manifest and receipt history, evidence-link, and recovery payloads.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.
@@ -56,8 +62,8 @@ or provider implementations.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
 - `Services/` - cross-module service contracts such as backtest preflight and Security Master
-  validation gates, fund-structure graph/query orchestration, operational scheduling/trading
-  calendar coordination, plus Environment Design draft/publish/runtime projection contracts that
+  validation gates, fund-structure graph/query orchestration, operational scheduling/deterministic local trading-calendar
+  coordination, plus Environment Design draft/publish/runtime projection contracts that
   must be injectable without depending on Application implementation types.
 - `Etl/` - shared ETL DTOs, the job-definition store contract, and the SFTP publisher port used by
   Application orchestration, Data Integration ETL services, Infrastructure adapters, and
@@ -103,6 +109,18 @@ publish `OperationsClosePackagePublicationDto` with close-package id, retained m
 evidence hash, sign-off actor/rationale, report pack id, evidence links, checklist approvals, and
 frozen vault document snapshots so clients can inspect close-package publication without rebuilding
 package metadata locally.
+Strategy-run detail payloads add a read-only acceptance checklist for the bounded Covered Call W6
+path. Each item carries its canonical checklist id, server-derived status, keyed evidence link,
+operator, decision time, audit reference, and blocker. Consumers must treat unknown or missing
+items as review-required and must not infer completion from retained declarations, metric
+eligibility, or a locally created Paper session. Evidence Vault identities and document/query
+payloads carry additive tenant/company scope; legacy unscoped store calls remain obsolete,
+source-visible fail-closed compatibility shims.
+`Workstation/EvidenceVaultReference.cs` owns the server-side canonical Vault reference grammar:
+`evidence://evidence-vault/ev-` plus 24 hexadecimal characters, normalized to lowercase, with no
+port, user info, query, fragment, extra/encoded path, or traversal. Browser validation mirrors this
+contract and its shared malformed-vector proof; storage, Covered Call admission, and Paper
+promotion must call the contract helper rather than maintain separate parsers.
 Strategy-run trial-balance and journal DTOs expose the canonical `LedgerDimensionSetDto` beside
 legacy account/entity/sleeve/vehicle scope fields so browser and WPF ledger drill-throughs can use
 the same dimensional accounting vocabulary as rules, drafts, period reports, and external GL
@@ -232,6 +250,19 @@ multiple accounting bases, ledger books, periods, policies, and dimension scopes
 governed posting candidate for each target without creating posted ledger facts. Approved generated
 candidate posting uses a separate request/result contract so clients cannot confuse preview with
 durable append.
+`AssetAccountingEventSpineDto` provides the canonical Acquisition, Capitalization, Valuation,
+Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal lifecycle envelope.
+It keeps Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported distinct and allows
+posted impact only when the response identifies the immutable journal, book, period, accounting
+basis, Posted status, currency, balanced amounts, and journal lines. `RetainedEvidenceIdentityDto`
+is the shared fail-closed evidence shape; a URI or operator rationale without identity, SHA-256,
+source reference, accepted review, effective date, positive version, retention metadata, and subject
+scope does not satisfy canonical asset posting or production-readiness gates.
+Drafted authority retains the full candidate intent/result and canonical fingerprints, including
+all dimensions, rule-pack and policy identity, period/version assertions, evidence, and any lot
+instruction. Typed correction lineage identifies the exact earlier event version and posted journal
+(plus mutation batch for lot-backed events). Acquisition and disposal lot instructions retain exact
+asset account and cost authority; other event kinds cannot carry lot mutations.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.
@@ -260,8 +291,9 @@ evidence instead of relying on account or run names.
 `AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle,
 close/reporting, close-plan configuration, external GL, reconciliation, direct-lending, and
 strategy-ledger-read controls as complete only when the certification flag is paired with retained
-ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
-certification packet. Ledger-book evidence must use an explicit `ledger-book:<id>`,
+ledger-book-scoped typed evidence for that specific workflow lane. Legacy string links and full-token
+certification packets remain navigation metadata and cannot establish readiness. The retained
+evidence URI must use an explicit `ledger-book:<id>`,
 `ledger-book/<id>`, `book:<id>`, or `ledgerBookId=<id>` marker, with `ledgerBookId:<id>` and
 `ledgerBookId/<id>` accepted for route-shaped evidence; incidental bare GUID references and generic
 evidence links do not certify every workflow lane by implication.
@@ -270,9 +302,8 @@ persistence, trial-balance dimension filters, period reports, cross-period repor
 dimension filters, report-package provenance, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
 Each dimensional control requires evidence for that specific ledger/query/report/export lane and a
-`dimension-scope` or `ledger-dimension-set` marker on the same ledger-book-scoped artifact, unless
-the artifact is an explicit full dimensional or production certification packet with that same
-dimension-scope proof. This keeps one generic ledger-book evidence link, incidental bare GUID
+`dimension-scope` or `ledger-dimension-set` marker on the same complete typed retained artifact.
+This keeps one generic ledger-book evidence link, incidental bare GUID
 reference, or split support artifact from certifying all dimensional reporting controls by
 implication, and keeps ledger-book proof separate from proof that fund, entity, sleeve, strategy,
 investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL
@@ -714,8 +745,9 @@ Application-layer dependencies. Runtime pipeline statistics live in `Pipeline/` 
 `PipelineStatistics` contract-owned so Platform backpressure alerting can observe Application
 pipeline state without referencing Application implementation assemblies.
 Operational scheduler contracts live in `Services/`. Keep `IOperationalScheduler`,
-`ITradingCalendarProvider`, operation types, resource requirements, scheduling decisions, slots,
-trading sessions, and maintenance-window records contract-owned so scheduling behavior can be
+`IOperationalTradingCalendar` (plus the obsolete `ITradingCalendarProvider` compatibility alias),
+operation types, resource requirements, scheduling decisions, slots, trading sessions, and
+maintenance-window records contract-owned so deterministic local scheduling behavior can be
 implemented in Platform while tests, future hosts, and operator surfaces consume the same
 scheduler shape.
 Evidence Vault identities also expose retained artifact metadata, grouped request lists, and
@@ -1352,6 +1384,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -1363,6 +1397,16 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:end -->
 
 ## API and contract notes
+
+Canonical symbol registries retain their stable read/write interfaces. Implementations that can
+apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigrationWriter`; callers
+must require that additive capability rather than widening the general registry contract or
+falling back to per-definition writes.
+
+`WorkstationWorkspaceCatalog` classifies browser workspaces by product maturity only:
+`Preview`, `Setup`, or `Available`. Execution environment (`Demo`, `Paper`, or `Live`) and runtime
+operator state (`Ready`, `Review`, or `Blocked`) come from session, provenance, and readiness
+evidence; they must not be encoded in static workspace metadata.
 
 The instrument-to-journal semantic alignment is additive and requires no initial schema migration.
 It does not replace Security Master identity, create an Instrument Master above Security Master,

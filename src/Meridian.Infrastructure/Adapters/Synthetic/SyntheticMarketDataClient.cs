@@ -41,6 +41,10 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
     }
 
     public bool IsEnabled => _config.Enabled;
+
+    /// <inheritdoc/>
+    public bool IsSimulated => true;
+
     public string ProviderId => "synthetic";
     public string ProviderDisplayName => "Synthetic Market Data";
     public string ProviderDescription => "Synthetic trades, BBO quotes, level-2 order books, and reference data for offline development.";

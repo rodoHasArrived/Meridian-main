@@ -1,6 +1,7 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
@@ -243,12 +244,29 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   const routeCopy = strategyRouteViewCopy[routeView];
   const showLab = routeView === "lab";
   const showRuns = routeView === "promotions";
+  const requestedRunId = new URLSearchParams(search).get("runId")?.trim() ?? "";
   const routeTabs = strategyRouteTabs.map((tab) => ({
     id: tab.id,
     label: tab.label,
     selected: tab.id === routeView
   }));
   const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const openedDeepLinkRunId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!showRuns || !requestedRunId) {
+      openedDeepLinkRunId.current = null;
+      return;
+    }
+
+    if (openedDeepLinkRunId.current === requestedRunId ||
+        !vm.runs.some((run) => run.id === requestedRunId)) {
+      return;
+    }
+
+    openedDeepLinkRunId.current = requestedRunId;
+    vm.openRunDetailById(requestedRunId);
+  }, [requestedRunId, showRuns, vm.openRunDetailById, vm.runs]);
 
   const runColumns = useMemo<DenseDataTableColumn<StrategyRunTableRow>[]>(() => [
     {
@@ -625,90 +643,52 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   )}
                 </div>
               )}
-              {vm.promotionPanel.sessionCreated && (
+              {vm.promotionPanel.approval && (
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold text-success">{vm.promotionPanel.sessionCreated.title}</div>
-                  <p className="font-mono text-xs text-muted-foreground">{vm.promotionPanel.sessionCreated.detail}</p>
+                  <div className="text-sm font-semibold text-success">{vm.promotionPanel.approval.title}</div>
+                  <p className="font-mono text-xs text-muted-foreground">{vm.promotionPanel.approval.detail}</p>
                   <Button
                     size="sm"
-                    aria-label={vm.promotionPanel.sessionCreated.actionAriaLabel}
+                    aria-label={vm.promotionPanel.approval.actionAriaLabel}
                     onClick={() => {
-                      if (vm.promotionPanel.sessionCreated) {
-                        navigate(vm.promotionPanel.sessionCreated.actionHref);
+                      if (vm.promotionPanel.approval) {
+                        navigate(vm.promotionPanel.approval.actionHref);
                       }
                     }}
                   >
-                    {vm.promotionPanel.sessionCreated.actionLabel}
+                    {vm.promotionPanel.approval.actionLabel}
                   </Button>
                 </div>
               )}
-              {vm.promotionPanel.showCashForm && (
+              {vm.promotionPanel.showApprovalForm && (
                 <form
-                  className="flex flex-wrap items-end gap-3"
+                  className="flex flex-wrap items-center gap-3"
                   onSubmit={(e) => { e.preventDefault(); void vm.confirmPromotion(); }}
-                  aria-label="Paper promotion session setup"
+                  aria-label="Governed Paper promotion approval"
                   noValidate
                 >
-                  <div className="space-y-1">
-                    <label htmlFor={vm.promotionCashForm.inputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                      {vm.promotionCashForm.label}
-                    </label>
-                    <input
-                      id={vm.promotionCashForm.inputId}
-                      type="number"
-                      min={vm.promotionCashForm.min}
-                      step={vm.promotionCashForm.step}
-                      value={vm.promotionCashForm.value}
-                      onChange={(e) => vm.setPromotionInitialCash(e.target.value)}
-                      disabled={vm.promotionCashForm.inputDisabled}
-                      title={vm.promotionCashForm.inputDisabledReason ?? undefined}
-                      aria-invalid={vm.promotionCashForm.errorText ? "true" : "false"}
-                      aria-describedby={vm.promotionCashForm.inputDescribedBy}
-                      className={cn(
-                        "w-44 rounded-md border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                        vm.promotionCashForm.errorText ? "border-danger/50 text-danger" : "border-border text-foreground"
-                      )}
-                    />
-                    <p
-                      id={vm.promotionCashForm.inputHelpId}
-                      className={cn(
-                        "max-w-56 text-[11px] leading-4",
-                        vm.promotionCashForm.errorText ? "text-danger" : "text-muted-foreground"
-                      )}
-                    >
-                      {vm.promotionCashForm.helpText}
-                    </p>
-                    {vm.promotionCashForm.inputDisabledReason ? (
-                      <p
-                        id={vm.promotionCashForm.inputDisabledReasonId ?? undefined}
-                        className="max-w-56 rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
-                      >
-                        {vm.promotionCashForm.inputDisabledReason}
-                      </p>
-                    ) : null}
-                  </div>
                   <label
-                    htmlFor={vm.promotionCashForm.acknowledgementId}
+                    htmlFor={vm.promotionApprovalForm.acknowledgementId}
                     className="flex max-w-sm items-start gap-2 rounded-md border border-border/70 bg-background/45 px-3 py-2 text-xs leading-5 text-muted-foreground"
                   >
                     <input
-                      id={vm.promotionCashForm.acknowledgementId}
+                      id={vm.promotionApprovalForm.acknowledgementId}
                       type="checkbox"
-                      checked={vm.promotionCashForm.acknowledgementChecked}
+                      checked={vm.promotionApprovalForm.acknowledgementChecked}
                       onChange={(e) => vm.setPromotionAcknowledgement(e.target.checked)}
-                      disabled={vm.promotionCashForm.acknowledgementDisabled}
-                      title={vm.promotionCashForm.acknowledgementDisabledReason ?? undefined}
-                      aria-describedby={vm.promotionCashForm.acknowledgementDescribedBy}
+                      disabled={vm.promotionApprovalForm.acknowledgementDisabled}
+                      title={vm.promotionApprovalForm.acknowledgementDisabledReason ?? undefined}
+                      aria-describedby={vm.promotionApprovalForm.acknowledgementDescribedBy}
                       className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     />
                     <span className="grid gap-1">
-                      <span>{vm.promotionCashForm.acknowledgementLabel}</span>
-                      {vm.promotionCashForm.acknowledgementDisabledReason ? (
+                      <span>{vm.promotionApprovalForm.acknowledgementLabel}</span>
+                      {vm.promotionApprovalForm.acknowledgementDisabledReason ? (
                         <span
-                          id={vm.promotionCashForm.acknowledgementDisabledReasonId ?? undefined}
+                          id={vm.promotionApprovalForm.acknowledgementDisabledReasonId ?? undefined}
                           className="rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
                         >
-                          {vm.promotionCashForm.acknowledgementDisabledReason}
+                          {vm.promotionApprovalForm.acknowledgementDisabledReason}
                         </span>
                       ) : null}
                     </span>
@@ -716,22 +696,22 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   <Button
                     type="submit"
                     size="sm"
-                    disabled={!vm.promotionCashForm.canSubmit}
-                    disabledReason={vm.promotionCashForm.disabledReason}
-                    aria-label={vm.promotionCashForm.submitAriaLabel}
+                    disabled={!vm.promotionApprovalForm.canSubmit}
+                    disabledReason={vm.promotionApprovalForm.disabledReason}
+                    aria-label={vm.promotionApprovalForm.submitAriaLabel}
                   >
-                    {vm.promotionCashForm.submitLabel}
+                    {vm.promotionApprovalForm.submitLabel}
                   </Button>
                   <Button
                     type="button"
                     size="sm"
                     variant="ghost"
                     onClick={vm.cancelPromotion}
-                    disabled={vm.promotionCashForm.cancelDisabled}
-                    disabledReason={vm.promotionCashForm.cancelDisabledReason}
-                    aria-label={vm.promotionCashForm.cancelAriaLabel}
+                    disabled={vm.promotionApprovalForm.cancelDisabled}
+                    disabledReason={vm.promotionApprovalForm.cancelDisabledReason}
+                    aria-label={vm.promotionApprovalForm.cancelAriaLabel}
                   >
-                    {vm.promotionCashForm.cancelLabel}
+                    {vm.promotionApprovalForm.cancelLabel}
                   </Button>
                 </form>
               )}
@@ -1096,6 +1076,94 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               ))}
             </section>
 
+            <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
+              <div className="eyebrow-label">{vm.selectedRunDetail.acceptanceCriteriaLabel}</div>
+              {vm.selectedRunDetail.acceptanceCriteriaStatus === "ready" ? (
+                <>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {vm.selectedRunDetail.acceptanceCriteriaMessage}
+                  </p>
+                  <ul
+                    aria-label={vm.selectedRunDetail.acceptanceCriteriaLabel}
+                    className="mt-3 space-y-2"
+                  >
+                    {vm.selectedRunDetail.acceptanceCriteria.map((criterion, index) => (
+                      <li key={`${criterion}-${index}`} className="flex items-start gap-2 text-sm leading-5 text-foreground">
+                        <span aria-hidden="true" className="mt-0.5 shrink-0 text-muted-foreground">&bull;</span>
+                        <span>{criterion}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p role="status" aria-live="polite" className="mt-2 text-sm text-muted-foreground">
+                  {vm.selectedRunDetail.acceptanceCriteriaMessage}
+                </p>
+              )}
+            </section>
+
+            <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="eyebrow-label">{vm.selectedRunDetail.acceptanceChecklistLabel}</div>
+                  <p id={`${vm.selectedRunDetail.dialogDescriptionId}-checklist`} className="mt-2 text-xs text-muted-foreground">
+                    {vm.selectedRunDetail.acceptanceChecklistMessage}
+                  </p>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link to={vm.selectedRunDetail.evidenceAction.href} aria-label={vm.selectedRunDetail.evidenceAction.ariaLabel}>
+                    {vm.selectedRunDetail.evidenceAction.label}
+                  </Link>
+                </Button>
+              </div>
+              {vm.selectedRunDetail.acceptanceChecklistStatus === "ready" ? (
+                <fieldset
+                  disabled
+                  aria-label={vm.selectedRunDetail.acceptanceChecklistLabel}
+                  aria-describedby={`${vm.selectedRunDetail.dialogDescriptionId}-checklist`}
+                  className="mt-3 space-y-2"
+                >
+                  {vm.selectedRunDetail.acceptanceChecklist.map((item) => (
+                    <label key={item.checklistId} className="block rounded-md border border-border/60 bg-background/45 px-3 py-2">
+                      <span className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          checked={item.status === "Ready"}
+                          readOnly
+                          className="mt-1 h-4 w-4 shrink-0"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium text-foreground">{item.label}</span>
+                          <span className="block font-mono text-[11px] text-muted-foreground">{item.checklistId}</span>
+                          <span className="mt-1 block text-xs text-muted-foreground">
+                            {item.status === "Ready"
+                              ? `Ready - decided by ${item.decidedBy} at ${item.decidedAt}.`
+                              : item.status === "Rejected"
+                                ? `Rejected - ${item.blocker ?? "the durable promotion decision blocked this requirement."}`
+                                : item.blocker ?? "Review is required before this item can be ready."}
+                          </span>
+                          {item.evidenceReference ? (
+                            <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                              Evidence: {item.evidenceReference}
+                            </span>
+                          ) : null}
+                          {item.auditReference ? (
+                            <span className="block break-all font-mono text-[11px] text-muted-foreground">
+                              Audit: {item.auditReference}
+                            </span>
+                          ) : null}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+              ) : (
+                <p role="status" aria-live="polite" className="mt-3 text-sm text-muted-foreground">
+                  {vm.selectedRunDetail.acceptanceChecklistMessage}
+                </p>
+              )}
+            </section>
+
             <TechnicalDetails
               label="Run references"
               description="Stable identifiers for support, audit, and API tracing."
@@ -1115,6 +1183,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               <div className="eyebrow-label">{vm.selectedRunDetail.notesLabel}</div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.selectedRunDetail.notesText}</p>
             </section>
+
+            <BiasDisclosurePanel disclosure={vm.selectedRunDetail.biasDisclosure} className="mt-4" />
           </DialogContent>
         )}
       </Dialog>

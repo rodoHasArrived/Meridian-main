@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Channels;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
@@ -8,6 +10,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Ui.Shared.Contracts;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Serialization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
@@ -35,6 +38,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<CoveredCallBacktestService> _logger;
     private readonly TimeProvider _timeProvider;
+    private readonly IEvidenceArtifactStore? _evidenceArtifactStore;
 
     private static readonly BoundedChannelOptions RunQueueOptions = new(capacity: 512)
     {
@@ -48,6 +52,16 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
     private const int MaxRetainedRuns = 2_000;
     private static readonly TimeSpan TerminalRunRetention = TimeSpan.FromMinutes(30);
+
+    internal const int MaxOperatorAcceptanceCriteriaCount = 16;
+    internal const int MaxRetainedEvidenceReferenceCount = 32;
+    internal const int MaxAccountingRecordReferenceCount = 32;
+    internal const int MaxApprovalReferenceCount = 32;
+    internal const int MaxPaperValidationReferenceCount = 32;
+    internal const int MaxGovernedReportReferenceCount = 32;
+    internal const int MaxOperatorAcceptanceCriterionLength = 1_024;
+    internal const int MaxEvidenceReferenceLength = 2_048;
+    internal const int MaxAggregateEvidenceCharacters = 32_768;
 
     private readonly ConcurrentDictionary<string, RunState> _runs = new(StringComparer.Ordinal);
 
@@ -78,7 +92,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         IOptionsMonitor<CoveredCallBacktestOptions> options,
         IMemoryCache resultCache,
         ILoggerFactory loggerFactory,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        IEvidenceArtifactStore? evidenceArtifactStore = null)
     {
         _engineFactory = engineFactory ?? throw new ArgumentNullException(nameof(engineFactory));
         _chainFactory = chainFactory ?? throw new ArgumentNullException(nameof(chainFactory));
@@ -88,6 +103,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         _logger = loggerFactory.CreateLogger<CoveredCallBacktestService>();
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _evidenceArtifactStore = evidenceArtifactStore;
 
         _configuredConcurrency = Math.Max(1, options.CurrentValue.MaxConcurrentRuns);
         _concurrency = new SemaphoreSlim(_configuredConcurrency, _configuredConcurrency);
@@ -152,10 +168,16 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     //  ICoveredCallBacktestService                                        //
     // ------------------------------------------------------------------ //
 
-    public ValueTask<CoveredCallRunHandle> StartAsync(CoveredCallBacktestRequest request, CancellationToken ct = default)
+    public async ValueTask<CoveredCallRunHandle> StartAsync(
+        CoveredCallBacktestRequest request,
+        CoveredCallRunScope scope,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ValidateScope(scope);
+        ValidateEvidenceBudget(request);
         ValidateRequest(request);
+        await ValidateRetainedEvidenceAuthorityAsync(request, scope, ct).ConfigureAwait(false);
         PruneTerminalRuns();
 
         if (_runs.Count >= MaxRetainedRuns)
@@ -171,6 +193,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         {
             RunId = runId,
             Request = request,
+            Scope = scope,
             Cts = runCts,
             QueuedAt = queuedAt,
             Phase = RunPhase.Queued
@@ -179,24 +202,33 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
         if (!_channel.Writer.TryWrite(new CoveredCallCommand.Start(runId)))
         {
-            state.Phase = RunPhase.Failed;
-            state.Failure = "Backtest service is shutting down or its queue is closed.";
+            state.Phase = RunPhase.PersistenceDegraded;
+            state.Failure =
+                "Backtest service is shutting down or its queue is closed; the run was not queued and no durable lifecycle entry was recorded.";
             state.EndedAt = _timeProvider.GetUtcNow();
-            return ValueTask.FromResult(new CoveredCallRunHandle(runId, queuedAt));
+            runCts.Dispose();
+            _logger.LogWarning(
+                "Covered-call run {RunId} could not be queued and has no durable lifecycle entry",
+                runId);
+            return new CoveredCallRunHandle(runId, queuedAt);
         }
 
         _logger.LogInformation(
             "Covered-call run {RunId} queued for {Symbol} {From}-{To}",
             runId, request.UnderlyingSymbol.ToUpperInvariant(), request.From, request.To);
 
-        return ValueTask.FromResult(new CoveredCallRunHandle(runId, queuedAt));
+        return new CoveredCallRunHandle(runId, queuedAt);
     }
 
-    public ValueTask<CoveredCallRunStatusDto?> GetStatusAsync(string runId, CancellationToken ct = default)
+    public ValueTask<CoveredCallRunStatusDto?> GetStatusAsync(
+        string runId,
+        CoveredCallRunScope scope,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ValidateScope(scope);
 
-        if (!_runs.TryGetValue(runId, out var state))
+        if (!_runs.TryGetValue(runId, out var state) || !ScopeEquals(state.Scope, scope))
         {
             return ValueTask.FromResult<CoveredCallRunStatusDto?>(null);
         }
@@ -209,19 +241,31 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             FailureMessage: state.Failure));
     }
 
-    public async ValueTask<CoveredCallRunResult?> GetResultAsync(string runId, CancellationToken ct = default)
+    public async ValueTask<CoveredCallRunResult?> GetResultAsync(
+        string runId,
+        CoveredCallRunScope scope,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ValidateScope(scope);
 
-        if (_resultCache.TryGetValue(CacheKey(runId), out CoveredCallRunResult? cached) && cached is not null)
-        {
-            return cached;
-        }
-
-        var entry = await TryGetRunEntryAsync(runId, ct).ConfigureAwait(false);
+        var entry = await TryGetRunEntryAsync(runId, scope, ct).ConfigureAwait(false);
         if (entry is null)
         {
             return null;
+        }
+
+        // A result is operator-visible only after the durable terminal completion event exists.
+        // This deliberately checks the repository before consulting the cache so a failed
+        // completion append can never leak a successful in-memory result.
+        if (entry.LastLifecycleEvent != StrategyRunLifecycleEventType.Completed)
+        {
+            return null;
+        }
+
+        if (TryGetCachedResult(scope, runId, out var cached) && cached is not null)
+        {
+            return cached;
         }
 
         var persistedResult = TryReadPersistedResult(entry);
@@ -230,30 +274,34 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             return null;
         }
 
-        CacheResult(runId, persistedResult);
+        TryCacheResult(scope, runId, persistedResult);
         return persistedResult;
     }
 
-    /// <summary>Key used to stash the serialised <see cref="CoveredCallRunResult"/> inside the run entry's <c>ParameterSet</c>.</summary>
+    /// <summary>Key used to retain the serialised <see cref="CoveredCallRunResult"/> as terminal output metadata.</summary>
     internal const string PersistedResultParameterKey = "coveredCallResult";
+    internal const string TenantParameterKey = "workstationTenantId";
+    internal const string CompanyParameterKey = "workstationCompanyId";
 
-    private async ValueTask<StrategyRunEntry?> TryGetRunEntryAsync(string runId, CancellationToken ct)
+    private async ValueTask<StrategyRunEntry?> TryGetRunEntryAsync(
+        string runId,
+        CoveredCallRunScope scope,
+        CancellationToken ct)
     {
         // GetRunByIdAsync is keyed on runId across all strategies; QueryRunsAsync with Limit:1
         // would return the most-recently-updated entry for the strategy and miss arbitrary runIds.
-        return await _runRepository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        var entry = await _runRepository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        return entry is not null && EntryBelongsToScope(entry, scope) ? entry : null;
     }
 
     private CoveredCallRunResult? TryReadPersistedResult(StrategyRunEntry entry)
     {
-        // StrategyRunEntry has no Metadata bag — we use the existing ParameterSet for both
-        // headline metric strings (cagr/sharpe/winRate) and the full serialised result blob.
-        if (entry.ParameterSet is null)
-        {
-            return null;
-        }
-
-        if (!entry.ParameterSet.TryGetValue(PersistedResultParameterKey, out var serializedResult) || string.IsNullOrWhiteSpace(serializedResult))
+        var metadata = entry.OutputMetadata.Count > 0
+            ? entry.OutputMetadata
+            : entry.ParameterSet;
+        if (metadata is null ||
+            !metadata.TryGetValue(PersistedResultParameterKey, out var serializedResult) ||
+            string.IsNullOrWhiteSpace(serializedResult))
         {
             return null;
         }
@@ -273,21 +321,98 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         }
     }
 
-    private void CacheResult(string runId, CoveredCallRunResult result)
+    private bool TryGetCachedResult(
+        CoveredCallRunScope scope,
+        string runId,
+        out CoveredCallRunResult? result)
     {
-        _resultCache.Set(
-            CacheKey(runId),
-            result,
-            new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = _options.CurrentValue.ResultCacheDuration
-            });
+        try
+        {
+            return _resultCache.TryGetValue(CacheKey(scope, runId), out result) && result is not null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Covered-call result cache read failed for run {RunId}; durable result rehydration will continue",
+                runId);
+            result = null;
+            return false;
+        }
     }
 
-    public async ValueTask<IReadOnlyList<CoveredCallRunSummary>> ListRunsAsync(int limit = 50, CancellationToken ct = default)
+    private void TryCacheResult(CoveredCallRunScope scope, string runId, CoveredCallRunResult result)
     {
+        var duration = ResolveResultCacheDuration();
+
+        try
+        {
+            _resultCache.Set(
+                CacheKey(scope, runId),
+                result,
+                new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = duration
+                });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Covered-call result cache write failed for run {RunId}; durable completion remains authoritative",
+                runId);
+        }
+    }
+
+    private TimeSpan ResolveResultCacheDuration()
+    {
+        try
+        {
+            var configured = _options.CurrentValue.ResultCacheDuration;
+            if (configured > TimeSpan.Zero)
+            {
+                return configured;
+            }
+
+            _logger.LogWarning(
+                "Covered-call ResultCacheDuration {ResultCacheDuration} is not positive; using default {DefaultResultCacheDuration}",
+                configured,
+                CoveredCallBacktestOptions.DefaultResultCacheDuration);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Covered-call cache options could not be read; using default ResultCacheDuration {DefaultResultCacheDuration}",
+                CoveredCallBacktestOptions.DefaultResultCacheDuration);
+        }
+
+        return CoveredCallBacktestOptions.DefaultResultCacheDuration;
+    }
+
+    private void TryRemoveCachedResult(CoveredCallRunScope scope, string runId)
+    {
+        try
+        {
+            _resultCache.Remove(CacheKey(scope, runId));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Covered-call result cache removal failed for run {RunId}; lifecycle persistence will continue",
+                runId);
+        }
+    }
+
+    public async ValueTask<IReadOnlyList<CoveredCallRunSummary>> ListRunsAsync(
+        CoveredCallRunScope scope,
+        int limit = 50,
+        CancellationToken ct = default)
+    {
+        ValidateScope(scope);
         var query = new StrategyRunRepositoryQuery(
-            StrategyId: StrategyId,
+            StrategyId: GetScopedStrategyId(scope),
             RunTypes: null,
             Status: null,
             Limit: Math.Max(1, limit));
@@ -297,9 +422,17 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         var result = new List<CoveredCallRunSummary>(entries.Count);
         foreach (var entry in entries)
         {
+            if (!EntryBelongsToScope(entry, scope))
+            {
+                continue;
+            }
             // Derive the run summary fields from the in-memory state when available,
             // and fall back to the persisted entry for past runs.
             _runs.TryGetValue(entry.RunId, out var liveState);
+            if (liveState is not null && !ScopeEquals(liveState.Scope, scope))
+            {
+                liveState = null;
+            }
 
             var symbol = liveState?.Request.UnderlyingSymbol
                 ?? entry.ParameterSet?.GetValueOrDefault("underlyingSymbol")
@@ -318,19 +451,23 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             })).ToString();
 
             double? cagr = null, sharpe = null, winRate = null;
-            if (_resultCache.TryGetValue(CacheKey(entry.RunId), out CoveredCallRunResult? cachedResult) && cachedResult is not null)
+            if (TryGetCachedResult(scope, entry.RunId, out var cachedResult) && cachedResult is not null)
             {
                 cagr = cachedResult.Metrics.Cagr;
                 sharpe = cachedResult.Metrics.SharpeRatio;
                 winRate = cachedResult.Metrics.WinRate;
             }
-            else if (entry.ParameterSet is not null)
+            else
             {
-                // Fall back to the headline-metric strings stashed on completion so older runs
-                // still show their performance numbers after the cache window expires.
-                cagr = TryParseInvariantDouble(entry.ParameterSet, "cagr");
-                sharpe = TryParseInvariantDouble(entry.ParameterSet, "sharpe");
-                winRate = TryParseInvariantDouble(entry.ParameterSet, "winRate");
+                var outputMetadata = entry.OutputMetadata.Count > 0
+                    ? entry.OutputMetadata
+                    : entry.ParameterSet;
+                if (outputMetadata is not null)
+                {
+                    cagr = TryParseInvariantDouble(outputMetadata, "cagr");
+                    sharpe = TryParseInvariantDouble(outputMetadata, "sharpe");
+                    winRate = TryParseInvariantDouble(outputMetadata, "winRate");
+                }
             }
 
             result.Add(new CoveredCallRunSummary(
@@ -350,11 +487,15 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         return result;
     }
 
-    public ValueTask CancelAsync(string runId, CancellationToken ct = default)
+    public ValueTask CancelAsync(
+        string runId,
+        CoveredCallRunScope scope,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ValidateScope(scope);
 
-        if (_runs.TryGetValue(runId, out var state))
+        if (_runs.TryGetValue(runId, out var state) && ScopeEquals(state.Scope, scope))
         {
             try
             {
@@ -461,6 +602,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             var request = state.Request;
             var paramSet = new Dictionary<string, string>(StringComparer.Ordinal)
             {
+                [TenantParameterKey] = state.Scope.TenantId.Trim(),
+                [CompanyParameterKey] = state.Scope.CompanyId.Trim(),
                 ["underlyingSymbol"] = request.UnderlyingSymbol.ToUpperInvariant(),
                 ["from"] = request.From.ToString("O"),
                 ["to"] = request.To.ToString("O"),
@@ -473,13 +616,11 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 paramSet["label"] = request.Label;
             }
 
-            initialEntry = StrategyRunEntry.Start(
-                strategyId: StrategyId,
-                strategyName: $"CoveredCallOverwrite({request.UnderlyingSymbol.ToUpperInvariant()})",
-                runType: RunType.Backtest,
-                runId: runId,
-                engine: "MeridianNative",
-                parameterSet: paramSet);
+            initialEntry = CoveredCallRunProjection.CreateEvidenceBackedRunEntry(
+                request,
+                state.Scope,
+                runId,
+                paramSet);
             await _runRepository.RecordRunAsync(initialEntry, hostCt).ConfigureAwait(false);
 
             // Build chain provider (eager materialisation).
@@ -529,20 +670,9 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             var equityCurve = innerStrategy.Metrics?.EquityCurve ?? [];
             var result = CoveredCallRunProjection.ToResult(runId, request, innerStrategy, equityCurve);
 
-            // Cache full result.
-            _resultCache.Set(CacheKey(runId), result, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = _options.CurrentValue.ResultCacheDuration
-            });
-
-            state.Phase = RunPhase.Completed;
-            state.Percent = 1.0;
-            state.EndedAt = _timeProvider.GetUtcNow();
-
-            // Persist headline metrics on the entry's parameter set so the history view still has
-            // them after the in-memory result cache expires. Also persist the full serialised
-            // result so GetResultAsync can re-hydrate completed runs past the cache window.
-            var enrichedParams = new Dictionary<string, string>(paramSet, StringComparer.Ordinal)
+            // Retain terminal outputs separately from the immutable input parameter set so the
+            // repository can verify the original request hash across the whole lifecycle.
+            var outputMetadata = new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 ["cagr"] = result.Metrics.Cagr.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
                 ["sharpe"] = result.Metrics.SharpeRatio.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
@@ -550,8 +680,15 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 // ADR-014: serialise via the source-generated context.
                 [PersistedResultParameterKey] = System.Text.Json.JsonSerializer.Serialize(result, CoveredCallJsonContext.Default.CoveredCallRunResult)
             };
-            var completedEntry = (initialEntry with { ParameterSet = enrichedParams }).Complete(backtestResult);
+            var completedEntry = (initialEntry with { OutputMetadata = outputMetadata }).Complete(backtestResult);
             await _runRepository.RecordRunAsync(completedEntry, hostCt).ConfigureAwait(false);
+
+            // Publish successful state and cache only after the terminal evidence append succeeds.
+            // The durable repository is the authority for whether a result may be exposed.
+            TryCacheResult(state.Scope, runId, result);
+            state.Phase = RunPhase.Completed;
+            state.Percent = 1.0;
+            state.EndedAt = _timeProvider.GetUtcNow();
 
             _logger.LogInformation(
                 "Covered-call run {RunId} completed: {Trades} trades, sharpe={Sharpe:F2}",
@@ -559,43 +696,63 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         }
         catch (OperationCanceledException)
         {
-            state.Phase = RunPhase.Cancelled;
-            state.EndedAt = _timeProvider.GetUtcNow();
+            TryRemoveCachedResult(state.Scope, runId);
+            Exception? terminalPersistenceFailure = null;
             try
             {
                 // Mutate the originally-persisted entry so StartedAt and ParameterSet survive.
-                var baseEntry = initialEntry ?? StrategyRunEntry.Start(
-                    StrategyId,
-                    $"CoveredCallOverwrite({state.Request.UnderlyingSymbol.ToUpperInvariant()})",
-                    RunType.Backtest,
-                    runId);
+                var baseEntry = initialEntry ?? CoveredCallRunProjection.CreateEvidenceBackedRunEntry(
+                    state.Request,
+                    state.Scope,
+                    runId,
+                    CreateScopedFallbackParameterSet(state.Scope));
                 await _runRepository.RecordRunAsync(baseEntry.Cancel(), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception persistEx)
             {
+                terminalPersistenceFailure = persistEx;
                 _logger.LogWarning(persistEx, "Failed to persist cancelled run {RunId}", runId);
             }
-            _logger.LogInformation("Covered-call run {RunId} cancelled", runId);
+
+            state.Phase = terminalPersistenceFailure is null
+                ? RunPhase.Cancelled
+                : RunPhase.PersistenceDegraded;
+            state.Failure = terminalPersistenceFailure is null
+                ? null
+                : $"Cancellation was observed locally, but the durable Cancelled lifecycle append failed: {terminalPersistenceFailure.Message}";
+            state.EndedAt = _timeProvider.GetUtcNow();
+            if (terminalPersistenceFailure is null)
+            {
+                _logger.LogInformation("Covered-call run {RunId} cancelled", runId);
+            }
         }
         catch (Exception ex)
         {
-            state.Phase = RunPhase.Failed;
-            state.Failure = ex.Message;
-            state.EndedAt = _timeProvider.GetUtcNow();
+            TryRemoveCachedResult(state.Scope, runId);
             _logger.LogError(ex, "Covered-call run {RunId} failed", runId);
+            Exception? terminalPersistenceFailure = null;
             try
             {
-                var baseEntry = initialEntry ?? StrategyRunEntry.Start(
-                    StrategyId,
-                    $"CoveredCallOverwrite({state.Request.UnderlyingSymbol.ToUpperInvariant()})",
-                    RunType.Backtest,
-                    runId);
-                await _runRepository.RecordRunAsync(baseEntry.Fail(), CancellationToken.None).ConfigureAwait(false);
+                var baseEntry = initialEntry ?? CoveredCallRunProjection.CreateEvidenceBackedRunEntry(
+                    state.Request,
+                    state.Scope,
+                    runId,
+                    CreateScopedFallbackParameterSet(state.Scope));
+                await _runRepository.RecordRunAsync(baseEntry.Fail(ex), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception persistEx)
             {
+                terminalPersistenceFailure = persistEx;
                 _logger.LogWarning(persistEx, "Failed to persist failed run {RunId}", runId);
             }
+
+            state.Phase = terminalPersistenceFailure is null
+                ? RunPhase.Failed
+                : RunPhase.PersistenceDegraded;
+            state.Failure = terminalPersistenceFailure is null
+                ? ex.Message
+                : $"The run stopped after '{ex.Message}', but the durable Failed lifecycle append also failed: {terminalPersistenceFailure.Message}";
+            state.EndedAt = _timeProvider.GetUtcNow();
         }
         finally
         {
@@ -608,10 +765,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 catch (ObjectDisposedException) { /* benign during resize */ }
             }
 
-            if (state is { Phase: RunPhase.Completed or RunPhase.Failed or RunPhase.Cancelled })
-            {
-                state.Cts.Dispose();
-            }
+            state.Cts.Dispose();
         }
     }
 
@@ -619,13 +773,124 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     //  Helpers                                                            //
     // ------------------------------------------------------------------ //
 
-    private static string CacheKey(string runId) => "covered-call-result:" + runId;
+    internal static string GetScopedStrategyId(CoveredCallRunScope scope)
+    {
+        ValidateScope(scope);
+        var identity = $"{scope.TenantId.Trim().Length}:{scope.TenantId.Trim()}" +
+                       $"{scope.CompanyId.Trim().Length}:{scope.CompanyId.Trim()}";
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))
+            .ToLowerInvariant();
+        return $"{StrategyId}:{hash[..16]}";
+    }
+
+    private static string CacheKey(CoveredCallRunScope scope, string runId) =>
+        $"covered-call-result:{GetScopedStrategyId(scope)}:{runId}";
+
+    private static Dictionary<string, string> CreateScopedFallbackParameterSet(CoveredCallRunScope scope) =>
+        new(StringComparer.Ordinal)
+        {
+            [TenantParameterKey] = scope.TenantId.Trim(),
+            [CompanyParameterKey] = scope.CompanyId.Trim()
+        };
+
+    private static bool EntryBelongsToScope(StrategyRunEntry entry, CoveredCallRunScope scope) =>
+        string.Equals(entry.StrategyId, GetScopedStrategyId(scope), StringComparison.Ordinal) &&
+        entry.ParameterSet is not null &&
+        entry.ParameterSet.TryGetValue(TenantParameterKey, out var tenantId) &&
+        entry.ParameterSet.TryGetValue(CompanyParameterKey, out var companyId) &&
+        string.Equals(tenantId, scope.TenantId.Trim(), StringComparison.Ordinal) &&
+        string.Equals(companyId, scope.CompanyId.Trim(), StringComparison.Ordinal);
+
+    private static bool ScopeEquals(CoveredCallRunScope left, CoveredCallRunScope right) =>
+        string.Equals(left.TenantId.Trim(), right.TenantId.Trim(), StringComparison.Ordinal) &&
+        string.Equals(left.CompanyId.Trim(), right.CompanyId.Trim(), StringComparison.Ordinal);
+
+    private static void ValidateScope(CoveredCallRunScope scope)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scope.TenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scope.CompanyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scope.Actor);
+    }
 
     private static double? TryParseInvariantDouble(IReadOnlyDictionary<string, string> map, string key) =>
         map.TryGetValue(key, out var raw)
         && double.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value)
             ? value
             : null;
+
+    private static void ValidateEvidenceBudget(CoveredCallBacktestRequest request)
+    {
+        long aggregateCharacters = 0;
+        aggregateCharacters += ValidateEvidenceCollectionBudget(
+            request.OperatorAcceptanceCriteria,
+            nameof(request.OperatorAcceptanceCriteria),
+            MaxOperatorAcceptanceCriteriaCount,
+            MaxOperatorAcceptanceCriterionLength);
+        aggregateCharacters += ValidateEvidenceCollectionBudget(
+            request.RetainedEvidenceReferences,
+            nameof(request.RetainedEvidenceReferences),
+            MaxRetainedEvidenceReferenceCount,
+            MaxEvidenceReferenceLength);
+        aggregateCharacters += ValidateEvidenceCollectionBudget(
+            request.AccountingRecordReferences,
+            nameof(request.AccountingRecordReferences),
+            MaxAccountingRecordReferenceCount,
+            MaxEvidenceReferenceLength);
+        aggregateCharacters += ValidateEvidenceCollectionBudget(
+            request.ApprovalReferences,
+            nameof(request.ApprovalReferences),
+            MaxApprovalReferenceCount,
+            MaxEvidenceReferenceLength);
+        aggregateCharacters += ValidateEvidenceCollectionBudget(
+            request.PaperValidationReferences,
+            nameof(request.PaperValidationReferences),
+            MaxPaperValidationReferenceCount,
+            MaxEvidenceReferenceLength);
+        aggregateCharacters += ValidateEvidenceCollectionBudget(
+            request.GovernedReportReferences,
+            nameof(request.GovernedReportReferences),
+            MaxGovernedReportReferenceCount,
+            MaxEvidenceReferenceLength);
+
+        if (aggregateCharacters > MaxAggregateEvidenceCharacters)
+        {
+            throw new ArgumentException(
+                $"Covered-call evidence declarations may contain at most " +
+                $"{MaxAggregateEvidenceCharacters} aggregate characters across all six collections.",
+                nameof(request));
+        }
+    }
+
+    private static long ValidateEvidenceCollectionBudget(
+        IReadOnlyList<string> values,
+        string category,
+        int maxCount,
+        int maxValueLength)
+    {
+        if (values.Count > maxCount)
+        {
+            throw new ArgumentException(
+                $"Covered-call {category} may contain at most {maxCount} values.",
+                "request");
+        }
+
+        long totalLength = 0;
+        foreach (var value in values)
+        {
+            var valueLength = value?.Length ?? 0;
+            if (valueLength > maxValueLength)
+            {
+                throw new ArgumentException(
+                    $"Each covered-call {category} value may contain at most {maxValueLength} characters.",
+                    "request");
+            }
+
+            totalLength += valueLength;
+        }
+
+        return totalLength;
+    }
 
     private static void ValidateRequest(CoveredCallBacktestRequest request)
     {
@@ -639,6 +904,95 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             throw new ArgumentException("InitialCash must be greater than zero.", nameof(request));
         if (request.InitialUnderlyingShares < 0)
             throw new ArgumentException("InitialUnderlyingShares cannot be negative.", nameof(request));
+
+        _ = CoveredCallRunProjection.RequireEvidenceLoop(request);
+    }
+
+    private async ValueTask ValidateRetainedEvidenceAuthorityAsync(
+        CoveredCallBacktestRequest request,
+        CoveredCallRunScope scope,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (_evidenceArtifactStore is null)
+        {
+            throw new ArgumentException(
+                "A tenant-scoped Evidence Vault store is required before a covered-call run can be queued.",
+                nameof(request));
+        }
+
+        var vaultIds = new List<string>();
+        foreach (var reference in request.RetainedEvidenceReferences)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (EvidenceVaultReference.TryParseCanonical(reference, out var vaultId, out var targetsEvidenceVault))
+            {
+                vaultIds.Add(vaultId);
+                continue;
+            }
+
+            if (targetsEvidenceVault)
+            {
+                throw new ArgumentException(
+                    $"Retained evidence reference '{reference}' is not a canonical " +
+                    "'evidence://evidence-vault/{vaultId}' reference.",
+                    nameof(request));
+            }
+        }
+
+        if (vaultIds.Count == 0)
+        {
+            throw new ArgumentException(
+                "At least one canonical 'evidence://evidence-vault/{vaultId}' retained evidence reference is required.",
+                nameof(request));
+        }
+
+        foreach (var vaultId in vaultIds.Distinct(StringComparer.Ordinal))
+        {
+            ct.ThrowIfCancellationRequested();
+
+            EvidenceManifestFile? manifest;
+            try
+            {
+                manifest = await _evidenceArtifactStore
+                    .TryOpenManifestByVaultIdAsync(
+                        vaultId,
+                        scope.TenantId.Trim(),
+                        scope.CompanyId.Trim(),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(
+                    $"Evidence Vault authority '{vaultId}' is unavailable for the authenticated tenant and company scope.",
+                    nameof(request),
+                    ex);
+            }
+
+            if (manifest is null)
+            {
+                throw new ArgumentException(
+                    $"Evidence Vault authority '{vaultId}' was not found for the authenticated tenant and company scope.",
+                    nameof(request));
+            }
+
+            try
+            {
+                manifest.Content.Dispose();
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(
+                    $"Evidence Vault authority '{vaultId}' could not be released after validation.",
+                    nameof(request),
+                    ex);
+            }
+        }
     }
 
 
@@ -648,7 +1002,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         foreach (var entry in _runs)
         {
             var state = entry.Value;
-            if (state.Phase is not (RunPhase.Completed or RunPhase.Failed or RunPhase.Cancelled))
+            if (state.Phase is not (RunPhase.Completed or RunPhase.Failed or RunPhase.Cancelled or RunPhase.PersistenceDegraded))
             {
                 continue;
             }
@@ -725,7 +1079,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         Running,
         Completed,
         Failed,
-        Cancelled
+        Cancelled,
+        PersistenceDegraded
     }
 
     /// <summary>Per-run mutable state held in-memory until eviction.</summary>
@@ -733,6 +1088,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     {
         public required string RunId { get; init; }
         public required CoveredCallBacktestRequest Request { get; init; }
+        public required CoveredCallRunScope Scope { get; init; }
         public required CancellationTokenSource Cts { get; init; }
         public DateTimeOffset QueuedAt { get; init; }
         public RunPhase Phase { get; set; } = RunPhase.Queued;

@@ -102,6 +102,24 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
 
             services.AddSingleton<IMarketDataClient>(sp =>
                 sp.GetRequiredService<AlpacaMarketDataClient>());
+
+            // Keep asset classes independently connectable. The host still selects the equities
+            // adapter as its compatibility default; operators and future routing can resolve the
+            // other streams without treating their entitlements as equivalent.
+            services.AddSingleton<AlpacaOptionsMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+            services.AddSingleton<AlpacaCryptoMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+            services.AddSingleton<AlpacaNewsEventBuffer>();
+            services.AddSingleton<IAlpacaNewsEventSink>(sp => sp.GetRequiredService<AlpacaNewsEventBuffer>());
+            services.AddSingleton<AlpacaNewsMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions,
+                sp.GetRequiredService<IAlpacaNewsEventSink>()));
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaOptionsMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaCryptoMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaNewsMarketDataClient>());
+            services.AddSingleton<IAlpacaMarketDataRouter, AlpacaMarketDataRouter>();
         }
 
         // ----------------------------------------------------------------
@@ -110,15 +128,17 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         // surface when orders are submitted.
         // ----------------------------------------------------------------
         services.AddSingleton<AlpacaBrokerageGateway>(sp =>
-        {
-            var httpFactory = sp.GetRequiredService<IHttpClientFactory>();
-            // Prefer context-resolved credentials; fall back to a registered AlpacaOptions or empty
-            var brokerageOptions = !string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secretKey)
-                ? new AlpacaOptions(KeyId: keyId, SecretKey: secretKey, Feed: feed, UseSandbox: useSandbox, SubscribeQuotes: subscribeQuotes)
-                : sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
-            var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
-            return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger);
-        });
+    {
+        var httpFactory = sp.GetRequiredService<IHttpClientFactory>();
+        // Prefer context-resolved credentials; fall back to a registered AlpacaOptions or empty
+        var brokerageOptions = !string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secretKey)
+            ? new AlpacaOptions(KeyId: keyId, SecretKey: secretKey, Feed: feed, UseSandbox: useSandbox, SubscribeQuotes: subscribeQuotes)
+            : sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
+        var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
+        var streamLogger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
+        var stream = new AlpacaTradeUpdatesClient(brokerageOptions, streamLogger);
+        return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger, stream);
+    });
         services.AddSingleton<IBrokerageAccountCatalog>(sp =>
             sp.GetRequiredService<AlpacaBrokerageGateway>());
         services.AddSingleton<IBrokeragePortfolioSync>(sp =>

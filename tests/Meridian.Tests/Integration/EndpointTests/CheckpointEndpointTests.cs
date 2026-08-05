@@ -21,7 +21,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class CheckpointEndpointTests
+public sealed class CheckpointEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
     private readonly string _dataRoot;

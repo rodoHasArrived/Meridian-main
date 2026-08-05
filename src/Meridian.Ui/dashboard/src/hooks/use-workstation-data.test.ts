@@ -399,6 +399,37 @@ describe("useWorkstationData", () => {
     expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
   });
 
+  it("can refresh every Control Tower workspace after bootstrap", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "trading" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+
+    let controlTowerRefresh!: Promise<void>;
+    act(() => {
+      controlTowerRefresh = result.current.refresh({ includeDeferred: true });
+    });
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      await resolveRefreshBatch(1, "control tower");
+      await controlTowerRefresh;
+    });
+
+    expect(api.getDataWorkspace).toHaveBeenCalledTimes(2);
+    expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(2);
+    expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2);
+    expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2);
+    expect(api.getStrategyWorkspace).toHaveBeenCalledTimes(2);
+    expect(result.current.data).toEqual({ marker: "control tower data" });
+    expect(result.current.accounting).toEqual({ marker: "control tower accounting" });
+  });
+
   it("refetches stale active workspace slices when the active workspace changes", async () => {
     let now = 1_000;
     vi.spyOn(Date, "now").mockImplementation(() => now);

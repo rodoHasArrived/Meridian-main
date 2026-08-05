@@ -4,13 +4,15 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `24`
+- Workflow count: `28`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
+| `.github/workflows/branch-cleanup.yml` | Branch Cleanup | workflow_dispatch |
 | `.github/workflows/ci.yml` | CI | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/codeql.yml` | CodeQL | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |
+| `.github/workflows/demo-smoke.yml` | Demo Smoke | pull_request, push, workflow_dispatch |
 | `.github/workflows/desktop-installer-packaging.yml` | Desktop Installer Release | push, workflow_dispatch |
 | `.github/workflows/desktop-screenshot-capture.yml` | Desktop Screenshot Capture | workflow_dispatch |
 | `.github/workflows/desktop-standalone-publish.yml` | Desktop Standalone Publish | workflow_dispatch |
@@ -18,9 +20,11 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/desktop-workflow-runner.yml` | Desktop Workflow Runner | workflow_dispatch |
 | `.github/workflows/documentation.yml` | Documentation Automation | workflow_dispatch, pull_request, push |
 | `.github/workflows/golden-path-validation.yml` | Golden Path Validation | pull_request, push, workflow_dispatch |
+| `.github/workflows/ibapi-runtime.yml` | IB API Official Runtime | workflow_dispatch, schedule |
 | `.github/workflows/ibapi-smoke.yml` | IB API Smoke Build | pull_request, push, workflow_dispatch |
 | `.github/workflows/maintenance.yml` | Maintenance | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/meridian-ci.yml` | Meridian CI | pull_request, push, merge_group, workflow_dispatch |
+| `.github/workflows/production-certification.yml` | Production Certification | workflow_dispatch, schedule, push |
 | `.github/workflows/provider-validation.yml` | Provider Validation | workflow_dispatch, schedule |
 | `.github/workflows/publish-smoke.yml` | Publish Smoke | workflow_dispatch |
 | `.github/workflows/roadmap-source-docs.yml` | Roadmap Source Docs | workflow_dispatch, pull_request, push |

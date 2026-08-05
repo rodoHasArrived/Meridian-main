@@ -35,3 +35,35 @@ documents:
     roadmap_items:
       - W2-TRD-001
       - W7-LIVE-001
+  - id: DOC-PRIORITY-SLATE-2026-07
+    path: docs/product/product-roadmap-priorities-2026-07.md
+    title: 2026-07 first-order improvement slate
+    role: planning_interpretation
+    owner_lane: Core Team
+    roadmap_items:
+      - W9-TRUTH-001
+      - W9-DEMO-002
+      - W9-PAPER-003
+      - W9-ALPACA-004
+      - W9-REPORT-005
+      - W9-NAV-006
+      - W9-SAFETY-007
+      - W9-GOV-008
+      - W9-INGEST-009
+  - id: DOC-DEPTH-SLATE-2026-07
+    path: docs/product/w10-depth-slate-2026-07.md
+    title: 2026-07 W10 depth slate
+    role: planning_interpretation
+    owner_lane: Core Team
+    roadmap_items:
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001

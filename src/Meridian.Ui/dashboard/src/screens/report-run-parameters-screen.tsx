@@ -10,6 +10,10 @@ import { Select } from "@/components/ui/select";
 import { describeApiError } from "@/lib/api-errors";
 import { assessReportingRunReadiness, getManualJournalEntryWorkbench, runReportingNow } from "@/lib/api";
 import { todayIsoDate } from "@/lib/reporting-periods";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   ExportsReportRunner,
@@ -45,7 +49,7 @@ import type {
 } from "@/types";
 
 interface ReportRunParametersScreenProps {
-  data: AccountingWorkspaceResponse | null;
+  data: ReportingWorkspacePayload | null;
   accounting: AccountingWorkspaceResponse | null;
 }
 
@@ -89,7 +93,7 @@ const idleReadinessPreflight: ReportingReadinessPreflightState = {
 export function ReportRunParametersScreen({ data, accounting }: ReportRunParametersScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const reporting = data?.reporting ?? null;
+  const reporting = normalizeReportingWorkspace(data);
 
   const templates = useMemo(() => buildTemplateRows(reporting?.templates ?? []), [reporting?.templates]);
   const runStatusRows = useMemo(
@@ -727,6 +731,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
                 <option value="Xlsx">XLSX</option>
                 <option value="Csv">CSV</option>
                 <option value="EvidenceVault">Evidence Vault</option>
+                <option value="ClientPackage">Client Package</option>
               </Select>
             </FormRow>
             <FormRow label="Draft vs final" labelFor="report-finality">

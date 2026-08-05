@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -8,6 +9,8 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.ProviderSdk.AccountingSystem;
+using Meridian.Storage.AssetOperations;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Features.Accounting;
@@ -105,6 +108,12 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingJournalDraftService, AccountingJournalDraftService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateService, AccountingPostingCandidateService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateAuthorityBuilder>(services, ServiceLifetime.Singleton);
+        // Registered as a graceful singleton via AssetAccountingEventSpineService.TryCreate (mirroring
+        // LedgerFeatureRegistration): the WPF host does not register the asset-operations projection
+        // stores, so a concrete-type registration would fail Development ValidateOnBuild. The concrete
+        // resolution is asserted by Register_WiresAssetAccountingDependenciesIntoPostingService below.
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAssetAccountingEventSpineService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidatePostService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>(services, ServiceLifetime.Singleton);
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IAccountingSystemProvider) && descriptor.ImplementationType == typeof(QuickBooksFixtureAccountingProvider) && descriptor.Lifetime == ServiceLifetime.Singleton);
@@ -112,6 +121,46 @@ public sealed class AccountingFeatureModuleTests
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IAccountingSystemProvider) && descriptor.ImplementationType == typeof(NetSuiteFixtureAccountingProvider) && descriptor.Lifetime == ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingSystemIntegrationService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingProductionReadinessService>(services, ServiceLifetime.Singleton);
+    }
+
+    [Fact]
+    public void Register_WiresAssetAccountingDependenciesIntoPostingService()
+    {
+        var candidateBuilder = Substitute.For<
+            IAccountingPostingCandidateWriteBuilder,
+            IAccountingPostingCandidateAuthorityBuilder>();
+        var journalStore = Substitute.For<ILedgerJournalStore>();
+        var atomicTaxLotStore = Substitute.For<IAtomicTaxLotJournalStore>();
+        var assetAccountingEventStore = Substitute.For<IAssetAccountingEventProjectionStore>();
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        var ledgerBookService = Substitute.For<ILedgerBookService>();
+        var accountingPolicyService = Substitute.For<IAccountingPolicyService>();
+        var accountingConfigurationService = Substitute.For<IAccountingConfigurationService>();
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingPostingCandidateWriteBuilder>(candidateBuilder);
+        services.AddSingleton(journalStore);
+        services.AddSingleton(atomicTaxLotStore);
+        services.AddSingleton(assetAccountingEventStore);
+        services.AddSingleton(positionStore);
+        services.AddSingleton(securityMaster);
+        services.AddSingleton(ledgerBookService);
+        services.AddSingleton(accountingPolicyService);
+        services.AddSingleton(accountingConfigurationService);
+
+        new AccountingFeatureModule().Register(services);
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>()
+            .Should().BeSameAs(candidateBuilder);
+        provider.GetRequiredService<IAssetAccountingEventSpineService>()
+            .Should().BeOfType<AssetAccountingEventSpineService>();
+        var postService = provider.GetRequiredService<IAccountingPostingCandidatePostService>()
+            .Should().BeOfType<AccountingPostingCandidatePostService>().Subject;
+        GetInjectedDependency(postService, "_journalStore").Should().BeSameAs(journalStore);
+        GetInjectedDependency(postService, "_atomicTaxLotStore").Should().BeSameAs(atomicTaxLotStore);
+        GetInjectedDependency(postService, "_assetAccountingEventStore").Should().BeSameAs(assetAccountingEventStore);
+        GetInjectedDependency(postService, "_authorityBuilder").Should().BeSameAs(candidateBuilder);
     }
 
     [Fact]
@@ -153,7 +202,6 @@ public sealed class AccountingFeatureModuleTests
     [InlineData("OperationsClose", "FundLedger", "accounting")]
     [InlineData("AccountingClose", "FundAccountingClose", "accounting")]
     [InlineData("CloseManagement", "FundAccountingClose", "accounting")]
-    [InlineData("EvidenceWorkbench", "FundAuditTrail", "accounting")]
     [InlineData("AccountingApprovals", "FundAuditTrail", "accounting")]
     [InlineData("LedgerInspector", "RunLedger", "accounting")]
     public void ShellRegistry_ResolvesAccountingAliasesAndRootNavigationTags(string requestedTag, string canonicalTag, string workspaceId)
@@ -181,4 +229,11 @@ public sealed class AccountingFeatureModuleTests
         source.Should().Contain("ItemsSource=\"{Binding CloseEvidenceReviewRows}\"");
         source.Should().Contain("ItemsSource=\"{Binding ClosePeriodLockIssueRows}\"");
     }
+
+    private static object? GetInjectedDependency(
+        AccountingPostingCandidatePostService service,
+        string fieldName)
+        => typeof(AccountingPostingCandidatePostService)
+            .GetField(fieldName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            ?.GetValue(service);
 }

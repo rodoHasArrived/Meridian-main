@@ -5,7 +5,7 @@
 This is an explicit module association, not a claim that a DTO is identical to a table.
 
 Mapped physical schemas: `identity_access`.
-Catalogued objects: 47.
+Catalogued objects: 50.
 
 ```mermaid
 classDiagram
@@ -252,7 +252,18 @@ classDiagram
     }
     class Meridian_Identity_IUserAccountStore["IUserAccountStore"] {
     }
+    class Meridian_Identity_LoginAttemptResult["LoginAttemptResult"] {
+        +int RemainingAttempts
+        +TimeSpan? RetryAfter
+        +LoginAttemptStatus Status
+        +string? Token
+    }
+    class Meridian_Identity_LoginAttemptStatus["LoginAttemptStatus"] {
+    }
     class Meridian_Identity_LoginSessionService["LoginSessionService"] {
+    }
+    class Meridian_Identity_LoginSessionStoreOptions["LoginSessionStoreOptions"] {
+        +string? Path
     }
     class Meridian_Identity_PasswordHashing["PasswordHashing"] {
     }
@@ -307,6 +318,7 @@ classDiagram
     Meridian_Identity_FileScopedAccessAssignmentStore --> Meridian_Identity_IScopedAccessAssignmentStore
     Meridian_Identity_FileUserAccountStore --> Meridian_Identity_IUserAccountStore
     Meridian_Identity_FundStructureAccessScopeLineageProvider --> Meridian_Identity_IAccessScopeLineageProvider
+    Meridian_Identity_LoginAttemptResult --> Meridian_Identity_LoginAttemptStatus
     Meridian_Identity_PostgresScopedAccessAssignmentStore --> Meridian_Identity_IScopedAccessAssignmentStore
     Meridian_Identity_ScopedAccessService --> Meridian_Identity_IScopedAccessAssignmentService
     Meridian_Identity_ScopedAccessService --> Meridian_Identity_IScopedAuthorizationService

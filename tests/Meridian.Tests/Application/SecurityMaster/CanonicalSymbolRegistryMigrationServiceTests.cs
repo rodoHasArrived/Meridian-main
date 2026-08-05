@@ -133,26 +133,28 @@ public sealed class CanonicalSymbolRegistryMigrationServiceTests
             ConfigStore = new ConfigStore(ConfigPath);
 
             _registry
-                .Setup(registry => registry.RegisterAsync(
-                    It.IsAny<CanonicalSymbolDefinition>(),
+                .As<ICanonicalSymbolRegistryMigrationWriter>()
+                .Setup(registry => registry.ApplyMigrationAsync(
+                    MigrationId,
+                    It.IsAny<string>(),
+                    It.IsAny<IEnumerable<CanonicalSymbolDefinition>>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<CanonicalSymbolDefinition, CancellationToken>((definition, _) =>
-                    ImportedDefinitions.Add(definition))
-                .Returns(Task.CompletedTask);
+                .Returns((
+                    string _,
+                    string fingerprint,
+                    IEnumerable<CanonicalSymbolDefinition> definitions,
+                    CancellationToken ct) =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    var batch = definitions.ToArray();
+                    ImportedDefinitions.AddRange(batch);
+                    PersistedFingerprint = fingerprint;
+                    PersistedMarkerWrites++;
+                    return Task.FromResult(batch.Length);
+                });
             _store
                 .Setup(store => store.GetMigrationMarkerAsync(MigrationId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() => PersistedFingerprint);
-            _store
-                .Setup(store => store.SetMigrationMarkerAsync(
-                    MigrationId,
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()))
-                .Callback<string, string, CancellationToken>((_, fingerprint, _) =>
-                {
-                    PersistedFingerprint = fingerprint;
-                    PersistedMarkerWrites++;
-                })
-                .Returns(Task.CompletedTask);
         }
 
         public string ConfigPath { get; }

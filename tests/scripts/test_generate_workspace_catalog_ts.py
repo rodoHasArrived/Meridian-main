@@ -28,6 +28,18 @@ class WorkspaceCatalogTypeScriptGenerationTests(unittest.TestCase):
             "Run python build/scripts/generate-workspace-catalog-ts.py after changing WorkstationWorkspaceCatalog.cs.",
         )
 
+    def test_rejects_workspace_values_outside_product_maturity_taxonomy(self) -> None:
+        generator = _load_generator()
+        source = generator.SOURCE_FILE.read_text(encoding="utf-8")
+        constants = generator.extract_constants(source)
+        constants["DataBrowserMaturity"] = "Live"
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "DataBrowserMaturity must be one of Available, Preview, Setup",
+        ):
+            generator.render(constants)
+
 
 if __name__ == "__main__":
     unittest.main()

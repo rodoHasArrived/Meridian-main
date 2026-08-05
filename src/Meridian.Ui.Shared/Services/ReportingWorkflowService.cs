@@ -1267,14 +1267,6 @@ public sealed class FileReportTemplateGovernanceStore : IReportTemplateGovernanc
     private sealed record ReportTemplateGovernanceSnapshot(IReadOnlyList<ReportTemplateGovernanceRecordDto> Records);
 }
 
-public sealed record ReportPackWorkflowRecordStoreOptions(string SnapshotPath);
-
-public interface IReportPackWorkflowRecordStore
-{
-    IReadOnlyList<ReportPackWorkflowRecordDto> Load();
-    void Save(IReadOnlyList<ReportPackWorkflowRecordDto> records);
-}
-
 public sealed class FileReportPackWorkflowRecordStore : IReportPackWorkflowRecordStore
 {
     private readonly ReportPackWorkflowRecordStoreOptions _options;

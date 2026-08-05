@@ -45,6 +45,7 @@ do_not_edit: true
 | `SRC-HOST` | Meridian host | `src/Meridian` | Host | active | Runtime Host | `src/Meridian/README.md` |
 | `SRC-IBAPI-SMOKESTUB` | IB API smoke stub | `src/Meridian.IbApi.SmokeStub` | Provider Test Support | active | Data Confidence and Validation | `src/Meridian.IbApi.SmokeStub/README.md` |
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `src/Meridian.Infrastructure` | Infrastructure | active | Data Confidence and Validation | `src/Meridian.Infrastructure/README.md` |
+| `SRC-LAUNCHER` | Meridian launcher | `src/Meridian.Launcher` | Host | active | Runtime Host | `src/Meridian.Launcher/README.md` |
 | `SRC-LEDGER` | Meridian ledger | `src/Meridian.Ledger` | Ledger | active | Accounting and Ledger | `src/Meridian.Ledger/README.md` |
 | `SRC-LIFECYCLE-SUPERVISOR` | Meridian lifecycle supervisor | `src/Meridian.LifecycleSupervisor` | Host | active | Runtime Host | `src/Meridian.LifecycleSupervisor/README.md` |
 | `SRC-MCP` | Meridian MCP host | `src/Meridian.Mcp` | MCP | active | Docs and Automation | `src/Meridian.Mcp/README.md` |

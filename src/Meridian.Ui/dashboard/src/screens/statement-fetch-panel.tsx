@@ -86,7 +86,7 @@ export function StatementFetchPanel({ connectors, profiles, services }: Statemen
                 ))}
               </Select>
             </FetchField>
-            <FetchField label="Fetch from" field="sinceDate" error={viewModel.draftErrors.sinceDate}>
+            <FetchField label="Fetch / ledger period start" field="sinceDate" error={viewModel.draftErrors.sinceDate}>
               <Input
                 id="statement-fetch-since-date"
                 type="date"
@@ -181,6 +181,16 @@ export function StatementFetchPanel({ connectors, profiles, services }: Statemen
                   id="statement-fetch-tolerance-profile-id"
                   value={viewModel.draft.toleranceProfileId}
                   onChange={(event) => viewModel.updateDraft("toleranceProfileId", event.target.value)}
+                />
+              </FetchField>
+              <FetchField label="Ledger period end" field="periodEnd" error={viewModel.draftErrors.periodEnd}>
+                <Input
+                  id="statement-fetch-period-end"
+                  type="date"
+                  value={viewModel.draft.periodEnd}
+                  aria-invalid={Boolean(viewModel.draftErrors.periodEnd)}
+                  aria-describedby={viewModel.draftErrors.periodEnd ? "statement-fetch-period-end-error" : undefined}
+                  onChange={(event) => viewModel.updateDraft("periodEnd", event.target.value)}
                 />
               </FetchField>
               <FetchField label="Cadence (hours)" field="cadenceHours" error={viewModel.draftErrors.cadenceHours}>
@@ -389,7 +399,7 @@ function StatementFetchRunResult({
   }
 
   const reconciliationRoute = result.reconciliationRoute ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliationMatch;
-  const evidenceRoute = result.evidenceWorkbenchRoute ?? WORKSTATION_ROUTE_CATALOG.accountingEvidence;
+  const evidenceRoute = result.evidenceWorkbenchRoute ?? WORKSTATION_ROUTE_CATALOG.reportingEvidence;
   return (
     <Card>
       <CardHeader>

@@ -104,6 +104,13 @@ public sealed class LoginSessionMiddleware
                 return;
             }
 
+            // API-key clients authenticate downstream via ApiKeyMiddleware, not sessions.
+            if (ApiKeyMiddleware.IsApiKeyCandidate(context))
+            {
+                await _next(context);
+                return;
+            }
+
             await WriteAuthenticationConfigurationErrorAsync(context, path);
             return;
         }
@@ -148,13 +155,21 @@ public sealed class LoginSessionMiddleware
             }
         }
 
+        // Defer to the API-key middleware when API-key auth is configured and the caller
+        // presented a key: out-of-band API clients authenticate with X-Api-Key, not sessions.
+        if (ApiKeyMiddleware.IsApiKeyCandidate(context))
+        {
+            await _next(context);
+            return;
+        }
+
         // Unauthenticated request — differentiate API from browser
         if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(
-                """{"error":"Unauthorized. Please sign in via the login page."}""");
+            await ApiProblemDetails.Unauthorized(
+                    context,
+                    "Sign in using the login page before accessing this resource.")
+                .ExecuteAsync(context);
         }
         else
         {
@@ -170,9 +185,11 @@ public sealed class LoginSessionMiddleware
 
         if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
         {
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(
-                """{"error":"Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development."}""");
+            await ApiProblemDetails.ServiceUnavailable(
+                    context,
+                    "authentication",
+                    "Authentication is required but is not configured. Configure governed users or explicitly enable optional authentication for local development.")
+                .ExecuteAsync(context);
             return;
         }
 

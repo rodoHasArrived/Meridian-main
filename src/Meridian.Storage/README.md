@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-17
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Storage
@@ -48,7 +48,9 @@ lookup paths, and evidence trails those layers rely on.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
-  that can play saved data back.
+  that can play saved data back. `JsonFileIBDataResultStore` requires tenant/company scope on writes
+  and queries, keys matching result identities by that scope, and excludes unscoped legacy rows
+  during restart hydration.
 - `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing
   the contracts-owned `ICanonicalSymbolRegistry` over the symbol registry store.
 - `Ledger/` - authoritative accounting journal storage, source-event queries, tax-lot policy inputs,
@@ -56,6 +58,10 @@ lookup paths, and evidence trails those layers rely on.
 - `Integrations/` - file-backed provider integration manifest, connection, raw payload,
   quarantine, quarantine-review decision, quarantine replay payload, staging-record, and
   reconciliation-handoff evidence persistence for replayable no-code provider intake.
+- `Operations/` - the shared append-only operational case-history implementation. It assigns a
+  global sequence and SHA-256 predecessor/current hash, verifies the complete chain before reads or
+  writes, rejects duplicate event identities and corrupt retained data, and uses an OS lock plus
+  `AtomicFileWriter` copy-on-write append for browser/WPF processes sharing one data root.
 - `SecurityMaster/` - reference-data stores that identify securities and preserve provenance.
 - `DirectLending/` - direct-lending state, events, workflow audit, and transactional ledger handoff.
 - `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,
@@ -68,20 +74,73 @@ lookup paths, and evidence trails those layers rely on.
   storage-backed rows and migrations.
 - `Reporting/` - tenant-bound PostgreSQL storage for immutable report bytes and catalogs, governed
   revisions, restatement requests, exact close/reconciliation receipts, append-only lifecycle and
-  access audit chains, opaque access-grant state, durable delivery jobs, and provider receipts.
+  access audit chains, certified run manifests and run audit, scoped schedule snapshots, opaque
+  access-grant state, durable delivery jobs, and provider receipts.
   Reporting migrations share a schema-scoped advisory lock and checksummed migration ledger;
   immutable rows and authority/payload fields are guarded against update or deletion. The store uses
   `MERIDIAN_REPORTING_CONNECTION_STRING` with the intentional ledger-connection fallback and
-  `MERIDIAN_REPORTING_SCHEMA` (default `reporting`); certified run and schedule/handoff snapshots
-  remain separate integrity-validated files under the resolved `DataRoot` and must be recovered as
-  part of the same reporting state set.
+  `MERIDIAN_REPORTING_SCHEMA` (default `reporting`). Migration `010_reporting_operational_state.sql`
+  adds tenant-bound run snapshots and tenant/company-bound schedule snapshots with canonical JSON
+  digests and indexed identity checks. The live deployment probe also verifies the reporting
+  migration-ledger key and non-null checksum, immediate non-expression conflict/idempotency keys,
+  and the predicate-bound access-grant delivery key. When the reporting connection is absent, UI
+  Shared can register file-backed run, schedule, custom-template, and starter-kit compatibility
+  stores for local development, but the independent Reporting deployment capability remains
+  blocked. Legacy file workflow and delivery-history repositories are not part of the default host
+  composition and remain available only to explicitly constructed compatibility callers.
+  Production omits all of these file authorities; they are not production recovery authority.
+  Migration `013_reporting_statement_reconciliation_authority.sql` adds the exact
+  tenant/company/workflow/document mapping and append-only mapping revisions for statement intake,
+  evidence, snapshots, and JSON/CSV support artifacts. Those mappings reference the existing
+  immutable artifact blobs; `PostgresStatementReconciliationReportAuthorityStore` verifies bytes on
+  read and holds a session advisory lease while one host advances a workflow. The live deployment
+  probe requires both statement-authority tables, the document guard/revision and revision
+  append/guard triggers, and the exact `reporting-statement-reconciliation-authority:v1`
+  compatibility marker. Production readiness additionally requires the concrete PostgreSQL store;
+  a migration receipt or compatible-looking schema without that store does not certify the
+  statement authority.
 - `Runtime/` - atomic JSON storage for the latest host lifecycle shutdown receipt. Installed
   supervisor session receipts remain below the supervisor-managed data root and use the same
   write-through-then-rename durability posture.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
-  tiering, and scheduled cleanup.
+  tiering, and scheduled cleanup. CSV exports route headers and values through the shared
+  spreadsheet-formula guard, including semicolon-locale segments, and quote commas, semicolons,
+  tabs, quotes, carriage returns, and line feeds before publishing an artifact. The shared XLSX
+  writer fixes ZIP entry timestamps and platform attributes so identical workbook inputs produce
+  byte-identical artifacts and stable retained hashes.
+- `Services/QualityTrendStore.cs` - crash-safe append-only quality history. New score events retain
+  immutable input snapshots, input and canonical result SHA-256 identities, and a verified
+  quality-evaluation outcome. Sequence/predecessor hashes, a durable chain head, deterministic
+  pending-append recovery, and evaluation-id idempotency detect deletion, reordering, duplicate
+  retries, malformed rows, and semantic edits instead of silently skipping them. Scores enter the
+  process cache only after durable append succeeds; evaluation or retention failures return a
+  validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
 
 ## Important workflows
+
+### Operational case history
+
+`FileOperationalCaseHistoryStore` persists Contracts-owned workflow transitions, actors, reasons,
+assignments, retries, exceptions, input hashes, approvals, evidence, artifacts, recovery attempts,
+terminal receipts, and bounded source-owned replay data at
+`<DataRoot>/operations/case-history.jsonl`. Reads validate the whole global chain before filtering
+by case or case type, so corruption is surfaced instead of skipped or silently truncated. The
+browser and WPF composition roots share this same data-root-backed port; source modules such as
+Strategies project their compatible read models from the retained history without depending on
+Storage directly. Chain-head checkpoints are finalized without caller cancellation after the JSONL
+commit, retry transient checkpoint failures, and surface an explicit post-commit exception carrying
+the committed record when repair remains pending so callers never infer that durable work rolled
+back.
+
+Maintenance executions compose the shared terminal-outcome contract. Index rebuild invokes the
+real `IStorageSearchService`; when that dependency is absent the operation returns `Blocked`
+instead of claiming a no-op success. A successful rebuild must supply canonical before, staged,
+and read-back item counts and SHA-256 snapshots; missing, incomplete, or mismatched proof blocks or
+fails the operation. Scheduled, running, and terminal maintenance transitions are
+retained through the same case-history spine when a durable history store is configured. Quality
+maintenance distinguishes complete success, partial `CompletedWithWarnings`, total failure, and
+no-input blocking from attempted/succeeded/failed input counts; cancelled work is not converted to
+a false terminal failure.
 
 ### Market data and evidence
 
@@ -110,6 +169,11 @@ lease records under the configured
 coordination root with per-resource lock files and `AtomicFileWriter`; Platform owns lease renewal,
 coordinator election, split-brain detection, scheduled-work ownership, and subscription ownership
 decisions, while Application consumes those services through the shared contracts.
+Lease, position-snapshot, and other identity-partitioned file paths use the Core rooted-path guard:
+identifiers remain one validated component, resolved paths must stay beneath the configured root,
+and links/reparse points at either the configured root or an existing descendant are rejected before
+reads, writes, locks, or deletes.
+Unsafe identifiers fail without creating a sanitized alias or touching a sibling path.
 
 Storage profile presets preserve existing persisted identifiers. The default profile ID remains
 `Research` for compatibility, while APIs and operator surfaces display that preset as `Strategy`
@@ -126,6 +190,25 @@ Canonical symbol resolution is Storage-owned because it wraps the durable symbol
 identifier indexes. Application composition registers the Storage implementation behind
 `Meridian.Contracts.Catalog.ICanonicalSymbolRegistry` for canonicalization and Security Master seed
 workflows.
+Security Master identifier lookup preserves provider authority: a provider-bound canonical
+identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
+is available only for providerless records that have no authoritative identifier row, so an omitted
+or incorrect provider cannot select a provider-bound security.
+The optional atomic-migration capability builds the complete candidate registry and lookup caches
+off to the side, persists that candidate through `AtomicFileWriter`, and publishes it only after
+the durable replacement succeeds. Conflict, cancellation, or write failure leaves both the live
+registry and migration marker unchanged.
+
+Fund-account and fund-structure legacy JSON imports are bounded and replay-safe. Startup submits a
+typed snapshot to the PostgreSQL store, which takes a schema-scoped advisory lock and writes all
+rows plus a domain-specific source SHA-256 receipt in one serializable transaction. Fund-account
+imports include statement batches and lines, and fund-structure emptiness covers every imported
+entity table. Fund structure also persists the legacy linked-account identity set independently
+from active links and assignments, so disconnected account nodes keep their type and uniqueness
+semantics after restart. After `Imported` or receipt-backed `AlreadyImported`, startup atomically
+claims and re-hashes the exact source bytes before archival; a pending claim is recoverable after
+process failure. Cancellation, rollback, a hash mismatch, or a non-empty store retains the source
+for operator recovery.
 
 ### Accounting and Security Master evidence
 
@@ -146,6 +229,10 @@ be reconstructed from durable journal evidence. Postgres journal storage also ke
 indexes for aggregate-scoped command id, source event id, and normalized metadata idempotency key so
 retry attempts fail closed at the durable ledger boundary instead of relying only on caller-side
 checks. When LedgerJournalEntryWrite carries an AccountingPostingCommandDto, storage normalizes the write metadata from that command and rejects missing command identity, mismatched aggregate/period/ledger-book scope, pending reviewer state, non-human material origin, missing evidence/rationale, or correction intents without source journal lineage before append.
+Canonical `AssetAccounting.*` commands use the stricter evidence contract: operator rationale and
+string links are navigation only, and storage requires complete typed retained identity, SHA-256,
+source reference, accepted reviewer, UTC review/retention timestamps, effective date, positive
+version, retained-by actor, and subject scope before append.
 The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
@@ -275,6 +362,15 @@ migrated. Economic-state payloads retain their matching typed lineage, allowing 
 factor event to survive a later current-position update. Role and position identities cannot move
 across Security Master, owner, role, or ledger-book boundaries, state versions cannot be replaced,
 and idempotent replay preserves the original approval actor, reference, rationale, and timestamp.
+`004_asset_accounting_event_spine.sql` adds append-only, fingerprinted versions of the canonical
+Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment,
+Depreciation/Amortization, and Disposal spine. Store writes require exact prior spine and current
+book-position versions, preserve lifecycle/evidence history, and reject payload drift on replay.
+`V_ledger_027__atomic_tax_lot_posting.sql` adds immutable mutation-batch and tax-lot mutation
+evidence beside versioned lots. `PostgresLedgerJournalStore.AppendAssetPostingAsync` takes
+serializable scope locks, rechecks period and selected-lot CAS, appends the governed journal, creates
+or consumes lots, and retains before/after snapshots in one transaction; stale state or any failed
+append rolls the entire batch back, while an exact canonical fingerprint returns the retained result.
 Asset Operations migrations run under a schema-scoped advisory lock and a checksummed migration
 ledger, preventing concurrent first-start races and repeated DDL/history rewrites after restart.
 
@@ -317,8 +413,11 @@ across tenant/company boundaries.
 Governed reporting persistence stores each series revision under its immutable tenant and scope
 identity while lifecycle state advances through compare-and-swap aggregate versions. State payloads
 retain a SHA-256 checksum and are hydrated only when their indexed identity, tenant, lifecycle
-state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction;
-database triggers require contiguous versions and the retained previous hash, and reject later
+state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction.
+Optional immutable-array fields are canonicalized from their default value to an empty collection
+before source-generated JSON persistence and after hydration, keeping equivalent reporting state
+serializable and deterministic across callers. Database triggers require contiguous versions and
+the retained previous hash, and reject later
 updates or deletes. Restatement approval updates the request and creates the next report revision in
 one transaction, so a failed revision insert cannot leave an approved request without its draft.
 Reporting delivery persistence also keeps run and package identity separately, lists grants and
@@ -326,6 +425,20 @@ receipt-bearing jobs only through exact tenant/package keys, and prevents author
 provider-message, access-grant, lifecycle, and receipt evidence from being replaced or moved
 backwards. Retry claims use leased skip-locked rows, while terminal provider and audited-download
 receipts append without overwriting prior evidence.
+`PostgresReportingRunStore` retains the canonical certified manifest and run audit under tenant/run
+identity, re-hashes the manifest, audit, and certified rows before returning them, and treats
+identity or digest drift as operational-state corruption. Tenant/run create claims use expiring,
+version-fenced leases, and aggregate saves reject stale expected revisions so concurrent or retried
+creators cannot overwrite a newer retained run. `PostgresReportingScheduleStore` retains the
+complete scoped schedule set in a serializable transaction under tenant/company/schedule identity,
+verifies each canonical payload digest on read, and uses expiring version-fenced execution leases
+for due work. Missing, expired, or superseded leases fail closed instead of allowing duplicate
+schedule advancement. Production readiness requires these PostgreSQL stores plus the migration-010
+run-claim and schedule-lease tables/columns and every migration-owned unique/idempotency control to
+pass the live schema probe; file-backed reporting stores remain local/development compatibility
+and keep the deployment gate blocked. These operational snapshots support the canonical Reporting
+services; they do not replace governed lifecycle, artifact-vault, release, or delivery-receipt
+authority.
 
 ## Glossary
 
@@ -378,6 +491,14 @@ flowchart TB
     books --> reports
 ```
 
+Asset Accounting Event Spine persistence is append-only. A Posted append is accepted only after
+the store resolves one exact immutable journal with matching event, book, period, basis, timestamp,
+balanced lines, currencies, and dimensions. Atomic acquisition/disposal persistence uses one
+serializable transaction for the journal, scoped tax lots, immutable mutation snapshots, evidence,
+and correction lineage. Every atomic lot carries Security Master plus book-position identity;
+disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
+selected-lot cost basis.
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE -->
@@ -388,6 +509,7 @@ flowchart TB
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -400,6 +522,7 @@ flowchart TB
 
 ```bash
 dotnet build src/Meridian.Storage/Meridian.Storage.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOperationalStoreTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
@@ -415,4 +538,5 @@ Route durable writes through WAL or atomic file helpers. Avoid direct unguarded 
 - `docs/reference/accounting-report-packs.md`
 - `docs/reference/database-schema.md`
 - `docs/operators/governed-reporting-operations.md`
+- `docs/operators/statement-reconciliation-report-operations.md`
 - `docs/source/generated/source-roadmap-traceability.md`

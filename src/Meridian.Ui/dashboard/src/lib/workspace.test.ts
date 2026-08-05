@@ -47,7 +47,7 @@ describe("workspace metadata", () => {
 
   it("exposes typed workstation route catalog helpers", () => {
     expect(workstationRoute("tradingReadiness")).toBe("/trading/readiness");
-    expect(workstationRoute("strategyFormulaWorkbench")).toBe("/strategy/formula-workbench");
+    expect(workstationRoute("strategyFormulaWorkbenchLegacy")).toBe("/strategy/formula-workbench");
     expect(workstationRoute("strategyLab")).toBe("/strategy/lab");
     expect(workstationRoute("portfolioAssetDetail")).toBe("/portfolio/asset-detail");
     expect(workstationRoute("portfolioCashLadder")).toBe("/portfolio/cash-ladder");
@@ -108,11 +108,67 @@ describe("workspace metadata", () => {
     expect(legacyWorkspaceRedirect("/trading")).toBeNull();
   });
 
+  it("redirects consolidated screen routes into their host screens with scope preserved", () => {
+    expect(legacyWorkspaceRedirect("/accounting/trial-balance")).toBe(
+      "/accounting/ledger?view=trial-balance"
+    );
+    expect(legacyWorkspaceRedirect("/accounting/trial-balance", "?runId=run-42", "#section")).toBe(
+      "/accounting/ledger?runId=run-42&view=trial-balance#section"
+    );
+    expect(legacyWorkspaceRedirect("/strategy/formula-workbench")).toBe(
+      "/strategy/quant-lab?view=formulas"
+    );
+    expect(legacyWorkspaceRedirect("/strategy/formula-workbench", "?draft=1")).toBe(
+      "/strategy/quant-lab?draft=1&view=formulas"
+    );
+    expect(normalizeLocalWorkstationRoute("/accounting/trial-balance?runId=run-42")).toBe(
+      "/accounting/ledger?runId=run-42&view=trial-balance"
+    );
+  });
+
+  it("redirects retired evidence mounts to the canonical reporting evidence workbench", () => {
+    expect(legacyWorkspaceRedirect("/accounting/evidence")).toBe("/reporting/evidence");
+    expect(legacyWorkspaceRedirect("/accounting/evidence", "?subjectKind=run&subjectId=run-1", "#packet")).toBe(
+      "/reporting/evidence?subjectKind=run&subjectId=run-1#packet"
+    );
+    expect(legacyWorkspaceRedirect("/accounting/evidence/detail", "?evidenceId=bank-statement")).toBe(
+      "/reporting/evidence?subjectKind=evidence&subjectId=bank-statement"
+    );
+    expect(legacyWorkspaceRedirect("/accounting/evidence/detail")).toBe("/reporting/evidence");
+    expect(legacyWorkspaceRedirect("/data/evidence")).toBe("/reporting/evidence");
+    expect(legacyWorkspaceRedirect("/data/evidence", "?subjectKind=import-run&subjectId=imp-9")).toBe(
+      "/reporting/evidence?subjectKind=import-run&subjectId=imp-9"
+    );
+  });
+
+  it("redirects the retired watchlist and price-alert routes into the market data desk", () => {
+    expect(legacyWorkspaceRedirect("/data/watchlist")).toBe("/data/quotes?view=watchlist");
+    expect(legacyWorkspaceRedirect("/data/watchlist", "?symbol=AAPL")).toBe(
+      "/data/quotes?symbol=AAPL&view=watchlist"
+    );
+    expect(legacyWorkspaceRedirect("/data/alerts")).toBe("/data/quotes?view=alerts");
+    expect(legacyWorkspaceRedirect("/data/alerts", "?symbol=MSFT", "#active")).toBe(
+      "/data/quotes?symbol=MSFT&view=alerts#active"
+    );
+  });
+
   it("returns workspace summaries for canonical keys", () => {
     expect(workspaceForKey("reporting")).toMatchObject({
       label: "Reporting",
-      status: "Review"
+      maturity: "Available"
     });
+  });
+
+  it("keeps product maturity separate from environment and operator state", () => {
+    expect(WORKSPACES.map((workspace) => [workspace.key, workspace.maturity])).toEqual([
+      ["trading", "Available"],
+      ["portfolio", "Preview"],
+      ["accounting", "Available"],
+      ["reporting", "Available"],
+      ["strategy", "Available"],
+      ["data", "Available"],
+      ["settings", "Setup"]
+    ]);
   });
 
   it("resolves route breadcrumb labels from the centralized workstation route registry", () => {
@@ -129,7 +185,7 @@ describe("workspace metadata", () => {
       .toBe("Configure");
     expect(resolveWorkstationRouteBreadcrumbLabel("/reporting/report-packs", workspaceForKey("reporting")))
       .toBe("Report Packs");
-    expect(resolveWorkstationRouteBreadcrumbLabel("/workstation/data/quotes", workspaceForKey("data"))).toBe("Quotes");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/workstation/data/quotes", workspaceForKey("data"))).toBe("Market Data");
     expect(resolveWorkstationRouteBreadcrumbLabel("/portfolio/custom-beta-route", workspaceForKey("portfolio"))).toBe(
       "Custom Beta Route"
     );
@@ -149,7 +205,7 @@ describe("workspace metadata", () => {
 
   it("maps backend workflow targets to browser workstation routes", () => {
     expect(workflowTargetPath("Backtest", "strategy")).toBe("/strategy");
-    expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/accounting/evidence");
+    expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/reporting/evidence");
     expect(workflowTargetPath("EvidenceWorkbench:accounting-record/accounting-record-2026-05", "accounting"))
       .toBe("/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05");
     expect(workflowTargetPath(" EvidenceWorkbench:strategy-run/run 1/A ", "strategy"))

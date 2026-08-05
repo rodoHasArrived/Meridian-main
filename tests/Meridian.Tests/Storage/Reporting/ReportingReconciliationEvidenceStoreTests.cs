@@ -1,4 +1,7 @@
 using System.Collections.Immutable;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -7,15 +10,20 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
+using Meridian.Strategies.Services;
+using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
+using Npgsql;
+using NpgsqlTypes;
 using Xunit;
 
 namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
 public sealed class ReportingReconciliationEvidenceStoreTests :
-    IClassFixture<ReportingGovernanceDatabaseFixture>
+    IClassFixture<ReportingGovernanceDatabaseFixture>,
+    IAsyncLifetime
 {
     private readonly ReportingGovernanceDatabaseFixture _database;
 
@@ -23,6 +31,10 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
     {
         _database = database;
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task RetainAndRead_RoundTripsExactTextPayloadIdempotentlyAcrossStoreRestart()
@@ -52,7 +64,74 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
     }
 
     [ReportingDatabaseFact]
-    public async Task HardCloseBridge_RetainsDurableReceipt_ThatRestartedCertificationConsumes()
+    public async Task LegacyV1Row_VerifiedReceiptBlocksCertificationUntilGovernedV2RecoverySupersedesIt()
+    {
+        var legacy = NewLegacyReceipt();
+        var legacyPayload = JsonSerializer.Serialize(
+            legacy,
+            ReportingReconciliationEvidenceJsonContext.Default.LegacyReportingReconciliationEvidenceReceipt);
+        await InsertLegacyRowAsync(legacy, legacyPayload);
+        var restarted = new PostgresReportingReconciliationEvidenceStore(_database.Options);
+
+        Func<Task> readLegacy = async () => await restarted.GetExactAsync(
+            legacy.TenantId,
+            legacy.OrganizationId,
+            legacy.CompanyId,
+            legacy.FundId,
+            legacy.LedgerBookId,
+            legacy.AccountingPeriodId,
+            legacy.AccountingBasis,
+            legacy.AsOfDate,
+            legacy.SourceCheckpointId,
+            legacy.SourceCheckpointHash);
+
+        (await readLegacy.Should()
+            .ThrowAsync<ReportingReconciliationEvidenceLegacyMigrationRequiredException>()).Which.Message
+            .Should().Contain("Final certification is blocked")
+            .And.Contain("re-run the governed reconciliation and close workflow")
+            .And.Contain("Do not update, delete, or synthesize break evidence");
+
+        var recovered = NewCurrentReceiptFor(legacy);
+        (await restarted.RetainAsync(recovered)).Should().BeFalse();
+        var retained = await new PostgresReportingReconciliationEvidenceStore(_database.Options).GetExactAsync(
+            legacy.TenantId,
+            legacy.OrganizationId,
+            legacy.CompanyId,
+            legacy.FundId,
+            legacy.LedgerBookId,
+            legacy.AccountingPeriodId,
+            legacy.AccountingBasis,
+            legacy.AsOfDate,
+            legacy.SourceCheckpointId,
+            legacy.SourceCheckpointHash);
+
+        retained.Should().BeEquivalentTo(recovered, options => options.WithStrictOrdering());
+        (await ReadLegacyPayloadAsync(legacy.TenantId, ComputeKeyHash(legacy))).Should().Be(legacyPayload);
+        (await ReadSupersededLegacyKeyAsync(legacy.TenantId, ComputeKeyHash(legacy)))
+            .Should().Be(ComputeKeyHash(legacy));
+    }
+
+    [ReportingDatabaseFact]
+    public async Task LegacyV1RowWithTamperedInnerReceiptHash_CannotBeSupersededByV2Recovery()
+    {
+        var legacy = NewLegacyReceipt();
+        var tampered = legacy with { HasOpenBreaks = true };
+        var payload = JsonSerializer.Serialize(
+            tampered,
+            ReportingReconciliationEvidenceJsonContext.Default.LegacyReportingReconciliationEvidenceReceipt);
+        await InsertLegacyRowAsync(tampered, payload);
+        var recovered = NewCurrentReceiptFor(tampered);
+        var store = new PostgresReportingReconciliationEvidenceStore(_database.Options);
+
+        Func<Task> retain = async () => await store.RetainAsync(recovered);
+
+        (await retain.Should().ThrowAsync<ReportingArtifactCatalogIntegrityException>()).Which.Message
+            .Should().Contain("legacy reconciliation evidence failed v1 canonical validation");
+        (await CountCurrentRowsAsync(tampered.TenantId, ComputeKeyHash(tampered))).Should().Be(0);
+    }
+
+    [ReportingDatabaseFact]
+    public async Task HardCloseBridge_RetainsCompatibilityReceipt_ThatFinalCertificationRejectsWithoutCommittedWorkflow()
     {
         const string tenantId = "tenant-close";
         const string companyId = "company-close";
@@ -104,29 +183,33 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
                 "USD",
                 completedAt,
                 completedAt));
-        var periodReadCount = 0;
+        // Model the ledger authority's committed state instead of coupling the fixture to the
+        // bridge's number of defensive boundary reads.
+        var currentPeriod = softClosed;
         ledgerBookService.ListPeriodsAsync(
                 Arg.Any<LedgerPeriodQuery>(),
                 Arg.Any<CancellationToken>())
-            .Returns(_ => ++periodReadCount <= 3
-                ? new[] { softClosed }
-                : new[] { hardClosed });
+            .Returns(_ => new[] { currentPeriod });
         ledgerBookService.GetPeriodSummaryAsync(periodId, Arg.Any<CancellationToken>())
             .Returns(summary);
         ledgerBookService.ClosePeriodAsync(
                 periodId,
                 Arg.Any<CloseLedgerPeriodRequest>(),
                 Arg.Any<CancellationToken>())
-            .Returns(new LedgerPeriodCloseResultDto(
-                hardClosed,
-                summary,
-                new OperatorWorkItemDto(
-                    $"period-close:{periodId:D}",
-                    OperatorWorkItemKindDto.LedgerPeriodClose,
-                    "Period hard closed",
-                    "The reporting close completed.",
-                    OperatorWorkItemToneDto.Success,
-                    completedAt)));
+            .Returns(_ =>
+            {
+                currentPeriod = hardClosed;
+                return new LedgerPeriodCloseResultDto(
+                    hardClosed,
+                    summary,
+                    new OperatorWorkItemDto(
+                        $"period-close:{periodId:D}",
+                        OperatorWorkItemKindDto.LedgerPeriodClose,
+                        "Period hard closed",
+                        "The reporting close completed.",
+                        OperatorWorkItemToneDto.Success,
+                        completedAt));
+            });
 
         var workbench = Substitute.For<IManualJournalEntryWorkbenchService>();
         workbench.GetWorkbenchAsync(
@@ -167,13 +250,43 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
         var tenancy = Substitute.For<IFundProfileTenancyRegistry>();
         tenancy.ResolveAsync(fundId, Arg.Any<CancellationToken>())
             .Returns(new FundProfileOwnership(fundId, tenantId, companyId));
+        var breakQueue = Substitute.For<IReconciliationBreakQueueRepository>();
+        breakQueue.GetAllAsync(Arg.Any<ReconciliationBreakQueueStatus?>(), Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<ReconciliationBreakQueueItem>());
+        var closeScope = new ReconciliationCloseScope(
+            fundId,
+            bookId,
+            periodId,
+            softClosed.EndDate);
+        var closeScopeCheckpoint = new ReconciliationCloseScopeCheckpoint(
+            closeScope,
+            [],
+            new string('c', 64));
+        var closeScopeLease = Substitute.For<IReconciliationCloseScopeLease>();
+        closeScopeLease.Scope.Returns(closeScope);
+        closeScopeLease.Items.Returns(Array.Empty<ReconciliationBreakQueueItem>());
+        closeScopeLease.CheckpointHashSha256.Returns(closeScopeCheckpoint.CheckpointHashSha256);
+        closeScopeLease.Generation.Returns(closeScopeCheckpoint.Generation);
+        closeScopeLease.CommitHardCloseAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        closeScopeLease.DisposeAsync().Returns(ValueTask.CompletedTask);
+        breakQueue.AcquireCloseScopeLeaseAsync(
+                Arg.Is<ReconciliationCloseScope>(candidate => candidate == closeScope),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(closeScopeLease));
+        breakQueue.RecoverHardClosedScopeCheckpointAsync(
+                Arg.Is<ReconciliationCloseScope>(candidate => candidate == closeScope),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(closeScopeCheckpoint));
         var bridge = new AccountingClosePostingWorkbenchBridge(
             runner,
             workbench,
             lifecycle,
             ledgerBookService,
             retention,
-            tenancy);
+            tenancy,
+            breakQueue,
+            new ImmediateReportingReleaseConsistencyGate());
 
         var closeContext = new AccountingClosePostingContext(
                 Guid.NewGuid(),
@@ -203,7 +316,9 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
             Arg.Any<CloseLedgerPeriodRequest>(),
             Arg.Any<CancellationToken>());
         var restartedStore = new PostgresReportingReconciliationEvidenceStore(_database.Options);
-        var restartedEvidenceSource = new ReportingReconciliationEvidenceSource(restartedStore);
+        var restartedEvidenceSource = new ReportingReconciliationEvidenceSource(
+            restartedStore,
+            breakQueue);
         var parameters = CloseAuthoritativeSource.Parameters(fundId, bookId, periodId);
         var readiness = new ReportingRunReadinessDto(
             "close-readiness",
@@ -227,10 +342,10 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
             ],
             BlockingReasons: [],
             EvidenceHash: new string('a', 64));
-        var certified = await new ReportingRunCertificationService(
-                authoritativeSource,
-                restartedEvidenceSource)
-            .CertifyAsync(
+        var certification = new ReportingRunCertificationService(
+            authoritativeSource,
+            restartedEvidenceSource);
+        Func<Task> certify = async () => await certification.CertifyAsync(
                 new ReportingTemplateMetadata(
                     "close-report",
                     ReportingTemplateFamily.CustomReport,
@@ -248,9 +363,11 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
                     TenantId: tenantId,
                     RequireBoundScope: true));
 
-        certified.Snapshot.ReconciliationCheckpointId.Should().NotBeNullOrWhiteSpace();
-        certified.Snapshot.SourceCheckpointId.Should().Be(certified.AuthoritativeSource.CheckpointId);
-        certified.Readiness.CanGenerateFinal.Should().BeTrue();
+        var blocked = await certify.Should().ThrowAsync<ReportingRunReadinessBlockedException>();
+        blocked.Which.Readiness.BlockingReasons.Should().ContainSingle(reason =>
+            reason.Contains(
+                "Final reporting requires retained proof that the accounting-close workflow committed",
+                StringComparison.Ordinal));
     }
 
     private static ReportingReconciliationEvidenceReceipt NewReceipt()
@@ -284,6 +401,221 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
             ImmutableArray.Create($"period-close:{suffix}:hard-closed"));
         return ReportingReconciliationEvidenceValidation.CreateReceipt(source, completion);
     }
+
+    private static LegacyReportingReconciliationEvidenceReceipt NewLegacyReceipt()
+    {
+        const string sourceHash = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        const string completionHash = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        var reconciledAt = new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
+        var evidenceWithoutReceipt = ImmutableArray.Create(
+            "source-evidence:legacy-postgres",
+            $"reconciliation-completion:completion-legacy:{completionHash}");
+        var reconciliationHash = ComputeLegacyReceiptHash(
+            "tenant-legacy-postgres",
+            "organization-legacy-postgres",
+            "company-legacy-postgres",
+            "fund-legacy-postgres",
+            "book-legacy-postgres",
+            "period-legacy-postgres",
+            "Gaap",
+            new DateOnly(2026, 6, 30),
+            "source-legacy-postgres",
+            sourceHash,
+            "completion-legacy",
+            completionHash,
+            reconciledAt,
+            hasOpenBreaks: false,
+            evidenceWithoutReceipt);
+        var reconciliationId = $"report-reconciliation-{reconciliationHash[..32]}";
+        return new LegacyReportingReconciliationEvidenceReceipt(
+            "tenant-legacy-postgres",
+            "organization-legacy-postgres",
+            "company-legacy-postgres",
+            "fund-legacy-postgres",
+            "book-legacy-postgres",
+            "period-legacy-postgres",
+            "Gaap",
+            new DateOnly(2026, 6, 30),
+            "source-legacy-postgres",
+            sourceHash,
+            reconciliationId,
+            reconciliationHash,
+            reconciledAt,
+            HasOpenBreaks: false,
+            EvidenceIds: evidenceWithoutReceipt.Add($"reconciliation-checkpoint:{reconciliationId}:{reconciliationHash}"),
+            CompletionCheckpointId: "completion-legacy",
+            CompletionCheckpointHash: completionHash);
+    }
+
+    private static ReportingReconciliationEvidenceReceipt NewCurrentReceiptFor(
+        LegacyReportingReconciliationEvidenceReceipt legacy)
+    {
+        var source = new ReportingAuthoritativeSourceCheckpoint(
+            "ledger-journal",
+            "legacy-recovery-source",
+            legacy.TenantId,
+            legacy.OrganizationId,
+            legacy.CompanyId,
+            legacy.FundId,
+            legacy.LedgerBookId,
+            legacy.AccountingPeriodId,
+            legacy.AccountingBasis,
+            legacy.AsOfDate,
+            legacy.ReconciledAtUtc,
+            42,
+            2,
+            4,
+            legacy.SourceCheckpointId,
+            legacy.SourceCheckpointHash,
+            legacy.ReconciledAtUtc,
+            ImmutableArray.Create("source-evidence:legacy-postgres"));
+        return ReportingReconciliationEvidenceValidation.CreateReceipt(
+            source,
+            new ReportingReconciliationCompletionEvidence(
+                "completion-v2-recovery",
+                new string('c', 64),
+                legacy.ReconciledAtUtc.AddMinutes(1),
+                HasOpenBreaks: false,
+                ImmutableArray.Create("reconciliation-recovery:legacy-postgres"),
+                ImmutableArray<ReportingReconciliationBreakEvidence>.Empty));
+    }
+
+    private async Task InsertLegacyRowAsync(
+        LegacyReportingReconciliationEvidenceReceipt receipt,
+        string payload)
+    {
+        await using var connection = new NpgsqlConnection(_database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            insert into "{_database.Options.Schema}"."reporting_reconciliation_evidence" (
+                tenant_id, receipt_key_sha256, organization_id, company_id, fund_id, ledger_book_id,
+                accounting_period_id, accounting_basis, as_of_date, source_checkpoint_id,
+                source_checkpoint_hash, reconciliation_checkpoint_id, reconciliation_checkpoint_hash,
+                receipt_payload, receipt_hash_sha256)
+            values (
+                @tenant_id, @receipt_key_sha256, @organization_id, @company_id, @fund_id, @ledger_book_id,
+                @accounting_period_id, @accounting_basis, @as_of_date, @source_checkpoint_id,
+                @source_checkpoint_hash, @reconciliation_checkpoint_id, @reconciliation_checkpoint_hash,
+                @receipt_payload, @receipt_hash_sha256);
+            """;
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, receipt.TenantId);
+        command.Parameters.AddWithValue("receipt_key_sha256", NpgsqlDbType.Text, ComputeKeyHash(receipt));
+        command.Parameters.AddWithValue("organization_id", NpgsqlDbType.Text, receipt.OrganizationId);
+        command.Parameters.AddWithValue("company_id", NpgsqlDbType.Text, receipt.CompanyId!);
+        command.Parameters.AddWithValue("fund_id", NpgsqlDbType.Text, receipt.FundId);
+        command.Parameters.AddWithValue("ledger_book_id", NpgsqlDbType.Text, receipt.LedgerBookId);
+        command.Parameters.AddWithValue("accounting_period_id", NpgsqlDbType.Text, receipt.AccountingPeriodId);
+        command.Parameters.AddWithValue("accounting_basis", NpgsqlDbType.Text, receipt.AccountingBasis);
+        command.Parameters.AddWithValue("as_of_date", NpgsqlDbType.Date, receipt.AsOfDate);
+        command.Parameters.AddWithValue("source_checkpoint_id", NpgsqlDbType.Text, receipt.SourceCheckpointId);
+        command.Parameters.AddWithValue("source_checkpoint_hash", NpgsqlDbType.Text, receipt.SourceCheckpointHash);
+        command.Parameters.AddWithValue("reconciliation_checkpoint_id", NpgsqlDbType.Text, receipt.ReconciliationCheckpointId);
+        command.Parameters.AddWithValue("reconciliation_checkpoint_hash", NpgsqlDbType.Text, receipt.ReconciliationCheckpointHash);
+        command.Parameters.AddWithValue("receipt_payload", NpgsqlDbType.Text, payload);
+        command.Parameters.AddWithValue("receipt_hash_sha256", NpgsqlDbType.Text, ComputeSha256(payload));
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private async Task<string?> ReadLegacyPayloadAsync(string tenantId, string keyHash)
+    {
+        await using var connection = new NpgsqlConnection(_database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"select receipt_payload from \"{_database.Options.Schema}\".\"reporting_reconciliation_evidence\" where tenant_id = @tenant_id and receipt_key_sha256 = @key_hash;";
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, tenantId);
+        command.Parameters.AddWithValue("key_hash", NpgsqlDbType.Text, keyHash);
+        return await command.ExecuteScalarAsync() as string;
+    }
+
+    private async Task<string?> ReadSupersededLegacyKeyAsync(string tenantId, string keyHash)
+    {
+        await using var connection = new NpgsqlConnection(_database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"select supersedes_legacy_receipt_key_sha256 from \"{_database.Options.Schema}\".\"reporting_reconciliation_evidence_v2\" where tenant_id = @tenant_id and receipt_key_sha256 = @key_hash;";
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, tenantId);
+        command.Parameters.AddWithValue("key_hash", NpgsqlDbType.Text, keyHash);
+        return await command.ExecuteScalarAsync() as string;
+    }
+
+    private async Task<long> CountCurrentRowsAsync(string tenantId, string keyHash)
+    {
+        await using var connection = new NpgsqlConnection(_database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"select count(*) from \"{_database.Options.Schema}\".\"reporting_reconciliation_evidence_v2\" where tenant_id = @tenant_id and receipt_key_sha256 = @key_hash;";
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, tenantId);
+        command.Parameters.AddWithValue("key_hash", NpgsqlDbType.Text, keyHash);
+        return (long)(await command.ExecuteScalarAsync() ?? 0L);
+    }
+
+    private static string ComputeLegacyReceiptHash(
+        string tenantId,
+        string organizationId,
+        string? companyId,
+        string fundId,
+        string ledgerBookId,
+        string accountingPeriodId,
+        string accountingBasis,
+        DateOnly asOfDate,
+        string sourceCheckpointId,
+        string sourceCheckpointHash,
+        string completionCheckpointId,
+        string completionCheckpointHash,
+        DateTimeOffset reconciledAtUtc,
+        bool hasOpenBreaks,
+        ImmutableArray<string> evidenceIds)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("tenantId", tenantId);
+            writer.WriteString("organizationId", organizationId);
+            writer.WriteString("companyId", companyId);
+            writer.WriteString("fundId", fundId);
+            writer.WriteString("ledgerBookId", ledgerBookId);
+            writer.WriteString("accountingPeriodId", accountingPeriodId);
+            writer.WriteString("accountingBasis", accountingBasis);
+            writer.WriteString("asOfDate", asOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+            writer.WriteString("sourceCheckpointId", sourceCheckpointId);
+            writer.WriteString("sourceCheckpointHash", sourceCheckpointHash);
+            writer.WriteString("completionCheckpointId", completionCheckpointId);
+            writer.WriteString("completionCheckpointHash", completionCheckpointHash);
+            writer.WriteString("reconciledAtUtc", reconciledAtUtc.ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+            writer.WriteBoolean("hasOpenBreaks", hasOpenBreaks);
+            writer.WriteStartArray("evidenceIds");
+            foreach (var evidence in evidenceIds.OrderBy(static item => item, StringComparer.Ordinal))
+            {
+                writer.WriteStringValue(evidence);
+            }
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+
+        return ComputeSha256(Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    private static string ComputeKeyHash(LegacyReportingReconciliationEvidenceReceipt receipt) =>
+        ComputeSha256(string.Join('\n',
+            receipt.TenantId,
+            receipt.OrganizationId,
+            receipt.CompanyId,
+            receipt.FundId,
+            receipt.LedgerBookId,
+            receipt.AccountingPeriodId,
+            receipt.AccountingBasis,
+            receipt.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            receipt.SourceCheckpointId,
+            receipt.SourceCheckpointHash));
+
+    private static string ComputeSha256(string value) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
     private sealed class CloseAuthoritativeSource(
         string tenantId,

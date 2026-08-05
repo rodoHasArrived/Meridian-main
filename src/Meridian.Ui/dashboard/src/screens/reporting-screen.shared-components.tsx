@@ -15,6 +15,24 @@ export interface ReportingCommandStatus {
   };
 }
 
+export function ReportingHighlight({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-secondary/35 p-4">
+      <div className="font-semibold">{title}</div>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+export function ReportingCutMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
+    </div>
+  );
+}
+
 export function ReportingScheduleField({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">

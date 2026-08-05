@@ -12,10 +12,15 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { getOperationsCloseCalendar, getRunLedgerJournal, getRunTrialBalance } from "@/lib/api";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
+import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -33,6 +38,10 @@ import type {
 
 interface FinanceStandardScreenProps {
   data: AccountingWorkspaceResponse | null;
+}
+
+interface ReportingStandardScreenProps {
+  data: ReportingWorkspacePayload | null;
 }
 
 type UnknownRecord = Record<string, unknown>;
@@ -61,15 +70,16 @@ const reportParameterFields = [
   "Evidence appendix"
 ];
 
-export function ReportPreviewValidationScreen({ data }: FinanceStandardScreenProps) {
+export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenProps) {
   const [searchParams] = useSearchParams();
-  const reporting = asRecord(data?.reporting);
+  const reportingData = normalizeReportingWorkspace(data);
+  const reporting = asRecord(reportingData);
   const requestedRunId = searchParams.get("runId") ?? "";
   const runs = readRecordArray(reporting, "recentRuns");
   const run = requestedRunId
     ? runs.find((candidate) => readString(candidate, "runId", "") === requestedRunId) ?? null
     : runs[0] ?? null;
-  const templates = buildTemplateRows(data?.reporting.templates ?? []);
+  const templates = buildTemplateRows(reportingData?.templates ?? []);
   const runTemplateId = readString(run, "templateId", "");
   const selectedTemplate = runTemplateId
     ? templates.find((candidate) => candidate.templateName === runTemplateId || candidate.id === runTemplateId) ?? null
@@ -86,9 +96,9 @@ export function ReportPreviewValidationScreen({ data }: FinanceStandardScreenPro
   const retainedArtifacts = readStringArray(run, "artifacts");
   const retainedOutputReferences = generatedFiles.length > 0 ? generatedFiles : retainedArtifacts;
   const selectedTemplateMetadata = runTemplateId
-    ? data?.reporting.templates?.find((candidate) => candidate.templateId === runTemplateId) ?? null
+    ? reportingData?.templates?.find((candidate) => candidate.templateId === runTemplateId) ?? null
     : selectedTemplate
-      ? data?.reporting.templates?.find((candidate) => candidate.templateId === selectedTemplate.templateName) ?? null
+      ? reportingData?.templates?.find((candidate) => candidate.templateId === selectedTemplate.templateName) ?? null
       : null;
   const previewSections = (selectedTemplateMetadata?.sections ?? []).map((section) => presentReportingIdentifier(section, "Report section"));
   const sectionCount = readNumber(run, "sectionCount", previewSections.length);
@@ -263,7 +273,7 @@ export function ReportPreviewValidationScreen({ data }: FinanceStandardScreenPro
   );
 }
 
-export function ReportRunDetailScreen(_props: FinanceStandardScreenProps) {
+export function ReportRunDetailScreen(_props: ReportingStandardScreenProps) {
   return <ReportRunGovernanceScreen />;
 }
 
@@ -371,7 +381,7 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
       </Card>
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("accountingTrialBalance", { runId: requestedRunId || null })}>Back to Trial Balance</Link>
+          <Link to={workstationRouteWithQuery("accountingLedger", { view: "trial-balance", runId: requestedRunId || null })}>Back to Trial Balance</Link>
         </Button>
         <Button asChild size="sm" variant="outline">
           <Link to={workstationRouteWithQuery("accountingLedger", { runId: requestedRunId || null })}>Open ledger activity</Link>
@@ -391,8 +401,14 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   );
 }
 
+const LEDGER_EXPLORER_TABS = [
+  { id: "ledger", label: "Ledger" },
+  { id: "trial-balance", label: "Trial balance" }
+];
+
 export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get("view") === "trial-balance" ? "trial-balance" : "ledger";
   const runs = readRecordArray(asRecord(data), "reconciliationQueue");
   const selectedRunId = searchParams.get("runId") ?? readString(runs[0] ?? null, "runId", "");
   const [searchText, setSearchText] = useState("");
@@ -403,7 +419,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!selectedRunId) {
+    if (!selectedRunId || view !== "ledger") {
       setJournalLines([]);
       return;
     }
@@ -430,7 +446,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
     return () => {
       cancelled = true;
     };
-  }, [selectedRunId]);
+  }, [selectedRunId, view]);
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -449,6 +465,21 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
   }, [journalLines, searchText]);
 
   return (
+    <Tabs
+      tabs={LEDGER_EXPLORER_TABS}
+      value={view}
+      onValueChange={(nextView) => {
+        const nextParams = new URLSearchParams(searchParams);
+        if (nextView === "ledger") {
+          nextParams.delete("view");
+        } else {
+          nextParams.set("view", nextView);
+        }
+        setSearchParams(nextParams, { replace: true });
+      }}
+    >
+      <TabPanel>
+        {view === "ledger" ? (
     <div className="space-y-4">
       <Card className="panel-surface">
         <CardHeader>
@@ -589,6 +620,12 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
         </CardContent>
       </Card>
     </div>
+        ) : null}
+      </TabPanel>
+      <TabPanel>
+        {view === "trial-balance" ? <TrialBalanceScreen data={data} /> : null}
+      </TabPanel>
+    </Tabs>
   );
 }
 
@@ -769,45 +806,6 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
         </TechnicalDetails>
       ) : null}
       <Button asChild size="sm" variant="outline"><Link to={WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity}>Open Operations Continuity</Link></Button>
-    </div>
-  );
-}
-
-export function EvidenceDetailScreen() {
-  const [searchParams] = useSearchParams();
-  const evidenceId = searchParams.get("evidenceId")?.trim() || null;
-
-  return (
-    <div className="space-y-4">
-      <Card className="panel-surface">
-        <CardHeader>
-          <CardTitle>Evidence Detail</CardTitle>
-          <CardDescription>Document-level evidence can support or block work; it does not approve, post, or release work.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Selected evidence" value={evidenceId ? "Reference retained" : "No reference selected"} />
-          <FinanceFact label="Metadata source" value="Shared Evidence Workbench" />
-          <FinanceFact label="Review status" value={evidenceId ? "Ready to inspect" : "Selection required"} />
-        </CardContent>
-      </Card>
-      <StatusBanner
-        role="status"
-        tone={evidenceId ? "info" : "warning"}
-        title={evidenceId ? "Evidence reference ready for inspection" : "Select evidence to continue"}
-        detail={evidenceId
-          ? "Open the shared Evidence Workbench to load source-owned classification, extraction, links, and audit events."
-          : "Return to the Evidence Workbench and select a retained document or record."}
-      />
-      {evidenceId ? (
-        <TechnicalDetails label="Evidence reference">
-          <p className="break-all font-mono text-xs text-muted-foreground">{evidenceId}</p>
-        </TechnicalDetails>
-      ) : null}
-      <Button asChild size="sm">
-        <Link to={evidenceId ? evidenceWorkbenchPath("evidence", evidenceId) : WORKSTATION_ROUTE_CATALOG.reportingEvidence}>
-          {evidenceId ? "Inspect selected evidence" : "Open Evidence Workbench"}
-        </Link>
-      </Button>
     </div>
   );
 }

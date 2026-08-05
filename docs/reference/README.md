@@ -21,7 +21,7 @@ Reference content here must stay schema/procedure-neutral and claim-stable. Proc
 
 | Area | Canonical or migration source | Notes |
 | --- | --- | --- |
-| HTTP and local API contracts | [API Reference](api-reference.md), [Lifecycle Control Plane](lifecycle-control-plane.md), [OMS/EMS Integration](oms-ems-integration.md), [Accounting Configuration](accounting-configuration.md), [Governed Accounting Reporting](accounting-report-packs.md) | Keep route, request, response, idempotency, and storage-shape details here. |
+| HTTP and local API contracts | [API Reference](api-reference.md), [Verified Operation Outcomes](verified-operation-outcomes.md), [Lifecycle Control Plane](lifecycle-control-plane.md), [OMS/EMS Integration](oms-ems-integration.md), [Accounting Configuration](accounting-configuration.md), [Governed Accounting Reporting](accounting-report-packs.md) | Keep route, request, response, idempotency, and storage-shape details here. |
 | Data fields and normalization | [Data Dictionary](data-dictionary.md), [Data Uniformity](data-uniformity.md), [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Stable field/type definitions and cross-provider terminology. |
 | Environment and config | [Environment Variables](environment-variables.md), [Appsettings Schema Reference](appsettings-schema.md), [EDGAR Reference Data](edgar-reference-data.md) | Lookup details only; setup procedures belong in operators/start docs. |
 | Provider capability and readiness lookup | [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), [Provider Integration Status](provider-integration-status.md) | Canonical lookup in this lane; keep procedure and rollout details in operators. |
@@ -60,6 +60,7 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [EDGAR Reference Data](edgar-reference-data.md) | EDGAR filer, ticker association, XBRL fact, filing-derived security data, CLI, API, and local storage reference. |
 | [Contract Compatibility Matrix](contract-compatibility-matrix.md) | Shared contract/versioning baseline for workstation routes, DTOs, services, and migration behavior. |
 | [Provider Capability Matrix](provider-capability-matrix.md) | Adapter coverage and readiness states by capability surface. |
+| [Interactive Brokers and Alpaca Capability Expansion Review](broker-provider-capability-expansion-review.md) | Evidence-based provider expansion opportunities, priorities, and safety boundaries. |
 | [Provider Integration Status](provider-integration-status.md) | Per-provider phase, DI/factory posture, blockers, and evidence refresh cadence. |
 | [Provider Validation Matrix](provider-validation-matrix.md) | Wave 1 provider gate matrix and promotion evidence criteria. |
 | [Provider Validation Evidence Schema](provider-validation-evidence-schema.md) | Required validation packet artifacts and schema fields for provider trust decisions. |
@@ -74,6 +75,7 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Versioned canonical break classes and reason codes used by ledger reconciliation. |
 | [Strategy Briefing Workflow](strategy-briefing-workflow.md) | Shared Strategy workspace briefing contracts, endpoint, and shell binding flow. |
 | [Strategy Promotion History Persistence](strategy-promotion-history.md) | Durable promotion decision chain fields and JSONL-backed history behavior. |
+| [Verified Operation Outcomes](verified-operation-outcomes.md) | Four-state terminal receipt, postcondition, evidence, artifact, replay, and case-history contract. |
 
 ## Migration Rules
 

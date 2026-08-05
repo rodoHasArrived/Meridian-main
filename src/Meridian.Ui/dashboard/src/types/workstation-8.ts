@@ -1,3 +1,4 @@
+import type { BiasDisclosure } from "./workstation-6";
 import type {
   CorporateAction,
   InstrumentPassportEconomicDefinition,
@@ -397,6 +398,12 @@ export interface StrategyDesignPreviewResult {
 export interface StrategyDesignRunBacktestRequest {
   document: StrategyDesignDocument;
   parameters?: Record<string, string> | null;
+  operatorAcceptanceCriteria: string[];
+  retainedEvidenceReferences: string[];
+  accountingRecordReferences: string[];
+  approvalReferences: string[];
+  paperValidationReferences: string[];
+  governedReportReferences: string[];
 }
 
 export interface StrategyDesignRunBacktestResponse {
@@ -412,6 +419,7 @@ export interface StrategyDesignRunBacktestResponse {
   runtimeError: string | null;
   promotionCandidatePath: string | null;
   reviewPacketPath: string | null;
+  biasDisclosure?: BiasDisclosure | null;
 }
 
 // --- Quant Notebook ---

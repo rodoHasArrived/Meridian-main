@@ -13,7 +13,9 @@ namespace Meridian.Storage.Services;
 /// Service for managing the symbol registry with comprehensive alias resolution.
 /// Stored at _catalog/symbols.json.
 /// </summary>
-public sealed class SymbolRegistryService : ISymbolRegistryService
+public sealed class SymbolRegistryService :
+    ISymbolRegistryService,
+    ISymbolRegistryMigrationWriter
 {
     private const string CatalogDirectoryName = "_catalog";
     private const string SymbolsFileName = "symbols.json";
@@ -21,16 +23,30 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
     private readonly ILogger _log = LoggingSetup.ForContext<SymbolRegistryService>();
     private readonly string _registryPath;
     private readonly SemaphoreSlim _registryLock = new(1, 1);
+    private readonly Func<string, string, CancellationToken, Task> _atomicWriteAsync;
 
     private SymbolRegistry _registry;
-    private readonly ConcurrentDictionary<string, string> _aliasCache = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, SymbolRegistryEntry> _symbolCache = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<Guid, string> _securityIdCache = new();
+    private ConcurrentDictionary<string, string> _aliasCache = new(StringComparer.OrdinalIgnoreCase);
+    private ConcurrentDictionary<string, SymbolRegistryEntry> _symbolCache = new(StringComparer.OrdinalIgnoreCase);
+    private ConcurrentDictionary<Guid, string> _securityIdCache = new();
 
     public SymbolRegistryService(string storagePath)
+        : this(
+            storagePath,
+            static (path, contents, ct) => AtomicFileWriter.WriteAsync(path, contents, ct))
     {
+    }
+
+    internal SymbolRegistryService(
+        string storagePath,
+        Func<string, string, CancellationToken, Task> atomicWriteAsync)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(storagePath);
+        ArgumentNullException.ThrowIfNull(atomicWriteAsync);
+
         var catalogPath = Path.Combine(storagePath, CatalogDirectoryName);
         _registryPath = Path.Combine(catalogPath, SymbolsFileName);
+        _atomicWriteAsync = atomicWriteAsync;
         _registry = new SymbolRegistry();
 
         Directory.CreateDirectory(catalogPath);
@@ -414,7 +430,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
     public async Task SaveRegistryAsync(CancellationToken ct = default)
     {
         var json = JsonSerializer.Serialize(_registry, MarketDataJsonContext.Default.SymbolRegistry);
-        await AtomicFileWriter.WriteAsync(_registryPath, json, ct);
+        await _atomicWriteAsync(_registryPath, json, ct).ConfigureAwait(false);
         _log.Debug("Saved symbol registry to {Path}", _registryPath);
     }
 
@@ -450,15 +466,104 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
         }
     }
 
+    public async Task<int> ApplyMigrationAsync(
+        string migrationId,
+        string fingerprint,
+        IEnumerable<SymbolRegistryEntry> symbols,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(migrationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
+        ArgumentNullException.ThrowIfNull(symbols);
+
+        await _registryLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var normalizedMigrationId = migrationId.Trim();
+            var normalizedFingerprint = fingerprint.Trim();
+            if (_registry.MigrationMarkers.TryGetValue(normalizedMigrationId, out var completed) &&
+                string.Equals(completed, normalizedFingerprint, StringComparison.Ordinal))
+            {
+                return 0;
+            }
+
+            var originalJson = JsonSerializer.Serialize(
+                _registry,
+                MarketDataJsonContext.Default.SymbolRegistry);
+            var candidate = JsonSerializer.Deserialize(
+                    originalJson,
+                    MarketDataJsonContext.Default.SymbolRegistry)
+                ?? throw new InvalidDataException("Unable to clone the retained symbol registry.");
+            var imported = 0;
+            var candidateIndexes = BuildIndexesAndCaches(candidate);
+            foreach (var symbol in symbols)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (string.IsNullOrWhiteSpace(symbol.Canonical))
+                    continue;
+
+                symbol.Canonical = symbol.Canonical.Trim().ToUpperInvariant();
+                NormalizeEntry(symbol);
+                RegisterEntry(
+                    candidate,
+                    candidateIndexes.SecurityIdCache,
+                    symbol,
+                    merge: true,
+                    _log);
+                imported++;
+            }
+
+            candidate.MigrationMarkers = new Dictionary<string, string>(
+                candidate.MigrationMarkers ?? new Dictionary<string, string>(),
+                StringComparer.OrdinalIgnoreCase)
+            {
+                [normalizedMigrationId] = normalizedFingerprint
+            };
+            candidate.LastUpdatedAt = DateTime.UtcNow;
+            candidateIndexes = BuildIndexesAndCaches(candidate);
+            UpdateStatistics(candidate);
+            var candidateJson = JsonSerializer.Serialize(
+                candidate,
+                MarketDataJsonContext.Default.SymbolRegistry);
+
+            await _atomicWriteAsync(_registryPath, candidateJson, ct).ConfigureAwait(false);
+
+            // Publish only after the atomic writer reports durable success. All candidate
+            // collections were built privately, so lock-free readers never observe a partial
+            // migration or its completion marker.
+            _registry = candidate;
+            _aliasCache = candidateIndexes.AliasCache;
+            _symbolCache = candidateIndexes.SymbolCache;
+            _securityIdCache = candidateIndexes.SecurityIdCache;
+            _log.Information(
+                "Atomically imported {Count} symbols for migration {MigrationId}",
+                imported,
+                normalizedMigrationId);
+            return imported;
+        }
+        finally
+        {
+            _registryLock.Release();
+        }
+    }
+
     private void RebuildIndexesAndCaches()
     {
-        _symbolCache.Clear();
-        _aliasCache.Clear();
-        _securityIdCache.Clear();
+        var indexes = BuildIndexesAndCaches(_registry);
+        _aliasCache = indexes.AliasCache;
+        _symbolCache = indexes.SymbolCache;
+        _securityIdCache = indexes.SecurityIdCache;
+    }
+
+    private RegistryIndexes BuildIndexesAndCaches(SymbolRegistry registry)
+    {
+        var aliasCache = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var symbolCache = new ConcurrentDictionary<string, SymbolRegistryEntry>(StringComparer.OrdinalIgnoreCase);
+        var securityIdCache = new ConcurrentDictionary<Guid, string>();
 
         var symbols = new Dictionary<string, SymbolRegistryEntry>(StringComparer.OrdinalIgnoreCase);
         var entriesBySecurityId = new Dictionary<Guid, SymbolRegistryEntry>();
-        foreach (var entry in _registry.Symbols.Values)
+        foreach (var entry in registry.Symbols.Values)
         {
             if (string.IsNullOrWhiteSpace(entry.Canonical))
                 continue;
@@ -470,7 +575,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
                 entriesBySecurityId.TryGetValue(securityId, out var identityEntry))
             {
                 AddCanonicalTickerAlias(identityEntry, entry.Canonical);
-                MergeEntry(identityEntry, entry);
+                MergeEntry(identityEntry, entry, _log);
                 _log.Warning(
                     "Collapsed duplicate canonical symbol {DuplicateCanonical} into {RetainedCanonical} for SecurityId {SecurityId}",
                     entry.Canonical,
@@ -483,13 +588,13 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
             if (entry.SecurityId is Guid retainedSecurityId)
                 entriesBySecurityId[retainedSecurityId] = entry;
         }
-        _registry.Symbols = symbols;
-        _registry.MigrationMarkers = new Dictionary<string, string>(
-            _registry.MigrationMarkers ?? new Dictionary<string, string>(),
+        registry.Symbols = symbols;
+        registry.MigrationMarkers = new Dictionary<string, string>(
+            registry.MigrationMarkers ?? new Dictionary<string, string>(),
             StringComparer.OrdinalIgnoreCase);
-        _registry.AliasIndex = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        _registry.ProviderMappings = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _registry.IdentifierIndex = new IdentifierIndex
+        registry.AliasIndex = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        registry.ProviderMappings = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+        registry.IdentifierIndex = new IdentifierIndex
         {
             IsinToSymbol = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
             FigiToSymbol = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
@@ -501,11 +606,11 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
             Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
         var aliasCandidates = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var (canonical, entry) in _registry.Symbols)
+        foreach (var (canonical, entry) in registry.Symbols)
         {
-            _symbolCache[canonical] = entry;
+            symbolCache[canonical] = entry;
             if (entry.SecurityId is Guid securityId)
-                _securityIdCache[securityId] = canonical;
+                securityIdCache[securityId] = canonical;
 
             foreach (var alias in entry.Aliases)
             {
@@ -535,7 +640,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
                     canonical);
             }
 
-            UpdateIdentifierIndex(entry);
+            UpdateIdentifierIndex(registry, entry);
         }
 
         foreach (var (alias, canonicals) in aliasCandidates)
@@ -544,8 +649,8 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
                 continue;
 
             var canonical = canonicals.Single();
-            _registry.AliasIndex[alias] = canonical;
-            _aliasCache[alias] = canonical;
+            registry.AliasIndex[alias] = canonical;
+            aliasCache[alias] = canonical;
         }
 
         foreach (var (provider, providerSymbols) in providerMappingCandidates)
@@ -557,13 +662,25 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
                     static candidate => candidate.Value.Single(),
                     StringComparer.OrdinalIgnoreCase);
             if (mappings.Count > 0)
-                _registry.ProviderMappings[provider] = mappings;
+                registry.ProviderMappings[provider] = mappings;
         }
+
+        return new RegistryIndexes(aliasCache, symbolCache, securityIdCache);
     }
 
     private SymbolRegistryEntry RegisterEntryLocked(SymbolRegistryEntry incoming, bool merge)
     {
-        _registry.Symbols.TryGetValue(incoming.Canonical, out var canonicalEntry);
+        return RegisterEntry(_registry, _securityIdCache, incoming, merge, _log);
+    }
+
+    private static SymbolRegistryEntry RegisterEntry(
+        SymbolRegistry registry,
+        IReadOnlyDictionary<Guid, string> securityIdCache,
+        SymbolRegistryEntry incoming,
+        bool merge,
+        ILogger log)
+    {
+        registry.Symbols.TryGetValue(incoming.Canonical, out var canonicalEntry);
 
         if (canonicalEntry?.SecurityId is Guid retainedSecurityId && incoming.SecurityId is null)
             incoming.SecurityId = retainedSecurityId;
@@ -578,7 +695,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
         }
 
         var identityEntry = incoming.SecurityId is Guid securityId
-            ? FindBySecurityIdLocked(securityId)
+            ? FindBySecurityId(registry, securityIdCache, securityId)
             : null;
 
         if (identityEntry is not null && !ReferenceEquals(identityEntry, canonicalEntry))
@@ -591,7 +708,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
             }
 
             AddCanonicalTickerAlias(identityEntry, incoming.Canonical);
-            MergeEntry(identityEntry, incoming);
+            MergeEntry(identityEntry, incoming, log);
             return identityEntry;
         }
 
@@ -599,28 +716,31 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
         {
             if (merge)
             {
-                MergeEntry(canonicalEntry, incoming);
+                MergeEntry(canonicalEntry, incoming, log);
                 return canonicalEntry;
             }
 
-            _registry.Symbols[incoming.Canonical] = incoming;
+            registry.Symbols[incoming.Canonical] = incoming;
             return incoming;
         }
 
-        _registry.Symbols[incoming.Canonical] = incoming;
+        registry.Symbols[incoming.Canonical] = incoming;
         return incoming;
     }
 
-    private SymbolRegistryEntry? FindBySecurityIdLocked(Guid securityId)
+    private static SymbolRegistryEntry? FindBySecurityId(
+        SymbolRegistry registry,
+        IReadOnlyDictionary<Guid, string> securityIdCache,
+        Guid securityId)
     {
-        if (_securityIdCache.TryGetValue(securityId, out var canonical) &&
-            _registry.Symbols.TryGetValue(canonical, out var cachedEntry) &&
+        if (securityIdCache.TryGetValue(securityId, out var canonical) &&
+            registry.Symbols.TryGetValue(canonical, out var cachedEntry) &&
             cachedEntry.SecurityId == securityId)
         {
             return cachedEntry;
         }
 
-        return _registry.Symbols.Values.FirstOrDefault(entry => entry.SecurityId == securityId);
+        return registry.Symbols.Values.FirstOrDefault(entry => entry.SecurityId == securityId);
     }
 
     private static void AddCanonicalTickerAlias(SymbolRegistryEntry entry, string canonicalTicker)
@@ -722,7 +842,10 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
         entry.ProviderSymbolMetadata = metadata;
     }
 
-    private void MergeEntry(SymbolRegistryEntry existing, SymbolRegistryEntry incoming)
+    private static void MergeEntry(
+        SymbolRegistryEntry existing,
+        SymbolRegistryEntry incoming,
+        ILogger log)
     {
         NormalizeEntry(existing);
         NormalizeEntry(incoming);
@@ -730,7 +853,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
         if (existing.SecurityId is null)
             existing.SecurityId = incoming.SecurityId;
         else if (incoming.SecurityId is not null && existing.SecurityId != incoming.SecurityId)
-            _log.Warning(
+            log.Warning(
                 "Ignored conflicting SecurityId {IncomingSecurityId} for canonical symbol {Canonical}; retaining {ExistingSecurityId}",
                 incoming.SecurityId,
                 existing.Canonical,
@@ -837,45 +960,56 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
            && string.Equals(left.Provider, right.Provider, StringComparison.OrdinalIgnoreCase);
 
     private void UpdateIdentifierIndex(SymbolRegistryEntry entry)
+        => UpdateIdentifierIndex(_registry, entry);
+
+    private static void UpdateIdentifierIndex(SymbolRegistry registry, SymbolRegistryEntry entry)
     {
         if (!string.IsNullOrEmpty(entry.Identifiers.Isin))
-            _registry.IdentifierIndex.IsinToSymbol[entry.Identifiers.Isin] = entry.Canonical;
+            registry.IdentifierIndex.IsinToSymbol[entry.Identifiers.Isin] = entry.Canonical;
 
         if (!string.IsNullOrEmpty(entry.Identifiers.Figi))
-            _registry.IdentifierIndex.FigiToSymbol[entry.Identifiers.Figi] = entry.Canonical;
+            registry.IdentifierIndex.FigiToSymbol[entry.Identifiers.Figi] = entry.Canonical;
 
         if (!string.IsNullOrEmpty(entry.Identifiers.CompositeFigi))
-            _registry.IdentifierIndex.FigiToSymbol[entry.Identifiers.CompositeFigi] = entry.Canonical;
+            registry.IdentifierIndex.FigiToSymbol[entry.Identifiers.CompositeFigi] = entry.Canonical;
 
         if (!string.IsNullOrEmpty(entry.Identifiers.Cusip))
-            _registry.IdentifierIndex.CusipToSymbol[entry.Identifiers.Cusip] = entry.Canonical;
+            registry.IdentifierIndex.CusipToSymbol[entry.Identifiers.Cusip] = entry.Canonical;
 
         if (!string.IsNullOrEmpty(entry.Identifiers.Sedol))
-            _registry.IdentifierIndex.SedolToSymbol[entry.Identifiers.Sedol] = entry.Canonical;
+            registry.IdentifierIndex.SedolToSymbol[entry.Identifiers.Sedol] = entry.Canonical;
     }
 
     private void UpdateStatistics()
+        => UpdateStatistics(_registry);
+
+    private static void UpdateStatistics(SymbolRegistry registry)
     {
-        _registry.Statistics = new SymbolRegistryStatistics
+        registry.Statistics = new SymbolRegistryStatistics
         {
-            TotalSymbols = _registry.Symbols.Count,
-            ActiveSymbols = _registry.Symbols.Values.Count(s => s.IsActive),
-            DelistedSymbols = _registry.Symbols.Values.Count(s => !s.IsActive),
-            TotalAliases = _registry.Symbols.Values.Sum(s => s.Aliases.Count),
-            ProviderCount = _registry.ProviderMappings.Count
+            TotalSymbols = registry.Symbols.Count,
+            ActiveSymbols = registry.Symbols.Values.Count(s => s.IsActive),
+            DelistedSymbols = registry.Symbols.Values.Count(s => !s.IsActive),
+            TotalAliases = registry.Symbols.Values.Sum(s => s.Aliases.Count),
+            ProviderCount = registry.ProviderMappings.Count
         };
 
         // Breakdown by asset class
-        _registry.Statistics.ByAssetClass = _registry.Symbols.Values
+        registry.Statistics.ByAssetClass = registry.Symbols.Values
             .GroupBy(s => s.AssetClass)
             .ToDictionary(g => g.Key, g => g.Count());
 
         // Breakdown by exchange
-        _registry.Statistics.ByExchange = _registry.Symbols.Values
+        registry.Statistics.ByExchange = registry.Symbols.Values
             .Where(s => !string.IsNullOrEmpty(s.Exchange))
             .GroupBy(s => s.Exchange!)
             .ToDictionary(g => g.Key, g => g.Count());
     }
+
+    private sealed record RegistryIndexes(
+        ConcurrentDictionary<string, string> AliasCache,
+        ConcurrentDictionary<string, SymbolRegistryEntry> SymbolCache,
+        ConcurrentDictionary<Guid, string> SecurityIdCache);
 
     private void InitializeDefaultSymbols()
     {

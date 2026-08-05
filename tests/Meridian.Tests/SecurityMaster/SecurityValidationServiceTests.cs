@@ -179,6 +179,41 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_OptionTermsHiddenInProfileFields_BlockValidationReadiness()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Option",
+            [CreateIdentifier(SecurityIdentifierKind.ProviderSymbol, "AAPL260620C00100000", isPrimary: true, provider: "OPRA")],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                profileFields = new
+                {
+                    underlyingId = Guid.NewGuid(),
+                    putCall = "Call",
+                    strike = 100m,
+                    expiry = "2026-06-20",
+                    multiplier = 100m
+                },
+                valuationProfile = new { pricingSource = "OPRA" },
+                accountingClassification = "DerivativeAsset"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Select(static issue => issue.Code).Should().Contain(
+            "SM_OPTION_UNDERLYING_REQUIRED",
+            "SM_OPTION_PUT_CALL_INVALID",
+            "SM_OPTION_STRIKE_INVALID",
+            "SM_OPTION_EXPIRY_REQUIRED",
+            "SM_OPTION_MULTIPLIER_INVALID");
+    }
+
+    [Fact]
     public void Scenario_UnsupportedAssetClass_ProducesActionableRegistryIssue()
     {
         var record = CreateProjection(

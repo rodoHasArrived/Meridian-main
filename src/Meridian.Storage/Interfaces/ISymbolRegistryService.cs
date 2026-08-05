@@ -94,3 +94,20 @@ public interface ISymbolRegistryService
     /// </summary>
     Task<int> ImportSymbolsAsync(IEnumerable<SymbolRegistryEntry> symbols, bool merge = true, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Optional atomic migration capability kept separate from the stable symbol-registry service
+/// contract so third-party storage implementations are not forced to implement startup concerns.
+/// </summary>
+public interface ISymbolRegistryMigrationWriter
+{
+    /// <summary>
+    /// Atomically imports symbols and persists the migration fingerprint in the same registry
+    /// replacement. Cancellation or persistence failure leaves the prior registry active.
+    /// </summary>
+    Task<int> ApplyMigrationAsync(
+        string migrationId,
+        string fingerprint,
+        IEnumerable<SymbolRegistryEntry> symbols,
+        CancellationToken ct = default);
+}

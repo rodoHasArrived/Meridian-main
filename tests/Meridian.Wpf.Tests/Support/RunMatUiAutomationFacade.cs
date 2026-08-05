@@ -13,6 +13,9 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Wpf.Contracts;
@@ -212,6 +215,10 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/DataProvenanceBadge.xaml", UriKind.Absolute)
+            });
+            dictionaries.Add(new ResourceDictionary
+            {
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/IconResources.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
@@ -286,6 +293,11 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             StrategyRunWorkspaceService.SetInstance(service);
             return service;
         });
+        services.AddSingleton(_ => new WorkstationWorkflowSummaryService(
+            new StrategyRunReadService(
+                new StrategyRunStore(),
+                new PortfolioReadService(),
+                new LedgerReadService())));
         services.AddSingleton<IWorkstationStrategyBriefingApiClient, FakeWorkstationStrategyBriefingApiClient>();
         services.AddSingleton<IStrategyBriefingWorkspaceService, StrategyBriefingWorkspaceService>();
         services.AddSingleton<InMemoryFundAccountService>(_ => new InMemoryFundAccountService(Path.Combine(serviceRoot, "fund-accounts.json")));

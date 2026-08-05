@@ -1,4 +1,5 @@
 using Meridian.Contracts.Lifecycle;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.LifecycleSupervisor;
 
@@ -7,23 +8,54 @@ internal static class Program
     private static async Task<int> Main(string[] args)
     {
         var command = args.FirstOrDefault()?.ToLowerInvariant() ?? "start";
+        var requestId = LifecycleStartupOutcome.NormalizeRequestId(
+            Environment.GetEnvironmentVariable(LifecycleStartupOutcome.RequestIdEnvironmentVariable));
         if (command is "--help" or "-h" or "help")
         {
             ShowUsage();
             return 0;
         }
 
-        var configuration = LifecycleSupervisorConfiguration.Load(AppContext.BaseDirectory);
+        LifecycleSupervisorConfiguration configuration;
+        try
+        {
+            configuration = LifecycleSupervisorConfiguration.Load(AppContext.BaseDirectory);
+        }
+        catch (Exception ex)
+        {
+            LifecycleStartupOutcomeReceipt? receipt = null;
+            try
+            {
+                receipt = LifecycleStartupOutcome.PersistConfigurationBlocked(
+                    AppContext.BaseDirectory,
+                    ex,
+                    requestId);
+            }
+            catch (Exception persistenceException)
+            {
+                Console.Error.WriteLine(
+                    $"Verified Blocked outcome persistence also failed ({persistenceException.GetType().Name}): " +
+                    persistenceException.Message);
+            }
+            Console.Error.WriteLine(
+                $"Meridian startup is Blocked because lifecycle configuration could not be loaded " +
+                $"({ex.GetType().Name}): {ex.Message}");
+            if (receipt is not null)
+                Console.Error.WriteLine($"Verified outcome: {receipt.ReceiptPath}");
+            Console.Error.WriteLine(
+                "Recovery: repair service/lifecycle-supervisor.json or its permissions, run preflight, then retry start.");
+            return LifecycleSupervisorExitCode.Blocked;
+        }
         if (command is "status" or "stop" or "restart" or "preflight" or "open")
         {
-            return await SendCommandAsync(configuration, command).ConfigureAwait(false);
+            return await SendCommandAsync(configuration, command, requestId).ConfigureAwait(false);
         }
 
         if (command is not ("start" or "run"))
         {
             Console.Error.WriteLine($"Unknown lifecycle supervisor command '{command}'.");
             ShowUsage();
-            return 2;
+            return LifecycleSupervisorExitCode.InvalidCommand;
         }
 
         using var mutex = new Mutex(
@@ -40,7 +72,10 @@ internal static class Program
         }
         if (!ownsMutex)
         {
-            return await SendCommandAsync(configuration, command == "start" ? "open" : "status").ConfigureAwait(false);
+            return await SendCommandAsync(
+                configuration,
+                command == "start" ? "open" : "status",
+                requestId).ConfigureAwait(false);
         }
 
         using var shutdown = new CancellationTokenSource();
@@ -53,42 +88,69 @@ internal static class Program
         try
         {
             await using var runtime = new LifecycleSupervisorRuntime(configuration);
-            return await runtime.RunAsync(openBrowser: command == "start", shutdown.Token).ConfigureAwait(false);
+            return await runtime.RunAsync(
+                openBrowser: command == "start",
+                requestId,
+                shutdown.Token).ConfigureAwait(false);
         }
         finally
         {
-            mutex.ReleaseMutex();
+            // The mutex was acquired before the awaits above, so this finally usually resumes
+            // on a different thread and ReleaseMutex throws ApplicationException (mutexes have
+            // thread affinity). The process is exiting either way: the OS abandons the handle,
+            // and the acquisition path above already treats AbandonedMutexException as owned.
+            try
+            {
+                mutex.ReleaseMutex();
+            }
+            catch (ApplicationException)
+            {
+            }
         }
     }
 
     private static async Task<int> SendCommandAsync(
         LifecycleSupervisorConfiguration configuration,
-        string command)
+        string command,
+        string requestId)
     {
+        var startedAtUtc = DateTimeOffset.UtcNow;
         try
         {
+            var commandTimeout = command == "open"
+                ? TimeSpan.FromSeconds(configuration.Manifest.StartupTimeoutSeconds + 20)
+                : TimeSpan.FromSeconds(10);
             var response = await LifecycleSupervisorClient.SendAsync(
                 configuration.PipeName,
-                new LifecycleSupervisorMessageDto { Command = command },
-                TimeSpan.FromSeconds(10),
+                new LifecycleSupervisorMessageDto { Command = command, RequestId = requestId },
+                commandTimeout,
                 CancellationToken.None).ConfigureAwait(false);
             if (response.Status is not null)
             {
                 Console.WriteLine(LifecycleSupervisorConsole.Format(response.Status));
             }
-            else if (!string.IsNullOrWhiteSpace(response.Message))
+            if (!string.IsNullOrWhiteSpace(response.Message))
             {
                 Console.WriteLine(response.Message);
             }
+            if (command == "open" &&
+                Enum.TryParse<OperationTerminalState>(response.Reason, ignoreCase: true, out var terminalState))
+            {
+                if (!string.IsNullOrWhiteSpace(response.Detail))
+                    Console.WriteLine($"Verified outcome: {response.Detail}");
+                return LifecycleSupervisorExitCode.FromOutcome(terminalState);
+            }
             if (!response.Success)
-                return 1;
+                return command == "preflight"
+                    ? LifecycleSupervisorExitCode.Blocked
+                    : LifecycleSupervisorExitCode.Failed;
             if (command == "stop")
             {
                 return await WaitForSupervisorStopAsync(configuration).ConfigureAwait(false)
-                    ? 0
-                    : 1;
+                    ? LifecycleSupervisorExitCode.Succeeded
+                    : LifecycleSupervisorExitCode.Failed;
             }
-            return 0;
+            return LifecycleSupervisorExitCode.Succeeded;
         }
         catch (TimeoutException)
         {
@@ -102,11 +164,35 @@ internal static class Program
             {
                 var preflight = LifecycleSupervisorPreflight.Evaluate(configuration);
                 Console.WriteLine(preflight.Message);
-                return preflight.Success ? 0 : 1;
+                return preflight.Success
+                    ? LifecycleSupervisorExitCode.Succeeded
+                    : LifecycleSupervisorExitCode.Blocked;
+            }
+
+            if (command == "open")
+            {
+                var operationRequest = LifecycleStartupOutcome.CreateRequest(
+                    configuration,
+                    requestId,
+                    browserRequested: true);
+                var receipt = LifecycleStartupOutcome.Persist(
+                    configuration,
+                    operationRequest,
+                    sessionId: requestId,
+                    startedAtUtc: startedAtUtc,
+                    state: OperationTerminalState.Blocked,
+                    prerequisitesSatisfied: true,
+                    readinessSatisfied: false,
+                    terminalMessage: "The lifecycle supervisor command pipe was unavailable for the open request.",
+                    browserRequested: true,
+                    browserOpened: false,
+                    exceptionType: nameof(TimeoutException));
+                Console.Error.WriteLine($"Verified outcome: {receipt.ReceiptPath}");
+                return LifecycleSupervisorExitCode.Blocked;
             }
 
             Console.Error.WriteLine("Meridian lifecycle supervisor is not running.");
-            return 3;
+            return LifecycleSupervisorExitCode.SupervisorUnavailable;
         }
     }
 

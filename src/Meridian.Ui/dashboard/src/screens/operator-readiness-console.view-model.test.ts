@@ -337,6 +337,7 @@ describe("operator readiness console view model", () => {
       trading,
       data,
       accounting,
+      reporting: accounting.reporting,
       operatorInbox: inbox,
       inboxLoading: false,
       inboxError: null
@@ -1155,7 +1156,7 @@ describe("operator readiness console view model", () => {
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({
       label: "Report-pack readiness",
       detail: "Reporting payload has not loaded.",
-      meta: "Wait for Accounting/Reporting bootstrap recovery.",
+      meta: "Wait for the Reporting capability and durability checks to recover.",
       level: "review"
     }));
     expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
@@ -1274,6 +1275,7 @@ describe("operator readiness console view model", () => {
       trading: readyTrading,
       data,
       accounting: cleanGovernance,
+      reporting: cleanGovernance.reporting,
       operatorInbox: null,
       inboxLoading: true,
       inboxError: null
@@ -1301,6 +1303,7 @@ describe("operator readiness console view model", () => {
       trading: readyTrading,
       data,
       accounting: cleanGovernance,
+      reporting: cleanGovernance.reporting,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
@@ -1332,6 +1335,7 @@ describe("operator readiness console view model", () => {
       trading: readyTrading,
       data,
       accounting: noReportPackGovernance,
+      reporting: noReportPackGovernance.reporting,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
@@ -1425,7 +1429,7 @@ describe("operator readiness console view model", () => {
         trading: tradingPayload,
         data,
         accounting: cleanGovernance,
-        reporting: accounting
+        reporting: accounting.reporting
       }, services),
       { initialProps: { tradingPayload: readyTrading } }
     );
@@ -1466,7 +1470,7 @@ describe("operator readiness console view model", () => {
       trading: tradingWithoutScopedReadiness,
       data,
       accounting: cleanGovernance,
-      reporting: accounting,
+      reporting: accounting.reporting,
       fundAccountId
     }, services));
 
@@ -1503,7 +1507,7 @@ describe("operator readiness console view model", () => {
         trading: tradingPayload,
         data,
         accounting: cleanGovernance,
-        reporting: accounting
+        reporting: accounting.reporting
       }, services),
       { initialProps: { tradingPayload: readyTrading } }
     );
@@ -1543,7 +1547,7 @@ describe("operator readiness console view model", () => {
       trading: readyTrading,
       data,
       accounting: cleanGovernance,
-      reporting: accounting
+      reporting: accounting.reporting
     }, services));
 
     await waitFor(() => expect(result.current.inboxErrorText).toBe("Operator inbox 503"));

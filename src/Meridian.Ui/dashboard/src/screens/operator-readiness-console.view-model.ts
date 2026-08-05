@@ -3,6 +3,10 @@ import { getOperatorInbox, getTradingReadiness, type ApiRequestOptions } from "@
 import { formatCurrency, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -15,7 +19,7 @@ import type {
   DataProviderRecord,
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
-  ReportingWorkspaceResponse,
+  AccountingReportingSummary,
   MetricSnapshot,
   OperatorInbox,
   OperatorWorkItem,
@@ -198,7 +202,7 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   trading: TradingWorkspaceResponse | null;
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
-  reporting?: ReportingWorkspaceResponse | null;
+  reporting?: ReportingWorkspacePayload | null;
   fundAccountId?: string | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
@@ -414,6 +418,7 @@ export function buildOperatorReadinessConsoleState({
   refreshInbox
 }: BuildOperatorReadinessConsoleStateOptions): ReadinessConsoleState {
   const readiness = tradingReadiness === undefined ? trading?.readiness ?? null : tradingReadiness;
+  const reportingSummary = normalizeReportingWorkspace(reporting);
   const workItems = mergeOperatorWorkItems(operatorInbox?.items ?? [], readiness?.workItems ?? []);
   const latestRuns = withRowPresentation(buildLatestRunRows(strategy?.runs ?? []), "latest-runs");
   const activeSessionFacts = withRowPresentation(buildActiveSessionFacts(readiness), "active-session");
@@ -421,7 +426,7 @@ export function buildOperatorReadinessConsoleState({
   const reconciliationRows = withRowPresentation(buildReconciliationRows(accounting), "reconciliation");
   const promotionRows = withRowPresentation(buildPromotionRows(readiness, workItems), "promotion");
   const prioritizedWorkItems = prioritizeWorkItems(workItems);
-  const reportPackFacts = withRowPresentation(buildReportPackFacts(reporting ?? accounting), "report-pack");
+  const reportPackFacts = withRowPresentation(buildReportPackFacts(reportingSummary), "report-pack");
   const checkpointGates = withRowPresentation(buildCockpitGateRows({
     readiness,
     providerTrustRows,
@@ -446,7 +451,7 @@ export function buildOperatorReadinessConsoleState({
     providerTrustRows,
     reconciliationRows,
     promotionRows,
-    reporting: reporting ?? accounting
+    reporting: reportingSummary
   }));
   const overallLevel = determineOverallLevel({
     readiness,
@@ -498,7 +503,7 @@ export function buildOperatorReadinessConsoleState({
       readiness,
       data,
       accounting,
-      reporting,
+      reporting: reportingSummary,
       operatorInbox,
       inboxLoading,
       inboxError
@@ -804,7 +809,11 @@ function buildProviderTrustRows(
         provider.signalSource,
         provider.gateImpact
       ].filter(Boolean).join(" · ") || provider.capability,
-      level: provider.status === "Healthy" ? "ready" : provider.status === "Degraded" ? "blocked" : "review"
+      level: provider.status === "Healthy"
+        ? "ready"
+        : provider.status === "Degraded" || provider.status === "Blocked"
+          ? "blocked"
+          : "review"
     });
   });
 
@@ -901,15 +910,15 @@ function buildAcceptanceGateRow(gate: TradingAcceptanceGate): ReadinessConsoleRo
   };
 }
 
-function buildReportPackFacts(reportingPayload: ReportingWorkspaceResponse | null): ReadinessConsoleRowBase[] {
-  const reporting = reportingPayload?.reporting ?? null;
+function buildReportPackFacts(reportingPayload: AccountingReportingSummary | null): ReadinessConsoleRowBase[] {
+  const reporting = reportingPayload;
   if (!reporting) {
     return [{
       id: "report-pack",
       label: "Report-pack readiness",
       value: "Unavailable",
       detail: "Reporting payload has not loaded.",
-      meta: "Wait for Accounting/Reporting bootstrap recovery.",
+      meta: "Wait for the Reporting capability and durability checks to recover.",
       level: "review"
     }];
   }
@@ -1655,11 +1664,11 @@ function buildMetrics({
   providerTrustRows: ReadinessConsoleRow[];
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
-  reporting: ReportingWorkspaceResponse | null;
+  reporting: AccountingReportingSummary | null;
 }): ReadinessConsoleMetricBase[] {
   const activeSession = readiness?.activeSession;
-  const reportDistributions = getReportPackDistributions(reporting?.reporting);
-  const pendingReportDistributions = countPendingReportPackDistributions(reporting?.reporting);
+  const reportDistributions = getReportPackDistributions(reporting);
+  const pendingReportDistributions = countPendingReportPackDistributions(reporting);
 
   return [
     {
@@ -1727,7 +1736,7 @@ function buildApiSources({
   readiness: TradingOperatorReadiness | null;
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
-  reporting?: ReportingWorkspaceResponse | null;
+  reporting?: AccountingReportingSummary | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
@@ -1772,8 +1781,8 @@ function buildApiSources({
       id: "reporting",
       label: "Reporting",
       endpoint: WORKSTATION_API_ENDPOINTS.reporting,
-      status: reporting ? `${reporting.reporting.profileCount} report profiles` : "Unavailable",
-      level: reporting ? "ready" : "review"
+      status: reporting ? `${reporting.profileCount} report profiles` : "Unavailable",
+      level: reporting?.deploymentCapability?.isReady === true ? "ready" : "review"
     }
   ];
 }

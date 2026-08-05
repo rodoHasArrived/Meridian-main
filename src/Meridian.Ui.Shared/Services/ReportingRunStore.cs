@@ -1,8 +1,10 @@
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Application.Composition;
 using Meridian.Reporting;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -60,17 +62,22 @@ public sealed class ReportingLegacyStateRequiresArchiveException : InvalidOperat
     public int RecordCount { get; }
 }
 
-public sealed class FileReportingRunStore : IReportingRunStore
+public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOnlyService
 {
     private const string SnapshotFileName = "reporting-runs.json";
     private const string SchemaVersion = "meridian.reporting.run-store.v2";
     private const string LegacySchemaVersion = "meridian.reporting.run-store.v1";
     private const string LegacyRunRemediation =
         "Read-only legacy run. Preserve for inventory, then freshly recertify from authoritative source data before current use.";
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> StoreGates =
+        new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, ReportingRunCreateLease> CreateLeases =
+        new(StringComparer.Ordinal);
 
     private readonly ReportingRunStoreOptions _options;
     private readonly ILogger<FileReportingRunStore> _logger;
-    private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly SemaphoreSlim _gate;
+    private readonly string _storeKey;
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -86,6 +93,10 @@ public sealed class FileReportingRunStore : IReportingRunStore
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         ArgumentException.ThrowIfNullOrWhiteSpace(_options.RootDirectory);
         Directory.CreateDirectory(_options.RootDirectory);
+        _storeKey = Path.GetFullPath(Path.Combine(_options.RootDirectory, SnapshotFileName));
+        _gate = StoreGates.GetOrAdd(
+            _storeKey,
+            static _ => new SemaphoreSlim(1, 1));
     }
 
     public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) =>
@@ -95,6 +106,54 @@ public sealed class FileReportingRunStore : IReportingRunStore
             .ThenBy(static run => run.Manifest.RunId, StringComparer.Ordinal)
             .Take(Math.Clamp(limit, 1, 200))
             .ToArray();
+
+    public IReadOnlyList<ReportingRunSnapshot> ListRuns(string tenantId, int limit = 25)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        var normalizedTenantId = tenantId.Trim();
+        return LoadActiveSnapshot().Runs
+            .Where(run => string.Equals(
+                run.Manifest.OperationalScope?.TenantId,
+                normalizedTenantId,
+                StringComparison.Ordinal))
+            .OrderByDescending(static run => run.UpdatedAtUtc)
+            .ThenBy(static run => run.Manifest.RunId, StringComparer.Ordinal)
+            .Take(Math.Clamp(limit, 1, 200))
+            .ToArray();
+    }
+
+    public IReadOnlyList<ReportingRunSnapshot> ListRuns(
+        string tenantId,
+        string? companyId,
+        int limit = 25) =>
+        ListRuns(tenantId, companyId, offset: 0, limit: limit);
+
+    public IReadOnlyList<ReportingRunSnapshot> ListRuns(
+        string tenantId,
+        string? companyId,
+        int offset,
+        int limit)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        var normalizedTenantId = tenantId.Trim();
+        var normalizedCompanyId = companyId?.Trim();
+        return LoadActiveSnapshot().Runs
+            .Where(run => string.Equals(
+                    run.Manifest.OperationalScope?.TenantId,
+                    normalizedTenantId,
+                    StringComparison.Ordinal)
+                && (string.IsNullOrWhiteSpace(normalizedCompanyId)
+                    || string.Equals(
+                    run.Manifest.OperationalScope?.CompanyId,
+                    normalizedCompanyId,
+                    StringComparison.Ordinal)))
+            .OrderByDescending(static run => run.UpdatedAtUtc)
+            .ThenBy(static run => run.Manifest.RunId, StringComparer.Ordinal)
+            .Skip(offset)
+            .Take(Math.Clamp(limit, 1, 200))
+            .ToArray();
+    }
 
     public ReportingOutputManifest? GetManifest(string runId)
     {
@@ -138,10 +197,219 @@ public sealed class FileReportingRunStore : IReportingRunStore
             ?.AuditTrail ?? [];
     }
 
-    public async Task SaveAsync(
+    public string? GetRevision(string runId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var matches = LoadActiveSnapshot().Runs
+            .Where(run => string.Equals(
+                run.Manifest.RunId,
+                runId.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+            .Take(2)
+            .ToArray();
+        return matches.Length == 1
+            ? ReportingRunStoreRevision.Compute(
+                matches[0].Manifest,
+                matches[0].AuditTrail)
+            : null;
+    }
+
+    public string? GetRevision(string tenantId, string runId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var retained = LoadActiveSnapshot().Runs
+            .SingleOrDefault(run =>
+                string.Equals(
+                    run.Manifest.OperationalScope?.TenantId,
+                    tenantId.Trim(),
+                    StringComparison.Ordinal)
+                && string.Equals(
+                    run.Manifest.RunId,
+                    runId.Trim(),
+                    StringComparison.OrdinalIgnoreCase));
+        return retained is null
+            ? null
+            : ReportingRunStoreRevision.Compute(
+                retained.Manifest,
+                retained.AuditTrail);
+    }
+
+    public async Task<ReportingRunCreateClaimResult> TryClaimCreateAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(leaseDuration));
+        }
+
+        var normalizedTenantId = tenantId.Trim();
+        var normalizedRunId = runId.Trim();
+        var normalizedOwner = leaseOwner.Trim();
+        var evaluatedAtUtc = DateTimeOffset.UtcNow;
+        var claimKey = BuildCreateLeaseKey(normalizedTenantId, normalizedRunId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (LoadActiveSnapshot().Runs.Any(snapshot =>
+                    string.Equals(
+                        snapshot.Manifest.OperationalScope?.TenantId,
+                        normalizedTenantId,
+                        StringComparison.Ordinal)
+                    && string.Equals(
+                        snapshot.Manifest.RunId,
+                        normalizedRunId,
+                        StringComparison.OrdinalIgnoreCase)))
+            {
+                CreateLeases.TryRemove(claimKey, out _);
+                return new ReportingRunCreateClaimResult(
+                    ReportingRunCreateClaimStatus.AlreadyExists);
+            }
+
+            if (CreateLeases.TryGetValue(claimKey, out var retained)
+                && retained.ExpiresAtUtc > evaluatedAtUtc
+                && !string.Equals(retained.Owner, normalizedOwner, StringComparison.Ordinal))
+            {
+                return new ReportingRunCreateClaimResult(
+                    ReportingRunCreateClaimStatus.LeasedByAnotherOwner,
+                    retained.ExpiresAtUtc);
+            }
+
+            var expiresAtUtc = evaluatedAtUtc.Add(leaseDuration);
+            CreateLeases[claimKey] = new ReportingRunCreateLease(
+                normalizedOwner,
+                expiresAtUtc,
+                retained is null ? 1 : checked(retained.Version + 1));
+            return new ReportingRunCreateClaimResult(
+                ReportingRunCreateClaimStatus.Acquired,
+                expiresAtUtc,
+                CreateLeases[claimKey].Version);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<bool> RenewCreateClaimAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        long leaseVersion,
+        TimeSpan leaseDuration,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(leaseDuration));
+        }
+
+        var claimKey = BuildCreateLeaseKey(tenantId.Trim(), runId.Trim());
+        var normalizedOwner = leaseOwner.Trim();
+        var evaluatedAtUtc = DateTimeOffset.UtcNow;
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!CreateLeases.TryGetValue(claimKey, out var retained)
+                || !string.Equals(retained.Owner, normalizedOwner, StringComparison.Ordinal)
+                || retained.Version != leaseVersion
+                || retained.ExpiresAtUtc <= evaluatedAtUtc)
+            {
+                return false;
+            }
+
+            CreateLeases[claimKey] = retained with
+            {
+                ExpiresAtUtc = evaluatedAtUtc.Add(leaseDuration)
+            };
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task ReleaseCreateClaimAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        long leaseVersion,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+        var claimKey = BuildCreateLeaseKey(tenantId.Trim(), runId.Trim());
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (CreateLeases.TryGetValue(claimKey, out var retained)
+                && string.Equals(retained.Owner, leaseOwner.Trim(), StringComparison.Ordinal)
+                && retained.Version == leaseVersion)
+            {
+                CreateLeases.TryRemove(claimKey, out _);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public Task SaveAsync(
         ReportingOutputManifest manifest,
         IReadOnlyList<ReportingRunAuditEntry> auditTrail,
-        CancellationToken ct = default)
+        CancellationToken ct = default) =>
+        SaveAsync(manifest, auditTrail, expectedRevision: null, ct: ct);
+
+    public Task SaveAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string? expectedRevision,
+        CancellationToken ct = default) =>
+        SaveCoreAsync(
+            manifest,
+            auditTrail,
+            expectedRevision,
+            leaseOwner: null,
+            leaseVersion: 0,
+            ct);
+
+    public Task SaveClaimedCreateAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string leaseOwner,
+        long leaseVersion,
+        CancellationToken ct = default) =>
+        SaveCoreAsync(
+            manifest,
+            auditTrail,
+            expectedRevision: null,
+            leaseOwner,
+            leaseVersion,
+            ct);
+
+    private async Task SaveCoreAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string? expectedRevision,
+        string? leaseOwner,
+        long leaseVersion,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(auditTrail);
@@ -155,6 +423,10 @@ public sealed class FileReportingRunStore : IReportingRunStore
         // shape for already-retained runs are unchanged.
         manifest = NormalizeManifestArrays(manifest);
         ValidateManifest(manifest);
+        var retainedAudit = auditTrail.ToArray();
+        var candidateRevision = ReportingRunStoreRevision.Compute(
+            manifest,
+            retainedAudit);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -162,12 +434,95 @@ public sealed class FileReportingRunStore : IReportingRunStore
             var tenantId = manifest.OperationalScope?.TenantId;
             var retained = new ReportingRunSnapshot(
                 manifest,
-                auditTrail.ToArray(),
+                retainedAudit,
                 DateTimeOffset.UtcNow,
                 ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
                 ComputeManifestHash(manifest));
             var state = LoadStoreState();
             EnsureLegacyStateArchived(state);
+            var existing = state.Snapshot.Runs.SingleOrDefault(
+                run => SameIdentity(run.Manifest, tenantId, manifest.RunId));
+            var createLeaseKey = tenantId is null
+                ? null
+                : BuildCreateLeaseKey(tenantId, manifest.RunId);
+            if (leaseOwner is not null)
+            {
+                if (tenantId is null
+                    || leaseVersion <= 0
+                    || createLeaseKey is null
+                    || !CreateLeases.TryGetValue(createLeaseKey, out var createLease)
+                    || !string.Equals(
+                        createLease.Owner,
+                        leaseOwner.Trim(),
+                        StringComparison.Ordinal)
+                    || createLease.Version != leaseVersion
+                    || createLease.ExpiresAtUtc <= DateTimeOffset.UtcNow)
+                {
+                    throw new ReportingRunCreateClaimException(
+                        tenantId ?? string.Empty,
+                        manifest.RunId,
+                        "The reporting run create lease is missing, expired, or was superseded by another owner.");
+                }
+            }
+            else if (existing is null
+                     && createLeaseKey is not null
+                     && CreateLeases.TryGetValue(createLeaseKey, out var activeLease)
+                     && activeLease.ExpiresAtUtc > DateTimeOffset.UtcNow)
+            {
+                throw new ReportingRunCreateClaimException(
+                    tenantId ?? string.Empty,
+                    manifest.RunId,
+                    "The reporting run identity has an active durable create owner.");
+            }
+
+            if (existing is null)
+            {
+                if (expectedRevision is not null)
+                {
+                    throw ReportingRunConcurrencyException.ForMissing(
+                        tenantId,
+                        manifest.RunId,
+                        expectedRevision);
+                }
+            }
+            else
+            {
+                var currentRevision = ReportingRunStoreRevision.Compute(
+                    existing.Manifest,
+                    existing.AuditTrail);
+                if (expectedRevision is null)
+                {
+                    if (ReportingRunStoreRevision.Matches(
+                            currentRevision,
+                            candidateRevision))
+                    {
+                        return;
+                    }
+
+                    throw ReportingRunConcurrencyException.ForConflict(
+                        tenantId,
+                        manifest.RunId,
+                        expectedRevision: null,
+                        currentRevision);
+                }
+                if (!ReportingRunStoreRevision.Matches(
+                        currentRevision,
+                        expectedRevision))
+                {
+                    throw ReportingRunConcurrencyException.ForConflict(
+                        tenantId,
+                        manifest.RunId,
+                        expectedRevision,
+                        currentRevision);
+                }
+                if (ReportingRunStoreRevision.Matches(
+                        currentRevision,
+                        candidateRevision))
+                {
+                    return;
+                }
+            }
+
             var current = state.Snapshot.Runs
                 .Where(run => !SameIdentity(run.Manifest, tenantId, manifest.RunId))
                 .Append(retained)
@@ -188,6 +543,10 @@ public sealed class FileReportingRunStore : IReportingRunStore
             await AtomicFileWriter
                 .WriteAsync(SnapshotPath, JsonSerializer.Serialize(snapshot, _jsonOptions), ct)
                 .ConfigureAwait(false);
+            if (leaseOwner is not null && createLeaseKey is not null)
+            {
+                CreateLeases.TryRemove(createLeaseKey, out _);
+            }
         }
         finally
         {
@@ -283,6 +642,14 @@ public sealed class FileReportingRunStore : IReportingRunStore
         EnsureLegacyStateArchived(state);
         return state.Snapshot;
     }
+
+    private string BuildCreateLeaseKey(string tenantId, string runId) =>
+        $"{_storeKey.Length}:{_storeKey}:{tenantId.Length}:{tenantId}:{runId.ToLowerInvariant()}";
+
+    private sealed record ReportingRunCreateLease(
+        string Owner,
+        DateTimeOffset ExpiresAtUtc,
+        long Version);
 
     private ReportingRunStoreState LoadStoreState()
     {
@@ -534,82 +901,8 @@ public sealed class FileReportingRunStore : IReportingRunStore
         ValidateManifest(run.Manifest);
     }
 
-    private static void ValidateManifest(ReportingOutputManifest manifest)
-    {
-        if (string.IsNullOrWhiteSpace(manifest.RunId)
-            || string.IsNullOrWhiteSpace(manifest.TemplateId)
-            || manifest.CertifiedDatasetRows.IsDefault)
-        {
-            throw new InvalidDataException("A retained reporting manifest is incomplete.");
-        }
-
-        var hasCertifiedState = manifest.OperationalScope is not null
-            || manifest.ImmutableAccessScope is not null
-            || manifest.CertifiedSnapshot is not null
-            || manifest.AuthoritativeSource is not null;
-        if (!hasCertifiedState)
-        {
-            return;
-        }
-
-        if (manifest.OperationalScope is not { } scope
-            || manifest.ImmutableAccessScope is not { } access
-            || manifest.CertifiedSnapshot is not { } snapshot
-            || manifest.AuthoritativeSource is not { } source
-            || manifest.ResolvedTemplate is null
-            || manifest.ResolvedParameters is null
-            || manifest.Readiness is null
-            || !IsSha256(manifest.Readiness.EvidenceHash)
-            || manifest.Readiness.EvaluatedAtUtc == default
-            || manifest.Readiness.EvaluatedAtUtc.Offset != TimeSpan.Zero
-            || manifest.CertifiedDatasetRows.Length != source.LedgerLineCount
-            || !string.Equals(source.TenantId, scope.TenantId, StringComparison.Ordinal)
-            || !string.Equals(source.OrganizationId, scope.OrganizationId, StringComparison.Ordinal)
-            || !string.Equals(source.CompanyId, scope.CompanyId, StringComparison.Ordinal)
-            || !string.Equals(source.FundId, scope.FundId, StringComparison.Ordinal)
-            || !string.Equals(source.LedgerBookId, scope.BookId, StringComparison.Ordinal)
-            || !string.Equals(source.AccountingPeriodId, scope.PeriodId, StringComparison.Ordinal)
-            || !string.Equals(snapshot.SourceCheckpointId, source.CheckpointId, StringComparison.Ordinal)
-            || !string.Equals(snapshot.SourceCheckpointHash, source.CheckpointHash, StringComparison.OrdinalIgnoreCase)
-            || !IsSha256(source.CheckpointHash)
-            || source.EvidenceIds.IsDefaultOrEmpty
-            || !source.EvidenceIds.Contains(
-                $"reporting-source-checkpoint:{source.CheckpointId}:{source.CheckpointHash}",
-                StringComparer.Ordinal))
-        {
-            throw new InvalidDataException(
-                "A retained certified reporting manifest has incomplete or mismatched source bindings.");
-        }
-
-        ReportingGovernanceCanonicalValidation.ValidateScope(scope);
-        ReportingGovernanceCanonicalValidation.ValidateAccess(access);
-        ReportingGovernanceCanonicalValidation.ValidateSnapshot(snapshot, scope);
-        var expectedSnapshotHash = ComputeSnapshotHash(manifest);
-        if (!FixedHashEquals(snapshot.SnapshotHash, expectedSnapshotHash))
-        {
-            throw new InvalidDataException(
-                "The retained certified snapshot hash does not match its template, scope, access, parameters, source, reconciliation, and readiness binding.");
-        }
-    }
-
-    private static string ComputeSnapshotHash(ReportingOutputManifest manifest) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-        {
-            template = new
-            {
-                manifest.ResolvedTemplate!.Name,
-                manifest.ResolvedTemplate.Version
-            },
-            scope = manifest.OperationalScope,
-            access = manifest.ImmutableAccessScope,
-            parametersHash = manifest.CertifiedSnapshot!.ParametersHash,
-            sourceCheckpointId = manifest.AuthoritativeSource!.CheckpointId,
-            sourceCheckpointHash = manifest.AuthoritativeSource.CheckpointHash,
-            reconciliationId = manifest.CertifiedSnapshot.ReconciliationCheckpointId,
-            reconciliationHash = manifest.CertifiedSnapshot.ReconciliationCheckpointHash,
-            readinessHash = manifest.Readiness!.EvidenceHash,
-            certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows)
-        })));
+    private static void ValidateManifest(ReportingOutputManifest manifest) =>
+        ReportingCertifiedManifestValidation.Validate(manifest);
 
     // Normalizes before hashing as well as at the SaveAsync entry point. Save-side manifests are
     // already normalized, so this is a no-op there; on the load/verification path a manifest
@@ -853,27 +1146,8 @@ public sealed class FileReportingRunStore : IReportingRunStore
     }
 
     internal static string ComputeCertifiedRowsHash(
-        ImmutableArray<IReadOnlyDictionary<string, string>> rows)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream))
-        {
-            writer.WriteStartArray();
-            foreach (var row in rows.IsDefault
-                         ? ImmutableArray<IReadOnlyDictionary<string, string>>.Empty
-                         : rows)
-            {
-                writer.WriteStartObject();
-                foreach (var pair in row.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-                {
-                    writer.WriteString(pair.Key, pair.Value);
-                }
-                writer.WriteEndObject();
-            }
-            writer.WriteEndArray();
-        }
-        return ComputeSha256(stream.ToArray());
-    }
+        ImmutableArray<IReadOnlyDictionary<string, string>> rows) =>
+        ReportingCertifiedManifestValidation.ComputeCertifiedRowsHash(rows);
 
     private static void EnsureUniqueIdentities(IReadOnlyList<ReportingRunSnapshot> runs)
     {

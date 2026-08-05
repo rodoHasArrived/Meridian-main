@@ -176,7 +176,15 @@ public sealed record ReportingCertifiedSnapshotScope(
     string? SourceCheckpointHash = null,
     string? ReconciliationCheckpointHash = null,
     string? ParametersCanonicalJson = null,
-    string? ParametersHash = null);
+    string? ParametersHash = null)
+{
+    /// <summary>
+    /// True when final client artifacts must be rendered from the checkpoint-bound canonical
+    /// ledger presentation. Init-only preserves the established constructor and deconstruction ABI.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool RequiresCertifiedLedgerPresentation { get; init; }
+}
 
 /// <summary>Server-resolved authority snapshot used for one governed command.</summary>
 public sealed record ReportingAuthorityScope(
@@ -476,6 +484,11 @@ public interface IReportingGovernanceTransaction
 public class ReportingGovernanceException : InvalidOperationException
 {
     public ReportingGovernanceException(string message) : base(message)
+    {
+    }
+
+    public ReportingGovernanceException(string message, Exception innerException)
+        : base(message, innerException)
     {
     }
 }

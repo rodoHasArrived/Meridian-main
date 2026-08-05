@@ -56,6 +56,15 @@ erDiagram
         boolean is_primary
         timestamp_with_time_zone updated_at
     }
+    fund_structure_fund_structure_legacy_import_receipt {
+        text source_hash PK
+        timestamp_with_time_zone imported_at
+        integer entity_count
+    }
+    fund_structure_fund_structure_linked_account {
+        uuid account_id PK
+        timestamp_with_time_zone updated_at
+    }
     fund_structure_fund_structure_schema_migrations {
         text filename PK
         text checksum

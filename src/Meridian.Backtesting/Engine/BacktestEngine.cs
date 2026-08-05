@@ -91,8 +91,10 @@ public sealed class BacktestEngine(
             universe.Count, universe.Count == 0 ? "(asset-event-only run)" : string.Join(", ", universe.Take(10)) + (universe.Count > 10 ? "…" : string.Empty));
 
         // 1b. Pre-flight Security Master validation — resolve all universe symbols before the
-        //     event loop begins so bad symbol lists surface immediately.
-        await PreResolveUniverseAsync(universe, request, ct).ConfigureAwait(false);
+        //     event loop begins so bad symbol lists surface immediately. Missing and inactive
+        //     symbols feed the bias-disclosure report attached to the result.
+        var (missingSecurityMasterSymbols, inactiveSecurityMasterSymbols) =
+            await PreResolveUniverseAsync(universe, request, ct).ConfigureAwait(false);
 
         // 2. Resolve per-symbol tick sizes from Security Master (best-effort; missing symbols are silently skipped).
         var tickSizes = await ResolveTickSizesAsync(universe, request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct)
@@ -109,12 +111,14 @@ public sealed class BacktestEngine(
             commissionModel,
             tickSizes,
             request.OrderBookQueueAheadFraction);
-        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes: tickSizes, maxParticipationRate: request.MaxParticipationRate);
+        var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes: tickSizes, maxParticipationRate: request.MaxParticipationRate, conservatism: request.FillConservatism);
         var marketImpactFillModel = new MarketImpactFillModel(
             commissionModel,
             request.MarketImpactCoefficient,
             request.SlippageBasisPoints,
-            maxParticipationRate: request.MaxParticipationRate);
+            maxParticipationRate: request.MaxParticipationRate,
+            conservatism: request.FillConservatism);
+        var delistingMonitor = new DelistingMonitor(request.DelistingPolicy, request.DelistingHaircutPercent, request.DelistingGraceDays);
 
         var pendingOrders = new List<Order>();
         var allSnapshots = new List<PortfolioSnapshot>();
@@ -139,6 +143,7 @@ public sealed class BacktestEngine(
         long eventsProcessed = 0;
         var totalDays = (request.To.ToDateTime(TimeOnly.MinValue) - request.From.ToDateTime(TimeOnly.MinValue)).Days + 1;
         var rollingState = new RollingMetricsState(portfolio.ComputeCurrentEquity());
+        var lastEventTimestamps = new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
 
         await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(streams, ct))
         {
@@ -149,13 +154,15 @@ public sealed class BacktestEngine(
             // Day boundary — close out the previous day and apply any gap-day asset events.
             if (evtDate > currentDay)
             {
-                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, rollingState, stageTimer, ct);
+                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, rollingState, stageTimer, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
                 currentDay = evtDate;
             }
 
             ctx.CurrentTime = evt.Timestamp;
             ctx.CurrentDate = evtDate;
             eventsProcessed++;
+            delistingMonitor.RecordEvent(evt.EffectiveSymbol, evtDate);
+            lastEventTimestamps[evt.EffectiveSymbol] = evt.Timestamp;
 
             // Update last known price from event
             UpdateLastPrice(portfolio, evt);
@@ -168,15 +175,15 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
-        ProcessDayEnd(currentDay, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
+        ProcessDayEnd(currentDay, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
         for (var date = currentDay.AddDays(1); date <= request.To; date = date.AddDays(1))
         {
             ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
-            ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, ct);
+            ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
         }
 
         strategy.OnFinished(ctx);
@@ -209,7 +216,13 @@ public sealed class BacktestEngine(
 
         var tradeTickets = BuildTradeTickets(allCashFlows);
         var tcaReport = PostSimulationTcaReporter.Generate(request, allFills);
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport);
+        var biasDisclosure = BuildBiasDisclosure(
+            request,
+            corporateActionsApplied: request.AdjustForCorporateActions && corporateActionAdjustment is not null,
+            missingSecurityMasterSymbols,
+            inactiveSecurityMasterSymbols,
+            delistingMonitor);
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
@@ -336,16 +349,21 @@ public sealed class BacktestEngine(
         long eventsProcessed,
         RollingMetricsState rollingState,
         StageTimer stageTimer,
+        DelistingMonitor delistingMonitor,
+        List<FillEvent> allFills,
+        ILogger logger,
+        FillTiming fillTiming,
+        IReadOnlyDictionary<string, DateTimeOffset> lastEventTimestamps,
         CancellationToken ct)
     {
-        ProcessDayEnd(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
+        ProcessDayEnd(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, delistingMonitor, allFills, logger, fillTiming, lastEventTimestamps, ct);
 
         for (var date = fromDay.AddDays(1); date <= toDay; date = date.AddDays(1))
         {
             ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
 
             if (date < toDay)
-                ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
+                ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, delistingMonitor, allFills, logger, fillTiming, lastEventTimestamps, ct);
 
             var equity = portfolio.ComputeCurrentEquity();
             var daysElapsed = (date.ToDateTime(TimeOnly.MinValue) - requestFrom.ToDateTime(TimeOnly.MinValue)).Days;
@@ -437,13 +455,20 @@ public sealed class BacktestEngine(
         List<FillEvent> allFills,
         ILogger<BacktestEngine> logger,
         RollingMetricsState rollingState,
-        ExecutionModel requestDefault = ExecutionModel.Auto)
+        ExecutionModel requestDefault = ExecutionModel.Auto,
+        FillTiming fillTiming = FillTiming.NextBar)
     {
         var filled = new List<Guid>();
         for (var i = pendingOrders.Count - 1; i >= 0; i--)
         {
             var order = pendingOrders[i];
             if (!order.Symbol.Equals(evt.EffectiveSymbol, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            // Next-bar semantics: an order may only fill against events strictly later than the
+            // event that was being dispatched when it was placed. This blocks the same-bar
+            // look-ahead of signalling on a bar's close and filling inside that very bar.
+            if (fillTiming == FillTiming.NextBar && evt.Timestamp <= order.SubmittedAt)
                 continue;
 
             var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel, requestDefault);
@@ -517,6 +542,11 @@ public sealed class BacktestEngine(
         IBacktestStrategy strategy,
         List<PortfolioSnapshot> snapshots,
         List<CashFlowEntry> allCashFlows,
+        DelistingMonitor delistingMonitor,
+        List<FillEvent> allFills,
+        ILogger logger,
+        FillTiming fillTiming,
+        IReadOnlyDictionary<string, DateTimeOffset> lastEventTimestamps,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
@@ -524,10 +554,28 @@ public sealed class BacktestEngine(
         ctx.CurrentDate = date;
         strategy.OnDayEnd(date, ctx);
 
+        // Delisting sweep runs before the snapshot so forced liquidations are reflected in the
+        // day's equity instead of carrying a stale mark forward.
+        delistingMonitor.ProcessDayEnd(date, portfolio, pendingOrders, allFills, logger);
+
         for (var i = pendingOrders.Count - 1; i >= 0; i--)
         {
             if (pendingOrders[i].TimeInForce != TimeInForce.Day)
                 continue;
+
+            // Under next-bar timing a Day order signalled on day N is intended for the next
+            // session, so it only expires at the end of the first day on which its symbol traded
+            // after submission — otherwise a Day order on daily bars could never fill at all.
+            if (fillTiming == FillTiming.NextBar)
+            {
+                var hadEligibleEventToday =
+                    lastEventTimestamps.TryGetValue(pendingOrders[i].Symbol, out var lastEventAt) &&
+                    DateOnly.FromDateTime(lastEventAt.UtcDateTime) == date &&
+                    lastEventAt > pendingOrders[i].SubmittedAt;
+
+                if (!hadEligibleEventToday)
+                    continue;
+            }
 
             pendingOrders.RemoveAt(i);
         }
@@ -538,10 +586,127 @@ public sealed class BacktestEngine(
         allCashFlows.AddRange(snapshot.DayCashFlows);
     }
 
-    private static BacktestResult CreateEmptyResult(BacktestRequest request, IReadOnlySet<string> universe, TimeSpan elapsed)
+    private BacktestResult CreateEmptyResult(BacktestRequest request, IReadOnlySet<string> universe, TimeSpan elapsed)
     {
         var metrics = BacktestMetricsEngine.Compute([], [], [], request);
-        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, []);
+        var biasDisclosure = BuildBiasDisclosure(
+            request,
+            corporateActionsApplied: request.AdjustForCorporateActions && corporateActionAdjustment is not null,
+            missingSecurityMasterSymbols: [],
+            inactiveSecurityMasterSymbols: [],
+            delistingMonitor: null);
+        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, [], BiasDisclosure: biasDisclosure);
+    }
+
+    /// <summary>
+    /// Builds the honest-assumptions report attached to every result: which execution semantics the
+    /// run used, where the universe came from, and every detected data-quality issue that could
+    /// flatter the numbers. Items are ordered most severe first.
+    /// </summary>
+    private static BiasDisclosureReport BuildBiasDisclosure(
+        BacktestRequest request,
+        bool corporateActionsApplied,
+        IReadOnlyList<string> missingSecurityMasterSymbols,
+        IReadOnlyList<string> inactiveSecurityMasterSymbols,
+        DelistingMonitor? delistingMonitor)
+    {
+        var items = new List<BiasDisclosureItem>();
+        var universeIsExplicit = request.Symbols is { Count: > 0 };
+        var delistingLiquidations = delistingMonitor?.Liquidations ?? [];
+
+        items.Add(request.FillTiming == FillTiming.SameBar
+            ? new BiasDisclosureItem(
+                "fill-timing", BiasSeverity.Warning, "Same-bar execution",
+                "Orders fill against the same bar that generated the signal. A strategy reacting to a bar's close can trade inside that bar, which is impossible live — results may embed look-ahead bias.")
+            : new BiasDisclosureItem(
+                "fill-timing", BiasSeverity.Info, "Next-bar execution",
+                "Orders placed in reaction to an event are eligible to fill no earlier than the symbol's next event, eliminating same-bar look-ahead."));
+
+        items.Add(request.FillConservatism == FillConservatism.Optimistic
+            ? new BiasDisclosureItem(
+                "fill-conservatism", BiasSeverity.Warning, "Optimistic limit/stop fills",
+                "Limit orders fill on a bare touch of the limit price and triggered stops execute at the bar midpoint, which can beat the stop. Fill rates and prices are flattered relative to live trading.")
+            : new BiasDisclosureItem(
+                "fill-conservatism", BiasSeverity.Info, "Conservative limit/stop fills",
+                "Limit orders require the bar to trade through the limit (a bare touch does not fill) and stop fills are anchored to the worse of the stop and the open, so simulated executions cannot beat prices achievable live."));
+
+        items.Add(universeIsExplicit
+            ? new BiasDisclosureItem(
+                "universe", BiasSeverity.Caution, "Universe fixed by the caller",
+                "The symbol list was supplied explicitly. If it was chosen with knowledge of later performance (e.g. today's index members or known winners), the run embeds selection/survivorship bias.")
+            : new BiasDisclosureItem(
+                "universe", BiasSeverity.Warning, "Universe discovered from local data",
+                "The tradeable universe is whatever has data on disk for the period. Unless the dataset includes delisted and acquired names, losers are silently excluded and the run has survivorship bias."));
+
+        if (!request.AdjustForCorporateActions)
+        {
+            items.Add(new BiasDisclosureItem(
+                "corporate-actions", BiasSeverity.Warning, "Corporate-action adjustment disabled",
+                "Bar prices are not adjusted for splits or dividends; price jumps around corporate actions will distort signals and returns."));
+        }
+        else if (!corporateActionsApplied)
+        {
+            items.Add(new BiasDisclosureItem(
+                "corporate-actions", BiasSeverity.Warning, "Corporate-action adjustment unavailable",
+                "Adjustment was requested but no corporate-action adjustment service is configured, so prices replayed unadjusted."));
+        }
+        else
+        {
+            items.Add(new BiasDisclosureItem(
+                "corporate-actions", BiasSeverity.Info, "Corporate-action adjusted prices",
+                "Bar prices were split/dividend adjusted during replay using Security Master data."));
+        }
+
+        if (missingSecurityMasterSymbols.Count > 0)
+        {
+            items.Add(new BiasDisclosureItem(
+                "security-master-missing", BiasSeverity.Caution, $"{missingSecurityMasterSymbols.Count} symbol(s) missing from Security Master",
+                $"No Security Master record for: {string.Join(", ", missingSecurityMasterSymbols.Take(10))}{(missingSecurityMasterSymbols.Count > 10 ? ", …" : string.Empty)}. Corporate-action adjustment and tick-size resolution were unavailable for these symbols."));
+        }
+
+        if (inactiveSecurityMasterSymbols.Count > 0)
+        {
+            items.Add(new BiasDisclosureItem(
+                "security-master-inactive", BiasSeverity.Caution, $"{inactiveSecurityMasterSymbols.Count} inactive symbol(s) in universe",
+                $"Marked Inactive in the Security Master (delisted or renamed): {string.Join(", ", inactiveSecurityMasterSymbols.Take(10))}{(inactiveSecurityMasterSymbols.Count > 10 ? ", …" : string.Empty)}."));
+        }
+
+        if (request.DelistingPolicy == DelistingPolicy.Hold)
+        {
+            items.Add(new BiasDisclosureItem(
+                "delisting-policy", BiasSeverity.Warning, "Delisted positions held at stale marks",
+                "Positions in symbols whose data ends mid-run stay open and marked at the last observed price, overstating equity for delisted names."));
+        }
+
+        if (delistingLiquidations.Count > 0)
+        {
+            var symbols = delistingLiquidations.Select(static l => l.Symbol).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            items.Add(new BiasDisclosureItem(
+                "delisting-liquidations", BiasSeverity.Caution, $"{symbols.Count} position(s) force-liquidated on data end",
+                $"Data ended before the backtest range did for: {string.Join(", ", symbols.Take(10))}{(symbols.Count > 10 ? ", …" : string.Empty)}. Positions were closed at the last observed price (haircut {request.DelistingHaircutPercent:P0}); actual delisting proceeds may differ."));
+        }
+
+        if (delistingMonitor is { FailedLiquidationSymbols.Count: > 0 })
+        {
+            items.Add(new BiasDisclosureItem(
+                "delisting-liquidation-failed", BiasSeverity.Warning, "Delisting liquidation rejected by account rules",
+                $"Forced liquidation failed for: {string.Join(", ", delistingMonitor.FailedLiquidationSymbols.Distinct(StringComparer.OrdinalIgnoreCase))}. These positions remain open at stale marks."));
+        }
+
+        items.Add(new BiasDisclosureItem(
+            "in-sample", BiasSeverity.Caution, "Single-period result — not validated out-of-sample",
+            "This is one simulation over the full requested period. If parameters were tuned on the same period, the result is in-sample; use the walk-forward harness for out-of-sample evidence."));
+
+        return new BiasDisclosureReport(
+            request.FillTiming,
+            request.FillConservatism,
+            request.DelistingPolicy,
+            universeIsExplicit ? BiasDisclosureReport.UniverseSourceExplicit : BiasDisclosureReport.UniverseSourceDiscovered,
+            corporateActionsApplied,
+            missingSecurityMasterSymbols,
+            inactiveSecurityMasterSymbols,
+            delistingLiquidations,
+            items.OrderByDescending(static item => item.Severity).ToList());
     }
 
     private static IFillModel SelectFillModel(
@@ -685,16 +850,18 @@ public sealed class BacktestEngine(
     /// <see cref="BacktestRequest.FailOnUnknownSymbols"/> is <see langword="true"/>, throws
     /// so the caller gets a clear error before wasting time on a long replay.
     /// When <see langword="false"/> (default), logs a warning and continues.
+    /// Returns the lists of missing and Inactive symbols for the bias-disclosure report.
     /// </summary>
-    private async Task PreResolveUniverseAsync(
+    private async Task<(IReadOnlyList<string> Missing, IReadOnlyList<string> Inactive)> PreResolveUniverseAsync(
         IReadOnlySet<string> universe,
         BacktestRequest request,
         CancellationToken ct)
     {
         if (securityMasterQueryService is null || universe.Count == 0)
-            return;
+            return ([], []);
 
         var missing = new List<string>();
+        var inactive = new List<string>();
 
         foreach (var symbol in universe)
         {
@@ -714,6 +881,7 @@ public sealed class BacktestEngine(
                 }
                 else if (detail.Status == SecurityStatusDto.Inactive)
                 {
+                    inactive.Add(symbol);
                     logger.LogWarning(
                         "Backtest symbol {Symbol} (SecurityId={SecurityId}) is marked Inactive in the Security Master. " +
                         "It may represent a delisted or renamed instrument.",
@@ -734,6 +902,8 @@ public sealed class BacktestEngine(
                 $"and FailOnUnknownSymbols=true. Missing: {string.Join(", ", missing)}. " +
                 "Import the securities via POST /api/security-master/import or set FailOnUnknownSymbols=false to warn and continue.");
         }
+
+        return (missing, inactive);
     }
 
     /// <summary>

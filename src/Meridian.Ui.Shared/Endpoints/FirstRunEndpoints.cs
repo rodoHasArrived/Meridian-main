@@ -1,7 +1,9 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -17,7 +19,7 @@ public static class FirstRunEndpoints
             try
             { return Results.Ok(await service.CompleteAsync(CurrentUser(context), request, ct).ConfigureAwait(false)); }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
         group.MapPost("/outcomes/complete", async (HttpContext context, CompleteActivationOutcomeRequestDto request, FirstRunExperienceService service, CancellationToken ct) =>
         {
             try
@@ -26,7 +28,7 @@ public static class FirstRunEndpoints
         });
         app.MapPost(
                 "/api/workstation/desktop/launch",
-                (HttpContext context, DesktopLaunchRequest request, DesktopWorkstationLaunchService service) =>
+                (HttpContext context, DesktopLaunchRequest request, [FromServices] DesktopWorkstationLaunchService service) =>
                 {
                     var remote = context.Connection.RemoteIpAddress;
                     if (remote is not null && !System.Net.IPAddress.IsLoopback(remote))
@@ -49,7 +51,7 @@ public static class FirstRunEndpoints
 
         app.MapGet(
                 "/api/auth/desktop-launch/{ticket}",
-                (HttpContext context, string ticket, DesktopLaunchTicketService service) =>
+                (HttpContext context, string ticket, [FromServices] DesktopLaunchTicketService service) =>
                 {
                     var redemption = service.Redeem(context.Connection.RemoteIpAddress, ticket);
                     return redemption is null ? Results.NotFound() : Results.Ok(redemption);

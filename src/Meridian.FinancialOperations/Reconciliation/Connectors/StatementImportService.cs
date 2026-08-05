@@ -3,10 +3,22 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.Core.IO;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
+
+public static class StatementConnectorLimits
+{
+    /// <summary>
+    /// Maximum accepted statement file size (20 MiB). IB Flex XML exports routinely exceed the general
+    /// 5 MB data-upload cap, so statement imports get their own, larger bound. Shared by the workstation
+    /// upload endpoint and the CLI import/validate commands so neither path buffers an unbounded
+    /// caller-supplied file into memory.
+    /// </summary>
+    public const long MaxFileBytes = 20L * 1024 * 1024;
+}
 
 public sealed record StatementImportCommitRequest(
     StatementSourceDocument Document,
@@ -18,7 +30,42 @@ public sealed record StatementImportCommitRequest(
     DateOnly PeriodStart,
     DateOnly PeriodEnd,
     string? ToleranceProfileId,
-    string ImportedBy);
+    string ImportedBy)
+{
+    /// <summary>
+    /// Exact server-verified accounting authority for statement-to-close processing. It remains
+    /// optional for legacy reconciliation-report callers that do not enter the governed close lane.
+    /// </summary>
+    public StatementAccountingScope? AccountingScope { get; init; }
+}
+
+/// <summary>
+/// The outcome of validating a statement document through the connector pipeline without
+/// committing it: whether the document parsed cleanly into canonical records, how many records it
+/// produced, and any blocking error messages. Mirrors the connector's parse result so an operator
+/// can validate a bank file (camt.053, BAI2, ...) before importing it, not only CSV/IB Flex.
+/// </summary>
+public sealed record StatementImportValidationResult(
+    bool IsValid,
+    int RecordCount,
+    IReadOnlyList<string> Errors);
+
+public interface IStatementImportCommitService
+{
+    Task<StatementImportCommitResultDto> CommitAsync(
+        StatementImportCommitRequest request,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Validates a statement document through the connector pipeline (resolve connector, parse, no
+    /// commit), so the newly supported bank formats are validatable from the CLI just as they are
+    /// importable. Returns the record count and any blocking parse errors.
+    /// </summary>
+    Task<StatementImportValidationResult> ValidateAsync(
+        StatementSourceDocument document,
+        string? connectorId,
+        CancellationToken ct = default);
+}
 
 /// <summary>
 /// Orchestrates the statement connector pipeline: preview (per-column mapping confidence,
@@ -30,7 +77,7 @@ public sealed class StatementImportService(
     StatementConnectorRegistry connectors,
     StatementMappingProfileCatalog catalog,
     IStatementRunWorkflowService workflow,
-    string dataRoot)
+    string dataRoot) : IStatementImportCommitService
 {
     private const int SamplesPerKind = 5;
     private const int MaxProfileSuggestions = 3;
@@ -44,7 +91,7 @@ public sealed class StatementImportService(
         "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
     ];
 
-    private readonly string _retainedRoot = Path.Combine(dataRoot, "reconciliation", "statement-connector-imports");
+    private readonly RootedPathGuard _retainedPathGuard = new(dataRoot);
 
     public async Task<StatementImportPreviewDto> PreviewAsync(
         StatementSourceDocument document,
@@ -88,15 +135,17 @@ public sealed class StatementImportService(
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var capturedSourceBytes = request.Document.Content.ToArray();
+        var capturedDocument = request.Document with { Content = capturedSourceBytes };
         var sourceKind = NormalizeSourceKind(request.SourceKind);
 
-        var (connector, resolutionIssue) = ResolveConnector(request.Document, request.ConnectorId);
+        var (connector, resolutionIssue) = ResolveConnector(capturedDocument, request.ConnectorId);
         if (connector is null)
         {
             throw new InvalidDataException(resolutionIssue!.Message);
         }
 
-        var parse = await connector.ParseAsync(request.Document, ct).ConfigureAwait(false);
+        var parse = await connector.ParseAsync(capturedDocument, ct).ConfigureAwait(false);
         if (parse.HasErrors)
         {
             var errors = parse.Issues
@@ -110,16 +159,56 @@ public sealed class StatementImportService(
             throw new InvalidDataException("Statement produced no canonical records; nothing to import.");
         }
 
+        EnsureParsedAccountAuthority(
+            capturedDocument,
+            parse.Records,
+            request.ExternalAccountId);
+
         var artifactContent = RenderCanonicalArtifact(parse.Records);
         var artifactBytes = Encoding.UTF8.GetBytes(artifactContent);
-        var uploadId = "sc-" + Convert.ToHexString(SHA256.HashData(request.Document.Content.Span))[..16].ToLowerInvariant();
-        var retainedDirectory = Path.Combine(_retainedRoot, uploadId);
-        Directory.CreateDirectory(retainedDirectory);
+        // Key the retained evidence on both the raw content and its canonical rendering. Keying on the
+        // raw hash alone let a re-import of the same source file under a changed mapping profile — which
+        // renders different canonical output — reuse the directory and overwrite the first import's
+        // canonical artifact, destroying the normalized evidence that run still references. Combining
+        // both hashes gives every distinct rendering its own directory, while a same-profile re-import
+        // rewrites identical bytes in place and stays idempotent.
+        var rawHash = ComputeSha256Hex(capturedSourceBytes);
+        var canonicalHash = ComputeSha256Hex(artifactBytes);
+        var uploadId = $"sc-{rawHash}-{canonicalHash}";
+        const string reconciliationDirectory = "reconciliation";
+        const string retainedImportsDirectory = "statement-connector-imports";
+        var retainedDirectory = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId);
 
+        // Retain the raw source under its own subdirectory so a source file literally named
+        // "canonical.csv" cannot overwrite (or be overwritten by) the rendered canonical artifact.
+        const string sourceSubdirectory = "source";
         var safeSourceName = SanitizeFileName(request.Document.FileName);
-        var rawPath = Path.Combine(retainedDirectory, safeSourceName);
-        var canonicalPath = Path.Combine(retainedDirectory, "canonical.csv");
-        var canonicalEvidencePath = Path.Combine(retainedDirectory, "canonical-evidence.json");
+        var retainedSourceDirectory = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            sourceSubdirectory);
+        Directory.CreateDirectory(retainedSourceDirectory);
+        _retainedPathGuard.EnsurePath(retainedSourceDirectory);
+        var rawPath = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            sourceSubdirectory,
+            safeSourceName);
+        var canonicalPath = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            "canonical.csv");
+        var canonicalEvidencePath = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            "canonical-evidence.json");
         var canonicalEvidence = new StatementCanonicalEvidenceArtifact(
             ConnectorId: parse.ConnectorId,
             ProfileId: parse.ProfileId,
@@ -134,29 +223,35 @@ public sealed class StatementImportService(
         var canonicalEvidenceBytes = JsonSerializer.SerializeToUtf8Bytes(
             canonicalEvidence,
             StatementCanonicalEvidenceJsonContext.Default.StatementCanonicalEvidenceArtifact);
-        await AtomicFileWriter.WriteAsync(rawPath, request.Document.Content.ToArray(), ct).ConfigureAwait(false);
+        _retainedPathGuard.EnsurePath(retainedDirectory);
+        await AtomicFileWriter.WriteAsync(rawPath, capturedSourceBytes, ct).ConfigureAwait(false);
+        _retainedPathGuard.EnsurePath(canonicalPath);
         await AtomicFileWriter.WriteAsync(canonicalPath, artifactBytes, ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(canonicalEvidencePath, canonicalEvidenceBytes, ct).ConfigureAwait(false);
 
-        var runRequest = await StatementRunCreateRequest.FromFileAsync(
-                broker: sourceKind,
-                sourceInstitution: request.SourceInstitution,
-                fundAccountId: request.FundAccountId,
-                externalAccountId: request.ExternalAccountId,
-                statementPeriodStart: request.PeriodStart,
-                statementPeriodEnd: request.PeriodEnd,
-                sourcePath: canonicalPath,
-                mappingProfileId: StatementMappingProfileRegistry.CanonicalCsvV1ProfileId,
-                toleranceProfileId: string.IsNullOrWhiteSpace(request.ToleranceProfileId)
-                    ? StatementToleranceProfile.DefaultProfileId
-                    : request.ToleranceProfileId,
-                importedBy: request.ImportedBy,
-                originalFileName: request.Document.FileName,
-                ct: ct)
-            .ConfigureAwait(false);
+        var runRequest = new StatementRunCreateRequest(
+            Broker: sourceKind,
+            SourceInstitution: request.SourceInstitution.Trim(),
+            FundAccountId: request.FundAccountId.Trim(),
+            ExternalAccountId: request.ExternalAccountId.Trim(),
+            StatementPeriodStart: request.PeriodStart,
+            StatementPeriodEnd: request.PeriodEnd,
+            SourcePath: rawPath,
+            OriginalFileName: request.Document.FileName,
+            MappingProfileId: StatementMappingProfileRegistry.CanonicalCsvV1ProfileId,
+            ToleranceProfileId: string.IsNullOrWhiteSpace(request.ToleranceProfileId)
+                ? StatementToleranceProfile.DefaultProfileId
+                : request.ToleranceProfileId.Trim(),
+            ImportedBy: request.ImportedBy.Trim(),
+            SourceFileHash: rawHash)
+        {
+            CanonicalSourcePath = canonicalPath,
+            CanonicalArtifactHash = canonicalHash,
+            AccountingScope = request.AccountingScope
+        };
 
         var kindSummaries = BuildKindSummaries(parse.Records);
-        var relativeRaw = ToRelativeRetainedPath(uploadId, safeSourceName);
+        var relativeRaw = ToRelativeRetainedPath(uploadId, $"{sourceSubdirectory}/{safeSourceName}");
         var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
         var relativeCanonicalEvidence = ToRelativeRetainedPath(uploadId, "canonical-evidence.json");
 
@@ -165,24 +260,16 @@ public sealed class StatementImportService(
         {
             result = await workflow.CreateAsync(runRequest.ToStatementRunRequest(), ct).ConfigureAwait(false);
         }
+        catch (StatementAlreadyImportedException ex)
+        {
+            // Upgrade compatibility: a pre-hardening run may be keyed only by the canonical
+            // artifact hash. Return that retained run identity instead of inventing the new
+            // raw-plus-canonical key for a run that was not created.
+            return await DuplicateResultAsync(ex.ExistingImportId).ConfigureAwait(false);
+        }
         catch (InvalidOperationException ex) when (ex.Message.Contains("already imported", StringComparison.OrdinalIgnoreCase))
         {
-            // Idempotent re-import: the deterministic artifact hashes to the same duplicate
-            // key, so surface the existing run instead of failing the operator.
-            return new StatementImportCommitResultDto(
-                RunId: runRequest.DuplicateKey,
-                Duplicate: true,
-                RecordCount: parse.Records.Count,
-                KindSummaries: kindSummaries,
-                BreakCount: 0,
-                CaseCount: 0,
-                RetainedSourcePath: relativeRaw,
-                RetainedCanonicalPath: relativeCanonical,
-                Status: "Duplicate",
-                NextAction: "This statement was already imported for the fund account and period; review the existing reconciliation run.")
-            {
-                RetainedCanonicalEvidencePath = relativeCanonicalEvidence
-            };
+            return await DuplicateResultAsync(runRequest.DuplicateKey).ConfigureAwait(false);
         }
 
         await catalog.RecordAcceptedFingerprintAsync(parse.ProfileId, parse.Fingerprint, ct).ConfigureAwait(false);
@@ -219,6 +306,81 @@ public sealed class StatementImportService(
             ReconciliationCaseLinks = caseLinks,
             RetainedCanonicalEvidencePath = relativeCanonicalEvidence
         };
+
+        async Task<StatementImportCommitResultDto> DuplicateResultAsync(string existingRunId)
+        {
+            var retained = await workflow.GetAsync(existingRunId, ct).ConfigureAwait(false)
+                ?? throw new InvalidDataException(
+                    $"Statement import '{existingRunId}' was reported as a duplicate, but its retained reconciliation authority could not be loaded.");
+            var retainedBreakIds = retained.Breaks
+                .Select(static item => item.BreakId)
+                .Where(static value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var retainedCaseLinks = BuildReconciliationCaseLinks(
+                retained.Import.ImportId,
+                retained.Cases);
+
+            return new StatementImportCommitResultDto(
+                RunId: retained.Import.ImportId,
+                Duplicate: true,
+                RecordCount: parse.Records.Count,
+                KindSummaries: kindSummaries,
+                BreakCount: retained.Breaks.Count,
+                CaseCount: retained.Cases.Count,
+                RetainedSourcePath: relativeRaw,
+                RetainedCanonicalPath: relativeCanonical,
+                Status: "Duplicate",
+                NextAction: "This statement was already imported for the fund account and period; review the existing reconciliation run.")
+            {
+                BreakIds = retainedBreakIds,
+                CaseIds = retainedCaseLinks
+                    .Select(static item => item.CaseId)
+                    .ToArray(),
+                ReconciliationCaseRoutes = retainedCaseLinks
+                    .Select(static item => item.Route)
+                    .ToArray(),
+                ReconciliationCaseLinks = retainedCaseLinks
+            };
+        }
+    }
+
+    public async Task<StatementImportValidationResult> ValidateAsync(
+        StatementSourceDocument document,
+        string? connectorId,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
+        if (connector is null)
+        {
+            return new StatementImportValidationResult(false, 0, [resolutionIssue!.Message]);
+        }
+
+        var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
+        var errors = parse.Issues
+            .Where(static issue => string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase))
+            .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message)
+            .ToArray();
+
+        if (parse.HasErrors)
+        {
+            return new StatementImportValidationResult(false, parse.Records.Count, errors);
+        }
+
+        // A well-formed document that yields no canonical rows cannot be imported (CommitAsync rejects
+        // it the same way), so report it as invalid rather than a passing empty validation.
+        if (parse.Records.Count == 0)
+        {
+            return new StatementImportValidationResult(
+                false,
+                0,
+                ["Statement produced no canonical records; nothing to import."]);
+        }
+
+        return new StatementImportValidationResult(true, parse.Records.Count, errors);
     }
 
     /// <summary>Fetches a remote statement document through a fetch-capable connector.</summary>
@@ -233,6 +395,37 @@ public sealed class StatementImportService(
 
         return await fetching.FetchAsync(request, ct).ConfigureAwait(false);
     }
+
+    private static void EnsureParsedAccountAuthority(
+        StatementSourceDocument document,
+        IReadOnlyList<StatementCanonicalRecord> records,
+        string externalAccountId)
+    {
+        if (string.IsNullOrWhiteSpace(externalAccountId))
+        {
+            throw new InvalidDataException(
+                "Statement import requires an authorized external account before parsed records can be retained.");
+        }
+
+        var authorizedAccountId = externalAccountId.Trim();
+        if (!string.IsNullOrWhiteSpace(document.ExternalAccountId)
+            && !AccountsMatch(document.ExternalAccountId, authorizedAccountId))
+        {
+            throw new InvalidDataException(
+                "The uploaded statement account scope conflicts with the authorized external account.");
+        }
+
+        if (records.Any(record =>
+                string.IsNullOrWhiteSpace(record.Account)
+                || !AccountsMatch(record.Account, authorizedAccountId)))
+        {
+            throw new InvalidDataException(
+                "Statement contains a missing or conflicting parsed account identity; every row must match the authorized external account.");
+        }
+    }
+
+    private static bool AccountsMatch(string? left, string? right)
+        => string.Equals(left?.Trim(), right?.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private (IStatementConnector? Connector, StatementParseIssue? Issue) ResolveConnector(
         StatementSourceDocument document,
@@ -401,9 +594,12 @@ public sealed class StatementImportService(
 
     /// <summary>
     /// Renders records to the canonical CSV artifact deterministically: fixed column order,
-    /// invariant formatting, LF endings, and delimiter-safe values, so the same source file
+    /// invariant formatting, LF endings, and reversible CSV quoting, so the same source file
     /// always produces byte-identical bytes and therefore the same duplicate key.
     /// </summary>
+    private static string ComputeSha256Hex(ReadOnlySpan<byte> content)
+        => Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+
     internal static string RenderCanonicalArtifact(IReadOnlyList<StatementCanonicalRecord> records)
     {
         var builder = new StringBuilder();
@@ -411,16 +607,16 @@ public sealed class StatementImportService(
         foreach (var record in records)
         {
             builder
-                .Append(SanitizeArtifactValue(record.Account)).Append(',')
-                .Append(SanitizeArtifactValue(record.Symbol)).Append(',')
+                .Append(EncodeArtifactValue(record.Account)).Append(',')
+                .Append(EncodeArtifactValue(record.Symbol)).Append(',')
                 .Append(record.Quantity.ToString(CultureInfo.InvariantCulture)).Append(',')
                 .Append(record.Price.ToString(CultureInfo.InvariantCulture)).Append(',')
                 .Append(record.CashAmount.ToString(CultureInfo.InvariantCulture)).Append(',')
-                .Append(SanitizeArtifactValue(record.ActivityType)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivityType)).Append(',')
                 .Append(record.TradeDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
-                .Append(SanitizeArtifactValue(record.Currency)).Append(',')
-                .Append(record.FeesCommission?.ToString(CultureInfo.InvariantCulture)).Append(',')
+                .Append(EncodeArtifactValue(record.Currency)).Append(',')
+                .Append(EncodeArtifactValue(record.FeesCommission?.ToString(CultureInfo.InvariantCulture))).Append(',')
                 .Append(SanitizeArtifactValue(record.ExternalTransactionId)).Append(',')
                 .Append(SanitizeArtifactValue(record.ActivityCategory)).Append(',')
                 .Append(SanitizeArtifactValue(record.ActivitySubtype)).Append(',')
@@ -434,23 +630,22 @@ public sealed class StatementImportService(
     }
 
     /// <summary>
-    /// The downstream canonical parser splits rows with a plain comma split, so artifact
-    /// values must never contain the delimiter, quotes, or line breaks.
+    /// Encodes one canonical value without discarding source characters. The downstream parser
+    /// accepts quoted commas, doubled quotes, and quoted line breaks.
     /// </summary>
-    private static string SanitizeArtifactValue(string? value)
+    private static string EncodeArtifactValue(string? value)
     {
         if (string.IsNullOrEmpty(value))
         {
             return string.Empty;
         }
 
-        var builder = new StringBuilder(value.Length);
-        foreach (var character in value)
+        if (value.IndexOfAny([',', '"', '\r', '\n']) < 0)
         {
-            builder.Append(character is ',' or '"' or '\r' or '\n' ? ' ' : character);
+            return value;
         }
 
-        return builder.ToString().Trim();
+        return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
     }
 
     private static string NormalizeSourceKind(string sourceKind)
@@ -474,7 +669,15 @@ public sealed class StatementImportService(
             safeName = safeName.Replace(character, '-');
         }
 
-        return safeName;
+        try
+        {
+            RootedPathGuard.ValidatePathSegment(safeName, nameof(fileName));
+            return safeName;
+        }
+        catch (ArgumentException)
+        {
+            return "statement.dat";
+        }
     }
 
     private static string ToRelativeRetainedPath(string uploadId, string fileName)

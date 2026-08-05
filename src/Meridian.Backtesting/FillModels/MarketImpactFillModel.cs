@@ -16,7 +16,8 @@ internal sealed class MarketImpactFillModel(
     decimal impactCoefficient = 0.1m,
     decimal slippageBasisPoints = 5m,
     int maxPartialFills = 5,
-    decimal maxParticipationRate = 0m) : IFillModel
+    decimal maxParticipationRate = 0m,
+    FillConservatism conservatism = FillConservatism.Conservative) : IFillModel
 {
     private readonly decimal _maxParticipationRate = Math.Clamp(maxParticipationRate, 0m, 1m);
 
@@ -31,6 +32,7 @@ internal sealed class MarketImpactFillModel(
 
         var isBuy = order.Quantity > 0;
         var triggered = order.IsTriggered || IsTriggered(order, bar, isBuy);
+        var newlyTriggered = triggered && !order.IsTriggered;
         var executableType = GetExecutableType(order.Type, triggered);
 
         if (executableType is null)
@@ -42,7 +44,7 @@ internal sealed class MarketImpactFillModel(
                 WasTriggered: triggered && !order.IsTriggered);
         }
 
-        if (!TryResolveBaseFillPrice(bar, order, executableType.Value, isBuy, out var baseFillPrice))
+        if (!TryResolveBaseFillPrice(bar, order, executableType.Value, isBuy, newlyTriggered, out var baseFillPrice))
         {
             return new OrderFillResult(
                 order with { IsTriggered = triggered },
@@ -160,13 +162,27 @@ internal sealed class MarketImpactFillModel(
         return Math.Min(remainingAbsolute, Math.Max(0L, barVolumeCap));
     }
 
-    private bool TryResolveBaseFillPrice(HistoricalBar bar, Order order, OrderType executableType, bool isBuy, out decimal fillPrice)
+    private bool TryResolveBaseFillPrice(HistoricalBar bar, Order order, OrderType executableType, bool isBuy, bool newlyTriggered, out decimal fillPrice)
     {
         fillPrice = 0m;
 
         switch (executableType)
         {
             case OrderType.Market:
+                // Conservative stop-market pricing mirrors BarMidpointFillModel: a stop that
+                // triggers inside this bar anchors to the worse of the stop and the open instead
+                // of the midpoint, so the base fill can never beat the stop price.
+                if (conservatism == FillConservatism.Conservative
+                    && order.Type is OrderType.StopMarket
+                    && newlyTriggered
+                    && order.StopPrice is { } stop)
+                {
+                    var stopBase = isBuy ? Math.Max(stop, bar.Open) : Math.Min(stop, bar.Open);
+                    var stopSlip = stopBase * (slippageBasisPoints / 10_000m);
+                    fillPrice = isBuy ? stopBase + stopSlip : stopBase - stopSlip;
+                    return true;
+                }
+
                 // Midpoint is (Open + Close) / 2 — the bar's open-to-close centre — consistent
                 // with BarMidpointFillModel. See that model's summary XML doc for the rationale.
                 var mid = (bar.Open + bar.Close) / 2m;
@@ -176,6 +192,14 @@ internal sealed class MarketImpactFillModel(
 
             case OrderType.Limit:
                 var limitPrice = order.LimitPrice!.Value;
+
+                if (conservatism == FillConservatism.Conservative)
+                {
+                    if (order.Type == OrderType.StopLimit && newlyTriggered)
+                        return TryResolveConservativeTriggerBarStopLimit(bar, order.StopPrice!.Value, limitPrice, isBuy, out fillPrice);
+                    return TryResolveConservativeLimit(bar, limitPrice, isBuy, out fillPrice);
+                }
+
                 if (isBuy && bar.Low > limitPrice)
                     return false;
                 if (!isBuy && bar.High < limitPrice)
@@ -186,6 +210,60 @@ internal sealed class MarketImpactFillModel(
             default:
                 return false;
         }
+    }
+
+    /// <summary>Conservative resting-limit semantics; identical rules to <see cref="BarMidpointFillModel"/>.</summary>
+    private static bool TryResolveConservativeLimit(HistoricalBar bar, decimal limitPrice, bool isBuy, out decimal fillPrice)
+    {
+        fillPrice = 0m;
+
+        if (isBuy)
+        {
+            if (bar.Open <= limitPrice)
+            {
+                fillPrice = bar.Open;
+                return true;
+            }
+            if (bar.Low < limitPrice)
+            {
+                fillPrice = limitPrice;
+                return true;
+            }
+            return false;
+        }
+
+        if (bar.Open >= limitPrice)
+        {
+            fillPrice = bar.Open;
+            return true;
+        }
+        if (bar.High > limitPrice)
+        {
+            fillPrice = limitPrice;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>Conservative trigger-bar stop-limit semantics; identical rules to <see cref="BarMidpointFillModel"/>.</summary>
+    private static bool TryResolveConservativeTriggerBarStopLimit(HistoricalBar bar, decimal stopPrice, decimal limitPrice, bool isBuy, out decimal fillPrice)
+    {
+        fillPrice = 0m;
+
+        if (isBuy)
+        {
+            var triggerPrice = Math.Max(stopPrice, bar.Open);
+            if (limitPrice < triggerPrice)
+                return false;
+            fillPrice = Math.Min(limitPrice, bar.High);
+            return true;
+        }
+
+        var sellTriggerPrice = Math.Min(stopPrice, bar.Open);
+        if (limitPrice > sellTriggerPrice)
+            return false;
+        fillPrice = Math.Max(limitPrice, bar.Low);
+        return true;
     }
 
     private static bool IsTriggered(Order order, HistoricalBar bar, bool isBuy)

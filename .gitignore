@@ -264,6 +264,11 @@ __pycache__/
 .Python
 *.egg-info/
 .eggs/
+# pytest writes .pytest_cache/README.md, which the documentation scanners count as a
+# repository document and fold into docs/status/doc-health-dashboard.*. Left untracked
+# but not ignored, running the suite locally shifts the generated file counts and the
+# documentation drift gate then rejects the regenerated dashboard.
+.pytest_cache/
 
 .fakeactionlint
 /Meridian Design System/uploads
@@ -293,3 +298,4 @@ __pycache__/
 
 # Provider credential sidecar — contains plaintext credentials; never commit
 provider-credentials.json
+tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs

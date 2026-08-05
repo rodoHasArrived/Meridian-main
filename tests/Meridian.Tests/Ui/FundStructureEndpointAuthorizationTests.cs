@@ -93,6 +93,17 @@ public sealed class FundStructureEndpointAuthorizationTests
         payload.Accounts.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task OperationsWorkspace_WithoutTenantAndCompanyScope_ShouldFailClosed()
+    {
+        await using var app = await CreateAppAsync([]);
+
+        var response = await app.GetTestClient().GetAsync(
+            "/api/fund-structure/workspace-view?fundProfileId=fund-operations-test");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> allowedScopes,
         UserPermission permissions = UserPermission.ManageFundStructure)

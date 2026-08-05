@@ -1,3 +1,4 @@
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
@@ -72,6 +73,24 @@ public interface ILedgerJournalStore
         CancellationToken ct = default)
         => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
             new NotSupportedException("This ledger journal store does not support tax-lot persistence."));
+
+    Task<IReadOnlyList<LedgerTaxLotRecord>> GetTaxLotsByIdsAsync(
+        Guid ledgerBookId,
+        IReadOnlyList<Guid> taxLotRecordIds,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
+            new NotSupportedException("This ledger journal store does not support authoritative tax-lot identity reads."));
+
+    /// <summary>
+    /// Resolves one immutable atomic tax-lot posting batch together with its journal and mutation
+    /// evidence. Public Posted projections use this read to prove that a supplied mutation-batch
+    /// identity is durable authority rather than caller-provided lifecycle metadata.
+    /// </summary>
+    Task<AtomicTaxLotJournalResult?> GetAtomicTaxLotPostingAsync(
+        Guid mutationBatchId,
+        CancellationToken ct = default)
+        => Task.FromException<AtomicTaxLotJournalResult?>(
+            new NotSupportedException("This ledger journal store does not support atomic tax-lot authority reads."));
 }
 
 public interface IAtomicLedgerPeriodCloseStore
@@ -96,6 +115,18 @@ public interface ITransactionalLedgerJournalStore :
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
+        CancellationToken ct = default);
+}
+
+/// <summary>
+/// Persists an immutable journal and its acquisition or disposal tax-lot consequences in one
+/// serializable database transaction. Implementations must treat an identical batch fingerprint
+/// as an exact replay and reject every partial-identity collision.
+/// </summary>
+public interface IAtomicTaxLotJournalStore
+{
+    Task<AtomicTaxLotJournalResult> AppendAssetPostingAsync(
+        AtomicTaxLotJournalCommand command,
         CancellationToken ct = default);
 }
 
@@ -276,6 +307,11 @@ public sealed record PeriodCloseEventRecord(
     string Notes,
     DateTimeOffset RecordedAt);
 
+/// <param name="WashSalePolicy">
+/// Wash-sale deferral policy for this account, effective from the same date as the relief method.
+/// Defaults to <see cref="Meridian.Ledger.WashSalePolicy.Disabled"/> so an account that has never
+/// been configured keeps recognizing losses in full, exactly as before.
+/// </param>
 public sealed record LedgerAccountTaxLotPolicyRecord(
     Guid PolicyRecordId,
     Guid LedgerBookId,
@@ -285,7 +321,13 @@ public sealed record LedgerAccountTaxLotPolicyRecord(
     DateOnly EffectiveDate,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    string? Rationale = null);
+    string? Rationale = null,
+    WashSalePolicy? WashSalePolicy = null)
+{
+    /// <summary>The configured wash-sale policy, or the disabled default.</summary>
+    public WashSalePolicy EffectiveWashSalePolicy
+        => WashSalePolicy ?? global::Meridian.Ledger.WashSalePolicy.Disabled;
+}
 
 public sealed record LedgerTaxLotRecord(
     Guid TaxLotRecordId,
@@ -300,4 +342,119 @@ public sealed record LedgerTaxLotRecord(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     Guid? SourceJournalEntryId = null,
-    string? EvidenceRef = null);
+    string? EvidenceRef = null,
+    long Version = 0,
+    Guid? OriginatingMutationBatchId = null,
+    Guid? LastMutationBatchId = null,
+    Guid SecurityId = default,
+    Guid BookPositionId = default);
+
+public enum AtomicTaxLotMutationKind
+{
+    Acquisition = 0,
+    Disposal = 1
+}
+
+public sealed record LedgerTaxLotDisposalSelection(
+    Guid TaxLotRecordId,
+    string LotId,
+    long ExpectedVersion,
+    decimal ExpectedOpenQuantity,
+    decimal Quantity,
+    int SelectionOrdinal,
+    string SelectionEvidenceId,
+    decimal ExpectedUnitCost = 0m,
+    decimal ExpectedCostBasis = 0m);
+
+public sealed record AtomicTaxLotJournalCommand(
+    Guid MutationBatchId,
+    Guid LedgerBookId,
+    LedgerJournalEntryWrite Journal,
+    Guid SourceEventId,
+    string IdempotencyKey,
+    string CanonicalFingerprint,
+    long ExpectedPeriodVersion,
+    AtomicTaxLotMutationKind MutationKind,
+    IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence,
+    LedgerTaxLotRecord? AcquisitionLot = null,
+    IReadOnlyList<LedgerTaxLotDisposalSelection>? DisposalSelections = null,
+    Guid? CorrectsMutationBatchId = null,
+    string? ReliefMethod = null,
+    string? PolicyRevision = null)
+{
+    public static AtomicTaxLotJournalCommand Create(
+        Guid mutationBatchId,
+        Guid ledgerBookId,
+        LedgerJournalEntryWrite journal,
+        Guid sourceEventId,
+        string idempotencyKey,
+        long expectedPeriodVersion,
+        AtomicTaxLotMutationKind mutationKind,
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence,
+        LedgerTaxLotRecord? acquisitionLot = null,
+        IReadOnlyList<LedgerTaxLotDisposalSelection>? disposalSelections = null,
+        Guid? correctsMutationBatchId = null,
+        string? reliefMethod = null,
+        string? policyRevision = null)
+    {
+        var command = new AtomicTaxLotJournalCommand(
+            mutationBatchId,
+            ledgerBookId,
+            journal,
+            sourceEventId,
+            idempotencyKey,
+            CanonicalFingerprint: string.Empty,
+            expectedPeriodVersion,
+            mutationKind,
+            retainedEvidence,
+            acquisitionLot,
+            disposalSelections,
+            correctsMutationBatchId,
+            reliefMethod,
+            policyRevision);
+        return command.WithComputedFingerprint();
+    }
+
+    public AtomicTaxLotJournalCommand WithComputedFingerprint()
+        => this with { CanonicalFingerprint = AtomicTaxLotJournalFingerprint.Compute(this) };
+}
+
+public sealed record LedgerTaxLotMutationRecord(
+    Guid MutationRecordId,
+    Guid MutationBatchId,
+    AtomicTaxLotMutationKind MutationKind,
+    Guid TaxLotRecordId,
+    string LotId,
+    int SelectionOrdinal,
+    decimal QuantityBefore,
+    decimal QuantityDelta,
+    decimal QuantityAfter,
+    decimal UnitCost,
+    decimal CostBasis,
+    long ExpectedVersion,
+    long ResultVersion,
+    string SelectionEvidenceId,
+    Guid JournalEntryId,
+    Guid SourceEventId,
+    IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence,
+    DateTimeOffset RecordedAt,
+    LedgerTaxLotRecord? LotBefore,
+    LedgerTaxLotRecord LotAfter,
+    Guid? CorrectsMutationBatchId = null,
+    string? ReliefMethod = null,
+    string? PolicyRevision = null,
+    Guid SecurityId = default,
+    Guid BookPositionId = default);
+
+public sealed record AtomicTaxLotJournalResult(
+    Guid MutationBatchId,
+    AtomicTaxLotMutationKind MutationKind,
+    string CanonicalFingerprint,
+    bool IsExactReplay,
+    LedgerJournalEntryRecord Journal,
+    IReadOnlyList<LedgerTaxLotRecord> MutatedLots,
+    IReadOnlyList<LedgerTaxLotMutationRecord> Mutations,
+    IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence,
+    Guid? CorrectsMutationBatchId = null,
+    string? ReliefMethod = null,
+    string? PolicyRevision = null);

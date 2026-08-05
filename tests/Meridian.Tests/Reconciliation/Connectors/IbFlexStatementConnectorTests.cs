@@ -193,6 +193,39 @@ public sealed class IbFlexStatementConnectorTests : IDisposable
         snapshot.ExcessLiquidity.Should().Be(85000m);
     }
 
+    [Fact]
+    public async Task Parse_MultiAccountFlexReport_IsRejected()
+    {
+        // Two FlexStatement sections for two different IB accounts. The matcher normalizes every row to
+        // the run's single external account, so a multi-account report must be rejected rather than
+        // reconciling one account's rows against another account's Meridian records.
+        const string xml = """
+            <FlexQueryResponse queryName="MeridianDaily" type="AF">
+              <FlexStatements count="2">
+                <FlexStatement accountId="U1234567" fromDate="20260601" toDate="20260630" period="Month">
+                  <Trades>
+                    <Trade accountId="U1234567" symbol="AAPL" tradeDate="20260615" quantity="100" tradePrice="201.35" netCash="-20136.00" currency="USD" buySell="BUY" tradeID="1000001" assetCategory="STK" />
+                  </Trades>
+                </FlexStatement>
+                <FlexStatement accountId="U7654321" fromDate="20260601" toDate="20260630" period="Month">
+                  <Trades>
+                    <Trade accountId="U7654321" symbol="MSFT" tradeDate="20260616" quantity="10" tradePrice="500.10" netCash="-5001.00" currency="USD" buySell="BUY" tradeID="1000002" assetCategory="STK" />
+                  </Trades>
+                </FlexStatement>
+              </FlexStatements>
+            </FlexQueryResponse>
+            """;
+
+        var document = new StatementSourceDocument("ib-flex-multi-account.xml", System.Text.Encoding.UTF8.GetBytes(xml));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a multi-account Flex report must not commit into a single-account run");
+        result.Issues.Should().Contain(issue => issue.Code == "IBFLEX_MULTIPLE_ACCOUNTS");
+    }
+
     public void Dispose()
     {
         try

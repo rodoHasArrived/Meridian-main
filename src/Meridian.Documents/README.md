@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DOCUMENTS
 path: src/Meridian.Documents
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-25
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Documents
@@ -22,6 +22,19 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.Documents` - registered source module root.
+- `FinancialReportDocumentRenderer.cs` - client-grade QuestPDF (PDF) + ClosedXML (XLSX) renderer that
+  implements the ledger's `ILedgerReportBinaryRenderer` seam. Output is made deterministic (fixed
+  document metadata/timestamps, canonical zip ordering) so re-rendering a pack reproduces the bytes.
+- `DocumentsServiceCollectionExtensions.cs` - `AddFinancialReportDocumentRenderer` composition helper
+  that registers the renderer for the `ILedgerReportBinaryRenderer` seam. The workstation host calls
+  it (see `WorkstationServiceCollectionExtensions`), flipping governed ledger exports off the
+  dependency-free plain-text fallback so the governed report pack is the client deliverable. The
+  shared `LedgerClientReportExportService` (in `Meridian.Ui.Shared`) is the single export seam the
+  browser and WPF workstations both route through. Reporting uses that same seam for governed
+  capital-account `Pdf`, `Xlsx`, and `ClientPackage` outputs: the certified producer passes the
+  exact checkpoint-bound `LedgerFinancialReportPack` through once and receives the complete
+  PDF/XLSX pair, selecting one canonical document for a standalone format or both for the package.
+  It does not project the pack into a second `ClientGradeReportRenderer` model.
 
 ## Important workflows
 

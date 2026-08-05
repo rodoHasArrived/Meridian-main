@@ -1,5 +1,9 @@
 # Screenshot Artifacts
 
+**Status:** supporting-generated
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 This folder stores maintained screenshot references used by documentation and
 workflow evidence.
 

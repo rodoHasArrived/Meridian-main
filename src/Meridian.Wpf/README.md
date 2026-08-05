@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Wpf
@@ -29,6 +29,9 @@ Keep shared contracts and read-model logic in shared UI services when browser an
 the behavior. The seven operator workspaces now register through feature modules under
 `src/Meridian.Wpf/Features/` so new workspace-level navigation and shell ownership lands in the
 matching module before it expands through the older flat page folders.
+`ProviderDataProjectionViewModel` requires the signed-in tenant and company on every refresh and
+uses the shared scoped provider projection. It has no unscoped fallback, so missing desktop session
+scope fails before any provider rows are read.
 
 ## Key folders and files
 
@@ -51,6 +54,13 @@ returns to the startup login screen with a fresh startup view model.
 Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden by default, exposes
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
+
+Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
+configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
+when available (otherwise safe defaults are written), and a recovery receipt is retained beside the
+configuration. The Data Sources page remains navigable, displays the recovery outcome and retained
+artifact path, and exposes a retry command after the operator corrects file access or syntax; a
+configuration failure no longer terminates the entire desktop process.
 
 The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
 `FundAccountingConfigure` now routes to `AccountingConfigurePage` and `AccountingConfigureViewModel`
@@ -262,8 +272,24 @@ Fund Ledger trial-balance and journal grids project the canonical ledger dimensi
 shared DTOs, including fund, entity, sleeve, strategy, investor, capital-account, instrument,
 tax-lot, cost-center, counterparty, organization, portfolio, book, account, customer, vendor, and
 project scope, while detail inspectors continue to show external-GL dimensions for selected rows.
-Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
-queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
+Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints and inspect
+the returned verified outcome before displaying
+success. Assign, resolve, waive, and supersede commands therefore surface blocked prerequisites,
+failed persistence, retained evidence, and recovery guidance instead of inferring completion from an
+HTTP response or compatibility message. `CompletedWithWarnings` retains the successful mutation,
+refreshes the shared queue, and keeps its issues and recovery guidance visible; only `Blocked` or
+`Failed` suppresses the success path. Strategy workspace composition resolves the durable
+strategy-run store and operational case-history store; lifecycle state, attempts, input hashes,
+artifacts, exceptions, and recovery events survive desktop restart rather than falling back to an
+in-memory production history.
+
+The desktop pending-operations store persists a versioned queue envelope. Unknown operation types
+remain durable for a later handler, while the retired authentication-sensitive
+`reconciliation.review-break` and `reconciliation.resolve-break` replay types move once into
+payload-free quarantine so operator notes and evidence are not retained in an unsafe replay record.
+
+After mutation, the desktop refreshes the queue from the shared break read model after
+review/resolve/dismiss and keeps the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
 visible in the retained detail panel. The WPF queue projection carries the same source systems,
 probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting
@@ -282,12 +308,12 @@ The browser `AccountingApprovals` approval route also resolves in WPF to the Fun
 surface, so the design-document approval step has a route-compatible desktop target for approval
 history, retained evidence, and accounting audit references.
 Shared evidence workflow target routing is also explicit: `EvidenceWorkbench` resolves to the WPF
-Fund Audit Trail surface while the browser resolves the same shared tag to `/reporting/evidence`.
-Parameterized desktop targets such as `EvidenceWorkbench:accounting-record/{recordId}` preserve the
-canonical evidence subject for row/readiness metadata while resolving to the same Fund Audit Trail
-route. Direct WPF navigation and embedded page-content creation canonicalize those parameterized
-targets before resolving page content and carry the subject plus source target through
-`FundOperationsNavigationContext`, so view models can use the same shared target string carried by
+Evidence packets page (`EvidenceWorkbenchPage`, Reporting workspace) while the browser resolves the
+same shared tag to `/reporting/evidence`. Parameterized desktop targets such as
+`EvidenceWorkbench:accounting-record/{recordId}` preserve the canonical evidence subject: direct WPF
+navigation and embedded page-content creation canonicalize those parameterized targets before
+resolving page content and pass the `{subjectKind}/{subjectId}` subject string through the page's
+navigation parameter, so the Evidence packets view model focuses the same shared subject carried by
 browser routes, workflow rows, and saved presets.
 The route-registry parity test covers all built-in workflow entry and action target tags so shared
 workflow catalog updates cannot silently become browser-only or desktop-only.
@@ -380,11 +406,12 @@ telemetry. It surfaces report writer datasets and retained grids, branded report
 PDF/XLSX/CSV delivery, secure-portal and email-link distribution, Top-N/contribution analytics,
 custom-formula grid validation, cross-fund consolidation roll-ups with shadow-NAV, regulatory and
 warehouse exports, user/group/company access posture, and audit lineage through registered WPF
-targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`, `ExportPresets`,
-`ReportLineProvenanceExplorer`, `FundAuditTrail`, and `DataQuality`) rather than desktop-local
-reporting logic. The Reporting shell default pane set and command surface now include
-`ReportLineProvenanceExplorer`, matching the browser `/reporting/evidence` route for report-line
-evidence and provenance review. Its home chrome stays compact: the Daily Reporting Cockpit strip
+targets (`FundReportPack`, `ReportRunStatus`, `EvidenceWorkbench`, `Dashboard`, `AnalysisExport`,
+`ExportPresets`, `ReportLineProvenanceExplorer`, `FundAuditTrail`, and `DataQuality`) rather than
+desktop-local reporting logic. The Reporting shell default pane set and command surface now include
+`ReportLineProvenanceExplorer`, and the Evidence packets page (`EvidenceWorkbench`) provides the
+canonical desktop parity surface for the browser `/reporting/evidence` evidence workbench alongside
+report-line evidence and provenance review. Its home chrome stays compact: the Daily Reporting Cockpit strip
 puts the shared summary text, writer, approval, and delivery posture beside direct report-pack, run
 status, evidence, and export routes before the decision queue instead of rendering a separate
 page-level hero.
@@ -611,10 +638,11 @@ Direct Lending now follows the same focused portfolio workbench pattern: the hea
 by a compact action strip, loan/accrual/cash evidence renders through shared dense tables, the
 selected loan owns the inspector rail, and accrual posting fails closed until a retained loan row is
 selected and detail loading is idle.
-Analysis Export now opens on compact run/preset readiness instead of an embedded header. Recent
-export history renders through `DenseDataGridControl`, selected history rows drive an inspector, and
-run/save commands expose missing export name, destination, metric, or date-range requirements through
-disabled-action tooltips and inspector facts.
+Analysis Export now opens on compact canonical-backend availability instead of an embedded header.
+Recent export history renders through `DenseDataGridControl` but remains empty until backend-confirmed
+history is connected. Run and preset-save commands fail closed because this desktop screen's
+destination, metric, chart, summary, and preset options are not yet represented by the canonical
+analysis-export service; disabled-action tooltips state that no export or preset was created.
 RunMat Lab is a Strategy workspace tool; its visible page descriptions and code comments use
 `Strategy` wording while retaining the existing `RunMat` page tag and automation IDs.
 QuantScript run-history handoffs use `CompareInStrategyCommand` for Strategy Runs comparison

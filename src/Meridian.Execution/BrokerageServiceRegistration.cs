@@ -98,7 +98,8 @@ public static class BrokerageServiceRegistration
                 liveOrderReadinessGate: liveOrderReadinessGate,
                 options: orderManagementOptions,
                 tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
+                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
+                escalationQueue: sp.GetService<RiskEscalationQueueService>());
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
@@ -315,6 +316,8 @@ public sealed class TradeFillLedgerPostingHostOptions
 
     public string AccountingPolicyVersion { get; set; } = "1";
 
+    public long? ExpectedPeriodVersion { get; set; }
+
     public int ChannelCapacity { get; set; } = 10_000;
 
     public TimeSpan? DrainTimeout { get; set; }
@@ -331,6 +334,9 @@ public sealed class TradeFillLedgerPostingHostOptions
             throw new InvalidOperationException("Execution trade-fill posting requires PeriodId.");
         if (LedgerBookId == Guid.Empty)
             throw new InvalidOperationException("Execution trade-fill posting requires LedgerBookId.");
+        if (!ExpectedPeriodVersion.HasValue || ExpectedPeriodVersion.Value < 0)
+            throw new InvalidOperationException(
+                "Execution trade-fill posting requires the authoritative ExpectedPeriodVersion.");
 
         return new TradeFillLedgerPostingContext(
             $"ledger-book/{LedgerBookId:D}/period/{PeriodId:D}/aggregate/{AggregateId:D}",
@@ -338,6 +344,7 @@ public sealed class TradeFillLedgerPostingHostOptions
             PeriodId,
             LedgerBookId,
             AccountingPolicyId,
-            AccountingPolicyVersion).Validate();
+            AccountingPolicyVersion,
+            ExpectedPeriodVersion).Validate();
     }
 }

@@ -2,9 +2,9 @@
 
 # `reporting` schema
 
-- Relations: 14
-- Functions/procedures: 11
-- Triggers: 13
+- Relations: 20
+- Functions/procedures: 18
+- Triggers: 21
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -30,6 +30,7 @@ erDiagram
         bigint version
         text run_id
         integer audience_kind
+        text[] consumed_artifact_ids
     }
     reporting_reporting_artifact_audit {
         bigint sequence PK
@@ -160,6 +161,26 @@ erDiagram
         text receipt_hash_sha256
         timestamp_with_time_zone retained_at_utc
     }
+    reporting_reporting_reconciliation_evidence_v2 {
+        text tenant_id PK
+        text receipt_key_sha256 PK
+        text organization_id
+        text company_id
+        text fund_id
+        text ledger_book_id
+        text accounting_period_id
+        text accounting_basis
+        date as_of_date
+        text source_checkpoint_id
+        text source_checkpoint_hash
+        text reconciliation_checkpoint_id
+        text reconciliation_checkpoint_hash
+        text receipt_payload
+        text receipt_hash_sha256
+        timestamp_with_time_zone retained_at_utc
+        smallint receipt_format_version
+        text supersedes_legacy_receipt_key_sha256
+    }
     reporting_reporting_restatement_requests {
         text tenant_id PK,FK
         text request_id PK
@@ -173,11 +194,76 @@ erDiagram
         timestamp_with_time_zone updated_at_utc
         smallint state_format_version
     }
+    reporting_reporting_run_create_claims {
+        text tenant_id PK
+        text run_id
+        text run_id_key PK
+        text lease_owner
+        timestamp_with_time_zone claimed_at_utc
+        timestamp_with_time_zone lease_expires_at_utc
+        bigint lease_version
+    }
+    reporting_reporting_run_snapshots {
+        text tenant_id PK
+        text run_id
+        text run_id_key PK
+        jsonb manifest_payload
+        jsonb audit_payload
+        timestamp_with_time_zone updated_at_utc
+        text certified_dataset_hash_sha256
+        text manifest_hash_sha256
+        text audit_hash_sha256
+        text state_hash_sha256
+    }
+    reporting_reporting_schedule_snapshots {
+        text tenant_id PK
+        text company_id PK
+        text schedule_id
+        text schedule_id_key PK
+        jsonb schedule_payload
+        text payload_hash_sha256
+        timestamp_with_time_zone due_at_utc
+        text lease_owner
+        timestamp_with_time_zone lease_expires_at_utc
+        bigint lease_version
+        timestamp_with_time_zone stored_at_utc
+    }
     reporting_reporting_schema_migrations {
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
     }
+    reporting_reporting_statement_reconciliation_document_revisions {
+        text tenant_id PK,FK
+        text company_id PK
+        text workflow_id PK
+        text document_key PK
+        bigint document_version PK
+        text previous_content_hash_sha256 FK
+        bigint previous_byte_size
+        timestamp_with_time_zone previous_updated_at_utc
+        text content_hash_sha256 FK
+        bigint byte_size
+        boolean is_immutable
+        timestamp_with_time_zone mapping_stored_at_utc
+        timestamp_with_time_zone mapping_updated_at_utc
+        timestamp_with_time_zone recorded_at_utc
+    }
+    reporting_reporting_statement_reconciliation_documents {
+        text tenant_id PK,FK
+        text company_id PK
+        text workflow_id PK
+        text document_key PK
+        text content_hash_sha256 FK
+        bigint byte_size
+        boolean is_immutable
+        bigint document_version
+        timestamp_with_time_zone stored_at_utc
+        timestamp_with_time_zone updated_at_utc
+    }
+    reporting_reporting_artifact_blobs ||--o{ reporting_reporting_statement_reconciliation_document_revisions : "fk_reporting_statement_revision_blob"
+    reporting_reporting_artifact_blobs ||--o{ reporting_reporting_statement_reconciliation_document_revisions : "fk_reporting_statement_revision_previous_blob"
+    reporting_reporting_artifact_blobs ||--o{ reporting_reporting_statement_reconciliation_documents : "fk_reporting_statement_document_blob"
     reporting_reporting_artifact_packages ||--o{ reporting_reporting_artifact_catalog : "fk_reporting_artifact_catalog_package"
     reporting_reporting_delivery_jobs ||--o{ reporting_reporting_delivery_receipts : "fk_reporting_delivery_receipt_job"
     reporting_reporting_governed_runs ||--o{ reporting_reporting_restatement_requests : "fk_reporting_restatement_predecessor"
@@ -185,17 +271,23 @@ erDiagram
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `reporting_access_grants` | table | 18 | `grant_id` | 0 | 4 | - |
+| `reporting_access_grants` | table | 19 | `grant_id` | 0 | 4 | - |
 | `reporting_artifact_audit` | table | 12 | `sequence` | 0 | 3 | - |
 | `reporting_artifact_audit_chain_head` | table | 3 | `chain_id` | 0 | 1 | - |
 | `reporting_artifact_blobs` | table | 5 | `tenant_id`, `content_hash_sha256` | 0 | 2 | - |
 | `reporting_artifact_catalog` | table | 6 | `tenant_id`, `package_id`, `artifact_id` | 1 | 2 | - |
 | `reporting_artifact_packages` | table | 6 | `tenant_id`, `package_id` | 0 | 1 | - |
-| `reporting_delivery_jobs` | table | 22 | `job_id` | 0 | 6 | - |
+| `reporting_delivery_jobs` | table | 22 | `job_id` | 0 | 7 | - |
 | `reporting_delivery_receipts` | table | 11 | `job_id`, `receipt_id` | 1 | 2 | - |
 | `reporting_delivery_receipts_receipt_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `reporting_governance_audit` | table | 11 | `tenant_id`, `aggregate_kind`, `aggregate_id`, `aggregate_version` | 0 | 3 | - |
 | `reporting_governed_runs` | table | 14 | `tenant_id`, `run_id` | 0 | 4 | - |
 | `reporting_reconciliation_evidence` | table | 16 | `tenant_id`, `receipt_key_sha256` | 0 | 3 | - |
+| `reporting_reconciliation_evidence_v2` | table | 18 | `tenant_id`, `receipt_key_sha256` | 0 | 3 | - |
 | `reporting_restatement_requests` | table | 11 | `tenant_id`, `request_id` | 1 | 2 | - |
+| `reporting_run_create_claims` | table | 7 | `tenant_id`, `run_id_key` | 0 | 2 | - |
+| `reporting_run_snapshots` | table | 10 | `tenant_id`, `run_id_key` | 0 | 2 | - |
+| `reporting_schedule_snapshots` | table | 11 | `tenant_id`, `company_id`, `schedule_id_key` | 0 | 2 | - |
 | `reporting_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
+| `reporting_statement_reconciliation_document_revisions` | table | 14 | `tenant_id`, `company_id`, `workflow_id`, `document_key`, `document_version` | 2 | 2 | - |
+| `reporting_statement_reconciliation_documents` | table | 10 | `tenant_id`, `company_id`, `workflow_id`, `document_key` | 1 | 3 | - |

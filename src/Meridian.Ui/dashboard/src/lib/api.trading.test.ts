@@ -8,13 +8,9 @@ import {
   createExecutionManualOverride,
   deleteWorkflowPreset,
   evaluatePromotion,
-  exportChiefOfStaffTrace,
   getAlpacaConnectionStatus,
   getAccountingWorkspace,
   getBrokerageHouseholdPortfolio,
-  getChiefOfStaffHealth,
-  getChiefOfStaffSession,
-  getChiefOfStaffSessions,
   getDataWorkspace,
   developmentFixtureHeader,
   getExecutionControls,
@@ -95,11 +91,12 @@ import {
   setReplaySpeed,
   startReplay,
   stopReplay,
-  submitChiefOfStaffDecision,
+  supersedeReconciliationBreak,
   submitOrder,
   updateExecutionDefaultPositionLimit,
   updateExecutionSymbolPositionLimit,
-  updateWorkflowPreset
+  updateWorkflowPreset,
+  waiveReconciliationBreak
 } from "@/lib/api";
 
 describe("trading endpoint wiring", () => {
@@ -110,6 +107,41 @@ describe("trading endpoint wiring", () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({}), text: async () => "{}" });
     vi.stubGlobal("fetch", fetchMock);
     resetDevelopmentFixtureUsage();
+  });
+
+  it("wires governed reconciliation waive and supersede actions with disposition evidence", async () => {
+    const waiver = {
+      breakId: "break / 1",
+      action: "Waive" as const,
+      actor: "operator-1",
+      commandId: "cmd-waive-1",
+      correlationId: "corr-1",
+      source: "accounting-workstation",
+      expectedVersion: 4,
+      reason: "Reviewed immaterial difference",
+      evidenceLinks: ["evidence://waiver/1"],
+      actionOrigin: "HumanOperator" as const,
+      approvalActor: "controller-1",
+      approvalReference: "approval://waiver/1"
+    };
+    const supersede = {
+      ...waiver,
+      action: "Supersede" as const,
+      commandId: "cmd-supersede-1",
+      supersedingBreakId: "break-2"
+    };
+
+    await waiveReconciliationBreak(waiver);
+    await supersedeReconciliationBreak(supersede);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/waive",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(waiver) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/supersede",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(supersede) })
+    );
   });
 
   it("wires promotion endpoints", async () => {
@@ -259,7 +291,11 @@ describe("trading endpoint wiring", () => {
       exports: [expect.objectContaining({ target: "strategy pack" })]
     });
     await expect(getAccountingWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
-    await expect(getReportingWorkspace()).resolves.toMatchObject({ reporting: expect.any(Object) });
+    await expect(getReportingWorkspace()).resolves.toMatchObject({
+      profileCount: expect.any(Number),
+      profiles: expect.any(Array),
+      summary: expect.any(String)
+    });
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/strategy", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/strategy/briefing", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/portfolio", expect.anything());
@@ -738,53 +774,6 @@ describe("trading endpoint wiring", () => {
           reportPackId: "report-pack-2026-05",
           reconciliationCaseId: null,
           accountingRecordId: "workflow-2026-05"
-        })
-      })
-    );
-  });
-
-  it("wires Chief of Staff workstation API client calls", async () => {
-    await getChiefOfStaffSessions({ workspace: "Reporting", status: "AwaitingOperatorDecision", limit: 10 });
-    await getChiefOfStaffSession("session-1");
-    await getChiefOfStaffHealth();
-    await submitChiefOfStaffDecision("session-1", {
-      decision: "Approve",
-      actor: "operator",
-      selectedActionId: "action-1",
-      rationale: "Evidence reviewed."
-    });
-    await exportChiefOfStaffTrace("session-1", {
-      requestedBy: "operator",
-      reason: "audit trace",
-      includeWarnings: true
-    });
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/chief-of-staff/sessions?workspace=Reporting&status=AwaitingOperatorDecision&limit=10",
-      expect.anything()
-    );
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/chief-of-staff/sessions/session-1", expect.anything());
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/chief-of-staff/health", expect.anything());
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/chief-of-staff/sessions/session-1/decisions",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          decision: "Approve",
-          actor: "operator",
-          selectedActionId: "action-1",
-          rationale: "Evidence reviewed."
-        })
-      })
-    );
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/chief-of-staff/sessions/session-1/export-trace",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          requestedBy: "operator",
-          reason: "audit trace",
-          includeWarnings: true
         })
       })
     );

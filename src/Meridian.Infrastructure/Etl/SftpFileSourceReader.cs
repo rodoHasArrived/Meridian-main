@@ -9,17 +9,30 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
     private readonly EtlStagingStore _stagingStore;
     private readonly ISftpClientFactory _clientFactory;
     private readonly ISftpCredentialResolver _credentialResolver;
+    private readonly ISftpCapabilityService _capabilityService;
 
-    public SftpFileSourceReader(EtlStagingStore stagingStore, ISftpClientFactory clientFactory)
-        : this(stagingStore, clientFactory, new EnvironmentSftpCredentialResolver())
-    {
-    }
-
-    public SftpFileSourceReader(EtlStagingStore stagingStore, ISftpClientFactory clientFactory, ISftpCredentialResolver credentialResolver)
+    /// <summary>
+    /// Creates a reader. Every dependency is required, including the capability gate.
+    /// </summary>
+    /// <remarks>
+    /// The convenience overloads that defaulted <paramref name="capabilityService"/> to a fresh
+    /// <see cref="SftpCapabilityService"/> are gone. In a default EnableSftp=false build that
+    /// default reports not-ready, so a caller supplying a working custom
+    /// <see cref="ISftpClientFactory"/> through a short overload had every connection path throw
+    /// before its factory was reached — the overload silently disabled the transport it was given.
+    /// Requiring the argument makes that a compile error instead of a runtime surprise, and
+    /// matches <see cref="SftpFilePublisher"/>.
+    /// </remarks>
+    public SftpFileSourceReader(
+        EtlStagingStore stagingStore,
+        ISftpClientFactory clientFactory,
+        ISftpCredentialResolver credentialResolver,
+        ISftpCapabilityService capabilityService)
     {
         _stagingStore = stagingStore;
         _clientFactory = clientFactory;
         _credentialResolver = credentialResolver;
+        _capabilityService = capabilityService;
     }
 
     public EtlSourceKind Kind => EtlSourceKind.Sftp;
@@ -27,6 +40,7 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
     public async Task<IReadOnlyList<EtlRemoteFile>> ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        EnsureCapable(source);
         var location = SftpRemoteLocation.ParseRequired(source.Location, "source");
         var credential = await _credentialResolver.ResolveAsync(source, ct).ConfigureAwait(false);
         using var client = CreateClient(source, location, credential);
@@ -59,6 +73,7 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
     public async Task<EtlStagedFile> StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        EnsureCapable(source);
         var location = SftpRemoteLocation.ParseRequired(source.Location, "source");
         if (!location.ContainsFile(file.Path))
             throw new InvalidOperationException("SFTP remote file must be under the configured source path.");
@@ -96,6 +111,7 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
             return;
         }
 
+        EnsureCapable(source);
         var location = SftpRemoteLocation.ParseRequired(source.Location, "source");
         if (!location.ContainsFile(file.Path))
             throw new InvalidOperationException("SFTP remote file must be under the configured source path.");
@@ -155,8 +171,40 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         }
     }
 
+    /// <summary>
+    /// Rejects a source that is not ready before any other work happens on the read path.
+    /// </summary>
+    /// <remarks>
+    /// The read path was left ungated while the publisher checked capability, so a default
+    /// EnableSftp=false build accepted an SFTP source and then surfaced the disabled stub's
+    /// NotSupportedException from list, preview, and ingestion as a transport failure. That is
+    /// the same accepted-then-broken shape the destination fix removed, and it made the stated
+    /// "reject in production, fail closed" disposition true of exports only.
+    ///
+    /// This runs before <see cref="SftpRemoteLocation.ParseRequired"/> and credential resolution
+    /// rather than at client construction. Both of those throw on their own for a malformed
+    /// location or an unset <c>env:</c> variable, so a source that is *both* misconfigured and
+    /// running on a build without SFTP reported only the configuration error and never mentioned
+    /// that real SFTP is absent — the operator fixes the URI, retries, and hits the same wall for
+    /// a reason they were never told. Evaluate aggregates every readiness issue, so checking it
+    /// first reports all of them at once, which is what the disposition advertises.
+    /// </remarks>
+    private void EnsureCapable(EtlSourceDefinition source)
+    {
+        var status = _capabilityService.Evaluate(source);
+        if (!status.Ready)
+        {
+            throw new InvalidOperationException(
+                "SFTP import is not available for this source: " + string.Join(" ", status.Issues));
+        }
+    }
+
     private ISftpClient CreateClient(EtlSourceDefinition source, SftpRemoteLocation location, SftpCredentialMaterial credential)
     {
+        // Re-checked here so a future caller that reaches CreateClient without going through a
+        // public entry point cannot skip the gate. Evaluate is pure and cheap.
+        EnsureCapable(source);
+
         return _clientFactory.Create(SftpConnectionOptions.Create(
             location.Host,
             location.Port,

@@ -1,5 +1,16 @@
 namespace Meridian.Domain.Reconciliation;
 
+/// <summary>
+/// Exact accounting authority bound to a retained statement import. The source account remains on
+/// the statement request; this scope identifies the reporting fund profile, ledger book, ledger
+/// period, and as-of date that may consume the statement during close and certified reporting.
+/// </summary>
+public sealed record StatementAccountingScope(
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid AccountingPeriodId,
+    DateOnly AsOfDate);
+
 public sealed record CanonicalStatementImport(
     string ImportId,
     string Broker,
@@ -20,7 +31,9 @@ public sealed record CanonicalStatementImport(
     public string ToleranceProfileId { get; init; } = string.Empty;
     public string ImportedBy { get; init; } = "system";
     public string SourceFileHash { get; init; } = SourceChecksum;
+    public string CanonicalArtifactHash { get; init; } = SourceChecksum;
     public string DuplicateKey { get; init; } = string.Empty;
+    public StatementAccountingScope? AccountingScope { get; init; }
 }
 
 public sealed record StatementSourceRowReference(
@@ -107,7 +120,20 @@ public sealed record CanonicalStatementRow(
     decimal CashAmount,
     string ActivityType,
     DateOnly TradeDate,
-    string RawChecksum);
+    string RawChecksum)
+{
+    /// <summary>ISO 4217 currency of the row's monetary amounts. Defaults to USD when unmapped.</summary>
+    public string Currency { get; init; } = "USD";
+
+    /// <summary>Settlement date when the source provides one; otherwise null.</summary>
+    public DateOnly? SettlementDate { get; init; }
+
+    /// <summary>Fees or commission carried on the row, when present.</summary>
+    public decimal? FeesCommission { get; init; }
+
+    /// <summary>The broker/custodian transaction identifier, used for exact transaction matching.</summary>
+    public string? ExternalTransactionId { get; init; }
+}
 
 public sealed record ReconciliationCase(
     string CaseId,

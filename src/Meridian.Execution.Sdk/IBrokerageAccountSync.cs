@@ -36,6 +36,25 @@ public interface IBrokerageActivitySync
         string externalAccountId,
         DateTimeOffset? since = null,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Reads activity inside an exact half-open window. Providers that cannot enforce the upper
+    /// bound fail closed instead of silently widening a governed statement period.
+    /// </summary>
+    Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+        string externalAccountId,
+        DateTimeOffset? since,
+        DateTimeOffset? untilExclusive,
+        CancellationToken ct = default)
+    {
+        if (untilExclusive.HasValue)
+        {
+            throw new NotSupportedException(
+                $"Brokerage activity provider '{ProviderId}' does not support an exact upper time bound.");
+        }
+
+        return GetActivitySnapshotAsync(externalAccountId, since, ct);
+    }
 }
 
 public sealed record BrokerageExternalAccountDto(

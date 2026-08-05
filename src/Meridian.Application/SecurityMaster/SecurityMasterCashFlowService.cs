@@ -250,32 +250,26 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(terms.PaymentFrequency));
-        var dates = BuildPaymentDates(issueDate, maturity, periodMonths)
-            .Where(date => date >= asOfDate)
+        var periods = BuildPaymentPeriods(issueDate, maturity, periodMonths)
+            .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();
-        if (dates.Length == 0)
+        if (periods.Length == 0)
         {
             return Empty();
         }
 
-        var entries = new List<StructuredCashFlowScheduleEntry>(dates.Length);
-        var accrualStart = issueDate;
+        var entries = new List<StructuredCashFlowScheduleEntry>(periods.Length);
         var sinkerPrincipal = sourceKind == StructuredCashFlowSourceKind.CalculatedSinker
-            ? RoundCash(outstanding / dates.Length)
+            ? RoundCash(outstanding / periods.Length)
             : 0m;
-        for (var i = 0; i < dates.Length; i++)
+        for (var i = 0; i < periods.Length; i++)
         {
-            var date = dates[i];
-            while (accrualStart.AddMonths(periodMonths) < date)
-            {
-                accrualStart = accrualStart.AddMonths(periodMonths);
-            }
-
+            var (accrualStart, date) = periods[i];
             var interest = annualRate > 0m && outstanding > 0m
                 ? RoundCash(outstanding * annualRate * DayCountConventions.Fraction(terms.DayCountConvention, accrualStart, date))
                 : 0m;
             var principal = 0m;
-            var isLast = i == dates.Length - 1;
+            var isLast = i == periods.Length - 1;
             if (sourceKind == StructuredCashFlowSourceKind.CalculatedBullet && isLast)
             {
                 principal = outstanding;
@@ -291,7 +285,6 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
                 RoundCash(principal),
                 interest,
                 principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis)));
-            accrualStart = date;
         }
 
         return new StructuredCashFlowProjectionDto(
@@ -350,35 +343,28 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         var annualRate = ResolveLegAnnualRate(leg, scenario);
         var dayCount = leg.DayCountConvention ?? terms.DayCountConvention;
         var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(leg.PaymentFrequency ?? terms.PaymentFrequency));
-        var dates = BuildPaymentDates(issueDate, maturity, periodMonths)
-            .Where(date => date >= asOfDate)
+        var periods = BuildPaymentPeriods(issueDate, maturity, periodMonths)
+            .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();
-        if (dates.Length == 0)
+        if (periods.Length == 0)
         {
             return [];
         }
 
-        var entries = new List<StructuredCashFlowScheduleEntry>(dates.Length);
-        var accrualStart = issueDate;
-        for (var i = 0; i < dates.Length; i++)
+        var entries = new List<StructuredCashFlowScheduleEntry>(periods.Length);
+        for (var i = 0; i < periods.Length; i++)
         {
-            var date = dates[i];
-            while (accrualStart.AddMonths(periodMonths) < date)
-            {
-                accrualStart = accrualStart.AddMonths(periodMonths);
-            }
-
+            var (accrualStart, date) = periods[i];
             var interest = annualRate > 0m
                 ? RoundCash(notional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
                 : 0m;
-            var isLast = i == dates.Length - 1;
+            var isLast = i == periods.Length - 1;
             var principal = leg.ExchangesPrincipal && isLast ? RoundCash(notional) : 0m;
             entries.Add(new StructuredCashFlowScheduleEntry(
                 ToUtcDateTimeOffset(date),
                 principal,
                 interest,
                 leg.ExchangesPrincipal && isLast ? 0m : 1m));
-            accrualStart = date;
         }
 
         return entries;
@@ -434,18 +420,44 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         _ => string.Empty
     };
 
-    private static IEnumerable<DateOnly> BuildPaymentDates(DateOnly issueDate, DateOnly maturity, int periodMonths)
+    /// <summary>
+    /// Yields each coupon period as an accrual start and its payment date, ending on maturity.
+    /// </summary>
+    /// <remarks>
+    /// Every payment date is anchored on the issue date rather than compounded from the previous
+    /// payment date. <see cref="DateOnly.AddMonths"/> clamps a month-end anchor into shorter months
+    /// (31 Jan plus three months is 30 Apr), and compounding that clamp walks the schedule earlier
+    /// every period. For a bond issued on the 31st that drift lands the final period one day before
+    /// maturity and emits a spurious one-day stub, so a one-year quarterly bond yields five payments
+    /// instead of four. Anchoring keeps each period on the issue day-of-month, clamping only where
+    /// the target month is shorter.
+    /// </remarks>
+    private static IEnumerable<(DateOnly AccrualStart, DateOnly PaymentDate)> BuildPaymentPeriods(
+        DateOnly issueDate,
+        DateOnly maturity,
+        int periodMonths)
     {
-        var date = issueDate;
-        while (date < maturity)
+        // A non-positive period would never advance the anchor and would spin forever. Both callers
+        // clamp with Math.Max(1, ...), so this guards the contract rather than a reachable path.
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(periodMonths);
+
+        if (issueDate >= maturity)
         {
-            date = date.AddMonths(periodMonths);
-            if (date > maturity)
+            yield break;
+        }
+
+        var accrualStart = issueDate;
+        for (var period = 1; ; period++)
+        {
+            var paymentDate = issueDate.AddMonths(periodMonths * period);
+            if (paymentDate >= maturity)
             {
-                date = maturity;
+                yield return (accrualStart, maturity);
+                yield break;
             }
 
-            yield return date;
+            yield return (accrualStart, paymentDate);
+            accrualStart = paymentDate;
         }
     }
 

@@ -20,6 +20,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
     public const string ConnectorId = "ib-flex";
 
     private const string FlexRootElement = "FlexQueryResponse";
+    private const int MaximumStatementBytes = 32 * 1024 * 1024;
+    private const int MaximumStatementRows = 100_000;
 
     private readonly StatementMappingProfileCatalog _catalog;
     private readonly IProviderCredentialStore? _credentialStore;
@@ -94,17 +96,28 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             return EmptyResult(profileId, issues);
         }
 
-        var content = Encoding.UTF8.GetString(document.Content.Span);
+        if (document.Content.Length > MaximumStatementBytes)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "STATEMENT_TOO_LARGE",
+                $"The Flex report exceeds the {MaximumStatementBytes}-byte limit."));
+            return EmptyResult(profileId, issues);
+        }
+
         XDocument xml;
         try
         {
-            using var textReader = new StringReader(content);
-            using var xmlReader = XmlReader.Create(textReader, new XmlReaderSettings
+            var settings = new XmlReaderSettings
             {
                 DtdProcessing = DtdProcessing.Prohibit,
-                XmlResolver = null
-            });
-            xml = XDocument.Load(xmlReader, LoadOptions.SetLineInfo);
+                XmlResolver = null,
+                Async = true,
+                MaxCharactersInDocument = MaximumStatementBytes,
+                MaxCharactersFromEntities = 0
+            };
+            await using var stream = new MemoryStream(document.Content.ToArray(), writable: false);
+            using var reader = XmlReader.Create(stream, settings);
+            xml = await XDocument.LoadAsync(reader, LoadOptions.None, ct).ConfigureAwait(false);
         }
         catch (XmlException ex)
         {
@@ -146,6 +159,11 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var trade in Section(statement, "Trades", "Trade"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
                 CountSection(sectionCounts, "Trades");
                 CollectAttributeNames(trade, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -169,6 +187,11 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var cash in Section(statement, "CashTransactions", "CashTransaction"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
                 CountSection(sectionCounts, "CashTransactions");
                 CollectAttributeNames(cash, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -188,6 +211,11 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var position in Section(statement, "OpenPositions", "OpenPosition"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
                 CountSection(sectionCounts, "OpenPositions");
                 CollectAttributeNames(position, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -323,6 +351,23 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 if (BuildBorrowPosition(borrowed, statementAccountId, profile) is { } borrowPosition)
                     borrowPositions.Add(borrowPosition);
             }
+        }
+
+        // An advisor Flex report can carry several accounts across FlexStatement sections, but a
+        // statement run reconciles a single account and the matcher normalizes every row to the run's
+        // one external account. Committing a multi-account report would compare one account's rows
+        // against another account's Meridian records, so reject it: split into one document per account.
+        var distinctAccounts = records
+            .Select(static record => record.Account)
+            .Where(static account => !string.IsNullOrWhiteSpace(account))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinctAccounts.Length > 1)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "IBFLEX_MULTIPLE_ACCOUNTS",
+                $"The Flex report contains records for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the report into one document per account before importing."));
+            return EmptyResult(profileId, issues);
         }
 
         if (records.Count == 0 && statements.Length > 0)

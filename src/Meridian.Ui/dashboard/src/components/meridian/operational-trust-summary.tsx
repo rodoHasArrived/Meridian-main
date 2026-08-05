@@ -4,9 +4,11 @@ import { cn } from "@/lib/utils";
 export type OperationalTrustTone = "ready" | "review" | "blocked" | "unknown";
 
 export interface OperationalTrustFact {
+  label?: string;
   value: ReactNode;
   detail?: ReactNode;
   tone?: OperationalTrustTone;
+  action?: ReactNode;
 }
 
 export interface OperationalTrustSummaryProps {
@@ -39,7 +41,8 @@ const toneLabels: Record<OperationalTrustTone, string> = {
  *
  * It keeps source, operating scope, freshness, completeness, and any blocker in
  * one predictable region. Every tone also has visible text so color is never the
- * only status signal. Route-owned recovery actions can be supplied in `action`.
+ * only status signal. Each fact can own its recovery action so an operator does
+ * not have to infer which global control remediates a specific warning.
  */
 export function OperationalTrustSummary({
   source,
@@ -52,14 +55,14 @@ export function OperationalTrustSummary({
   className
 }: OperationalTrustSummaryProps) {
   const facts: Array<{ id: string; label: string; fact: OperationalTrustFact }> = [
-    { id: "source", label: "Source", fact: source },
-    { id: "scope", label: "Scope", fact: scope },
-    { id: "freshness", label: "Freshness", fact: freshness },
-    { id: "completeness", label: "Completeness", fact: completeness }
+    { id: "source", label: source.label ?? "Source", fact: source },
+    { id: "scope", label: scope.label ?? "Scope", fact: scope },
+    { id: "freshness", label: freshness.label ?? "Freshness", fact: freshness },
+    { id: "completeness", label: completeness.label ?? "Completeness", fact: completeness }
   ];
 
   if (blocker) {
-    facts.push({ id: "blocker", label: "Blocker", fact: blocker });
+    facts.push({ id: "blocker", label: blocker.label ?? "Blocker", fact: blocker });
   }
 
   return (
@@ -85,6 +88,9 @@ export function OperationalTrustSummary({
                   </div>
                   {fact.detail ? (
                     <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{fact.detail}</p>
+                  ) : null}
+                  {fact.action ? (
+                    <div className="mt-2 flex flex-wrap items-center gap-2">{fact.action}</div>
                   ) : null}
                 </dd>
               </div>

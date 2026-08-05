@@ -1,15 +1,26 @@
 <!-- phase:PR7 -->
 # Blueprint — Quote-stream fan-out (Phase 4 Step 2 + companion-pane stream sharing)
 
-**Status:** Proposed
+**Status:** Implemented — PRs A–C shipped (§9); PR D was rescoped into a separate blueprint
 **Owner:** Workstation Shell and UX
-**Reviewed:** 2026-07-05
+**Reviewed:** 2026-08-01
 
-**Summary:** Design for review — no implementation in this PR.
+**Summary:** Delivered design. `src/Meridian.Ui.Shared/Streaming/` (`QuoteStreamBroadcaster`,
+`StreamConnectionRegistry`, `StreamTopic`, `QuoteStreamOptions`, `QuoteStreamSubscription`) and
+`src/Meridian.Ui/dashboard/src/lib/quotes-stream.ts` are in source. Read this as the design record
+for shipped behavior, not as pending work.
 **Extends:** `docs/product/web-ui-improvements-implementation-plan-2026-07.md` (Phase 4 "Step 2" and Phase 6d follow-up).
+**Continued by:** [`web-ui-report-run-stream-blueprint-2026-07.md`](web-ui-report-run-stream-blueprint-2026-07.md) — which rescoped PR D and generalized the broadcaster (see §9).
+**Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
 **Scope owner surfaces:** `src/Meridian.Ui.Shared` (server SSE), `src/Meridian.Domain/Collectors` (notifier seam), `src/Meridian.Ui/dashboard` (client stream + companion bridge).
 
 This blueprint is a code-ready design. It names the exact seams, interfaces, and files to add/modify, and a phased checklist. It deliberately does **not** change the storage hot path.
+
+> **Post-delivery drift.** Two details below describe the design as proposed, not as shipped:
+> §5.2's `TrySubscribe(topic, sessionId, ct)` shipped without the `CancellationToken` parameter, and
+> the broadcaster's machinery was later extracted into a generic `StreamBroadcaster<TPayload>` by
+> the report-run blueprint, so `QuoteStreamBroadcaster` is now a thin façade over it. The wire
+> format, route, topic model, and cap behavior are as designed.
 
 ---
 
@@ -335,9 +346,15 @@ npm --prefix src/Meridian.Ui/dashboard run build
    owner/follower roles in `quotes-stream.ts`, follower degradation on `session-expired` / stale
    watchdog. Role is decided by route (`isCompanionPaneRoute`), so the watchlist + live-quotes panes
    follow automatically with no screen change.
-4. **PR D (optional, future) — Additional topics** (`workspace:<key>`, `inbox`, `report-run:<id>`)
-   reusing `StreamTopic`; wire the `use-workstation-data` workspace poller suspension deferred in
-   Phase 4 step 1.
+4. **PR D — Additional topics.** ✅ Shipped, **rescoped**. This entry originally proposed three
+   topics (`workspace:<key>`, `inbox`, `report-run:<id>`) plus suspending the `use-workstation-data`
+   workspace poller. Grounding that against source showed only `report-run:<id>` fits the quote
+   model: workspace and inbox payloads are `HttpContext`-coupled, per-session authorized, and carry
+   no change signal, so the shared-build economics disappear. **`workspace` and `inbox` streams and
+   the workspace poller suspension are cancelled**, not deferred — they stay on client polling.
+   See [`web-ui-report-run-stream-blueprint-2026-07.md`](web-ui-report-run-stream-blueprint-2026-07.md)
+   §1 for the rescope rationale and §9 for the delivered D1–D3 phasing, which also extracted
+   `StreamBroadcaster<TPayload>` out of `QuoteStreamBroadcaster`.
 
 ## 10. Risks & mitigations
 
@@ -351,13 +368,16 @@ npm --prefix src/Meridian.Ui/dashboard run build
 | Stranded pane shows stale data silently | Follower flips `healthy=false` on `session-expired` or stale timeout ⇒ `FreshnessChip` leaves `live` and polling resumes ⇒ visible + self-healing. |
 | Durability guardrail drift | Storage sink path is untouched; all new channels use `EventPipelinePolicy`/bounded options per the guardrails; no WAL/atomic-write path is modified. |
 
-## 11. Open questions for the reviewer
+## 11. Open questions for the reviewer — resolved in delivery
 
-1. **Session identity for caps** — confirm the exact accessor exposed by
-   `RequireWorkstationTenantScope` to key `StreamConnectionRegistry` (tenant id vs session id vs
-   both). Affects whether the cap is per-user-session or per-tenant.
-2. **Coalesce floor** — is 250ms an acceptable max push cadence for quotes, or should it be
-   configurable per topic (e.g. tighter for a focused single symbol)?
-3. **Owner-election** — is poll-fallback-only for stranded panes acceptable for v1, or should a
-   follower promote to owner immediately on `session-expired`?
-4. **Cap default** — 4 concurrent streams/session: right ceiling given expected pop-out usage?
+These were answered by PRs A–C as shipped; they are retained as the decision record.
+
+1. **Session identity for caps** — resolved: `StreamConnectionRegistry` is keyed by the id returned
+   from `ResolveStreamSessionId(context)`, and the same registry is shared with the report-run
+   stream so the cap is a total-SSE-per-session guard.
+2. **Coalesce floor** — resolved: `QuoteStreamOptions.CoalesceIntervalMs` stays configurable with
+   the 250 ms default; no per-topic cadence was introduced.
+3. **Owner-election** — resolved as designed: no owner election in v1. A stranded pane flips
+   `healthy=false` and resumes polling; promotion remains unbuilt.
+4. **Cap default** — resolved: `MaxConcurrentStreamsPerSession` default 4, configurable. Report-run
+   streams count against the same ceiling (see the report-run blueprint §11 item 3).

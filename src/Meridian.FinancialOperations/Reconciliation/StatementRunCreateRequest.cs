@@ -17,7 +17,26 @@ public sealed record StatementRunCreateRequest(
     string ImportedBy,
     string SourceFileHash)
 {
-    public string DuplicateKey => StatementDuplicateKey.Create(FundAccountId, StatementPeriodStart, StatementPeriodEnd, SourceFileHash);
+    public string? CanonicalSourcePath { get; init; }
+
+    public string CanonicalArtifactHash { get; init; } = string.Empty;
+
+    public StatementAccountingScope? AccountingScope { get; init; }
+
+    public string DuplicateKey => AccountingScope is null
+        ? StatementDuplicateKey.Create(
+            FundAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourceFileHash,
+            CanonicalArtifactHash)
+        : StatementDuplicateKey.Create(
+            FundAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourceFileHash,
+            CanonicalArtifactHash,
+            AccountingScope);
 
     public static async Task<StatementRunCreateRequest> FromFileAsync(
         string broker,
@@ -77,7 +96,12 @@ public sealed record StatementRunCreateRequest(
             MappingProfileId,
             ToleranceProfileId,
             ImportedBy,
-            SourceFileHash);
+            SourceFileHash)
+        {
+            CanonicalSourcePath = CanonicalSourcePath,
+            CanonicalArtifactHash = CanonicalArtifactHash,
+            AccountingScope = AccountingScope
+        };
 
     public StatementRunRequest ToStatementRunRequest()
         => new(
@@ -92,7 +116,12 @@ public sealed record StatementRunCreateRequest(
             MappingProfileId,
             ToleranceProfileId,
             ImportedBy,
-            SourceFileHash);
+            SourceFileHash)
+        {
+            CanonicalSourcePath = CanonicalSourcePath,
+            CanonicalArtifactHash = CanonicalArtifactHash,
+            AccountingScope = AccountingScope
+        };
 
     private static void ValidateRequired(string parameterName, string value)
     {

@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
 using Meridian.Storage;
@@ -9,6 +10,8 @@ namespace Meridian.Application.Composition;
 
 internal static class FundStructureStartup
 {
+    private const int MaxLegacySnapshotBytes = 64 * 1024 * 1024;
+
     internal const string ConnectionStringVariable = "MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING";
     internal const string SchemaVariable = "MERIDIAN_FUND_STRUCTURE_SCHEMA";
     internal const string DefaultSchema = "fund_structure";
@@ -24,8 +27,12 @@ internal static class FundStructureStartup
         }
     }
 
-    public static void EnsureDatabaseReady(IServiceProvider serviceProvider, ILogger? logger = null)
+    public static async Task EnsureDatabaseReadyAsync(
+        IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default,
+        ILogger? logger = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         EnsureEnvironmentDefaults();
         if (!IsConfigured())
         {
@@ -36,8 +43,10 @@ internal static class FundStructureStartup
         }
 
         var options = serviceProvider.GetRequiredService<FundStructureStoreOptions>();
+        var readiness = serviceProvider.GetRequiredService<DatabaseMigrationReadinessReceipt>();
         var runner = new FundStructureMigrationRunner(options);
-        runner.EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+        await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
+        readiness.MarkFundStructureReady();
         logger?.LogInformation(
             "Fund structure schema '{Schema}' is ready.",
             options.Schema);
@@ -48,74 +57,145 @@ internal static class FundStructureStartup
         if (store is null || storageRoot is null)
             return;
 
-        var snapshotPath = Path.Combine(storageRoot.RootPath, "governance", "fund-structure.json");
-        if (!File.Exists(snapshotPath))
+        var sourcePath = Path.Combine(storageRoot.RootPath, "governance", "fund-structure.json");
+        var snapshotPath = LegacySnapshotArchiver.ResolveReadableSnapshotPath(sourcePath);
+        if (snapshotPath is null)
             return;
 
-        var isEmpty = Task.Run(() => store.IsEmptyAsync(CancellationToken.None)).GetAwaiter().GetResult();
-        if (!isEmpty)
+        var request = await ReadSnapshotAsync(snapshotPath, logger, cancellationToken).ConfigureAwait(false);
+        var result = await store.ImportLegacySnapshotIfEmptyAsync(request, cancellationToken).ConfigureAwait(false);
+        if (result == FundStructureLegacyImportResult.StoreNotEmpty)
+        {
+            logger?.LogInformation(
+                "Fund structure store is not empty and has no matching import receipt; leaving legacy snapshot at {Path}.",
+                snapshotPath);
             return;
+        }
 
-        logger?.LogInformation("Fund structure store is empty — importing existing JSON snapshot from {Path}.", snapshotPath);
-        ImportSnapshotAsync(snapshotPath, store, logger).GetAwaiter().GetResult();
-        var importedPath = snapshotPath + ".imported";
-        File.Move(snapshotPath, importedPath, overwrite: true);
-        logger?.LogInformation("Snapshot import complete. Original file renamed to {ImportedPath}.", importedPath);
+        var archiveResult = await LegacySnapshotArchiver.ArchiveCommittedSnapshotAsync(
+            sourcePath,
+            request.SourceHash,
+            MaxLegacySnapshotBytes,
+            cancellationToken).ConfigureAwait(false);
+        logger?.LogInformation(
+            "Fund structure legacy snapshot state is {ImportResult}; archive state is {ArchiveResult} at {ImportedPath}.",
+            result,
+            archiveResult,
+            LegacySnapshotArchiver.GetImportedPath(sourcePath));
     }
 
     // Mirrors the internal PersistedState record in InMemoryFundStructureService.
     private sealed record PersistedState(
         int Version,
-        List<OrganizationSummaryDto>? Organizations,
-        List<BusinessSummaryDto>? Businesses,
-        List<ClientSummaryDto>? Clients,
-        List<FundSummaryDto>? Funds,
-        List<SleeveSummaryDto>? Sleeves,
-        List<VehicleSummaryDto>? Vehicles,
-        List<LegalEntitySummaryDto>? Entities,
-        List<InvestmentPortfolioSummaryDto>? InvestmentPortfolios,
-        List<OwnershipLinkDto>? OwnershipLinks,
-        List<FundStructureAssignmentDto>? Assignments,
+        List<OrganizationSummaryDto?>? Organizations,
+        List<BusinessSummaryDto?>? Businesses,
+        List<ClientSummaryDto?>? Clients,
+        List<FundSummaryDto?>? Funds,
+        List<SleeveSummaryDto?>? Sleeves,
+        List<VehicleSummaryDto?>? Vehicles,
+        List<LegalEntitySummaryDto?>? Entities,
+        List<InvestmentPortfolioSummaryDto?>? InvestmentPortfolios,
+        List<OwnershipLinkDto?>? OwnershipLinks,
+        List<FundStructureAssignmentDto?>? Assignments,
         List<Guid>? LinkedAccountIds);
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    private static async Task ImportSnapshotAsync(string snapshotPath, IFundStructureStore store, ILogger? logger)
+    internal static async Task<FundStructureLegacyImportRequest> ReadSnapshotAsync(
+        string snapshotPath,
+        ILogger? logger,
+        CancellationToken cancellationToken)
     {
-        var json = await File.ReadAllTextAsync(snapshotPath).ConfigureAwait(false);
-        var state = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
+        var snapshotBytes = await ReadBoundedSnapshotAsync(snapshotPath, cancellationToken).ConfigureAwait(false);
+        var sourceHash = Convert.ToHexString(SHA256.HashData(snapshotBytes)).ToLowerInvariant();
+        await using var snapshotStream = new MemoryStream(snapshotBytes, writable: false);
+        var state = await JsonSerializer
+            .DeserializeAsync<PersistedState>(snapshotStream, JsonOptions, cancellationToken)
+            .ConfigureAwait(false);
         if (state is null)
-        {
-            logger?.LogWarning("Fund structure snapshot at {Path} could not be deserialized; skipping import.", snapshotPath);
-            return;
-        }
+            throw InvalidSnapshot(snapshotPath, "the JSON document did not contain a snapshot");
+        if (state.Version != 1)
+            throw InvalidSnapshot(snapshotPath, $"unsupported snapshot version {state.Version}");
 
-        // Import in parent-before-child order to respect any FK-like constraints.
-        foreach (var org in state.Organizations ?? [])
-            await store.UpsertOrganizationAsync(org).ConfigureAwait(false);
-        foreach (var biz in state.Businesses ?? [])
-            await store.UpsertBusinessAsync(biz).ConfigureAwait(false);
-        foreach (var client in state.Clients ?? [])
-            await store.UpsertClientAsync(client).ConfigureAwait(false);
-        foreach (var fund in state.Funds ?? [])
-            await store.UpsertFundAsync(fund).ConfigureAwait(false);
-        foreach (var sleeve in state.Sleeves ?? [])
-            await store.UpsertSleeveAsync(sleeve).ConfigureAwait(false);
-        foreach (var vehicle in state.Vehicles ?? [])
-            await store.UpsertVehicleAsync(vehicle).ConfigureAwait(false);
-        foreach (var entity in state.Entities ?? [])
-            await store.UpsertLegalEntityAsync(entity).ConfigureAwait(false);
-        foreach (var portfolio in state.InvestmentPortfolios ?? [])
-            await store.UpsertInvestmentPortfolioAsync(portfolio).ConfigureAwait(false);
-        foreach (var link in state.OwnershipLinks ?? [])
-            await store.UpsertOwnershipLinkAsync(link).ConfigureAwait(false);
-        foreach (var assignment in state.Assignments ?? [])
-            await store.UpsertAssignmentAsync(assignment).ConfigureAwait(false);
+        var organizations = RequireItems(state.Organizations, snapshotPath, "organizations");
+        var businesses = RequireItems(state.Businesses, snapshotPath, "businesses");
+        var clients = RequireItems(state.Clients, snapshotPath, "clients");
+        var funds = RequireItems(state.Funds, snapshotPath, "funds");
+        var sleeves = RequireItems(state.Sleeves, snapshotPath, "sleeves");
+        var vehicles = RequireItems(state.Vehicles, snapshotPath, "vehicles");
+        var entities = RequireItems(state.Entities, snapshotPath, "entities");
+        var portfolios = RequireItems(state.InvestmentPortfolios, snapshotPath, "investmentPortfolios");
+        var ownershipLinks = RequireItems(state.OwnershipLinks, snapshotPath, "ownershipLinks");
+        var assignments = RequireItems(state.Assignments, snapshotPath, "assignments");
+        var linkedAccountIds = state.LinkedAccountIds
+            ?.Distinct()
+            .ToArray()
+            ?? throw InvalidSnapshot(snapshotPath, "required field 'linkedAccountIds' is missing");
+        if (linkedAccountIds.Contains(Guid.Empty))
+            throw InvalidSnapshot(snapshotPath, "linkedAccountIds contains an empty account identifier");
 
         logger?.LogInformation(
-            "Fund structure import: orgs={Orgs}, funds={Funds}, links={Links}.",
-            state.Organizations?.Count ?? 0,
-            state.Funds?.Count ?? 0,
-            state.OwnershipLinks?.Count ?? 0);
+            "Prepared fund structure import: orgs={Orgs}, funds={Funds}, links={Links}.",
+            organizations.Count,
+            funds.Count,
+            ownershipLinks.Count);
+
+        return new FundStructureLegacyImportRequest(
+            sourceHash,
+            organizations,
+            businesses,
+            clients,
+            funds,
+            sleeves,
+            vehicles,
+            entities,
+            portfolios,
+            ownershipLinks,
+            assignments,
+            linkedAccountIds);
+    }
+
+    private static List<T> RequireItems<T>(
+        List<T?>? items,
+        string snapshotPath,
+        string fieldName)
+        where T : class
+    {
+        if (items is null)
+            throw InvalidSnapshot(snapshotPath, $"required field '{fieldName}' is missing");
+
+        var result = new List<T>(items.Count);
+        foreach (var item in items)
+        {
+            result.Add(item ?? throw InvalidSnapshot(
+                snapshotPath,
+                $"required field '{fieldName}' contains a null item"));
+        }
+
+        return result;
+    }
+
+    private static InvalidDataException InvalidSnapshot(string snapshotPath, string reason)
+        => new($"Fund structure legacy snapshot '{snapshotPath}' is invalid: {reason}.");
+
+    private static async Task<byte[]> ReadBoundedSnapshotAsync(
+        string snapshotPath,
+        CancellationToken cancellationToken)
+    {
+        var length = new FileInfo(snapshotPath).Length;
+        if (length > MaxLegacySnapshotBytes)
+        {
+            throw new InvalidDataException(
+                $"Fund structure legacy snapshot '{snapshotPath}' is {length} bytes; maximum supported size is {MaxLegacySnapshotBytes} bytes.");
+        }
+
+        var bytes = await File.ReadAllBytesAsync(snapshotPath, cancellationToken).ConfigureAwait(false);
+        if (bytes.Length > MaxLegacySnapshotBytes)
+        {
+            throw new InvalidDataException(
+                $"Fund structure legacy snapshot '{snapshotPath}' exceeded the {MaxLegacySnapshotBytes}-byte limit while being read.");
+        }
+
+        return bytes;
     }
 }

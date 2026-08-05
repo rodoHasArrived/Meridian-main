@@ -184,6 +184,10 @@ public sealed record StatementImportCommitResultDto(
     public IReadOnlyList<StatementImportReconciliationCaseLinkDto> ReconciliationCaseLinks { get; init; } = [];
     public IReadOnlyList<string> NextActions { get; init; } = [];
     public string? RetainedCanonicalEvidencePath { get; init; }
+    public string? StatementReconciliationReportWorkflowId { get; init; }
+    public string? StatementReconciliationReportStatusRoute { get; init; }
+    public Guid? OperationsWorkflowId { get; init; }
+    public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }
 }
 
 /// <summary>
@@ -200,6 +204,167 @@ public sealed record StatementImportReconciliationCaseLinkDto(
     string Reason,
     string SuggestedNextAction);
 
+/// <summary>Status of the durable statement reconciliation report workflow.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StatementReconciliationReportWorkflowStatusDto>))]
+public enum StatementReconciliationReportWorkflowStatusDto : byte
+{
+    InputRetained = 0,
+    Importing = 1,
+    AwaitingReconciliation = 2,
+    RenderingReconciliationReport = 3,
+    Completed = 4,
+    Failed = 5
+}
+
+/// <summary>One immutable, hash-verified artifact produced by the statement reconciliation report workflow.</summary>
+public sealed record StatementReconciliationReportArtifactDto(
+    string ArtifactId = default!,
+    string ArtifactKind = default!,
+    string FileName = default!,
+    string ContentType = default!,
+    long ByteLength = default,
+    string ContentHashSha256 = default!,
+    string DownloadRoute = default!,
+    DateTimeOffset RetainedAtUtc = default);
+
+/// <summary>
+/// One superseded artifact generation retained for immutable workflow and audit history.
+/// Artifact descriptors preserve the exact metadata that was current for the generation; their
+/// original download routes are audit metadata and do not authorize historical download.
+/// </summary>
+public sealed record StatementReconciliationReportArtifactGenerationDto(
+    int Generation = default,
+    IReadOnlyList<StatementReconciliationReportArtifactDto> Artifacts = default!,
+    string ManifestFileName = default!,
+    long ManifestByteLength = default,
+    string ManifestContentHashSha256 = default!,
+    DateTimeOffset GeneratedAtUtc = default,
+    DateTimeOffset ArchivedAtUtc = default,
+    IReadOnlyList<string> EvidenceReferences = default!,
+    string ArchiveReceiptContentHashSha256 = default!);
+
+/// <summary>
+/// Exact accounting authority bound to a statement import before it can enter close casework.
+/// </summary>
+public sealed record StatementReconciliationAccountingScopeDto(
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid AccountingPeriodId,
+    DateOnly AsOfDate);
+
+/// <summary>
+/// Durable workflow projection shared by browser and WPF clients. It exposes retained evidence and
+/// recovery routes without exposing server file-system paths.
+/// </summary>
+public sealed record StatementReconciliationReportWorkflowDto(
+    string WorkflowId = default!,
+    StatementReconciliationReportWorkflowStatusDto Status = default,
+    long Version = default,
+    string TenantId = default!,
+    string? CompanyId = default,
+    string SourceInstitution = default!,
+    string FundAccountId = default!,
+    string ExternalAccountId = default!,
+    DateOnly PeriodStart = default,
+    DateOnly PeriodEnd = default,
+    string? StatementRunId = default,
+    EvidenceVaultIdentityDto? EvidenceVaultIdentity = default,
+    IReadOnlyList<StatementReconciliationReportArtifactDto> RetainedArtifacts = default!,
+    IReadOnlyList<string> EvidenceReferences = default!,
+    int BreakCount = default,
+    int CaseCount = default,
+    DateTimeOffset CreatedAtUtc = default,
+    DateTimeOffset UpdatedAtUtc = default,
+    DateTimeOffset? CompletedAtUtc = default,
+    string? FailureReason = default,
+    string? RecoveryAction = default,
+    string StatusRoute = default!,
+    string ResumeRoute = default!)
+{
+    /// <summary>
+    /// Server-verified fund, ledger-book, period, and as-of scope. Null denotes a legacy
+    /// reconciliation-only workflow that cannot be used as close or certified-reporting evidence.
+    /// </summary>
+    public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }
+
+    /// <summary>
+    /// Existing Operations Continuity workflow that owns posting, casework, approval, and close.
+    /// The statement operation does not duplicate that lifecycle.
+    /// </summary>
+    public Guid? OperationsWorkflowId { get; init; }
+
+    /// <summary>
+    /// Monotonic number of the latest artifact generation produced by this workflow. When the
+    /// workflow is awaiting reconciliation after a reopen, the latest generation is historical and
+    /// <see cref="RetainedArtifacts"/> remains empty until a new current generation completes.
+    /// </summary>
+    public int ArtifactGeneration { get; init; }
+
+    /// <summary>
+    /// Immutable metadata, manifest hashes, descriptors, and audit evidence for superseded artifact
+    /// generations. Current artifact authority remains exclusively in <see cref="RetainedArtifacts"/>.
+    /// </summary>
+    public IReadOnlyList<StatementReconciliationReportArtifactGenerationDto> ArtifactHistory { get; init; } = [];
+}
+
+/// <summary>
+/// Source-compatibility status contract for clients compiled before the operation was renamed.
+/// Newly persisted and returned workflows use <see cref="StatementReconciliationReportWorkflowStatusDto"/>.
+/// </summary>
+[Obsolete("Use StatementReconciliationReportWorkflowStatusDto.")]
+[JsonConverter(typeof(JsonStringEnumConverter<StatementToReportWorkflowStatusDto>))]
+public enum StatementToReportWorkflowStatusDto : byte
+{
+    InputRetained = 0,
+    Importing = 1,
+    AwaitingReconciliation = 2,
+    RenderingReport = 3,
+    Completed = 4,
+    Failed = 5
+}
+
+/// <summary>Source-compatibility artifact contract for pre-rename clients.</summary>
+[Obsolete("Use StatementReconciliationReportArtifactDto.")]
+public sealed record StatementToReportArtifactDto(
+    string ArtifactId,
+    string ArtifactKind,
+    string FileName,
+    string ContentType,
+    long ByteLength,
+    string ContentHashSha256,
+    string DownloadRoute,
+    DateTimeOffset RetainedAtUtc);
+
+/// <summary>
+/// Source-compatibility workflow contract for pre-rename clients. Legacy HTTP routes project this
+/// wire shape directly over the canonical statement reconciliation report operation.
+/// </summary>
+[Obsolete("Use StatementReconciliationReportWorkflowDto.")]
+public sealed record StatementToReportWorkflowDto(
+    string WorkflowId,
+    StatementToReportWorkflowStatusDto Status,
+    long Version,
+    string TenantId,
+    string? CompanyId,
+    string SourceInstitution,
+    string FundAccountId,
+    string ExternalAccountId,
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    string? StatementRunId,
+    EvidenceVaultIdentityDto? EvidenceVaultIdentity,
+    IReadOnlyList<StatementToReportArtifactDto> RetainedArtifacts,
+    IReadOnlyList<string> EvidenceReferences,
+    int BreakCount,
+    int CaseCount,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    DateTimeOffset? CompletedAtUtc,
+    string? FailureReason,
+    string? RecoveryAction,
+    string StatusRoute,
+    string ResumeRoute);
+
 /// <summary>A persisted scheduled-fetch configuration for a fetch-capable connector.</summary>
 public sealed record StatementFetchScheduleDto(
     string ScheduleId,
@@ -214,7 +379,10 @@ public sealed record StatementFetchScheduleDto(
     DateTimeOffset? LastRunAtUtc,
     string? LastRunStatus,
     DateTimeOffset? NextDueAtUtc,
-    string SourceKind);
+    string SourceKind,
+    DateOnly? PeriodStart = null,
+    DateOnly? PeriodEnd = null,
+    StatementReconciliationAccountingScopeDto? AccountingScope = null);
 
 public sealed record StatementFetchScheduleUpsertRequestDto(
     string? ScheduleId,
@@ -226,4 +394,6 @@ public sealed record StatementFetchScheduleUpsertRequestDto(
     string? ToleranceProfileId,
     int CadenceHours,
     bool Enabled,
-    string? SourceKind = null);
+    string? SourceKind = null,
+    DateOnly? PeriodStart = null,
+    DateOnly? PeriodEnd = null);

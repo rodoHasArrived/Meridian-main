@@ -36,6 +36,31 @@ public sealed class LifecycleSupervisorRuntimeTests
         action.Should().Be(SupervisorAction.HostExited);
     }
 
+    [Theory]
+    [InlineData(RuntimeLifecycleState.Degraded, RuntimeReadinessStatus.Degraded, true, false)]
+    [InlineData(RuntimeLifecycleState.Ready, RuntimeReadinessStatus.Ready, false, false)]
+    [InlineData(RuntimeLifecycleState.Ready, RuntimeReadinessStatus.Ready, true, true)]
+    public void IsReadyForBrowser_RequiresExactReadyAndAcceptingWork(
+        RuntimeLifecycleState state,
+        RuntimeReadinessStatus readiness,
+        bool acceptingWork,
+        bool expected)
+    {
+        var lifecycle = new RuntimeLifecycleSnapshotDto
+        {
+            SessionId = "host-session",
+            State = state,
+            Readiness = readiness,
+            StartedAtUtc = DateTimeOffset.UtcNow.AddMinutes(-1),
+            StateChangedAtUtc = DateTimeOffset.UtcNow,
+            ActivePhase = readiness.ToString(),
+            AcceptingWork = acceptingWork,
+            ShutdownRequested = false
+        };
+
+        LifecycleSupervisorRuntime.IsReadyForBrowser(lifecycle).Should().Be(expected);
+    }
+
     private static RuntimeLifecycleSnapshotDto Lifecycle(bool shutdownRequested, string? reason)
         => new()
         {

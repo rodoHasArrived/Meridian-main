@@ -175,7 +175,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             allFailedMessageFactory: summary => $"All providers failed for {symbol}: {summary}",
             rangeStart: from,
             rangeEnd: to,
-            ct).ConfigureAwait(false);
+            recencyEvaluator: bars => BackfillBarValidation.EvaluateDailyRecency(bars, to),
+            ct: ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
@@ -206,16 +207,21 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 $"All aggregate-capable providers failed for {symbol} ({granularity.ToDisplayName()}): {summary}",
             rangeStart: from,
             rangeEnd: to,
-            ct).ConfigureAwait(false);
+            recencyEvaluator: null,
+            ct: ct).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Shared failover skeleton for the daily-bar and aggregate-bar paths: iterate the ordered
     /// candidate providers, skipping backed-off and rate-limited ones, and return the first
-    /// non-empty result. If every candidate is rate limited it waits (bounded by
-    /// <see cref="_maxRateLimitRetryBudget"/>, with jitter) for the earliest reset and retries.
-    /// When all providers fail it raises the exhausted progress event and throws an
-    /// <see cref="AggregateException"/>; when they simply return no data it returns an empty list.
+    /// non-empty result that passes the optional recency evaluation. A stale result (e.g. a
+    /// frozen dataset ending years before the requested range end) is held as a last-resort
+    /// fallback while fresher providers are tried; if only stale data exists it is returned
+    /// with an error-level log so consumers cannot mistake it for fresh coverage. If every
+    /// candidate is rate limited it waits (bounded by <see cref="_maxRateLimitRetryBudget"/>,
+    /// with jitter) for the earliest reset and retries. When all providers fail it raises the
+    /// exhausted progress event and throws an <see cref="AggregateException"/>; when they
+    /// simply return no data it returns an empty list.
     /// </summary>
     private async Task<IReadOnlyList<TResult>> ExecuteWithFailoverAsync<TResult>(
         string symbol,
@@ -226,11 +232,15 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         Func<string, string> allFailedMessageFactory,
         DateOnly? rangeStart,
         DateOnly? rangeEnd,
+        Func<IReadOnlyList<TResult>, StaleBarsVerdict?>? recencyEvaluator,
         CancellationToken ct)
     {
         var requestStartedAt = DateTimeOffset.UtcNow;
         var retryDeadline = requestStartedAt + _maxRateLimitRetryBudget;
         var providerAttempt = 0;
+        IReadOnlyList<TResult>? freshestStaleResult = null;
+        StaleBarsVerdict? freshestStaleVerdict = null;
+        string? freshestStaleProvider = null;
 
         for (var attempt = 0; ; attempt++)
         {
@@ -298,6 +308,25 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         _health.ClearFailure(provider.Name);
                         _rotation.ClearRateLimitState(provider.Name);
 
+                        var staleVerdict = recencyEvaluator?.Invoke(results);
+                        if (staleVerdict is not null)
+                        {
+                            _log.Warning(
+                                "Provider {Provider} returned stale {Operation} for {Symbol}: {StaleReason}. Trying fresher providers before accepting.",
+                                provider.Name, operationLabel, symbol, staleVerdict.Description);
+                            Report(provider.Name, "stale-data", results.Count, error: staleVerdict.Description);
+
+                            if (freshestStaleVerdict is null ||
+                                staleVerdict.LatestSessionDate > freshestStaleVerdict.LatestSessionDate)
+                            {
+                                freshestStaleResult = results;
+                                freshestStaleVerdict = staleVerdict;
+                                freshestStaleProvider = provider.Name;
+                            }
+
+                            continue;
+                        }
+
                         _log.Information("Successfully retrieved {Count} {Operation} from {Provider} for {Symbol}",
                             results.Count, operationLabel, provider.Name, symbol);
                         Report(provider.Name, "completed", results.Count);
@@ -356,6 +385,18 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     await Task.Delay(wait.Value, ct).ConfigureAwait(false);
                     continue;
                 }
+            }
+
+            // No provider produced a fresh result. If a stale result was held back, return it
+            // loudly rather than failing outright — old data with an error-level signal beats
+            // no data — but never let it masquerade as fresh coverage.
+            if (freshestStaleResult is not null)
+            {
+                _log.Error(
+                    "All providers returned stale {Operation} for {Symbol}; accepting freshest stale result from {Provider} ({StaleReason})",
+                    operationLabel, symbol, freshestStaleProvider, freshestStaleVerdict!.Description);
+                Report(freshestStaleProvider!, "stale-data-accepted", freshestStaleResult.Count, error: freshestStaleVerdict.Description);
+                return freshestStaleResult;
             }
 
             // All providers failed
@@ -608,13 +649,49 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             return;
         _disposed = true;
 
-        _rotation.Dispose();
-        if (_ownsProgressTracker)
-            _progressTracker.Dispose();
+        var failures = new List<Exception>();
 
-        foreach (var provider in _providers.OfType<IDisposable>())
+        CaptureDisposalFailure(
+            failures,
+            _rotation.Dispose,
+            "Failed to dispose the provider rotation strategy.");
+
+        if (_ownsProgressTracker)
         {
-            provider.Dispose();
+            CaptureDisposalFailure(
+                failures,
+                _progressTracker.Dispose,
+                "Failed to dispose the owned backfill progress tracker.");
+        }
+
+        foreach (var provider in _providers)
+        {
+            CaptureDisposalFailure(
+                failures,
+                provider.Dispose,
+                $"Failed to dispose historical provider '{provider.Name}'.");
+        }
+
+        if (failures.Count > 0)
+        {
+            throw new AggregateException(
+                "Composite historical provider disposal completed with failures.",
+                failures);
+        }
+    }
+
+    private static void CaptureDisposalFailure(
+        ICollection<Exception> failures,
+        Action dispose,
+        string message)
+    {
+        try
+        {
+            dispose();
+        }
+        catch (Exception ex)
+        {
+            failures.Add(new InvalidOperationException(message, ex));
         }
     }
 }

@@ -4,7 +4,7 @@ description: >
   Archive and repository-structure specialist for Meridian. Decides whether files
   should remain active, move to archive buckets, or be relocated to clearer
   ownership paths while preserving traceability.
-tools: ["read", "search", "edit", "mcp"]
+tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
 # Meridian — Archive Organizer

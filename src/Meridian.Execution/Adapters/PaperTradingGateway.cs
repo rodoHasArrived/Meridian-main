@@ -1,3 +1,4 @@
+using Meridian.Execution.Logging;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Meridian.Contracts.SecurityMaster;
@@ -13,17 +14,22 @@ namespace Meridian.Execution.Adapters;
 
 /// <summary>
 /// Simulated order gateway that routes no real orders to any exchange.
-/// Fills are generated synthetically at a notional price (or at the limit price for
-/// limit orders), making this the safe default for strategy validation before live promotion.
+/// Fills are priced from the limit/stop price or the live feed's last observed price;
+/// market orders with no available reference price are rejected unless scaffold notional
+/// pricing is explicitly enabled via
+/// <see cref="PaperTradingGatewayOptions.AllowScaffoldMarketFills"/>.
 /// Implements ADR-015.
 /// </summary>
 [ImplementsAdr("ADR-015", "Simulated IOrderGateway over live Meridian feed — no real orders")]
 public sealed class PaperTradingGateway : IOrderGateway
 {
-    // Notional fill price used for market orders in this scaffold, configurable via
-    // PaperTradingGatewayOptions. A production implementation would source the
-    // last-traded price from ILiveFeedAdapter.
+    // Notional fallback fill price used for market orders when no live feed price is
+    // available, configurable via PaperTradingGatewayOptions. When a live feed adapter
+    // is supplied, market fills are priced from the last trade (or quote midpoint).
+    // Scaffold pricing is opt-in: without it, priceless market orders are rejected.
     private readonly decimal _scaffoldMarketFillPrice;
+    private readonly bool _allowScaffoldMarketFills;
+    private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     private int _scaffoldPriceWarningIssued;
 
     private readonly ILogger<PaperTradingGateway> _logger;
@@ -81,10 +87,15 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// Optional gateway options. When omitted, defaults apply (including the notional
     /// scaffold market fill price).
     /// </param>
+    /// <param name="liveFeed">
+    /// Optional live feed adapter. When provided, market orders fill at the last observed
+    /// trade price (or quote midpoint) instead of the scaffold notional price.
+    /// </param>
     public PaperTradingGateway(
         ILogger<PaperTradingGateway> logger,
         ISecurityMasterQueryService? securityMaster = null,
-        PaperTradingGatewayOptions? options = null)
+        PaperTradingGatewayOptions? options = null,
+        Interfaces.ILiveFeedAdapter? liveFeed = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tradingParameters = new PaperTradingGatewayTradingParameters(
@@ -92,6 +103,8 @@ public sealed class PaperTradingGateway : IOrderGateway
             securityMaster,
             LogLevel.Debug);
         _scaffoldMarketFillPrice = PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
+        _allowScaffoldMarketFills = PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
+        _liveFeed = liveFeed;
         // Use EventPipelinePolicy for consistent backpressure settings across the platform (ADR-013).
         // Disposal waits for in-flight fills before completing this bounded update channel.
         _updates = EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>(
@@ -128,7 +141,7 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         _logger.LogInformation(
             "Paper order accepted: {ClientOrderId} {Quantity} {Symbol} @ {Type}",
-            orderId, request.Quantity, request.Symbol, request.Type);
+            LogSanitizer.Sanitize(orderId), request.Quantity, LogSanitizer.Sanitize(request.Symbol), request.Type);
 
         var ack = new OrderAcknowledgement(
             OrderId: orderId,
@@ -197,7 +210,7 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         if (cancelledRequest is not null)
         {
-            _logger.LogInformation("Paper order cancelled: {OrderId} {Symbol}", orderId, cancelledRequest.Symbol);
+            _logger.LogInformation("Paper order cancelled: {OrderId} {Symbol}", LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(cancelledRequest.Symbol));
             var update = new OrderStatusUpdate(
                 OrderId: orderId,
                 ClientOrderId: orderId,
@@ -212,7 +225,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             {
                 _logger.LogWarning(
                     "Paper cancellation update for {OrderId} could not be queued because the update channel was unavailable.",
-                    orderId);
+                    LogSanitizer.Sanitize(orderId));
             }
         }
 
@@ -248,12 +261,13 @@ public sealed class PaperTradingGateway : IOrderGateway
             // Emitting a Filled update here would contradict that terminal state.
             _logger.LogDebug(
                 "Paper fill skipped for {OrderId}: order is no longer working (cancelled or already filled).",
-                orderId);
+                LogSanitizer.Sanitize(orderId));
             return;
         }
 
-        // For limit orders use the limit price; for market orders use the scaffold notional price.
-        // A real implementation would source the fill price from the live feed via ILiveFeedAdapter.
+        // For limit orders use the limit price; for market orders source the fill price
+        // from the live feed (last trade, then quote midpoint) before falling back to the
+        // scaffold notional price.
         var referencePrice = ((OrderType)request.Type) switch
         {
             OrderType.Limit or OrderType.StopLimit => request.LimitPrice,
@@ -261,8 +275,37 @@ public sealed class PaperTradingGateway : IOrderGateway
             _ => null
         };
 
+        referencePrice ??= GetLiveReferencePrice(request.Symbol);
+
         if (referencePrice is null)
         {
+            if (!_allowScaffoldMarketFills)
+            {
+                var rejectReason = PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol);
+                _logger.LogWarning(
+                    "Paper order rejected: {ClientOrderId} {Symbol} — {RejectReason}",
+                    LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(rejectReason));
+
+                var rejection = new OrderStatusUpdate(
+                    OrderId: orderId,
+                    ClientOrderId: orderId,
+                    Symbol: request.Symbol,
+                    Status: GatewayOrderStatus.Rejected,
+                    FilledQuantity: 0,
+                    AverageFillPrice: null,
+                    RejectReason: rejectReason,
+                    Timestamp: DateTimeOffset.UtcNow);
+
+                if (!_updates.Writer.TryWrite(rejection))
+                {
+                    _logger.LogWarning(
+                        "Paper rejection update for {OrderId} could not be queued because the update channel was unavailable.",
+                        LogSanitizer.Sanitize(orderId));
+                }
+
+                return;
+            }
+
             WarnScaffoldPriceUsed();
         }
 
@@ -286,12 +329,41 @@ public sealed class PaperTradingGateway : IOrderGateway
         {
             _logger.LogWarning(
                 "Paper fill update for {OrderId} could not be queued because the update channel was unavailable.",
-                orderId);
+                LogSanitizer.Sanitize(orderId));
         }
 
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
-            request.ClientOrderId, request.Quantity, request.Symbol, fillPrice);
+            LogSanitizer.Sanitize(request.ClientOrderId), request.Quantity, LogSanitizer.Sanitize(request.Symbol), fillPrice);
+    }
+
+    /// <summary>
+    /// Returns the best live reference price for a symbol from the optional feed adapter:
+    /// last trade price first, then best-bid/offer midpoint; <c>null</c> when no feed is
+    /// wired or no tick has been observed yet.
+    /// </summary>
+    private decimal? GetLiveReferencePrice(string symbol)
+    {
+        if (_liveFeed is null)
+        {
+            return null;
+        }
+
+        if (_liveFeed.GetLastTrade(symbol) is { Price: > 0m } trade)
+        {
+            return trade.Price;
+        }
+
+        if (_liveFeed.GetLastQuote(symbol) is { } quote)
+        {
+            var mid = quote.MidPrice ?? (quote.BidPrice + quote.AskPrice) / 2m;
+            if (mid > 0m)
+            {
+                return mid;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -357,7 +429,7 @@ public sealed class PaperTradingGateway : IOrderGateway
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Paper fill simulation failed for {OrderId}.", orderId);
+            _logger.LogError(ex, "Paper fill simulation failed for {OrderId}.", LogSanitizer.Sanitize(orderId));
         }
         finally
         {

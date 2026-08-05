@@ -168,17 +168,23 @@ public enum StatementFetchDatasets
     All = Activity | Positions
 }
 
+/// <summary>
+/// Requests remote statement data. When <see cref="UntilExclusive"/> is set, the connector must
+/// enforce the exact half-open window or fail closed.
+/// </summary>
 public sealed record StatementFetchRequest(
     string ConnectorId,
     string ExternalAccountId,
     DateTimeOffset? Since = null,
     string? MappingProfileId = null,
-    StatementFetchDatasets Datasets = StatementFetchDatasets.All);
+    StatementFetchDatasets Datasets = StatementFetchDatasets.All,
+    DateTimeOffset? UntilExclusive = null);
 
 /// <summary>
 /// A connector that can pull statements from a remote source. Fetch yields a retained
 /// document that <see cref="IStatementConnector.ParseAsync"/> then consumes, keeping a
 /// single parse path and raw evidence for every import regardless of origin.
+/// A connector must not silently ignore <see cref="StatementFetchRequest.UntilExclusive"/>.
 /// </summary>
 public interface IFetchingStatementConnector : IStatementConnector
 {

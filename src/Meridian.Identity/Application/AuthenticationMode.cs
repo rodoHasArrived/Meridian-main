@@ -24,7 +24,8 @@ internal static class AuthenticationModeResolver
                 "optional" => AuthenticationMode.Optional,
                 "required" => AuthenticationMode.Required,
                 "auto" => ResolveDefault(environment),
-                _ => ResolveDefault(environment)
+                _ => throw new InvalidOperationException(
+                    $"Unrecognized {AuthModeEnvVar} value '{configuredMode}'. Supported values: optional, required, auto.")
             };
         }
 
@@ -43,7 +44,7 @@ internal static class AuthenticationModeResolver
             : AuthenticationMode.Required;
     }
 
-    private static bool IsPackagedOrCustomerBuild()
+    internal static bool IsPackagedOrCustomerBuild()
         => IsTruthy(Environment.GetEnvironmentVariable(PackagedBuildEnvVar)) ||
            IsTruthy(Environment.GetEnvironmentVariable(CustomerBuildEnvVar));
 

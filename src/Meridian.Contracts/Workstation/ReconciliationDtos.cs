@@ -1,6 +1,9 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -131,7 +134,8 @@ public sealed record ReconciliationBreakDto(
     string Reason,
     DateTimeOffset? ExpectedAsOf,
     DateTimeOffset? ActualAsOf,
-    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null);
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null,
+    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null);
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
@@ -352,7 +356,38 @@ public enum ReconciliationCaseworkAction : byte
     LinkEvidence = 8,
     SignOff = 9,
     Reopen = 10,
-    Resolve = 11
+    Resolve = 11,
+    Waive = 12,
+    Supersede = 13
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakMeasureKindDto>))]
+public enum ReconciliationBreakMeasureKindDto : byte
+{
+    Value = 0,
+    Quantity = 1,
+    CostBasis = 2
+}
+
+/// <summary>
+/// One typed, item-level reconciliation comparison. A measure that cannot be calculated must say
+/// why instead of substituting zeroes that could be mistaken for an actual tie-out.
+/// </summary>
+public sealed record ReconciliationBreakMeasureDto(
+    ReconciliationBreakMeasureKindDto Kind,
+    decimal? Expected,
+    decimal? Actual,
+    decimal? Variance,
+    decimal? Tolerance,
+    string Unit,
+    string? UnavailableReason = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakDispositionDto>))]
+public enum ReconciliationBreakDispositionDto : byte
+{
+    Resolved = 0,
+    Waived = 1,
+    Superseded = 2
 }
 
 /// <summary>
@@ -439,7 +474,64 @@ public sealed record ReconciliationBreakQueueItem(
     string? SourceBreakId = null,
     string? SourceFingerprint = null,
     ReconciliationBreakExplanationDto? BreakExplanation = null,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null,
+    ReconciliationBreakDispositionDto? Disposition = null,
+    string? DispositionReason = null,
+    string? SupersedingBreakId = null,
+    string? DispositionApprovedBy = null,
+    string? DispositionApprovalReference = null,
+    string? DispositionEvidenceHash = null,
+    DateTimeOffset? DisposedAt = null,
+    IReadOnlyList<string>? BlockedOutputs = null,
+    string? AccountingPeriodId = null,
+    DateOnly? AsOfDate = null)
+{
+    /// <summary>
+    /// Immutable tenant identity retained by the queue persistence boundary. Legacy records may
+    /// be unscoped; tenant-bound production reads must not surface those records.
+    /// </summary>
+    public string? TenantId { get; init; }
+
+    /// <summary>
+    /// Immutable company identity retained alongside <see cref="TenantId"/>. Tenant and company
+    /// must either both be present or both be absent on a legacy record.
+    /// </summary>
+    public string? CompanyId { get; init; }
+
+    /// <summary>
+    /// Reporting/close fund-profile identity. Kept separate from the source fund-account identity
+    /// and init-only to preserve the established positional constructor and deconstruction ABI.
+    /// </summary>
+    public string? FundProfileId { get; init; }
+}
+
+/// <summary>
+/// Server-resolved access scope for reconciliation queue reads and mutations. This value is never
+/// accepted from a workstation request body; endpoint adapters build it from the authenticated
+/// session.
+/// </summary>
+public sealed record ReconciliationBreakQueueScope
+{
+    public ReconciliationBreakQueueScope(string tenantId, string companyId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        TenantId = tenantId.Trim();
+        CompanyId = companyId.Trim();
+    }
+
+    public string TenantId { get; }
+
+    public string CompanyId { get; }
+
+    public bool Owns(ReconciliationBreakQueueItem? item)
+        => item is not null
+           && !string.IsNullOrWhiteSpace(item.TenantId)
+           && !string.IsNullOrWhiteSpace(item.CompanyId)
+           && string.Equals(item.TenantId.Trim(), TenantId, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(item.CompanyId.Trim(), CompanyId, StringComparison.OrdinalIgnoreCase);
+}
 
 public sealed record ReconciliationBreakExplanationDto(
     string Summary,
@@ -535,7 +627,28 @@ public sealed record ReconciliationCaseworkCommand(
     bool Privileged = false,
     ReconciliationCaseLifecycleState? StatusTransition = null,
     IReadOnlyList<string>? Mentions = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    string? ApprovalActor = null,
+    string? ApprovalReference = null,
+    string? SupersedingBreakId = null)
+{
+    /// <summary>
+    /// Server-resolved close scope bound by the statement/Operations evidence handoff. Init-only
+    /// preserves the established command constructor and deconstruction ABI.
+    /// </summary>
+    public ReconciliationCaseworkCloseScopeDto? CloseScope { get; init; }
+}
+
+/// <summary>
+/// Exact accounting-close scope retained when statement casework has been handed to the matching
+/// Operations Continuity workflow. This scope is queue-owned evidence; callers cannot use it to
+/// post, approve, or close a ledger period.
+/// </summary>
+public sealed record ReconciliationCaseworkCloseScopeDto(
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid AccountingPeriodId,
+    DateOnly AsOfDate);
 
 public sealed record ReconciliationBulkCaseworkRequest(
     IReadOnlyList<string> BreakIds,
@@ -555,7 +668,11 @@ public sealed record ReconciliationBulkCaseworkRequest(
     string? RootCauseCode = null,
     string? ResolutionCode = null,
     int MaxCaseCount = 100,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? ApprovalActor = null,
+    string? ApprovalReference = null,
+    string? SupersedingBreakId = null);
 
 public sealed record ReconciliationBulkCaseworkCaseResult(
     string BreakId,
@@ -571,7 +688,151 @@ public sealed record ReconciliationBulkCaseworkResult(
     int RequestedCount,
     int SucceededCount,
     int FailedCount,
-    IReadOnlyList<ReconciliationBulkCaseworkCaseResult> Results);
+    IReadOnlyList<ReconciliationBulkCaseworkCaseResult> Results)
+{
+    /// <summary>Canonical hash of the complete admitted bulk request.</summary>
+    public string InputHashSha256 { get; init; } = ComputeCompatibilityInputHash(
+        BulkActionId,
+        IdempotencyKey,
+        DryRun,
+        RequestedCount,
+        SucceededCount,
+        FailedCount);
+
+    /// <summary>
+    /// Verified terminal receipt. Queue implementations replace this compatibility receipt with
+    /// one bound to the full request, persisted receipt, and retained audit evidence.
+    /// </summary>
+    public VerifiedOperationOutcome Outcome { get; init; } = CreateCompatibilityOutcome(
+        BulkActionId,
+        IdempotencyKey,
+        DryRun,
+        RequestedCount,
+        SucceededCount,
+        FailedCount);
+
+    private static VerifiedOperationOutcome CreateCompatibilityOutcome(
+        string bulkActionId,
+        string idempotencyKey,
+        bool dryRun,
+        int requestedCount,
+        int succeededCount,
+        int failedCount)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var inputHash = ComputeCompatibilityInputHash(
+            bulkActionId,
+            idempotencyKey,
+            dryRun,
+            requestedCount,
+            succeededCount,
+            failedCount);
+        var evidenceId = "reconciliation-bulk-result";
+        var allSucceeded = requestedCount > 0 && failedCount == 0 && succeededCount == requestedCount;
+        var partiallySucceeded = succeededCount > 0;
+        var state = allSucceeded
+            ? OperationTerminalState.Succeeded
+            : partiallySucceeded
+                ? OperationTerminalState.CompletedWithWarnings
+                : OperationTerminalState.Blocked;
+        var issues = allSucceeded
+            ? Array.Empty<OperationIssue>()
+            : partiallySucceeded
+                ?
+                [
+                    new OperationIssue(
+                        "partial-casework",
+                        $"{failedCount} of {requestedCount} reconciliation cases did not satisfy the requested action.",
+                        OperationIssueSeverity.Warning,
+                        EvidenceId: evidenceId)
+                ]
+                :
+                [
+                    new OperationIssue(
+                        "casework-blocked",
+                        "No reconciliation cases satisfied the requested bulk action.",
+                        OperationIssueSeverity.Error,
+                        EvidenceId: evidenceId)
+                    {
+                        IsBlocking = true
+                    }
+                ];
+        var recovery = allSucceeded
+            ? Array.Empty<OperationRecoveryAction>()
+            :
+            [
+                new OperationRecoveryAction(
+                    "review-case-failures",
+                    "Review case failures",
+                    "Review each failed case, satisfy its prerequisites, and retry using a new command id and idempotency key.",
+                    Retryable: true,
+                    RequiresHumanAction: true)
+                {
+                    EvidenceIds = [evidenceId]
+                }
+            ];
+
+        return VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            OperationId: string.IsNullOrWhiteSpace(bulkActionId)
+                ? $"reconciliation-bulk:{Guid.NewGuid():N}"
+                : $"reconciliation-bulk:{bulkActionId}",
+            OperationKind: dryRun ? "reconciliation.casework.bulk-dry-run" : "reconciliation.casework.bulk-execute",
+            State: state,
+            StartedAtUtc: now,
+            CompletedAtUtc: now,
+            AttemptNumber: 1,
+            CorrelationId: string.IsNullOrWhiteSpace(bulkActionId) ? "reconciliation-bulk" : bulkActionId,
+            InputHashSha256: inputHash,
+            Postconditions:
+            [
+                new OperationPostcondition(
+                    "bulk-casework-terminalized",
+                    "Every admitted case has an explicit terminal result.",
+                    allSucceeded || partiallySucceeded
+                        ? OperationPostconditionState.Satisfied
+                        : OperationPostconditionState.NotSatisfied,
+                    Required: true,
+                    EvidenceIds: [evidenceId])
+            ],
+            Evidence:
+            [
+                new OperationEvidenceReference(
+                    evidenceId,
+                    "bulk-result",
+                    $"Bulk casework returned {succeededCount} successful and {failedCount} failed case results.",
+                    Uri: $"urn:sha256:{inputHash}",
+                    ContentHashSha256: inputHash,
+                    CapturedAtUtc: now)
+            ],
+            Artifacts: [],
+            Issues: issues,
+            Recovery: recovery));
+    }
+
+    private static string ComputeCompatibilityInputHash(
+        string bulkActionId,
+        string idempotencyKey,
+        bool dryRun,
+        int requestedCount,
+        int succeededCount,
+        int failedCount)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"{bulkActionId}|{idempotencyKey}|{dryRun}|{requestedCount}|{succeededCount}|{failedCount}")))
+            .ToLowerInvariant();
+}
+
+/// <summary>
+/// API-safe terminal receipt for a single reconciliation casework attempt. HTTP success only
+/// means the command was evaluated; callers must use <see cref="Outcome"/> to determine whether
+/// its postconditions were satisfied, blocked, or failed.
+/// </summary>
+public sealed record ReconciliationCaseworkOperationResult(
+    string TransitionStatus,
+    ReconciliationBreakQueueItem? Item,
+    VerifiedOperationOutcome Outcome,
+    string? Error = null,
+    string? ErrorCode = null,
+    IReadOnlyList<string>? ValidationIssues = null);
 
 public sealed record ReconciliationCaseSignoffRecord(
     string Actor,

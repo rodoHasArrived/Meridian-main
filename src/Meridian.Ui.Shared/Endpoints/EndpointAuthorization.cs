@@ -138,7 +138,8 @@ public static class EndpointAuthorization
         {
             if (!TryGetPermissions(context.HttpContext, out _))
             {
-                return ValueTask.FromResult<object?>(Results.Unauthorized());
+                return ValueTask.FromResult<object?>(
+                    ApiProblemDetails.Unauthorized(context.HttpContext));
             }
 
             if (HasPermission(context.HttpContext, permission))
@@ -146,7 +147,8 @@ public static class EndpointAuthorization
                 return next(context);
             }
 
-            return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
+            return ValueTask.FromResult<object?>(
+                EndpointHelpers.Forbidden(context.HttpContext));
         };
 
     public static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RequireAny(
@@ -155,7 +157,8 @@ public static class EndpointAuthorization
         {
             if (!TryGetPermissions(context.HttpContext, out _))
             {
-                return ValueTask.FromResult<object?>(Results.Unauthorized());
+                return ValueTask.FromResult<object?>(
+                    ApiProblemDetails.Unauthorized(context.HttpContext));
             }
 
             if (HasAnyPermission(context.HttpContext, permissions))
@@ -163,7 +166,8 @@ public static class EndpointAuthorization
                 return next(context);
             }
 
-            return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
+            return ValueTask.FromResult<object?>(
+                EndpointHelpers.Forbidden(context.HttpContext));
         };
 
     /// <summary>
@@ -224,16 +228,13 @@ public static class EndpointAuthorization
         var service = context.RequestServices.GetService(typeof(IScopedAuthorizationService)) as IScopedAuthorizationService;
         if (service is null)
         {
-            var isGloballyAllowed = (globalPermissions & required) == required;
             return new ScopedAuthorizationDecisionDto(
-                IsAllowed: isGloballyAllowed,
+                IsAllowed: false,
                 Actor: actor,
                 RequiredPermission: required,
                 ScopeKind: scopeKind,
                 ScopeId: scopeId,
-                Reason: isGloballyAllowed
-                    ? "Scoped authorization service unavailable; global permission fallback granted access."
-                    : "Scoped authorization service unavailable and global permission fallback denied access.");
+                Reason: "Scoped authorization service unavailable; scoped access was denied.");
         }
 
         return await service

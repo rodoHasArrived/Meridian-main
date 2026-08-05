@@ -113,29 +113,25 @@ Use this map as a starting point before diving into generated type/member pages.
 
 ## REST API Endpoints
 
-The application exposes a REST API when running with `--mode desktop`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set. Swagger UI is available at `/swagger` in development mode.
+The application exposes a REST API when running with `--mode desktop`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set, except requests already authenticated by a browser login session (the workstation UI authenticates with the session cookie + CSRF token instead of an API key). Swagger UI is available at `/swagger` in development mode.
 
 ### Authentication
 
-Set the `MDC_API_KEY` environment variable to enable authentication. Pass the key via:
-- `X-Api-Key` header (recommended)
+Set the `MDC_API_KEY` environment variable to enable API-key authentication for out-of-band clients (scripts, service-to-service calls). Pass the key via:
+- `X-Api-Key` header (the only accepted transport — query-string keys are rejected to avoid leakage via URLs, logs, and browser history)
 
 Health probes (`/healthz`, `/readyz`, `/livez`) are always exempt.
 
 **Example:**
 
 ```bash
-# With header (recommended)
 curl -H "X-Api-Key: your-api-key" http://localhost:8080/api/status
-
-# With query parameter
-curl http://localhost:8080/api/status?api_key=your-api-key
 ```
 
 When authentication fails, the API returns `401 Unauthorized`:
 
 ```json
-{ "error": "Unauthorized", "message": "Missing or invalid API key" }
+{ "error": "Unauthorized. Provide a valid API key via the X-Api-Key header." }
 ```
 
 ### Rate Limiting
@@ -453,6 +449,40 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 `/api/execution/positions/blotter` is the preferred position endpoint for desktop execution surfaces because it returns broker-backed/live state, a source label, a status message, and keyed position metadata needed for broker option actions.
 
 `/api/execution/sessions/{sessionId}/replay` is the Wave 2 operator continuity check for paper trading: it replays the durable fill log, compares the replayed portfolio to the current session snapshot, and records the verification step in the execution audit trail.
+
+`/api/execution/orders/submit` and the two position actions answer `202 Accepted` with a
+`PendingApproval` outcome when a risk rule parks the order for governed approval. That is not a
+failure: nothing routed, but a durable queue entry can still execute the order once an approver
+releases it. Clients must not resubmit — each attempt mints a new client order id, and several
+parked orders for one intent can all release.
+
+### Risk (`/api/risk/*`)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/risk/rules` | Live status for every registered risk rule; requires `ViewTrades` |
+| GET | `/api/risk/rules/{ruleName}/status` | Live status for one rule; requires `ViewTrades` |
+| GET | `/api/risk/rules/{ruleName}/config` | Operator-managed thresholds for one rule |
+| PUT | `/api/risk/rules/{ruleName}/config` | Update thresholds; requires risk-configuration permission |
+| GET | `/api/risk/escalations` | Governed-approval queue: orders parked by an `Escalate`-severity rule |
+| POST | `/api/risk/escalations/{escalationId}/approve` | Approve a parked order, optionally releasing it |
+| POST | `/api/risk/escalations/{escalationId}/deny` | Deny a parked order and withdraw its escalation |
+
+Rule status is a trade read, not a configuration read: it carries aggregate gross exposure across
+every registered portfolio and violation reasons that can name traded symbols, so both status
+routes require `ViewTrades`.
+
+The escalation queue is the governed-approval surface for orders a risk rule parked rather than
+rejected. `GET /api/risk/escalations` returns only entries the caller is authorized to see —
+fund-scoped entries require scoped `ManageOrders` authority over the owning account, and
+administrators see all. Approve and deny each require a written rationale, which is retained with
+the decision and surfaced in the audit trail; a request without one is rejected. Segregation of
+duties is enforced against the retained submitter: the operator who submitted an order cannot
+approve it. Approving with release re-checks the approver's scoped authority, because the release
+bypasses `/api/execution/orders/submit` and its gates. Approvals are one-shot tokens matched
+against a full fingerprint of the retained request including its client order id; a release the
+gateway refuses re-arms the approval so a transient failure never retires an operator's decision,
+and denying or withdrawing an entry also retires any approvals linked through its token chain.
 
 ### Failover (`/api/failover/*`)
 

@@ -95,6 +95,15 @@ public sealed class ReportingArtifactVaultService
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(authority);
+        if (!request.Artifacts.IsDefault)
+        {
+            request = request with
+            {
+                Artifacts = request.Artifacts
+                    .Select(static artifact => artifact with { Content = artifact.Content.ToArray() })
+                    .ToImmutableArray()
+            };
+        }
         ValidateRetentionRequest(request);
         ValidateRetentionAuthority(request.Scope, authority);
 
@@ -113,7 +122,7 @@ public sealed class ReportingArtifactVaultService
 
             EnsureWriteMatchesExactBytes(expectedIdentity, content.LongLength, write);
             writeResults.Add(write);
-            retained.Add(new ReportingRetainedArtifactRecord(
+            var retainedRecord = new ReportingRetainedArtifactRecord(
                 request.PackageId,
                 request.RunId,
                 request.SeriesId,
@@ -128,16 +137,51 @@ public sealed class ReportingArtifactVaultService
                 artifact.ContentType,
                 write.Identity,
                 write.ByteSize,
-                write.StoredAtUtc));
+                write.StoredAtUtc);
+            var readBack = await _artifactStore
+                .ReadAsync(write.Identity, cancellationToken)
+                .ConfigureAwait(false);
+            VerifyRead(retainedRecord, readBack);
+            if (!readBack.Content.AsSpan().SequenceEqual(content))
+            {
+                throw new ReportingArtifactIntegrityException(
+                    write.Identity,
+                    $"artifact '{artifact.ArtifactId}' did not read back as the exact renderer bytes");
+            }
+            retained.Add(retainedRecord);
         }
 
         var package = new ReportingRetainedArtifactPackage(request.PackageId, retained.MoveToImmutable());
         var catalogWrite = await _catalog.AddPackageAsync(package, cancellationToken).ConfigureAwait(false);
-        var auditEventIds = ImmutableArray.CreateBuilder<string>(package.Artifacts.Length);
-
-        for (var index = 0; index < package.Artifacts.Length; index++)
+        var persistedPackage = await _catalog
+            .GetPackageAsync(request.Scope.TenantId, request.PackageId, cancellationToken)
+            .ConfigureAwait(false);
+        if (persistedPackage is null || !PackagesEqual(package, persistedPackage))
         {
-            var record = package.Artifacts[index];
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Artifact catalog did not read back the exact retained package '{request.PackageId}'.");
+        }
+        foreach (var expected in package.Artifacts)
+        {
+            var persisted = await _catalog
+                .GetArtifactAsync(
+                    request.Scope.TenantId,
+                    request.PackageId,
+                    expected.ArtifactId,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (persisted is null || !ArtifactRecordsEqual(expected, persisted))
+            {
+                throw new ReportingArtifactCatalogIntegrityException(
+                    $"Artifact catalog did not read back exact metadata for '{request.PackageId}/{expected.ArtifactId}'.");
+            }
+        }
+
+        var auditEventIds = ImmutableArray.CreateBuilder<string>(persistedPackage.Artifacts.Length);
+
+        for (var index = 0; index < persistedPackage.Artifacts.Length; index++)
+        {
+            var record = persistedPackage.Artifacts[index];
             var action = catalogWrite.AlreadyExisted || writeResults[index].AlreadyExisted
                 ? ReportingArtifactAuditAction.RetentionVerified
                 : ReportingArtifactAuditAction.ArtifactRetained;
@@ -159,7 +203,7 @@ public sealed class ReportingArtifactVaultService
         }
 
         return new ReportingArtifactRetentionReceipt(
-            package,
+            persistedPackage,
             catalogWrite.AlreadyExisted,
             auditEventIds.MoveToImmutable());
     }
@@ -394,6 +438,27 @@ public sealed class ReportingArtifactVaultService
                 throw new ArgumentException($"Rendered artifact id '{artifact.ArtifactId}' is duplicated.", nameof(request));
             }
         }
+
+        var manifestArtifacts = request.Artifacts
+            .Where(artifact => string.Equals(
+                artifact.ArtifactId,
+                request.ManifestId,
+                StringComparison.Ordinal))
+            .ToArray();
+        if (manifestArtifacts.Length != 1)
+        {
+            throw new ArgumentException(
+                $"A reporting package must contain exactly one rendered manifest artifact '{request.ManifestId}'.",
+                nameof(request));
+        }
+
+        var renderedManifestHash = ComputeSha256(manifestArtifacts[0].Content.Span);
+        if (!string.Equals(renderedManifestHash, request.ManifestHash, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                $"Rendered manifest artifact '{request.ManifestId}' does not match the declared manifest hash.",
+                nameof(request));
+        }
     }
 
     private static void ValidateRetentionAuthority(
@@ -512,6 +577,66 @@ public sealed class ReportingArtifactVaultService
         ReportingAccessScope access,
         ReportingArtifactAccessContext context) =>
         HasPrivatePrincipal(access, context);
+
+    private static bool PackagesEqual(
+        ReportingRetainedArtifactPackage expected,
+        ReportingRetainedArtifactPackage actual)
+    {
+        if (!string.Equals(expected.PackageId, actual.PackageId, StringComparison.Ordinal)
+            || expected.Artifacts.Length != actual.Artifacts.Length)
+        {
+            return false;
+        }
+
+        var actualById = actual.Artifacts.ToDictionary(
+            static artifact => artifact.ArtifactId,
+            StringComparer.Ordinal);
+        return expected.Artifacts.All(expectedArtifact =>
+            actualById.TryGetValue(expectedArtifact.ArtifactId, out var actualArtifact)
+            && ArtifactRecordsEqual(expectedArtifact, actualArtifact));
+    }
+
+    private static bool ArtifactRecordsEqual(
+        ReportingRetainedArtifactRecord left,
+        ReportingRetainedArtifactRecord right) =>
+        string.Equals(left.PackageId, right.PackageId, StringComparison.Ordinal)
+        && string.Equals(left.RunId, right.RunId, StringComparison.Ordinal)
+        && string.Equals(left.SeriesId, right.SeriesId, StringComparison.Ordinal)
+        && left.Revision == right.Revision
+        && Equals(left.Scope, right.Scope)
+        && AccessScopesEqual(left.Access, right.Access)
+        && Equals(left.Snapshot, right.Snapshot)
+        && string.Equals(left.ManifestId, right.ManifestId, StringComparison.Ordinal)
+        && string.Equals(left.ManifestHash, right.ManifestHash, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(left.ArtifactId, right.ArtifactId, StringComparison.Ordinal)
+        && string.Equals(left.FileName, right.FileName, StringComparison.Ordinal)
+        && string.Equals(left.ContentType, right.ContentType, StringComparison.Ordinal)
+        && Equals(left.Identity, right.Identity)
+        && left.ByteLength == right.ByteLength
+        && left.StoredAtUtc == right.StoredAtUtc;
+
+    private static bool AccessScopesEqual(ReportingAccessScope left, ReportingAccessScope right)
+    {
+        var leftPrincipals = left.Principals.IsDefault
+            ? ImmutableArray<ReportingAccessPrincipalScope>.Empty
+            : left.Principals
+                .OrderBy(static principal => principal.Kind)
+                .ThenBy(static principal => principal.PrincipalId, StringComparer.Ordinal)
+                .ToImmutableArray();
+        var rightPrincipals = right.Principals.IsDefault
+            ? ImmutableArray<ReportingAccessPrincipalScope>.Empty
+            : right.Principals
+                .OrderBy(static principal => principal.Kind)
+                .ThenBy(static principal => principal.PrincipalId, StringComparer.Ordinal)
+                .ToImmutableArray();
+        return string.Equals(left.PolicyId, right.PolicyId, StringComparison.Ordinal)
+            && string.Equals(left.PolicyVersion, right.PolicyVersion, StringComparison.Ordinal)
+            && left.Mode == right.Mode
+            && string.Equals(left.OwnerPrincipalId, right.OwnerPrincipalId, StringComparison.Ordinal)
+            && left.AllowOwnerAccess == right.AllowOwnerAccess
+            && string.Equals(left.PolicyHash, right.PolicyHash, StringComparison.OrdinalIgnoreCase)
+            && leftPrincipals.SequenceEqual(rightPrincipals);
+    }
 
     private static bool ContextMatches(
         ReportingAccessPrincipalScope principal,

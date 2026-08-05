@@ -41,32 +41,6 @@ public sealed class AnalysisExportWizardService
         {
             new()
             {
-                Id = "python-pandas",
-                Name = "Python / Pandas",
-                Description = "Parquet files with appropriate dtypes for pandas DataFrame",
-                Icon = "\uE943",
-                OutputFormat = "Parquet",
-                Compression = "snappy",
-                IncludeLoaderCode = true,
-                LoaderLanguage = "python",
-                FileExtension = ".parquet",
-                Features = new[] { "Efficient columnar storage", "Native pandas support", "Type preservation" }
-            },
-            new()
-            {
-                Id = "python-pytorch",
-                Name = "Python / PyTorch",
-                Description = "HDF5 files optimized for ML training pipelines",
-                Icon = "\uE945",
-                OutputFormat = "HDF5",
-                Compression = "gzip",
-                IncludeLoaderCode = true,
-                LoaderLanguage = "python",
-                FileExtension = ".h5",
-                Features = new[] { "ML-ready format", "Chunked storage", "Feature scaling metadata" }
-            },
-            new()
-            {
                 Id = "r-dataframe",
                 Name = "R / data.frame",
                 Description = "CSV with proper formatting for R analysis",
@@ -90,71 +64,6 @@ public sealed class AnalysisExportWizardService
                 LoaderLanguage = "runmat",
                 FileExtension = ".csv",
                 Features = new[] { "Numeric-only CSV", "Unix millisecond timestamps", "Ready-to-run .m loader script" }
-            },
-            new()
-            {
-                Id = "quantconnect-lean",
-                Name = "QuantConnect Lean",
-                Description = "Native Lean data format for backtesting",
-                Icon = "\uE9D9",
-                OutputFormat = "Lean",
-                Compression = "zip",
-                IncludeLoaderCode = false,
-                LoaderLanguage = "csharp",
-                FileExtension = ".zip",
-                Features = new[] { "Direct Lean compatibility", "Multiple resolutions", "Corporate actions" }
-            },
-            new()
-            {
-                Id = "excel",
-                Name = "Microsoft Excel",
-                Description = "XLSX with multiple sheets and formatting",
-                Icon = "\uE8D5",
-                OutputFormat = "Excel",
-                Compression = "none",
-                IncludeLoaderCode = false,
-                LoaderLanguage = "none",
-                FileExtension = ".xlsx",
-                Features = new[] { "Pivot-ready", "Charts included", "Summary statistics" }
-            },
-            new()
-            {
-                Id = "sql-postgres",
-                Name = "PostgreSQL / TimescaleDB",
-                Description = "SQL COPY format optimized for time-series databases",
-                Icon = "\uE8F1",
-                OutputFormat = "SQL",
-                Compression = "gzip",
-                IncludeLoaderCode = true,
-                LoaderLanguage = "sql",
-                FileExtension = ".sql.gz",
-                Features = new[] { "COPY format", "Schema included", "TimescaleDB hypertables" }
-            },
-            new()
-            {
-                Id = "clickhouse",
-                Name = "ClickHouse",
-                Description = "Native ClickHouse format for analytics",
-                Icon = "\uE8F1",
-                OutputFormat = "ClickHouse",
-                Compression = "lz4",
-                IncludeLoaderCode = true,
-                LoaderLanguage = "sql",
-                FileExtension = ".clickhouse",
-                Features = new[] { "Columnar format", "High compression", "Fast analytics" }
-            },
-            new()
-            {
-                Id = "jupyter",
-                Name = "Jupyter Notebook",
-                Description = "Ready-to-run notebook with data loading and exploration",
-                Icon = "\uE8A1",
-                OutputFormat = "Notebook",
-                Compression = "none",
-                IncludeLoaderCode = true,
-                LoaderLanguage = "python",
-                FileExtension = ".ipynb",
-                Features = new[] { "Interactive exploration", "Sample visualizations", "Documentation" }
             }
         };
     }
@@ -520,6 +429,17 @@ public sealed class AnalysisExportWizardService
             Configuration = config
         };
 
+        var outputFormat = NormalizeLocallySupportedOutputFormat(config.Profile.OutputFormat);
+        if (outputFormat is null)
+        {
+            result.Success = false;
+            result.ErrorMessage =
+                $"Format '{FormatRequestedOutput(config.Profile.OutputFormat)}' is not supported by the local analysis export wizard. " +
+                "Use the shared analysis export API with a registered profile; no fallback file was created.";
+            result.EndTime = DateTime.UtcNow;
+            return result;
+        }
+
         try
         {
             // Create output directory
@@ -545,6 +465,7 @@ public sealed class AnalysisExportWizardService
                 var exportedRecords = await ExportSymbolDataAsync(
                     symbol,
                     config,
+                    outputFormat,
                     progress,
                     ct);
 
@@ -620,6 +541,7 @@ public sealed class AnalysisExportWizardService
     private async Task<SymbolExportResult> ExportSymbolDataAsync(
         string symbol,
         ExportConfiguration config,
+        string outputFormat,
         IProgress<ExportProgress>? progress,
         CancellationToken ct)
     {
@@ -660,17 +582,12 @@ public sealed class AnalysisExportWizardService
             }
 
             // Export based on the selected format
-            result = config.Profile.OutputFormat switch
+            result = outputFormat switch
             {
                 "CSV" => await ExportToCsvAsync(symbol, sourceFiles, config, ct),
-                "Parquet" => await ExportToParquetPlaceholderAsync(symbol, sourceFiles, config, ct),
-                "Excel" => await ExportToExcelPlaceholderAsync(symbol, sourceFiles, config, ct),
                 "SQL" => await ExportToSqlAsync(symbol, sourceFiles, config, ct),
                 "Notebook" => await ExportToNotebookAsync(symbol, sourceFiles, config, ct),
-                "HDF5" => await ExportToHdf5PlaceholderAsync(symbol, sourceFiles, config, ct),
-                "ClickHouse" => await ExportToClickHousePlaceholderAsync(symbol, sourceFiles, config, ct),
-                "Lean" => await ExportToLeanPlaceholderAsync(symbol, sourceFiles, config, ct),
-                _ => await ExportToCsvAsync(symbol, sourceFiles, config, ct) // Default to CSV
+                _ => throw new NotSupportedException($"Format '{outputFormat}' is not supported.")
             };
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -680,6 +597,21 @@ public sealed class AnalysisExportWizardService
 
         return result;
     }
+
+    private static string? NormalizeLocallySupportedOutputFormat(string? outputFormat)
+    {
+        if (string.Equals(outputFormat, "CSV", StringComparison.OrdinalIgnoreCase))
+            return "CSV";
+        if (string.Equals(outputFormat, "SQL", StringComparison.OrdinalIgnoreCase))
+            return "SQL";
+        if (string.Equals(outputFormat, "Notebook", StringComparison.OrdinalIgnoreCase))
+            return "Notebook";
+
+        return null;
+    }
+
+    private static string FormatRequestedOutput(string? outputFormat) =>
+        string.IsNullOrWhiteSpace(outputFormat) ? "(empty)" : outputFormat.Trim();
 
     /// <summary>
     /// Checks if a file's date is within the specified range based on filename.
@@ -964,227 +896,6 @@ public sealed class AnalysisExportWizardService
         var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedSymbol));
         var suffix = Convert.ToHexString(hashBytes, 0, 4).ToLowerInvariant();
         return $"{safeStem}_{suffix}";
-    }
-
-    /// <summary>
-    /// Placeholder for Parquet export (requires Apache.Arrow or Parquet.Net library).
-    /// </summary>
-    private async Task<SymbolExportResult> ExportToParquetPlaceholderAsync(
-        string symbol,
-        List<string> sourceFiles,
-        ExportConfiguration config,
-        CancellationToken ct)
-    {
-        // Parquet export requires additional libraries (Apache.Arrow.Parquet)
-        // For now, fall back to CSV with a note
-        var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateUniqueFileStem(symbol);
-
-        // Rename to indicate it's a placeholder
-        var csvFile = result.OutputFile;
-        if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
-        {
-            var csvFileName = Path.GetFileName(csvFile);
-            var parquetNote = Path.Combine(config.OutputPath, $"{safeStem}_parquet_note.txt");
-            await File.WriteAllTextAsync(parquetNote,
-                "Note: Full Parquet export requires Apache.Arrow library.\n" +
-                "CSV data has been exported as a fallback.\n" +
-                "To convert to Parquet, use the generated Python loader with pandas:\n" +
-                "  df = pd.read_csv('" + csvFileName + "')\n" +
-                "  df.to_parquet('" + $"{safeStem}.parquet" + "')", ct);
-            result.OutputFile = csvFile;
-            result.GeneratedFiles.Add(parquetNote);
-            result.OutputBytes += new FileInfo(parquetNote).Length;
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Placeholder for Excel export (requires EPPlus or similar library).
-    /// Falls back to CSV with instructions for Excel conversion.
-    /// </summary>
-    private async Task<SymbolExportResult> ExportToExcelPlaceholderAsync(
-        string symbol,
-        List<string> sourceFiles,
-        ExportConfiguration config,
-        CancellationToken ct)
-    {
-        // Excel export requires additional libraries (EPPlus, ClosedXML, etc.)
-        // For now, export to CSV which can be opened in Excel
-        var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateUniqueFileStem(symbol);
-
-        // Add a note file explaining the Excel fallback
-        var csvFile = result.OutputFile;
-        if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
-        {
-            var csvFileName = Path.GetFileName(csvFile);
-            var excelNote = Path.Combine(config.OutputPath, $"{safeStem}_excel_note.txt");
-            await File.WriteAllTextAsync(excelNote,
-                "Note: Full Excel (.xlsx) export requires the EPPlus library.\n" +
-                "CSV data has been exported as a fallback.\n\n" +
-                "To convert to Excel:\n" +
-                "  Option 1: Open the CSV directly in Excel and save as .xlsx\n" +
-                "  Option 2: Use Python with openpyxl:\n" +
-                "    import pandas as pd\n" +
-                $"    df = pd.read_csv('{csvFileName}')\n" +
-                $"    df.to_excel('{safeStem}.xlsx', index=False)\n\n" +
-                "  Option 3: Use the generated Python loader and export to Excel\n\n" +
-                "The CSV file is fully compatible with Excel and can be imported using:\n" +
-                "  Data > From Text/CSV > Select the file", ct);
-            result.OutputFile = csvFile;
-            result.GeneratedFiles.Add(excelNote);
-            result.OutputBytes += new FileInfo(excelNote).Length;
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Placeholder for HDF5 export (requires h5py or HDF5.NET library).
-    /// Falls back to CSV with instructions for HDF5 conversion.
-    /// </summary>
-    private async Task<SymbolExportResult> ExportToHdf5PlaceholderAsync(
-        string symbol,
-        List<string> sourceFiles,
-        ExportConfiguration config,
-        CancellationToken ct)
-    {
-        // HDF5 export requires additional libraries (HDF5.NET, or Python h5py)
-        // For now, export to CSV with conversion instructions
-        var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateUniqueFileStem(symbol);
-
-        var csvFile = result.OutputFile;
-        if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
-        {
-            var csvFileName = Path.GetFileName(csvFile);
-            var hdf5Note = Path.Combine(config.OutputPath, $"{safeStem}_hdf5_note.txt");
-            await File.WriteAllTextAsync(hdf5Note,
-                "Note: Full HDF5 (.h5) export requires the h5py library in Python.\n" +
-                "CSV data has been exported as a fallback.\n\n" +
-                "To convert to HDF5 for ML pipelines:\n" +
-                "  import pandas as pd\n" +
-                "  import h5py\n" +
-                "  import numpy as np\n\n" +
-                $"  df = pd.read_csv('{csvFileName}')\n" +
-                $"  with h5py.File('{safeStem}.h5', 'w') as f:\n" +
-                "      # Store numeric columns as datasets\n" +
-                "      for col in df.select_dtypes(include=[np.number]).columns:\n" +
-                "          f.create_dataset(col, data=df[col].values)\n" +
-                "      # Store timestamps as ISO strings\n" +
-                "      if 'timestamp' in df.columns:\n" +
-                "          f.create_dataset('timestamp', data=df['timestamp'].astype(str).values.astype('S'))\n\n" +
-                "Benefits of HDF5:\n" +
-                "  - Efficient chunked storage for large datasets\n" +
-                "  - Native support in PyTorch/TensorFlow\n" +
-                "  - Compression support built-in", ct);
-            result.OutputFile = csvFile;
-            result.GeneratedFiles.Add(hdf5Note);
-            result.OutputBytes += new FileInfo(hdf5Note).Length;
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Placeholder for ClickHouse export (requires ClickHouse client).
-    /// Falls back to CSV with SQL import script.
-    /// </summary>
-    private async Task<SymbolExportResult> ExportToClickHousePlaceholderAsync(
-        string symbol,
-        List<string> sourceFiles,
-        ExportConfiguration config,
-        CancellationToken ct)
-    {
-        // ClickHouse native export requires ClickHouse client tools
-        // Export to CSV with ClickHouse import instructions
-        var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateUniqueFileStem(symbol);
-        var tableName = CreateSafeSqlIdentifier("market_data_", symbol);
-
-        var csvFile = result.OutputFile;
-        if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
-        {
-            var csvFileName = Path.GetFileName(csvFile);
-            var chScript = Path.Combine(config.OutputPath, $"{safeStem}_clickhouse_import.sql");
-            var sb = new StringBuilder();
-            sb.AppendLine($"-- ClickHouse Import Script for {symbol}");
-            sb.AppendLine($"-- Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
-            sb.AppendLine();
-            sb.AppendLine("-- Create table for market data");
-            sb.AppendLine($"CREATE TABLE IF NOT EXISTS {tableName} (");
-            sb.AppendLine("    timestamp DateTime64(3),");
-            sb.AppendLine("    symbol LowCardinality(String),");
-            sb.AppendLine("    price Decimal64(8),");
-            sb.AppendLine("    volume UInt64,");
-            sb.AppendLine("    data_type LowCardinality(String)");
-            sb.AppendLine(") ENGINE = MergeTree()");
-            sb.AppendLine("ORDER BY (symbol, timestamp);");
-            sb.AppendLine();
-            sb.AppendLine("-- Import from CSV using clickhouse-client:");
-            sb.AppendLine($"-- clickhouse-client --query=\"INSERT INTO {tableName} FORMAT CSV\" < {csvFileName}");
-            sb.AppendLine();
-            sb.AppendLine("-- Or using HTTP interface:");
-            sb.AppendLine($"-- curl 'http://localhost:8123/?query=INSERT%20INTO%20{tableName}%20FORMAT%20CSV' --data-binary @{csvFileName}");
-            sb.AppendLine();
-            sb.AppendLine("-- Benefits of ClickHouse:");
-            sb.AppendLine("--   - Columnar storage with high compression");
-            sb.AppendLine("--   - Sub-second queries on billions of rows");
-            sb.AppendLine("--   - Excellent for time-series analytics");
-
-            await File.WriteAllTextAsync(chScript, sb.ToString(), ct);
-            result.OutputFile = csvFile;
-            result.GeneratedFiles.Add(chScript);
-            result.OutputBytes += new FileInfo(chScript).Length;
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Placeholder for QuantConnect Lean export.
-    /// Falls back to CSV with Lean format conversion instructions.
-    /// </summary>
-    private async Task<SymbolExportResult> ExportToLeanPlaceholderAsync(
-        string symbol,
-        List<string> sourceFiles,
-        ExportConfiguration config,
-        CancellationToken ct)
-    {
-        // Lean format requires specific directory structure and format
-        // Export to CSV with instructions for Lean format conversion
-        var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateUniqueFileStem(symbol);
-
-        var csvFile = result.OutputFile;
-        if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
-        {
-            var leanNote = Path.Combine(config.OutputPath, $"{safeStem}_lean_note.txt");
-            await File.WriteAllTextAsync(leanNote,
-                "Note: Full QuantConnect Lean format export requires specific data structure.\n" +
-                "CSV data has been exported as a fallback.\n\n" +
-                "Lean Data Format Requirements:\n" +
-                $"  Data should be placed in: {{Lean Data Root}}/equity/usa/daily/{symbol.ToLower()}.zip\n\n" +
-                "To convert to Lean format using the ToolBox:\n" +
-                $"  1. Run the Lean Data Writer ToolBox\n" +
-                $"  2. Use the CSV converter with --source-dir pointing to this export\n" +
-                $"  3. The ToolBox will create properly formatted Lean data files\n\n" +
-                "Alternative: Use LeanDataWriter in your algorithm:\n" +
-                "  var writer = new LeanDataWriter(\n" +
-                "      Globals.DataFolder,\n" +
-                $"      Symbol.Create(\"{symbol}\", SecurityType.Equity, Market.USA),\n" +
-                "      Resolution.Daily);\n" +
-                "  writer.Write(data);\n\n" +
-                "For more information:\n" +
-                "  https://www.quantconnect.com/docs/v2/writing-algorithms/importing-custom-data", ct);
-            result.OutputFile = csvFile;
-            result.GeneratedFiles.Add(leanNote);
-            result.OutputBytes += new FileInfo(leanNote).Length;
-        }
-
-        return result;
     }
 
     /// <summary>

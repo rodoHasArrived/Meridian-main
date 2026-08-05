@@ -3,10 +3,12 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
 using Meridian.Reporting;
+using Meridian.Storage.Export;
+using Meridian.Ui.Shared.Serialization;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -46,27 +48,52 @@ public sealed record ReportingRetainedManifestDocument(
     ImmutableArray<ReportingRetainedManifestArtifactDescriptor> Artifacts);
 
 /// <summary>
-/// Production deterministic artifact implementation. Every byte is derived only from the completed
-/// certified manifest, uses stable ordering, and is emitted exactly once according to
-/// <see cref="ReportingRunParametersDto.OutputFormat"/> and the optional evidence/schedule flags.
+/// Production deterministic artifact implementation. Every byte is derived from the completed
+/// certified manifest and, for a partners-capital primary document, an exact checkpoint-bound
+/// canonical ledger presentation. Output uses stable ordering and is emitted exactly as declared
+/// according to <see cref="ReportingRunParametersDto.OutputFormat"/> and the optional
+/// evidence/schedule flags.
 /// </summary>
 public sealed class DeterministicReportingCertifiedArtifactProducer : IReportingCertifiedArtifactProducer
 {
     public const string RetainedManifestSchemaVersion = "meridian.reporting.retained-manifest.v1";
 
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        Encoder = JavaScriptEncoder.Default,
-        WriteIndented = false
-    };
+    private const string DurableLedgerSourceKind = "durable-ledger-journal";
+    private const int PdfCharactersPerLine = 86;
+    private const int PdfLinesPerPage = 48;
 
-    public ValueTask<ReportingGovernedArtifactProduction> ProduceAsync(
+    private readonly IReportingPrimaryDocumentRenderer? _primaryRenderer;
+    private readonly IReportingCertifiedLedgerPresentationSource? _ledgerPresentationSource;
+
+    /// <summary>
+    /// Constructs the producer with an optional client-grade primary-document renderer and an
+    /// optional exact canonical-ledger-presentation source. When the renderer is null
+    /// (dependency-free hosts and the existing byte-exact tests) the built-in plain-text PDF/XLSX
+    /// rendering is used. A capital-account primary document requires both a presentation-capable
+    /// renderer and a checkpoint-bound canonical ledger report pack; it never falls back to
+    /// recalculating partners' capital from certified display rows. Capital-account PDF, XLSX, and
+    /// ClientPackage outputs all select bytes from that same canonical pair. Every other artifact
+    /// (CSV, evidence vault, preview, manifest, grids) is unaffected by this choice.
+    /// </summary>
+    public DeterministicReportingCertifiedArtifactProducer(
+        IReportingPrimaryDocumentRenderer? primaryRenderer = null,
+        IReportingCertifiedLedgerPresentationSource? ledgerPresentationSource = null)
+    {
+        _primaryRenderer = primaryRenderer;
+        _ledgerPresentationSource = ledgerPresentationSource;
+    }
+
+    public async ValueTask<ReportingGovernedArtifactProduction> ProduceAsync(
         ReportingOutputManifest manifest,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         cancellationToken.ThrowIfCancellationRequested();
         ValidateManifest(manifest);
+        var certifiedLedgerPresentation = await ResolveCertifiedLedgerPresentationAsync(
+                manifest,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var declarations = ReportingArtifactDeclaration.Build(manifest);
         var declaredIds = declarations.Select(static artifact => artifact.ArtifactId).ToArray();
@@ -75,6 +102,10 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             throw new ReportingGovernanceException(
                 $"Certified manifest '{manifest.RunId}' artifact declaration drifted before byte production.");
         }
+        var canonicalLedgerDocuments = RenderCertifiedLedgerDocuments(
+            manifest,
+            declarations,
+            certifiedLedgerPresentation);
 
         var rendered = ImmutableArray.CreateBuilder<ReportingRenderedArtifact>(declarations.Length);
         var descriptors = ImmutableArray.CreateBuilder<ReportingRetainedManifestArtifactDescriptor>(declarations.Length);
@@ -85,7 +116,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                      artifact.Kind != ReportingDeclaredArtifactKind.Manifest))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var content = RenderArtifact(manifest, declaration);
+            var content = RenderArtifact(manifest, declaration, canonicalLedgerDocuments);
             if (content.Length == 0)
             {
                 throw new ReportingGovernanceException(
@@ -132,7 +163,9 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             descriptors
                 .OrderBy(static descriptor => descriptor.ArtifactId, StringComparer.Ordinal)
                 .ToImmutableArray());
-        var retainedManifestBytes = SerializeCanonical(retainedDocument);
+        var retainedManifestBytes = JsonSerializer.SerializeToUtf8Bytes(
+            retainedDocument,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingRetainedManifestDocument);
         rendered.Add(new ReportingRenderedArtifact(
             manifestDeclaration.ArtifactId,
             manifestDeclaration.FileName,
@@ -157,11 +190,11 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 .OrderBy(static evidence => evidence, StringComparer.Ordinal)
                 .ToImmutableArray());
 
-        return ValueTask.FromResult(new ReportingGovernedArtifactProduction(
+        return new ReportingGovernedArtifactProduction(
             manifest.RunId,
             manifestDeclaration.ArtifactId,
             certification,
-            orderedArtifacts));
+            orderedArtifacts);
     }
 
     public static ReportingRetainedManifestDocument ParseRetainedManifest(
@@ -175,7 +208,9 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         ReportingRetainedManifestDocument document;
         try
         {
-            document = JsonSerializer.Deserialize<ReportingRetainedManifestDocument>(retainedBytes, JsonOptions)
+            document = JsonSerializer.Deserialize(
+                    retainedBytes,
+                    ReportingCertifiedArtifactJsonContext.Default.ReportingRetainedManifestDocument)
                 ?? throw new ReportingArtifactCatalogIntegrityException(
                     "Retained reporting manifest deserialized to null.");
         }
@@ -219,17 +254,30 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return document;
     }
 
-    private static byte[] RenderArtifact(
+    private byte[] RenderArtifact(
         ReportingOutputManifest manifest,
-        ReportingDeclaredArtifact declaration) => declaration.Kind switch
+        ReportingDeclaredArtifact declaration,
+        LedgerClientReportDocumentPackage? canonicalLedgerDocuments) => declaration.Kind switch
         {
-            ReportingDeclaredArtifactKind.PrimaryOutput => manifest.ResolvedParameters!.OutputFormat switch
+            ReportingDeclaredArtifactKind.PrimaryOutput => declaration.ContentType switch
             {
-                ReportingOutputFormatDto.Xlsx => RenderXlsx(manifest),
-                ReportingOutputFormatDto.Csv => RenderPrimaryCsv(manifest),
-                ReportingOutputFormatDto.EvidenceVault => RenderEvidenceVault(manifest),
-                _ => RenderPdf(manifest)
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" =>
+                    canonicalLedgerDocuments is { } package
+                    ? package.Workbook
+                    : _primaryRenderer is { } workbookRenderer
+                    ? workbookRenderer.RenderWorkbook(manifest)
+                    : RenderXlsx(manifest),
+                "text/csv" => RenderPrimaryCsv(manifest),
+                "application/vnd.meridian.reporting-evidence+json" => RenderEvidenceVault(manifest),
+                "application/pdf" => canonicalLedgerDocuments is { } package
+                    ? package.Pdf
+                    : _primaryRenderer is { } documentRenderer
+                    ? documentRenderer.RenderPdf(manifest)
+                    : RenderPdf(manifest),
+                _ => throw new ReportingGovernanceException(
+                    $"Primary artifact '{declaration.ArtifactId}' declares unsupported content type '{declaration.ContentType}'.")
             },
+            ReportingDeclaredArtifactKind.Preview => RenderPreview(manifest),
             ReportingDeclaredArtifactKind.CertifiedSourceSchedule => RenderCertifiedRowsCsv(manifest),
             ReportingDeclaredArtifactKind.SupportingSchedules => RenderSupportingSchedules(manifest),
             ReportingDeclaredArtifactKind.EvidenceAppendix => RenderEvidenceAppendix(manifest),
@@ -237,6 +285,248 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             _ => throw new ReportingGovernanceException(
                 $"Artifact kind '{declaration.Kind}' cannot be rendered outside the retained manifest pass.")
         };
+
+    private async ValueTask<ReportingCertifiedLedgerPresentationInput?> ResolveCertifiedLedgerPresentationAsync(
+        ReportingOutputManifest manifest,
+        CancellationToken cancellationToken)
+    {
+        if (!RequiresCertifiedLedgerPresentation(manifest))
+        {
+            return null;
+        }
+
+        if (_primaryRenderer is not IReportingPrimaryDocumentRendererWithLedgerReportPack)
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' is blocked because the configured primary-document renderer cannot consume the exact checkpoint-bound ledger report pack.");
+        }
+
+        var input = _ledgerPresentationSource is null
+            ? null
+            : await _ledgerPresentationSource
+                .ResolveExactAsync(manifest, cancellationToken)
+                .ConfigureAwait(false);
+        if (input is null)
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' is blocked because no exact checkpoint-bound canonical ledger presentation is available. Partners' capital was not recalculated from incomplete certified display rows.");
+        }
+        ValidateCertifiedLedgerPresentation(manifest, input);
+        return input;
+    }
+
+    private LedgerClientReportDocumentPackage? RenderCertifiedLedgerDocuments(
+        ReportingOutputManifest manifest,
+        ImmutableArray<ReportingDeclaredArtifact> declarations,
+        ReportingCertifiedLedgerPresentationInput? certifiedLedgerPresentation)
+    {
+        if (certifiedLedgerPresentation is null)
+        {
+            return null;
+        }
+
+        var primaryDocuments = declarations
+            .Where(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput)
+            .ToArray();
+        var outputFormat = manifest.ResolvedParameters!.OutputFormat;
+        var pdfCount = primaryDocuments.Count(static artifact =>
+            string.Equals(artifact.ContentType, "application/pdf", StringComparison.Ordinal));
+        var workbookCount = primaryDocuments.Count(static artifact =>
+            string.Equals(
+                artifact.ContentType,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                StringComparison.Ordinal));
+        var declarationsMatch = outputFormat switch
+        {
+            ReportingOutputFormatDto.Pdf =>
+                primaryDocuments.Length == 1 && pdfCount == 1 && workbookCount == 0,
+            ReportingOutputFormatDto.Xlsx =>
+                primaryDocuments.Length == 1 && pdfCount == 0 && workbookCount == 1,
+            ReportingOutputFormatDto.ClientPackage =>
+                primaryDocuments.Length == 2 && pdfCount == 1 && workbookCount == 1,
+            _ => false
+        };
+        if (!declarationsMatch)
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' has declarations that do not match output format '{outputFormat}'.");
+        }
+
+        var renderer = (IReportingPrimaryDocumentRendererWithLedgerReportPack)_primaryRenderer!;
+        var package = renderer.RenderClientPackage(
+            manifest,
+            certifiedLedgerPresentation.ReportPack);
+        if (package.Pdf.Length == 0 || package.Workbook.Length == 0)
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' did not render the complete canonical PDF/XLSX pair.");
+        }
+
+        return package;
+    }
+
+    private static void ValidateCertifiedLedgerPresentation(
+        ReportingOutputManifest manifest,
+        ReportingCertifiedLedgerPresentationInput input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        var source = manifest.AuthoritativeSource!;
+        var parameters = manifest.ResolvedParameters!;
+        var reportPack = input.ReportPack
+            ?? throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' has no canonical ledger report pack.");
+        var expectedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows);
+
+        if (!string.Equals(source.SourceKind, DurableLedgerSourceKind, StringComparison.Ordinal)
+            || !string.Equals(input.SourceCheckpointId, source.CheckpointId, StringComparison.Ordinal)
+            || !IsSha256(input.SourceCheckpointHash)
+            || !string.Equals(input.SourceCheckpointHash, source.CheckpointHash, StringComparison.OrdinalIgnoreCase)
+            || !IsSha256(input.CertifiedDatasetHashSha256)
+            || !string.Equals(
+                input.CertifiedDatasetHashSha256,
+                expectedDatasetHash,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical ledger presentation is not bound to the exact certified source checkpoint and dataset hash.");
+        }
+
+        var request = reportPack.Request;
+        if (!string.Equals(request.FundId, source.FundId, StringComparison.Ordinal)
+            || !string.Equals(request.PeriodId, source.AccountingPeriodId, StringComparison.Ordinal)
+            || DateOnly.FromDateTime(request.AsOf.UtcDateTime) != manifest.AsOfDate
+            || !string.Equals(
+                request.BaseCurrency,
+                parameters.PresentationCurrency,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical ledger report pack does not match the certified fund, period, as-of date, and presentation currency.");
+        }
+
+        ValidateLedgerReportPackIntegrity(manifest.RunId, reportPack);
+        var retainedPresentationEvidence =
+            ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(source);
+        var resolvedPresentationEvidence =
+            ReportingCertifiedLedgerPresentationBinding.BuildEvidenceId(reportPack);
+        if (retainedPresentationEvidence is null
+            || !string.Equals(
+                retainedPresentationEvidence,
+                resolvedPresentationEvidence,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its signed ledger presentation checksum is missing from or changed relative to the certified source evidence.");
+        }
+
+        var partnersCapital = reportPack.Statements.PartnersCapital
+            ?? throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical ledger report pack has no partners-capital statement.");
+        if (partnersCapital.Accounts.Count == 0
+            || partnersCapital.PeriodStart != request.PeriodStart
+            || partnersCapital.AsOf != request.AsOf
+            || !partnersCapital.IsReconciled
+            || partnersCapital.AllocationComponentsVariance != 0m
+            || partnersCapital.Accounts.Any(static account =>
+                account.ReconciliationVariance != 0m
+                || account.AllocationComponentsVariance != 0m)
+            || partnersCapital.EndingCapital != reportPack.Statements.EndingEquity
+            || !reportPack.IsBalanced)
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical partners-capital roll-forward is incomplete, unbalanced, or unreconciled.");
+        }
+    }
+
+    private static void ValidateLedgerReportPackIntegrity(
+        string runId,
+        LedgerFinancialReportPack reportPack)
+    {
+        if (!string.Equals(reportPack.Signature.Algorithm, "SHA256", StringComparison.Ordinal)
+            || !IsSha256(reportPack.Signature.PayloadChecksumSha256)
+            || reportPack.Artifacts.Count == 0
+            || reportPack.Artifacts.Any(static artifact =>
+                artifact is null
+                || string.IsNullOrWhiteSpace(artifact.Name)
+                || string.IsNullOrWhiteSpace(artifact.ContentType)
+                || !IsSha256(artifact.ChecksumSha256))
+            || reportPack.Artifacts
+                .Select(static artifact => artifact.Name)
+                .Distinct(StringComparer.Ordinal)
+                .Count() != reportPack.Artifacts.Count)
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{runId}' is blocked because its canonical ledger report pack signature or artifact declaration is incomplete.");
+        }
+
+        foreach (var artifact in reportPack.Artifacts)
+        {
+            if (!string.Equals(
+                    ComputeSha256(artifact.GetBytes()),
+                    artifact.ChecksumSha256,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ReportingGovernanceException(
+                    $"Capital-account primary document '{runId}' is blocked because canonical ledger report artifact '{artifact.Name}' failed checksum validation.");
+            }
+        }
+
+        var signaturePayload = string.Join(
+            "\n",
+            reportPack.Artifacts
+                .OrderBy(static artifact => artifact.Name, StringComparer.Ordinal)
+                .Select(static artifact => $"{artifact.Name}:{artifact.ChecksumSha256}"));
+        if (!string.Equals(
+                ComputeSha256(Utf8(signaturePayload)),
+                reportPack.Signature.PayloadChecksumSha256,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account primary document '{runId}' is blocked because its canonical ledger report pack signature does not match its exact artifacts.");
+        }
+    }
+
+    private static bool RequiresCertifiedLedgerPresentation(ReportingOutputManifest manifest) =>
+        ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest);
+
+    private static byte[] RenderPreview(ReportingOutputManifest manifest)
+    {
+        var rows = manifest.CertifiedDatasetRows
+            .Take(25)
+            .Select(static row => row
+                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal))
+            .ToArray();
+        var primaryOutputs = ReportingArtifactDeclaration.Build(manifest)
+            .Where(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput)
+            .ToArray();
+        var primary = primaryOutputs.FirstOrDefault(static artifact =>
+                string.Equals(artifact.ContentType, "application/pdf", StringComparison.Ordinal))
+            ?? primaryOutputs.FirstOrDefault()
+            ?? throw new ReportingGovernanceException(
+                $"Reporting manifest '{manifest.RunId}' declares no primary output for its retained preview.");
+        var document = new ReportingRetainedPreviewDocument(
+            "meridian.reporting.retained-preview.v1",
+            manifest.RunId,
+            NormalizeOptional(manifest.RunSeriesId) ?? manifest.RunId,
+            manifest.TemplateId,
+            manifest.ResolvedTemplate!,
+            manifest.AsOfDate,
+            manifest.AuthoritativeSource!.CheckpointId,
+            manifest.CertifiedSnapshot!.SnapshotId,
+            manifest.CertifiedDatasetRows.Length,
+            ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
+            rows.Length,
+            ResolveCertifiedColumns(manifest.CertifiedDatasetRows),
+            rows,
+            new ReportingRetainedPreviewPrimaryArtifact(
+                primary.ArtifactId,
+                primary.FileName,
+                primary.ContentType));
+        return JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingRetainedPreviewDocument);
+    }
 
     private static byte[] RenderPrimaryCsv(ReportingOutputManifest manifest)
         => RenderCertifiedRowsCsv(manifest);
@@ -293,33 +583,47 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return Utf8(builder.ToString());
     }
 
-    private static byte[] RenderEvidenceVault(ReportingOutputManifest manifest) =>
-        SerializeCanonical(new
-        {
-            schemaVersion = "meridian.reporting.evidence-vault.v1",
+    private static byte[] RenderEvidenceVault(ReportingOutputManifest manifest)
+    {
+        var document = new ReportingEvidenceVaultDocument(
+            "meridian.reporting.evidence-vault.v1",
             manifest.RunId,
             manifest.AsOfDate,
-            source = manifest.AuthoritativeSource,
-            snapshot = manifest.CertifiedSnapshot,
-            readiness = manifest.Readiness,
-            sections = manifest.Sections.OrderBy(static section => section.SectionId, StringComparer.Ordinal),
-            certifiedDatasetHashSha256 = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
-            certifiedDatasetRows = manifest.CertifiedDatasetRows
-        });
+            manifest.AuthoritativeSource!,
+            manifest.CertifiedSnapshot!,
+            manifest.Readiness!,
+            manifest.Sections
+                .OrderBy(static section => section.SectionId, StringComparer.Ordinal)
+                .ToArray(),
+            ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
+            manifest.CertifiedDatasetRows
+                .Select(static row => row
+                    .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                    .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal))
+                .ToArray());
+        return JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingEvidenceVaultDocument);
+    }
 
-    private static byte[] RenderEvidenceAppendix(ReportingOutputManifest manifest) =>
-        SerializeCanonical(new
-        {
-            schemaVersion = "meridian.reporting.evidence-appendix.v1",
+    private static byte[] RenderEvidenceAppendix(ReportingOutputManifest manifest)
+    {
+        var document = new ReportingEvidenceAppendixDocument(
+            "meridian.reporting.evidence-appendix.v1",
             manifest.RunId,
-            evidence = manifest.AuthoritativeSource!.EvidenceIds
+            manifest.AuthoritativeSource!.EvidenceIds
                 .Concat(manifest.Readiness!.Checks.SelectMany(static check => check.EvidenceReferences))
                 .Distinct(StringComparer.Ordinal)
-                .OrderBy(static evidence => evidence, StringComparer.Ordinal),
-            lineage = manifest.Sections
+                .OrderBy(static evidence => evidence, StringComparer.Ordinal)
+                .ToArray(),
+            manifest.Sections
                 .OrderBy(static section => section.SectionId, StringComparer.Ordinal)
                 .Select(static section => section.Lineage)
-        });
+                .ToArray());
+        return JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingEvidenceAppendixDocument);
+    }
 
     private static byte[] RenderGrid(ReportingOutputManifest manifest, string gridId)
     {
@@ -329,27 +633,33 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                     string.Equals(item.GridId, gridId, StringComparison.OrdinalIgnoreCase)))
             ?? throw new ReportingGovernanceException(
                 $"Declared report-writer grid '{gridId}' has no rendered grid payload.");
-        return SerializeCanonical(new
-        {
-            schemaVersion = "meridian.reporting.grid.v1",
+        var document = new ReportingRetainedGridDocument(
+            "meridian.reporting.grid.v1",
             grid.GridId,
             grid.Title,
-            kind = grid.Kind.ToString(),
-            columns = grid.Columns.Select(static column => new { column.Key, column.Label, column.Role }),
-            rows = grid.Rows
+            grid.Kind.ToString(),
+            grid.Columns
+                .Select(static column => new ReportingRetainedGridColumn(
+                    column.Key,
+                    column.Label,
+                    column.Role))
+                .ToArray(),
+            grid.Rows
                 .OrderBy(static row => row.RowKey, StringComparer.Ordinal)
-                .Select(static row => new
-                {
+                .Select(static row => new ReportingRetainedGridRow(
                     row.RowKey,
-                    values = row.Values.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                    row.Values.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
                         .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal)
-                }),
-            warnings = grid.Warnings.OrderBy(static warning => warning, StringComparer.Ordinal),
+                ))
+                .ToArray(),
+            grid.Warnings.OrderBy(static warning => warning, StringComparer.Ordinal).ToArray(),
             grid.Lineage,
             grid.DataDictionary,
             grid.ValidationChecks,
-            grid.Chart
-        });
+            grid.Chart);
+        return JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingRetainedGridDocument);
     }
 
     private static byte[] RenderPdf(ReportingOutputManifest manifest)
@@ -365,18 +675,32 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             $"Certified ledger rows: {manifest.CertifiedDatasetRows.Length.ToString(CultureInfo.InvariantCulture)}",
             $"Certified row hash: {ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows)}"
         };
-        var accountSummaries = manifest.CertifiedDatasetRows
-            .Where(static row => row.ContainsKey("account"))
-            .GroupBy(static row => row["account"], StringComparer.Ordinal)
-            .OrderBy(static group => group.Key, StringComparer.Ordinal)
-            .Select(group => new
-            {
-                Account = group.Key,
-                Debit = group.Sum(static row => ReadDecimal(row, "debit")),
-                Credit = group.Sum(static row => ReadDecimal(row, "credit")),
-                Net = group.Sum(static row => ReadDecimal(row, "netAmount"))
-            })
-            .ToArray();
+        var canRenderAccountSummary = manifest.CertifiedDatasetRows.Length > 0
+            && manifest.CertifiedDatasetRows.All(static row =>
+                row.ContainsKey("account")
+                && row.ContainsKey("debit")
+                && row.ContainsKey("credit")
+                && row.ContainsKey("netAmount"));
+        var accountSummaries = canRenderAccountSummary
+            ? manifest.CertifiedDatasetRows
+                .Select((row, index) => new
+                {
+                    Account = row["account"],
+                    Debit = ReadRequiredDecimal(row, "debit", index),
+                    Credit = ReadRequiredDecimal(row, "credit", index),
+                    Net = ReadRequiredDecimal(row, "netAmount", index)
+                })
+                .GroupBy(static row => row.Account, StringComparer.Ordinal)
+                .OrderBy(static group => group.Key, StringComparer.Ordinal)
+                .Select(group => new
+                {
+                    Account = group.Key,
+                    Debit = group.Sum(static row => row.Debit),
+                    Credit = group.Sum(static row => row.Credit),
+                    Net = group.Sum(static row => row.Net)
+                })
+                .ToArray()
+            : [];
         if (accountSummaries.Length > 0)
         {
             textLines.Add("Account totals (debit / credit / net)");
@@ -385,7 +709,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         }
         else
         {
-            foreach (var row in manifest.CertifiedDatasetRows.Take(40))
+            foreach (var row in manifest.CertifiedDatasetRows)
             {
                 textLines.Add(string.Join(
                     "; ",
@@ -393,38 +717,128 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                         .Select(static pair => $"{pair.Key}={pair.Value}")));
             }
         }
-        var content = new StringBuilder("BT /F1 10 Tf 48 744 Td 14 TL\n");
-        foreach (var line in textLines)
+
+        // A substituted primary document is not a warning-only outcome: it would certify different
+        // text than the source. Fail before byte production so the coordinator retains a Failed
+        // execution with the recovery guidance below instead of a superficially successful PDF.
+        EnsurePdfTextCanBeRenderedWithoutLoss(textLines);
+        var wrappedLines = textLines.SelectMany(WrapPdfLine).ToArray();
+        var pageStreams = wrappedLines
+            .Chunk(PdfLinesPerPage)
+            .Select(RenderPdfPage)
+            .ToArray();
+        if (pageStreams.Length == 0)
         {
-            content.Append('(').Append(EscapePdf(line)).Append(") Tj T*\n");
+            pageStreams = [RenderPdfPage([])];
         }
-        content.Append("ET\n");
-        var stream = content.ToString();
-        var objects = new[]
+
+        const int catalogObjectId = 1;
+        const int pagesObjectId = 2;
+        const int fontObjectId = 3;
+        var objects = new List<string>(3 + (pageStreams.Length * 2))
         {
-            "<< /Type /Catalog /Pages 2 0 R >>",
-            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-            $"<< /Length {Encoding.ASCII.GetByteCount(stream).ToString(CultureInfo.InvariantCulture)} >>\nstream\n{stream}endstream"
+            $"<< /Type /Catalog /Pages {pagesObjectId} 0 R >>",
+            string.Empty,
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
         };
+        var pageObjectIds = new List<int>(pageStreams.Length);
+        foreach (var stream in pageStreams)
+        {
+            var pageObjectId = objects.Count + 1;
+            var contentObjectId = pageObjectId + 1;
+            pageObjectIds.Add(pageObjectId);
+            objects.Add(
+                $"<< /Type /Page /Parent {pagesObjectId} 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 {fontObjectId} 0 R >> >> /Contents {contentObjectId} 0 R >>");
+            objects.Add(
+                $"<< /Length {Encoding.ASCII.GetByteCount(stream).ToString(CultureInfo.InvariantCulture)} >>\nstream\n{stream}endstream");
+        }
+
+        objects[pagesObjectId - 1] =
+            $"<< /Type /Pages /Kids [{string.Join(" ", pageObjectIds.Select(static id => $"{id} 0 R"))}] /Count {pageStreams.Length.ToString(CultureInfo.InvariantCulture)} >>";
         using var output = new MemoryStream();
         WriteAscii(output, "%PDF-1.4\n%Meridian\n");
         var offsets = new List<long> { 0 };
-        for (var index = 0; index < objects.Length; index++)
+        for (var index = 0; index < objects.Count; index++)
         {
             offsets.Add(output.Position);
             WriteAscii(output, $"{index + 1} 0 obj\n{objects[index]}\nendobj\n");
         }
         var xref = output.Position;
-        WriteAscii(output, $"xref\n0 {objects.Length + 1}\n0000000000 65535 f \n");
+        WriteAscii(output, $"xref\n0 {objects.Count + 1}\n0000000000 65535 f \n");
         foreach (var offset in offsets.Skip(1))
         {
             WriteAscii(output, $"{offset.ToString("D10", CultureInfo.InvariantCulture)} 00000 n \n");
         }
         WriteAscii(output,
-            $"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xref.ToString(CultureInfo.InvariantCulture)}\n%%EOF\n");
+            $"trailer\n<< /Size {objects.Count + 1} /Root {catalogObjectId} 0 R >>\nstartxref\n{xref.ToString(CultureInfo.InvariantCulture)}\n%%EOF\n");
         return output.ToArray();
+    }
+
+    private static void EnsurePdfTextCanBeRenderedWithoutLoss(IEnumerable<string> lines)
+    {
+        foreach (var line in lines)
+        {
+            foreach (var rune in line.EnumerateRunes())
+            {
+                if (rune.Value is >= 0x20 and <= 0x7E)
+                {
+                    continue;
+                }
+
+                throw new ReportingGovernanceException(
+                    $"PDF artifact rendering is blocked because certified report text contains Unicode scalar U+{rune.Value:X4}, which is outside the producer's deterministic ASCII Helvetica font mapping. No lossy PDF bytes were emitted or retained. Choose XLSX, CSV, or Evidence Vault output to preserve the source text, or configure an embedded Unicode PDF font before retrying.");
+            }
+        }
+    }
+
+    private static string RenderPdfPage(IEnumerable<string> lines)
+    {
+        var content = new StringBuilder("BT /F1 10 Tf 48 744 Td 14 TL\n");
+        foreach (var line in lines)
+        {
+            content.Append('(').Append(EscapePdf(line)).Append(") Tj T*\n");
+        }
+
+        return content.Append("ET\n").ToString();
+    }
+
+    private static IEnumerable<string> WrapPdfLine(string value)
+    {
+        var normalized = string.Concat(value.Select(static character =>
+            char.IsControl(character) ? ' ' : character)).Trim();
+        if (normalized.Length == 0)
+        {
+            yield return string.Empty;
+            yield break;
+        }
+
+        var continuation = false;
+        while (normalized.Length > 0)
+        {
+            var prefix = continuation ? "  " : string.Empty;
+            var capacity = PdfCharactersPerLine - prefix.Length;
+            if (normalized.Length <= capacity)
+            {
+                yield return prefix + normalized;
+                yield break;
+            }
+
+            var split = normalized.LastIndexOf(' ', capacity - 1, capacity);
+            if (split <= 0)
+            {
+                split = capacity;
+                if (char.IsHighSurrogate(normalized[split - 1])
+                    && split < normalized.Length
+                    && char.IsLowSurrogate(normalized[split]))
+                {
+                    split--;
+                }
+            }
+
+            yield return prefix + normalized[..split].TrimEnd();
+            normalized = normalized[split..].TrimStart();
+            continuation = true;
+        }
     }
 
     private static byte[] RenderXlsx(ReportingOutputManifest manifest)
@@ -514,7 +928,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return builder.ToString();
     }
 
-    private static string[] ResolveCertifiedColumns(
+    internal static string[] ResolveCertifiedColumns(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows) =>
         rows.IsDefaultOrEmpty
             ? []
@@ -523,13 +937,24 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 .OrderBy(static column => column, StringComparer.Ordinal)
                 .ToArray();
 
-    private static decimal ReadDecimal(IReadOnlyDictionary<string, string> row, string key) =>
-        row.TryGetValue(key, out var value)
-        && decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
-            ? parsed
-            : 0m;
+    private static decimal ReadRequiredDecimal(
+        IReadOnlyDictionary<string, string> row,
+        string key,
+        int zeroBasedRowIndex)
+    {
+        if (row.TryGetValue(key, out var value)
+            && decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+        {
+            return parsed;
+        }
 
-    private static string ComputeCertifiedRowsHash(
+        throw new ReportingGovernanceException(
+            $"Certified ledger row {(zeroBasedRowIndex + 1).ToString(CultureInfo.InvariantCulture)} has an invalid '{key}' value. " +
+            "PDF account totals were not produced because invalid certified numeric data cannot be coerced to zero. " +
+            "Correct and recertify the authoritative dataset, then retry artifact production.");
+    }
+
+    internal static string ComputeCertifiedRowsHash(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows)
     {
         using var stream = new MemoryStream();
@@ -558,42 +983,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
     }
 
     private static string EscapeCsv(string? value)
-    {
-        var normalized = NeutralizeSpreadsheetFormula(value ?? string.Empty);
-        return normalized.IndexOfAny([',', '\"', '\r', '\n']) >= 0
-            ? $"\"{normalized.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
-            : normalized;
-    }
-
-    private static string NeutralizeSpreadsheetFormula(string value)
-    {
-        if (value.Length == 0)
-        {
-            return value;
-        }
-
-        var firstNonSpace = 0;
-        while (firstNonSpace < value.Length && value[firstNonSpace] == ' ')
-        {
-            firstNonSpace++;
-        }
-        if (firstNonSpace >= value.Length)
-        {
-            return value;
-        }
-
-        var leading = value[firstNonSpace];
-        var isSafeNegativeNumber = leading == '-'
-            && decimal.TryParse(
-                value.AsSpan(firstNonSpace),
-                NumberStyles.Number | NumberStyles.AllowLeadingSign,
-                CultureInfo.InvariantCulture,
-                out _);
-        return leading is '=' or '+' or '@' or '\t' or '\r' or '\n'
-            || leading == '-' && !isSafeNegativeNumber
-                ? $"'{value}"
-                : value;
-    }
+        => Meridian.Storage.Export.SpreadsheetFormulaGuard.EscapeCsvCell(value);
 
     private static void ValidateManifest(ReportingOutputManifest manifest)
     {
@@ -628,9 +1018,6 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         }
     }
 
-    private static byte[] SerializeCanonical<T>(T value) =>
-        JsonSerializer.SerializeToUtf8Bytes(value, JsonOptions);
-
     private static byte[] Utf8(string value) => Encoding.UTF8.GetBytes(value);
 
     private static string EscapePdf(string value) =>
@@ -638,8 +1025,25 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             .Replace("(", "\\(", StringComparison.Ordinal)
             .Replace(")", "\\)", StringComparison.Ordinal);
 
-    private static string EscapeXml(string value) =>
-        System.Security.SecurityElement.Escape(value) ?? string.Empty;
+    private static string EscapeXml(string value)
+    {
+        var sanitized = new StringBuilder(value.Length);
+        foreach (var rune in value.EnumerateRunes())
+        {
+            if (IsXml10Character(rune.Value))
+            {
+                sanitized.Append(rune.ToString());
+            }
+        }
+
+        return System.Security.SecurityElement.Escape(sanitized.ToString()) ?? string.Empty;
+    }
+
+    private static bool IsXml10Character(int scalar) =>
+        scalar is 0x9 or 0xA or 0xD
+        || scalar is >= 0x20 and <= 0xD7FF
+        || scalar is >= 0xE000 and <= 0xFFFD
+        || scalar is >= 0x10000 and <= 0x10FFFF;
 
     private static void WriteAscii(Stream stream, string value)
     {

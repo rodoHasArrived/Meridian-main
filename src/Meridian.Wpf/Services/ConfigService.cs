@@ -50,10 +50,13 @@ public sealed class ConfigService : ConfigServiceBase
     private static readonly Lazy<ConfigService> _instance = new(() => new ConfigService());
 
     private bool _initialized;
+    private Exception? _lastLoadError;
 
     public static ConfigService Instance => _instance.Value;
 
     public bool IsInitialized => _initialized;
+
+    public Exception? LastLoadError => _lastLoadError;
 
     public override string ConfigPath => FirstRunService.Instance.ConfigFilePath;
 
@@ -300,6 +303,7 @@ public sealed class ConfigService : ConfigServiceBase
     {
         try
         {
+            await FirstRunService.Instance.EnsureConfigurationExistsAsync().ConfigureAwait(false);
             if (!File.Exists(ConfigPath))
             {
                 return new AppConfigDto();
@@ -313,10 +317,16 @@ public sealed class ConfigService : ConfigServiceBase
 
             var config = JsonSerializer.Deserialize<AppConfigDto>(json, SharedJsonOptions) ?? new AppConfigDto();
             config.DataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, config.DataRoot);
+            _lastLoadError = null;
             return config;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
+            _lastLoadError = ex;
             LogError("Failed to load configuration", ex);
             return new AppConfigDto();
         }
@@ -337,7 +347,7 @@ public sealed class ConfigService : ConfigServiceBase
                 : config.DataRoot;
 
             var json = JsonSerializer.Serialize(config, SharedJsonOptions);
-            await File.WriteAllTextAsync(ConfigPath, json, ct).ConfigureAwait(false);
+            await FirstRunService.Instance.PersistConfigurationAsync(json, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

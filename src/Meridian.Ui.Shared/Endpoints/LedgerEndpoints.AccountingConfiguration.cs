@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
@@ -318,6 +319,158 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireFundScopedWriteTenant();
 
+        app.MapPost(UiApiRoutes.LedgerAssetAccountingEventProjections, async (ProjectAssetAccountingEventRequestDto request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAssetAccountingEventSpineService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable("Asset accounting event spine service is not registered.");
+            }
+
+            try
+            {
+                if (request.Scope is null)
+                    return Results.BadRequest(new { error = "Asset accounting projection scope is required." });
+
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.Scope.FundProfileId).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
+
+                var result = await service.ProjectAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    Scope = request.Scope with
+                    {
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
+                    }
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: result.WasReplay
+                    ? StatusCodes.Status200OK
+                    : StatusCodes.Status201Created);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("ProjectAssetAccountingEventSpine")
+        .Produces<AssetAccountingEventSpineAppendResultDto>(StatusCodes.Status200OK)
+        .Produces<AssetAccountingEventSpineAppendResultDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerAssetAccountingEventLifecycle, async (AppendAssetAccountingLifecycleStageRequestDto request, HttpContext context) =>
+        {
+            if (!HasLedgerCertificationPermission(context))
+                return EndpointHelpers.Forbidden();
+
+            var service = ResolveAssetAccountingEventSpineService(context);
+            if (service is null)
+                return ServiceUnavailable("Asset accounting event spine service is not registered.");
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
+
+                var result = await service.AppendLifecycleStageAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("AppendAssetAccountingEventLifecycleStage")
+        .Produces<AssetAccountingEventSpineAppendResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationAssetAccountingCandidates, async (AssetAccountingPostingCandidateRequestDto request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAssetAccountingEventSpineService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable("Asset accounting event spine service is not registered.");
+            }
+
+            try
+            {
+                if (request.Scope is null)
+                {
+                    return Results.BadRequest(new { error = "Asset accounting candidate scope is required." });
+                }
+
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.Scope.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
+                var result = await service
+                    .BuildPostingCandidateAsync(request with
+                    {
+                        Actor = ResolveMutationActor(context, request.Actor),
+                        Scope = request.Scope with
+                        {
+                            TenantId = tenantContext.TenantId,
+                            CompanyId = tenantContext.CompanyId
+                        }
+                    }, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("BuildAssetAccountingEventSpinePostingCandidate")
+        .Produces<AssetAccountingPostingCandidateDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts, async (PostPostingRuleJournalCandidateRequestDto request, HttpContext context) =>
         {
             if (!HasLedgerCertificationPermission(context))
@@ -333,7 +486,20 @@ public static partial class LedgerEndpoints
 
             try
             {
+                if (request.Candidate is null)
+                {
+                    return Results.BadRequest(new { error = "Accounting posting candidate is required." });
+                }
+
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(
+                        context,
+                        tenantContext,
+                        request.Candidate.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .PostCandidateAsync(request with
                     {

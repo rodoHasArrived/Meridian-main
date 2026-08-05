@@ -178,11 +178,14 @@ public sealed class StatementMappingProfileRegistry
                 new("trade", "trade"),
                 new("position", "position"),
                 new("cash", "cash"),
-                new("Dividends", "cash"),
-                new("Deposits/Withdrawals", "cash"),
-                new("Broker Interest Paid", "cash"),
-                new("Broker Interest Received", "cash"),
-                new("Withholding Tax", "cash"),
+                // Flex CashTransactions are ledger movements, not the account's ending cash balance, so
+                // they reconcile against ledger transactions: canonical "cash"/"cashbalance" are reserved
+                // for balance rows. Dividends keep dividend semantics; the rest are generic transactions.
+                new("Dividends", "dividend"),
+                new("Deposits/Withdrawals", "transaction"),
+                new("Broker Interest Paid", "transaction"),
+                new("Broker Interest Received", "transaction"),
+                new("Withholding Tax", "transaction"),
                 new("Other Fees", "fee")
             ])
     ];

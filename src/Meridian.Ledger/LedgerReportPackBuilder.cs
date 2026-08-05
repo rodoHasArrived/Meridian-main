@@ -22,8 +22,9 @@ public static class LedgerReportPackBuilder
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(request);
 
-        var statements = LedgerFinancialStatementBuilder.BuildAsOf(
+        var statements = LedgerFinancialStatementBuilder.BuildForPeriod(
             ledger,
+            request.PeriodStart,
             request.AsOf,
             chart,
             financialAccountId,
@@ -34,6 +35,8 @@ public static class LedgerReportPackBuilder
             CreateCsvArtifact("trial-balance.csv", statements.TrialBalanceRows),
             CreateCsvArtifact("income-statement.csv", statements.IncomeStatementRows),
             CreateCsvArtifact("balance-sheet.csv", statements.BalanceSheetRows),
+            CreateCashFlowArtifact("cash-flow-statement.csv", statements.CashFlow),
+            CreatePartnersCapitalArtifact("partners-capital-statement.csv", statements.PartnersCapital),
             CreateFinancialStatementsJsonArtifact(request, statements),
             CreateTaxLotRealizedGainsArtifact(taxLotReliefProjections ?? []),
         };
@@ -64,7 +67,12 @@ public static class LedgerReportPackBuilder
         IReadOnlyList<LedgerTaxLotReliefProjection> projections)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate,QuantityRelieved,UnitCost,Proceeds,CostBasis,RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss");
+        builder.AppendLine(
+            "SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate," +
+            "HoldingPeriodStartDate,HoldingPeriodDays,TaxCharacter,HoldingPeriodExtendedByWashSale," +
+            "QuantityRelieved,UnitCost,Proceeds,CostBasis," +
+            "RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss," +
+            "ShortTermRecognizedGainOrLoss,LongTermRecognizedGainOrLoss");
 
         foreach (var projection in projections
             .OrderBy(static projection => projection.Input.SaleDate)
@@ -81,15 +89,13 @@ public static class LedgerReportPackBuilder
             // Spread the disallowed amount across the relieved lots by quantity so each row's
             // recognized gain/loss nets to what was actually booked (residual on the final row),
             // instead of the export overstating the current-period realized loss.
-            var disallowedTotal = projection.WashSale?.DisallowedLoss ?? 0m;
+            var disallowedTotal = projection.DisallowedWashSaleLoss;
             var totalQuantity = orderedSelections.Sum(static selection => selection.QuantityRelieved);
             var allocatedDisallowed = 0m;
 
             for (var index = 0; index < orderedSelections.Count; index++)
             {
                 var selection = orderedSelections[index];
-                var proceeds = RoundCurrency(selection.QuantityRelieved * projection.Input.SalePrice);
-                var realizedGainOrLoss = proceeds - selection.CostBasis;
 
                 decimal disallowed;
                 if (disallowedTotal == 0m)
@@ -114,7 +120,12 @@ public static class LedgerReportPackBuilder
 
                 // Disallowed loss is a positive amount that reduces the recognized loss (a realized
                 // loss is negative, so adding the deferred portion moves it toward zero).
-                var recognizedGainOrLoss = realizedGainOrLoss + disallowed;
+                var recognizedGainOrLoss = selection.RealizedGainOrLoss + disallowed;
+
+                // The recognized amount lands in exactly one of the two character columns, so a
+                // reader can total short- and long-term results by summing a column rather than
+                // pivoting on the character label. The two columns sum back to RecognizedGainOrLoss.
+                var isLongTerm = selection.TaxCharacter == TaxCharacter.LongTerm;
 
                 builder.Append(projection.Input.SaleDate.ToString("O", CultureInfo.InvariantCulture));
                 builder.Append(',');
@@ -130,19 +141,31 @@ public static class LedgerReportPackBuilder
                 builder.Append(',');
                 builder.Append(selection.Lot.AcquiredDate.ToString("O", CultureInfo.InvariantCulture));
                 builder.Append(',');
+                builder.Append(selection.Lot.HoldingPeriodStart.ToString("O", CultureInfo.InvariantCulture));
+                builder.Append(',');
+                builder.Append(selection.HoldingPeriodDays.ToString(CultureInfo.InvariantCulture));
+                builder.Append(',');
+                builder.Append(selection.TaxCharacter);
+                builder.Append(',');
+                builder.Append(selection.HoldingPeriodExtendedByWashSale ? "true" : "false");
+                builder.Append(',');
                 builder.Append(FormatDecimal(selection.QuantityRelieved));
                 builder.Append(',');
                 builder.Append(FormatDecimal(selection.UnitCost));
                 builder.Append(',');
-                builder.Append(FormatDecimal(proceeds));
+                builder.Append(FormatDecimal(selection.Proceeds));
                 builder.Append(',');
                 builder.Append(FormatDecimal(selection.CostBasis));
                 builder.Append(',');
-                builder.Append(FormatDecimal(realizedGainOrLoss));
+                builder.Append(FormatDecimal(selection.RealizedGainOrLoss));
                 builder.Append(',');
                 builder.Append(FormatDecimal(disallowed));
                 builder.Append(',');
-                builder.AppendLine(FormatDecimal(recognizedGainOrLoss));
+                builder.Append(FormatDecimal(recognizedGainOrLoss));
+                builder.Append(',');
+                builder.Append(FormatDecimal(isLongTerm ? 0m : recognizedGainOrLoss));
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(isLongTerm ? recognizedGainOrLoss : 0m));
             }
         }
 
@@ -153,6 +176,103 @@ public static class LedgerReportPackBuilder
     private static LedgerReportPackArtifact CreateCsvArtifact(string name, IReadOnlyList<LedgerChartBalance> rows)
     {
         var content = BuildCsv(rows);
+        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+    }
+
+    private static LedgerReportPackArtifact CreateCashFlowArtifact(string name, LedgerCashFlowStatement? cashFlow)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("Category,Description,CounterpartyType,Amount");
+        if (cashFlow is not null)
+        {
+            foreach (var line in cashFlow.Lines
+                .OrderBy(static line => line.Category)
+                .ThenBy(static line => line.Description, StringComparer.Ordinal))
+            {
+                builder.Append(line.Category);
+                builder.Append(',');
+                builder.Append(EscapeCsv(line.Description));
+                builder.Append(',');
+                builder.Append(line.CounterpartyType);
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(line.Amount));
+            }
+
+            AppendCashFlowTotal(builder, "Operating cash flow", cashFlow.OperatingCashFlow);
+            AppendCashFlowTotal(builder, "Investing cash flow", cashFlow.InvestingCashFlow);
+            AppendCashFlowTotal(builder, "Financing cash flow", cashFlow.FinancingCashFlow);
+            AppendCashFlowTotal(builder, "Net change in cash", cashFlow.NetCashFlow);
+            AppendCashFlowTotal(builder, "Beginning cash", cashFlow.BeginningCash);
+            AppendCashFlowTotal(builder, "Ending cash", cashFlow.EndingCash);
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+    }
+
+    private static void AppendCashFlowTotal(StringBuilder builder, string label, decimal amount)
+    {
+        builder.Append("Total,");
+        builder.Append(EscapeCsv(label));
+        builder.Append(',');
+        builder.Append(',');
+        builder.AppendLine(FormatDecimal(amount));
+    }
+
+    private static LedgerReportPackArtifact CreatePartnersCapitalArtifact(string name, LedgerPartnersCapitalStatement? partnersCapital)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("AccountName,InvestorId,BeginningCapital,Contributions,Distributions,IncomeGainAllocations,ExpenseAllocations,FeeAllocations,AllocatedResult,OtherMovements,EndingCapital");
+        if (partnersCapital is not null)
+        {
+            foreach (var account in partnersCapital.Accounts
+                .OrderBy(static account => account.AccountName, StringComparer.Ordinal)
+                .ThenBy(static account => account.InvestorId ?? string.Empty, StringComparer.Ordinal))
+            {
+                builder.Append(EscapeCsv(account.AccountName));
+                builder.Append(',');
+                builder.Append(EscapeCsv(account.InvestorId ?? string.Empty));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.BeginningCapital));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.Contributions));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.Distributions));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.IncomeGainAllocations));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.ExpenseAllocations));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.FeeAllocations));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.AllocatedResult));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.OtherMovements));
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(account.EndingCapital));
+            }
+
+            builder.Append("Total,,");
+            builder.Append(FormatDecimal(partnersCapital.BeginningCapital));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.Contributions));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.Distributions));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.IncomeGainAllocations));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.ExpenseAllocations));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.FeeAllocations));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.AllocatedResult));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.OtherMovements));
+            builder.Append(',');
+            builder.AppendLine(FormatDecimal(partnersCapital.EndingCapital));
+        }
+
+        var content = builder.ToString();
         return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
     }
 

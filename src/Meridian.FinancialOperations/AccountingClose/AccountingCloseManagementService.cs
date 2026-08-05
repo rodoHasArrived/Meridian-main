@@ -97,7 +97,9 @@ public interface IAccountingCloseManagementService
         string? tenantId,
         string? companyId,
         CancellationToken ct = default)
-        => LockClosePeriodAsync(request, actor, ct);
+        => Task.FromException<ClosePeriodLockResultDto?>(
+            new NotSupportedException(
+                "This accounting close service does not implement tenant- and company-scoped hard close."));
 
     Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
         ReopenClosePeriodRequestDto request,
@@ -112,7 +114,9 @@ public interface IAccountingCloseManagementService
         string? tenantId,
         string? companyId,
         CancellationToken ct = default)
-        => ReopenClosePeriodAsync(request, actor, ct);
+        => Task.FromException<ClosePeriodReopenResultDto?>(
+            new NotSupportedException(
+                "This accounting close service does not implement tenant- and company-scoped reopen."));
 }
 
 public sealed partial class AccountingCloseManagementService : IAccountingCloseManagementService
@@ -133,9 +137,11 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
 
     private readonly IOperationsContinuityWorkflowService _workflowService;
     private readonly IAccountingClosePostingWorkbench? _postingWorkbench;
+    private readonly IAccountingCloseMutationGate? _mutationGate;
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string? _persistencePath;
+    private int _hasEstablishedPersistedSnapshot;
     private readonly ConcurrentDictionary<Guid, List<LateAdjustmentRequestDto>> _lateAdjustments = new();
     private readonly ConcurrentDictionary<Guid, List<WorkflowCloseTaskSignOffRecord>> _taskSignOffs = new();
     private readonly ConcurrentDictionary<Guid, ClosePeriodPlanConfigurationDto> _planConfigurations = new();
@@ -152,6 +158,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         : this(workflowService)
     {
         _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
+        _mutationGate = postingWorkbench as IAccountingCloseMutationGate;
     }
 
     public AccountingCloseManagementService(
@@ -161,6 +168,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _persistencePath = Path.Combine(storageOptions.RootPath, "accounting", "close-management-late-adjustments.json");
+        _hasEstablishedPersistedSnapshot = File.Exists(_persistencePath) ? 1 : 0;
     }
 
     public AccountingCloseManagementService(
@@ -170,6 +178,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         : this(workflowService, storageOptions)
     {
         _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
+        _mutationGate = postingWorkbench as IAccountingCloseMutationGate;
     }
 
     public Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(
@@ -739,7 +748,22 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         LockClosePeriodRequestDto request,
         string actor,
         CancellationToken ct = default)
-        => LockClosePeriodScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (!request.PrepareClosingEntriesOnly)
+        {
+            return Task.FromException<ClosePeriodLockResultDto?>(
+                new InvalidOperationException(
+                    "Governed hard close requires an authenticated tenant and company scope. Use the scoped close-period operation."));
+        }
+
+        return LockClosePeriodScopedAsync(
+            request,
+            actor,
+            tenantId: null,
+            companyId: null,
+            ct: ct);
+    }
 
     public async Task<ClosePeriodLockResultDto?> LockClosePeriodScopedAsync(
         LockClosePeriodRequestDto request,
@@ -755,6 +779,14 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             throw new ArgumentException("WorkflowId is required.", nameof(request));
         }
 
+        var controllerRole = request.PrepareClosingEntriesOnly
+            ? null
+            : RequireControllerRole(request.ControllerRole);
+        if (!request.PrepareClosingEntriesOnly)
+        {
+            RequireCompleteMutationScope(tenantId, companyId);
+        }
+
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -766,9 +798,50 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             }
 
             var plan = BuildPeriodPlan(workflow);
+            if (!request.PrepareClosingEntriesOnly && _mutationGate is null)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
+            await using var closeConsistencyLease =
+                !request.PrepareClosingEntriesOnly
+                    ? await _mutationGate!
+                        .AcquireAsync(
+                            RequirePostingContext(workflow, plan, tenantId, companyId),
+                            ct)
+                        .ConfigureAwait(false)
+                    : null;
+            var consistencyLeaseHeld = closeConsistencyLease is not null;
+            if (!request.PrepareClosingEntriesOnly && !consistencyLeaseHeld)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
             if (plan.IsPeriodLocked)
             {
-                if (_postingWorkbench is not null)
+                if (_postingWorkbench is not null && !request.PrepareClosingEntriesOnly)
                 {
                     try
                     {
@@ -779,8 +852,11 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                                     RequireText(request.Rationale, "Rationale"),
                                     NormalizeEvidenceLinks(request.EvidenceLinks),
                                     request.ActionOrigin,
-                                    Role: "Fund Controller",
-                                    CorrelationId: request.CorrelationId),
+                                    Role: controllerRole!,
+                                    CorrelationId: request.CorrelationId)
+                                {
+                                    ConsistencyLeaseHeld = consistencyLeaseHeld
+                                },
                                 ct)
                             .ConfigureAwait(false);
                     }
@@ -915,8 +991,11 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                             RequireText(request.Rationale, "Rationale"),
                             NormalizeEvidenceLinks(request.EvidenceLinks),
                             request.ActionOrigin,
-                            Role: "Fund Controller",
-                            CorrelationId: request.CorrelationId),
+                            Role: controllerRole!,
+                            CorrelationId: request.CorrelationId)
+                        {
+                            ConsistencyLeaseHeld = consistencyLeaseHeld
+                        },
                         ct)
                     .ConfigureAwait(false);
             }
@@ -970,6 +1049,41 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             var updatedPlan = transition.Workflow is null
                 ? plan
                 : await BuildPeriodPlanWithGateAsync(transition.Workflow, ct, tenantId, companyId).ConfigureAwait(false);
+            if (transition.Success)
+            {
+                try
+                {
+                    // The first hard-close call deliberately cannot retain certifiable reporting
+                    // evidence while the Operations Continuity close transition is pending. Once
+                    // that transition commits, repeat the idempotent handoff so the final receipt
+                    // binds the closed workflow version, approval, checklist, close package, and
+                    // close-audit hash without reopening or re-closing the ledger period.
+                    await _postingWorkbench.FinalizeHardCloseAsync(
+                            RequirePostingContext(transition.Workflow ?? workflow, updatedPlan, tenantId, companyId),
+                            new AccountingClosePostingCommand(
+                                resolvedActor,
+                                RequireText(request.Rationale, "Rationale"),
+                                NormalizeEvidenceLinks(request.EvidenceLinks),
+                                request.ActionOrigin,
+                                Role: controllerRole!,
+                                CorrelationId: request.CorrelationId)
+                            {
+                                ConsistencyLeaseHeld = consistencyLeaseHeld
+                            },
+                            ct)
+                        .ConfigureAwait(false);
+                }
+                catch (ReportingCloseEvidenceHandoffException ex)
+                {
+                    updatedPlan = updatedPlan with
+                    {
+                        IsPeriodLocked = true,
+                        CloseCalendar = BuildCloseCalendar(updatedPlan.Tasks, isPeriodLocked: true)
+                    };
+                    return ReportingEvidenceHandoffPending(updatedPlan, ex);
+                }
+            }
+
             var transitionIssues = transition.Success
                 ? Array.Empty<AccountingConfigurationValidationIssueDto>()
                 : transition.Blockers
@@ -1011,7 +1125,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         ReopenClosePeriodRequestDto request,
         string actor,
         CancellationToken ct = default)
-        => ReopenClosePeriodScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+        => Task.FromException<ClosePeriodReopenResultDto?>(
+            new InvalidOperationException(
+                "Governed close-period reopen requires an authenticated tenant and company scope. Use the scoped close-period operation."));
 
     public async Task<ClosePeriodReopenResultDto?> ReopenClosePeriodScopedAsync(
         ReopenClosePeriodRequestDto request,
@@ -1026,6 +1142,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         {
             throw new ArgumentException("WorkflowId is required.", nameof(request));
         }
+        RequireCompleteMutationScope(tenantId, companyId);
 
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -1093,6 +1210,46 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                     [ClosingEntriesIssue(unavailable)]);
             }
 
+            if (_mutationGate is null)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    plan,
+                    null,
+                    plan.ClosingEntriesGate,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
+            await using var reopenConsistencyLease = await _mutationGate
+                .AcquireAsync(
+                    RequirePostingContext(workflow, plan, tenantId, companyId),
+                    ct)
+                .ConfigureAwait(false);
+            var consistencyLeaseHeld = reopenConsistencyLease is not null;
+            if (!consistencyLeaseHeld)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    plan,
+                    null,
+                    plan.ClosingEntriesGate,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
             // Re-read immediately before the durable ledger reopen. This prevents a stale version from
             // reopening the ledger after another close-plan mutation completed while the request waited.
             var boundaryWorkflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
@@ -1144,7 +1301,10 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                         request.ActionOrigin,
                         role,
                         RequireText(request.ApprovalReference, "ApprovalReference"),
-                        request.CorrelationId),
+                        request.CorrelationId)
+                    {
+                        ConsistencyLeaseHeld = consistencyLeaseHeld
+                    },
                     ct)
                 .ConfigureAwait(false);
 
@@ -1368,6 +1528,24 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             gate.GateId,
             "Open the Post closing entries gate, review the net-income roll, and independently approve/post the governed draft before period lock.");
 
+    private static AccountingConfigurationValidationIssueDto MutationConsistencyGateUnavailableIssue(
+        ClosePeriodPlanDto plan)
+        => new(
+            "ClosePeriodMutationConsistencyGateUnavailable",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            "The durable accounting-period mutation fence is unavailable; ledger close/reopen and the Operations workflow transition cannot be committed as one governed outcome.",
+            plan.ClosePlanId,
+            "Configure the canonical cross-host reporting release/close consistency authority, then retry the unchanged close or reopen command.");
+
+    private static void RequireCompleteMutationScope(string? tenantId, string? companyId)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId))
+        {
+            throw new ArgumentException(
+                "Governed accounting-period mutation requires authenticated tenant and company scope.");
+        }
+    }
+
     private static IReadOnlyList<CloseOperatingCoverageItemDto> BuildOperatingCoverage(
         OperationsContinuityWorkflowDto workflow,
         IReadOnlyList<CloseTaskDto> tasks,
@@ -1552,26 +1730,258 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     }
 
     private IReadOnlyList<WorkflowLateAdjustmentRecord> ReadLateAdjustments()
+        => ReadPersistedSlice(
+            static snapshot => snapshot.LateAdjustments,
+            ReadInMemoryLateAdjustments);
+
+    /// <summary>
+    /// Reads one collection out of the persisted close-management snapshot, falling back to the
+    /// in-memory set when no persistence path is configured or the file has never been initialized.
+    /// </summary>
+    /// <remarks>
+    /// An unreadable snapshot throws rather than yielding an empty set. Every close mutation
+    /// re-reads the three collections it is not changing and rewrites all four
+    /// (see <see cref="SaveCloseManagementAsync"/>), so an empty fallback would let the next
+    /// routine sign-off atomically overwrite the file with a snapshot missing every previously
+    /// recorded late adjustment, task sign-off, plan configuration, and evidence review.
+    /// Failing closed leaves the unreadable file intact on disk for recovery.
+    /// </remarks>
+    private IReadOnlyList<T> ReadPersistedSlice<T>(
+        Func<CloseManagementSnapshot, IReadOnlyList<T>?> select,
+        Func<IReadOnlyList<T>> readInMemory)
     {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
+        if (string.IsNullOrWhiteSpace(_persistencePath))
         {
-            return ReadInMemoryLateAdjustments();
+            return readInMemory();
         }
 
         lock (_readGate)
         {
+            if (!File.Exists(_persistencePath))
+            {
+                if (Volatile.Read(ref _hasEstablishedPersistedSnapshot) != 0)
+                {
+                    throw new InvalidDataException(
+                        $"Close-management snapshot '{_persistencePath}' is missing after durable " +
+                        "close-management state was previously persisted or observed. Refusing to " +
+                        "continue with an empty close-management set because the next close mutation " +
+                        "would permanently discard retained close evidence.");
+                }
+
+                return readInMemory();
+            }
+
+            CloseManagementSnapshot normalizedSnapshot;
             try
             {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.LateAdjustments ?? [];
+                using var document = JsonDocument.Parse(File.ReadAllText(_persistencePath));
+                var version = ReadPersistedSnapshotVersion(document.RootElement);
+                var snapshot = document.RootElement.Deserialize<CloseManagementSnapshot>(JsonOptions);
+                normalizedSnapshot = NormalizePersistedSnapshot(snapshot, version);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                return [];
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' is unreadable. Refusing to " +
+                    "continue with an empty close-management set: the next close mutation would " +
+                    "overwrite this file and permanently discard the recorded late adjustments, " +
+                    "task sign-offs, plan configurations, and evidence reviews.",
+                    ex);
+            }
+
+            var slice = select(normalizedSnapshot)
+                ?? throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                    "Refusing to continue because the next close mutation would overwrite retained " +
+                    "late adjustments, task sign-offs, plan configurations, or evidence reviews.");
+            Volatile.Write(ref _hasEstablishedPersistedSnapshot, 1);
+            return slice;
+        }
+    }
+
+    /// <summary>
+    /// Normalizes snapshots written before task sign-offs, plan configurations, and evidence
+    /// reviews were added to the persisted close-management record.
+    /// </summary>
+    /// <remarks>
+    /// Late adjustments are the original persisted authority and remain mandatory. A null root or
+    /// missing late-adjustment collection is therefore incomplete and fails closed. Repository
+    /// history contains three additive legacy generations: late adjustments only, then task
+    /// sign-offs, then plan configurations. Only those exact contiguous prefixes may omit later
+    /// collections; explicit nulls, unknown properties, and gapped shapes fail before typed
+    /// normalization. The next mutation persists the fully normalized four-collection snapshot
+    /// through <see cref="SaveCloseManagementAsync"/>.
+    /// </remarks>
+    private CloseManagementSnapshot NormalizePersistedSnapshot(
+        CloseManagementSnapshot? snapshot,
+        CloseManagementSnapshotVersion version)
+    {
+        if (snapshot?.LateAdjustments is null)
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The legacy late-adjustment collection is the core persisted authority and must " +
+                "be present before retained close-management state can be read or rewritten.");
+        }
+
+        return version switch
+        {
+            CloseManagementSnapshotVersion.LateAdjustmentsOnly => snapshot with
+            {
+                TaskSignOffs = [],
+                PlanConfigurations = [],
+                EvidenceReviews = []
+            },
+            CloseManagementSnapshotVersion.ThroughTaskSignOffs
+                when snapshot.TaskSignOffs is not null => snapshot with
+                {
+                    PlanConfigurations = [],
+                    EvidenceReviews = []
+                },
+            CloseManagementSnapshotVersion.ThroughPlanConfigurations
+                when snapshot.TaskSignOffs is not null
+                     && snapshot.PlanConfigurations is not null => snapshot with
+                     {
+                         EvidenceReviews = []
+                     },
+            CloseManagementSnapshotVersion.Current
+                when snapshot.TaskSignOffs is not null
+                     && snapshot.PlanConfigurations is not null
+                     && snapshot.EvidenceReviews is not null => snapshot,
+            _ => throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state for " +
+                $"recognized persisted generation '{version}'. Refusing to infer retained close " +
+                "state from an incomplete typed snapshot.")
+        };
+    }
+
+    private CloseManagementSnapshotVersion ReadPersistedSnapshotVersion(JsonElement root)
+    {
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The persisted root must be a JSON object.");
+        }
+
+        var presentCollections = new bool[4];
+        foreach (var property in root.EnumerateObject())
+        {
+            var index = GetPersistedCollectionIndex(property.Name);
+            if (index < 0)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported state " +
+                    $"shape. Property '{property.Name}' is not part of a recognized persisted " +
+                    "close-management generation.");
+            }
+
+            if (presentCollections[index])
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported state " +
+                    $"shape. Collection '{property.Name}' appears more than once.");
+            }
+
+            if (property.Value.ValueKind == JsonValueKind.Null)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' contains explicit null for " +
+                    $"collection '{property.Name}'. Present close-management collections must be " +
+                    "JSON arrays.");
+            }
+
+            if (property.Value.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has invalid state for " +
+                    $"collection '{property.Name}'. Present close-management collections must be " +
+                    "JSON arrays.");
+            }
+
+            presentCollections[index] = true;
+        }
+
+        if (!presentCollections[0])
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The legacy late-adjustment collection is the core persisted authority.");
+        }
+
+        var lastPresentIndex = 0;
+        for (var index = 1; index < presentCollections.Length; index++)
+        {
+            if (presentCollections[index])
+            {
+                lastPresentIndex = index;
             }
         }
+
+        for (var index = 0; index <= lastPresentIndex; index++)
+        {
+            if (!presentCollections[index])
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported gapped " +
+                    $"state shape. Collection '{GetPersistedCollectionName(index)}' is omitted " +
+                    "before a later-generation collection.");
+            }
+        }
+
+        return (CloseManagementSnapshotVersion)(lastPresentIndex + 1);
+    }
+
+    private static int GetPersistedCollectionIndex(string propertyName)
+    {
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.LateAdjustments),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.TaskSignOffs),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.PlanConfigurations),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 2;
+        }
+
+        return string.Equals(
+            propertyName,
+            nameof(CloseManagementSnapshot.EvidenceReviews),
+            StringComparison.OrdinalIgnoreCase)
+            ? 3
+            : -1;
+    }
+
+    private static string GetPersistedCollectionName(int index)
+        => index switch
+        {
+            0 => nameof(CloseManagementSnapshot.LateAdjustments),
+            1 => nameof(CloseManagementSnapshot.TaskSignOffs),
+            2 => nameof(CloseManagementSnapshot.PlanConfigurations),
+            3 => nameof(CloseManagementSnapshot.EvidenceReviews),
+            _ => throw new ArgumentOutOfRangeException(nameof(index))
+        };
+
+    private enum CloseManagementSnapshotVersion
+    {
+        LateAdjustmentsOnly = 1,
+        ThroughTaskSignOffs = 2,
+        ThroughPlanConfigurations = 3,
+        Current = 4
     }
 
     private async Task SaveCloseManagementAsync(
@@ -1631,6 +2041,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                 .ToArray());
         var json = JsonSerializer.Serialize(snapshot, JsonOptions);
         await AtomicFileWriter.WriteAsync(_persistencePath, json, ct).ConfigureAwait(false);
+        Volatile.Write(ref _hasEstablishedPersistedSnapshot, 1);
     }
 
     private IReadOnlyList<WorkflowLateAdjustmentRecord> ReadInMemoryLateAdjustments()
@@ -1650,27 +2061,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             .ToArray();
 
     private IReadOnlyList<WorkflowCloseTaskSignOffRecord> ReadTaskSignOffs()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryTaskSignOffs();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.TaskSignOffs ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.TaskSignOffs,
+            ReadInMemoryTaskSignOffs);
 
     private IReadOnlyList<WorkflowCloseTaskSignOffRecord> ReadInMemoryTaskSignOffs()
     {
@@ -1687,27 +2080,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             .FirstOrDefault(configuration => configuration.WorkflowId == workflowId);
 
     private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadPlanConfigurations()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryPlanConfigurations();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.PlanConfigurations ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.PlanConfigurations,
+            ReadInMemoryPlanConfigurations);
 
     private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadInMemoryPlanConfigurations()
     {
@@ -1720,27 +2095,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     }
 
     private IReadOnlyList<WorkflowCloseEvidenceReviewRecord> ReadEvidenceReviews()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryEvidenceReviews();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.EvidenceReviews ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.EvidenceReviews,
+            ReadInMemoryEvidenceReviews);
 
     private IReadOnlyList<WorkflowCloseEvidenceReviewRecord> ReadInMemoryEvidenceReviews()
     {

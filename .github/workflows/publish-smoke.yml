@@ -65,6 +65,15 @@ jobs:
         with:
           python-version: "3.12"
 
+      # publish.ps1 builds the gitignored workstation bundle when it is absent from a
+      # clean checkout, so the publish job needs the repo's Node toolchain.
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
       - name: Cache NuGet packages
         uses: actions/cache@v6.1.0
         with:
@@ -86,6 +95,41 @@ jobs:
             -OutputRetentionDays 0 `
             -OutputRetainLatest 0
 
+      - name: Prepare published WebWorkstation artifact for installed startup
+        if: inputs.project == 'web-workstation' && inputs.runtime == 'win-x64'
+        shell: pwsh
+        run: |
+          $artifactHost = Resolve-Path 'artifacts/publish/publish-smoke/win-x64/web-workstation'
+          $installSmokeHost = 'artifacts/publish/web-workstation/win-x64'
+          New-Item -ItemType Directory -Path $installSmokeHost -Force | Out-Null
+          Copy-Item -Path (Join-Path $artifactHost '*') -Destination $installSmokeHost -Recurse -Force
+          dotnet publish src/Meridian.LifecycleSupervisor/Meridian.LifecycleSupervisor.csproj `
+            -c Release -r win-x64 -o $installSmokeHost --self-contained true `
+            -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:PublishTrimmed=false
+
+          # Runner PostgreSQL directories are major-only names like '17', which
+          # [version] refuses to parse; sort on the leading integer instead.
+          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
+            Where-Object { $_.Name -match '^\d+' } |
+            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
+          if ($null -eq $postgres) { throw 'GitHub Windows runner has no PostgreSQL runtime for installed startup smoke.' }
+          $payload = 'artifacts/postgresql-payload/win-x64'
+          New-Item -ItemType Directory -Path $payload -Force | Out-Null
+          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
+          Copy-Item -LiteralPath $payload -Destination (Join-Path $installSmokeHost 'database') -Recurse -Force
+
+      - name: Start the published WebWorkstation artifact with required authentication
+        if: inputs.project == 'web-workstation' && inputs.runtime == 'win-x64'
+        shell: pwsh
+        run: |
+          pwsh ./build/scripts/install/smoke-web-workstation-install.ps1 `
+            -RuntimeIdentifier win-x64 `
+            -PostgreSqlPayloadRoot artifacts/postgresql-payload `
+            -OutputRoot artifacts/publish/publish-smoke/installed-startup `
+            -SkipHostPublish `
+            -SkipDashboardBuild `
+            -SkipNpmInstall
+
       - name: Generate release evidence manifest
         shell: pwsh
         run: |
@@ -98,10 +142,13 @@ jobs:
             --workflow-run-id '${{ github.run_id }}' `
             --validation-lane publish-smoke
 
+      # always(): a failed smoke must still ship its install.log and receipts,
+      # or the failure cannot be diagnosed from the run page.
       - name: Upload publish artifact
+        if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
           name: meridian-${{ inputs.project }}-${{ inputs.runtime }}-${{ github.run_number }}
           path: artifacts/publish/publish-smoke/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14

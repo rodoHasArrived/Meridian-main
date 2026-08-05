@@ -35,7 +35,7 @@ This lane is the canonical operator procedure page for reconciliation exception 
 
 1. Open `Accounting` -> `Import statement`.
 2. Choose the source path:
-   - `File upload` for CSV, OFX/QFX, IB Flex XML, or connector JSON; or
+   - `File upload` for CSV, OFX/QFX, IB Flex XML, ISO 20022 camt.053, BAI2, or connector JSON; or
    - `Scheduled fetch` for a fetch-capable provider connection such as Alpaca or the IB Flex Web
      Service.
 3. Review the detected canonical columns, per-column confidence, position/transaction/cash/fee/
@@ -53,9 +53,9 @@ This lane is the canonical operator procedure page for reconciliation exception 
    returned reconciliation route for break or case review.
 
 Scheduled-fetch credentials remain in the existing provider credential vault. The statement screen
-never asks for, displays, or persists API keys. A transient fetch failure leaves the last successful
-watermark unchanged so the schedule remains retryable; the schedule row shows a stable failure type
-without exposing upstream exception text.
+never asks for, displays, or persists API keys. A transient fetch failure advances the schedule
+watermark, so the next automatic retry respects the configured cadence; the schedule row shows a
+stable failure type without exposing upstream exception text.
 
 Alpaca activity fetches continue until the provider cursor is complete and fail closed when a page
 token is missing or repeated. IB Flex fetches submit the configured query, poll its documented v3

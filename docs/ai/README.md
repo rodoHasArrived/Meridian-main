@@ -42,6 +42,7 @@ Classify AI/doc changes in this rebuild model:
 | Stakeholder/product planning | [`product/README.md`](../product/README.md) | [`meridian-design-document.md`](../product/meridian-design-document.md) and roadmap-facing status alignment |
 | Any task | [`CLAUDE.md`](../../CLAUDE.md) | Root commands, conventions, and architecture |
 | Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
+| AI system inventory and compatibility | [`ai-systems-inventory.md`](ai-systems-inventory.md) | Scope map for cross-host edits and surface ownership |
 | Rebuild-era AI requirements | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Contracted requirements for repo navigation, generated-doc handling, orchestration, token/context discipline, and validation |
 | Multi-agent or multi-phase work | [`agent-handoff-checklist.md`](agent-handoff-checklist.md) | Required handoff packet format and token-efficient context boundaries |
 | Parallel multi-lane execution | [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md) | Shared lane-ownership manifest to prevent duplicate discovery and overlapping edits |
@@ -201,6 +202,7 @@ Located mainly in `docs/ai/claude/`.
 | Topic | Canonical Source |
 | --- | --- |
 | Cross-provider AI workflow | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) |
+| AI system inventory | [`ai-systems-inventory.md`](ai-systems-inventory.md) |
 | Repo orientation | [`generated/repo-navigation.json`](generated/repo-navigation.json) |
 | Agent catalog | [`agents/README.md`](agents/README.md) |
 | Portable skill catalog | [`skills/README.md`](skills/README.md), [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills) |

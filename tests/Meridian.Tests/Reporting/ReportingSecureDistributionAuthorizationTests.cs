@@ -93,6 +93,74 @@ public sealed class ReportingSecureDistributionAuthorizationTests
     }
 
     [Fact]
+    public async Task AccessGrantDiscovery_UsedLegacyMultiArtifactGrantProjectsIndeterminateTerminalState()
+    {
+        var fixture = await Fixture.CreateAsync();
+        var legacyGrant = fixture.Grant with
+        {
+            ArtifactIds = ["statement.pdf", "statement.xlsx"],
+            MaxUses = 2,
+            UseCount = 1,
+            LastUsedAtUtc = FixedNow,
+            Version = 1,
+            ConsumedArtifactIds = null
+        };
+        fixture.AccessGrantStore.SetUnsafe(legacyGrant);
+        var authority = Authority(
+            "owner-a",
+            "tenant-a",
+            "company-a",
+            ["owner-a"],
+            isAdmin: false);
+
+        var detail = await fixture.Application.GetAccessGrantAsync(
+            legacyGrant.GrantId,
+            authority);
+        var listed = await fixture.Application.ListAccessGrantsAsync(
+            legacyGrant.RunId,
+            authority);
+
+        detail.State.Should().Be("LegacyConsumptionIndeterminate");
+        listed.Should().ContainSingle(grant =>
+            grant.GrantId == legacyGrant.GrantId
+            && grant.State == "LegacyConsumptionIndeterminate");
+    }
+
+    [Fact]
+    public async Task AccessGrantDiscovery_ZeroArtifactLegacyPackageGrantProjectsScopeIndeterminate()
+    {
+        var fixture = await Fixture.CreateAsync();
+        var legacyGrant = fixture.Grant with
+        {
+            AllowPackageRead = true,
+            ArtifactIds = [],
+            MaxUses = 1,
+            UseCount = 0,
+            LastUsedAtUtc = null,
+            ConsumedArtifactIds = null
+        };
+        fixture.AccessGrantStore.SetUnsafe(legacyGrant);
+        var authority = Authority(
+            "owner-a",
+            "tenant-a",
+            "company-a",
+            ["owner-a"],
+            isAdmin: false);
+
+        var detail = await fixture.Application.GetAccessGrantAsync(
+            legacyGrant.GrantId,
+            authority);
+        var listed = await fixture.Application.ListAccessGrantsAsync(
+            legacyGrant.RunId,
+            authority);
+
+        detail.State.Should().Be("LegacyScopeIndeterminate");
+        listed.Should().ContainSingle(grant =>
+            grant.GrantId == legacyGrant.GrantId
+            && grant.State == "LegacyScopeIndeterminate");
+    }
+
+    [Fact]
     public async Task TransportCatalog_IsAuthenticatedCredentialFreeAndReportsFailClosedReadiness()
     {
         var fixture = await Fixture.CreateAsync();
@@ -144,6 +212,270 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             !transport.IsReady && transport.DisabledReasonCode == "DELIVER_PERMISSION_REQUIRED");
         viewOnly.Transports.Single(transport => transport.TransportId == "secure-portal")
             .IsInfrastructureReady.Should().BeTrue("permission and configuration readiness are separate server facts");
+    }
+
+    [Fact]
+    public void ClientPackageDistribution_RejectsRequestedPrimaryArtifactSubset()
+    {
+        var scope = new ReportingOperationalScope(
+            "tenant-a",
+            "organization-a",
+            "company-a",
+            "fund-a",
+            "book-a",
+            "2026-07");
+        var snapshot = CertifiedSnapshot(
+            scope,
+            outputFormat: ReportingOutputFormatDto.ClientPackage);
+
+        Action selectPdfOnly = () =>
+            ReportingSecureDistributionApplicationService.RequireAtomicClientPackageSelection(
+                "run-a",
+                snapshot,
+                ["run-a.pdf"]);
+        Action selectCompletePackage = () =>
+            ReportingSecureDistributionApplicationService.RequireAtomicClientPackageSelection(
+                "run-a",
+                snapshot,
+                ["run-a.pdf", "run-a.xlsx"]);
+
+        selectPdfOnly.Should().Throw<InvalidOperationException>()
+            .WithMessage("*atomic*both released PDF and XLSX primary artifacts*");
+        selectCompletePackage.Should().NotThrow();
+    }
+
+    [Fact]
+    public async Task ClientPackageExternalGrants_DefaultToSelectedArtifactCount()
+    {
+        var resolver = new ConfiguredReportingRecipientDestinationResolver(
+        [
+            new ReportingRecipientDestinationBinding(
+                "tenant-a",
+                "company-a",
+                "recipient-a",
+                "http-relay",
+                "governed-recipient@example.test")
+        ]);
+        var fixture = await ReleasedFixture.CreateAsync(
+            resolver,
+            outputFormat: ReportingOutputFormatDto.ClientPackage);
+        var artifactIds = new[] { $"{fixture.Run.RunId}.pdf", $"{fixture.Run.RunId}.xlsx" };
+        var authority = Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false);
+
+        var issued = await fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                artifactIds,
+                LifetimeSeconds: 900),
+            authority);
+        var queued = await fixture.Application.QueueDeliveryAsync(
+            fixture.BuildQueueCommand(
+                string.Empty,
+                artifactIds: artifactIds,
+                grantMaxUses: null),
+            authority);
+
+        (await fixture.AccessGrantStore.GetAsync(issued.GrantId))!.MaxUses
+            .Should().Be(artifactIds.Length);
+        queued.Payload.ExternalAccess.Should().NotBeNull();
+        queued.Payload.ExternalAccess!.MaxUses.Should().Be(artifactIds.Length);
+    }
+
+    [Theory]
+    [InlineData(".pdf", ".xlsx")]
+    [InlineData(".xlsx", ".pdf")]
+    public async Task ClientPackageDeliveryLinkedGrant_DuplicateCannotConsumeOtherArtifactBudget(
+        string firstExtension,
+        string secondExtension)
+    {
+        var fixture = await ReleasedFixture.CreateAsync(
+            new RejectingReportingRecipientDestinationResolver(),
+            outputFormat: ReportingOutputFormatDto.ClientPackage);
+        var artifactIds = new[]
+        {
+            $"{fixture.Run.RunId}.pdf",
+            $"{fixture.Run.RunId}.xlsx"
+        };
+        var issued = await fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                artifactIds,
+                LifetimeSeconds: 900,
+                MaxUses: artifactIds.Length),
+            Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false));
+        var job = BuildLinkedDelivery(
+            fixture,
+            $"delivery-client-package-{firstExtension[1..]}",
+            issued.GrantId,
+            ReportingDeliveryState.Sent,
+            providerMessageId: "provider-client-package",
+            lastErrorCode: null,
+            receipts: []);
+        (await fixture.DeliveryStore.TryCreateAsync(job)).Should().BeTrue();
+        var token = ExtractFragmentValue(issued.RecipientAccessUri, "token");
+        var firstArtifactId = $"{fixture.Run.RunId}{firstExtension}";
+        var secondArtifactId = $"{fixture.Run.RunId}{secondExtension}";
+
+        var first = await fixture.Application.ExchangeGrantForDownloadAsync(
+            issued.GrantId,
+            new SecureReportingGrantExchangeCommand(token, firstArtifactId),
+            $"download-{firstExtension[1..]}");
+        var duplicate = () => fixture.Application.ExchangeGrantForDownloadAsync(
+            issued.GrantId,
+            new SecureReportingGrantExchangeCommand(token, firstArtifactId),
+            $"duplicate-{firstExtension[1..]}");
+        var denied = await duplicate.Should()
+            .ThrowAsync<SecureReportingAccessGrantDeniedException>();
+        var second = await fixture.Application.ExchangeGrantForDownloadAsync(
+            issued.GrantId,
+            new SecureReportingGrantExchangeCommand(token, secondArtifactId),
+            $"download-{secondExtension[1..]}");
+
+        denied.Which.Status.Should().Be(
+            ReportingAccessGrantValidationStatus.UseLimitExceeded);
+        first.Artifact.ArtifactId.Should().Be(firstArtifactId);
+        second.Artifact.ArtifactId.Should().Be(secondArtifactId);
+        var consumedGrant = (await fixture.AccessGrantStore.GetAsync(issued.GrantId))!;
+        consumedGrant.UseCount.Should().Be(2);
+        consumedGrant.ConsumedArtifactIds.Should().Equal(artifactIds);
+        var delivery = (await fixture.DeliveryStore.GetAsync(job.JobId))!;
+        delivery.Receipts.Should().HaveCount(2)
+            .And.OnlyContain(receipt =>
+                receipt.Kind == ReportingDeliveryReceiptKind.Downloaded);
+        fixture.AuditStore.Events.Should().HaveCount(2)
+            .And.OnlyContain(audit =>
+                audit.Action == ReportingArtifactAuditAction.ContentAccessed);
+    }
+
+    [Fact]
+    public async Task ClientPackageDeliveryLinkedGrant_ConcurrentDistinctReadsRetryAtomicConflict()
+    {
+        var fixture = await ReleasedFixture.CreateAsync(
+            new RejectingReportingRecipientDestinationResolver(),
+            outputFormat: ReportingOutputFormatDto.ClientPackage);
+        var artifactIds = new[]
+        {
+            $"{fixture.Run.RunId}.pdf",
+            $"{fixture.Run.RunId}.xlsx"
+        };
+        var issued = await fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                artifactIds,
+                LifetimeSeconds: 900,
+                MaxUses: artifactIds.Length),
+            Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false));
+        var job = BuildLinkedDelivery(
+            fixture,
+            "delivery-client-package-concurrent",
+            issued.GrantId,
+            ReportingDeliveryState.Sent,
+            providerMessageId: "provider-client-package-concurrent",
+            lastErrorCode: null,
+            receipts: []);
+        (await fixture.DeliveryStore.TryCreateAsync(job)).Should().BeTrue();
+        fixture.DeliveryStore.CoordinateNextAtomicCommitPair = true;
+        var token = ExtractFragmentValue(issued.RecipientAccessUri, "token");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var downloads = await Task.WhenAll(
+            fixture.Application.ExchangeGrantForDownloadAsync(
+                issued.GrantId,
+                new SecureReportingGrantExchangeCommand(token, artifactIds[0]),
+                "download-concurrent-pdf",
+                timeout.Token),
+            fixture.Application.ExchangeGrantForDownloadAsync(
+                issued.GrantId,
+                new SecureReportingGrantExchangeCommand(token, artifactIds[1]),
+                "download-concurrent-xlsx",
+                timeout.Token));
+
+        downloads.Select(download => download.Artifact.ArtifactId)
+            .Should().BeEquivalentTo(artifactIds);
+        var consumedGrant = (await fixture.AccessGrantStore.GetAsync(issued.GrantId))!;
+        consumedGrant.UseCount.Should().Be(2);
+        consumedGrant.ConsumedArtifactIds.Should().Equal(artifactIds);
+        var delivery = (await fixture.DeliveryStore.GetAsync(job.JobId))!;
+        delivery.Receipts.Should().HaveCount(2)
+            .And.OnlyContain(receipt =>
+                receipt.Kind == ReportingDeliveryReceiptKind.Downloaded);
+        fixture.AuditStore.Events.Should().HaveCount(2);
+        fixture.DeliveryStore.AtomicCommitAttempts.Should().Be(3,
+            "the losing initial commit should reload both aggregates and succeed once");
+    }
+
+    [Fact]
+    public async Task ClientPackageExternalGrants_RejectUseLimitBelowSelectedArtifactCount()
+    {
+        var resolver = new ConfiguredReportingRecipientDestinationResolver(
+        [
+            new ReportingRecipientDestinationBinding(
+                "tenant-a",
+                "company-a",
+                "recipient-a",
+                "http-relay",
+                "governed-recipient@example.test")
+        ]);
+        var fixture = await ReleasedFixture.CreateAsync(
+            resolver,
+            outputFormat: ReportingOutputFormatDto.ClientPackage);
+        var artifactIds = new[] { $"{fixture.Run.RunId}.pdf", $"{fixture.Run.RunId}.xlsx" };
+        var authority = Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false);
+
+        var issue = () => fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                artifactIds,
+                LifetimeSeconds: 900,
+                MaxUses: 1),
+            authority);
+        var queue = () => fixture.Application.QueueDeliveryAsync(
+            fixture.BuildQueueCommand(
+                string.Empty,
+                artifactIds: artifactIds,
+                grantMaxUses: 1),
+            authority);
+
+        await issue.Should().ThrowAsync<ArgumentOutOfRangeException>()
+            .WithMessage("*all 2 selected artifacts*");
+        await queue.Should().ThrowAsync<ArgumentOutOfRangeException>()
+            .WithMessage("*all 2 selected artifacts*");
+        fixture.AccessGrantStore.Count.Should().Be(0);
+        fixture.DeliveryStore.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task NonClientPackageGrant_PreservesConfiguredDefaultAndMaximum()
+    {
+        var fixture = await ReleasedFixture.CreateAsync(
+            new RejectingReportingRecipientDestinationResolver());
+        var authority = Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false);
+
+        var issued = await fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                ["statement.pdf"],
+                LifetimeSeconds: 900),
+            authority);
+        var aboveMaximum = () => fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                ["statement.pdf"],
+                LifetimeSeconds: 900,
+                MaxUses: SecureReportingDistributionOptions.Default.MaximumGrantMaxUses + 1),
+            authority);
+
+        (await fixture.AccessGrantStore.GetAsync(issued.GrantId))!.MaxUses
+            .Should().Be(SecureReportingDistributionOptions.Default.DefaultGrantMaxUses);
+        await aboveMaximum.Should().ThrowAsync<ArgumentOutOfRangeException>()
+            .WithMessage("*outside the configured range*");
+        fixture.AccessGrantStore.Count.Should().Be(1);
     }
 
     [Theory]
@@ -217,6 +549,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             "http-relay"));
 
         resolver.IsConfigured.Should().BeTrue();
+        resolver.ConfiguredTransportIds.Should().Equal("http-relay");
         exact.Should().Be("recipient@example.test");
         crossTenant.Should().BeNull();
         crossCompany.Should().BeNull();
@@ -322,7 +655,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
 
         queuedUser.Payload.RecipientKind.Should().Be(ReportingAccessPrincipalKind.User);
         await replayAsGroup.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*different immutable delivery request*");
+            .WithMessage("*different immutable delivery content*");
         fixture.DeliveryStore.Count.Should().Be(1);
     }
 
@@ -703,6 +1036,129 @@ public sealed class ReportingSecureDistributionAuthorizationTests
         var grant = (await fixture.AccessGrantStore.GetAsync(issued.GrantId))!;
         grant.RevokedAtUtc.Should().BeNull();
         grant.UseCount.Should().Be(1);
+        (await fixture.DeliveryStore.GetAsync(job.JobId))!.Receipts.Should().ContainSingle(
+            receipt => receipt.Kind == ReportingDeliveryReceiptKind.Downloaded
+                       && receipt.EvidenceReference == download.AuditEventId);
+    }
+
+    [Fact]
+    public async Task DeliveryLinkedGrantExchange_TransientCommitConflictRetriesWithoutDuplicateReadOrReceipt()
+    {
+        var fixture = await ReleasedFixture.CreateAsync(
+            new RejectingReportingRecipientDestinationResolver());
+        var issued = await fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                ["statement.pdf"],
+                LifetimeSeconds: 900,
+                MaxUses: 1),
+            Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false));
+        var job = BuildLinkedDelivery(
+            fixture,
+            "delivery-atomic-conflict",
+            issued.GrantId,
+            ReportingDeliveryState.Sent,
+            providerMessageId: null,
+            lastErrorCode: null,
+            receipts: []);
+        (await fixture.DeliveryStore.TryCreateAsync(job)).Should().BeTrue();
+        fixture.DeliveryStore.FailNextAtomicCommits = 1;
+
+        var download = await fixture.Application.ExchangeGrantForDownloadAsync(
+            issued.GrantId,
+            new SecureReportingGrantExchangeCommand(
+                ExtractFragmentValue(issued.RecipientAccessUri, "token"),
+                "statement.pdf"),
+            "atomic-conflict-download");
+
+        download.Content.Should().Equal(fixture.ExactBytes);
+        (await fixture.AccessGrantStore.GetAsync(issued.GrantId))!.UseCount.Should().Be(1);
+        (await fixture.DeliveryStore.GetAsync(job.JobId))!.Receipts.Should().ContainSingle(
+            receipt => receipt.Kind == ReportingDeliveryReceiptKind.Downloaded
+                       && receipt.EvidenceReference == download.AuditEventId);
+        fixture.AuditStore.Events.Should().ContainSingle();
+        fixture.DeliveryStore.AtomicCommitAttempts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task DeliveryLinkedGrantExchange_PersistentCommitConflictStopsAtBoundWithoutUseOrReceipt()
+    {
+        var fixture = await ReleasedFixture.CreateAsync(
+            new RejectingReportingRecipientDestinationResolver());
+        var issued = await fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                ["statement.pdf"],
+                LifetimeSeconds: 900,
+                MaxUses: 1),
+            Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false));
+        var job = BuildLinkedDelivery(
+            fixture,
+            "delivery-persistent-atomic-conflict",
+            issued.GrantId,
+            ReportingDeliveryState.Sent,
+            providerMessageId: null,
+            lastErrorCode: null,
+            receipts: []);
+        (await fixture.DeliveryStore.TryCreateAsync(job)).Should().BeTrue();
+        fixture.DeliveryStore.FailNextAtomicCommits = int.MaxValue;
+
+        var exchange = () => fixture.Application.ExchangeGrantForDownloadAsync(
+            issued.GrantId,
+            new SecureReportingGrantExchangeCommand(
+                ExtractFragmentValue(issued.RecipientAccessUri, "token"),
+                "statement.pdf"),
+            "persistent-atomic-conflict-download");
+
+        var denied = await exchange.Should()
+            .ThrowAsync<SecureReportingAccessGrantDeniedException>();
+        denied.Which.Status.Should().Be(
+            ReportingAccessGrantValidationStatus.ConcurrencyConflict);
+        (await fixture.AccessGrantStore.GetAsync(issued.GrantId))!.UseCount.Should().Be(0);
+        (await fixture.DeliveryStore.GetAsync(job.JobId))!.Receipts.Should().BeEmpty();
+        fixture.AuditStore.Events.Should().ContainSingle(
+            "optimistic retries must reuse the one integrity-verified retained read");
+        fixture.DeliveryStore.AtomicCommitAttempts.Should().Be(8);
+    }
+
+    [Fact]
+    public async Task DeliveryLinkedGrantExchange_WithoutAtomicCommitterFailsBeforeReadOrUse()
+    {
+        var fixture = await ReleasedFixture.CreateAsync(
+            new RejectingReportingRecipientDestinationResolver(),
+            exposeAtomicGrantDownloadCommitter: false);
+        var issued = await fixture.Application.IssueAccessGrantAsync(
+            new SecureReportingGrantIssueCommand(
+                fixture.Run.RunId,
+                "recipient-a",
+                ["statement.pdf"],
+                LifetimeSeconds: 900,
+                MaxUses: 1),
+            Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false));
+        var job = BuildLinkedDelivery(
+            fixture,
+            "delivery-non-atomic",
+            issued.GrantId,
+            ReportingDeliveryState.Sent,
+            providerMessageId: null,
+            lastErrorCode: null,
+            receipts: []);
+        (await fixture.DeliveryStore.TryCreateAsync(job)).Should().BeTrue();
+
+        var exchange = () => fixture.Application.ExchangeGrantForDownloadAsync(
+            issued.GrantId,
+            new SecureReportingGrantExchangeCommand(
+                ExtractFragmentValue(issued.RecipientAccessUri, "token"),
+                "statement.pdf"),
+            "non-atomic-download");
+
+        await exchange.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*atomic PostgreSQL distribution boundary*");
+        (await fixture.AccessGrantStore.GetAsync(issued.GrantId))!.UseCount.Should().Be(0);
+        (await fixture.DeliveryStore.GetAsync(job.JobId))!.Receipts.Should().BeEmpty();
+        fixture.AuditStore.Events.Should().BeEmpty();
     }
 
     [Fact]
@@ -902,8 +1358,14 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                 MaxUses: 1),
             Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false));
 
+        // Both unavailability modes fail closed with InvalidDataException and issue no grant;
+        // the message is case-specific (corrupt bytes fail integrity verification, absent bytes
+        // are reported missing from immutable storage).
+        var expectedMessage = corruptBytes
+            ? "*exact integrity verification*"
+            : "*missing from immutable storage*";
         await issue.Should().ThrowAsync<InvalidDataException>()
-            .WithMessage("*exact integrity verification*");
+            .WithMessage(expectedMessage);
         fixture.AccessGrantStore.Count.Should().Be(0);
     }
 
@@ -956,6 +1418,10 @@ public sealed class ReportingSecureDistributionAuthorizationTests
         IReadOnlyList<ReportingDeliveryReceipt> receipts)
     {
         var release = ReportingDeliveryReleaseAuthorizationFactory.Create(fixture.Run);
+        var artifactIds = release.Artifacts
+            .Select(static artifact => artifact.ArtifactId)
+            .OrderBy(static artifactId => artifactId, StringComparer.Ordinal)
+            .ToArray();
         return new ReportingDeliveryJobRecord(
             jobId,
             fixture.Run.Scope.TenantId,
@@ -977,8 +1443,8 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                     "https://reports.example.test/portal/reporting/access",
                     TimeSpan.FromMinutes(15),
                     AllowPackageRead: false,
-                    ArtifactIds: ["statement.pdf"],
-                    MaxUses: 1,
+                    ArtifactIds: artifactIds,
+                    MaxUses: artifactIds.Length,
                     AudienceKind: ReportingAccessPrincipalKind.User),
                 ReportingAccessPrincipalKind.User),
             state,
@@ -1016,7 +1482,8 @@ public sealed class ReportingSecureDistributionAuthorizationTests
 
     private static ReportingCertifiedSnapshotScope CertifiedSnapshot(
         ReportingOperationalScope scope,
-        string snapshotId = "snapshot-a")
+        string snapshotId = "snapshot-a",
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
     {
         var parametersJson = JsonSerializer.Serialize(new
         {
@@ -1036,7 +1503,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             accountingBasis = ReportingAccountingBasisDto.Gaap.ToString(),
             presentationCurrency = "USD",
             consolidationLevel = ReportingConsolidationLevelDto.Fund.ToString(),
-            outputFormat = ReportingOutputFormatDto.Pdf.ToString(),
+            outputFormat = outputFormat.ToString(),
             finality = ReportingFinalityDto.Final.ToString(),
             includeSupportingSchedules = true,
             includeEvidenceAppendix = true,
@@ -1249,7 +1716,9 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             string destination,
             string recipientPrincipalId = "recipient-a",
             string distributionId = "distribution-a",
-            ReportingAccessPrincipalKind? recipientPrincipalKind = null) =>
+            ReportingAccessPrincipalKind? recipientPrincipalKind = null,
+            IReadOnlyList<string>? artifactIds = null,
+            int? grantMaxUses = 1) =>
             new(
                 Run.RunId,
                 distributionId,
@@ -1258,9 +1727,9 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                 destination,
                 "Released report",
                 "Use the secure governed recipient link.",
-                ["statement.pdf"],
+                artifactIds ?? ["statement.pdf"],
                 GrantLifetimeSeconds: 900,
-                GrantMaxUses: 1,
+                GrantMaxUses: grantMaxUses,
                 MaxAttempts: 3,
                 RecipientPrincipalKind: recipientPrincipalKind);
 
@@ -1268,7 +1737,9 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             IReportingRecipientDestinationResolver destinationResolver,
             ReportingGovernanceAccessMode accessMode = ReportingGovernanceAccessMode.Private,
             string? additionalPrincipalId = null,
-            IReadOnlyList<ReportingAccessPrincipalScope>? additionalPrincipals = null)
+            IReadOnlyList<ReportingAccessPrincipalScope>? additionalPrincipals = null,
+            bool exposeAtomicGrantDownloadCommitter = true,
+            ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
         {
             var clock = new FixedTimeProvider(FixedNow);
             var governanceRepository = new MemoryGovernanceRepository();
@@ -1311,7 +1782,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                 AllowOwnerAccess: true,
                 principals,
                 new string('a', 64));
-            var snapshot = CertifiedSnapshot(scope);
+            var snapshot = CertifiedSnapshot(scope, outputFormat: outputFormat);
             var creator = GovernanceAuthority(
                 "owner-a",
                 scope,
@@ -1363,8 +1834,35 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                     scope,
                     [ReportingGovernancePermission.ApproveRun]));
 
-            var exactBytes = Encoding.UTF8.GetBytes("exact immutable private reporting bytes");
-            var contentHash = Convert.ToHexString(SHA256.HashData(exactBytes)).ToLowerInvariant();
+            (string ArtifactId, string FileName, string ContentType, byte[] Content)[] artifactContents =
+                outputFormat == ReportingOutputFormatDto.ClientPackage
+                    ?
+                    [
+                        (
+                            $"{run.RunId}.pdf",
+                            $"{run.RunId}.pdf",
+                            "application/pdf",
+                            Encoding.UTF8.GetBytes("exact immutable client PDF bytes")),
+                        (
+                            $"{run.RunId}.xlsx",
+                            $"{run.RunId}.xlsx",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            Encoding.UTF8.GetBytes("exact immutable client XLSX bytes"))
+                    ]
+                    :
+                    [
+                        (
+                            "statement.pdf",
+                            "statement.pdf",
+                            "application/pdf",
+                            Encoding.UTF8.GetBytes("exact immutable private reporting bytes"))
+                    ];
+            var releaseArtifacts = artifactContents
+                .Select(artifact => new ReportingArtifactReference(
+                    artifact.ArtifactId,
+                    Convert.ToHexString(SHA256.HashData(artifact.Content)).ToLowerInvariant(),
+                    artifact.Content.LongLength))
+                .ToImmutableArray();
             var manifestHash = new string('d', 64);
             run = await governance.ReleaseAsync(
                 run.RunId,
@@ -1372,7 +1870,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                 new ReportingReleaseEvidence(
                     "manifest-a",
                     manifestHash,
-                    [new ReportingArtifactReference("statement.pdf", contentHash, exactBytes.LongLength)],
+                    releaseArtifacts,
                     ["evidence-release-a"]),
                 GovernanceAuthority(
                     "release-officer-a",
@@ -1380,34 +1878,49 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                     [ReportingGovernancePermission.ReleaseRun]));
 
             var packageId = ReportingArtifactPackageIdentity.Create(run);
-            var identity = new ReportingArtifactIdentity(scope.TenantId, contentHash);
-            var retained = new ReportingRetainedArtifactRecord(
-                packageId,
-                run.RunId,
-                run.SeriesId,
-                run.Revision,
-                scope,
-                access,
-                snapshot,
-                run.Release!.ManifestId,
-                run.Release.ManifestHash,
-                "statement.pdf",
-                "statement.pdf",
-                "application/pdf",
-                identity,
-                exactBytes.LongLength,
+            var retainedArtifacts = artifactContents
+                .Select(artifact =>
+                {
+                    var hash = Convert.ToHexString(SHA256.HashData(artifact.Content)).ToLowerInvariant();
+                    return new ReportingRetainedArtifactRecord(
+                        packageId,
+                        run.RunId,
+                        run.SeriesId,
+                        run.Revision,
+                        scope,
+                        access,
+                        snapshot,
+                        run.Release!.ManifestId,
+                        run.Release.ManifestHash,
+                        artifact.ArtifactId,
+                        artifact.FileName,
+                        artifact.ContentType,
+                        new ReportingArtifactIdentity(scope.TenantId, hash),
+                        artifact.Content.LongLength,
+                        FixedNow);
+                })
+                .ToArray();
+            var artifactCatalog = new MutableArtifactCatalog(retainedArtifacts);
+            var artifactStore = new MutableArtifactStore(
+                retainedArtifacts.ToDictionary(
+                    static artifact => artifact.Identity,
+                    artifact => artifactContents
+                        .Single(content => content.ArtifactId == artifact.ArtifactId)
+                        .Content),
                 FixedNow);
-            var artifactCatalog = new MutableArtifactCatalog(retained);
-            var artifactStore = new MutableArtifactStore(identity, exactBytes, FixedNow);
             var auditStore = new RecordingArtifactAuditStore();
             var accessGrantStore = new MemoryAccessGrantStore();
             var accessGrantService = new ReportingAccessGrantService(accessGrantStore, clock);
-            var deliveryStore = new ReleasedDeliveryStore();
+            var deliveryStore = new ReleasedDeliveryStore(accessGrantStore);
+            IReportingDeliveryStore applicationDeliveryStore =
+                exposeAtomicGrantDownloadCommitter
+                    ? deliveryStore
+                    : new NonAtomicDeliveryStoreAdapter(deliveryStore);
             var releaseVerifier = new GovernanceReportingReleaseAuthorizationVerifier(
                 governanceRepository,
                 new ReportingReleasedArtifactIntegrityGate(artifactCatalog, artifactStore));
             var dispatcher = new ReportingDeliveryDispatcher(
-                deliveryStore,
+                applicationDeliveryStore,
                 [new HttpRelayReportingDeliveryTransport(
                     new AcceptingRelayClient(),
                     accessGrantService,
@@ -1420,7 +1933,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                 governanceRepository,
                 artifactCatalog,
                 dispatcher,
-                deliveryStore,
+                applicationDeliveryStore,
                 accessGrantService,
                 accessGrantStore,
                 new ReportingArtifactVaultService(
@@ -1444,8 +1957,8 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                 artifactCatalog,
                 artifactStore,
                 auditStore,
-                exactBytes,
-                contentHash);
+                artifactContents[0].Content,
+                releaseArtifacts[0].ArtifactHash);
         }
 
         private static ReportingAuthorityScope GovernanceAuthority(
@@ -1542,27 +2055,53 @@ public sealed class ReportingSecureDistributionAuthorizationTests
     {
         private readonly Dictionary<string, ReportingAccessGrantRecord> _grants = new(StringComparer.Ordinal);
 
-        public int Count => _grants.Count;
+        internal object Gate { get; } = new();
+
+        public int Count
+        {
+            get
+            {
+                lock (Gate)
+                {
+                    return _grants.Count;
+                }
+            }
+        }
+
         public int FailNextUpdates { get; set; }
 
-        public Task<ReportingAccessGrantRecord?> GetAsync(string grantId, CancellationToken ct = default) =>
-            Task.FromResult(_grants.GetValueOrDefault(grantId));
+        public Task<ReportingAccessGrantRecord?> GetAsync(string grantId, CancellationToken ct = default)
+        {
+            lock (Gate)
+            {
+                return Task.FromResult(_grants.GetValueOrDefault(grantId));
+            }
+        }
 
         public Task<IReadOnlyList<ReportingAccessGrantRecord>> ListByPackageAsync(
             string tenantId,
             string packageId,
-            CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<ReportingAccessGrantRecord>>(_grants.Values.Where(grant =>
-                grant.TenantId == tenantId && grant.PackageId == packageId).ToArray());
+            CancellationToken ct = default)
+        {
+            lock (Gate)
+            {
+                return Task.FromResult<IReadOnlyList<ReportingAccessGrantRecord>>(
+                    _grants.Values.Where(grant =>
+                        grant.TenantId == tenantId && grant.PackageId == packageId).ToArray());
+            }
+        }
 
         public Task<bool> TryCreateAsync(ReportingAccessGrantRecord grant, CancellationToken ct = default)
         {
-            if (!_grants.TryAdd(grant.GrantId, grant))
+            lock (Gate)
             {
-                return Task.FromResult(false);
-            }
+                if (!_grants.TryAdd(grant.GrantId, grant))
+                {
+                    return Task.FromResult(false);
+                }
 
-            return Task.FromResult(true);
+                return Task.FromResult(true);
+            }
         }
 
         public Task<bool> TryUpdateAsync(
@@ -1571,31 +2110,42 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             ReportingAccessGrantRecord updatedGrant,
             CancellationToken ct = default)
         {
-            if (!_grants.TryGetValue(grantId, out var current) || current.Version != expectedVersion)
+            lock (Gate)
             {
-                return Task.FromResult(false);
-            }
+                if (!_grants.TryGetValue(grantId, out var current) || current.Version != expectedVersion)
+                {
+                    return Task.FromResult(false);
+                }
 
-            if (FailNextUpdates > 0)
-            {
-                FailNextUpdates--;
-                return Task.FromResult(false);
-            }
+                if (FailNextUpdates > 0)
+                {
+                    FailNextUpdates--;
+                    return Task.FromResult(false);
+                }
 
-            _grants[grantId] = updatedGrant;
-            return Task.FromResult(true);
+                _grants[grantId] = updatedGrant;
+                return Task.FromResult(true);
+            }
         }
+
+        internal ReportingAccessGrantRecord? GetUnsafe(string grantId) =>
+            _grants.GetValueOrDefault(grantId);
+
+        internal void SetUnsafe(ReportingAccessGrantRecord grant) =>
+            _grants[grant.GrantId] = grant;
     }
 
     private sealed class MemoryDeliveryStore(ReportingDeliveryJobRecord job) : IReportingDeliveryStore
     {
+        private ReportingDeliveryJobRecord _job = job;
+
         public Task<ReportingDeliveryJobRecord?> GetAsync(string jobId, CancellationToken ct = default) =>
-            Task.FromResult<ReportingDeliveryJobRecord?>(job.JobId == jobId ? job : null);
+            Task.FromResult<ReportingDeliveryJobRecord?>(_job.JobId == jobId ? _job : null);
 
         public Task<ReportingDeliveryJobRecord?> GetByIdempotencyKeyAsync(
             string idempotencyKey,
             CancellationToken ct = default) =>
-            Task.FromResult<ReportingDeliveryJobRecord?>(job.IdempotencyKey == idempotencyKey ? job : null);
+            Task.FromResult<ReportingDeliveryJobRecord?>(_job.IdempotencyKey == idempotencyKey ? _job : null);
 
         public Task<ReportingDeliveryJobRecord?> GetByAccessGrantIdAsync(
             string accessGrantId,
@@ -1607,7 +2157,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             string packageId,
             CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<ReportingDeliveryJobRecord>>(
-                job.TenantId == tenantId && job.PackageId == packageId ? [job] : []);
+                _job.TenantId == tenantId && _job.PackageId == packageId ? [_job] : []);
 
         public Task<bool> TryCreateAsync(ReportingDeliveryJobRecord created, CancellationToken ct = default) =>
             Task.FromResult(false);
@@ -1620,24 +2170,60 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<ReportingDeliveryJobRecord>>([]);
 
+        // Optimistic-concurrency update matching the real store contract: succeed and retain the
+        // new record when the expected version matches, so receipt-recording success paths can be
+        // exercised. A hardcoded false would make every receipt update loop until it reports a
+        // spurious "conflicted repeatedly".
         public Task<bool> TryUpdateAsync(
             string jobId,
             long expectedVersion,
             ReportingDeliveryJobRecord updatedJob,
-            CancellationToken ct = default) =>
-            Task.FromResult(false);
+            CancellationToken ct = default)
+        {
+            if (_job.JobId != jobId || _job.Version != expectedVersion)
+            {
+                return Task.FromResult(false);
+            }
+
+            _job = updatedJob;
+            return Task.FromResult(true);
+        }
     }
 
-    private sealed class ReleasedDeliveryStore : IReportingDeliveryStore
+    private sealed class ReleasedDeliveryStore(MemoryAccessGrantStore accessGrantStore) :
+        IReportingDeliveryStore,
+        IReportingDeliveryGrantDownloadCommitter
     {
         private readonly Dictionary<string, ReportingDeliveryJobRecord> _jobs = new(StringComparer.Ordinal);
+        private readonly TaskCompletionSource<bool> _coordinatedAtomicCommitPair =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _atomicCommitAttempts;
+        private int _coordinatedAtomicCommitArrivals;
 
-        public int Count => _jobs.Count;
+        public int FailNextAtomicCommits { get; set; }
+
+        public bool CoordinateNextAtomicCommitPair { get; set; }
+
+        public int AtomicCommitAttempts => Volatile.Read(ref _atomicCommitAttempts);
+
+        public int Count
+        {
+            get
+            {
+                lock (accessGrantStore.Gate)
+                {
+                    return _jobs.Count;
+                }
+            }
+        }
 
         public Task<ReportingDeliveryJobRecord?> GetAsync(string jobId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult(_jobs.GetValueOrDefault(jobId));
+            lock (accessGrantStore.Gate)
+            {
+                return Task.FromResult(_jobs.GetValueOrDefault(jobId));
+            }
         }
 
         public Task<ReportingDeliveryJobRecord?> GetByIdempotencyKeyAsync(
@@ -1645,8 +2231,11 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult(_jobs.Values.SingleOrDefault(job =>
-                string.Equals(job.IdempotencyKey, idempotencyKey, StringComparison.Ordinal)));
+            lock (accessGrantStore.Gate)
+            {
+                return Task.FromResult(_jobs.Values.SingleOrDefault(job =>
+                    string.Equals(job.IdempotencyKey, idempotencyKey, StringComparison.Ordinal)));
+            }
         }
 
         public Task<ReportingDeliveryJobRecord?> GetByAccessGrantIdAsync(
@@ -1654,8 +2243,11 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult(_jobs.Values.SingleOrDefault(job =>
-                string.Equals(job.AccessGrantId, accessGrantId, StringComparison.Ordinal)));
+            lock (accessGrantStore.Gate)
+            {
+                return Task.FromResult(_jobs.Values.SingleOrDefault(job =>
+                    string.Equals(job.AccessGrantId, accessGrantId, StringComparison.Ordinal)));
+            }
         }
 
         public Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByPackageAsync(
@@ -1664,10 +2256,13 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<ReportingDeliveryJobRecord>>(_jobs.Values
-                .Where(job => string.Equals(job.TenantId, tenantId, StringComparison.Ordinal)
-                              && string.Equals(job.PackageId, packageId, StringComparison.Ordinal))
-                .ToArray());
+            lock (accessGrantStore.Gate)
+            {
+                return Task.FromResult<IReadOnlyList<ReportingDeliveryJobRecord>>(_jobs.Values
+                    .Where(job => string.Equals(job.TenantId, tenantId, StringComparison.Ordinal)
+                                  && string.Equals(job.PackageId, packageId, StringComparison.Ordinal))
+                    .ToArray());
+            }
         }
 
         public Task<IReadOnlyList<ReportingDeliveryGrantRevocationCandidate>>
@@ -1676,38 +2271,44 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                 CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<ReportingDeliveryGrantRevocationCandidate>>(
-                _jobs.Values
-                    .Where(job =>
-                        job.AccessGrantId is not null
-                        && job.Receipts.Any(receipt =>
-                            receipt.Kind is ReportingDeliveryReceiptKind.Bounced or ReportingDeliveryReceiptKind.Rejected
-                            || job.State == ReportingDeliveryState.Failed
-                            && receipt.Kind == ReportingDeliveryReceiptKind.Failed
-                            && receipt.Detail?.StartsWith("RELAY_OUTCOME_UNKNOWN:", StringComparison.Ordinal) != true
-                            && receipt.Detail?.StartsWith("TRANSPORT_CANCELLED:", StringComparison.Ordinal) != true))
-                    .OrderBy(job => job.UpdatedAtUtc)
-                    .ThenBy(job => job.JobId, StringComparer.Ordinal)
-                    .Take(take)
-                    .Select(job => new ReportingDeliveryGrantRevocationCandidate(
-                        job.JobId,
-                        job.TenantId,
-                        job.AccessGrantId!))
-                    .ToArray());
+            lock (accessGrantStore.Gate)
+            {
+                return Task.FromResult<IReadOnlyList<ReportingDeliveryGrantRevocationCandidate>>(
+                    _jobs.Values
+                        .Where(job =>
+                            job.AccessGrantId is not null
+                            && job.Receipts.Any(receipt =>
+                                receipt.Kind is ReportingDeliveryReceiptKind.Bounced or ReportingDeliveryReceiptKind.Rejected
+                                || job.State == ReportingDeliveryState.Failed
+                                && receipt.Kind == ReportingDeliveryReceiptKind.Failed
+                                && receipt.Detail?.StartsWith("RELAY_OUTCOME_UNKNOWN:", StringComparison.Ordinal) != true
+                                && receipt.Detail?.StartsWith("TRANSPORT_CANCELLED:", StringComparison.Ordinal) != true))
+                        .OrderBy(job => job.UpdatedAtUtc)
+                        .ThenBy(job => job.JobId, StringComparer.Ordinal)
+                        .Take(take)
+                        .Select(job => new ReportingDeliveryGrantRevocationCandidate(
+                            job.JobId,
+                            job.TenantId,
+                            job.AccessGrantId!))
+                        .ToArray());
+            }
         }
 
         public Task<bool> TryCreateAsync(ReportingDeliveryJobRecord job, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            if (_jobs.ContainsKey(job.JobId)
-                || _jobs.Values.Any(existing =>
-                    string.Equals(existing.IdempotencyKey, job.IdempotencyKey, StringComparison.Ordinal)))
+            lock (accessGrantStore.Gate)
             {
-                return Task.FromResult(false);
-            }
+                if (_jobs.ContainsKey(job.JobId)
+                    || _jobs.Values.Any(existing =>
+                        string.Equals(existing.IdempotencyKey, job.IdempotencyKey, StringComparison.Ordinal)))
+                {
+                    return Task.FromResult(false);
+                }
 
-            _jobs.Add(job.JobId, job);
-            return Task.FromResult(true);
+                _jobs.Add(job.JobId, job);
+                return Task.FromResult(true);
+            }
         }
 
         public Task<IReadOnlyList<ReportingDeliveryJobRecord>> ClaimDueAsync(
@@ -1725,21 +2326,143 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            if (!_jobs.TryGetValue(jobId, out var current)
-                || current.Version != expectedVersion
-                || updatedJob.Version != expectedVersion + 1)
+            lock (accessGrantStore.Gate)
             {
-                return Task.FromResult(false);
+                if (!_jobs.TryGetValue(jobId, out var current)
+                    || current.Version != expectedVersion
+                    || updatedJob.Version != expectedVersion + 1)
+                {
+                    return Task.FromResult(false);
+                }
+
+                _jobs[jobId] = updatedJob;
+                return Task.FromResult(true);
+            }
+        }
+
+        public async Task<ReportingDeliveryGrantDownloadCommitStatus> TryCommitAsync(
+            ReportingDeliveryGrantDownloadCommit commit,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref _atomicCommitAttempts);
+            if (CoordinateNextAtomicCommitPair)
+            {
+                var arrival = Interlocked.Increment(ref _coordinatedAtomicCommitArrivals);
+                if (arrival <= 2)
+                {
+                    if (arrival == 2)
+                    {
+                        _coordinatedAtomicCommitPair.TrySetResult(true);
+                    }
+
+                    await _coordinatedAtomicCommitPair.Task.WaitAsync(ct);
+                }
             }
 
-            _jobs[jobId] = updatedJob;
-            return Task.FromResult(true);
+            lock (accessGrantStore.Gate)
+            {
+                if (FailNextAtomicCommits > 0)
+                {
+                    FailNextAtomicCommits--;
+                    return ReportingDeliveryGrantDownloadCommitStatus.ConcurrencyConflict;
+                }
+
+                var currentGrant = accessGrantStore.GetUnsafe(commit.ConsumedGrant.GrantId);
+                if (currentGrant is null
+                    || currentGrant.Version != commit.ExpectedGrantVersion
+                    || !_jobs.TryGetValue(
+                        commit.DeliveryWithDownloadReceipt.JobId,
+                        out var currentDelivery)
+                    || currentDelivery.Version != commit.ExpectedDeliveryVersion)
+                {
+                    return ReportingDeliveryGrantDownloadCommitStatus.ConcurrencyConflict;
+                }
+
+                currentGrant.UseCount.Should().Be(commit.ConsumedGrant.UseCount - 1);
+                currentDelivery.AccessGrantId.Should().Be(currentGrant.GrantId);
+                commit.DeliveryWithDownloadReceipt.Receipts.Should().HaveCount(
+                    currentDelivery.Receipts.Count + 1);
+                commit.DeliveryWithDownloadReceipt.Receipts[^1].Kind
+                    .Should().Be(ReportingDeliveryReceiptKind.Downloaded);
+                accessGrantStore.SetUnsafe(commit.ConsumedGrant);
+                _jobs[currentDelivery.JobId] = commit.DeliveryWithDownloadReceipt;
+                return ReportingDeliveryGrantDownloadCommitStatus.Committed;
+            }
         }
     }
 
-    private sealed class MutableArtifactCatalog(ReportingRetainedArtifactRecord artifact)
-        : IReportingArtifactCatalog
+    private sealed class NonAtomicDeliveryStoreAdapter(IReportingDeliveryStore inner)
+        : IReportingDeliveryStore
     {
+        public Task<ReportingDeliveryJobRecord?> GetAsync(
+            string jobId,
+            CancellationToken ct = default) =>
+            inner.GetAsync(jobId, ct);
+
+        public Task<ReportingDeliveryJobRecord?> GetByIdempotencyKeyAsync(
+            string idempotencyKey,
+            CancellationToken ct = default) =>
+            inner.GetByIdempotencyKeyAsync(idempotencyKey, ct);
+
+        public Task<ReportingDeliveryJobRecord?> GetByAccessGrantIdAsync(
+            string accessGrantId,
+            CancellationToken ct = default) =>
+            inner.GetByAccessGrantIdAsync(accessGrantId, ct);
+
+        public Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByPackageAsync(
+            string tenantId,
+            string packageId,
+            CancellationToken ct = default) =>
+            inner.ListByPackageAsync(tenantId, packageId, ct);
+
+        public Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByRunAsync(
+            string tenantId,
+            string runId,
+            CancellationToken ct = default) =>
+            inner.ListByRunAsync(tenantId, runId, ct);
+
+        public Task<IReadOnlyList<ReportingDeliveryGrantRevocationCandidate>>
+            ListPendingAccessGrantRevocationsAsync(
+                int take,
+                CancellationToken ct = default) =>
+            inner.ListPendingAccessGrantRevocationsAsync(take, ct);
+
+        public Task<bool> TryCreateAsync(
+            ReportingDeliveryJobRecord job,
+            CancellationToken ct = default) =>
+            inner.TryCreateAsync(job, ct);
+
+        public Task<IReadOnlyList<ReportingDeliveryJobRecord>> ClaimDueAsync(
+            DateTimeOffset nowUtc,
+            string leaseOwner,
+            TimeSpan leaseDuration,
+            int take,
+            CancellationToken ct = default) =>
+            inner.ClaimDueAsync(nowUtc, leaseOwner, leaseDuration, take, ct);
+
+        public Task<bool> TryUpdateAsync(
+            string jobId,
+            long expectedVersion,
+            ReportingDeliveryJobRecord updatedJob,
+            CancellationToken ct = default) =>
+            inner.TryUpdateAsync(jobId, expectedVersion, updatedJob, ct);
+    }
+
+    private sealed class MutableArtifactCatalog : IReportingArtifactCatalog
+    {
+        private readonly IReadOnlyList<ReportingRetainedArtifactRecord> _artifacts;
+
+        public MutableArtifactCatalog(ReportingRetainedArtifactRecord artifact)
+            : this([artifact])
+        {
+        }
+
+        public MutableArtifactCatalog(IReadOnlyList<ReportingRetainedArtifactRecord> artifacts)
+        {
+            _artifacts = artifacts;
+        }
+
         public bool ReturnArtifact { get; set; } = true;
 
         public ValueTask<ReportingArtifactCatalogWriteResult> AddPackageAsync(
@@ -1753,11 +2476,15 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var retained = _artifacts
+                .Where(artifact =>
+                    string.Equals(artifact.Scope.TenantId, tenantId, StringComparison.Ordinal)
+                    && string.Equals(artifact.PackageId, packageId, StringComparison.Ordinal))
+                .ToArray();
             return ValueTask.FromResult<ReportingRetainedArtifactPackage?>(
                 ReturnArtifact
-                && string.Equals(artifact.Scope.TenantId, tenantId, StringComparison.Ordinal)
-                && string.Equals(artifact.PackageId, packageId, StringComparison.Ordinal)
-                    ? new ReportingRetainedArtifactPackage(packageId, [artifact])
+                && retained.Length > 0
+                    ? new ReportingRetainedArtifactPackage(packageId, retained.ToImmutableArray())
                     : null);
         }
 
@@ -1768,22 +2495,51 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult<ReportingRetainedArtifactRecord?>(
-                ReturnArtifact
-                && string.Equals(artifact.Scope.TenantId, tenantId, StringComparison.Ordinal)
+            var retained = _artifacts.SingleOrDefault(artifact =>
+                string.Equals(artifact.Scope.TenantId, tenantId, StringComparison.Ordinal)
                 && string.Equals(artifact.PackageId, packageId, StringComparison.Ordinal)
-                && string.Equals(artifact.ArtifactId, artifactId, StringComparison.Ordinal)
-                    ? artifact
-                    : null);
+                && string.Equals(artifact.ArtifactId, artifactId, StringComparison.Ordinal));
+            return ValueTask.FromResult<ReportingRetainedArtifactRecord?>(
+                ReturnArtifact ? retained : null);
         }
     }
 
-    private sealed class MutableArtifactStore(
-        ReportingArtifactIdentity identity,
-        byte[] content,
-        DateTimeOffset storedAtUtc) : IReportingArtifactStore
+    private sealed class MutableArtifactStore : IReportingArtifactStore
     {
-        public byte[] Content { get; set; } = content.ToArray();
+        private readonly Dictionary<ReportingArtifactIdentity, byte[]> _contents;
+        private readonly ReportingArtifactIdentity _primaryIdentity;
+        private readonly DateTimeOffset _storedAtUtc;
+
+        public MutableArtifactStore(
+            ReportingArtifactIdentity identity,
+            byte[] content,
+            DateTimeOffset storedAtUtc)
+            : this(
+                new Dictionary<ReportingArtifactIdentity, byte[]>
+                {
+                    [identity] = content
+                },
+                storedAtUtc)
+        {
+        }
+
+        public MutableArtifactStore(
+            IReadOnlyDictionary<ReportingArtifactIdentity, byte[]> contents,
+            DateTimeOffset storedAtUtc)
+        {
+            contents.Should().NotBeEmpty();
+            _contents = contents.ToDictionary(
+                static pair => pair.Key,
+                static pair => pair.Value.ToArray());
+            _primaryIdentity = _contents.Keys.First();
+            _storedAtUtc = storedAtUtc;
+        }
+
+        public byte[] Content
+        {
+            get => _contents[_primaryIdentity].ToArray();
+            set => _contents[_primaryIdentity] = value.ToArray();
+        }
 
         public Task<ReportingArtifactWriteResult> StoreAsync(
             ReportingArtifactWriteRequest request,
@@ -1795,12 +2551,12 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            requestedIdentity.Should().Be(identity);
+            _contents.TryGetValue(requestedIdentity, out var content).Should().BeTrue();
             return Task.FromResult(new ReportingArtifactReadResult(
-                identity,
-                Content.LongLength,
-                storedAtUtc,
-                Content.ToArray()));
+                requestedIdentity,
+                content!.LongLength,
+                _storedAtUtc,
+                content.ToArray()));
         }
     }
 

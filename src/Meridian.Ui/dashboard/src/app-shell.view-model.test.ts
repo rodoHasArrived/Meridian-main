@@ -6,6 +6,7 @@ import {
   buildCommandPaletteTriggerState,
   buildDevelopmentFixtureNoticeViewModel,
   normalizeWorkspace,
+  resolveAppShellLocation,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkspacePayload
 } from "@/app-shell.view-model";
@@ -112,7 +113,6 @@ describe("app shell view model", () => {
     expect(statusPanelSource).toContain('title: "Workspace data unavailable"');
     expect(trustStripSource).toContain("export function buildTrustStripState");
     expect(trustStripSource).toContain("function buildProviderTrustStripItem");
-    expect(trustStripSource).toContain("function titleCase");
     expect(trustStripSource).toContain("function formatCount");
     expect(trustStripSource).toContain("packageJson.version");
     expect(trustStripSource).toContain("Provider posture has not loaded yet.");
@@ -245,6 +245,14 @@ describe("app shell view model", () => {
     expect(normalizeWorkspace("/unknown")).toBe("trading");
   });
 
+  it("models the root as shell home without adding an eighth workspace", () => {
+    expect(resolveAppShellLocation("/")).toEqual({ kind: "home" });
+    expect(resolveAppShellLocation("/accounting/reconciliation")).toEqual({
+      kind: "workspace",
+      workspaceKey: "accounting"
+    });
+  });
+
   it("treats the root route as the Daily Control Tower shell focus", () => {
     const state = buildAppShellViewState({
       pathname: "/",
@@ -259,6 +267,8 @@ describe("app shell view model", () => {
       documentTitle: "Daily Control Tower - Meridian",
       fallbackElementId: "workbench-content"
     });
+    expect(state.location).toEqual({ kind: "home" });
+    expect(state.workflowContinuity.contextValue).toBe("Daily Control Tower / Today");
     expect(state.workflowContinuity.title).toBe("Daily Control Tower");
     expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
       "Today",
@@ -384,7 +394,7 @@ describe("app shell view model", () => {
     });
 
     expect(state.trustStrip).toMatchObject({
-      ariaLabel: "Workstation build, mode, data source, and provider posture",
+      ariaLabel: "Workstation build, environment, provenance, and provider posture",
       items: [
         {
           id: "build",
@@ -394,18 +404,18 @@ describe("app shell view model", () => {
         },
         {
           id: "mode",
-          label: "Mode",
+          label: "Environment",
           value: "Paper",
           tone: "ready"
         },
         {
           id: "source",
-          label: "Source",
-          value: "Demo data",
-          tone: "pending",
-          detail: "Demo data is visible; confirm live source status before making operating decisions.",
-          href: "/settings#backend-capability-coverage",
-          actionLabel: "Open diagnostics"
+          label: "Provenance",
+          value: "SEEDED",
+          tone: "review",
+          detail: "Seeded demo data. This is seeded demo data shipped without live credentials. It is not real market or account data.",
+          href: "/data/providers",
+          actionLabel: "Connect live source"
         },
         {
           id: "providers",
@@ -417,6 +427,93 @@ describe("app shell view model", () => {
           actionLabel: "Open provider posture"
         }
       ]
+    });
+  });
+
+  it("keeps environment, provenance, and provider operator state independent", () => {
+    const liveSimulatedState = buildAppShellViewState({
+      pathname: "/data/providers",
+      operatingContextSymbol: "MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      dataProvenance: "simulated",
+      payload: {
+        ...sessionPayload,
+        session: {
+          ...sessionPayload.session!,
+          environment: "live"
+        },
+        data: {
+          metrics: [],
+          providers: [
+            {
+              provider: "Databento",
+              status: "Blocked",
+              capability: "market-data",
+              latency: "timeout",
+              note: "Credential verification failed."
+            }
+          ],
+          backfills: [],
+          exports: []
+        }
+      }
+    });
+
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
+      value: "Live",
+      tone: "review",
+      href: "/trading/readiness"
+    });
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
+      value: "SIMULATED",
+      tone: "review",
+      href: "/data/providers"
+    });
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
+      value: "1 blocked",
+      tone: "blocked",
+      href: "/data/providers",
+      actionLabel: "Open provider posture"
+    });
+    expect(liveSimulatedState.workflowContinuity.operatorFocusItems).toContainEqual(
+      expect.objectContaining({
+        label: "Databento provider blocked",
+        tone: "blocked"
+      })
+    );
+    expect(liveSimulatedState.workflowContinuity.linkedContextItems).toContainEqual(
+      expect.objectContaining({
+        statusLabel: "Provider blocked",
+        tone: "blocked"
+      })
+    );
+
+    const researchRealState = buildAppShellViewState({
+      pathname: "/strategy",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      dataProvenance: "real",
+      payload: {
+        ...sessionPayload,
+        session: {
+          ...sessionPayload.session!,
+          environment: "research"
+        }
+      }
+    });
+
+    expect(researchRealState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
+      value: "Demo",
+      detail: "Session Ops is operating in research mode, shown as Demo."
+    });
+    expect(researchRealState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
+      value: "REAL",
+      tone: "ready",
+      href: null,
+      actionLabel: null
     });
   });
 
@@ -476,6 +573,7 @@ describe("app shell view model", () => {
       workspaceErrors: {
         data: "Provider posture timed out."
       },
+      dataProvenance: "real",
       payload: {
         ...emptyPayload,
         session: {
@@ -490,20 +588,22 @@ describe("app shell view model", () => {
 
     expect(state.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
       value: "Live",
-      tone: "blocked",
+      tone: "review",
       href: "/trading/readiness",
       actionLabel: "Review readiness"
     });
     expect(state.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
-      value: "Limited data",
-      tone: "review",
-      href: "/settings#backend-capability-coverage",
-      actionLabel: "Open diagnostics"
+      value: "REAL",
+      tone: "ready",
+      href: null,
+      actionLabel: null
     });
     expect(state.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
-      value: "Pending",
-      href: "/data/providers",
-      actionLabel: "Open provider posture"
+      value: "Unavailable",
+      tone: "blocked",
+      detail: "Data workspace failed: Provider posture timed out.",
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Open diagnostics"
     });
   });
 
@@ -550,23 +650,19 @@ describe("app shell view model", () => {
       contextLabel: "Operating context",
       contextValue: "Data / AAPL",
       routeLabel: "/data/quotes?symbol=AAPL",
-      nextActionLabel: "Next: Price alerts",
-      nextActionHref: "/data/alerts?symbol=AAPL",
+      nextActionLabel: "Next: Readiness",
+      nextActionHref: "/trading/readiness?symbol=AAPL",
       subjectSymbol: "AAPL",
       clearSubjectAriaLabel: "Clear AAPL operating context"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.href])).toEqual([
-      ["watchlist", false, false, "/data/watchlist?symbol=AAPL"],
-      ["quotes", true, false, "/data/quotes?symbol=AAPL"],
-      ["alerts", false, true, "/data/alerts?symbol=AAPL"],
-      ["readiness", false, false, "/trading/readiness?symbol=AAPL"],
+      ["market-data", true, false, "/data/quotes?symbol=AAPL"],
+      ["readiness", false, true, "/trading/readiness?symbol=AAPL"],
       ["provider-setup", false, false, "/settings#alpaca-provider-setup"]
     ]);
     expect(state.workflowContinuity.steps.map((step) => [step.label, step.statusLabel])).toEqual([
-      ["Watchlist", "Waiting"],
-      ["Live quotes", "Current / Waiting"],
-      ["Price alerts", "Next / Waiting"],
-      ["Readiness", "Waiting"],
+      ["Market data", "Current / Waiting"],
+      ["Readiness", "Next / Waiting"],
       ["Provider setup", "Available"]
     ]);
     expect(state.workflowContinuity.primaryOperatorFlowSteps.map((step) => [step.id, step.label, step.active, step.href])).toEqual([
@@ -606,7 +702,7 @@ describe("app shell view model", () => {
     ]);
 
     const dataState = buildAppShellViewState({
-      pathname: "/data/watchlist",
+      pathname: "/data/quotes",
       operatingContextSymbol: "msft",
       loading: false,
       error: null,
@@ -615,9 +711,7 @@ describe("app shell view model", () => {
     });
 
     expect(dataState.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
-      ["watchlist", "/data/watchlist?symbol=MSFT"],
-      ["quotes", "/data/quotes?symbol=MSFT"],
-      ["alerts", "/data/alerts?symbol=MSFT"],
+      ["market-data", "/data/quotes?symbol=MSFT"],
       ["readiness", "/trading/readiness?symbol=MSFT"],
       ["provider-setup", "/settings#alpaca-provider-setup"]
     ]);
@@ -968,13 +1062,11 @@ describe("app shell view model", () => {
       nextActionHref: "/settings#alpaca-provider-setup"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.statusLabel, step.statusTone])).toEqual([
-      ["watchlist", false, false, "Waiting", "pending"],
-      ["quotes", false, false, "Waiting", "pending"],
-      ["alerts", false, false, "Waiting", "pending"],
+      ["market-data", false, false, "Waiting", "pending"],
       ["readiness", false, false, "Waiting", "pending"],
       ["provider-setup", true, false, "Current / Available", "ready"]
     ]);
-    expect(state.workflowContinuity.steps[4].ariaLabel)
+    expect(state.workflowContinuity.steps[2].ariaLabel)
       .toBe("Provider setup, current workflow step, Available");
   });
 
@@ -1497,6 +1589,23 @@ describe("app shell view model", () => {
       ["readiness", false],
       ["connect", false]
     ]);
+  });
+
+  it("marks the watchlist demo step active on the market data desk watchlist view", () => {
+    const state = buildDevelopmentFixtureNoticeViewModel({
+      pathname: "/data/quotes",
+      search: "?view=watchlist"
+    });
+
+    expect(state.steps.map((step) => [step.id, step.active])).toEqual([
+      ["watchlist", true],
+      ["quotes", false],
+      ["readiness", false],
+      ["connect", false]
+    ]);
+    expect(state.steps.find((step) => step.id === "watchlist")).toMatchObject({
+      href: "/data/quotes?view=watchlist"
+    });
   });
 
   it("includes workflow catalog failures in the shell degraded status", () => {

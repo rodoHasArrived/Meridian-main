@@ -1,9 +1,12 @@
 import type {
   EvidenceStatus,
+  OrderResult,
   MeridianAssuranceScore,
   OperationsCloseChecklistTask,
   OperationsClosePackagePublication,
   OperationsCloseReadiness,
+  ReconciliationBreakDisposition,
+  ReconciliationBreakMeasure,
 } from "../types";
 
 export type WorkspaceKey =
@@ -726,11 +729,13 @@ export interface UserAccessAssignmentMutationResult {
   auditEvent: UserAccessAssignmentAuditEvent;
 }
 
+export type ProductMaturity = "Preview" | "Setup" | "Available";
+
 export interface WorkspaceSummary {
   key: WorkspaceKey;
   label: string;
   description: string;
-  status: string;
+  maturity: ProductMaturity;
 }
 
 export interface MetricSnapshot {
@@ -779,6 +784,7 @@ export interface StrategyRunRecord {
   netPnl?: number | null;
   totalReturn?: number | null;
   finalEquity?: number | null;
+  biasDisclosure?: import("./workstation-6").BiasDisclosure | null;
 }
 
 // --- Promotion workflow types ---
@@ -959,6 +965,10 @@ export interface RiskRuleStatus {
   currentValue: string;
   asOf: string;
   recentViolations: string[];
+  /** Current/threshold percent; null when the rule has no measurable utilization. */
+  utilizationPercent?: number | null;
+  /** Enforced outcome tier: Warning flags, Error rejects, Escalate parks, Critical trips the breaker. */
+  severity?: string | null;
 }
 
 export interface RiskRuleConfig {
@@ -967,6 +977,10 @@ export interface RiskRuleConfig {
   symbolPositionLimits: Record<string, number> | null;
   maxDrawdownPercent: number | null;
   maxOrdersPerMinute: number | null;
+  maxGrossExposure?: number | null;
+  maxSymbolConcentrationPercent?: number | null;
+  maxOrderNotional?: number | null;
+  escalateOrderNotional?: number | null;
 }
 
 export interface RiskRuleConfigUpdateRequest {
@@ -975,6 +989,33 @@ export interface RiskRuleConfigUpdateRequest {
   maxDrawdownPercent?: number | null;
   maxOrdersPerMinute?: number | null;
   reason?: string | null;
+  maxGrossExposure?: number | null;
+  maxSymbolConcentrationPercent?: number | null;
+  maxOrderNotional?: number | null;
+  escalateOrderNotional?: number | null;
+}
+
+/** A parked risk escalation awaiting (or resolved by) governed operator approval. */
+export interface RiskEscalation {
+  escalationId: string;
+  symbol: string;
+  side: string;
+  type: string;
+  quantity: number;
+  limitPrice: number | null;
+  reason: string;
+  ruleName: string | null;
+  status: "PendingApproval" | "Approved" | "Denied" | "Released";
+  parkedAt: string;
+  resolvedBy: string | null;
+  resolutionReason: string | null;
+  resolvedAt: string | null;
+}
+
+/** Result of approving a parked escalation, with the release attempt when one was made. */
+export interface RiskEscalationApprovalResponse {
+  escalation: RiskEscalation;
+  releaseResult: OrderResult | null;
 }
 
 export type OperatorWorkItemKind =
@@ -1243,6 +1284,14 @@ export interface OperationsBreakCase {
   rootCauseCode?: string | null;
   approvalState?: string | null;
   blockedOutputs?: string[] | null;
+  measures?: ReconciliationBreakMeasure[] | null;
+  disposition?: ReconciliationBreakDisposition | null;
+  dispositionReason?: string | null;
+  supersedingBreakId?: string | null;
+  dispositionApprovedBy?: string | null;
+  dispositionApprovalReference?: string | null;
+  dispositionEvidenceHash?: string | null;
+  disposedAtUtc?: string | null;
 }
 
 export interface OperationsReconciliationLaneSummary {

@@ -37,8 +37,26 @@ public sealed class FundAccountCloseReadinessService
         _breakQueueRepository = breakQueueRepository;
     }
 
-    public async Task<FundAccountCloseReadinessDto?> GetAsync(Guid accountId, CancellationToken ct = default)
+    [Obsolete(
+        "Authoritative close readiness requires an authenticated tenant and company scope. " +
+        "Use GetAsync(Guid, ReconciliationBreakQueueScope, CancellationToken).")]
+    public Task<FundAccountCloseReadinessDto?> GetAsync(
+        Guid accountId,
+        CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult<FundAccountCloseReadinessDto?>(BuildFailClosedReadiness(
+            accountId,
+            "close.authority.scope_required",
+            "A tenant- and company-scoped request context is required before authoritative close readiness can be evaluated."));
+    }
+
+    public async Task<FundAccountCloseReadinessDto?> GetAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
         ct.ThrowIfCancellationRequested();
 
         var account = await _accounts.GetAccountAsync(accountId, ct).ConfigureAwait(false);
@@ -47,13 +65,28 @@ public sealed class FundAccountCloseReadinessService
             return null;
         }
 
+        if (_breakQueueRepository is null)
+        {
+            return BuildFailClosedReadiness(
+                accountId,
+                "close.casework.authority_unavailable",
+                "The authoritative reconciliation casework store is unavailable, so close readiness cannot prove that scoped approval blockers are clear.");
+        }
+
         var evaluatedAt = DateTimeOffset.UtcNow;
         var accountReadiness = await _accounts.GetReadinessAsync(accountId, ct).ConfigureAwait(false);
         var latestSnapshot = await _accounts.GetLatestBalanceSnapshotAsync(accountId, ct).ConfigureAwait(false);
         var latestReconciliation = _providerLedgerReconciliation is null
             ? null
-            : await _providerLedgerReconciliation.GetLatestAsync(accountId, ct).ConfigureAwait(false);
-        var openCases = await LoadOpenAccountCasesAsync(accountId, latestReconciliation, ct).ConfigureAwait(false);
+            : await _providerLedgerReconciliation
+                .GetLatestAsync(accountId, accessScope, ct)
+                .ConfigureAwait(false);
+        var openCases = await LoadOpenAccountCasesAsync(
+                accountId,
+                latestReconciliation,
+                accessScope,
+                ct)
+            .ConfigureAwait(false);
 
         var components = new List<FundAccountCloseReadinessComponentDto>(capacity: 6);
         var blockers = new List<FundAccountCloseReadinessBlockerDto>();
@@ -106,15 +139,15 @@ public sealed class FundAccountCloseReadinessService
     private async Task<IReadOnlyList<ReconciliationBreakQueueItem>> LoadOpenAccountCasesAsync(
         Guid accountId,
         ProviderLedgerReconciliationDetailDto? latestReconciliation,
+        ReconciliationBreakQueueScope accessScope,
         CancellationToken ct)
     {
-        if (_breakQueueRepository is null)
-        {
-            return [];
-        }
-
-        var open = await _breakQueueRepository.GetAllAsync(ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
-        var inReview = await _breakQueueRepository.GetAllAsync(ReconciliationBreakQueueStatus.InReview, ct).ConfigureAwait(false);
+        var open = await _breakQueueRepository!
+            .GetAllAsync(accessScope, ReconciliationBreakQueueStatus.Open, ct)
+            .ConfigureAwait(false);
+        var inReview = await _breakQueueRepository
+            .GetAllAsync(accessScope, ReconciliationBreakQueueStatus.InReview, ct)
+            .ConfigureAwait(false);
         var accountIdText = accountId.ToString("D");
         var accountIdCompact = accountId.ToString("N");
         var securityIds = latestReconciliation?.SecurityMasterPassports?
@@ -620,6 +653,46 @@ public sealed class FundAccountCloseReadinessService
             reason,
             routeHint,
             EvidenceLink: routeHint));
+    }
+
+    private static FundAccountCloseReadinessDto BuildFailClosedReadiness(
+        Guid accountId,
+        string blockerCode,
+        string reason)
+    {
+        var evaluatedAt = DateTimeOffset.UtcNow;
+        var component = new FundAccountCloseReadinessComponentDto(
+            Key: "authoritative-scope",
+            Label: "Authoritative close scope",
+            Status: FundAccountCloseReadinessStatusDto.Blocked,
+            Score: 0,
+            Weight: 100,
+            Severity: "Critical",
+            Reason: reason);
+        var blocker = new FundAccountCloseReadinessBlockerDto(
+            blockerCode,
+            "Authority",
+            "Critical",
+            reason);
+        return new FundAccountCloseReadinessDto(
+            accountId,
+            evaluatedAt,
+            FundAccountCloseReadinessStatusDto.Blocked,
+            IsReadyToClose: false,
+            Score: 0,
+            LatestProviderSyncedAt: null,
+            LatestLedgerAsOfDate: null,
+            LatestReconciliationRunId: null,
+            Components: [component],
+            Blockers: [blocker],
+            NextActions:
+            [
+                new FundAccountCloseReadinessActionDto(
+                    blockerCode,
+                    "Restore authoritative close scope",
+                    "Critical",
+                    RouteHint: null)
+            ]);
     }
 
     private static string BuildRoute(string routeTemplate, Guid accountId) =>

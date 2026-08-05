@@ -207,9 +207,10 @@ public interface IOperationalScheduler
 }
 
 /// <summary>
-/// Provides trading calendar information.
+/// Provides the deterministic trading-calendar policy used by local operational scheduling.
+/// This is intentionally separate from provider-supplied calendar data.
 /// </summary>
-public interface ITradingCalendarProvider
+public interface IOperationalTradingCalendar
 {
     /// <summary>
     /// Checks if a specific date is a trading day.
@@ -242,4 +243,16 @@ public interface ITradingCalendarProvider
     /// <param name="market">Market to check.</param>
     /// <returns>List of holiday dates.</returns>
     IReadOnlyList<DateOnly> GetHolidays(int year, string market = "US");
+}
+
+
+/// <summary>
+/// Compatibility alias for the former local scheduling calendar contract.
+/// New local scheduling code must use <see cref="IOperationalTradingCalendar"/>; provider
+/// adapters must use <c>Meridian.ProviderSdk.ITradingCalendarProvider</c> so their calendar
+/// output retains provider provenance.
+/// </summary>
+[Obsolete("Use IOperationalTradingCalendar for local scheduling or Meridian.ProviderSdk.ITradingCalendarProvider for provider data.")]
+public interface ITradingCalendarProvider : IOperationalTradingCalendar
+{
 }

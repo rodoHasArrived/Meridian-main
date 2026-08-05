@@ -1,46 +1,46 @@
 {
   "generator": {
     "name": "build/scripts/docs/render-roadmap-docs.py",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "inputs": [
     {
       "path": "docs/roadmap/data/decision-log.yml",
-      "sha256": "1218179346b12e70e5609749f730a20824a0fe71399f41f7370f946fd002bda4"
+      "sha256": "f1fbeb17aae7d568ec025c231dddfbfe20d89c5b1a3f8cd0ec59f8111b2252af"
     },
     {
       "path": "docs/roadmap/data/document-index.yml",
-      "sha256": "a3e1fe38dad11bd7cdfc8bcdf6f41001839310cf49e57d10aa3baab7a780b3ff"
+      "sha256": "75cb3aa15b46bf3388412fc714799492cf42eb7d500b313544c45a31a3f1b5f4"
     },
     {
       "path": "docs/roadmap/data/program-state.yml",
-      "sha256": "35b32264e436bc46f882e9cadccc475c9e8968270989f2f485656b97f4e27383"
+      "sha256": "6372b0a4534fa14d4e9ac13ab4c1dca65859a6aa3ce268fa6249a631b358ee3c"
     },
     {
       "path": "docs/roadmap/data/risk-register.yml",
-      "sha256": "094a87a2ab04ddaa00f7d44480a08f43f42ca6d2d5d6158ac30298b7a36972eb"
+      "sha256": "baadfb75a5dc21e710158cb679213d9546c3df14306b3b032d34249637016c5a"
     },
     {
       "path": "docs/roadmap/data/roadmap-items.yml",
-      "sha256": "4e516b88ad214b6d26ed217cd53adffee28e6caa239d3edfb88b292f3770b8b6"
+      "sha256": "fc4a7ccb499988643a4d43abe76b2985ef7f26aef9289febbbd6a05a38d6e738"
     },
     {
       "path": "docs/roadmap/data/stage-gates.yml",
-      "sha256": "b8961e83ecb02ab54dfe12dc4b16b294aac9efe7015be016e0a844af82166d0a"
+      "sha256": "5857e972354938b141981b6f3f88ec8b8fdc6fa64308fbb478617dea6c2e0e2a"
     }
   ],
   "outputs": [
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "sha256": "7a94ea539c41994b0f0631edf46bf83b596d31d0666c727329831f044ce19d51"
+      "sha256": "cc2d947a3cecba5240ce66d0f2a6de9b7c503ebc13033c7002303f8e1f87dc9a"
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "e8ad6da810012ba400331b2c41c25f3939f72d8e2ae2dfbaf600d005e6a40320"
+      "sha256": "91585c4d0a6143881bb16622dc4ec8272a282cb42fa94d5be54f11638ad9ff14"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "sha256": "7a94ea539c41994b0f0631edf46bf83b596d31d0666c727329831f044ce19d51"
+      "sha256": "cc2d947a3cecba5240ce66d0f2a6de9b7c503ebc13033c7002303f8e1f87dc9a"
     }
   ],
   "schema": {

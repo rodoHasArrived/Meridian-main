@@ -10,7 +10,9 @@ namespace Meridian.Storage.Services;
 /// resolution interface that accepts any known identifier (canonical, alias, ISIN,
 /// FIGI, SEDOL, CUSIP, provider-specific ticker) and resolves it to the canonical name.
 /// </summary>
-public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
+public sealed class CanonicalSymbolRegistry :
+    ICanonicalSymbolRegistry,
+    ICanonicalSymbolRegistryMigrationWriter
 {
     private readonly ISymbolRegistryService _registryService;
 
@@ -106,6 +108,31 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
 
         RebuildResolverCache();
 
+        return count;
+    }
+
+    /// <inheritdoc />
+    public async Task<int> ApplyMigrationAsync(
+        string migrationId,
+        string fingerprint,
+        IEnumerable<CanonicalSymbolDefinition> definitions,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(migrationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
+        ArgumentNullException.ThrowIfNull(definitions);
+
+        var entries = definitions.Select(ToRegistryEntry).ToArray();
+        if (_registryService is not ISymbolRegistryMigrationWriter migrationWriter)
+        {
+            throw new InvalidOperationException(
+                "The configured symbol registry store does not support atomic startup migrations.");
+        }
+
+        var count = await migrationWriter
+            .ApplyMigrationAsync(migrationId, fingerprint, entries, ct)
+            .ConfigureAwait(false);
+        RebuildResolverCache();
         return count;
     }
 

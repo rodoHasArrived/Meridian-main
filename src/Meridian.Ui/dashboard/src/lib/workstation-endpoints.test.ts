@@ -70,9 +70,11 @@ import {
   reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakSupersedeEndpoint,
   reconciliationBreakRootCauseEndpoint,
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
+  reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
   reconciliationStatementRunEndpoint,
   replayFilesEndpoint,
@@ -117,11 +119,6 @@ import {
   workstationProviderIntegrationReconciliationHandoffHistoryEndpoint,
   workstationProviderIntegrationStagingReviewEndpoint,
   workstationProviderIntegrationTemplateEndpoint,
-  workstationChiefOfStaffDecisionEndpoint,
-  workstationChiefOfStaffHealthEndpoint,
-  workstationChiefOfStaffSessionEndpoint,
-  workstationChiefOfStaffSessionsEndpoint,
-  workstationChiefOfStaffTraceExportEndpoint,
   workstationOperatorInboxEndpoint,
   workstationAssetOperationsEndpoint,
   workstationOperationsContinuityApprovalSubmitEndpoint,
@@ -217,7 +214,6 @@ describe("workstation API endpoint catalog", () => {
       operationsContinuityApprovalPolicyRules: "/api/workstation/operations/continuity/approval-policy-rules",
       operationsContinuityCloseCalendar: "/api/workstation/operations/continuity/close-calendar",
       operationsContinuityCloseCalendarItems: "/api/workstation/operations/continuity/close-calendar-items",
-      chiefOfStaff: "/api/workstation/chief-of-staff",
       runHistory: "/api/workstation/runs/history",
       runTimeline: "/api/workstation/runs/timeline",
       runSweeps: "/api/workstation/runs/sweeps",
@@ -439,28 +435,6 @@ describe("workstation API endpoint catalog", () => {
     expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "pdf")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=pdf"
     );
-  });
-
-  it("builds Chief of Staff workstation endpoint routes", () => {
-    expect(workstationChiefOfStaffSessionsEndpoint()).toBe("/api/workstation/chief-of-staff/sessions");
-    expect(workstationChiefOfStaffSessionsEndpoint({
-      workspace: "Reporting",
-      fundProfileId: "fund / 1",
-      status: "AwaitingOperatorDecision",
-      limit: 10
-    })).toBe(
-      "/api/workstation/chief-of-staff/sessions?workspace=Reporting&fundProfileId=fund+%2F+1&status=AwaitingOperatorDecision&limit=10"
-    );
-    expect(workstationChiefOfStaffSessionEndpoint("session / 1")).toBe(
-      "/api/workstation/chief-of-staff/sessions/session%20%2F%201"
-    );
-    expect(workstationChiefOfStaffDecisionEndpoint("session / 1")).toBe(
-      "/api/workstation/chief-of-staff/sessions/session%20%2F%201/decisions"
-    );
-    expect(workstationChiefOfStaffTraceExportEndpoint("session / 1")).toBe(
-      "/api/workstation/chief-of-staff/sessions/session%20%2F%201/export-trace"
-    );
-    expect(workstationChiefOfStaffHealthEndpoint()).toBe("/api/workstation/chief-of-staff/health");
   });
 
   it("builds run evidence endpoints and matching Settings templates", () => {
@@ -729,6 +703,12 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reconciliationBreakResolveEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/resolve"
+    );
+    expect(reconciliationBreakWaiveEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/waive"
+    );
+    expect(reconciliationBreakSupersedeEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/supersede"
     );
     expect(reconciliationBreakAssignEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/assign"

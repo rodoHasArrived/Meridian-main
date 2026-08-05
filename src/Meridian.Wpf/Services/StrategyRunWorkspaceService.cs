@@ -1,8 +1,10 @@
 using System.Globalization;
 using System.Windows.Media;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
+using Meridian.Storage.Operations;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -40,8 +42,22 @@ public sealed class StrategyRunWorkspaceService
     public static StrategyRunWorkspaceService Instance => _instance ?? _fallbackInstance.Value;
 
     public StrategyRunWorkspaceService()
-        : this(new StrategyRunStore(), new PortfolioReadService(), new LedgerReadService())
+        : this(CreateDurableFallbackRepository(ResolveConfiguredDataRoot()), new PortfolioReadService(), new LedgerReadService())
     {
+    }
+
+    internal static IStrategyRepository CreateDurableFallbackRepository(string dataRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        IOperationalCaseHistoryStore history = new FileOperationalCaseHistoryStore(dataRoot);
+        return new StrategyRunStore(history);
+    }
+
+    private static string ResolveConfiguredDataRoot()
+    {
+        var configService = ConfigService.Instance;
+        var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
+        return configService.ResolveDataRoot(config);
     }
 
     public StrategyRunWorkspaceService(

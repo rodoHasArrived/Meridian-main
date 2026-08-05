@@ -10,12 +10,21 @@ namespace Meridian.Execution.Services;
 /// <summary>
 /// Configuration for persisted execution operator controls.
 /// </summary>
-public sealed record ExecutionOperatorControlOptions(string RootDirectory)
+public sealed record ExecutionOperatorControlOptions(
+    string RootDirectory,
+    bool FailClosedOnMissingOrCorruptSnapshot = false)
 {
     public static ExecutionOperatorControlOptions Default { get; } = new(
         Path.Combine(AppContext.BaseDirectory, "data", "execution", "controls"));
 
     public string SnapshotPath => Path.Combine(RootDirectory, "controls.json");
+
+    /// <summary>
+    /// Marker recording a circuit-breaker trip that was demanded but could not be written
+    /// into the snapshot. It is independent of the snapshot on purpose: the snapshot write
+    /// is exactly what failed, so the halt needs somewhere else to survive a restart.
+    /// </summary>
+    public string PendingTripPath => Path.Combine(RootDirectory, "pending-circuit-breaker-trip.txt");
 }
 
 /// <summary>
@@ -64,7 +73,8 @@ public sealed record ExecutionControlSnapshot(
     decimal? DefaultMaxPositionSize,
     IReadOnlyDictionary<string, decimal> SymbolPositionLimits,
     IReadOnlyList<ExecutionManualOverride> ManualOverrides,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf,
+    long Version = 0);
 
 /// <summary>
 /// Manual override creation request.
@@ -115,11 +125,13 @@ public sealed class ExecutionOperatorControlService
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<ExecutionOperatorControlService> _logger;
     private readonly Lock _lock = new();
+    private readonly SemaphoreSlim _mutationGate = new(1, 1);
 
     private ExecutionCircuitBreakerState _circuitBreaker = new(false);
     private decimal? _defaultMaxPositionSize;
     private Dictionary<string, decimal> _symbolPositionLimits = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, ExecutionManualOverride> _manualOverrides = new(StringComparer.OrdinalIgnoreCase);
+    private long _version;
 
     public ExecutionOperatorControlService(
         ExecutionOperatorControlOptions? options,
@@ -132,6 +144,7 @@ public sealed class ExecutionOperatorControlService
         _auditTrail = auditTrail;
 
         LoadSnapshot();
+        ApplyPendingTripMarker();
 
         if (_defaultMaxPositionSize is null && brokerageConfiguration?.MaxPositionSize > 0m)
         {
@@ -170,20 +183,34 @@ public sealed class ExecutionOperatorControlService
         string? correlationId = null,
         CancellationToken ct = default)
     {
-        ExecutionControlSnapshot snapshot;
-
-        lock (_lock)
-        {
-            _circuitBreaker = new ExecutionCircuitBreakerState(
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
+            {
+                _circuitBreaker = new ExecutionCircuitBreakerState(
                 IsOpen: isOpen,
                 Reason: string.IsNullOrWhiteSpace(reason) ? null : reason,
                 ChangedBy: NormalizeActor(changedBy),
                 ChangedAt: DateTimeOffset.UtcNow);
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        // Immediately after the snapshot commit and before the audit write: an audit
+        // failure or a cancelled request must not leave a superseded marker on disk, or
+        // the next restart would reopen the breaker an operator just durably closed.
+        //
+        // Marker removal is part of the close decision, not bookkeeping after it. A marker
+        // that survives will reopen the breaker on the next restart, so reporting a
+        // successful close while it is still there would promise a state the next start
+        // silently revokes.
+        if (!ClearPendingTripMarker())
+        {
+            throw new InvalidOperationException(
+                $"The circuit breaker decision was persisted, but the pending-trip marker at "
+                + $"'{_options.PendingTripPath}' could not be removed; a restart would reopen the breaker. "
+                + "Remove the marker before relying on this state.");
+        }
 
         await RecordAuditAsync(
             isOpen ? "CircuitBreakerOpened" : "CircuitBreakerClosed",
@@ -215,15 +242,14 @@ public sealed class ExecutionOperatorControlService
             maxPositionSize = null;
         }
 
-        ExecutionControlSnapshot snapshot;
-        lock (_lock)
-        {
-            _defaultMaxPositionSize = maxPositionSize;
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
+            {
+                _defaultMaxPositionSize = maxPositionSize;
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             "DefaultPositionLimitUpdated",
@@ -259,24 +285,22 @@ public sealed class ExecutionOperatorControlService
         }
 
         var normalizedSymbol = symbol.Trim().ToUpperInvariant();
-        ExecutionControlSnapshot snapshot;
-
-        lock (_lock)
-        {
-            if (maxPositionSize.HasValue)
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
             {
-                _symbolPositionLimits[normalizedSymbol] = maxPositionSize.Value;
-            }
-            else
-            {
-                _symbolPositionLimits.Remove(normalizedSymbol);
-            }
+                if (maxPositionSize.HasValue)
+                {
+                    _symbolPositionLimits[normalizedSymbol] = maxPositionSize.Value;
+                }
+                else
+                {
+                    _symbolPositionLimits.Remove(normalizedSymbol);
+                }
 
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             "SymbolPositionLimitUpdated",
@@ -325,15 +349,14 @@ public sealed class ExecutionOperatorControlService
             StrategyId: NormalizeOptionalToken(request.StrategyId),
             RunId: NormalizeOptionalToken(request.RunId));
 
-        ExecutionControlSnapshot snapshot;
-        lock (_lock)
-        {
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            _manualOverrides[overrideEntry.OverrideId] = overrideEntry;
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        await MutateAndPersistAsync(
+            () =>
+            {
+                _manualOverrides[overrideEntry.OverrideId] = overrideEntry;
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             action: "ManualOverrideCreated",
@@ -368,26 +391,15 @@ public sealed class ExecutionOperatorControlService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideId);
 
-        ExecutionManualOverride? removed = null;
-        ExecutionControlSnapshot snapshot;
+        var (removed, _, persisted) = await MutateAndPersistAsync(
+            () => _manualOverrides.Remove(overrideId, out var existing) ? existing : null,
+            static value => value is not null,
+            ct).ConfigureAwait(false);
 
-        lock (_lock)
-        {
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            if (_manualOverrides.Remove(overrideId, out var existing))
-            {
-                removed = existing;
-            }
-
-            snapshot = BuildSnapshotLocked();
-        }
-
-        if (removed is null)
+        if (!persisted || removed is null)
         {
             return false;
         }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             action: "ManualOverrideCleared",
@@ -453,7 +465,11 @@ public sealed class ExecutionOperatorControlService
                 var normalizedSymbol = request.Symbol.Trim().ToUpperInvariant();
                 if (portfolioState?.Positions.TryGetValue(normalizedSymbol, out var existingPosition) == true)
                 {
-                    currentQuantity = existingPosition.Quantity;
+                    // Unrounded: IPosition.Quantity is whole shares, and the order delta
+                    // below is decimal. Fractional and broker-native notional fills are real,
+                    // so rounding the held side lets a 0.9-share position plus a 0.2-share
+                    // buy read as 0.2 against a 1-share cap and approve a 1.1-share position.
+                    currentQuantity = existingPosition.ExactQuantity;
                 }
 
                 var signedDelta = request.Side == OrderSide.Buy ? request.Quantity : -request.Quantity;
@@ -513,6 +529,7 @@ public sealed class ExecutionOperatorControlService
     {
         if (!File.Exists(_options.SnapshotPath))
         {
+            EnterFailClosedStateIfRequired("Execution control snapshot is missing.");
             return;
         }
 
@@ -522,22 +539,185 @@ public sealed class ExecutionOperatorControlService
             var snapshot = JsonSerializer.Deserialize(json, ExecutionJsonContext.Default.ExecutionControlSnapshot);
             if (snapshot is null)
             {
+                throw new JsonException("Execution control snapshot deserialized to null.");
+            }
+
+            ApplySnapshotLocked(snapshot);
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+            _logger.LogError(ex, "Failed to load execution control snapshot from {Path}", _options.SnapshotPath);
+            EnterFailClosedStateIfRequired("Execution control snapshot is unreadable or corrupt.");
+        }
+    }
+
+    /// <summary>
+    /// Durably records a circuit-breaker trip whose snapshot write failed, so a restart
+    /// before the retry succeeds still comes up halted. Best-effort by nature — the caller
+    /// already holds an in-memory fail-closed latch — but a snapshot write can fail for
+    /// reasons a small independent marker survives. Returns whether the marker landed.
+    /// </summary>
+    public async Task<bool> TryRecordPendingCircuitBreakerTripAsync(string? reason, CancellationToken ct = default)
+    {
+        try
+        {
+            Directory.CreateDirectory(_options.RootDirectory);
+            await AtomicFileWriter
+                .WriteAsync(
+                    _options.PendingTripPath,
+                    string.IsNullOrWhiteSpace(reason) ? "Critical risk rule demanded a halt." : reason,
+                    ct)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(
+                exception,
+                "A demanded circuit-breaker trip could not be durably recorded; the halt survives only in memory");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Opens the breaker at startup when a previous process recorded a trip it could not
+    /// persist. The snapshot on disk is still the stale pre-trip one, so without this the
+    /// halt would silently disappear across a restart.
+    /// </summary>
+    private void ApplyPendingTripMarker()
+    {
+        string reason;
+        try
+        {
+            if (!File.Exists(_options.PendingTripPath))
+            {
                 return;
             }
 
-            _circuitBreaker = snapshot.CircuitBreaker;
-            _defaultMaxPositionSize = snapshot.DefaultMaxPositionSize;
-            _symbolPositionLimits = new Dictionary<string, decimal>(
-                snapshot.SymbolPositionLimits,
-                StringComparer.OrdinalIgnoreCase);
-            _manualOverrides = snapshot.ManualOverrides.ToDictionary(
-                static entry => entry.OverrideId,
-                StringComparer.OrdinalIgnoreCase);
+            reason = File.ReadAllText(_options.PendingTripPath).Trim();
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            _logger.LogWarning(ex, "Failed to load execution control snapshot from {Path}", _options.SnapshotPath);
+            // The marker exists but is unreadable: its very presence is the halt signal.
+            _logger.LogError(exception, "Pending circuit-breaker trip marker could not be read; halting anyway");
+            reason = string.Empty;
         }
+
+        if (_circuitBreaker.IsOpen)
+        {
+            return;
+        }
+
+        _circuitBreaker = new ExecutionCircuitBreakerState(
+            IsOpen: true,
+            Reason: string.IsNullOrWhiteSpace(reason)
+                ? "A circuit-breaker trip from a previous process was never durably committed."
+                : reason,
+            ChangedBy: "risk-engine/pending-trip-recovery",
+            ChangedAt: DateTimeOffset.UtcNow);
+        _logger.LogCritical(
+            "Execution circuit breaker opened at startup: a previous process demanded a halt that never reached the snapshot");
+    }
+
+    /// <summary>
+    /// Clears the pending-trip marker once an explicit breaker decision has been durably
+    /// written — the snapshot is authoritative again, in either direction.
+    /// </summary>
+    private bool ClearPendingTripMarker()
+    {
+        try
+        {
+            if (File.Exists(_options.PendingTripPath))
+            {
+                File.Delete(_options.PendingTripPath);
+            }
+
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogError(exception, "Pending circuit-breaker trip marker could not be cleared");
+            return false;
+        }
+    }
+
+    private void EnterFailClosedStateIfRequired(string reason)
+    {
+        if (!_options.FailClosedOnMissingOrCorruptSnapshot)
+        {
+            return;
+        }
+
+        _circuitBreaker = new ExecutionCircuitBreakerState(
+            IsOpen: true,
+            Reason: reason,
+            ChangedBy: "system",
+            ChangedAt: DateTimeOffset.UtcNow);
+        _defaultMaxPositionSize = null;
+        _symbolPositionLimits = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        _manualOverrides = new Dictionary<string, ExecutionManualOverride>(StringComparer.OrdinalIgnoreCase);
+        _version = 0;
+    }
+
+    private async Task<(T Result, ExecutionControlSnapshot Snapshot, bool Persisted)> MutateAndPersistAsync<T>(
+        Func<T> mutation,
+        Func<T, bool>? shouldPersist,
+        CancellationToken ct)
+    {
+        await _mutationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            ExecutionControlSnapshot previous;
+            ExecutionControlSnapshot next;
+            T result;
+            lock (_lock)
+            {
+                PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
+                previous = BuildSnapshotLocked();
+                result = mutation();
+                if (shouldPersist is not null && !shouldPersist(result))
+                {
+                    return (result, previous, false);
+                }
+
+                _version = checked(_version + 1);
+                PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
+                next = BuildSnapshotLocked();
+            }
+
+            try
+            {
+                await PersistSnapshotAsync(next, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                lock (_lock)
+                {
+                    ApplySnapshotLocked(previous);
+                }
+
+                throw;
+            }
+
+            return (result, next, true);
+        }
+        finally
+        {
+            _mutationGate.Release();
+        }
+    }
+
+    private void ApplySnapshotLocked(ExecutionControlSnapshot snapshot)
+    {
+        _circuitBreaker = snapshot.CircuitBreaker;
+        _defaultMaxPositionSize = snapshot.DefaultMaxPositionSize;
+        _symbolPositionLimits = new Dictionary<string, decimal>(
+            snapshot.SymbolPositionLimits,
+            StringComparer.OrdinalIgnoreCase);
+        _manualOverrides = snapshot.ManualOverrides.ToDictionary(
+            static entry => entry.OverrideId,
+            StringComparer.OrdinalIgnoreCase);
+        _version = snapshot.Version;
     }
 
     private async Task PersistSnapshotAsync(ExecutionControlSnapshot snapshot, CancellationToken ct)
@@ -583,7 +763,8 @@ public sealed class ExecutionOperatorControlService
             ManualOverrides: _manualOverrides.Values
                 .OrderByDescending(static entry => entry.CreatedAt)
                 .ToArray(),
-            AsOf: DateTimeOffset.UtcNow);
+            AsOf: DateTimeOffset.UtcNow,
+            Version: _version);
     }
 
     private void PurgeExpiredOverridesLocked(DateTimeOffset now)

@@ -24,7 +24,7 @@
 
 .companion-pane-badge {
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ws-text-muted, #59636f);

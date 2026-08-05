@@ -28,7 +28,12 @@ public sealed class ConfigStore
     public Meridian.Core.Config.AppConfig Load() => _core.Load();
 
     public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg)
-        => _core.SaveAsync(cfg);
+        => SaveAsync(cfg, CancellationToken.None);
+
+    public System.Threading.Tasks.Task SaveAsync(
+        Meridian.Core.Config.AppConfig cfg,
+        CancellationToken ct)
+        => _core.SaveAsync(cfg, ct);
 
     public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics()
         => _core.TryLoadProviderMetrics();

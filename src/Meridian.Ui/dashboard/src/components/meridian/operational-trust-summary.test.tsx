@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 
@@ -40,6 +40,39 @@ describe("OperationalTrustSummary", () => {
     const region = screen.getByRole("region", { name: "Data confidence" });
     expect(screen.getAllByText("Unknown")).toHaveLength(4);
     expect(region.querySelector("dl")).toHaveClass("grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))]");
+  });
+
+  it("keeps remediation actions inside the fact that owns the warning", () => {
+    render(
+      <OperationalTrustSummary
+        source={{
+          label: "Connectivity",
+          value: "Provider degraded",
+          tone: "blocked",
+          action: <a href="/data/providers">Open provider posture</a>
+        }}
+        scope={{
+          value: "No operating scope selected",
+          tone: "review",
+          action: <button type="button">Set operating scope</button>
+        }}
+        freshness={{
+          value: "Stale update",
+          tone: "review",
+          action: <button type="button">Refresh evidence</button>
+        }}
+        completeness={{ value: "3 ranked items", tone: "ready" }}
+      />
+    );
+
+    const connectivityCard = screen.getByText("Connectivity").parentElement as HTMLElement;
+    const scopeCard = screen.getByText("Scope").parentElement as HTMLElement;
+    const freshnessCard = screen.getByText("Freshness").parentElement as HTMLElement;
+
+    expect(within(connectivityCard).getByRole("link", { name: "Open provider posture" }))
+      .toHaveAttribute("href", "/data/providers");
+    expect(within(scopeCard).getByRole("button", { name: "Set operating scope" })).toBeInTheDocument();
+    expect(within(freshnessCard).getByRole("button", { name: "Refresh evidence" })).toBeInTheDocument();
   });
 
   it("wraps long trust facts instead of truncating financially material labels", () => {

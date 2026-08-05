@@ -157,10 +157,56 @@ public sealed record StrategyDesignDraftSaveResponse(
 /// </summary>
 public sealed record StrategyDesignRunBacktestRequest(
     StrategyDesignDocument Document,
-    IReadOnlyDictionary<string, string>? Parameters = null);
+    IReadOnlyDictionary<string, string>? Parameters = null)
+{
+    private IReadOnlyList<string> _operatorAcceptanceCriteria = [];
+    private IReadOnlyList<string> _retainedEvidenceReferences = [];
+    private IReadOnlyList<string> _accountingRecordReferences = [];
+    private IReadOnlyList<string> _approvalReferences = [];
+    private IReadOnlyList<string> _paperValidationReferences = [];
+    private IReadOnlyList<string> _governedReportReferences = [];
+
+    public IReadOnlyList<string> OperatorAcceptanceCriteria
+    {
+        get => _operatorAcceptanceCriteria;
+        init => _operatorAcceptanceCriteria = value ?? [];
+    }
+
+    public IReadOnlyList<string> RetainedEvidenceReferences
+    {
+        get => _retainedEvidenceReferences;
+        init => _retainedEvidenceReferences = value ?? [];
+    }
+
+    public IReadOnlyList<string> AccountingRecordReferences
+    {
+        get => _accountingRecordReferences;
+        init => _accountingRecordReferences = value ?? [];
+    }
+
+    public IReadOnlyList<string> ApprovalReferences
+    {
+        get => _approvalReferences;
+        init => _approvalReferences = value ?? [];
+    }
+
+    public IReadOnlyList<string> PaperValidationReferences
+    {
+        get => _paperValidationReferences;
+        init => _paperValidationReferences = value ?? [];
+    }
+
+    public IReadOnlyList<string> GovernedReportReferences
+    {
+        get => _governedReportReferences;
+        init => _governedReportReferences = value ?? [];
+    }
+}
 
 /// <summary>
 /// Backtest execution response returned by the Strategy Builder route.
+/// <see cref="BiasDisclosure"/> carries the engine's honest-assumptions report for the captured
+/// run (null when the runner did not capture an engine-level result).
 /// </summary>
 public sealed record StrategyDesignRunBacktestResponse(
     bool Success,
@@ -174,4 +220,5 @@ public sealed record StrategyDesignRunBacktestResponse(
     IReadOnlyDictionary<string, string> Metrics,
     string? RuntimeError,
     string? PromotionCandidatePath,
-    string? ReviewPacketPath);
+    string? ReviewPacketPath,
+    BiasDisclosureDto? BiasDisclosure = null);

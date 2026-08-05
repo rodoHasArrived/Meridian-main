@@ -158,6 +158,7 @@ public static class UiEndpoints
         app.MapMessagingEndpoints(jsonOptions);
         app.MapOmsIntegrationEndpoints(jsonOptions);
         app.MapProviderExtendedEndpoints(jsonOptions);
+        app.MapProviderDataProjectionEndpoints(jsonOptions);
         app.MapProviderModuleEndpoints(jsonOptions);
         app.MapIndexEndpoints(jsonOptions);
 
@@ -293,6 +294,12 @@ public static class UiEndpoints
     public const string MutationRateLimitPolicy = "mutation";
 
     /// <summary>
+    /// Direct-lending command limiter. Kept separate from the general mutation budget so loan
+    /// servicing writes have an explicit, independently auditable abuse-control boundary.
+    /// </summary>
+    public const string DirectLendingMutationRateLimitPolicy = "direct-lending-mutation";
+
+    /// <summary>
     /// Registers a per-IP fixed-window rate limiter for mutation endpoints.
     /// Allows 10 requests per minute per IP with a small queue for bursts.
     /// Set the <c>MDC_DISABLE_RATE_LIMIT=true</c> environment variable to bypass rate
@@ -316,6 +323,8 @@ public static class UiEndpoints
             {
                 options.AddPolicy(MutationRateLimitPolicy, _ =>
                     RateLimitPartition.GetNoLimiter<string>("global"));
+                options.AddPolicy(DirectLendingMutationRateLimitPolicy, _ =>
+                    RateLimitPartition.GetNoLimiter<string>("direct-lending-global"));
                 return;
             }
 
@@ -328,6 +337,20 @@ public static class UiEndpoints
                         Window = TimeSpan.FromMinutes(1),
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                         QueueLimit = 2
+                    }));
+
+            options.AddPolicy(DirectLendingMutationRateLimitPolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.Identity?.Name ??
+                                  httpContext.Connection.RemoteIpAddress?.ToString() ??
+                                  "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 20,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                        AutoReplenishment = true
                     }));
         });
 

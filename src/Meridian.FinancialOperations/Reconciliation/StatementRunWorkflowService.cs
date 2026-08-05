@@ -8,8 +8,27 @@ public sealed class StatementRunWorkflowService(
     IReconciliationCaseStore caseStore,
     IReconciliationBreakStore breakStore,
     IBrokerStatementService brokerStatementService,
-    IStatementReconciliationValidationService validationService) : IStatementRunWorkflowService
+    IStatementReconciliationValidationService validationService,
+    IInternalReconciliationPopulationProvider? populationProvider = null,
+    IReconciliationFxRateProvider? fxRateProvider = null,
+    IStatementToleranceProfileProvider? toleranceProfileProvider = null) : IStatementRunWorkflowService
 {
+    // The internal book to reconcile against and the FX seam used to normalize foreign-currency
+    // lines. Both default to safe, fail-closed implementations: an empty book (every row becomes a
+    // break) and identity-only FX (same-currency reconciles exactly, cross-currency breaks) until a
+    // deployment wires real populations and rates.
+    private readonly IInternalReconciliationPopulationProvider _populationProvider =
+        populationProvider ?? EmptyInternalReconciliationPopulationProvider.Instance;
+    private readonly IReconciliationFxRateProvider _fxRateProvider =
+        fxRateProvider ?? IdentityReconciliationFxRateProvider.Instance;
+
+    // Resolves the tolerance thresholds for the run's selected profile. Defaults to a provider that
+    // knows only the built-in default profile; a deployment registers a provider carrying its operator
+    // profiles so a run configured with a non-default profile is matched with that profile's thresholds
+    // rather than silently using the defaults.
+    private readonly IStatementToleranceProfileProvider _toleranceProfileProvider =
+        toleranceProfileProvider ?? new InMemoryStatementToleranceProfileProvider();
+
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default)
         => importStore.ListImportsAsync(cancellationToken);
 
@@ -18,19 +37,45 @@ public sealed class StatementRunWorkflowService(
         ArgumentNullException.ThrowIfNull(request);
 
         var normalizedRequest = await NormalizeAndValidateAsync(request, cancellationToken).ConfigureAwait(false);
+        // Resolve the selected tolerance profile before committing the import. An unknown profile must
+        // fail the run before ImportAsync persists it; otherwise the stored import would be left with no
+        // breaks or cases and the duplicate-source guard would reject a corrected retry of the same file.
+        var toleranceProfile = await ResolveToleranceProfileAsync(normalizedRequest.ToleranceProfileId, cancellationToken).ConfigureAwait(false);
         var imported = await brokerStatementService.ImportAsync(ToImportRequest(normalizedRequest), cancellationToken).ConfigureAwait(false);
-        var matcher = new StatementMatchingService();
-        var outcomes = matcher.MatchRows(imported.Rows);
-        var breaks = matcher
-            .BuildBreakRecords(imported.Import.ImportId, imported.Import.ImportId, imported.Rows, outcomes)
-            .Select(static item => item with
-            {
-                EvidenceLink = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(item.ImportId)}#row-{Uri.EscapeDataString(item.SourceReference)}"
-            })
+
+        // Reconcile the imported statement against Meridian's own book. The population provider
+        // supplies the internal positions, cash, and ledger for this fund account and period; the
+        // matching engine then compares statement rows to those records (not to themselves) across
+        // exact, tolerance, candidate, and unmatched tiers.
+        var baseCurrency = StatementRunMatcher.DefaultBaseCurrency;
+        var populations = await _populationProvider
+            .GetPopulationsAsync(
+                new InternalReconciliationPopulationContext(
+                    imported.Import.FundAccountId,
+                    imported.Import.ExternalAccountId,
+                    imported.Import.StatementPeriodStart,
+                    imported.Import.StatementPeriodEnd,
+                    baseCurrency),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        var createdAtUtc = DateTimeOffset.UtcNow;
+        var matchResult = StatementRunMatcher.Match(
+            imported.Import,
+            imported.Rows,
+            populations,
+            toleranceProfile,
+            _fxRateProvider,
+            baseCurrency,
+            createdAtUtc);
+
+        var linkedBreaks = matchResult.Breaks
+            .Select(static item => item with { Record = item.Record with { EvidenceLink = BuildEvidenceLink(item) } })
             .ToArray();
+        var breaks = linkedBreaks.Select(static item => item.Record).ToArray();
         await breakStore.WriteAsync(breaks, cancellationToken).ConfigureAwait(false);
 
-        var cases = BuildStatementCases(imported.Import, imported.Rows, outcomes, breaks, normalizedRequest.ImportedBy);
+        var cases = BuildStatementCases(imported.Import, linkedBreaks, normalizedRequest.ImportedBy);
         foreach (var reconciliationCase in cases)
         {
             await caseStore.SaveAsync(reconciliationCase, cancellationToken).ConfigureAwait(false);
@@ -72,11 +117,14 @@ public sealed class StatementRunWorkflowService(
 
     private async Task<StatementRunRequest> NormalizeAndValidateAsync(StatementRunRequest request, CancellationToken cancellationToken)
     {
-        var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
-            ? await ComputeSourceFileHashAsync(request.SourcePath, cancellationToken).ConfigureAwait(false)
-            : request.SourceFileHash.Trim().ToUpperInvariant();
+        var canonicalSourcePath = string.IsNullOrWhiteSpace(request.CanonicalSourcePath)
+            ? null
+            : request.CanonicalSourcePath.Trim();
         await validationService.ValidateAsync(
-            new StatementReconciliationValidationRequest(request.Broker, request.SourcePath, request.MappingProfileId),
+            new StatementReconciliationValidationRequest(
+                request.Broker,
+                canonicalSourcePath ?? request.SourcePath,
+                request.MappingProfileId),
             cancellationToken).ConfigureAwait(false);
         return request with
         {
@@ -89,8 +137,44 @@ public sealed class StatementRunWorkflowService(
             MappingProfileId = request.MappingProfileId.Trim(),
             ToleranceProfileId = request.ToleranceProfileId.Trim(),
             ImportedBy = request.ImportedBy.Trim(),
-            SourceFileHash = sourceFileHash
+            SourceFileHash = request.SourceFileHash?.Trim().ToUpperInvariant() ?? string.Empty,
+            CanonicalSourcePath = canonicalSourcePath,
+            CanonicalArtifactHash = request.CanonicalArtifactHash?.Trim().ToUpperInvariant() ?? string.Empty,
+            AccountingScope = NormalizeAccountingScope(request.AccountingScope, request.StatementPeriodEnd)
         };
+    }
+
+    private static StatementAccountingScope? NormalizeAccountingScope(
+        StatementAccountingScope? scope,
+        DateOnly statementPeriodEnd)
+    {
+        if (scope is null)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(scope.FundProfileId))
+        {
+            throw new InvalidDataException("Statement accounting scope requires a fund profile id.");
+        }
+
+        if (scope.LedgerBookId == Guid.Empty)
+        {
+            throw new InvalidDataException("Statement accounting scope requires a ledger book id.");
+        }
+
+        if (scope.AccountingPeriodId == Guid.Empty)
+        {
+            throw new InvalidDataException("Statement accounting scope requires an accounting period id.");
+        }
+
+        if (scope.AsOfDate != statementPeriodEnd)
+        {
+            throw new InvalidDataException(
+                "Statement accounting scope as-of date must equal the retained statement period end.");
+        }
+
+        return scope with { FundProfileId = scope.FundProfileId.Trim() };
     }
 
     private static BrokerStatementImportRequest ToImportRequest(StatementRunRequest request)
@@ -106,51 +190,74 @@ public sealed class StatementRunWorkflowService(
             request.MappingProfileId,
             request.ToleranceProfileId,
             request.ImportedBy,
-            request.SourceFileHash);
+            request.SourceFileHash)
+        {
+            CanonicalSourcePath = request.CanonicalSourcePath,
+            CanonicalArtifactHash = request.CanonicalArtifactHash,
+            AccountingScope = request.AccountingScope
+        };
+
+    private static string BuildEvidenceLink(StatementRunBreak item)
+    {
+        var record = item.Record;
+        // An internal-only break (no broker statement row) links to the retained internal record, not a
+        // nonexistent statement row, so an operator investigating it gets true provenance.
+        var anchor = item.StatementRow is null ? "internal" : "row";
+        return $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(record.ImportId)}#{anchor}-{Uri.EscapeDataString(record.SourceReference)}";
+    }
 
     private static IReadOnlyList<ReconciliationCase> BuildStatementCases(
         CanonicalStatementImport import,
-        IReadOnlyList<CanonicalStatementRow> rows,
-        IReadOnlyList<MatchOutcome> outcomes,
-        IReadOnlyList<ReconciliationBreakRecord> breaks,
+        IReadOnlyList<StatementRunBreak> breaks,
         string actor)
     {
-        var now = DateTimeOffset.UtcNow;
-        var rowByReference = rows.ToDictionary(
-            row => $"{import.ImportId}:{row.SourceRowNumber}",
-            StringComparer.OrdinalIgnoreCase);
-        var outcomeByChecksum = outcomes.ToDictionary(
-            outcome => outcome.RowChecksum,
-            StringComparer.OrdinalIgnoreCase);
-
-        return breaks.Select(breakRecord =>
+        return breaks.Select(item =>
         {
-            rowByReference.TryGetValue(breakRecord.SourceReference, out var row);
+            var breakRecord = item.Record;
+            // Anchor every case, history entry, comment, and audit event to the break's own
+            // creation timestamp so the run's records share one consistent instant.
+            var now = breakRecord.CreatedAtUtc;
+            var engineResult = item.EngineResult;
+            var row = item.StatementRow;
+            var isInternalOnly = row is null;
             var sourceRowHash = row?.RawChecksum ?? breakRecord.SourceReference;
-            outcomeByChecksum.TryGetValue(sourceRowHash, out var outcome);
-            var evidenceLink = breakRecord.EvidenceLink ?? $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(import.ImportId)}#row-{Uri.EscapeDataString(breakRecord.SourceReference)}";
-            var evidenceReferences = new[] { evidenceLink, $"statement-row:{breakRecord.SourceReference}", $"statement-hash:{sourceRowHash}" };
-            var explanation = BuildBreakExplanation(import, row, breakRecord, outcome, evidenceReferences);
-            var attachment = new ReconciliationCaseAttachment(
-                AttachmentId: $"statement-row:{breakRecord.ImportId}:{breakRecord.SourceReference}",
-                EvidenceKind: "ExternalStatementRow",
-                SourceSystem: import.Broker,
-                SourceReference: breakRecord.SourceReference,
-                ContentHash: sourceRowHash,
-                Route: evidenceLink,
-                AttachedAtUtc: now);
+            var evidenceLink = breakRecord.EvidenceLink ?? BuildEvidenceLink(item);
+            // An internal-only break has no broker statement row; its source reference is the retained
+            // internal evidence id. Record it as internal evidence so an operator gets true provenance
+            // and a link to the internal record instead of a fabricated external statement row.
+            var evidenceReferences = isInternalOnly
+                ? new[] { evidenceLink, $"internal-record:{breakRecord.SourceReference}", $"internal-hash:{sourceRowHash}" }
+                : new[] { evidenceLink, $"statement-row:{breakRecord.SourceReference}", $"statement-hash:{sourceRowHash}" };
+            var explanation = BuildBreakExplanation(import, row, breakRecord, engineResult, evidenceReferences);
+            var attachment = isInternalOnly
+                ? new ReconciliationCaseAttachment(
+                    AttachmentId: $"internal-record:{breakRecord.ImportId}:{breakRecord.SourceReference}",
+                    EvidenceKind: "InternalReconciliationRecord",
+                    SourceSystem: "meridian-internal-book",
+                    SourceReference: breakRecord.SourceReference,
+                    ContentHash: sourceRowHash,
+                    Route: evidenceLink,
+                    AttachedAtUtc: now)
+                : new ReconciliationCaseAttachment(
+                    AttachmentId: $"statement-row:{breakRecord.ImportId}:{breakRecord.SourceReference}",
+                    EvidenceKind: "ExternalStatementRow",
+                    SourceSystem: import.Broker,
+                    SourceReference: breakRecord.SourceReference,
+                    ContentHash: sourceRowHash,
+                    Route: evidenceLink,
+                    AttachedAtUtc: now);
 
             return new ReconciliationCase(
                 CaseId: $"case:{breakRecord.BreakId}",
                 ImportId: import.ImportId,
                 Status: "Open",
                 Reason: explanation.Summary,
-                Confidence: outcome?.Confidence ?? 0.25m,
-                Rationale: outcome?.Rationale ?? breakRecord.Category,
+                Confidence: engineResult.Confidence,
+                Rationale: string.IsNullOrWhiteSpace(engineResult.Explanation) ? breakRecord.Category : engineResult.Explanation,
                 CreatedAtUtc: now,
                 History:
                 [
-                    new ReconciliationCaseHistoryEntry(now, "None", "Open", "Case created from external statement break.")
+                    new ReconciliationCaseHistoryEntry(now, "None", "Open", isInternalOnly ? "Case created from internal-only reconciliation break." : "Case created from external statement break.")
                     {
                         Actor = string.IsNullOrWhiteSpace(actor) ? "system" : actor.Trim(),
                         EvidenceId = evidenceLink
@@ -170,8 +277,8 @@ public sealed class StatementRunWorkflowService(
                 CommentThreads =
                 [
                     new ReconciliationCaseCommentThread(
-                        "statement-intake",
-                        "External statement intake",
+                        isInternalOnly ? "internal-intake" : "statement-intake",
+                        isInternalOnly ? "Internal reconciliation intake" : "External statement intake",
                         [
                             new ReconciliationCaseComment(
                                 Guid.NewGuid().ToString("N"),
@@ -184,10 +291,10 @@ public sealed class StatementRunWorkflowService(
                 [
                     new ReconciliationCaseAuditEvent(
                         Guid.NewGuid().ToString("N"),
-                        "ExternalStatementCaseCreated",
+                        isInternalOnly ? "InternalReconciliationCaseCreated" : "ExternalStatementCaseCreated",
                         now,
                         "system",
-                        $"Case created from statement break {breakRecord.BreakId}.")
+                        $"Case created from {(isInternalOnly ? "internal-only reconciliation" : "statement")} break {breakRecord.BreakId}.")
                 ]
             };
         }).ToArray();
@@ -197,28 +304,49 @@ public sealed class StatementRunWorkflowService(
         CanonicalStatementImport import,
         CanonicalStatementRow? row,
         ReconciliationBreakRecord breakRecord,
-        MatchOutcome? outcome,
+        StatementMatchResult engineResult,
         IReadOnlyList<string> evidenceReferences)
     {
         var sourceSystem = string.IsNullOrWhiteSpace(import.SourceInstitution) ? import.Broker : import.SourceInstitution;
         var rowLabel = row is null ? breakRecord.SourceReference : $"row {row.SourceRowNumber}";
         var activityType = row?.ActivityType ?? breakRecord.Category;
+        var side = engineResult.BrokerEvidenceReference is null ? "internal-record" : "statement";
         var amount = row is null ? breakRecord.Delta : Math.Abs(row.CashAmount) + Math.Abs(row.Quantity * row.Price);
+        var descriptor = engineResult.MatchTier == StatementMatchTier.Candidate ? "candidate review" : "break";
 
         return new ReconciliationBreakExplanation(
-            Summary: $"{activityType} break from {sourceSystem} statement {rowLabel}.",
+            Summary: $"{activityType} {descriptor} from {sourceSystem} {rowLabel}.",
             SourceSystems: [sourceSystem, "Meridian ledger", "Meridian positions"],
-            ProbableCause: outcome?.Rationale ?? "External statement row did not match retained Meridian ledger, position, or cash evidence.",
-            LedgerImpact: $"Ledger, cash, or position balances may require review for {import.FundAccountId}; unmatched statement exposure is {amount:G29}.",
+            ProbableCause: string.IsNullOrWhiteSpace(engineResult.Explanation)
+                ? "External statement row did not match retained Meridian ledger, position, or cash evidence."
+                : engineResult.Explanation,
+            LedgerImpact: $"Ledger, cash, or position balances may require review for {import.FundAccountId}; unmatched {side} exposure is {amount:G29}.",
             SuggestedNextAction: "Assign the case, compare the external statement row to retained ledger and position evidence, then attach support before disposition.",
             RequiredSignoffRole: breakRecord.ToleranceBreached ? "Fund accounting" : "Fund operations",
             EvidenceLinks: evidenceReferences);
     }
 
-    private static async Task<string> ComputeSourceFileHashAsync(string sourcePath, CancellationToken cancellationToken)
+    private async Task<StatementToleranceProfile> ResolveToleranceProfileAsync(string? profileId, CancellationToken cancellationToken)
     {
-        await using var stream = File.OpenRead(sourcePath);
-        var hash = await System.Security.Cryptography.SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
-        return Convert.ToHexString(hash);
+        if (string.IsNullOrWhiteSpace(profileId))
+        {
+            return StatementToleranceProfile.Default;
+        }
+
+        try
+        {
+            return await _toleranceProfileProvider.GetProfileAsync(profileId.Trim(), cancellationToken).ConfigureAwait(false);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            // Fail closed: a run must not silently reconcile with default thresholds while recording a
+            // different selected profile id, or the persisted profile would not be the profile actually
+            // applied. Surface the misconfiguration so the operator registers the profile or submits a
+            // known id instead.
+            throw new InvalidOperationException(
+                $"Statement tolerance profile '{profileId.Trim()}' is not registered; register it (reconciliation/tolerance-profiles.json) or submit the run with a known profile id.",
+                ex);
+        }
     }
+
 }

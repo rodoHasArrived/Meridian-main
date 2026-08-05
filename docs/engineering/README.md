@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-19
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 It replaces hand-built planning and historical engineering prose with active operating guidance.
@@ -16,6 +16,8 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
+- **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
+- **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
 - **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
@@ -25,8 +27,10 @@ Use the source-module registry and source README workflow before changing code:
 
 - [Source module registry](../source/data/source-modules.yml) *(canonical for engineering ownership)*
 - [Source ownership and validation](../source/README.md) *(canonical ownership workflow)*
+- [Architecture](../architecture/README.md) *(canonical system design and rationale)*
 - [Module map](../architecture/module-map.md) *(legacy source material; verify against `source/data/source-modules.yml`)*
 - [Project structure](../architecture/project-structure.md) *(legacy source material)*
+- [Live trading engine](live-trading-engine.md) *(promotion → execution loop: feed tap, strategy sessions, OMS routing)*
 
 Canonical ownership rule:
 
@@ -38,7 +42,11 @@ Canonical ownership rule:
 ## Blueprints
 
 Code-ready technical designs for prioritized features live under
-[`blueprints/`](blueprints/README.md).
+[`blueprints/`](blueprints/README.md). That README is the **canonical register for every active
+blueprint in the repository**, wherever it is filed — engineering, `docs/development/accounting-blueprints/`,
+`docs/product/`, and `docs/plans/` — and it records the shared conventions (ledger migration
+ordinals, DDL precision, API route prefixes, enum extension, terminology) plus the cross-blueprint
+contracts that stop two independently-written designs from colliding.
 
 ## Build/Test/Run
 
@@ -179,10 +187,30 @@ pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 Use `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` for a Release
 host/desktop build that does not require database connectivity. Use `-LaunchMode Production`
 without `-BuildOnly` only when the production governance persistence variables are configured:
-`MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`.
+`MERIDIAN_DATABASE_URL`, or `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
+`MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`.
 Development launch mode sets `DOTNET_ENVIRONMENT=Development`,
 `ASPNETCORE_ENVIRONMENT=Development`, and `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` for the
 launched processes, then restores the caller's environment.
+
+### Persistence
+
+**Without database configuration, every money-path store (ledger, fund accounts, banking,
+money market, reporting, and more) runs in-memory: journal entries, reconciliations, and
+approvals are lost on restart.** Hosts surface this loudly — a `PERSISTENCE: NONE`/`PARTIAL`
+warning at startup, in the `postgresql` readiness check, and as a red banner in the browser
+workstation.
+
+Set the single unified variable to persist every store domain to one PostgreSQL database:
+
+```bash
+export MERIDIAN_DATABASE_URL="postgres://user:password@localhost:5432/meridian"
+# or Npgsql keyword form:
+export MERIDIAN_DATABASE_URL="Host=localhost;Port=5432;Database=meridian;Username=user;Password=password"
+```
+
+Per-domain `MERIDIAN_*_CONNECTION_STRING` variables remain supported and always take
+precedence over `MERIDIAN_DATABASE_URL`, so split-database deployments keep working.
 
 ## Workstation Architecture Rules
 
@@ -208,7 +236,8 @@ contracts/read models/endpoints, then surfaced by each UI.
 - Source-module truth: `docs/source/data/*.yml` and generated source docs.
 - Roadmap truth: `docs/roadmap/data/*.yml` and generated roadmap views.
 - Generated docs are not hand-edited; update inputs/generators and regenerate.
-- Legacy hand-authored engineering guides remain source material only unless explicitly linked from canonical lanes.
+- Detailed hand-authored guides under `docs/development/` are supporting material reached through
+  this canonical lane; archived guides are historical context only.
 - Canonical ownership rules are in `../documentation-ownership.md`; this page is only the active
   engineering start lane.
 
@@ -257,13 +286,13 @@ Before editing `src/**`:
 python3 build/scripts/docs/mark-stale-docs.py --write --summary
 ```
 
-## Legacy Source-Material Index
+## Supporting Detail and Historical Sources
 
-- [Developer Quick Guides](../../archive/docs/developer/README.md) *(source material for migration only)*
-- [Development Guides](../development/README.md) *(source material for migration only)*
-- [Desktop Testing Guide](../development/desktop-testing-guide.md) *(source material for migration only)*
-- [Architecture Documentation](../architecture/README.md) *(source material; canonicalized through source registry)*
-- [Old WPF workflow notes](../development/wpf-implementation-notes.md) *(source material)*
+- [Development Guides](../development/README.md) *(active supporting implementation detail)*
+- [Desktop Testing Guide](../development/desktop-testing-guide.md) *(active supporting WPF detail)*
+- [Architecture Documentation](../architecture/README.md) *(canonical system design and rationale)*
+- [Developer Quick Guides](../../archive/docs/developer/README.md) *(historical source material)*
+- [Older WPF workflow notes](../development/wpf-implementation-notes.md) *(supporting context; verify against current source and parity plan)*
 
 ## Canonical Ownership Summary
 

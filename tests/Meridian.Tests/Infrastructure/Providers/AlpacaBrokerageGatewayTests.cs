@@ -20,13 +20,17 @@ public sealed class AlpacaBrokerageGatewayTests
 
     // ── Helpers ──────────────────────────────────────────────────────────
 
-    private static AlpacaBrokerageGateway CreateSut(HttpMessageHandler handler, bool useSandbox = true)
+    private static AlpacaBrokerageGateway CreateSut(
+        HttpMessageHandler handler,
+        bool useSandbox = true,
+        AlpacaTradeUpdatesClient? tradeUpdates = null)
     {
         var options = new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: useSandbox);
         return new AlpacaBrokerageGateway(
             new StubHttpClientFactory(handler),
             options,
-            NullLogger<AlpacaBrokerageGateway>.Instance);
+            NullLogger<AlpacaBrokerageGateway>.Instance,
+            tradeUpdates: tradeUpdates);
     }
 
     private static StringContent BuildAccountResponse(string status = "active") =>
@@ -75,8 +79,23 @@ public sealed class AlpacaBrokerageGatewayTests
     private static StringContent BuildPositionsResponse(object[] positions) =>
         BuildJson(positions);
 
+    private static object BuildActivityResponse(string? id, DateTimeOffset occurredAt) =>
+        new
+        {
+            id,
+            activity_type = "DIV",
+            transaction_time = occurredAt,
+            net_amount = "1.00",
+            currency = "USD"
+        };
+
     private static StringContent BuildJson(object obj) =>
         new StringContent(JsonSerializer.Serialize(obj), Encoding.UTF8, "application/json");
+
+    private static void MarkConnected(AlpacaBrokerageGateway gateway) =>
+        typeof(AlpacaBrokerageGateway)
+            .GetField("_connected", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(gateway, true);
 
     // ── Capabilities ─────────────────────────────────────────────────────
 
@@ -289,6 +308,47 @@ public sealed class AlpacaBrokerageGatewayTests
 
         report.ReportType.Should().Be(ExecutionReportType.Rejected);
         report.OrderStatus.Should().Be(OrderStatus.Rejected);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_UnhealthyExecutionStream_UsesRestCancellation()
+    {
+        var stream = new AlpacaTradeUpdatesClient(
+            new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
+            NullLogger<AlpacaTradeUpdatesClient>.Instance);
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses), tradeUpdates: stream);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("ord-1", cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Cancelled);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_UnhealthyExecutionStream_UsesRestModification()
+    {
+        var stream = new AlpacaTradeUpdatesClient(
+            new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
+            NullLogger<AlpacaTradeUpdatesClient>.Instance);
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses), tradeUpdates: stream);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.ModifyOrderAsync("ord-1", new OrderModification { NewQuantity = 2m }, cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Modified);
         await sut.DisposeAsync();
     }
 
@@ -816,12 +876,15 @@ public sealed class AlpacaBrokerageGatewayTests
             });
         var sut = CreateSut(handler);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var since = new DateTimeOffset(2026, 4, 24, 0, 0, 0, TimeSpan.Zero);
+        var untilExclusive = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
 
         var accounts = await ((IBrokerageAccountCatalog)sut).GetAccountsAsync(cts.Token);
         var portfolio = await ((IBrokeragePortfolioSync)sut).GetPortfolioSnapshotAsync("TEST123", cts.Token);
         var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
             "TEST123",
-            new DateTimeOffset(2026, 4, 24, 0, 0, 0, TimeSpan.Zero),
+            since,
+            untilExclusive,
             cts.Token);
 
         accounts.Should().ContainSingle(account =>
@@ -855,116 +918,218 @@ public sealed class AlpacaBrokerageGatewayTests
             cash.TransactionId == "cash-1" &&
             cash.TransactionType == "DIV" &&
             cash.Amount == 42.50m);
-        activity.Activities.Should().ContainSingle(item =>
-            item.EventId == "fill-1" &&
-            item.Category == BrokerageActivityCategory.Trade &&
-            item.Subtype == BrokerageActivitySubtype.TradeFill);
-        activity.Activities.Should().ContainSingle(item =>
-            item.EventId == "cash-1" &&
-            item.Category == BrokerageActivityCategory.Dividend &&
-            item.Subtype == BrokerageActivitySubtype.CashDividend);
-        activity.Cursor.Should().BeEquivalentTo(new BrokerageActivityCursorDto(
-            LastEventId: "cash-1",
-            HighWatermark: new DateTimeOffset(2026, 4, 25, 14, 35, 0, TimeSpan.Zero),
-            PageCount: 1,
-            SourceRecordCount: 2,
-            IsComplete: true));
-        capturedPaths.Should().Contain(path =>
-            path.StartsWith("/v2/account/activities?direction=asc&page_size=100&after=", StringComparison.Ordinal));
+        var activityPath = capturedPaths.Single(path =>
+            path.StartsWith("/v2/account/activities?", StringComparison.Ordinal));
+        activityPath.Should().Contain(
+            $"after={Uri.EscapeDataString(since.AddTicks(-1).UtcDateTime.ToString("O"))}");
+        activityPath.Should().Contain(
+            $"until={Uri.EscapeDataString(untilExclusive.UtcDateTime.ToString("O"))}");
     }
 
     [Fact]
-    public async Task GetActivitySnapshotAsync_MoreThanOnePage_ReturnsCompleteDeduplicatedCursor()
+    public async Task GetPortfolioSnapshotAsync_CredentialAccountMismatch_FailsBeforePositionsFetch()
     {
-        var capturedPaths = new List<string>();
-        var firstPage = Enumerable.Range(1, 100)
-            .Select(index => new
-            {
-                id = $"activity-{index:000}",
-                activity_type = "FEE",
-                transaction_time = $"2026-04-25T{index % 24:00}:00:00Z",
-                net_amount = "-0.01",
-                currency = "USD"
-            })
-            .ToArray();
+        var requestedPaths = new List<string>();
         var handler = new CapturingStubHandler(
-            request => capturedPaths.Add(request.RequestUri?.PathAndQuery ?? string.Empty),
+            request => requestedPaths.Add(request.RequestUri?.AbsolutePath ?? string.Empty),
+            request => request.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildPositionsResponse([]));
+        var sut = CreateSut(handler);
+
+        var act = () => ((IBrokeragePortfolioSync)sut).GetPortfolioSnapshotAsync("OTHER-ACCOUNT");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*does not match*configured credentials*");
+        requestedPaths.Should().Equal("/v2/account");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_CredentialAccountMismatch_FailsBeforeActivityFetch()
+    {
+        var requestedPaths = new List<string>();
+        var handler = new CapturingStubHandler(
+            request => requestedPaths.Add(request.RequestUri?.AbsolutePath ?? string.Empty),
+            request => request.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildJson(Array.Empty<object>()));
+        var sut = CreateSut(handler);
+
+        var act = () => ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("OTHER-ACCOUNT");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*does not match*configured credentials*");
+        requestedPaths.Should().Equal("/v2/account");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_BoundedWindow_IncludesStartAndExcludesEnd()
+    {
+        var activityPaths = new List<string>();
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var untilExclusive = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+        var handler = new CapturingStubHandler(
             request =>
             {
-                var uri = request.RequestUri!;
-                if (uri.AbsolutePath == "/v2/orders")
-                    return BuildJson(Array.Empty<object>());
-                if (uri.AbsolutePath == "/v2/account/activities" &&
-                    uri.Query.Contains("page_token=activity-100", StringComparison.Ordinal))
+                if (request.RequestUri?.AbsolutePath == "/v2/account/activities")
                 {
-                    return BuildJson(new object[]
-                    {
-                        new
-                        {
-                            id = "activity-101",
-                            activity_type = "DIV",
-                            transaction_time = "2026-04-26T12:00:00Z",
-                            net_amount = "5.00",
-                            currency = "USD"
-                        }
-                    });
+                    activityPaths.Add(request.RequestUri.PathAndQuery);
+                }
+            },
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
                 }
 
-                if (uri.AbsolutePath == "/v2/account/activities")
-                    return BuildJson(firstPage);
-                return BuildJson(new { });
+                return request.RequestUri?.AbsolutePath == "/v2/account/activities"
+                    ? BuildJson(new[]
+                    {
+                        BuildActivityResponse("before-start", since.AddTicks(-1)),
+                        BuildActivityResponse("at-start", since),
+                        BuildActivityResponse("inside-window", since.AddDays(1)),
+                        BuildActivityResponse("at-end", untilExclusive)
+                    })
+                    : BuildJson(Array.Empty<object>());
             });
         var sut = CreateSut(handler);
 
-        var snapshot = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("TEST123");
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            since,
+            untilExclusive);
 
-        snapshot.Activities.Should().HaveCount(101);
-        snapshot.Activities!.Select(item => item.EventId).Should().OnlyHaveUniqueItems();
-        snapshot.Cursor.Should().BeEquivalentTo(new BrokerageActivityCursorDto(
-            LastEventId: "activity-101",
-            HighWatermark: new DateTimeOffset(2026, 4, 26, 12, 0, 0, TimeSpan.Zero),
-            PageCount: 2,
-            SourceRecordCount: 101,
-            IsComplete: true));
-        capturedPaths.Should().Contain(path =>
-            path.Contains("page_token=activity-100", StringComparison.Ordinal));
+        activity.CashTransactions.Select(transaction => transaction.TransactionId)
+            .Should()
+            .BeEquivalentTo("at-start", "inside-window");
+        activityPaths.Should().ContainSingle();
+        activityPaths[0].Should().Contain(
+            $"after={Uri.EscapeDataString(since.AddTicks(-1).UtcDateTime.ToString("O"))}",
+            "the provider's exclusive after bound must be one tick before the inclusive period start");
+        activityPaths[0].Should().Contain(
+            $"until={Uri.EscapeDataString(untilExclusive.UtcDateTime.ToString("O"))}");
     }
 
     [Fact]
-    public async Task GetActivitySnapshotAsync_RichProviderCodes_PreservesCanonicalSubtypesAndOptionTerms()
+    public async Task GetActivitySnapshotAsync_FullActivityPage_PaginatesWithTerminalId()
     {
+        var activityPaths = new List<string>();
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var untilExclusive = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+        var firstPage = Enumerable.Range(0, 100)
+            .Select(index => BuildActivityResponse($"activity-{index:D3}", since.AddMinutes(index)))
+            .ToArray();
         var handler = new CapturingStubHandler(
-            _ => { },
-            request => request.RequestUri!.AbsolutePath switch
+            request =>
             {
-                "/v2/orders" => BuildJson(Array.Empty<object>()),
-                "/v2/account/activities" => BuildJson(new object[]
+                if (request.RequestUri?.AbsolutePath == "/v2/account/activities")
                 {
-                    new { id = "crypto-fee", activity_type = "CFEE", transaction_time = "2026-04-25T10:00:00Z", net_amount = "-1.00", currency = "USD" },
-                    new { id = "margin-interest", activity_type = "INT", transaction_time = "2026-04-25T11:00:00Z", net_amount = "-2.00", currency = "USD", description = "Margin interest" },
-                    new { id = "assignment", activity_type = "OPASN", transaction_time = "2026-04-25T12:00:00Z", symbol = "AAPL260116C00190000", qty = "1", currency = "USD" },
-                    new { id = "transfer", activity_type = "ACATS", transaction_time = "2026-04-25T13:00:00Z", symbol = "MSFT", qty = "3", currency = "USD" },
-                    new { id = "withholding", activity_type = "DIVTW", transaction_time = "2026-04-25T14:00:00Z", net_amount = "-3.00", currency = "USD" },
-                    new { id = "borrow-rebate", activity_type = "BORROW_REBATE", transaction_time = "2026-04-25T15:00:00Z", net_amount = "0.50", currency = "USD" }
-                }),
-                _ => BuildJson(new { })
+                    activityPaths.Add(request.RequestUri.PathAndQuery);
+                }
+            },
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
+                if (request.RequestUri?.AbsolutePath != "/v2/account/activities")
+                {
+                    return BuildJson(Array.Empty<object>());
+                }
+
+                return request.RequestUri.Query.Contains("page_token=", StringComparison.Ordinal)
+                    ? BuildJson(new[]
+                    {
+                        BuildActivityResponse("activity-100", since.AddMinutes(100))
+                    })
+                    : BuildJson(firstPage);
             });
         var sut = CreateSut(handler);
 
-        var snapshot = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("TEST123");
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            since,
+            untilExclusive);
 
-        snapshot.Activities.Should().Contain(item => item.EventId == "crypto-fee" && item.Subtype == BrokerageActivitySubtype.CryptoFee);
-        snapshot.Activities.Should().Contain(item => item.EventId == "margin-interest" && item.Subtype == BrokerageActivitySubtype.MarginInterest);
-        snapshot.Activities.Should().Contain(item => item.EventId == "transfer" && item.Subtype == BrokerageActivitySubtype.AcatsSecurity);
-        snapshot.Activities.Should().Contain(item => item.EventId == "withholding" && item.Subtype == BrokerageActivitySubtype.DividendWithholding);
-        snapshot.Activities.Should().Contain(item => item.EventId == "borrow-rebate" && item.Subtype == BrokerageActivitySubtype.BorrowRebate);
-        var assignment = snapshot.Activities.Should().ContainSingle(item => item.EventId == "assignment").Subject;
-        assignment.Option.Should().NotBeNull();
-        assignment.Option!.UnderlyingSymbol.Should().Be("AAPL");
-        assignment.Option.OptionType.Should().Be("Call");
-        assignment.Option.StrikePrice.Should().Be(190m);
-        assignment.Option.ExpirationDate.Should().Be(new DateOnly(2026, 1, 16));
-        assignment.Option.LifecycleAction.Should().Be("Assignment");
+        activity.CashTransactions.Should().HaveCount(101);
+        activityPaths.Should().HaveCount(2);
+        activityPaths[1].Should().Contain(
+            $"page_token={Uri.EscapeDataString("activity-099")}");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_FullActivityPageWithoutTerminalId_FailsClosed()
+    {
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var page = Enumerable.Range(0, 100)
+            .Select(index => BuildActivityResponse(
+                index == 99 ? null : $"activity-{index:D3}",
+                since.AddMinutes(index)))
+            .ToArray();
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
+                return request.RequestUri?.AbsolutePath == "/v2/account/activities"
+                    ? BuildJson(page)
+                    : BuildJson(Array.Empty<object>());
+            });
+        var sut = CreateSut(handler);
+
+        var act = () => ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            since,
+            since.AddDays(30));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*without a terminal activity id*");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_RepeatedActivityPageToken_FailsClosed()
+    {
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var activityRequestCount = 0;
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
+                if (request.RequestUri?.AbsolutePath != "/v2/account/activities")
+                {
+                    return BuildJson(Array.Empty<object>());
+                }
+
+                var pageOffset = activityRequestCount++ * 100;
+                var page = Enumerable.Range(0, 100)
+                    .Select(index => BuildActivityResponse(
+                        index == 99 ? "repeated-token" : $"activity-{pageOffset + index:D3}",
+                        since.AddMinutes(pageOffset + index)))
+                    .ToArray();
+                return BuildJson(page);
+            });
+        var sut = CreateSut(handler);
+
+        var act = () => ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            since,
+            since.AddDays(30));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*repeated a page token*");
+        activityRequestCount.Should().Be(2);
     }
 
 

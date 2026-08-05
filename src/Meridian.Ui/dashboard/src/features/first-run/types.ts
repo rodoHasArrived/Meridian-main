@@ -15,6 +15,62 @@ export interface ActivationOutcome {
   completedAtUtc: string | null;
 }
 
+export interface SampleHolding {
+  symbol: string;
+  quantity: number;
+  averagePrice: number;
+  lastPrice: number;
+  marketValue: number;
+  unrealizedPnl: number;
+}
+
+export interface SampleBreak {
+  id: string;
+  title: string;
+  category: string;
+  severity: string;
+  variance: number;
+  summary: string;
+  route: string;
+}
+
+export interface SampleArtifact {
+  name: string;
+  status: string;
+  detail: string;
+  route: string;
+}
+
+export interface SampleMarketHistory {
+  symbols: string[];
+  sessions: number;
+  route: string;
+}
+
+export interface SampleHighlight {
+  label: string;
+  value: string;
+  detail: string;
+  route: string;
+}
+
+export interface SampleWorkspace {
+  headline: string;
+  summary: string;
+  provenance: string;
+  portfolioName: string;
+  portfolioValue: number;
+  cash: number;
+  unrealizedPnl: number;
+  holdings: SampleHolding[];
+  watchlist: string[];
+  reconciliationBreaks: SampleBreak[];
+  report: SampleArtifact;
+  strategy: SampleArtifact;
+  marketHistory: SampleMarketHistory;
+  highlights: SampleHighlight[];
+}
+
 export interface FirstRunStatus {
   isComplete: boolean;
   goal: string | null;
@@ -31,4 +87,5 @@ export interface FirstRunStatus {
   starterKits: StarterWorkspace[];
   outcomes: ActivationOutcome[];
   recommendedActions: Array<{ label: string; route: string; description: string }>;
+  sampleWorkspace: SampleWorkspace | null;
 }

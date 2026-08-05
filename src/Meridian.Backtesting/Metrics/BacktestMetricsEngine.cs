@@ -19,13 +19,18 @@ internal static class BacktestMetricsEngine
 
         var initial = request.InitialCash;
         var final = snapshots[^1].TotalEquity;
-        var grossPnl = final - initial;
 
         // Commissions and margin interest are stored as negative cash flows; negate to get positive totals.
         var totalCommissions = -allCashFlows.OfType<CommissionCashFlow>().Sum(c => c.Amount);
         var totalMarginInterest = -allCashFlows.OfType<MarginInterestCashFlow>().Sum(c => c.Amount);
         var totalShortRebates = allCashFlows.OfType<ShortRebateCashFlow>().Sum(c => c.Amount);
-        var netPnl = grossPnl - totalCommissions - totalMarginInterest + totalShortRebates;
+
+        // TotalEquity already reflects every friction: SimulatedPortfolio deducts commissions
+        // from cash on each fill and posts margin interest / short rebates through cash during
+        // daily accrual. Net P&L is therefore the plain equity delta; subtracting the frictions
+        // again (the previous formula) double-counted them. Gross P&L adds the frictions back.
+        var netPnl = final - initial;
+        var grossPnl = netPnl + totalCommissions + totalMarginInterest - totalShortRebates;
 
         var datedDailyReturns = snapshots.Select(s => (Date: s.Date, Return: (double)s.DailyReturn)).ToList();
         var years = Math.Max((snapshots[^1].Date.ToDateTime(TimeOnly.MinValue) - snapshots[0].Date.ToDateTime(TimeOnly.MinValue)).TotalDays / 365.0, 1.0 / 365.0);

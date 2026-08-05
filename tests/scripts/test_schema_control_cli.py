@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from tools.schema_control.cli import (
+    _configured_output_paths,
     _deleted_migration_findings,
     _prepare_candidate_root,
     _promote,
@@ -17,6 +18,43 @@ from tools.schema_control.cli import (
 
 
 class SchemaControlCliTests(unittest.TestCase):
+    def test_configured_output_paths_reject_absolute_and_escaping_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repository"
+            root.mkdir()
+
+            for output_path in ("/tmp/schema-control-secret", "../outside-repository"):
+                with self.subTest(output_path=output_path):
+                    with self.assertRaisesRegex(ValueError, "inside the repository"):
+                        _configured_output_paths(
+                            root,
+                            {
+                                "outputs": {
+                                    "manifest": output_path,
+                                    "docs": "docs/generated/database",
+                                }
+                            },
+                        )
+
+    def test_configured_output_paths_reject_symlink_escaping_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repository"
+            root.mkdir()
+            outside = Path(directory) / "outside"
+            outside.mkdir()
+            (root / "linked-output").symlink_to(outside, target_is_directory=True)
+
+            with self.assertRaisesRegex(ValueError, "inside the repository"):
+                _configured_output_paths(
+                    root,
+                    {
+                        "outputs": {
+                            "manifest": "linked-output",
+                            "docs": "docs/generated/database",
+                        }
+                    },
+                )
+
     def test_promote_validates_all_sources_before_replacing_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repository"
@@ -48,7 +86,7 @@ class SchemaControlCliTests(unittest.TestCase):
             sentinel = root / "sentinel.txt"
             sentinel.write_text("keep", encoding="utf-8")
 
-            with self.assertRaisesRegex(ValueError, "outside the repository"):
+            with self.assertRaisesRegex(ValueError, "inside the repository"):
                 _promote(
                     root,
                     {"outputs": {"manifest": ".", "docs": "docs/generated/database"}},

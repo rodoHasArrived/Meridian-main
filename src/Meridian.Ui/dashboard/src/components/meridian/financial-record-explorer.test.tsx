@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import type { FinancialRecordExplorerDto } from "@/types";
@@ -61,14 +62,14 @@ describe("FinancialRecordExplorerShell", () => {
     renderExplorer();
 
     const row = screen.getByRole("row", { name: /revenue income aapl/i });
-    expect(row).toHaveAttribute("tabindex", "0");
-    expect(row).toHaveAttribute("aria-current", "false");
+    expect(row).toHaveAttribute("aria-selected", "false");
 
-    row.focus();
+    act(() => row.focus());
+    expect(row).toHaveAttribute("tabindex", "0");
     await user.keyboard("{Enter}");
 
     expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-selected", "true");
 
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
@@ -77,6 +78,190 @@ describe("FinancialRecordExplorerShell", () => {
     // Space reopens the selected proof record (default scroll suppressed).
     await user.keyboard(" ");
     expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
+  });
+
+  it("exposes the record table as a selectable grid", () => {
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    expect(rows.length).toBeGreaterThan(1);
+    // aria-selected is only meaningful inside a grid; on a plain table row assistive
+    // technology has no selection concept to report.
+    rows.forEach((row, index) => {
+      expect(row).toHaveAttribute("aria-selected");
+      // The header occupies row 1, so the first record is row 2.
+      expect(row).toHaveAttribute("aria-rowindex", String(index + 2));
+    });
+    expect(grid).toHaveAttribute("aria-rowcount", String(rows.length + 1));
+
+    const header = within(grid).getAllByRole("row").find((row) => !row.hasAttribute("aria-selected"));
+    expect(header).toHaveAttribute("aria-rowindex", "1");
+  });
+
+  it("keeps one tab stop for the whole grid", () => {
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    // Every row being tabbable would put a long explorer many Tab presses away from the
+    // next control; the grid keeps a single tab stop and moves it with the arrow keys.
+    const tabbable = rows.filter((row) => row.getAttribute("tabindex") === "0");
+    expect(tabbable).toHaveLength(1);
+  });
+
+  it("moves row focus with the arrow, Home, and End keys", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+    expect(rows.length).toBeGreaterThanOrEqual(2);
+
+    act(() => rows[0].focus());
+    expect(rows[0]).toHaveFocus();
+
+    await user.keyboard("{ArrowDown}");
+    expect(rows[1]).toHaveFocus();
+    expect(rows[1]).toHaveAttribute("tabindex", "0");
+    expect(rows[0]).toHaveAttribute("tabindex", "-1");
+
+    await user.keyboard("{ArrowUp}");
+    expect(rows[0]).toHaveFocus();
+
+    await user.keyboard("{End}");
+    expect(rows[rows.length - 1]).toHaveFocus();
+
+    await user.keyboard("{Home}");
+    expect(rows[0]).toHaveFocus();
+  });
+
+  it("does not move focus past the first or last row", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    act(() => rows[0].focus());
+    await user.keyboard("{ArrowUp}");
+    expect(rows[0]).toHaveFocus();
+
+    act(() => rows[rows.length - 1].focus());
+    await user.keyboard("{ArrowDown}");
+    expect(rows[rows.length - 1]).toHaveFocus();
+  });
+
+  it("keeps cell links out of the tab sequence so the grid is one tab stop", async () => {
+    renderExplorer();
+
+    const link = screen.getByRole("link", { name: "Cash" });
+
+    // Leaving every anchor natively tabbable meant Tab still walked each link in each rendered
+    // row, so the roving row tabIndex bought nothing.
+    expect(link).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("announces how to reach links that were removed from the tab order", async () => {
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const describedBy = grid.getAttribute("aria-describedby");
+    expect(describedBy).toBeTruthy();
+
+    // Removing the links from Tab is only half the job: without an announced replacement
+    // gesture a keyboard or screen-reader user cannot reach the proof links at all.
+    const help = document.getElementById(describedBy as string);
+    expect(help).toHaveTextContent(/Right Arrow to move into the record's links/i);
+    expect(help).toHaveTextContent(/Escape to return/i);
+  });
+
+  it("reaches a row's links with ArrowRight and returns with Escape", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    act(() => rows[0].focus());
+    await user.keyboard("{ArrowRight}");
+
+    // Removing the links from the tab order would strand them without this path.
+    const link = screen.getByRole("link", { name: "Cash" });
+    expect(link).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    expect(rows[0]).toHaveFocus();
+  });
+
+  it("lets a focused cell link handle its own Enter key", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const link = screen.getByRole("link", { name: "Cash" });
+    act(() => link.focus());
+    await user.keyboard("{Enter}");
+
+    // The row's activation handler must not swallow Enter aimed at a descendant link, or the
+    // browser never follows it and the proof drawer opens instead.
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("marks only the selected row as selected", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
+    await user.keyboard("{Escape}");
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const selected = within(grid)
+      .getAllByRole("row")
+      .filter((row) => row.getAttribute("aria-selected") === "true");
+
+    expect(selected).toHaveLength(1);
+    expect(selected[0]).toHaveTextContent("Revenue");
+  });
+
+  it("shows the keyboard hint on screen once focus enters the grid", async () => {
+    renderExplorer();
+
+    const help = screen.getByText(/Right Arrow to move into the record/i);
+    // A sighted keyboard-only operator never hears sr-only text, and the cell links are out of
+    // the tab sequence — so before focus arrives the hint may be screen-reader-only, but once
+    // the grid has focus it has to be visible or Tab silently skips every proof link.
+    expect(help).toHaveClass("sr-only");
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const firstRow = within(grid).getAllByRole("row")[1];
+    act(() => firstRow.focus());
+
+    expect(help).not.toHaveClass("sr-only");
+    expect(help).toBeVisible();
+  });
+
+  it("keeps the keyboard hint visible while focus moves between cells in the grid", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const firstRow = within(grid).getAllByRole("row")[1];
+    act(() => firstRow.focus());
+    await user.keyboard("{ArrowRight}");
+
+    // Moving into a cell link fires blur on the row; only focus leaving the grid entirely
+    // should hide the hint, or it flashes off exactly as the operator starts using it.
+    expect(screen.getByText(/Right Arrow to move into the record/i)).not.toHaveClass("sr-only");
+  });
+
+  it("has no detectable accessibility violations in the record grid", async () => {
+    const { container } = renderExplorer();
+
+    const results = await axe(container);
+
+    expect(results.violations).toHaveLength(0);
   });
 
   it("requires an operator name before saving a material view change", async () => {
@@ -129,7 +314,7 @@ describe("FinancialRecordExplorerShell", () => {
 
     await user.click(screen.getByRole("link", { name: "Cash" }));
 
-    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-selected", "true");
     expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog", { name: "Cash proof detail" })).not.toBeInTheDocument();
   });
@@ -279,28 +464,25 @@ describe("FinancialRecordExplorerShell", () => {
     }));
   });
 
-  it("persists the current explorer evidence state into the browser URL", async () => {
+  it("keeps explorer evidence state out of the browser URL until it is explicitly shared", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "/accounting?period=2026-06");
     renderExplorer();
 
-    await waitFor(() => {
-      expect(window.location.href).toContain("period=2026-06");
-      expect(window.location.href).toContain("frexExplorer=ledger");
-      expect(window.location.href).toContain("frexView=system-ledger-default");
-      expect(window.location.href).toContain("frexRecord=ledger%3Arun-1%3Acash");
-    });
+    expect(window.location.pathname).toBe("/accounting");
+    expect(window.location.search).toBe("?period=2026-06");
 
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
     await user.click(screen.getByRole("button", { name: "Close drawer" }));
     expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "aapl");
 
-    await waitFor(() => {
-      expect(window.location.href).toContain("period=2026-06");
-      expect(window.location.href).toContain("frexSearch=aapl");
-      expect(window.location.href).toContain("frexRecord=ledger%3Arun-1%3Arevenue");
-    });
+    expect(window.location.pathname).toBe("/accounting");
+    expect(window.location.search).toBe("?period=2026-06");
+    expect(screen.getByRole("link", { name: /share ledger explorer evidence state/i })).toHaveAttribute(
+      "href",
+      "/accounting?period=2026-06&frexExplorer=ledger&frexView=system-ledger-default&frexSearch=aapl&frexRecord=ledger%3Arun-1%3Arevenue"
+    );
   });
 
   it("renders Security & Instrument Explorer DTO fields used by WPF parity proof", async () => {

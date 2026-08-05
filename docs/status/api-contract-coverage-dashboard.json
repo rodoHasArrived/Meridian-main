@@ -2,40 +2,40 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.4,
-  "endpoint_coverage_percent": 41.3,
-  "contract_coverage_percent": 11.6,
+  "score_percent": 29.9,
+  "endpoint_coverage_percent": 41.2,
+  "contract_coverage_percent": 13.0,
   "summary": {
-    "endpoint_count": 613,
-    "documented_endpoint_count": 253,
-    "undocumented_endpoint_count": 360,
-    "workstation_contract_count": 885,
-    "documented_workstation_contract_count": 103,
-    "undocumented_workstation_contract_count": 782
+    "endpoint_count": 617,
+    "documented_endpoint_count": 254,
+    "undocumented_endpoint_count": 363,
+    "workstation_contract_count": 906,
+    "documented_workstation_contract_count": 118,
+    "undocumented_workstation_contract_count": 788
   },
   "endpoints": [
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:449",
+      "source": "src/Meridian/UiServer.cs:603",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:483",
+      "source": "src/Meridian/UiServer.cs:637",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:530",
+      "source": "src/Meridian/UiServer.cs:687",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:549",
+      "source": "src/Meridian/UiServer.cs:708",
       "documented": true
     },
     {
@@ -449,229 +449,229 @@
     {
       "method": "POST",
       "path": "/api/auth/logout",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:130",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:144",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/me",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:150",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:164",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/roles",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:171",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:185",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/accounts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:177",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:191",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/auth/accounts/{username}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:200",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:214",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/accounts/{username}/password-reset",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:238",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:252",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/accounts/{username}/disable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:298",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:312",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/sessions/revoke",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:358",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:372",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:389",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:403",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/role-profiles",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:413",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:427",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/access-assignments",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:465",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:479",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/access-assignments",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:506",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:520",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/auth/access-assignments/{assignmentId}/revoke",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:546",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:560",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:33",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:38",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:43",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:53",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/run/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:56",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:71",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:84",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:127",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/progress",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:112",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:190",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/metadata",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:134",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:217",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/statuses",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:144",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:228",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/fallback-chain",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:155",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:245",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/providers/dry-run-plan",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:167",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:263",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:186",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:293",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:28",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:31",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/resolve/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:50",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:63",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/gap-fill",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:68",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:89",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/presets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:96",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:157",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/executions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:111",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:173",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/statistics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:129",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:196",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/schedules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:159",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:236",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/schedules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:174",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:258",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/schedules/{id}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:189",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:300",
       "documented": true
     },
     {
       "method": "DELETE",
       "path": "/api/backfill/schedules/{id}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:200",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:321",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/schedules/{id}/enable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:216",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:344",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/schedules/{id}/disable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:231",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:367",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/schedules/{id}/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:246",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:390",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/schedules/{id}/history",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:271",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:452",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/schedules/templates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:284",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:471",
       "documented": false
     },
     {
@@ -702,7 +702,7 @@
       "method": "POST",
       "path": "/api/dev/seed/bank-transactions",
       "source": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:254",
-      "documented": false
+      "documented": true
     },
     {
       "method": "GET",
@@ -953,37 +953,37 @@
     {
       "method": "POST",
       "path": "/api/strategies/covered-call/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:25",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:28",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/covered-call/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:53",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:63",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/covered-call/runs/{runId}/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:71",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:88",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/covered-call/runs/{runId}/result",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:94",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:118",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/strategies/covered-call/runs/{runId}/cancel",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:136",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:167",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/strategies/covered-call/chain-preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:159",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:197",
       "documented": false
     },
     {
@@ -1259,25 +1259,25 @@
     {
       "method": "GET",
       "path": "/api/demo/mode",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:71",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:78",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/symbols",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:88",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:95",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/market-data/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:102",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:111",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/historical/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:132",
       "documented": false
     },
     {
@@ -1397,73 +1397,73 @@
     {
       "method": "GET",
       "path": "/api/projections/{projectionRunId:guid}/flows",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:923",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:928",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/journals/{journalEntryId:guid}/post",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:940",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:945",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reconciliation/{runId:guid}/results",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:992",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:998",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reconciliation/exceptions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1001",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1007",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/reconciliation/exceptions/{exceptionId:guid}/resolve",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1010",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1016",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/servicer-reports",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1032",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1039",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/servicer-reports/{batchId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1059",
-      "documented": true
-    },
-    {
-      "method": "GET",
-      "path": "/api/servicer-reports/{batchId:guid}/position-lines",
       "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1067",
       "documented": true
     },
     {
       "method": "GET",
+      "path": "/api/servicer-reports/{batchId:guid}/position-lines",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1075",
+      "documented": true
+    },
+    {
+      "method": "GET",
       "path": "/api/servicer-reports/{batchId:guid}/transaction-lines",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1076",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1084",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/loans/rebuild-checkpoints",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1085",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1093",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/loans/portfolio",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1094",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1102",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/loans/rebuild-all",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1105",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1113",
       "documented": true
     },
     {
@@ -1523,37 +1523,37 @@
     {
       "method": "GET",
       "path": "/api/export/formats",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:121",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:157",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/export/quality-report",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:160",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:218",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/export/orderflow",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:204",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:234",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/export/integrity",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:255",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:298",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/export/strategy-package",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:336",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:418",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/export/research-package",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:341",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:425",
       "documented": false
     },
     {
@@ -1565,37 +1565,37 @@
     {
       "method": "POST",
       "path": "/api/failover/config",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:72",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:65",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/failover/rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:95",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:113",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/failover/rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:125",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:134",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/failover/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:227",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:334",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/workstation/desktop/launch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:27",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:29",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/desktop-launch/{ticket}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:50",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:52",
       "documented": false
     },
     {
@@ -1877,85 +1877,103 @@
     {
       "method": "GET",
       "path": "/api/ledger/accounting-configuration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:14",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:15",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/chart",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:42",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:43",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/templates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:73",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:74",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:104",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:105",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/promotion-approvals",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:135",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:136",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/test-cases",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:171",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:172",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:202",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:203",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/dry-run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:237",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:238",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/candidates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:278",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:279",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/accounting-configuration/asset-accounting/events/project",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:322",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/accounting-configuration/asset-accounting/events/lifecycle",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:376",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:417",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/candidates/post",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:321",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:474",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/projection-sets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:365",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:531",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/tests",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:408",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:574",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/activate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:449",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:615",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/accounting-configuration/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:484",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:650",
       "documented": true
     },
     {
@@ -2087,103 +2105,103 @@
     {
       "method": "POST",
       "path": "/api/ledger/close-management/period-reopen",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:968",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:976",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/reports/accounting-package",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1039",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1047",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/reports/accounting-package/certification",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1090",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1098",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/accounting-packages",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1143",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1156",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1180",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1198",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/journal-entry-workbench",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1226",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1249",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/activity",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1252",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1275",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/fund-event-record",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1284",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1307",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/fund-event-command-center",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1327",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1350",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/capital-account-subledger",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1368",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1391",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/report-output",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1429",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1452",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/capital-account-workbench",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1500",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1523",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/drafts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1547",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1570",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/validate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1606",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1629",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/submit-approval",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1652",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1675",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/evidence",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1697",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1720",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1740",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1763",
       "documented": true
     },
     {
@@ -2638,80 +2656,86 @@
     },
     {
       "method": "GET",
+      "path": "/api/providers/data-projection",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:16",
+      "documented": false
+    },
+    {
+      "method": "GET",
       "path": "/api/config/datasources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:53",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:54",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/datasources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:72",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:73",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/datasources/defaults",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:192",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:202",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/datasources/failover",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:225",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:235",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/configure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:257",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:267",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/comparison",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:280",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:290",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/readiness",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:351",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:361",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/providers/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:363",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:373",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/metrics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:476",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:488",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/catalog",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:560",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:572",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/catalog/{providerId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:606",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:618",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/config/data-sources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:623",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:635",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/data-sources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:641",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:653",
       "documented": true
     },
     {
@@ -3149,127 +3173,127 @@
     {
       "method": "POST",
       "path": "/api/security-master/conflicts/{conflictId:guid}/resolve",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:777",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:770",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/import",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:824",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:811",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/security-master/ingest/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:855",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:842",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/operator-overrides",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:876",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:863",
       "documented": false
     },
     {
       "method": "PATCH",
       "path": "/api/security-master/{securityId:guid}/operator-overrides",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:900",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:887",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/operator-overrides/decision",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:935",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:917",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/pricing-hierarchy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1134",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1116",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/security-master/{securityId:guid}/pricing-hierarchy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1148",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1130",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/raw-price",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1178",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1160",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/price-golden-copy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1208",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1190",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/price-comparison",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1222",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1204",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/cashflow-source",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1239",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1221",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/security-master/{securityId:guid}/cashflow-source",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1252",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1234",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/cashflow-projections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1280",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1262",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/data-entitlements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1303",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1285",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/data-entitlements/expiring",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1313",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1295",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/data-entitlements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1325",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1307",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/security-master/data-entitlements/{entitlementId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1353",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1335",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/quality-report/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1385",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1367",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/quality-report/latest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1403",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1382",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/exceptions/aging",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1419",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1398",
       "documented": false
     },
     {
@@ -3683,13 +3707,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2642",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2799",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2763",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2940",
       "documented": false
     }
   ],
@@ -3731,232 +3755,232 @@
     },
     {
       "name": "WorkstationBrokerageSyncHealth",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:7",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:8",
       "documented": false
     },
     {
       "name": "BrokerageAccountKindDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:17",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:18",
       "documented": false
     },
     {
       "name": "BrokerageConnectionStateDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:26",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:27",
       "documented": false
     },
     {
       "name": "WorkstationBrokerageSyncRunRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:35",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:36",
       "documented": false
     },
     {
       "name": "WorkstationBrokerageAccountDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:42",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:43",
       "documented": false
     },
     {
       "name": "WorkstationBrokerageAccountLinkDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:51",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:52",
       "documented": false
     },
     {
       "name": "BrokerageAccountLinkRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:60",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:61",
       "documented": false
     },
     {
       "name": "WorkstationBrokerageSyncStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:67",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:68",
       "documented": false
     },
     {
       "name": "BrokerageConnectionStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:85",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:86",
       "documented": false
     },
     {
       "name": "AlpacaBrokerageConnectionRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:102",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:103",
       "documented": false
     },
     {
       "name": "BrokeragePortfolioPerformancePointDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:107",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:108",
       "documented": false
     },
     {
       "name": "BrokeragePortfolioPerformanceDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:113",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:114",
       "documented": false
     },
     {
       "name": "BrokerageCashFlowEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:129",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:130",
       "documented": false
     },
     {
       "name": "BrokerageCashFlowSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:139",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:140",
       "documented": false
     },
     {
       "name": "BrokerageHouseholdAccountDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:154",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:155",
       "documented": false
     },
     {
       "name": "BrokerageHouseholdPositionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:170",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:171",
       "documented": false
     },
     {
       "name": "BrokerageHouseholdPortfolioDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:187",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:188",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageBalanceSnapshotDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:198",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:199",
       "documented": false
     },
     {
       "name": "FundAccountBrokeragePositionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:205",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:206",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageOrderDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:218",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:219",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageFillDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:232",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:233",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageCashTransactionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:244",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:245",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageCorporateActionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:253",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:254",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageSyncActivityDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:265",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:266",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:281",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:282",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationCheckStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:289",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:290",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationBreakSignOffStateDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:297",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:298",
       "documented": false
     },
     {
       "name": "ProviderSecurityMasterPassportStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:305",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:306",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:312",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:313",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationCheckDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:320",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:322",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationBreakDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:333",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:335",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:357",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:359",
       "documented": false
     },
     {
       "name": "ProviderSecurityMasterPassportDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:377",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:379",
       "documented": false
     },
     {
       "name": "ProviderShadowBookComparisonLineDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:399",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:401",
       "documented": false
     },
     {
       "name": "ProviderShadowBookComparisonDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:410",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:412",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionReadinessLineDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:420",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:422",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionEvidenceCandidateDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:429",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:431",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionLedgerEffectDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:447",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:449",
       "documented": false
     },
     {
       "name": "ProviderSecurityMasterScheduleFeedDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:464",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:466",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:488",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:490",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationDetailDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:520",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:522",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:532",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:535",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessComponentDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:538",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:541",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessBlockerDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:552",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:555",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessActionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:560",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:563",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:566",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:569",
       "documented": false
     },
     {
@@ -4017,7 +4041,7 @@
     {
       "name": "ApprovalDecision",
       "source": "src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:30",
-      "documented": false
+      "documented": true
     },
     {
       "name": "FxConversionReference",
@@ -4082,12 +4106,12 @@
     {
       "name": "DailyValuationScheduleStateDto",
       "source": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:7",
-      "documented": false
+      "documented": true
     },
     {
       "name": "DailyValuationScheduleStatusDto",
       "source": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:22",
-      "documented": false
+      "documented": true
     },
     {
       "name": "DailyValuationBatchLifecycleRequestDto",
@@ -4097,7 +4121,7 @@
     {
       "name": "DailyValuationBatchLifecycleResultDto",
       "source": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:67",
-      "documented": false
+      "documented": true
     },
     {
       "name": "IngestionOperationsSnapshotDto",
@@ -4461,117 +4485,117 @@
     },
     {
       "name": "EvidenceVaultArtifactDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:419",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:421",
       "documented": false
     },
     {
       "name": "EvidenceSupportRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:436",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:438",
       "documented": false
     },
     {
       "name": "EvidenceRequestListKindDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:450",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:452",
       "documented": false
     },
     {
       "name": "EvidenceRequestListDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:460",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:462",
       "documented": false
     },
     {
       "name": "EvidenceVaultRequestListQueryDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:476",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:478",
       "documented": false
     },
     {
       "name": "EvidenceVaultRequestListEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:486",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:492",
       "documented": false
     },
     {
       "name": "EvidenceVaultDocumentQueryDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:509",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:515",
       "documented": false
     },
     {
       "name": "EvidenceVaultDocumentEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:522",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:528",
       "documented": false
     },
     {
       "name": "EvidenceVaultDocumentReviewRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:533",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:539",
       "documented": false
     },
     {
       "name": "EvidenceVaultDocumentReviewResponseDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:543",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:549",
       "documented": false
     },
     {
       "name": "EvidenceVaultIntakeRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:547",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:553",
       "documented": false
     },
     {
       "name": "EvidenceVaultIntakeResponseDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:574",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:580",
       "documented": false
     },
     {
       "name": "EvidenceLifecycleMetadataDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:591",
-      "documented": false
-    },
-    {
-      "name": "EvidenceSubjectLinkageDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:597",
       "documented": false
     },
     {
+      "name": "EvidenceSubjectLinkageDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:603",
+      "documented": false
+    },
+    {
       "name": "EvidenceVaultLookupRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:607",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:613",
       "documented": false
     },
     {
       "name": "EvidenceEndpointErrorDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:617",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:627",
       "documented": false
     },
     {
       "name": "EvidenceCompletenessDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:625",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:635",
       "documented": true
     },
     {
       "name": "EvidencePacketDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:647",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:657",
       "documented": false
     },
     {
       "name": "EvidenceGraphDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:659",
-      "documented": false
-    },
-    {
-      "name": "EvidenceTemplateExportSettingsDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:669",
       "documented": false
     },
     {
+      "name": "EvidenceTemplateExportSettingsDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:679",
+      "documented": false
+    },
+    {
       "name": "EvidenceTemplateDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:674",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:684",
       "documented": false
     },
     {
       "name": "EvidencePacketExportRequest",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:681",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:691",
       "documented": false
     },
     {
       "name": "EvidencePacketExportResponse",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:690",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:702",
       "documented": false
     },
     {
@@ -4705,44 +4729,74 @@
       "documented": false
     },
     {
+      "name": "SampleWorkspaceDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:23",
+      "documented": false
+    },
+    {
+      "name": "SampleHoldingDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:38",
+      "documented": false
+    },
+    {
+      "name": "SampleBreakDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:46",
+      "documented": false
+    },
+    {
+      "name": "SampleArtifactDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:55",
+      "documented": false
+    },
+    {
+      "name": "SampleMarketHistoryDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:57",
+      "documented": false
+    },
+    {
+      "name": "SampleHighlightDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:59",
+      "documented": false
+    },
+    {
       "name": "WorkspaceModeDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:12",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:61",
       "documented": false
     },
     {
       "name": "StarterWorkspaceDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:20",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:69",
       "documented": false
     },
     {
       "name": "ActivationOutcomeDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:27",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:76",
       "documented": false
     },
     {
       "name": "RecommendedActionDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:35",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:84",
       "documented": true
     },
     {
       "name": "CompleteFirstRunRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:37",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:86",
       "documented": false
     },
     {
       "name": "CompleteActivationOutcomeRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:43",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:92",
       "documented": false
     },
     {
       "name": "DesktopLaunchTicketRedemptionDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:45",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:94",
       "documented": false
     },
     {
       "name": "FundLedgerScope",
       "source": "src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:8",
-      "documented": false
+      "documented": true
     },
     {
       "name": "FundLedgerQuery",
@@ -4817,7 +4871,7 @@
     {
       "name": "FundPortfolioPosition",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:118",
-      "documented": false
+      "documented": true
     },
     {
       "name": "CashFinancingSummary",
@@ -5017,7 +5071,7 @@
     {
       "name": "FundOperationsWorkspaceDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:460",
-      "documented": true
+      "documented": false
     },
     {
       "name": "FundReportPackPreviewRequestDto",
@@ -5291,442 +5345,442 @@
     },
     {
       "name": "ReportingFinalityDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1236",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1237",
       "documented": false
     },
     {
       "name": "ReportingRunReadinessStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1243",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1244",
       "documented": false
     },
     {
       "name": "ReportingRunScopeDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1250",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1251",
       "documented": false
     },
     {
       "name": "ReportingLedgerBookSelectionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1258",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1259",
       "documented": false
     },
     {
       "name": "ReportingRunParametersDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1262",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1263",
       "documented": false
     },
     {
       "name": "ReportingRunReadinessCheckDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1280",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1281",
       "documented": false
     },
     {
       "name": "ReportingRunReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1294",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1295",
       "documented": false
     },
     {
       "name": "ReportingRunRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1306",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1307",
       "documented": true
     },
     {
       "name": "ReportingRunResultDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1319",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1320",
       "documented": false
     },
     {
       "name": "ReportingRunAuditEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1322",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1323",
       "documented": false
     },
     {
       "name": "ReportingRunAuditTrailDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1329",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1330",
       "documented": true
     },
     {
       "name": "ReportPackWorkflowStateDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1352",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1353",
       "documented": false
     },
     {
       "name": "VersionedReportTemplateIdDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1365",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1366",
       "documented": false
     },
     {
       "name": "ReportTemplateParameterDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1367",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1368",
       "documented": false
     },
     {
       "name": "ReportWriterGridKindDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1370",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1371",
       "documented": false
     },
     {
       "name": "ReportWriterAggregateFunctionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1379",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1380",
       "documented": false
     },
     {
       "name": "ReportWriterMetricDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1387",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1388",
       "documented": false
     },
     {
       "name": "ReportWriterFormulaDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1393",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1394",
       "documented": false
     },
     {
       "name": "ReportWriterFilterOperatorDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1400",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1401",
       "documented": false
     },
     {
       "name": "ReportWriterFilterDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1414",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1415",
       "documented": false
     },
     {
       "name": "ReportWriterGridDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1420",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1421",
       "documented": false
     },
     {
       "name": "ReportWriterCellStyleDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1437",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1438",
       "documented": false
     },
     {
       "name": "ReportWriterFormatRuleDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1445",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1446",
       "documented": false
     },
     {
       "name": "ReportWriterChartTypeDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1454",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1455",
       "documented": false
     },
     {
       "name": "ReportWriterChartDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1462",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1463",
       "documented": false
     },
     {
       "name": "ReportWriterChartSeriesDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1468",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1469",
       "documented": false
     },
     {
       "name": "ReportWriterChartRenderDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1473",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1474",
       "documented": false
     },
     {
       "name": "ReportWriterGridColumnDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1481",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1482",
       "documented": false
     },
     {
       "name": "ReportWriterGridRowDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1486",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1487",
       "documented": false
     },
     {
       "name": "ReportWriterMetricLineageDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1491",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1492",
       "documented": false
     },
     {
       "name": "ReportWriterFormulaLineageDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1496",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1497",
       "documented": false
     },
     {
       "name": "ReportWriterFilterLineageDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1501",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1502",
       "documented": false
     },
     {
       "name": "ReportWriterGridDataDictionaryFieldDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1507",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1508",
       "documented": false
     },
     {
       "name": "ReportWriterGridValidationCheckDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1516",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1517",
       "documented": false
     },
     {
       "name": "ReportWriterGridLineageDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1521",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1522",
       "documented": false
     },
     {
       "name": "ReportWriterGridRenderDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1530",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1531",
       "documented": false
     },
     {
       "name": "ReportWriterDiffRowStateDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1544",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1545",
       "documented": false
     },
     {
       "name": "ReportWriterDiffDirectionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1553",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1554",
       "documented": false
     },
     {
       "name": "ReportWriterGridDiffCellDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1559",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1560",
       "documented": false
     },
     {
       "name": "ReportWriterGridDiffRowDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1566",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1567",
       "documented": false
     },
     {
       "name": "ReportWriterGridDiffDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1573",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1574",
       "documented": false
     },
     {
       "name": "ReportAccessModeDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1586",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1587",
       "documented": false
     },
     {
       "name": "ReportAccessPrincipalKindDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1594",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1595",
       "documented": false
     },
     {
       "name": "ReportAccessPrincipalDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1600",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1601",
       "documented": false
     },
     {
       "name": "ReportAccessPolicyDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1605",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1606",
       "documented": false
     },
     {
       "name": "ReportAccessEvaluationDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1612",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1613",
       "documented": false
     },
     {
       "name": "ReportTemplateDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1617",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1618",
       "documented": false
     },
     {
       "name": "RenderReportTemplateRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1625",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1626",
       "documented": false
     },
     {
       "name": "RenderReportTemplateResponseDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1630",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1631",
       "documented": false
     },
     {
       "name": "ReportTemplateLifecycleStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1638",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1639",
       "documented": false
     },
     {
       "name": "ReportTemplateAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1646",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1647",
       "documented": false
     },
     {
       "name": "ReportTemplateGovernanceRecordDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1654",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1655",
       "documented": false
     },
     {
       "name": "ReportTemplateDraftRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1678",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1679",
       "documented": false
     },
     {
       "name": "ReportTemplateDecisionRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1689",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1690",
       "documented": false
     },
     {
       "name": "ReportPackAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1693",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1694",
       "documented": false
     },
     {
       "name": "ReportPackEvidenceLinkDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1695",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1696",
       "documented": false
     },
     {
       "name": "ReportPackChangedLineDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1696",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1697",
       "documented": true
     },
     {
       "name": "ReportPackLineProvenanceDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1697",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1698",
       "documented": false
     },
     {
       "name": "ReportPackPublicationManifestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1715",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1716",
       "documented": false
     },
     {
       "name": "ReportPackPublishRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1728",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1729",
       "documented": false
     },
     {
       "name": "ReportPackWorkflowActionRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1738",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1739",
       "documented": false
     },
     {
       "name": "ReportPackRejectRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1741",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1742",
       "documented": false
     },
     {
       "name": "ReportPackCreateRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1746",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1747",
       "documented": false
     },
     {
       "name": "ReportPackRestatementMetadataDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1754",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1755",
       "documented": false
     },
     {
       "name": "ReportPackRejectionMetadataDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1761",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1762",
       "documented": false
     },
     {
       "name": "ReportPackRestateRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1767",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1768",
       "documented": false
     },
     {
       "name": "ReportPackWorkflowRecordDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1773",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1774",
       "documented": false
     },
     {
       "name": "FundWorkflowOverallStatus",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:2",
-      "documented": false
-    },
-    {
-      "name": "FundWorkflowStage",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:4",
       "documented": false
     },
     {
-      "name": "FundWorkflowSubStatus",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:5",
-      "documented": false
-    },
-    {
-      "name": "FundWorkflowRejectionReasonCode",
+      "name": "FundWorkflowStage",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:6",
       "documented": false
     },
     {
-      "name": "FundWorkflowCommandMetadata",
+      "name": "FundWorkflowSubStatus",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:7",
       "documented": false
     },
     {
-      "name": "StartWorkflow",
+      "name": "FundWorkflowRejectionReasonCode",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:8",
+      "documented": false
+    },
+    {
+      "name": "FundWorkflowCommandMetadata",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:9",
+      "documented": false
+    },
+    {
+      "name": "StartWorkflow",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:18",
       "documented": true
     },
     {
       "name": "ImportBrokerData",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:10",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:19",
       "documented": false
     },
     {
       "name": "NormalizeBrokerTransactions",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:11",
-      "documented": false
-    },
-    {
-      "name": "ResolveSecurityMasterMappings",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:12",
-      "documented": false
-    },
-    {
-      "name": "ApproveSecurityMasterOverrides",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:13",
-      "documented": false
-    },
-    {
-      "name": "BuildLedgerDraft",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:14",
-      "documented": false
-    },
-    {
-      "name": "ValidateLedgerDraft",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:15",
-      "documented": false
-    },
-    {
-      "name": "PostLedgerEntries",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:16",
-      "documented": false
-    },
-    {
-      "name": "RunReconciliation",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:17",
-      "documented": false
-    },
-    {
-      "name": "ResolveBreakCase",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:18",
-      "documented": false
-    },
-    {
-      "name": "SubmitForApproval",
-      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:19",
-      "documented": true
-    },
-    {
-      "name": "ApproveWorkflow",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:20",
       "documented": false
     },
     {
-      "name": "RejectWorkflow",
+      "name": "ResolveSecurityMasterMappings",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:21",
       "documented": false
     },
     {
-      "name": "CloseWorkflow",
+      "name": "ApproveSecurityMasterOverrides",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:22",
       "documented": false
     },
     {
-      "name": "ReopenWorkflow",
+      "name": "BuildLedgerDraft",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:23",
       "documented": false
     },
     {
-      "name": "FundWorkflowState",
+      "name": "ValidateLedgerDraft",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24",
+      "documented": false
+    },
+    {
+      "name": "PostLedgerEntries",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:25",
+      "documented": false
+    },
+    {
+      "name": "RunReconciliation",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:26",
+      "documented": false
+    },
+    {
+      "name": "ResolveBreakCase",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:27",
+      "documented": false
+    },
+    {
+      "name": "SubmitForApproval",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:28",
+      "documented": true
+    },
+    {
+      "name": "ApproveWorkflow",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:29",
+      "documented": false
+    },
+    {
+      "name": "RejectWorkflow",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:30",
+      "documented": false
+    },
+    {
+      "name": "CloseWorkflow",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:31",
+      "documented": false
+    },
+    {
+      "name": "ReopenWorkflow",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:32",
+      "documented": false
+    },
+    {
+      "name": "FundWorkflowState",
+      "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:33",
       "documented": false
     },
     {
@@ -5771,422 +5825,387 @@
     },
     {
       "name": "NullReportingRunNotifier",
-      "source": "src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:15",
+      "source": "src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:21",
       "documented": true
     },
     {
-      "name": "MarginControlAccountDto",
-      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:4",
-      "documented": false
-    },
-    {
-      "name": "MarginPositionContributionDto",
-      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:35",
-      "documented": false
-    },
-    {
-      "name": "MarginControlPrimeSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:48",
-      "documented": false
-    },
-    {
-      "name": "MarginControlAlertDto",
-      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:56",
-      "documented": false
-    },
-    {
-      "name": "MarginControlCenterDto",
-      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:64",
-      "documented": false
-    },
-    {
-      "name": "MarginCertificationRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:76",
-      "documented": false
-    },
-    {
-      "name": "MarginCertificationResultDto",
-      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:83",
-      "documented": false
-    },
-    {
       "name": "OperationsWorkflowStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:11",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:12",
       "documented": false
     },
     {
       "name": "OperationsGateStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:28",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:29",
       "documented": false
     },
     {
       "name": "OperationsGateKeyDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:41",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:42",
       "documented": true
     },
     {
       "name": "OperationsBrokerIntakeStateDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:51",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:52",
       "documented": false
     },
     {
       "name": "OperationsSecurityMasterStateDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:61",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:62",
       "documented": false
     },
     {
       "name": "OperationsLedgerPostingStateDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:71",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:72",
       "documented": false
     },
     {
       "name": "OperationsReconciliationStateDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:81",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:82",
       "documented": false
     },
     {
       "name": "OperationsReconciliationLaneStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:92",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:93",
       "documented": false
     },
     {
       "name": "OperationsApprovalStateDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:101",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:102",
       "documented": false
     },
     {
       "name": "OperationsIssueCodeDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:439",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:445",
       "documented": false
     },
     {
       "name": "OperationsActionOriginDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:461",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:467",
       "documented": false
     },
     {
       "name": "OperationsStartWorkflowRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:468",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:474",
       "documented": true
     },
     {
       "name": "OperationsTransitionRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:479",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:485",
       "documented": false
     },
     {
       "name": "OperationsSecurityMasterOverrideApprovalRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:487",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:493",
       "documented": false
     },
     {
       "name": "OperationsGatePostureRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:498",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:504",
       "documented": false
     },
     {
       "name": "OperationsSecurityMasterResolveRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:518",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:524",
       "documented": false
     },
     {
       "name": "OperationsLedgerDraftRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:530",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:536",
       "documented": false
     },
     {
       "name": "OperationsLedgerValidationRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:544",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:550",
       "documented": false
     },
     {
       "name": "OperationsLedgerPostRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:554",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:560",
       "documented": true
     },
     {
       "name": "OperationsLedgerJournalCandidateDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:568",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:574",
       "documented": true
     },
     {
       "name": "OperationsLedgerJournalLineDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:590",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:597",
       "documented": false
     },
     {
       "name": "OperationsJournalEntryMetadataDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:606",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:613",
       "documented": false
     },
     {
       "name": "OperationsReconciliationRunRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:621",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:628",
       "documented": false
     },
     {
       "name": "OperationsResolveBreakCaseRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:639",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:646",
       "documented": false
     },
     {
       "name": "OperationsAssignBreakCaseRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:648",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:658",
       "documented": false
     },
     {
       "name": "OperationsSubmitApprovalRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:660",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:670",
       "documented": false
     },
     {
       "name": "OperationsApprovalDecisionRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:671",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:681",
       "documented": false
     },
     {
       "name": "OperationsRejectWorkflowRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:682",
-      "documented": false
-    },
-    {
-      "name": "OperationsCloseWorkflowRequestDto",
       "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:692",
       "documented": false
     },
     {
+      "name": "OperationsCloseWorkflowRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:702",
+      "documented": false
+    },
+    {
       "name": "OperationsReopenWorkflowRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:712",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:722",
       "documented": false
     },
     {
       "name": "OperationsChecklistControlApprovalDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:725",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:735",
       "documented": false
     },
     {
       "name": "OperationsApprovalPolicyMatrixDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:730",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:740",
       "documented": false
     },
     {
       "name": "OperationsApprovalPolicyMatrixRowDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:736",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:746",
       "documented": false
     },
     {
       "name": "OperationsApprovalPolicyRuleUpsertRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:754",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:764",
       "documented": false
     },
     {
       "name": "OperationsApprovalPolicyRuleUpsertResultDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:775",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:785",
       "documented": false
     },
     {
       "name": "OperationsApprovalPolicyRuleAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:780",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:790",
       "documented": false
     },
     {
       "name": "OperationsCloseCalendarDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:795",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:805",
       "documented": false
     },
     {
       "name": "OperationsCloseCalendarItemDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:799",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:809",
       "documented": false
     },
     {
       "name": "OperationsCloseCalendarItemUpsertRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:821",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:831",
       "documented": false
     },
     {
       "name": "OperationsCloseCalendarItemUpsertResultDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:830",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:840",
       "documented": false
     },
     {
       "name": "OperationsCloseCalendarItemAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:835",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:845",
       "documented": false
     },
     {
       "name": "OperationsTransitionResultDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:849",
-      "documented": false
-    },
-    {
-      "name": "OperationsContinuityWorkflowSummaryDto",
       "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:859",
       "documented": false
     },
     {
+      "name": "OperationsContinuityWorkflowSummaryDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:998",
+      "documented": false
+    },
+    {
       "name": "OperationsReviewedAutomationSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:873",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1012",
       "documented": false
     },
     {
       "name": "OperationsReviewedAutomationArtifactDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:892",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1031",
       "documented": false
     },
     {
       "name": "OperationsContinuityWorkflowDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:909",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1048",
       "documented": false
     },
     {
       "name": "OperationsDashboardSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:947",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1086",
       "documented": false
     },
     {
       "name": "OperationsDashboardMetricDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:963",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1102",
       "documented": false
     },
     {
       "name": "OperationsEvidencePackageSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:977",
-      "documented": false
-    },
-    {
-      "name": "OperationsReconciliationLaneSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:994",
-      "documented": false
-    },
-    {
-      "name": "OperationsAccountingRecordSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1005",
-      "documented": false
-    },
-    {
-      "name": "OperationsAccountingRecordEvidenceCategoryDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1015",
-      "documented": false
-    },
-    {
-      "name": "OperationsCloseChecklistTaskDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1024",
-      "documented": false
-    },
-    {
-      "name": "OperationsClosePackagePublicationDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1041",
-      "documented": false
-    },
-    {
-      "name": "OperationsChecklistAcknowledgeRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1059",
-      "documented": false
-    },
-    {
-      "name": "OperationsGateDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1065",
-      "documented": false
-    },
-    {
-      "name": "OperationsTimelineEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1076",
-      "documented": false
-    },
-    {
-      "name": "OperationsWorkflowAuditDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1096",
-      "documented": false
-    },
-    {
-      "name": "OperationsBreakCaseDto",
       "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1116",
       "documented": false
     },
     {
-      "name": "OperationsContinuityCorrelationKeysDto",
+      "name": "OperationsReconciliationLaneSummaryDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1133",
+      "documented": false
+    },
+    {
+      "name": "OperationsAccountingRecordSummaryDto",
       "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1144",
       "documented": false
     },
     {
+      "name": "OperationsAccountingRecordEvidenceCategoryDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1154",
+      "documented": false
+    },
+    {
+      "name": "OperationsCloseChecklistTaskDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1163",
+      "documented": false
+    },
+    {
+      "name": "OperationsClosePackagePublicationDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1180",
+      "documented": false
+    },
+    {
+      "name": "OperationsChecklistAcknowledgeRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1198",
+      "documented": false
+    },
+    {
+      "name": "OperationsGateDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1204",
+      "documented": false
+    },
+    {
+      "name": "OperationsTimelineEntryDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1215",
+      "documented": false
+    },
+    {
+      "name": "OperationsWorkflowAuditDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1236",
+      "documented": false
+    },
+    {
+      "name": "OperationsBreakCaseDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1257",
+      "documented": false
+    },
+    {
+      "name": "OperationsContinuityCorrelationKeysDto",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1293",
+      "documented": false
+    },
+    {
       "name": "OperationsApprovalDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1152",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1301",
       "documented": false
     },
     {
       "name": "OperationsLedgerPreviewDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1162",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1311",
       "documented": false
     },
     {
       "name": "OperationsReportPackReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1169",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1318",
       "documented": false
     },
     {
       "name": "OperationsCloseReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1175",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1324",
       "documented": false
     },
     {
       "name": "OperationsCloseReadinessComponentDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1184",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1333",
       "documented": false
     },
     {
       "name": "OperationsCloseReadinessBlockerDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1195",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1344",
       "documented": false
     },
     {
       "name": "OperationsWorkflowBlockerDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1203",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1352",
       "documented": false
     },
     {
       "name": "OperationsNextActionDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1211",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1360",
       "documented": false
     },
     {
       "name": "OperationsEvidenceLinkDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1220",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1369",
       "documented": false
     },
     {
       "name": "PrivateCapitalCloseCockpitWorkflowDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1227",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1376",
       "documented": false
     },
     {
       "name": "PrivateCapitalCloseCockpitLaneDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1241",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1390",
       "documented": false
     },
     {
       "name": "PrivateCapitalCloseCockpitApprovalDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1256",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1405",
       "documented": false
     },
     {
       "name": "PrivateCapitalNavSupportComponentDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1271",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1420",
       "documented": false
     },
     {
       "name": "PrivateCapitalShadowNavTieOutDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1280",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1429",
       "documented": false
     },
     {
       "name": "PrivateCapitalNavSupportPackageDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1299",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1448",
       "documented": false
     },
     {
       "name": "PrivateCapitalCloseCockpitDto",
-      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1318",
+      "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1467",
       "documented": false
     },
     {
@@ -6236,253 +6255,293 @@
     },
     {
       "name": "ReconciliationSourceKind",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:11",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:14",
       "documented": false
     },
     {
       "name": "ReconciliationBreakStatus",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:25",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:28",
       "documented": false
     },
     {
       "name": "ReconciliationBreakSeverity",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:38",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:41",
       "documented": false
     },
     {
       "name": "ReconciliationBreakCategory",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:51",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:54",
       "documented": true
     },
     {
       "name": "ReconciliationRunRequest",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:69",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:72",
       "documented": true
     },
     {
       "name": "ReconciliationRunSummary",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:83",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:86",
       "documented": true
     },
     {
       "name": "ReconciliationMatchDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:107",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:110",
       "documented": false
     },
     {
       "name": "ReconciliationBreakDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:121",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:124",
       "documented": true
     },
     {
       "name": "ReconciliationSecurityCoverageIssueDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:139",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:143",
       "documented": false
     },
     {
       "name": "ExpectedAccountingEventKindDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:152",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:156",
       "documented": false
     },
     {
       "name": "AccrualInputSnapshotDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:173",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:177",
       "documented": true
     },
     {
       "name": "AccrualCalculationResultDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:191",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:195",
       "documented": false
     },
     {
       "name": "ExpectedAccountingEventDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:207",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:211",
       "documented": false
     },
     {
       "name": "ExpectedJournalPreviewLineDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:232",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:236",
       "documented": false
     },
     {
       "name": "ExpectedJournalPreviewDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:242",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:246",
       "documented": true
     },
     {
       "name": "SecurityMasterAccountingIssueDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:255",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:259",
       "documented": false
     },
     {
       "name": "ReconciliationRunDetail",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:269",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:273",
       "documented": false
     },
     {
       "name": "ReconciliationBreakQueueStatus",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:288",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:292",
       "documented": false
     },
     {
       "name": "ReconciliationCaseLifecycleState",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:298",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:302",
       "documented": false
     },
     {
       "name": "ReconciliationCasePriority",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:314",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:318",
       "documented": false
     },
     {
       "name": "ReconciliationCaseSlaState",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:323",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:327",
       "documented": false
     },
     {
       "name": "ReconciliationCaseCommentVisibility",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:334",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:338",
       "documented": false
     },
     {
       "name": "ReconciliationCaseworkAction",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:342",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:346",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationBreakMeasureKindDto",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:365",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationBreakMeasureDto",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:376",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationBreakDispositionDto",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:386",
       "documented": false
     },
     {
       "name": "ReconciliationCalibrationStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:362",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:397",
       "documented": false
     },
     {
       "name": "ReconciliationBreakQueueItem",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:372",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:407",
       "documented": false
     },
     {
-      "name": "ReconciliationBreakExplanationDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:443",
-      "documented": false
-    },
-    {
-      "name": "ReconciliationCaseComment",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:451",
-      "documented": false
-    },
-    {
-      "name": "ReconciliationSlaPolicy",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:471",
-      "documented": false
-    },
-    {
-      "name": "ReconciliationSlaComputationResult",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:492",
-      "documented": false
-    },
-    {
-      "name": "ReconciliationTaxonomyValue",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:501",
-      "documented": false
-    },
-    {
-      "name": "ReconciliationTaxonomySnapshot",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:509",
-      "documented": false
-    },
-    {
-      "name": "ReconciliationCaseworkCommand",
+      "name": "ReconciliationBreakQueueScope",
       "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:514",
       "documented": false
     },
     {
-      "name": "ReconciliationBulkCaseworkRequest",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:539",
+      "name": "ReconciliationBreakExplanationDto",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:535",
       "documented": false
     },
     {
-      "name": "ReconciliationBulkCaseworkCaseResult",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:559",
+      "name": "ReconciliationCaseComment",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:543",
       "documented": false
     },
     {
-      "name": "ReconciliationBulkCaseworkResult",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:566",
+      "name": "ReconciliationSlaPolicy",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:563",
       "documented": false
     },
     {
-      "name": "ReconciliationCaseSignoffRecord",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:575",
-      "documented": false
-    },
-    {
-      "name": "ReconciliationBreakScore",
+      "name": "ReconciliationSlaComputationResult",
       "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:584",
       "documented": false
     },
     {
+      "name": "ReconciliationTaxonomyValue",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:593",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationTaxonomySnapshot",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:601",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationCaseworkCommand",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:606",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationCaseworkCloseScopeDto",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:647",
+      "documented": true
+    },
+    {
+      "name": "ReconciliationBulkCaseworkRequest",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:652",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationBulkCaseworkCaseResult",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:676",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationBulkCaseworkResult",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:683",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationCaseworkOperationResult",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:829",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationCaseSignoffRecord",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:836",
+      "documented": false
+    },
+    {
+      "name": "ReconciliationBreakScore",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:845",
+      "documented": false
+    },
+    {
       "name": "ReconciliationCaseStateTransition",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:597",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:858",
       "documented": false
     },
     {
       "name": "ReconciliationCaseTransitionAction",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:608",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:869",
       "documented": false
     },
     {
       "name": "ReconciliationCaseTransitionCommand",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:618",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:879",
       "documented": false
     },
     {
       "name": "ReconciliationCalibrationProfileSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:631",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:892",
       "documented": false
     },
     {
       "name": "ReconciliationCalibrationSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:648",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:909",
       "documented": false
     },
     {
       "name": "ReviewReconciliationBreakRequest",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:678",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:939",
       "documented": false
     },
     {
       "name": "ResolveReconciliationBreakRequest",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:688",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:949",
       "documented": false
     },
     {
       "name": "ReconciliationSchemaVersion",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:699",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:960",
       "documented": false
     },
     {
       "name": "ReconciliationCorrelationContext",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:709",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:970",
       "documented": false
     },
     {
       "name": "ReconciliationPayloadEnvelope",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:719",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:980",
       "documented": false
     },
     {
       "name": "ReconciliationJobControl",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:732",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:993",
       "documented": false
     },
     {
       "name": "ReconciliationProcessingTelemetry",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:747",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1008",
       "documented": false
     },
     {
       "name": "ReconciliationRolloutFlags",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:758",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1019",
       "documented": false
+    },
+    {
+      "name": "ReportingDeploymentComponentDto",
+      "source": "src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs:6",
+      "documented": false
+    },
+    {
+      "name": "ReportingDeploymentCapabilityDto",
+      "source": "src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs:16",
+      "documented": true
     },
     {
       "name": "InsightWidget",
@@ -6895,53 +6954,78 @@
       "documented": false
     },
     {
-      "name": "StatementAccountSnapshotPreviewDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:94",
-      "documented": false
-    },
-    {
-      "name": "StatementActivitySubtypeSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:116",
-      "documented": false
-    },
-    {
-      "name": "StatementActivityCompletenessDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:121",
-      "documented": false
-    },
-    {
       "name": "StatementKindSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:133",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:91",
       "documented": false
     },
     {
       "name": "StatementProfileSuggestionDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:97",
       "documented": false
     },
     {
       "name": "StatementImportPreviewDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:143",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:101",
       "documented": false
     },
     {
       "name": "StatementImportCommitResultDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:165",
-      "documented": false
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:116",
+      "documented": true
     },
     {
       "name": "StatementImportReconciliationCaseLinkDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:193",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:147",
+      "documented": false
+    },
+    {
+      "name": "StatementReconciliationReportWorkflowStatusDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:159",
+      "documented": false
+    },
+    {
+      "name": "StatementReconciliationReportArtifactDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:170",
+      "documented": false
+    },
+    {
+      "name": "StatementReconciliationReportArtifactGenerationDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:185",
+      "documented": false
+    },
+    {
+      "name": "StatementReconciliationAccountingScopeDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:199",
+      "documented": true
+    },
+    {
+      "name": "StatementReconciliationReportWorkflowDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:209",
+      "documented": false
+    },
+    {
+      "name": "StatementToReportWorkflowStatusDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:266",
+      "documented": false
+    },
+    {
+      "name": "StatementToReportArtifactDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:278",
+      "documented": false
+    },
+    {
+      "name": "StatementToReportWorkflowDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:293",
       "documented": false
     },
     {
       "name": "StatementFetchScheduleDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:204",
-      "documented": false
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:319",
+      "documented": true
     },
     {
       "name": "StatementFetchScheduleUpsertRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:218",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:336",
       "documented": false
     },
     {
@@ -7001,67 +7085,67 @@
     },
     {
       "name": "StatementReconciliationCaseDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:204",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:205",
       "documented": false
     },
     {
       "name": "StatementReconciliationCaseCommentThreadDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:227",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:228",
       "documented": false
     },
     {
       "name": "StatementReconciliationCaseCommentDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:232",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:233",
       "documented": false
     },
     {
       "name": "StatementReconciliationCaseAttachmentDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:239",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:240",
       "documented": false
     },
     {
       "name": "StatementReconciliationBreakExplanationDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:248",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:249",
       "documented": false
     },
     {
       "name": "StatementReconciliationCaseAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:257",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:258",
       "documented": false
     },
     {
       "name": "StatementRunDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:268",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:269",
       "documented": false
     },
     {
       "name": "StatementRunCreateDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:297",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:298",
       "documented": false
     },
     {
       "name": "StatementRunReconcileRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:315",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:316",
       "documented": false
     },
     {
       "name": "StatementRunSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:323",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:324",
       "documented": false
     },
     {
       "name": "StatementRunValidationDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:337",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:338",
       "documented": false
     },
     {
       "name": "StatementRunBreakDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:345",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:346",
       "documented": false
     },
     {
       "name": "StatementRunExceptionDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:360",
+      "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:361",
       "documented": false
     },
     {
@@ -7181,7 +7265,7 @@
     },
     {
       "name": "StrategyDesignRunBacktestResponse",
-      "source": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:165",
+      "source": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:211",
       "documented": true
     },
     {
@@ -7231,257 +7315,282 @@
     },
     {
       "name": "StrategyRunGovernanceSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:169",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:176",
       "documented": true
     },
     {
       "name": "StrategyRunIdentity",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:182",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:189",
       "documented": false
     },
     {
       "name": "StrategyRunSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:198",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:205",
       "documented": true
     },
     {
       "name": "StrategySweepObjectiveRanking",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:230",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:237",
       "documented": false
     },
     {
       "name": "StrategySweepResultGroup",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:239",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:246",
+      "documented": false
+    },
+    {
+      "name": "BiasDisclosureItemDto",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:260",
+      "documented": false
+    },
+    {
+      "name": "BiasDisclosureDto",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:271",
+      "documented": false
+    },
+    {
+      "name": "StrategyRunAcceptanceChecklistStatusDto",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:284",
+      "documented": false
+    },
+    {
+      "name": "StrategyRunAcceptanceChecklistItemDto",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:296",
+      "documented": false
+    },
+    {
+      "name": "StrategyRunEvidenceLoop",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:310",
       "documented": false
     },
     {
       "name": "StrategyRunDetail",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:252",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:450",
       "documented": true
     },
     {
       "name": "WorkstationSecurityCoverageStatus",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:267",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:486",
       "documented": false
     },
     {
       "name": "WorkstationSecurityReference",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:284",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:503",
       "documented": true
     },
     {
       "name": "PortfolioSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:308",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:527",
       "documented": true
     },
     {
       "name": "PortfolioPositionSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:344",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:563",
       "documented": true
     },
     {
       "name": "LedgerSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:364",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:583",
       "documented": true
     },
     {
       "name": "LedgerTrialBalanceLine",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:392",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:611",
       "documented": true
     },
     {
       "name": "LedgerJournalLine",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:413",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:632",
       "documented": true
     },
     {
       "name": "StrategyRunComparison",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:433",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:652",
       "documented": true
     },
     {
       "name": "StrategyRunArtifactCompleteness",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:455",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:674",
       "documented": false
     },
     {
       "name": "StrategyRunTimelineProjection",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:466",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:685",
       "documented": false
     },
     {
       "name": "StrategyRunLineageEventType",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:474",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:693",
       "documented": false
     },
     {
       "name": "StrategyRunHistoryQuery",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:484",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:703",
       "documented": false
     },
     {
       "name": "StrategyRunTimelineEntry",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:491",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:710",
       "documented": false
     },
     {
       "name": "StrategyRunCrossModeTransitionMetadata",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:506",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:725",
       "documented": false
     },
     {
       "name": "StrategyRunLineageTimelineEntry",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:517",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:736",
       "documented": false
     },
     {
       "name": "RunComparisonDto",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:535",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:754",
       "documented": false
     },
     {
       "name": "RunComparisonRequest",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:579",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:798",
       "documented": false
     },
     {
       "name": "RunDiffRequest",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:584",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:803",
       "documented": false
     },
     {
       "name": "StrategyRunDiff",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:587",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:806",
       "documented": false
     },
     {
       "name": "PositionDiffEntry",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:612",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:831",
       "documented": false
     },
     {
       "name": "ParameterDiff",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:621",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:840",
       "documented": false
     },
     {
       "name": "MetricsDiff",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:627",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:846",
       "documented": false
     },
     {
       "name": "EquityCurvePoint",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:650",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:869",
       "documented": false
     },
     {
       "name": "EquityCurveSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:659",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:878",
       "documented": false
     },
     {
       "name": "RunFillEntry",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:671",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:890",
       "documented": false
     },
     {
       "name": "RunFillSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:682",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:901",
       "documented": false
     },
     {
       "name": "SymbolAttributionEntry",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:690",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:909",
       "documented": false
     },
     {
       "name": "RunAttributionSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:700",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:919",
       "documented": false
     },
     {
       "name": "CashFlowEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:713",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:932",
       "documented": false
     },
     {
       "name": "CashLadderBucketDto",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:723",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:942",
       "documented": true
     },
     {
       "name": "RunCashLadder",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:733",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:952",
       "documented": false
     },
     {
       "name": "RunCashFlowSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:747",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:966",
       "documented": false
     },
     {
       "name": "RunPortfolioDrillInSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:762",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:981",
       "documented": false
     },
     {
       "name": "StrategyRunContinuityLink",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:776",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:995",
       "documented": false
     },
     {
       "name": "StrategyRunContinuityLineage",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:791",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1010",
       "documented": false
     },
     {
       "name": "StrategyRunCashFlowDigest",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:799",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1018",
       "documented": false
     },
     {
       "name": "StrategyRunContinuityWarning",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:820",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1039",
       "documented": false
     },
     {
       "name": "StrategyRunContinuityWarningSeverity",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:827",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1046",
       "documented": false
     },
     {
       "name": "StrategyRunContinuitySeamHealthStatus",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:835",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1054",
       "documented": false
     },
     {
       "name": "StrategyRunContinuityStatus",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:845",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1064",
       "documented": true
     },
     {
       "name": "StrategyRunContinuityDto",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:867",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1086",
       "documented": true
     },
     {
       "name": "StrategyRunContinuityDetail",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:877",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1096",
       "documented": false
     },
     {
       "name": "OpenLotSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:892",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1111",
       "documented": false
     },
     {
       "name": "ClosedLotSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:905",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1124",
       "documented": false
     },
     {
       "name": "RunLotSummary",
-      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:920",
+      "source": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1139",
       "documented": false
     },
     {
@@ -7497,7 +7606,7 @@
     {
       "name": "TradingAcceptanceGateStatusDto",
       "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:30",
-      "documented": false
+      "documented": true
     },
     {
       "name": "PortfolioLedgerWorkflowStatusDto",
@@ -7711,407 +7820,427 @@
     },
     {
       "name": "WorkstationModeComparisonRun",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:92",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:93",
       "documented": false
     },
     {
       "name": "WorkstationRunDigest",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:105",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:106",
       "documented": false
     },
     {
       "name": "WorkstationModeComparisonGroup",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:118",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:119",
       "documented": false
     },
     {
       "name": "WorkstationTimelineCard",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:126",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:127",
       "documented": false
     },
     {
       "name": "WorkstationSessionWorkspaceSummary",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:143",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:144",
       "documented": false
     },
     {
       "name": "WorkstationSessionPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:155",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:156",
       "documented": false
     },
     {
       "name": "WorkstationStrategyWorkspaceSummary",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:171",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:172",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolTabState",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:182",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:183",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolTickPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:195",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:196",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolPointPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:198",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:199",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolSummaryItemPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:203",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:204",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolLegendItemPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:208",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:209",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolFocusPointPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:214",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:215",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolSignalCardPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:220",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:221",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolWorkspacePayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:227",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:228",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolSummaryTilePayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:250",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:251",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolMomentPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:257",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:258",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolRegressionPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:263",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:264",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolSampleRowPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:267",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:268",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolStatisticsPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:276",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:277",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolStudyPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:288",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:289",
       "documented": false
     },
     {
       "name": "WorkstationPlotToolPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:299",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:300",
       "documented": false
     },
     {
       "name": "WorkstationStrategyPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:310",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:311",
       "documented": false
     },
     {
       "name": "WorkstationTradingPositionRow",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:325",
-      "documented": false
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:326",
+      "documented": true
     },
     {
       "name": "WorkstationTradingOrderRow",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:339",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:340",
       "documented": false
     },
     {
       "name": "WorkstationTradingFillRow",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:352",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:353",
+      "documented": false
+    },
+    {
+      "name": "WorkstationRiskGuardrail",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:373",
       "documented": false
     },
     {
       "name": "WorkstationTradingRiskState",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:365",
-      "documented": false
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:386",
+      "documented": true
     },
     {
       "name": "WorkstationTradingBrokerageState",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:378",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:400",
       "documented": false
     },
     {
       "name": "WorkstationTradingPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:393",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:415",
       "documented": false
     },
     {
       "name": "WorkstationAccountingWorkspaceSummary",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:411",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:433",
       "documented": false
     },
     {
       "name": "WorkstationReportingProfilePayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:422",
-      "documented": false
-    },
-    {
-      "name": "WorkstationReportWriterMetricPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:434",
-      "documented": false
-    },
-    {
-      "name": "WorkstationReportWriterFormulaPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:439",
-      "documented": false
-    },
-    {
-      "name": "WorkstationReportWriterFilterPayload",
       "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:444",
       "documented": false
     },
     {
+      "name": "WorkstationReportWriterMetricPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:456",
+      "documented": false
+    },
+    {
+      "name": "WorkstationReportWriterFormulaPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:461",
+      "documented": false
+    },
+    {
+      "name": "WorkstationReportWriterFilterPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:466",
+      "documented": false
+    },
+    {
       "name": "WorkstationReportWriterFieldPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:450",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:472",
       "documented": false
     },
     {
       "name": "WorkstationReportWriterDatasetSourcePayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:458",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:480",
       "documented": false
     },
     {
       "name": "WorkstationReportWriterGridPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:479",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:501",
       "documented": false
     },
     {
       "name": "WorkstationReportingTemplatePayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:496",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:518",
       "documented": false
     },
     {
       "name": "WorkstationReportingRunLinkPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:532",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:554",
       "documented": false
     },
     {
       "name": "WorkstationReportingRunNextActionPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:540",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:562",
       "documented": false
     },
     {
       "name": "WorkstationGeneratedReportWriterGridPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:550",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:572",
       "documented": false
     },
     {
       "name": "WorkstationReportingRunPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:563",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:585",
       "documented": true
     },
     {
       "name": "WorkstationReportingDailyWorkItemDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:602",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:624",
       "documented": false
     },
     {
       "name": "WorkstationReportPackDistributionPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:621",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:643",
       "documented": false
     },
     {
       "name": "WorkstationReportAccessAuditSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:637",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:659",
+      "documented": false
+    },
+    {
+      "name": "WorkstationReportingDeliveryReceiptPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:678",
+      "documented": false
+    },
+    {
+      "name": "WorkstationReportingDeliveryPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:690",
       "documented": false
     },
     {
       "name": "WorkstationReportingPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:656",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:719",
+      "documented": true
+    },
+    {
+      "name": "WorkstationReportingHistoryPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:750",
       "documented": false
     },
     {
       "name": "WorkstationAccountingRunGovernancePayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:685",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:759",
       "documented": false
     },
     {
       "name": "WorkstationAccountingRunReconciliationPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:691",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:765",
       "documented": false
     },
     {
       "name": "WorkstationAccountingRunCashFlowPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:702",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:776",
       "documented": false
     },
     {
       "name": "WorkstationAccountingCashFlowSummaryPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:713",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:787",
       "documented": false
     },
     {
       "name": "WorkstationAccountingRunRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:723",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:797",
       "documented": false
     },
     {
       "name": "WorkstationAccountingSeverityCountPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:741",
-      "documented": false
-    },
-    {
-      "name": "WorkstationAccountingAgingBucketPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:745",
-      "documented": false
-    },
-    {
-      "name": "WorkstationAccountingOwnerWorkloadPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:749",
-      "documented": false
-    },
-    {
-      "name": "WorkstationAccountingTrendSnapshotPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:753",
-      "documented": false
-    },
-    {
-      "name": "WorkstationAccountingDrillLinkPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:758",
-      "documented": false
-    },
-    {
-      "name": "WorkstationAccountingAlertPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:762",
-      "documented": false
-    },
-    {
-      "name": "WorkstationAccountingControlCenterPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:766",
-      "documented": false
-    },
-    {
-      "name": "WorkstationKernelLatencyPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:778",
-      "documented": false
-    },
-    {
-      "name": "WorkstationKernelDriftPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:783",
-      "documented": false
-    },
-    {
-      "name": "WorkstationKernelAlertThresholdsPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:788",
-      "documented": false
-    },
-    {
-      "name": "WorkstationKernelCriticalSeverityRatePayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:795",
-      "documented": false
-    },
-    {
-      "name": "WorkstationKernelDomainPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:804",
-      "documented": false
-    },
-    {
-      "name": "WorkstationKernelObservabilityPayload",
       "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:815",
       "documented": false
     },
     {
-      "name": "WorkstationAccountingPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:828",
+      "name": "WorkstationAccountingAgingBucketPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:819",
       "documented": false
     },
     {
+      "name": "WorkstationAccountingOwnerWorkloadPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:823",
+      "documented": false
+    },
+    {
+      "name": "WorkstationAccountingTrendSnapshotPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:827",
+      "documented": false
+    },
+    {
+      "name": "WorkstationAccountingDrillLinkPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:832",
+      "documented": false
+    },
+    {
+      "name": "WorkstationAccountingAlertPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:836",
+      "documented": false
+    },
+    {
+      "name": "WorkstationAccountingControlCenterPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:840",
+      "documented": false
+    },
+    {
+      "name": "WorkstationKernelLatencyPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:852",
+      "documented": false
+    },
+    {
+      "name": "WorkstationKernelDriftPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:857",
+      "documented": false
+    },
+    {
+      "name": "WorkstationKernelAlertThresholdsPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:862",
+      "documented": false
+    },
+    {
+      "name": "WorkstationKernelCriticalSeverityRatePayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:869",
+      "documented": false
+    },
+    {
+      "name": "WorkstationKernelDomainPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:878",
+      "documented": false
+    },
+    {
+      "name": "WorkstationKernelObservabilityPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:889",
+      "documented": false
+    },
+    {
+      "name": "WorkstationAccountingPayload",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:902",
+      "documented": true
+    },
+    {
       "name": "WorkstationPortfolioRunRow",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:847",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:921",
       "documented": false
     },
     {
       "name": "WorkstationPortfolioPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:866",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:940",
       "documented": false
     },
     {
       "name": "WorkstationPortfolioSummaryTelemetry",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:873",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:947",
       "documented": false
     },
     {
       "name": "WorkstationPortfolioSummaryPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:882",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:956",
       "documented": false
     },
     {
       "name": "MultiAssetEvidenceRequirementDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:896",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:970",
       "documented": false
     },
     {
       "name": "MultiAssetReadinessBlockerDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:907",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:981",
       "documented": false
     },
     {
       "name": "MultiAssetDrillThroughTargetDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:917",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:991",
       "documented": false
     },
     {
       "name": "MultiAssetClassCoverageDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:930",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1004",
       "documented": false
     },
     {
       "name": "MultiAssetPackCoverageDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:945",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1019",
       "documented": false
     },
     {
       "name": "MultiAssetCoverageSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:969",
-      "documented": false
-    },
-    {
-      "name": "WorkstationDataProviderDiagnostic",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:988",
-      "documented": false
-    },
-    {
-      "name": "WorkstationDataProviderRoutingSummary",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:998",
-      "documented": false
-    },
-    {
-      "name": "WorkstationDataProviderRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1010",
-      "documented": false
-    },
-    {
-      "name": "WorkstationDataBackfillRecord",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1032",
-      "documented": false
-    },
-    {
-      "name": "WorkstationDataExportRecord",
       "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1043",
       "documented": false
     },
     {
+      "name": "WorkstationDataProviderDiagnostic",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1062",
+      "documented": false
+    },
+    {
+      "name": "WorkstationDataProviderRoutingSummary",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1072",
+      "documented": false
+    },
+    {
+      "name": "WorkstationDataProviderRecord",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1084",
+      "documented": false
+    },
+    {
+      "name": "WorkstationDataBackfillRecord",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1106",
+      "documented": false
+    },
+    {
+      "name": "WorkstationDataExportRecord",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1117",
+      "documented": false
+    },
+    {
       "name": "WorkstationDataPayload",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1055",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1129",
       "documented": false
     },
     {

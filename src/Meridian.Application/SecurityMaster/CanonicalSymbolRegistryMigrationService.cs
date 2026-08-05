@@ -23,7 +23,7 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
     };
 
     private readonly ConfigStore _configStore;
-    private readonly ICanonicalSymbolRegistry _registry;
+    private readonly ICanonicalSymbolRegistryMigrationWriter _migrationWriter;
     private readonly ISymbolRegistryService _registryStore;
     private readonly ILogger<CanonicalSymbolRegistryMigrationService> _logger;
 
@@ -34,7 +34,9 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
         ILogger<CanonicalSymbolRegistryMigrationService> logger)
     {
         _configStore = configStore;
-        _registry = registry;
+        _migrationWriter = registry as ICanonicalSymbolRegistryMigrationWriter
+            ?? throw new InvalidOperationException(
+                "The configured canonical symbol registry does not support atomic startup migrations.");
         _registryStore = registryStore;
         _logger = logger;
     }
@@ -55,12 +57,13 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
             return;
         }
 
-        var imported = 0;
+        var definitions = new List<CanonicalSymbolDefinition>();
         foreach (var mapping in inlineMappings)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await ImportAsync(ToDefinition(mapping), cancellationToken).ConfigureAwait(false);
-            imported++;
+            var definition = ToDefinition(mapping);
+            if (!string.IsNullOrWhiteSpace(definition.Canonical))
+                definitions.Add(definition);
         }
 
         foreach (var external in externalInputs.SelectMany(static input => input.Mappings))
@@ -69,7 +72,7 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
             if (string.IsNullOrWhiteSpace(external.CanonicalSymbol))
                 continue;
 
-            await ImportAsync(new CanonicalSymbolDefinition
+            definitions.Add(new CanonicalSymbolDefinition
             {
                 Canonical = external.CanonicalSymbol.Trim().ToUpperInvariant(),
                 DisplayName = external.DisplayName,
@@ -80,12 +83,11 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
                 Isin = external.Isin,
                 Cusip = external.Cusip,
                 ProviderSymbols = ToProviderDefinitions(external.ProviderSymbols)
-            }, cancellationToken).ConfigureAwait(false);
-            imported++;
+            });
         }
 
-        await _registryStore
-            .SetMigrationMarkerAsync(MigrationId, fingerprint, cancellationToken)
+        var imported = await _migrationWriter
+            .ApplyMigrationAsync(MigrationId, fingerprint, definitions, cancellationToken)
             .ConfigureAwait(false);
         _logger.LogInformation(
             "Imported {Count} legacy symbol mappings into the canonical registry; legacy sources were retained for comparison and rollback.",
@@ -93,11 +95,6 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-    private Task ImportAsync(CanonicalSymbolDefinition definition, CancellationToken ct)
-        => string.IsNullOrWhiteSpace(definition.Canonical)
-            ? Task.CompletedTask
-            : _registry.RegisterAsync(definition, ct);
 
     private async Task<IReadOnlyList<LegacyExternalInput>> LoadExternalInputsAsync(
         AppConfig config,

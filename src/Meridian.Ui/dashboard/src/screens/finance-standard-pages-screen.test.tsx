@@ -5,7 +5,6 @@ import {
   AccountDetailScreen,
   ApprovalInboxScreen,
   CloseCalendarScreen,
-  EvidenceDetailScreen,
   LedgerExplorerScreen,
   ReconciliationMatchWorkbenchScreen,
   ReportPreviewValidationScreen,
@@ -127,7 +126,7 @@ describe("finance standard pages", () => {
   });
 
   it("renders the report preview and validation checkpoint tabs", async () => {
-    await renderPage(<ReportPreviewValidationScreen data={data} />, "/reporting/preview");
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
 
     expect(screen.getByRole("heading", { name: "Report Preview & Validation" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Preview" })).toBeInTheDocument();
@@ -329,6 +328,33 @@ describe("finance standard pages", () => {
     );
   });
 
+  it("switches the ledger explorer to the trial balance tab via the view search param", async () => {
+    vi.mocked(api.getRunLedgerJournal).mockResolvedValue([]);
+    vi.mocked(api.getRunTrialBalance).mockResolvedValue([]);
+
+    const tabData = {
+      ...data,
+      reconciliationQueue: [
+        {
+          runId: "run-42",
+          strategyName: "Paper Index Mean Reversion",
+          mode: "paper",
+          status: "Running",
+          lastUpdated: "3m ago",
+          breakCount: 1,
+          openBreakCount: 1,
+          reconciliationStatus: "BreaksOpen"
+        }
+      ]
+    } as unknown as AccountingWorkspaceResponse;
+
+    await renderPage(<LedgerExplorerScreen data={tabData} />, "/accounting/ledger?view=trial-balance&runId=run-42");
+
+    expect(screen.getByRole("tab", { name: "Trial balance" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Ledger" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.queryByLabelText("Search by account, amount, journal ID, source, security, entity")).not.toBeInTheDocument();
+  });
+
   it("renders reconciliation match workbench as a focused clearing queue", async () => {
     await renderPage(<ReconciliationMatchWorkbenchScreen data={data} />, "/accounting/reconciliation/match");
 
@@ -382,13 +408,4 @@ describe("finance standard pages", () => {
     expect(screen.getByText("What evidence supports it?")).toBeInTheDocument();
   });
 
-  it("renders evidence detail with the non-approval rule visible", async () => {
-    await renderPage(<EvidenceDetailScreen />, "/accounting/evidence/detail?evidenceId=bank-statement");
-
-    expect(screen.getByRole("heading", { name: "Evidence Detail" })).toBeInTheDocument();
-    expect(screen.getByText("bank-statement")).toBeInTheDocument();
-    expect(screen.getByText(/does not approve, post, or release work/i)).toBeInTheDocument();
-    expect(screen.getByText("Evidence reference ready for inspection")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Inspect selected evidence" })).toHaveAttribute("href", "/reporting/evidence?subjectKind=evidence&subjectId=bank-statement");
-  });
 });

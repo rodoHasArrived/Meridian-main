@@ -125,13 +125,18 @@ validation.
 - `src/Meridian.Risk/`: pre-trade risk validation
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
 - `src/Meridian.QuantScript/`: scripting and charting-oriented tooling
-- `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
+- `src/Meridian.Mcp/`: active MCP host, tools, and resources
 - `src/Meridian.Ui/dashboard/`: browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
   services, workstation endpoints, and the active WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: performance suites
+
+Archived compatibility artifacts for the retired Chief of Staff runtime and
+`Meridian.McpServer` live under `archive/code/tools/chief-of-staff-runtime/`,
+`archive/code/.codex/skills/cos-runtime-development/`, and
+`archive/code/src/Meridian.McpServer/`. Do not route new implementation work to them.
 
 ---
 

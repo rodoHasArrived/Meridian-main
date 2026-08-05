@@ -1961,7 +1961,6 @@ public sealed class AccountingSystemIntegrationService
               ReferencesEvidenceToken(link, compactPeriodEnd))));
     }
 
-
     private static bool HasExportPackageControlEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>
             link.Contains("export", StringComparison.OrdinalIgnoreCase) ||
@@ -2126,7 +2125,8 @@ public sealed class AccountingSystemIntegrationService
     }
 
     private static bool IsEvidenceTokenBoundary(string reference, int index)
-        => index >= reference.Length ||
+        => index < 0 ||
+           index >= reference.Length ||
            reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
 

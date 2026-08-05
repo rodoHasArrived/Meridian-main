@@ -72,16 +72,19 @@ public sealed class MarketDataClientFactoryTests
     }
 
     [Fact]
-    public void CreateStreamingClient_UnknownProviderId_FallsBackToIB()
+    public void CreateStreamingClient_UnknownProviderId_ThrowsWithRegisteredProviders()
     {
         // Arrange
         var registry = CreateRegistryWithFactories();
 
-        // Act - use a provider ID with no registered factory; falls back to IB
-        var client = registry.CreateStreamingClient("custom-feed");
+        // Act - a provider ID with no registered factory must fail closed, not
+        // silently substitute another provider's data feed
+        var act = () => registry.CreateStreamingClient("custom-feed");
 
         // Assert
-        client.Should().BeOfType<IBMarketDataClient>();
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*custom-feed*")
+            .WithMessage("*alpaca*");
     }
 
     [Fact]

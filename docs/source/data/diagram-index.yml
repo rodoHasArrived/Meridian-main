@@ -4,6 +4,26 @@ schema:
   minimum_renderer_version: "1.0.0"
 
 diagrams:
+  - id: DIA-STORAGE-TOPOLOGY
+    title: Storage topology
+    source: docs/architecture/diagrams/meridian-storage-topology.mmd
+    output: docs/architecture/assets/meridian-storage-topology.svg
+    type: mermaid
+    modules:
+      - SRC-STORAGE
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-LEDGER
+      - SRC-UI-SHARED
+    roadmap_items:
+      - W1-DATA-001
+      - W3-CONT-001
+      - W4-RECON-001
+      - W4-RPT-001
+      - W5-ACCT-001
+    update_when:
+      - File-backed or PostgreSQL persistence ownership changes.
+      - Storage control, lifecycle, or governed-publication paths change.
   - id: DIA-ASSURANCE-LOOP
     title: Meridian assurance loop
     source: docs/architecture/diagrams/meridian-assurance-loop.mmd

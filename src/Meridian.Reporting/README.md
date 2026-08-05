@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-15
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Reporting
@@ -36,10 +36,16 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   Released` aggregates, maker-checker rules, governed restatement, and append-only audit contracts.
 - `ReportingArtifactContracts.cs` and `ReportingArtifactDeclaration.cs` - immutable package,
   content-addressed artifact, access-audit, and deterministic output-declaration contracts.
+- `ReportingReconciliationEvidenceContracts.cs` - exact close/reconciliation receipts, including
+  item-level value, quantity, and cost-basis measures, unresolved blocked outputs, dispositions,
+  approval lineage, and per-break evidence hashes.
 - `ReportingDistributionContracts.cs` - opaque scoped grants, durable delivery jobs, leases,
   retries, provider receipts, and release authorization contracts.
-- `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
-  lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
+- `ReportingOperationalStoreContracts.cs` - Reporting-owned schedule and legacy
+  compatibility-store boundaries implemented by UI Shared or Storage adapters.
+- `ReportingOrchestrationService.cs` - deterministic certified single-run execution, lineage
+  rendering, approval transitions, retry/failure state, and run-store persistence handoff. Its
+  retained batch due-schedule member is obsolete and fails closed.
 - `ReportWriterGridEngine.cs` - governed no-code grid renderer for detail, pivot, Top-N,
   contribution, saved-filter, and formula-backed report-writer tables over explicit lower-level
   input rows.
@@ -56,6 +62,66 @@ artifact, governance, restatement, and distribution contracts plus deterministic
 UI Shared adapts authenticated workstation requests and server-owned accounting sources; Storage
 implements PostgreSQL persistence. Browser and WPF remain thin consumers of shared DTOs and
 server-returned action availability.
+Canonical governance comparisons treat default and empty immutable permission/principal arrays as
+the same empty authority set, matching persisted round trips while retaining ordered value
+comparison for populated authority evidence.
+The host reporting-schedule adapter is the only due-work discovery and lease authority. It resolves
+the exact access scope, readiness, certification, and delivery handoff before calling
+`IReportingOrchestrationService.ExecuteAsync` with one certified job contract. The retained
+`ExecuteDueSchedulesAsync` compatibility member cannot generate runs.
+Artifact declarations are not completion evidence by themselves. UI Shared renders the declared
+PDF, XLSX, CSV, evidence, and deterministic preview bytes, verifies non-empty content and SHA-256
+identity, and retains them in one immutable package. Final report readiness fails closed when exact
+reconciliation evidence identifies an unresolved break; blocker evidence names the break, measures,
+impacted outputs, and retained evidence hash.
+
+Production reporting is also fail-closed at the workspace boundary. The independent
+`GET /api/workstation/reporting` capability is ready only when PostgreSQL governance, artifact,
+immutable close/reconciliation evidence, run, schedule, access-grant, delivery, and receipt stores
+are active and their required tables, immutable-control triggers, operational lease columns,
+checksummed migration-ledger key, and immediate predicate-compatible unique/idempotency keys pass
+the schema probe. This includes migration 013's statement document and revision tables, its four
+document/revision guard and append triggers, and the exact
+`reporting-statement-reconciliation-authority:v1` compatibility marker; composition must also
+resolve `PostgresStatementReconciliationReportAuthorityStore`. The exact PostgreSQL
+accounting-period release-consistency gate, exact-scope
+recipient destinations, the canonical client-document renderer, the configured durable
+ledger-presentation source, atomic grant-use/download-receipt accounting, the current process's
+successful managed Reporting migration receipt, and successful ledger, fund-account, and
+fund-structure migration receipts are also required. Startup must integrity-reload the canonical
+reconciliation queue used by statement
+casework, Operations Continuity, hard close, and Final certification; both the reporting schedule
+worker and secure delivery worker must have valid options and be running. File-backed run, schedule,
+custom-template, and starter-kit stores remain local/development compatibility and do not satisfy
+the capability. Legacy file workflow and delivery-history repositories are not registered by the
+default host and remain available only to explicitly constructed compatibility callers. Production
+composition requires a
+Reporting or documented ledger PostgreSQL connection and does not silently substitute those file
+stores. With a database configured, checksummed Reporting migrations and the casework integrity
+probe finish before the HTTP host and hosted workers start; an unreachable database, migration
+failure, or corrupt casework snapshot stops startup. Other incomplete authority leaves production
+reporting `Required/NotReady` and its reads/mutations service-unavailable. Local/development may
+start on file compatibility stores with a degraded reporting lifecycle, but those stores still do
+not make authoritative Reporting routes ready.
+
+Capital-account `Pdf`, `Xlsx`, and `ClientPackage` outputs all use the exact checkpoint-bound
+`LedgerFinancialReportPack`. UI Shared passes that pack intact through the existing
+`LedgerClientReportExportService` to the registered
+`Meridian.Documents.FinancialReportDocumentRenderer` and receives the canonical PDF/XLSX pair from
+one in-memory package build. A standalone `Pdf` or `Xlsx` declaration retains only the matching
+canonical document; `ClientPackage` declares and retains exactly one `<runId>.pdf` and one
+`<runId>.xlsx`. The producer applies the Reporting declarations, byte lengths, and SHA-256 hashes;
+it does not rebuild partners-capital tables through a parallel renderer. Release and distribution
+treat the `ClientPackage` primary pair atomically: neither a missing, duplicated, PDF-only, nor
+XLSX-only subset is releasable or deliverable.
+
+The Statement Reconciliation Report endpoint is an intake adapter owned by UI Shared. It resolves
+durable account/fund/book/open-period scope, retains statement and Evidence Vault evidence, starts
+or reuses the exact Operations Continuity workflow, and publishes statement obligations into the
+existing governed reconciliation queue. Its retained JSON/CSV artifacts are not a Reporting run,
+governed artifact package, approval, release, or delivery receipt. Only a separately started,
+readiness-approved run enters this module's certification and governance lifecycle, followed by the
+shared client-document renderer and secure distribution after independent release.
 
 ## Diagrams
 
@@ -86,13 +152,15 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 ### API and contract notes
 
 `IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`,
-`IReportingRunStore`, `IReportingGovernanceRepository`, `IReportingArtifactStore`,
+`IReportingRunStore`, `IReportingScheduleStore`, `IReportingGovernanceRepository`, `IReportingArtifactStore`,
 `IReportingArtifactCatalog`, `IReportingAccessGrantStore`, `IReportingDeliveryStore`,
 `ReportGenerationService`, and `NavAttributionService` publish the Reporting module seams consumed
 by UI Shared, Storage, browser, and WPF. A successful orchestration manifest remains a certified
 Draft until the canonical governance aggregate validates, submits, approves, verifies exact retained
 bytes, and releases it. Released state is terminal; approved restatement creates a newly certified
-revision without changing its predecessor. `ReportGenerationService` retains the canonical ledger dimension
+revision without changing its predecessor. Due schedules must enter through the host schedule
+adapter; the obsolete batch method on `IReportingOrchestrationService` fails closed rather than
+constructing an uncertified job contract. `ReportGenerationService` retains the canonical ledger dimension
 envelope from dimensioned fund-ledger lines on generated trial-balance rows so downstream
 report-pack evidence artifacts do not reconstruct accounting scope from account names or route
 context. `ReportWriterGridEngine` renders governed template grid definitions without script
@@ -159,7 +227,16 @@ approval transition, audit-entry, and run-store seams moved out of the legacy Ap
 folder into this module. UI Shared and UI Services consume these module services but do not own the
 reporting behavior. Report-pack generation and NAV attribution also moved from
 `Meridian.Application.Services` into this module and now depend on the contracts-owned Security
-Master query seam.
+Master query seam. Reporting operational-store interfaces also live here; PostgreSQL run and
+schedule implementations remain Storage-owned, while file implementations are compatibility
+adapters rather than production authority.
+`IStatementReconciliationReportAuthorityStore` is the backend-neutral authority contract for the
+existing statement-reconciliation workflow. Its full tenant/company/workflow scope is mandatory;
+immutable input/evidence/history documents and mutable checkpoint/current-artifact mappings all
+resolve to content-addressed Reporting identities. Storage owns the PostgreSQL implementation and
+UI Shared owns the non-production file adapter and existing-workflow composition. A deployment is
+not production ready from this contract or migration 013 alone: the probed tables, revision
+controls, exact compatibility marker, and concrete PostgreSQL implementation must all be present.
 
 ## Change rules
 
@@ -172,3 +249,4 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 - `docs/architecture/module-map.md`
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
+- `docs/operators/statement-reconciliation-report-operations.md`

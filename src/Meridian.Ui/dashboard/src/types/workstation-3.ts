@@ -31,6 +31,7 @@ import type {
   TradingPromotionReadiness,
   TradingReplayReadiness,
   TradingTrustGateReadiness,
+  VerifiedOperationOutcome,
   WorkstationBrokerageSyncStatus,
   WorkstationSecurityReference,
 } from "../types";
@@ -353,6 +354,7 @@ export interface ClosePeriodLockResult {
   plan?: ClosePeriodPlan | null;
   transition?: OperationsTransitionResult | null;
   issues: AccountingConfigurationValidationIssue[];
+  outcome: VerifiedOperationOutcome;
 }
 
 export interface CloseOperatingCoverageItem {
@@ -908,6 +910,15 @@ export interface OrderResult {
   success: boolean;
   orderId: string | null;
   reason: string | null;
+  errorMessage?: string | null;
+  /**
+   * True when a risk escalation parked the order for governed approval. Nothing routed,
+   * but the queue entry can still execute once an operator approves it, so this is not a
+   * submission failure and must not be shown as one.
+   */
+  requiresApproval?: boolean;
+  escalationId?: string | null;
+  riskWarnings?: string[] | null;
 }
 
 export interface StrategyWorkspaceResponse {
@@ -1255,6 +1266,21 @@ export interface TradingFill {
   timestamp: string;
 }
 
+/**
+ * One live guardrail from the enforced risk-rule registry, rendered as a
+ * utilization bar (how much of the configured headroom is consumed).
+ */
+export interface RiskGuardrail {
+  ruleName: string;
+  state: "Healthy" | "Observe" | "Constrained";
+  currentValue: string;
+  threshold: string;
+  /** Current/threshold percent; null when the rule has no measurable utilization. */
+  utilizationPercent: number | null;
+  /** Enforced outcome tier: Warning flags, Error rejects, Escalate parks, Critical trips the breaker. */
+  severity: "Info" | "Warning" | "Error" | "Escalate" | "Critical";
+}
+
 export interface TradingRiskState {
   state: "Healthy" | "Observe" | "Constrained";
   summary: string;
@@ -1264,6 +1290,8 @@ export interface TradingRiskState {
   maxDrawdown: string;
   buyingPowerUsed: string;
   activeGuardrails: string[];
+  /** Live rule-registry utilization bars; absent from older payloads. */
+  guardrails?: RiskGuardrail[] | null;
 }
 
 export interface BrokerageWiringStatus {

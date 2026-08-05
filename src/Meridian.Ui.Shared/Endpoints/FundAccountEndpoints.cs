@@ -377,14 +377,39 @@ public static class FundAccountEndpoints
 
             var request = await ReadProviderLedgerReconciliationRequestAsync(context, jsonOptions).ConfigureAwait(false)
                 ?? new ProviderLedgerReconciliationRequestDto();
-            var detail = await reconciliation.RunAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+            if (request.SignedOffBreakKeys is { Count: > 0 } || !string.IsNullOrWhiteSpace(request.SignedOffBy))
+            {
+                return Results.Problem(
+                    "Reconciliation sign-off cannot be asserted by this request. Use the governed reconciliation casework action with retained approval evidence.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var serverBoundRequest = request with
+            {
+                RequestedBy = actor.Trim(),
+                SignedOffBreakKeys = [],
+                SignedOffBy = null
+            };
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var detail = await reconciliation
+                .RunAsync(accountId, accessScope, serverBoundRequest, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
         .WithName("RunProviderLedgerReconciliation")
         .Accepts<ProviderLedgerReconciliationRequestDto>("application/json")
         .Produces<ProviderLedgerReconciliationDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/brokerage-sync/reconciliation/latest", async (Guid accountId, HttpContext context) =>
         {
@@ -395,7 +420,13 @@ public static class FundAccountEndpoints
             if (reconciliation is null)
                 return ProviderLedgerReconciliationUnavailable();
 
-            var detail = await reconciliation.GetLatestAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var detail = await reconciliation
+                .GetLatestAsync(accountId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -404,7 +435,8 @@ public static class FundAccountEndpoints
         .Produces<ProviderLedgerReconciliationDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/close-readiness", async (Guid accountId, HttpContext context) =>
         {
@@ -418,15 +450,23 @@ public static class FundAccountEndpoints
             if (closeReadiness is null)
                 return FundAccountCloseReadinessUnavailable();
 
-            var result = await closeReadiness.GetAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var result = await closeReadiness
+                .GetAsync(accountId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return result is null
                 ? Results.NotFound()
                 : Results.Json(result, jsonOptions);
         })
         .WithName("GetFundAccountCloseReadiness")
         .Produces<FundAccountCloseReadinessDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
         {
@@ -1033,7 +1073,10 @@ public static class FundAccountEndpoints
         HttpContext context,
         JsonSerializerOptions jsonOptions)
     {
-        if (context.Request.ContentLength is null or 0)
+        // A null Content-Length means the transport did not declare a length (for example,
+        // chunked HTTP or TestServer), not that the request has no body. Only an explicit zero
+        // is empty; otherwise deserialize so the operation's server-side guards see every field.
+        if (context.Request.ContentLength == 0)
         {
             return null;
         }
@@ -1049,7 +1092,7 @@ public static class FundAccountEndpoints
         HttpContext context,
         JsonSerializerOptions jsonOptions)
     {
-        if (context.Request.ContentLength is null or 0)
+        if (context.Request.ContentLength == 0)
         {
             return null;
         }
@@ -1065,7 +1108,7 @@ public static class FundAccountEndpoints
         HttpContext context,
         JsonSerializerOptions jsonOptions)
     {
-        if (context.Request.ContentLength is null or 0)
+        if (context.Request.ContentLength == 0)
         {
             return null;
         }

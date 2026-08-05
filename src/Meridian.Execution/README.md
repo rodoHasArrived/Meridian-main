@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Execution
@@ -29,14 +29,75 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Important workflows
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
+
+The OMS owns settlement of pre-trade risk reservations. `IRiskValidator` returns a
+`RiskValidationResult` whose `Reservations` carry any capacity a stateful rule took while evaluating
+(today, the order-rate window); passing the gate is not the same as routing, so the validator
+transfers those reservations rather than committing them. The OMS then settles at the routing
+boundary:
+
+- gateway returns an accepted report — commit;
+- gateway returns `OrderStatus.Rejected`, the order is rejected by risk or operator controls, or the
+  client order id is a duplicate — roll back, because nothing reached a venue;
+- gateway submission **throws after dispatch was attempted** — commit. The dispatch is ambiguous and
+  the order may still execute, so a rate limiter has to over-count; under-counting would let a
+  runaway algorithm bypass the ceiling by producing ambiguous submissions. That path is audited with
+  `Reason = OrderManagementSystem.AmbiguousSubmissionReason`, the only `OrderRejected` entry that
+  keeps its slot, and is persisted with `CancellationToken.None` so a cancelled caller cannot erase
+  the record of capacity the throttle still holds;
+- submission fails **before** the gateway call — roll back. Cancellation observed at the dispatch
+  boundary is provably pre-dispatch, so it is not ambiguous and must not consume capacity.
+
+The ambiguous path merges rather than overwrites the tracked order state. The report pump can apply
+a fill before the acknowledgement throws, and replacing that with a rejected state built from the
+original request would erase a confirmed execution, make the client order id terminal and reusable,
+and contradict an accounting handoff that already happened. An order that executed stays executed.
+
+Every path between the gate and the venue must settle exactly once; a leaked reservation
+permanently consumes capacity and eventually blocks every later order.
+
+Order amendments follow the same rules. `ReserveAmendedExposureAsync` revalidates a risk-increasing
+modification through the same reserving rules a placement uses, so it takes real capacity; the
+decision rides on `AmendmentGateResult` and settles at the modify boundary — rolled back on refusal,
+on losing the exposure-publish race, on cancellation, and on a broker rejection; committed once the
+gateway accepts, and on a non-cancellation fault after dispatch.
+
+The OMS rolls reservations back on any non-approved decision rather than assuming the validator
+already did. `CompositeRiskValidator` does release its own capacity before returning a block, but the
+`IRiskValidator` contract says a normal return transfers ownership, so an alternate implementation is
+entitled to hand back a rejected result still holding slots. Settlement is idempotent, so covering
+that costs nothing.
+
+**Logging convention in this module:** caller-supplied order text — the client order id, the symbol,
+and rejection reasons, which embed the symbol via rule text — is rendered through
+`LogSanitizer.Sanitize` before it reaches a logger. `OrderRequest.ClientOrderId` and `Symbol` are
+submitted values that nothing upstream is required to constrain (the Security Master gate is
+optional), so a line break in either would render as an extra line in a text sink and let a submitter
+forge execution log entries. This holds for every `_logger` call in this module — the OMS, both paper
+gateways, the brokerage gateway adapter, and the Security Master gate — and in `Meridian.Risk`, whose
+rules log the same submitted values. A raw caller value in a new log call is a defect, not a style
+choice.
+
+`LogSanitizer` neutralizes line endings through `String.Replace`, which CodeQL models as a barrier,
+so `cs/log-forging` recognizes a sanitized call site and no query filter is needed. The invariant is
+additionally enforced by `build/scripts/check-execution-log-sanitization.py`, which fails on any
+caller-supplied value reaching a logger unsanitized — it catches a *missing* sanitizer call, which is
+the direction the query cannot check. It is **not** wired into `scripts/ci.sh` or any workflow yet:
+this module's phase scope does not cover the CI entrypoint, so wiring it needs a change that does.
+Until then it is a reviewer's tool, not a gate — treat the convention as enforced by review. Run it
+after touching logging in this module; `--list` prints the patterns it checks. A hand-written grep was
+declared clean twice during PR #2554 and was wrong both times, because its pattern list was narrower
+than the code — the list belongs in review, not in someone's shell history.
 Broker-backed order placement fails closed unless `BrokerageConfiguration` names the active
 gateway and all live-routing, phase, validation, and sign-off gates are explicitly green; missing
 brokerage configuration remains allowed only for the default paper gateway.
 After the brokerage gate allows a non-paper broker, the OMS also requires `runId` metadata,
 `OrderRequest.FundAccountId`, and a registered `ILiveOrderReadinessGate` approval with a retained
-evidence reference before submitting to the gateway; missing run/account context, missing readiness
-registration, rejected readiness, or an approval without retained evidence produces an audited
-rejection instead of a broker submit.
+evidence reference before submitting to the gateway; shared HTTP order submission must authorize any
+present `FundAccountId` against the authenticated actor's account-scoped `ManageOrders` access
+before the OMS can use that account in live-readiness evaluation. Missing run/account context,
+missing readiness registration, rejected readiness, or an approval without retained evidence
+produces an audited rejection instead of a broker submit.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
@@ -73,6 +134,10 @@ P&amp;L, or publish an enriched `TradeExecutedEvent` through the abstraction ins
 the OMS fallback value.
 The OMS sends only fills for its own tracked orders to the accounting publisher; untracked broker
 stream reports remain observable through `ExecutionReports` but cannot contaminate the configured book.
+For tracked orders, each streamed fill delta is capped to the remaining broker-authorized quantity,
+including an accepted quantity amendment, before portfolio state, public reports, and the accounting
+publisher observe it. An oversized or repeated callback therefore cannot overstate positions or
+post more than the accepted order quantity.
 After a broker acknowledges a fill, the OMS admits it to the accounting publisher before attempting
 cancelable paper-session history or audit bookkeeping. Report-pump shutdown likewise cannot cancel a
 dequeued fill before durable accounting admission; downstream session/channel work may be cancelled
@@ -98,6 +163,24 @@ OMS runtime guardrails are configuration-backed under `Execution:OrderManagement
 are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
 Fill-report publication observes bounded-channel `WriteAsync` backpressure, and duplicate gateway
 reports resume only unfinished portfolio, durable-accounting, session, or subscriber side effects.
+Paper-session persistence resolves session identifiers through the Core rooted-path guard. It
+rejects traversal, rooted, reserved, and ambiguous path segments, refuses existing descendant
+links/reparse points, and ignores retained metadata whose session identity does not match its
+directory before reading or appending session evidence.
+
+Orders that breach an `Escalate`-severity risk rule are parked rather than rejected:
+`RiskEscalationQueueService` durably retains the exact submitted request, and `PlaceOrderAsync`
+returns `RequiresApproval` with the escalation id instead of a failure, so callers must treat a
+park as accepted-not-routed rather than prompting a retry — each retry mints a new client order id
+and can leave several approvals releasable for one intended order. A park reserves its client order
+id until the escalation resolves, and that reservation also keeps the order out of terminal-order
+retention trimming so it stays cancellable while an approval can still route it. Approvals are
+one-shot tokens carried in `riskEscalationId` metadata, matched against a full request fingerprint
+including `ClientOrderId`; a release that the gateway refuses re-arms the approval and its id
+reservation, while withdrawing an escalation also retires any approvals linked through that
+metadata chain. Broker-native notional metadata (`notional`, `alpaca:notional`) is honoured only
+for gateways implementing `INotionalOrderSizingGateway`; on any other gateway the order is refused
+rather than measured at a size the broker will not route.
 
 ## Diagrams
 
