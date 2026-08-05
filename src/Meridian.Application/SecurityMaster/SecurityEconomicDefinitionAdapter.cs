@@ -192,6 +192,27 @@ internal static class SecurityEconomicDefinitionAdapter
             {
                 factor = definition.Terms.StructuredProduct.Value.Factor,
                 factorDate = definition.Terms.StructuredProduct.Value.FactorDate,
+                // Key spellings are the ones SecurityMasterAccountingEventSourceAdapter reads. It
+                // requires asOfDate, priorFactor, and currentFactor together — a row missing any of
+                // the three is skipped — so the paydown between consecutive factors is emitted
+                // explicitly rather than left for a consumer to difference.
+                //
+                // source/evidenceLink/sourceContentHash are carried for the same reason: the adapter
+                // hands EvidenceLink straight to FactorPaydownProjectionService, which validates the
+                // evidence list *before* it checks whether the factor moved. A row without it is
+                // rejected as factor-paydown.evidence-required, so dropping these here would let the
+                // schedule reach the reader while every actual paydown still failed closed.
+                factorSchedule = definition.Terms.StructuredProduct.Value.FactorSchedule
+                    .Select(point => new
+                    {
+                        asOfDate = point.AsOfDate,
+                        priorFactor = point.PriorFactor,
+                        currentFactor = point.Factor,
+                        source = point.Source is null ? null : point.Source.Value,
+                        evidenceLink = point.EvidenceLink is null ? null : point.EvidenceLink.Value,
+                        sourceContentHash = point.SourceContentHash is null ? null : point.SourceContentHash.Value
+                    })
+                    .ToArray(),
                 weightedAvgCoupon = definition.Terms.StructuredProduct.Value.WeightedAvgCoupon,
                 weightedAvgMaturityMonths = definition.Terms.StructuredProduct.Value.WeightedAvgMaturityMonths,
                 weightedAvgLoanAgeMos = definition.Terms.StructuredProduct.Value.WeightedAvgLoanAgeMos,

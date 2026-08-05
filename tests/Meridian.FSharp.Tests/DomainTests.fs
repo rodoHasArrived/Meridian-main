@@ -631,7 +631,15 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         OriginalFace = 1_000_000m
         CurrentFactor = Some 0.9825m
         CouponOrIndex = "SOFR+250"
-        FactorSchedule = Some "monthly-trustee"
+        FactorSchedule =
+            [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 1.0m
+                Source = Some "custodian-factor-file"; EvidenceLink = Some "evidence://factor/jan"
+                SourceContentHash = Some "sha256:jan" }
+              { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.9912m
+                Source = None; EvidenceLink = None; SourceContentHash = None }
+              { AsOfDate = DateOnly(2026, 3, 1); Factor = 0.9825m
+                Source = None; EvidenceLink = None; SourceContentHash = None } ]
+        FactorScheduleNote = Some "monthly-trustee"
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -652,6 +660,132 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     payload.GetProperty("collateralType").GetString() |> should equal "CLO"
     payload.GetProperty("originalFace").GetDecimal() |> should equal 1_000_000m
     payload.GetProperty("currentFactor").GetDecimal() |> should equal 0.9825m
+    payload.GetProperty("factorScheduleNote").GetString() |> should equal "monthly-trustee"
+
+    // The factor schedule must serialize as an array of {asOfDate, factor} rows: that is the only
+    // shape StructuredCashFlowTermsResolver.ReadFactorSchedule accepts. Emitting a string here (the
+    // pre-typed contract) left factor-based tranches restating face off the scalar factor alone.
+    let factorSchedule = payload.GetProperty("factorSchedule")
+    factorSchedule.ValueKind |> should equal JsonValueKind.Array
+    factorSchedule.GetArrayLength() |> should equal 3
+
+    let firstPoint = factorSchedule.EnumerateArray() |> Seq.head
+    firstPoint.GetProperty("asOfDate").GetString() |> should equal "2026-01-01"
+    firstPoint.GetProperty("factor").GetDecimal() |> should equal 1.0m
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes full swap leg economics`` () =
+    let terms = {
+        EffectiveDate = DateOnly(2026, 1, 15)
+        MaturityDate = DateOnly(2031, 1, 15)
+        Legs =
+            [ { LegId = Some "fixed-leg"
+                LegType = "Fixed"
+                Currency = "USD"
+                Direction = Some "Pay"
+                Index = None
+                FixedRate = Some 0.0425m
+                SpreadBps = None
+                CurrentIndexRate = None
+                Notional = Some 25_000_000m
+                PaymentFrequency = Some "SemiAnnual"
+                DayCount = Some "30/360"
+                ExchangesPrincipal = false }
+              { LegId = Some "floating-leg"
+                LegType = "Floating"
+                Currency = "USD"
+                Direction = Some "Receive"
+                Index = Some "SOFR"
+                FixedRate = None
+                SpreadBps = Some 35m
+                CurrentIndexRate = Some 0.0512m
+                Notional = Some 25_000_000m
+                PaymentFrequency = Some "Quarterly"
+                DayCount = Some "ACT/360"
+                ExchangesPrincipal = false } ]
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Swap terms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let legs = assetDocument.RootElement.GetProperty("legs")
+
+    legs.GetArrayLength() |> should equal 2
+
+    // Notional, payment frequency, and day count are what make a leg projectable: without them the
+    // read-side StructuredCashFlowLeg has nothing to accrue on and no schedule to accrue against.
+    let fixedLeg = legs.EnumerateArray() |> Seq.head
+    fixedLeg.GetProperty("legId").GetString() |> should equal "fixed-leg"
+    fixedLeg.GetProperty("direction").GetString() |> should equal "Pay"
+    fixedLeg.GetProperty("notional").GetDecimal() |> should equal 25_000_000m
+    fixedLeg.GetProperty("paymentFrequency").GetString() |> should equal "SemiAnnual"
+    fixedLeg.GetProperty("dayCount").GetString() |> should equal "30/360"
+    fixedLeg.GetProperty("exchangesPrincipal").GetBoolean() |> should equal false
+
+    let floatingLeg = legs.EnumerateArray() |> Seq.item 1
+    floatingLeg.GetProperty("index").GetString() |> should equal "SOFR"
+    floatingLeg.GetProperty("spreadBps").GetDecimal() |> should equal 35m
+    floatingLeg.GetProperty("currentIndexRate").GetDecimal() |> should equal 0.0512m
+
+[<Fact>]
+let ``SecurityMaster create rejects an out-of-range factor schedule point`` () =
+    let terms = {
+        Tranche = "B"
+        PoolId = None
+        CollateralType = "RMBS"
+        OriginalFace = 500_000m
+        CurrentFactor = None
+        CouponOrIndex = "FIXED"
+        FactorSchedule =
+            [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 1.25m
+                Source = None; EvidenceLink = None; SourceContentHash = None } ]
+        FactorScheduleNote = None
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
+
+    match SecurityMaster.create command with
+    | Error errors ->
+        errors
+        |> List.exists (fun e -> e.Code = "structured_credit_factor_schedule_factor_invalid")
+        |> should equal true
+    | Ok _ -> failwith "Expected a factor above par to be rejected."
+
+[<Fact>]
+let ``SecurityMaster create rejects a factor schedule that increases over time`` () =
+    // A pool factor only amortizes down. FactorPaydownProjectionService rejects an increasing
+    // transition outright (factor-paydown.factor-increase), so accepting one here would let a record
+    // be created canonically and then fail High-severity in accounting.
+    let terms = {
+        Tranche = "A"
+        PoolId = None
+        CollateralType = "CLO"
+        OriginalFace = 1_000_000m
+        CurrentFactor = None
+        CouponOrIndex = "SOFR+250"
+        FactorSchedule =
+            [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.95m
+                Source = None; EvidenceLink = None; SourceContentHash = None }
+              { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.97m
+                Source = None; EvidenceLink = None; SourceContentHash = None } ]
+        FactorScheduleNote = None
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
+
+    match SecurityMaster.create command with
+    | Error errors ->
+        errors
+        |> List.exists (fun e -> e.Code = "structured_credit_factor_schedule_not_monotonic")
+        |> should equal true
+    | Ok _ -> failwith "Expected an increasing factor schedule to be rejected."
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
@@ -748,6 +882,7 @@ let ``IO strip StructuredProductTerms sets IsInterestOnly true`` () =
     let sp = {
         Factor = None
         FactorDate = None
+        FactorSchedule = []
         WeightedAvgCoupon = None
         WeightedAvgMaturityMonths = None
         WeightedAvgLoanAgeMos = None

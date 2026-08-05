@@ -43,6 +43,19 @@ public sealed record SecurityAssetTermField(
     bool Required,
     IReadOnlyList<string> Aliases)
 {
+    /// <summary>
+    /// For <see cref="SecurityAssetTermFieldType.Array"/> and <see cref="SecurityAssetTermFieldType.Object"/>
+    /// fields, the declared shape of each element. Empty means the inner shape is undeclared.
+    /// <para>
+    /// Leaving nested shapes undeclared is what let the structured-credit factor schedule and the
+    /// swap leg drift: both were type-correct at the top level (a string, an array) while their
+    /// contents disagreed with every consumer. A field whose elements carry economics — schedules,
+    /// legs, instalments — should declare them here so the codec tests can measure the serializer
+    /// against the contract rather than against another codec.
+    /// </para>
+    /// </summary>
+    public IReadOnlyList<SecurityAssetTermField> ElementFields { get; init; } = [];
+
     /// <summary>A field the serialize side always emits (a non-optional domain field).</summary>
     public static SecurityAssetTermField Req(string key, SecurityAssetTermFieldType type, params string[] aliases)
         => new(key, type, Required: true, aliases);
@@ -50,6 +63,10 @@ public sealed record SecurityAssetTermField(
     /// <summary>A field emitted only when its optional domain value is present.</summary>
     public static SecurityAssetTermField Opt(string key, SecurityAssetTermFieldType type, params string[] aliases)
         => new(key, type, Required: false, aliases);
+
+    /// <summary>Declares the per-element shape of an <c>Array</c> or <c>Object</c> field.</summary>
+    public SecurityAssetTermField WithElements(params SecurityAssetTermField[] elementFields)
+        => this with { ElementFields = elementFields };
 }
 
 /// <summary>
@@ -219,7 +236,22 @@ public static class SecurityAssetTermsSchema
             [
                 Req("effectiveDate", SecurityAssetTermFieldType.Date),
                 Req("maturityDate", SecurityAssetTermFieldType.Date),
-                Req("legs", SecurityAssetTermFieldType.Array)
+                // Per-leg economics, not a rate label. Without notional, payment frequency, and day
+                // count a leg cannot be projected into a cash flow; the read-side
+                // StructuredCashFlowLeg has always modelled all three.
+                Req("legs", SecurityAssetTermFieldType.Array).WithElements(
+                    Opt("legId", SecurityAssetTermFieldType.String, "id", "name"),
+                    Req("legType", SecurityAssetTermFieldType.String, "rateType", "type"),
+                    Req("currency", SecurityAssetTermFieldType.String),
+                    Opt("direction", SecurityAssetTermFieldType.String, "payReceive", "payOrReceive", "side"),
+                    Opt("index", SecurityAssetTermFieldType.String, "indexName", "referenceIndex"),
+                    Opt("fixedRate", SecurityAssetTermFieldType.Decimal),
+                    Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
+                    Opt("currentIndexRate", SecurityAssetTermFieldType.Decimal, "lastFixing", "currentRate", "indexRate"),
+                    Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount", "faceAmount", "principal"),
+                    Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency"),
+                    Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention", "dayCountBasis"),
+                    Req("exchangesPrincipal", SecurityAssetTermFieldType.Boolean, "principalExchange", "notionalExchange"))
             ],
             ["DirectLoan"] =
             [
@@ -230,8 +262,13 @@ public static class SecurityAssetTermsSchema
                 Opt("currentCouponRate", SecurityAssetTermFieldType.Decimal),
                 Opt("resetFrequency", SecurityAssetTermFieldType.String),
                 Opt("pricingSource", SecurityAssetTermFieldType.String),
-                Req("covenants", SecurityAssetTermFieldType.Array),
-                Req("principalSchedule", SecurityAssetTermFieldType.Array)
+                Req("covenants", SecurityAssetTermFieldType.Array).WithElements(
+                    Req("covenantType", SecurityAssetTermFieldType.String),
+                    Req("threshold", SecurityAssetTermFieldType.String),
+                    Opt("notes", SecurityAssetTermFieldType.String)),
+                Req("principalSchedule", SecurityAssetTermFieldType.Array).WithElements(
+                    Req("paymentDate", SecurityAssetTermFieldType.Date),
+                    Req("amount", SecurityAssetTermFieldType.Decimal))
             ],
             ["StructuredCredit"] =
             [
@@ -241,7 +278,23 @@ public static class SecurityAssetTermsSchema
                 Req("originalFace", SecurityAssetTermFieldType.Decimal),
                 Opt("currentFactor", SecurityAssetTermFieldType.Decimal),
                 Req("couponOrIndex", SecurityAssetTermFieldType.String),
-                Opt("factorSchedule", SecurityAssetTermFieldType.String)
+                // Array of {asOfDate, factor} rows. Was declared String, matching a serializer that
+                // wrote free text — which the cash-flow resolver and the accounting-event adapter
+                // both skip, because both accept only an array. Factor-based tranches therefore
+                // restated face off the scalar currentFactor for their whole life while
+                // RequiresFactorSchedule blocked paydown accounting on a condition the write path
+                // could not satisfy. The legacy free text now lands in factorScheduleNote.
+                Req("factorSchedule", SecurityAssetTermFieldType.Array).WithElements(
+                    Req("asOfDate", SecurityAssetTermFieldType.Date, "factorDate", "effectiveDate", "date"),
+                    Req("factor", SecurityAssetTermFieldType.Decimal, "currentFactor"),
+                    // Retained-evidence attribution. Optional on the contract because a schedule can
+                    // be captured before its evidence is filed, but the factor-paydown gate fails
+                    // closed without evidenceLink, so it must survive the codec rather than be
+                    // dropped between the domain and the accounting reader.
+                    Opt("source", SecurityAssetTermFieldType.String),
+                    Opt("evidenceLink", SecurityAssetTermFieldType.String, "evidenceId", "evidenceRoute"),
+                    Opt("sourceContentHash", SecurityAssetTermFieldType.String, "contentHash", "sourceHash")),
+                Opt("factorScheduleNote", SecurityAssetTermFieldType.String)
             ],
             ["PrivateFundInterest"] =
             [

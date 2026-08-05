@@ -1,0 +1,560 @@
+using System.Text.Json;
+using FluentAssertions;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.SecurityMasterInterop;
+using Xunit;
+
+namespace Meridian.Tests.SecurityMaster;
+
+/// <summary>
+/// End-to-end guards for the two term shapes that were written narrower than they were read:
+/// the structured-credit factor schedule and the swap leg.
+/// <para>
+/// Both were type-correct at the top level — a string, an array — while their contents disagreed
+/// with every consumer, so a security could be created through the canonical path, pass validation,
+/// and still be economically unusable. These tests round-trip C# → F# domain → serialized JSON and
+/// then hand the result to the actual read-side resolver, so the two sides are measured against each
+/// other rather than each against its own assumptions.
+/// </para>
+/// </summary>
+[Trait("Category", "Unit")]
+public sealed class SecurityMasterTermScheduleCodecTests
+{
+    [Fact]
+    public void StructuredCredit_TypedFactorSchedule_SurvivesTheDomainRoundTrip()
+    {
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            poolId = "POOL-2026-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            currentFactor = 0.9825m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[]
+            {
+                new { asOfDate = "2026-01-01", factor = 1.0m },
+                new { asOfDate = "2026-02-01", factor = 0.9912m },
+                new { asOfDate = "2026-03-01", factor = 0.9825m }
+            }
+        });
+
+        var emitted = projection.AssetSpecificTerms.GetProperty("factorSchedule");
+        emitted.ValueKind.Should().Be(JsonValueKind.Array, "the read side accepts only an array");
+        emitted.GetArrayLength().Should().Be(3);
+    }
+
+    [Fact]
+    public void StructuredCredit_FactorSchedule_IsReadableByTheCashFlowResolver()
+    {
+        // The regression this whole change exists for: the serializer wrote free text, the resolver
+        // accepts only an array, so FactorAsOf always fell through to the scalar currentFactor and
+        // the tranche restated face at one static level for its whole life.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            currentFactor = 0.9825m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[]
+            {
+                new { asOfDate = "2026-01-01", factor = 1.0m },
+                new { asOfDate = "2026-02-01", factor = 0.9912m },
+                new { asOfDate = "2026-03-01", factor = 0.9825m }
+            }
+        });
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(SecurityMasterMapping.ToDetail(projection));
+
+        terms.HasFactorSchedule.Should().BeTrue();
+        terms.FactorSchedule.Should().HaveCount(3);
+        terms.FactorAsOf(new DateOnly(2026, 2, 15)).Should().Be(0.9912m);
+        terms.FactorAsOf(new DateOnly(2026, 3, 31)).Should().Be(0.9825m);
+
+        // Before any schedule point applies, the scalar factor is still the honest answer.
+        terms.FactorAsOf(new DateOnly(2025, 12, 31)).Should().Be(0.9825m);
+    }
+
+    [Fact]
+    public void StructuredCredit_LegacyStringFactorSchedule_IsPreservedRatherThanDropped()
+    {
+        // Payloads written under the pre-typed contract carry a free-text factorSchedule. It was
+        // never machine-readable, so it must not fail the read — but it is operator-entered text and
+        // must not silently vanish when the record is re-written under the typed schedule either.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            currentFactor = 0.9825m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = "monthly-trustee"
+        });
+
+        projection.AssetSpecificTerms.GetProperty("factorSchedule").ValueKind.Should().Be(JsonValueKind.Array);
+        projection.AssetSpecificTerms.GetProperty("factorSchedule").GetArrayLength().Should().Be(0);
+        projection.AssetSpecificTerms.GetProperty("factorScheduleNote").GetString().Should().Be("monthly-trustee");
+    }
+
+    [Fact]
+    public void StructuredCredit_FactorSchedule_ReachesTheEconomicTermsPaydownReader()
+    {
+        // The accounting-event adapter reads structuredProduct.factorSchedule off the economic-terms
+        // document — not off asset-specific terms — and skips any row missing asOfDate, priorFactor,
+        // or currentFactor. Fixing only the asset-terms side would have left the paydown coverage
+        // gate unsatisfiable, which is what blocked these securities in the first place.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[]
+            {
+                new
+                {
+                    asOfDate = "2026-02-01",
+                    factor = 0.9912m,
+                    source = "custodian-factor-file",
+                    evidenceLink = "evidence://factor/mbs-2026-02",
+                    sourceContentHash = "sha256:feb-row"
+                },
+                new
+                {
+                    asOfDate = "2026-03-01",
+                    factor = 0.9825m,
+                    source = "custodian-factor-file",
+                    evidenceLink = "evidence://factor/mbs-2026-03",
+                    sourceContentHash = "sha256:mar-row"
+                }
+            }
+        });
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+        var schedule = economic.EconomicTerms
+            .GetProperty("structuredProduct")
+            .GetProperty("factorSchedule");
+
+        schedule.GetArrayLength().Should().Be(2);
+
+        // The first observation is an opening level, not a paydown: it pairs against itself. Seeding
+        // it from par would read a mid-life import starting at 0.9912 as a 0.88% principal paydown
+        // that never happened.
+        var first = schedule[0];
+        first.GetProperty("asOfDate").GetString().Should().StartWith("2026-02-01");
+        first.GetProperty("priorFactor").GetDecimal().Should().Be(0.9912m);
+        first.GetProperty("currentFactor").GetDecimal().Should().Be(0.9912m);
+
+        var second = schedule[1];
+        second.GetProperty("priorFactor").GetDecimal().Should().Be(0.9912m);
+        second.GetProperty("currentFactor").GetDecimal().Should().Be(0.9825m);
+
+        // FactorPaydownProjectionService validates the evidence list before it checks whether the
+        // factor moved, so a row that reaches the reader without evidenceLink is rejected outright
+        // as factor-paydown.evidence-required. Carrying it is what makes the paydown postable.
+        first.GetProperty("evidenceLink").GetString().Should().Be("evidence://factor/mbs-2026-02");
+        first.GetProperty("source").GetString().Should().Be("custodian-factor-file");
+        first.GetProperty("sourceContentHash").GetString().Should().Be("sha256:feb-row");
+    }
+
+    [Fact]
+    public void StructuredCredit_UnchangedFactorObservation_IsRetainedForPeriodCoverage()
+    {
+        // SecurityMasterAccountingEventService refuses to generate anything for a factor security
+        // unless the schedule carries an entry dated inside the reporting period. Dropping an
+        // unchanged trustee observation as an "empty paydown" would therefore turn a current, fully
+        // evidenced observation into FACTOR_SCHEDULE_MISSING / FACTOR_STALE and block the security.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[]
+            {
+                new { asOfDate = "2026-02-01", factor = 0.9912m, evidenceLink = "evidence://factor/feb" },
+                // Same factor a month later: no principal moved, but the observation is still the
+                // period's coverage evidence.
+                new { asOfDate = "2026-03-01", factor = 0.9912m, evidenceLink = "evidence://factor/mar" }
+            }
+        });
+
+        var schedule = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection)
+            .EconomicTerms.GetProperty("structuredProduct").GetProperty("factorSchedule");
+
+        schedule.GetArrayLength().Should().Be(2, "the unchanged observation must survive");
+
+        var unchanged = schedule[1];
+        unchanged.GetProperty("asOfDate").GetString().Should().StartWith("2026-03-01");
+        unchanged.GetProperty("priorFactor").GetDecimal().Should().Be(0.9912m);
+        unchanged.GetProperty("currentFactor").GetDecimal().Should().Be(0.9912m);
+        unchanged.GetProperty("evidenceLink").GetString().Should().Be("evidence://factor/mar");
+    }
+
+    [Fact]
+    public void StructuredCredit_ExplicitOpeningParPoint_ProducesTheOpeningPaydown()
+    {
+        // The counterpart to the rule above: a schedule that genuinely starts at issuance says so
+        // with an explicit 1.0 row, and the first real paydown is then a 1.0 -> 0.9912 transition.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[]
+            {
+                new { asOfDate = "2026-01-01", factor = 1.0m, evidenceLink = "evidence://factor/jan" },
+                new { asOfDate = "2026-02-01", factor = 0.9912m, evidenceLink = "evidence://factor/feb" }
+            }
+        });
+
+        var schedule = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection)
+            .EconomicTerms.GetProperty("structuredProduct").GetProperty("factorSchedule");
+
+        schedule[0].GetProperty("priorFactor").GetDecimal().Should().Be(1.0m);
+        schedule[0].GetProperty("currentFactor").GetDecimal().Should().Be(1.0m);
+        schedule[1].GetProperty("priorFactor").GetDecimal().Should().Be(1.0m);
+        schedule[1].GetProperty("currentFactor").GetDecimal().Should().Be(0.9912m);
+    }
+
+    [Fact]
+    public void StructuredCredit_IncompleteFactorRow_IsRejectedRatherThanDropped()
+    {
+        // Silently skipping a malformed row would report success while discarding a vendor paydown
+        // observation, and the security would then fail its coverage gate for a reason the write
+        // path never surfaced.
+        var act = () => RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new object[] { new { asOfDate = "2026-02-01" } }
+        });
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*factor*");
+    }
+
+    [Fact]
+    public void StructuredCredit_VendorAliasesAndNumericStrings_SurviveTheWritePath()
+    {
+        // The resolver accepts the factorSchedules container alias and coerces numeric strings; the
+        // write path must too, or a payload the read side understands round-trips to nothing.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedules = new object[]
+            {
+                new { factorDate = "2026-02-01", currentFactor = "0.9912", evidenceRoute = "evidence://factor/feb" }
+            }
+        });
+
+        var emitted = projection.AssetSpecificTerms.GetProperty("factorSchedule");
+        emitted.GetArrayLength().Should().Be(1);
+        emitted[0].GetProperty("factor").GetDecimal().Should().Be(0.9912m);
+        emitted[0].GetProperty("evidenceLink").GetString().Should().Be("evidence://factor/feb");
+    }
+
+    [Fact]
+    public void StructuredCredit_DifferentlyCasedScheduleContainer_IsStillRead()
+    {
+        // SecurityTermReader matches container names case-insensitively, so the cash-flow resolver
+        // reads this payload. An exact-match probe on the write path would round-trip it into an
+        // empty schedule — the same write-narrower-than-read gap, one level up from the row fields.
+        var projection = RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            FactorSchedule = new object[]
+            {
+                new { asOfDate = "2026-02-01", factor = 0.9912m }
+            }
+        });
+
+        var emitted = projection.AssetSpecificTerms.GetProperty("factorSchedule");
+        emitted.GetArrayLength().Should().Be(1);
+        emitted[0].GetProperty("factor").GetDecimal().Should().Be(0.9912m);
+    }
+
+    [Fact]
+    public void StructuredCredit_MalformedScheduleContainer_IsRejectedRatherThanEmptied()
+    {
+        // A single object where the array belongs is a vendor mistake, not an absent schedule.
+        // Persisting an empty list would report success while dropping the paydown observation.
+        var act = () => RoundTrip("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            factorSchedule = new { asOfDate = "2026-02-01", factor = 0.9912m }
+        });
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*array*");
+    }
+
+    [Fact]
+    public void Swap_LegEconomics_SurviveTheDomainRoundTripAndReachTheResolver()
+    {
+        // A leg carrying only a rate label is not projectable: the read side has no notional to
+        // accrue on and no frequency to schedule against, so it yields nothing at all.
+        var projection = RoundTrip("Swap", new
+        {
+            schemaVersion = 1,
+            effectiveDate = "2026-01-15",
+            maturityDate = "2031-01-15",
+            legs = new object[]
+            {
+                new
+                {
+                    legId = "fixed-leg",
+                    legType = "Fixed",
+                    currency = "USD",
+                    direction = "Pay",
+                    fixedRate = 0.0425m,
+                    notional = 25_000_000m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCount = "30/360",
+                    exchangesPrincipal = false
+                },
+                new
+                {
+                    legId = "floating-leg",
+                    legType = "Floating",
+                    currency = "USD",
+                    direction = "Receive",
+                    index = "SOFR",
+                    spreadBps = 35m,
+                    currentIndexRate = 0.0512m,
+                    notional = 25_000_000m,
+                    paymentFrequency = "Quarterly",
+                    dayCount = "ACT/360",
+                    exchangesPrincipal = false
+                }
+            }
+        });
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(SecurityMasterMapping.ToDetail(projection));
+
+        terms.HasLegs.Should().BeTrue();
+        terms.Legs.Should().HaveCount(2);
+
+        var fixedLeg = terms.Legs![0];
+        fixedLeg.LegId.Should().Be("fixed-leg");
+        fixedLeg.RateKind.Should().Be(CashFlowLegRateKind.Fixed);
+        fixedLeg.Direction.Should().Be(CashFlowLegDirection.Pay);
+        fixedLeg.FixedRate.Should().Be(0.0425m);
+        fixedLeg.Notional.Should().Be(25_000_000m);
+        fixedLeg.PaymentFrequency.Should().Be("SemiAnnual");
+        fixedLeg.DayCountConvention.Should().Be("30/360");
+
+        var floatingLeg = terms.Legs[1];
+        floatingLeg.RateKind.Should().Be(CashFlowLegRateKind.Floating);
+        floatingLeg.Direction.Should().Be(CashFlowLegDirection.Receive);
+        floatingLeg.IndexName.Should().Be("SOFR");
+        floatingLeg.SpreadBps.Should().Be(35m);
+        floatingLeg.CurrentIndexRate.Should().Be(0.0512m);
+        floatingLeg.Notional.Should().Be(25_000_000m);
+        floatingLeg.PaymentFrequency.Should().Be("Quarterly");
+        floatingLeg.DayCountConvention.Should().Be("ACT/360");
+    }
+
+    [Fact]
+    public void Swap_LegsPersistedUnderThePreWideningShape_StillDeserialize()
+    {
+        // Legs written before per-leg economics existed carry only legType/currency/index/fixedRate.
+        // They must keep reading — they simply carry no economics, exactly as before.
+        var projection = RoundTrip("Swap", new
+        {
+            schemaVersion = 1,
+            effectiveDate = "2026-01-15",
+            maturityDate = "2031-01-15",
+            legs = new object[]
+            {
+                new { legType = "Fixed", currency = "USD", fixedRate = 0.0425m },
+                new { legType = "Floating", currency = "USD", index = "SOFR" }
+            }
+        });
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(SecurityMasterMapping.ToDetail(projection));
+
+        terms.Legs.Should().HaveCount(2);
+        terms.Legs![0].FixedRate.Should().Be(0.0425m);
+        terms.Legs[0].Notional.Should().BeNull();
+        terms.Legs[1].IndexName.Should().Be("SOFR");
+    }
+
+    [Theory]
+    [InlineData("Swap", "legs")]
+    [InlineData("StructuredCredit", "factorSchedule")]
+    [InlineData("DirectLoan", "principalSchedule")]
+    [InlineData("DirectLoan", "covenants")]
+    public void DeclaredElementShapes_CoverEveryEconomicallyMeaningfulArray(string assetClass, string fieldKey)
+    {
+        // The schema table declared only top-level types, which is exactly how the factor schedule
+        // and the swap leg drifted: both were the right kind of thing carrying the wrong contents.
+        // Arrays whose elements carry economics must declare those elements so the codecs can be
+        // measured against the contract instead of against each other.
+        var field = SecurityAssetTermsSchema.Field(assetClass, fieldKey);
+
+        field.Should().NotBeNull();
+        field!.Type.Should().Be(SecurityAssetTermFieldType.Array);
+        field.ElementFields.Should().NotBeEmpty(
+            $"'{assetClass}.{fieldKey}' carries economics in its elements, so their shape is part of the contract");
+    }
+
+    [Theory]
+    [InlineData("Swap", "legs")]
+    [InlineData("StructuredCredit", "factorSchedule")]
+    public void SerializedElements_ConformToTheDeclaredElementShape(string assetClass, string fieldKey)
+    {
+        var projection = assetClass == "Swap"
+            ? RoundTrip("Swap", new
+            {
+                schemaVersion = 1,
+                effectiveDate = "2026-01-15",
+                maturityDate = "2031-01-15",
+                legs = new object[]
+                {
+                    new
+                    {
+                        legId = "fixed-leg",
+                        legType = "Fixed",
+                        currency = "USD",
+                        direction = "Pay",
+                        fixedRate = 0.0425m,
+                        notional = 25_000_000m,
+                        paymentFrequency = "SemiAnnual",
+                        dayCount = "30/360",
+                        exchangesPrincipal = false
+                    }
+                }
+            })
+            : RoundTrip("StructuredCredit", new
+            {
+                schemaVersion = 1,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1_000_000m,
+                couponOrIndex = "SOFR+250",
+                factorSchedule = new object[] { new { asOfDate = "2026-02-01", factor = 0.9912m } }
+            });
+
+        var declared = SecurityAssetTermsSchema.Field(assetClass, fieldKey)!.ElementFields;
+        var element = projection.AssetSpecificTerms.GetProperty(fieldKey)[0];
+
+        // Every required element field must actually be emitted...
+        foreach (var required in declared.Where(static f => f.Required))
+        {
+            element.TryGetProperty(required.Key, out var value).Should().BeTrue(
+                $"'{assetClass}.{fieldKey}[].{required.Key}' is declared required");
+            value.ValueKind.Should().NotBe(JsonValueKind.Null);
+        }
+
+        // ...nothing may be emitted that the contract does not declare...
+        var declaredKeys = declared.Select(static f => f.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var emitted in element.EnumerateObject())
+        {
+            declaredKeys.Should().Contain(emitted.Name,
+                $"'{assetClass}.{fieldKey}[].{emitted.Name}' is serialized but undeclared");
+        }
+
+        // ...and every emitted value must match its declared type. Checking names alone would let
+        // the serializer regress `factor` from a number to a string, or a date to a boolean, while
+        // this guard still passed — which would defeat the reason ElementFields exists.
+        foreach (var field in declared)
+        {
+            if (!element.TryGetProperty(field.Key, out var value) || value.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            AssertValueKind(value, field.Type, $"{assetClass}.{fieldKey}[].{field.Key}");
+        }
+    }
+
+    private static void AssertValueKind(JsonElement value, SecurityAssetTermFieldType declared, string path)
+    {
+        switch (declared)
+        {
+            case SecurityAssetTermFieldType.Decimal:
+            case SecurityAssetTermFieldType.Integer:
+                value.ValueKind.Should().Be(JsonValueKind.Number, $"'{path}' is declared {declared}");
+                break;
+            case SecurityAssetTermFieldType.Boolean:
+                value.ValueKind.Should().BeOneOf([JsonValueKind.True, JsonValueKind.False],
+                    $"'{path}' is declared {declared}");
+                break;
+            case SecurityAssetTermFieldType.Date:
+                value.ValueKind.Should().Be(JsonValueKind.String, $"'{path}' is declared {declared}");
+                DateOnly.TryParse(value.GetString(), out _).Should().BeTrue(
+                    $"'{path}' is declared Date and must parse as one");
+                break;
+            case SecurityAssetTermFieldType.Guid:
+                value.ValueKind.Should().Be(JsonValueKind.String, $"'{path}' is declared {declared}");
+                Guid.TryParse(value.GetString(), out _).Should().BeTrue(
+                    $"'{path}' is declared Guid and must parse as one");
+                break;
+            case SecurityAssetTermFieldType.String:
+                value.ValueKind.Should().Be(JsonValueKind.String, $"'{path}' is declared {declared}");
+                break;
+            case SecurityAssetTermFieldType.Array:
+                value.ValueKind.Should().Be(JsonValueKind.Array, $"'{path}' is declared {declared}");
+                break;
+            case SecurityAssetTermFieldType.Object:
+                value.ValueKind.Should().Be(JsonValueKind.Object, $"'{path}' is declared {declared}");
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Pushes a projection through the canonical write path — C# terms JSON into the F# domain, then
+    /// back out through the snapshot serializer — so what comes back is exactly what would be
+    /// persisted and replayed.
+    /// </summary>
+    private static SecurityProjectionRecord RoundTrip(string assetClass, object assetSpecificTerms)
+    {
+        var projection = new SecurityProjectionRecord(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: assetClass,
+            Status: SecurityStatusDto.Active,
+            DisplayName: "Test Security",
+            Currency: "USD",
+            PrimaryIdentifierKind: "InternalCode",
+            PrimaryIdentifierValue: "TEST-1",
+            CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Test Security", currency = "USD" }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(assetSpecificTerms),
+            Provenance: JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "test",
+                asOf = DateTimeOffset.UtcNow,
+                updatedBy = "tester"
+            }),
+            Version: 1,
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-1),
+            EffectiveTo: null,
+            Identifiers: Array.Empty<SecurityIdentifierDto>(),
+            Aliases: Array.Empty<SecurityAliasDto>());
+
+        var record = SecurityMasterMapping.ToRecord(projection);
+        return SecurityMasterMapping.ToProjection(new SecurityMasterSnapshotWrapper(record));
+    }
+}

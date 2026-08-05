@@ -351,11 +351,41 @@ type OtherSecurityTerms = {
     SettlementType: string option
 }
 
+/// One leg of a multi-leg or floating-rate structure (swap leg, funding leg).
+///
+/// Carries the full per-leg economics the cash-flow projection reads — notional, payment
+/// frequency, day count, direction — rather than a rate label alone. A leg written with only a
+/// type and a rate is not projectable: the read side has no notional to accrue on and no
+/// frequency to schedule against, so it silently yields nothing.
 type SwapLeg = {
+    /// Stable per-leg identifier. None when the source carries no id; the projection then falls
+    /// back to a positional identifier.
+    LegId: string option
+    /// Rate-kind label ("Fixed", "Floating", …). Drives the projected leg's rate treatment.
     LegType: string
     Currency: string
+    /// "Pay" or "Receive" from the holder's perspective. None when the source carries no
+    /// direction — a multi-leg structure with a directionless leg cannot be netted honestly, so
+    /// only per-leg schedules are produced for it.
+    Direction: string option
     Index: string option
     FixedRate: decimal option
+    /// Spread over the reference index in basis points, for floating legs.
+    SpreadBps: decimal option
+    /// Last observed index fixing. Floating legs project flat-forward at this rate plus the
+    /// spread; no forward curve is implied.
+    CurrentIndexRate: decimal option
+    /// Leg notional. None falls back to the security-level principal face.
+    Notional: decimal option
+    /// Coupon payment frequency (Annual, SemiAnnual, Quarterly, Monthly, …). None falls back to
+    /// the security-level payment frequency.
+    PaymentFrequency: string option
+    /// Day-count convention for this leg's accrual. None falls back to the security-level
+    /// convention.
+    DayCount: string option
+    /// True when the leg exchanges principal at the effective and maturity dates (e.g. the funding
+    /// leg of a cross-currency swap).
+    ExchangesPrincipal: bool
 }
 
 type SwapTerms = {
@@ -374,6 +404,27 @@ type Covenant = {
 type PrincipalPaymentEntry = {
     PaymentDate: DateOnly
     Amount: decimal
+}
+
+/// A single dated pool-factor point on a structured (factor-based) instrument's schedule.
+///
+/// Amortization on a factor instrument runs off the latest schedule point dated on or before the
+/// valuation date. A single scalar factor cannot express a paydown curve, so a tranche modelled
+/// with only a current factor restates face at one static level for its whole life.
+type FactorScheduleEntry = {
+    AsOfDate: DateOnly
+    /// Outstanding pool factor in effect from <c>AsOfDate</c>, in [0, 1]. Zero is a fully paid-down
+    /// pool, not a missing value.
+    Factor: decimal
+    /// Where the observation came from (e.g. "custodian-factor-file", "trustee-report").
+    Source: string option
+    /// Retained-evidence route for the observation. The factor-paydown projection fails closed
+    /// without it — a paydown posts real principal, so it may not rest on an unevidenced number.
+    /// Optional here because a schedule can legitimately be captured before its evidence is filed;
+    /// the accounting gate, not the domain, is what refuses to post in that state.
+    EvidenceLink: string option
+    /// Content hash of the retained source row, for tamper-evidence.
+    SourceContentHash: string option
 }
 
 type DirectLoanTerms = {
@@ -400,9 +451,18 @@ type StructuredCreditTerms = {
     PoolId: string option
     CollateralType: string
     OriginalFace: decimal
+    /// Scalar pool factor. Used only when <c>FactorSchedule</c> has no point on or before the
+    /// valuation date.
     CurrentFactor: decimal option
     CouponOrIndex: string
-    FactorSchedule: string option
+    /// Dated pool-factor schedule, ascending by date. Empty when the tranche carries only the
+    /// scalar <c>CurrentFactor</c>.
+    FactorSchedule: FactorScheduleEntry list
+    /// Free-text factor-schedule reference carried forward from the pre-typed schema, where this
+    /// term was an unparsed string (a vendor name, a document reference, an operator note). Never
+    /// used to derive economics; retained so legacy text is not dropped when a record is
+    /// re-written under the typed schedule.
+    FactorScheduleNote: string option
 }
 
 type PrivateFundInterestTerms = {

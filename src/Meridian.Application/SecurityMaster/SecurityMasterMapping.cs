@@ -332,7 +332,8 @@ internal static class SecurityMasterMapping
                 GetRequiredDecimal(terms, "originalFace"),
                 ToOption(GetOptionalDecimal(terms, "currentFactor")),
                 GetRequiredString(terms, "couponOrIndex"),
-                ToOption(GetOptionalString(terms, "factorSchedule")))),
+                ToFSharpList(ToFactorSchedule(terms)),
+                ToOption(GetFactorScheduleNote(terms)))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -461,12 +462,148 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")));
     }
 
+    // Reads are alias-tolerant on the fields vendors spell differently, and every field beyond
+    // legType/currency is optional, so a leg persisted under the pre-widening shape (legType,
+    // currency, index, fixedRate only) still deserializes — it simply carries no per-leg
+    // economics, exactly as before.
     private static SwapLeg ToSwapLeg(JsonElement json)
         => new(
-            GetRequiredString(json, "legType"),
+            ToOption(GetFirstOptionalString(json, "legId", "id", "name")),
+            // rateType/type are declared aliases of legType; requiring the canonical spelling alone
+            // would make the alias contract unusable on the write path — a vendor payload the
+            // cash-flow resolver reads happily would throw before it could ever be persisted.
+            GetFirstRequiredString(json, "legType", "rateType", "type"),
             GetRequiredString(json, "currency"),
-            ToOption(GetOptionalString(json, "index")),
-            ToOption(GetOptionalDecimal(json, "fixedRate")));
+            ToOption(NormalizeLegDirection(GetFirstOptionalString(json, "direction", "payReceive", "payOrReceive", "side"))),
+            ToOption(GetFirstOptionalString(json, "index", "indexName", "referenceIndex")),
+            // Every leg term reads through the shared reader — including these two, which were left
+            // on the narrow number-only helper when the rest moved across. A fixed rate arriving as
+            // "rate", "couponRate", or the string "0.0425" would otherwise persist as null and the
+            // leg would project at 0%.
+            ToOption(GetFirstOptionalDecimal(json, "fixedRate", "rate", "couponRate")),
+            ToOption(GetFirstOptionalDecimal(json, "spreadBps")),
+            ToOption(GetFirstOptionalDecimal(json, "currentIndexRate", "lastFixing", "currentRate", "indexRate")),
+            ToOption(GetFirstOptionalDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
+            ToOption(GetFirstOptionalString(json, "paymentFrequency", "frequency")),
+            ToOption(GetFirstOptionalString(json, "dayCount", "dayCountConvention", "dayCountBasis")),
+            GetFirstOptionalBoolean(json, "exchangesPrincipal", "principalExchange", "notionalExchange") ?? false);
+
+    /// <summary>
+    /// Maps the vendor direction tokens the cash-flow resolver already accepts (anything containing
+    /// PAY or REC — "Payer", "Receiver", "P", "RCV") onto the canonical Pay/Receive the domain
+    /// validates. Normalizing on the way in keeps the strict domain check meaningful without
+    /// rejecting payloads the read side considers perfectly legible. An unrecognized token is
+    /// passed through unchanged so the domain still reports it rather than silently guessing.
+    /// </summary>
+    private static string? NormalizeLegDirection(string? direction)
+    {
+        if (string.IsNullOrWhiteSpace(direction))
+        {
+            return null;
+        }
+
+        var normalized = direction.Trim().ToUpperInvariant();
+        if (normalized.Contains("PAY", StringComparison.Ordinal))
+        {
+            return "Pay";
+        }
+
+        return normalized.Contains("REC", StringComparison.Ordinal) ? "Receive" : direction.Trim();
+    }
+
+    /// <summary>
+    /// Reads one dated pool-factor point. Both halves are required; see the body for why a partial
+    /// row is rejected rather than skipped.
+    /// </summary>
+    private static FactorScheduleEntry ToFactorScheduleEntry(JsonElement json)
+    {
+        if (json.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException("Each factorSchedule entry must be a JSON object.");
+        }
+
+        // Both halves are required, and a row missing either is rejected rather than skipped.
+        // Dropping it would let a create or amend report success while silently discarding a vendor
+        // paydown observation — and the security would then fail its coverage gate for a reason
+        // nothing in the write path ever reported.
+        // `?? throw` already unwraps the nullable, so these are DateOnly and decimal, not DateOnly?
+        // and decimal? — no .Value access.
+        var asOf = GetFirstOptionalDateOnly(json, "asOfDate", "factorDate", "effectiveDate", "date")
+            ?? throw new InvalidOperationException("Missing required date 'asOfDate' in a factorSchedule entry.");
+        var factor = GetFirstOptionalDecimal(json, "factor", "currentFactor")
+            ?? throw new InvalidOperationException("Missing required decimal 'factor' in a factorSchedule entry.");
+        return new FactorScheduleEntry(
+                asOf,
+                factor,
+                ToOption(GetFirstOptionalString(json, "source")),
+                ToOption(GetFirstOptionalString(json, "evidenceLink", "evidenceId", "evidenceRoute")),
+                ToOption(GetFirstOptionalString(json, "sourceContentHash", "contentHash", "sourceHash")));
+    }
+
+    /// <summary>
+    /// Reads the typed factor schedule from either declared container spelling. The resolver accepts
+    /// both <c>factorSchedule</c> and <c>factorSchedules</c>; reading only the canonical one here
+    /// would round-trip a payload the read side understands into an empty schedule.
+    /// <para>
+    /// The pre-typed shape, where <c>factorSchedule</c> held a free-text string, yields no entries
+    /// here; that string is preserved verbatim by <see cref="GetFactorScheduleNote"/> rather than
+    /// being dropped on re-write.
+    /// </para>
+    /// </summary>
+    private static IEnumerable<FactorScheduleEntry> ToFactorSchedule(JsonElement json)
+        => (ReadFactorScheduleContainer(json, "factorSchedule")
+                ?? ReadFactorScheduleContainer(json, "factorSchedules")
+                ?? Enumerable.Empty<JsonElement>())
+            .Select(ToFactorScheduleEntry)
+            // Deliberately no de-duplication: the domain rejects two points on the same date, and
+            // collapsing them here would sanitize the input before that validator ever saw it,
+            // silently discarding one of two disagreeing vendor observations while the create or
+            // amend reported success. Ordering is safe — it changes no content.
+            .OrderBy(static entry => entry.AsOfDate);
+
+    /// <summary>
+    /// Reads one declared container spelling for the typed factor schedule.
+    /// </summary>
+    /// <returns>
+    /// The container's rows, or <c>null</c> when the container is absent, empty, or holds the
+    /// pre-typed free-text string — all three cases let the alternate spelling be probed, and the
+    /// string is carried forward by <see cref="GetFactorScheduleNote"/> rather than treated as an
+    /// error.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The container is present but holds some other JSON type. Treating that as an absent schedule
+    /// would persist an empty list while the create or amend reported success, losing a vendor
+    /// paydown observation with nothing in the write path ever reporting it — the same silent-drop
+    /// failure the per-row validation above rejects.
+    /// </exception>
+    private static List<JsonElement>? ReadFactorScheduleContainer(JsonElement json, string propertyName)
+    {
+        if (!SecurityTermReader.TryGetProperty(json, propertyName, out var value))
+        {
+            return null;
+        }
+
+        switch (value.ValueKind)
+        {
+            case JsonValueKind.Array:
+                var rows = value.EnumerateArray().ToList();
+                return rows.Count > 0 ? rows : null;
+            case JsonValueKind.String:
+            case JsonValueKind.Null:
+            case JsonValueKind.Undefined:
+                return null;
+            default:
+                throw new InvalidOperationException(
+                    $"Property '{propertyName}' must be an array of factor schedule entries.");
+        }
+    }
+
+    private static string? GetFactorScheduleNote(JsonElement json)
+        => GetOptionalString(json, "factorScheduleNote")
+           ?? (SecurityTermReader.TryGetProperty(json, "factorSchedule", out var legacy)
+               && legacy.ValueKind == JsonValueKind.String
+                   ? legacy.GetString()
+                   : null);
 
     private static Covenant ToCovenant(JsonElement json)
         => new(
@@ -581,9 +718,14 @@ internal static class SecurityMasterMapping
             ? value
             : throw new InvalidOperationException($"Missing required array '{propertyName}'.");
 
+    // Container names are matched the same case-insensitive way the read side matches them. The
+    // exact-match overload would round-trip a payload spelling its container `FactorSchedule` into
+    // an empty list even though the cash-flow resolver reads it — the same write-narrower-than-read
+    // gap this change exists to close, one level up from the row fields.
     private static IEnumerable<JsonElement> GetOptionalArrayItems(JsonElement json, string propertyName)
     {
-        if (!json.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
+        if (!SecurityTermReader.TryGetProperty(json, propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Array)
         {
             yield break;
         }
@@ -603,6 +745,60 @@ internal static class SecurityMasterMapping
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
+
+    // Alias-priority readers, delegated to the same SecurityTermReader the cash-flow resolver uses.
+    //
+    // These were briefly hand-rolled here, which quietly recreated the defect this whole change is
+    // about: the write path accepted a narrower set of inputs than the read path; a leg whose
+    // notional arrived as the string "25000000" resolved fine for projection but persisted as null.
+    // Sharing one reader is what actually keeps the two sides at parity — alias order, case
+    // handling, and numeric-string coercion all come from a single implementation rather than two
+    // that agree only until someone edits one.
+    private static string? GetFirstOptionalString(JsonElement json, params string[] propertyNames)
+        => SecurityTermReader.ReadString(json, propertyNames);
+
+    private static decimal? GetFirstOptionalDecimal(JsonElement json, params string[] propertyNames)
+        => SecurityTermReader.ReadDecimal(json, propertyNames);
+
+    private static DateOnly? GetFirstOptionalDateOnly(JsonElement json, params string[] propertyNames)
+        => SecurityTermReader.ReadDate(json, propertyNames);
+
+    /// <summary>
+    /// Alias-priority boolean read that also accepts a quoted boolean, matching the coercion the
+    /// cash-flow resolver applies. A vendor payload sending <c>"true"</c> as a string is legible to
+    /// the read side; without the same coercion here it would silently persist as <see langword="false"/>
+    /// and a cross-currency leg would lose its principal exchange.
+    /// </summary>
+    private static bool? GetFirstOptionalBoolean(JsonElement json, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, propertyName, out var property))
+            {
+                continue;
+            }
+
+            if (property.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                return property.GetBoolean();
+            }
+
+            if (property.ValueKind == JsonValueKind.String && bool.TryParse(property.GetString(), out var parsed))
+            {
+                return parsed;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Required read that accepts any declared alias, reporting the canonical spelling when none
+    /// resolve so the error names the contract rather than whichever alias was tried last.
+    /// </summary>
+    private static string GetFirstRequiredString(JsonElement json, params string[] propertyNames)
+        => GetFirstOptionalString(json, propertyNames)
+           ?? throw new InvalidOperationException($"Missing required string '{propertyNames[0]}'.");
 
     private static decimal GetRequiredDecimal(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.TryGetDecimal(out var decimalValue)

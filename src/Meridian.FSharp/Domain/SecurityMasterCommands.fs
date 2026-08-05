@@ -139,7 +139,19 @@ module SecurityMaster =
                |> List.collect (fun leg ->
                    []
                    @ requireNotBlank "swap_leg_type_required" "SwapLeg.LegType" leg.LegType
-                   @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency))
+                   @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency
+                   @ require (leg.Notional |> Option.forall (fun notional -> notional > 0m))
+                       (error "swap_leg_notional_invalid" "SwapLeg Notional must be greater than zero when present.")
+                   // SpreadBps is deliberately unconstrained in sign: a floating leg quoted below its
+                   // reference index (e.g. SOFR - 10bp) is ordinary economics, and the cash-flow
+                   // projection models the leg as CurrentIndexRate + SpreadBps, clamping only the
+                   // resulting annual rate.
+                   @ require
+                       (leg.Direction
+                        |> Option.forall (fun direction ->
+                            String.Equals(direction, "Pay", StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(direction, "Receive", StringComparison.OrdinalIgnoreCase)))
+                       (error "swap_leg_direction_invalid" "SwapLeg Direction must be either 'Pay' or 'Receive' when present.")))
         | SecurityKind.DirectLoan terms ->
             []
             @ requireNotBlank "direct_loan_borrower_required" "Borrower" terms.Borrower
@@ -157,6 +169,35 @@ module SecurityMaster =
             @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m))
                 (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be zero or greater when present.")
             @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
+            // A negative factor, or one above par, restates face to a nonsense level. Zero is
+            // allowed: a fully paid-down pool legitimately reports a final factor of 0, the scalar
+            // CurrentFactor path already accepts it, and FactorPaydownProjectionService treats
+            // CurrentFactor = 0 as valid — rejecting it here would make the final paydown of every
+            // pool unrecordable.
+            @ (terms.FactorSchedule
+               |> List.collect (fun entry ->
+                   require (entry.Factor >= 0m && entry.Factor <= 1m)
+                       (error "structured_credit_factor_schedule_factor_invalid"
+                              "StructuredCredit FactorSchedule factors must be between zero and one inclusive.")))
+            @ require
+                (terms.FactorSchedule
+                 |> List.map (fun entry -> entry.AsOfDate)
+                 |> List.distinct
+                 |> List.length = terms.FactorSchedule.Length)
+                (error "structured_credit_factor_schedule_duplicate_date"
+                       "StructuredCredit FactorSchedule must not carry two points for the same date.")
+            // A pool factor only ever amortizes down. An increasing schedule is accepted nowhere
+            // downstream — FactorPaydownProjectionService rejects the transition outright with
+            // factor-paydown.factor-increase — so accepting it here would let a record be created
+            // canonically and then fail High-severity in accounting, which is the exact
+            // write-accepts/read-rejects split this change exists to close.
+            @ require
+                (terms.FactorSchedule
+                 |> List.sortBy (fun entry -> entry.AsOfDate)
+                 |> List.pairwise
+                 |> List.forall (fun (earlier, later) -> later.Factor <= earlier.Factor))
+                (error "structured_credit_factor_schedule_not_monotonic"
+                       "StructuredCredit FactorSchedule factors must not increase over time; a pool factor only amortizes down.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor

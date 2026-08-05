@@ -36,6 +36,52 @@ module SecurityMasterLegacyUpgrade =
 
     let private mapSweepFrequency = Option.map PaymentFrequency.OtherFrequency
 
+    /// The observation with the latest <c>AsOfDate</c>, independent of the order the caller supplied.
+    /// Every other reader of a factor schedule sorts by date first; this exists so the scalar
+    /// current-factor derivation agrees with them rather than trusting insertion order.
+    let private latestFactorObservation (schedule: FactorScheduleEntry list) =
+        match schedule with
+        | [] -> None
+        | entries -> entries |> List.maxBy (fun entry -> entry.AsOfDate) |> Some
+
+    /// Converts the domain's dated factor *levels* into the *transitions* the accounting-event
+    /// adapter reads. A level says what the factor is; a paydown event needs to know what it moved
+    /// from, so consecutive levels are paired into (prior, current).
+    ///
+    /// The first observation establishes an opening *level*, not a paydown: it pairs against itself.
+    /// Seeding it from par instead would be an assumption that the security was issued immediately
+    /// before that row, and it is wrong for every partial-history import — a schedule onboarded
+    /// mid-life whose first available trustee row is 0.80 would be read as a 20% principal paydown
+    /// in that period, overstating principal returned. A caller who genuinely wants the opening
+    /// paydown recorded says so by including the explicit 1.0 row at issuance.
+    ///
+    /// Every observation is emitted, including ones where the factor did not move. It is tempting
+    /// to drop those as empty paydowns, but the coverage check in SecurityMasterAccountingEventService
+    /// requires an entry dated inside the reporting period before it will generate anything at all:
+    /// silently dropping an unchanged current-period trustee observation turns it into
+    /// FACTOR_SCHEDULE_MISSING / FACTOR_STALE and blocks the whole security. A retained no-change
+    /// row is harmless downstream — FactorPaydownProjectionService returns NoChange and posts
+    /// nothing when prior and current are equal.
+    let private toFactorSchedulePoints (schedule: FactorScheduleEntry list) : FactorSchedulePoint list =
+        schedule
+        |> List.sortBy (fun entry -> entry.AsOfDate)
+        |> List.fold
+            (fun (priorFactor, points) entry ->
+                // None only for the first observation, which therefore reports no movement.
+                let effectivePrior = defaultArg priorFactor entry.Factor
+                let point =
+                    { AsOfDate = entry.AsOfDate
+                      PriorFactor = effectivePrior
+                      Factor = entry.Factor
+                      Source = entry.Source
+                      EvidenceLink = entry.EvidenceLink
+                      SourceContentHash = entry.SourceContentHash }
+
+                Some entry.Factor, point :: points)
+            (None, [])
+        |> snd
+        |> List.rev
+
     /// Builds the canonical classification for a legacy kind from the single
     /// <see cref="AssetClassRegistry"/> source of truth, layering on the two
     /// instrument-data-dependent sub-type refinements the registry cannot express
@@ -125,6 +171,7 @@ module SecurityMasterLegacyUpgrade =
                     Some {
                         Factor = None
                         FactorDate = None
+                        FactorSchedule = []
                         WeightedAvgCoupon = None
                         WeightedAvgMaturityMonths = None
                         WeightedAvgLoanAgeMos = None
@@ -425,21 +472,42 @@ module SecurityMasterLegacyUpgrade =
                         Some {
                             CouponType = Some (CouponKind.OtherCoupon terms.CouponOrIndex)
                             CouponRate = None
-                            PaymentFrequency = terms.FactorSchedule |> Option.map PaymentFrequency.OtherFrequency
+                            // The factor schedule used to be routed here as a payment frequency and
+                            // below as a reset frequency, because it was the only string on the
+                            // record. It is neither; it now lands in StructuredProduct.FactorSchedule
+                            // where the paydown reader looks for it.
+                            PaymentFrequency = None
                             DayCount = None
                         }
                     FloatingRate =
                         Some {
                             ReferenceIndex = Some terms.CouponOrIndex
                             SpreadBps = None
-                            ResetFrequency = terms.FactorSchedule
+                            ResetFrequency = None
                             FloorRate = None
                             CapRate = None
                         }
                     StructuredProduct =
                         Some {
-                            Factor = terms.CurrentFactor
-                            FactorDate = None
+                            // The scalar stays authoritative where it exists — it may have been
+                            // updated more recently than the schedule, and it carries no date to
+                            // compare against. The schedule supplies the current factor only for a
+                            // tranche that has no scalar, in which case its date is known too.
+                            // Factor and FactorDate are always derived from the same source so they
+                            // cannot describe different points in the paydown.
+                            // Latest by date, not by insertion order. The monotonicity validator and
+                            // toFactorSchedulePoints both sort before they read, so taking List.tryLast
+                            // on the raw list here would let a non-chronological input produce a
+                            // correct transition schedule beside a scalar factor pointing at an older
+                            // observation — stale face and exposure for anything reading the scalar.
+                            Factor =
+                                terms.CurrentFactor
+                                |> Option.orElse (latestFactorObservation terms.FactorSchedule |> Option.map (fun entry -> entry.Factor))
+                            FactorDate =
+                                match terms.CurrentFactor with
+                                | Some _ -> None
+                                | None -> latestFactorObservation terms.FactorSchedule |> Option.map (fun entry -> entry.AsOfDate)
+                            FactorSchedule = toFactorSchedulePoints terms.FactorSchedule
                             WeightedAvgCoupon = None
                             WeightedAvgMaturityMonths = None
                             WeightedAvgLoanAgeMos = None
