@@ -242,8 +242,13 @@ and criterion 3 requires naming *why* each position was blocked. Two specifics f
   mark through in precisely the configuration that has no other protection, and would turn a
   negative mark into a later exception instead of an operator-visible blocked position.
 
-*Verdict severity order, most severe first:* `InvalidPrice`, `FutureDated`, `MissingObservation`,
-`Stale`, `LowConfidence`, `Fresh`.
+*Verdict severity order, most severe first:* `Unavailable`, `InvalidPrice`, `FutureDated`,
+`MissingObservation`, `Stale`, `LowConfidence`, `Fresh`.
+
+`Unavailable` leads it — there is no mark at all, which outranks every judgement about a mark that
+exists. This list is what an implementer reads for assessment ranking and for `MarkFreshnessRef`
+aggregation, and it omitted the verdict the enum declaration and the row-state rules both treat as
+most severe, so a missing quote would have sorted behind a merely stale one.
 
 **Decision: fail closed at draft intake and at the posting boundary — not by flipping a schedule state.**
 
@@ -1256,7 +1261,20 @@ override id where one applies.
 overrides — the fail-closed posture applies to the override lookup itself.
 
 **Note:** `StalePricedSymbols` and `IsBlocked` currently have zero production readers.
-`BlockedPositions` supersedes both; delete them rather than leaving a third unread signal.
+`BlockedPositions` supersedes both — but they are **public members of a public type**, so removing
+them outright in Phase 2 is a source break with no migration window, and the breaking-change section
+promises shims only for the two policy types. "No readers in this repository" is not the same claim
+as "no external readers", and it is the second claim that a public API removal needs.
+
+So they follow the same pattern as the policy types: `[Obsolete]` in Phase 2 with forwarding
+implementations — `IsBlocked` returns `BlockedPositions.Count > 0`, `StalePricedSymbols` projects
+the symbols out of `BlockedPositions` — and **Phase 5 deletes them** alongside the policy shims.
+That also keeps the release note honest: one list of removals, in one phase, rather than two
+source-breaking removals in two places.
+
+The original reasoning still holds for the end state — a third unread signal beside
+`BlockedPositions` is exactly the confusion worth removing — but it argues for deleting them at the
+end of the migration window rather than at the start of it.
 
 ### `AutomatedJournalIntakeRunner` (modified) — first enforcement point
 
@@ -1935,14 +1953,30 @@ design, not an accident of ordering.
 Retention follows the valuation it describes: assessments are deleted when their ledger book's
 valuation history is pruned. They are evidence about a specific dated valuation, not a time series.
 
+**Except while a retained draft still needs them.** The pruner skips any `valuation_run_id` still
+named by a row in `ledger_valuation_attempt_draft`, because the posting guard fails closed on an
+empty `ReadByRunAsync` — pruning a run whose draft has not been posted or discarded would strand
+that draft permanently, which is the same defect the run id in the unique key was added to prevent,
+reached through retention instead of through a rerun. The two retention rules are deliberately the
+same rule: assessments and their attempt-draft association are pruned together, when the draft is
+disposed of.
+
 The migrations take their ordinals from the reservation table in
 [`docs/engineering/blueprints/README.md`](README.md#ledger-migration-ordinals). **036–038 are
-reserved for this blueprint** — override plus audit, the assessment table, and the valuation attempt
-record. `ledger_valuation_attempt_draft` is created by **038 alongside `ledger_valuation_attempt`**
-rather than taking a fourth ordinal: it is part of the same attempt protocol, lands in the same
-phase, and is meaningless without the table it references, so splitting them would allow a
-half-applied protocol. The reservation therefore still reads 036–038 and the README table needs no
-edit. Re-derive the next
+reserved for this blueprint, in phase order**: 036 the assessment table and 037 the valuation
+attempt record — both **Phase 2** — then 038 the override plus its audit table, **Phase 3**.
+
+The ordering is not cosmetic. `LedgerMigrationRunner` applies scripts in filename order and records
+each filename, and Phase 2 is explicitly allowed to merge before Phase 3, so an earlier reservation
+that gave the override tables 036 would have had a database upgraded through PR 2 apply 037–038 and
+then apply 036 afterwards on PR 3 — a lower ordinal running after a higher one, which defeats the
+convention and any dependency an ordinal is taken to encode. Reserving in the order the phases ship
+removes the possibility rather than documenting around it.
+
+`ledger_valuation_attempt_draft` is created by **037 alongside `ledger_valuation_attempt`** rather
+than taking a fourth ordinal: it is part of the same attempt protocol, lands in the same phase, and
+is meaningless without the table it references, so splitting them would allow a half-applied
+protocol. Re-derive the next
 free ordinal from disk at implementation time and update that table if an unrelated lane lands
 first; do not renumber a migration that has already shipped.
 
@@ -2213,6 +2247,7 @@ through their own services rather than inferring them from the schedule state.
 | `WriteAssessedAsync_BlockedRun_StoresNoPayloadAndParksAtReviewRequired` | a blocked run retains nothing |
 | `PostingGuard_AfterAttemptCompletion_StillVerifiesTheDraftAssociation` | **the association outlives `prepared_draft_payload`**, which is cleared at `Complete` while drafts are posted after it |
 | `AttemptDraftAssociation_PrunedOnlyWhenTheDraftIsPostedOrDiscarded` | not at attempt completion, which is the mistake this replaces |
+| `AssessmentPruning_SkipsARunStillNamedByARetainedDraft` | valuation-history pruning must not strand a draft the guard then refuses on an empty read |
 | `UnresolvedCase_NamesOverriddenPositionsNotJustACount` | the bypass ledger has to survive onto the remediation surface |
 | `TryClaimAsync_DifferentRunId_AfterConsumption_ReturnsNull` | the one-shot guarantee still holds across runs |
 | `TryClaimAsync_QuoteFingerprintChanged_ReturnsNullAndAuditsEvidenceChanged` | an approval is of a mark, not a slot |
@@ -2271,7 +2306,7 @@ through their own services rather than inferring them from the schedule state.
 
 | Test | Project | Verifies |
 | --- | --- | --- |
-| `WorkstationEndpoints_PositionRow_CarriesPopulatedMarkFreshness` | `tests/Meridian.Tests` | criterion 4 browser lane — **populated**, not merely present |
+| `WorkstationEndpoints_PositionRow_CarriesPopulatedMarkFreshness` | `tests/Meridian.Tests` | criterion 4 browser lane — **populated**, not merely present. Applies to the two **valuation** position tables. `WorkstationTradingPositionRow` is governed by open question 5, and if that resolves to the honest null it takes `WorkstationEndpoints_TradingRow_RendersNotApplicable` instead — asserting populated freshness there would force an implementer to fabricate a valuation assessment for a live mark just to satisfy the plan, which is the outcome the question exists to avoid |
 | `PortfolioReadService_JoinsPersistedAssessment` | `tests/Meridian.Tests` | the producer join |
 | `AssessmentStore_RerunOfSameDate_KeepsBothAttempts` | `tests/Meridian.Tests` | the unique key includes the run id — **inverts** the earlier `…_ReplacesRatherThanAccumulates`, which pinned the behaviour that stranded retained drafts |
 | `AssessmentStore_ReadByRunAsync_AfterALaterRerun_StillReturnsTheEarlierAttempt` | `tests/Meridian.Tests` | **the reason for the key change**: a retained draft stays checkable against the rows it was prepared from |
@@ -2283,7 +2318,8 @@ through their own services rather than inferring them from the schedule state.
 | `PostingGuard_DraftFromAVoidedAttempt_IsRefused` | `tests/Meridian.Tests` | the file-store write no database predicate can reach |
 | `AttemptStore_TransitionAfterVoid_AffectsNoRows` | `tests/Meridian.Tests` | `Voided` is terminal in the predicate, so a resurfacing worker cannot walk the attempt back |
 | `ReviewRequiredCase_SurvivesTheNextDaysRun` | `tests/Meridian.Tests` | **the case is read from assessments, not the schedule row** |
-| `FundPortfolioPosition_AggregatesWorstVerdictAndOldestObservation` | `tests/Meridian.Tests` | the aggregation rule |
+| `FundPortfolioPosition_SelectsOneContributingAssessmentWhole` | `tests/Meridian.Tests` | the aggregation rule as designed. **Renamed from `…_AggregatesWorstVerdictAndOldestObservation`**, which pinned the rejected rule — worst verdict *and* oldest observation are two independent selections over the same set, so the pair can describe a mark that never existed. A test asserting it would have locked in the exact defect the producer section forbids |
+| `FundPortfolioPosition_PrefersAnUnoverriddenBlockerOverAHigherSeverityOverriddenOne` | `tests/Meridian.Tests` | stage 1 of the selection — partitioning on effective blocking, so a non-null `OverrideId` can never pair with a sibling's `IsBlocking` |
 | `FundLedgerViewModel_BlockedPosition_SurfacesReviewRequired` | `tests/Meridian.Wpf.Tests` | criterion 3 desktop lane |
 | `FundLedgerPage_UnavailableVerdict_RendersRed` | `tests/Meridian.Wpf.Tests` | the most severe verdict must not render as default foreground |
 | `FundLedgerPage_MarkAgeColumn_RendersDashForNullAge` | `tests/Meridian.Wpf.Tests` | the nullable-age contract at the surface |
@@ -2294,14 +2330,21 @@ through their own services rather than inferring them from the schedule state.
 `dotnet` is unavailable in the authoring environment, so these are written for CI:
 
 ```bash
-# .NET — the filter must catch the scheduler, intake, lifecycle, and endpoint tests too,
-# none of which contain "MarkFreshness" in their names
+# .NET — the filter has to name every family in the test plan above, not just the ones with
+# "MarkFreshness" in the name. Each addition below corresponds to a table in that plan; a
+# filter that silently skips the migration, legacy-draft, and posting-guard cases would pass
+# while leaving exactly the guarantees this blueprint rests on unverified.
 dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true \
-  --filter "FullyQualifiedName~MarkFreshness|FullyQualifiedName~MarkOverride|FullyQualifiedName~DailyValuation|FullyQualifiedName~AutomatedJournalIntake|FullyQualifiedName~BatchLifecycle"
+  --filter "FullyQualifiedName~MarkFreshness|FullyQualifiedName~MarkOverride|FullyQualifiedName~DailyValuation|FullyQualifiedName~AutomatedJournalIntake|FullyQualifiedName~BatchLifecycle|FullyQualifiedName~AssessmentStore|FullyQualifiedName~AttemptStore|FullyQualifiedName~AttemptDraftAssociation|FullyQualifiedName~VoidAttempt|FullyQualifiedName~LegacyDraftResolve|FullyQualifiedName~ManualDraftSave|FullyQualifiedName~PostingGuard|FullyQualifiedName~UnresolvedCase|FullyQualifiedName~UniqueScopeIndex|FullyQualifiedName~OverrideStateColumn|FullyQualifiedName~PreviewRoutes|FullyQualifiedName~RolloutPreview|FullyQualifiedName~WriteAssessedAsync|FullyQualifiedName~IntakeRunner|FullyQualifiedName~FundPortfolioPosition|FullyQualifiedName~PortfolioReadService|FullyQualifiedName~WorkstationEndpoints"
+
+# Verify the filter actually reaches the plan rather than trusting it: this must list every
+# test named in the tables above, and the count must not drop when a family is added.
+dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true \
+  --filter "<the filter above>" --list-tests
 
 # WPF desktop lane
 dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true \
-  --filter "FullyQualifiedName~FundLedger"
+  --filter "FullyQualifiedName~FundLedger|FullyQualifiedName~FundPortfolioPosition"
 
 # browser workstation lane
 npm --prefix src/Meridian.Ui/dashboard run test
@@ -2402,7 +2445,8 @@ enrich a queue that by then exists rather than being what makes one exist.
       in `AutomatedJournalIntakeRunner` and **commit the `ledger_valuation_attempt` row before the
       first claim**, so a crash mid-run can recover the id instead of minting a new one.
 - [ ] Migration: `ledger_valuation_attempt` **and `ledger_valuation_attempt_draft`** in one ordinal
-      (038), with the attempt-state lifecycle, the `prepared_draft_payload` column, and the
+      (037), with the assessment table at 036 — Phase 2 takes the lower ordinals so a database
+      upgraded through this PR never applies a lower-numbered migration afterwards, with the attempt-state lifecycle, the `prepared_draft_payload` column, and the
       one-live-attempt-per-valuation unique index — which is the whole concurrency control, since
       there is deliberately no lease-reassignment rule. The association table is what the posting
       guard verifies against, and it must outlive both the payload and attempt completion.
@@ -2446,8 +2490,10 @@ enrich a queue that by then exists rather than being what makes one exist.
       that closes the generic manual-journal route; the batch check stays so a batch fails as a batch.
 - [ ] **Invert** `DailyValuationPolicyTests.StalePricePolicy_FuturePrice_IsFreshWithZeroAge`.
 - [ ] Mark **both** `StalePricePolicy` and `MarkPriceQualityPolicy` `[Obsolete]`, each with a
-      converter and a compatibility constructor overload; delete unread `StalePricedSymbols` /
-      `IsBlocked`. Neither type is deleted in this phase — Phase 5 removes both shims together.
+      converter and a compatibility constructor overload. Mark `StalePricedSymbols` and `IsBlocked`
+      `[Obsolete]` too, forwarding to `BlockedPositions`, rather than deleting them: they are public
+      members and this phase offers no migration window. Nothing is deleted in this phase — Phase 5
+      removes all four shims together.
 - [ ] **Gate:** preview evidence from Phase 1 reviewed and the override backlog sized before merge —
       and the gate has a **decision rule**, not just a number to look at. See below.
 
@@ -2482,7 +2528,7 @@ non-empty uncorrectable backlog, which is what the previous wording permitted by
       matching blocking row before inserting, so an override cannot be minted against a valuation
       that was never blocked; `Unavailable` is refused with a remediation message rather than
       approved.
-- [ ] Migration: `ledger_mark_override` — including the five `quote_*` evidence columns, without
+- [ ] Migration: `ledger_mark_override` at ordinal **038**, after Phase 2's 036–037 — including the five `quote_*` evidence columns, without
       which the fingerprint comparison and the reviewer list have nothing to read — plus
       `ledger_mark_override_audit` with a **nullable** `from_state`, and the nullable-aware partial
       unique index on the scope.
@@ -2553,15 +2599,18 @@ asserting a **populated** value. Where open question 5 resolves to "honest null"
 and the test asserts that, so the absence stays deliberate rather than looking like a wiring gap.
 
 ### Phase 5 — Wrap-up
-- [ ] Remove the `[Obsolete]` `StalePricePolicy` **and** `MarkPriceQualityPolicy` shims — both
-      converters and both compatibility constructor overloads — and the duplicated `Blockers`
-      projection.
+- [ ] Remove all four `[Obsolete]` shims together — `StalePricePolicy`, `MarkPriceQualityPolicy`,
+      `DailyMarkToMarketRun.IsBlocked`, and `DailyMarkToMarketRun.StalePricedSymbols` — with both
+      converters and both compatibility constructor overloads, and the duplicated `Blockers`
+      projection. One release note, one list of removals, one phase.
 - [ ] XML doc comments on every new public type.
 - [ ] Structured logging only — no interpolation inside log calls.
 - [ ] Update the roadmap row from `planned` with implementation paths and evidence (criterion 6).
 - [ ] **Only now** move `RISK-STALE-MARK-001` from `open` in the risk register, and update this
       document's header to match.
-- [ ] Release-note the `StalePricePolicy` removal and the default flip as source-breaking.
+- [ ] Release-note **all four** removals and the default flip as source-breaking — the two policy
+      types plus `DailyMarkToMarketRun.IsBlocked` and `StalePricedSymbols`. Naming only the
+      policy types would leave a public member removal unannounced.
 
 ---
 
@@ -2582,7 +2631,7 @@ and the test asserts that, so the absence stays deliberate rather than looking l
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
 | Fail-closed default blocks a large share of current valuations on day one | **High** | High | Phase 1 delivers the preview and Phase 2 gates on reviewing its evidence — the sequence is the mitigation, not a note attached to it. |
-| Deleting `StalePricePolicy` **or** `MarkPriceQualityPolicy` breaks an external caller's compile | Medium | Medium | `[Obsolete]` shim plus converter for each, for one release; a documented field-by-field mapping for both; release-noted as source-breaking in two places, not one. |
+| Removing a public type or member breaks an external caller's compile | Medium | Medium | Four `[Obsolete]` shims for one release — `StalePricePolicy`, `MarkPriceQualityPolicy`, and the two `DailyMarkToMarketRun` members that `BlockedPositions` supersedes — each with a converter or forwarding implementation and a documented mapping; all four removed together in Phase 5 and release-noted as one list. |
 | The override store becomes a routine bypass | Medium | High | Full-identity scope keys, a server-owned maximum lifetime so no approval can stand indefinitely, expiry at time of use, `PolicyVersion` invalidation, single-claim consumption, and `PositionsOverridden` reported beside `PositionsBlocked` on every freshness surface. |
 | A valuation-run identity that changes per attempt or is shared across attempts | Medium | High | The id is part of the request contract, minted by the runner before `PrepareAsync`, and asserted by an orchestration-level retry test rather than store tests alone. |
 | A governed valuation draft is posted through the generic manual-journal route | Medium | High | The freshness precondition lives in the shared lifecycle validation chain, not only in the batch wrapper; drafts carry `ValuationRunId`; a governed fair-value draft without one is refused rather than exempted; and the endpoint test covers the generic route. |
