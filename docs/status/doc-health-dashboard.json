@@ -1,11 +1,11 @@
 {
-  "total_files": 642,
-  "total_lines": 122935,
+  "total_files": 641,
+  "total_lines": 120418,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 222,
-  "average_lines": 191.5,
+  "average_lines": 187.9,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -978,7 +978,7 @@
     },
     {
       "path": "build/scripts/docs/README.md",
-      "line_count": 706,
+      "line_count": 802,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2154,7 +2154,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 176,
+      "line_count": 174,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2163,14 +2163,6 @@
     {
       "path": "docs/engineering/blueprints/risk-engine-severity-and-decision-journal-blueprint.md",
       "line_count": 1352,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
-      "line_count": 2597,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2586,7 +2578,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9709,
+      "line_count": 9708,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

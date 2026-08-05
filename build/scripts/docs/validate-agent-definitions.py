@@ -116,10 +116,58 @@ KNOWN_TOOLS = frozenset(
     }
 )
 
-# `mcp__server`, `mcp__server__tool`, or `mcp__server__*`. The all-server
-# `mcp__*` is handled separately because it is only valid in `disallowedTools`.
-MCP_PATTERN = re.compile(r"^mcp__[A-Za-z0-9_.-]+(?:__(?:[A-Za-z0-9_.-]+|\*))?$")
+# `mcp__server`, `mcp__server__tool`, `mcp__server__*`, or a partial tool wildcard
+# such as `mcp__github__get_*`. All four forms are documented at
+# https://code.claude.com/docs/en/permissions - "`mcp__puppeteer` matches any tool provided
+# by the `puppeteer` server", and "`mcp__github__get_*` matches its `get_` tools". The
+# bare-server form is deliberately still accepted: an earlier review read it as invalid,
+# but it resolves, and rejecting it would block legitimate declarations for no safety gain
+# - this validator exists to catch grants that resolve to *nothing*, which a bare server
+# entry is not. The all-server `mcp__*` is handled separately because an allow rule
+# containing it is skipped with a warning rather than honoured, so it is meaningful only
+# in `disallowedTools`.
+# The tool segment is a glob, so `*` may appear anywhere in it - `mcp__github__get_*`,
+# `mcp__github__*_issue`, `mcp__github__get_*_issue`. Only accepting a trailing star was
+# the same too-narrow reading that broke the Bash scope matcher. The **server** segment
+# stays glob-free: the reference requires an allow rule to name a specific configured
+# server, and an unanchored glob there is skipped with a warning rather than honoured.
+MCP_PATTERN = re.compile(r"^mcp__[A-Za-z0-9_.-]+(?:__[A-Za-z0-9_.\-*]+)?$")
 MCP_ALL_SERVERS = "mcp__*"
+
+# What an inline server config must carry to be reachable at all. Every server example in
+# https://code.claude.com/docs/en/mcp has one or the other: `command` for stdio, `url` for
+# http and sse. A config with neither cannot connect under any reading, so counting it as a
+# declaration would exempt an MCP-only grant the host resolves to nothing.
+#
+# Deliberately *only* the transport. Every documented remote example also pairs `url` with
+# `type`, but the reference never states that `type` is required, and a validator that
+# guesses at the rest of the schema rejects definitions that work - the same over-tightening
+# that made the first version of `KNOWN_FIELDS` block legitimate agents. Reject what
+# provably cannot work; leave the rest to the host.
+MCP_TRANSPORT_KEYS = frozenset({"command", "url"})
+
+# Wrappers the host removes before matching a Bash rule, quoted in full from
+# https://code.claude.com/docs/en/permissions. `command -v` and zsh's `nocorrect` are named
+# there as *not* stripped, and neither are environment runners such as `devbox run` or
+# `npx`, so both groups are absent here on purpose.
+BASH_WRAPPERS = frozenset(
+    {"timeout", "time", "nice", "nohup", "stdbuf", "command", "builtin", "noglob"}
+)
+ENV_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+DURATION = re.compile(r"\d+(?:\.\d+)?[smhd]?")
+
+# Tools whose scopes are file paths in gitignore syntax rather than shell commands.
+# `Read` and `Edit` only: "Claude Code checks file permissions against `Edit(path)` and
+# `Read(path)` rules only."
+PATH_SCOPED_TOOLS = frozenset({"Read", "Edit"})
+
+# Tools where a *path* rule is accepted and then never consulted - the host "warns at
+# startup" and matches nothing. A scoped deny on one of these therefore cancels no grant,
+# while the unscoped form still "matches that rule at the tool level everywhere". An earlier
+# revision put `Write` in PATH_SCOPED_TOOLS, which made `Write(src/*.json)` cancel
+# `Write(src/config.json)` - a grant the host leaves entirely alone, since it never reads
+# the deny at all.
+IGNORED_PATH_SCOPE_TOOLS = frozenset({"Write", "NotebookEdit", "Glob"})
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TOOL_FIELDS = ("tools", "disallowedTools")
 ALLOW_LIST_FIELD = "tools"
@@ -132,6 +180,12 @@ ALLOW_LIST_FIELD = "tools"
 # notice. That check only earns its place if the allowlist is complete, since this gate
 # now runs on every agent change — a field the host supports but this set omits would
 # block legitimate work. Add new host fields here as they ship.
+#
+# Checked against the "Supported frontmatter fields" table at
+# https://code.claude.com/docs/en/sub-agents rather than assembled from memory. The first
+# version of this set omitted four of them, and review caught only two - the gap is easy
+# to make and hard to see, so re-derive from that table when adding fields rather than
+# appending one at a time.
 KNOWN_FIELDS = frozenset(
     {
         "name",
@@ -146,6 +200,10 @@ KNOWN_FIELDS = frozenset(
         "memory",
         "background",
         "isolation",
+        "maxTurns",
+        "mcpServers",
+        "effort",
+        "initialPrompt",
     }
 )
 
@@ -157,12 +215,22 @@ KNOWN_FIELDS = frozenset(
 # confidence get a value check here. The rest are type-checked instead, which
 # catches the shape errors (a mapping where a string belongs, a string where a
 # boolean belongs) without inventing a vocabulary.
+#
+# `auto` and `manual` were both missing from the first version, which made this check
+# reject two documented modes - the same failure the `dontAsk` omission produced earlier.
+# The full set is the "Permission mode" row of the frontmatter table at
+# https://code.claude.com/docs/en/sub-agents; `manual` is an alias for `default`.
 PERMISSION_MODES = frozenset(
-    {"default", "acceptEdits", "bypassPermissions", "dontAsk", "plan"}
+    {"default", "acceptEdits", "auto", "bypassPermissions", "dontAsk", "plan", "manual"}
 )
 
 # Expected Python type per field once the frontmatter has been resolved. `bool`
 # is checked before `int` because Python treats bool as a subclass of int.
+#
+# `effort` and `memory` are type-checked but not value-checked, deliberately. Their
+# documented value sets are small, but every value check here is a chance to reject a
+# value the host later adds, and neither field fails open the way the permission fields
+# do - a bad `effort` costs an unhelpful effort level, not an unintended grant.
 FIELD_TYPES: dict[str, tuple[type, ...]] = {
     "name": (str,),
     "description": (str,),
@@ -173,8 +241,14 @@ FIELD_TYPES: dict[str, tuple[type, ...]] = {
     "permissionMode": (str,),
     "memory": (str,),
     "isolation": (str,),
+    "effort": (str,),
+    "initialPrompt": (str,),
     "background": (bool,),
+    "maxTurns": (int,),
     "skills": (str, list),
+    # A sequence whose members are a server name or a one-key inline definition. Not a
+    # top-level mapping: that is the `.mcp.json` shape, not the frontmatter one.
+    "mcpServers": (list,),
     "hooks": (dict,),
 }
 
@@ -386,6 +460,55 @@ def _entry_scope(entry: str) -> str | None:
     return entry[entry.index("(") + 1 : -1].strip()
 
 
+def _head_covers(deny_head: str, allow_head: str) -> bool:
+    """True when a deny entry's tool name covers an allow entry's tool name.
+
+    Built-in names match exactly. MCP names do not: they are hierarchical, so
+    `disallowedTools: mcp__github` removes every tool that server provides, and
+    `mcp__github__get_*` removes the matching subset. Comparing MCP heads for string
+    equality meant `tools: mcp__github__get_issue` beside `disallowedTools: mcp__github`
+    reported a surviving grant - and because the survivor was MCP-only with its server
+    declared, the declared-server exemption then suppressed the remaining guard too, so a
+    fully cancelled grant passed clean.
+
+    Direction is preserved, as it is for scopes: a per-tool deny does not cancel a
+    whole-server grant, and a wildcard in the *allow* tool segment is matched literally
+    rather than expanded. But "per-tool" has to mean *some* tools - `mcp__github__*` names
+    every tool the server has, so it does cancel a bare `mcp__github`. Returning False for
+    any deny carrying a tool segment applied the direction rule past where it holds.
+    """
+    if deny_head == allow_head:
+        return True
+    if not deny_head.startswith("mcp__"):
+        # "Deny and ask rules also accept glob patterns in the tool-name position. The
+        # pattern must match the full tool name" - so `B*` cancels `Bash` and `*` cancels
+        # everything. Allow rules get no such licence, which is why this is keyed on the
+        # deny side alone.
+        if "*" in deny_head:
+            return re.fullmatch(_glob_to_regex(deny_head), allow_head) is not None
+        return False
+    if not allow_head.startswith("mcp__"):
+        return False
+    deny_server, _, deny_tool = deny_head[len("mcp__") :].partition("__")
+    allow_server, _, allow_tool = allow_head[len("mcp__") :].partition("__")
+    if "*" in deny_server:
+        # A glob in the server segment is legal on the deny side; `mcp__*` is its most
+        # common spelling, not a special case.
+        if not re.fullmatch(_glob_to_regex(deny_server), allow_server):
+            return False
+    elif deny_server != allow_server:
+        return False
+    if not deny_tool:
+        return True  # a bare server deny covers every tool that server provides
+    if not allow_tool:
+        # A bare-server grant *is* every tool that server provides, so only a deny that
+        # covers every tool cancels it: `mcp__github__*` does, `mcp__github__get_*` does
+        # not. A tool segment of nothing but wildcards is the one form that provably
+        # matches any name.
+        return not deny_tool.strip("*")
+    return re.fullmatch(_glob_to_regex(deny_tool), allow_tool) is not None
+
+
 def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
     """True when some deny entry covers this allow entry.
 
@@ -400,23 +523,364 @@ def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
     allow_scope = _entry_scope(allowed)
     for deny in denied:
         deny_head, _ = entry_head(deny)
-        if deny_head != allow_head:
+        if not _head_covers(deny_head, allow_head):
             continue
         deny_scope = _entry_scope(deny)
         if deny_scope is None:
             return True  # unscoped deny cancels every scope of that tool
+        if allow_head in IGNORED_PATH_SCOPE_TOOLS:
+            # The host "accepts the rule but never consults it" for a path rule on these
+            # tools, so a scoped deny here removes nothing. Only the unscoped form above
+            # cancels, which the reference confirms: a bare `Write` deny "matches that rule
+            # at the tool level everywhere".
+            continue
+        if _universal_scope(allow_head, deny_scope):
+            # `WebFetch(domain:*)` "matches every domain and is equivalent to a bare
+            # WebFetch rule", so it is not a narrowing of an unscoped grant - it is the
+            # whole tool, and the direction guard below must not skip it.
+            return True
         if allow_scope is None:
             # A scoped deny narrows an unscoped grant rather than removing it.
             continue
-        # Prefix containment: the deny covers the allow only when the allow's scope
-        # falls entirely inside it. `Bash(git:*)` denied by `Bash(git:*)` cancels;
-        # denied by `Bash(git push:*)` does not.
-        if allow_scope == deny_scope or allow_scope.startswith(deny_scope.rstrip("*")):
-            if deny_scope.endswith("*") and allow_scope.startswith(deny_scope[:-1]):
-                return True
-            if allow_scope == deny_scope:
-                return True
+        if _scope_covers(allow_head, deny_scope, allow_scope):
+            return True
     return False
+
+
+def _universal_scope(head: str, scope: str) -> bool:
+    """True when a scope covers everything the tool can do, making it equal to no scope."""
+    scope = _normalize_scope(head, scope)
+    if head == "WebFetch" and scope.startswith("domain:"):
+        return scope[len("domain:"):].strip() == "*"
+    return scope == "*"
+
+
+# Tools whose parenthesised scope is a *command* rather than a parameter. For these the
+# trailing `:*` suffix is an alternative spelling of a trailing wildcard. For every other
+# tool `param:value` is a parameter match - `Agent(model:opus)`, `WebFetch(domain:*)` -
+# and the colon is part of the pattern, not a separator to strip. The permission reference
+# is explicit that parameter matching cannot target a tool's primary content field, which
+# is exactly `command` for these two.
+COMMAND_SCOPED_TOOLS = frozenset({"Bash", "PowerShell"})
+
+
+def _scope_flags(head: str) -> int:
+    """Regex flags for a scope comparison.
+
+    PowerShell matching is case-insensitive per the permission reference, and it "uses the
+    same shape as Bash rules". Bash commands are case-sensitive, so only the PowerShell
+    side relaxes.
+    """
+    return re.DOTALL | (re.IGNORECASE if head == "PowerShell" else 0)
+
+
+# PowerShell aliases the permission reference names as canonicalized before matching, so
+# `PowerShell(Get-ChildItem *)` also covers `gci`, `ls`, and `dir`. Exactly the three the
+# reference lists, and no more: the host's full alias table is not enumerable from the
+# documentation, and inventing entries here would manufacture cancellations the host would
+# never apply - the more damaging direction for a check whose job is deciding whether a
+# grant survives. Definitions using an undocumented alias are therefore still compared
+# literally, which under-reports rather than over-reports.
+POWERSHELL_ALIASES = {
+    "gci": "Get-ChildItem",
+    "ls": "Get-ChildItem",
+    "dir": "Get-ChildItem",
+}
+
+
+def _canonicalize_powershell(scope: str) -> str:
+    """Rewrite a leading documented alias to its canonical cmdlet name.
+
+    Only the command token, and only when it stands alone: `PowerShell(ls*)` keeps its
+    glob, because `ls*` also covers `lsof` and is not the alias.
+    """
+    command, separator, rest = scope.partition(" ")
+    canonical = POWERSHELL_ALIASES.get(command.lower())
+    if canonical is None:
+        return scope
+    return canonical + separator + rest
+
+
+def _normalize_scope(head: str, scope: str) -> str:
+    """Put a scope into the one spelling the matcher compares against.
+
+    Applied to **both** sides, at every comparison site. Normalising only the deny left
+    mixed spellings uncovered in one direction: `disallowedTools: Bash(git *)` did not
+    cancel `tools: Bash(git:*)`, because the deny regex was matched against the raw allow
+    text; and `WebFetch(domain :example.*)` missed the domain branch entirely, falling
+    through to a glob that crosses dots.
+    """
+    scope = scope.strip()
+    if head in COMMAND_SCOPED_TOOLS:
+        # `command:*` is an equivalent trailing wildcard on both shell tools.
+        if scope.endswith(":*"):
+            scope = scope[:-2].rstrip() + " *"
+        if head == "PowerShell":
+            scope = _canonicalize_powershell(scope)
+        return scope
+    # Parameter scopes: "Whitespace around the colon is ignored".
+    parameter, separator, value = scope.partition(":")
+    if separator:
+        return f"{parameter.strip()}:{value.strip()}"
+    return scope
+
+
+def _path_glob_to_regex(pattern: str) -> str:
+    """Translate a gitignore-style path pattern, where `*` does not cross a separator.
+
+    Per https://code.claude.com/docs/en/permissions: "In gitignore patterns, `*` matches
+    within a single path segment and can appear at any position in the pattern, while `**`
+    matches across directories." Applying the shell glob here made `Read(src/*.json)` cancel
+    `Read(src/a/b.json)` - a grant the host leaves live, the same class of false
+    cancellation as the WebFetch domain rule, on a different tool.
+
+    Anchoring (`//`, `~/`, a leading `/`, or relative), the rule that a bare filename matches
+    at any depth, and the allow-versus-deny depth difference for single-segment directory
+    patterns are **not** modelled: resolving them needs the settings source a subagent file
+    does not have. The effect is that some genuine cancellations go unreported, which is the
+    safe direction for a check whose job is deciding whether a grant survives.
+    """
+    out = []
+    for part in re.split(r"(\*\*|\*)", pattern):
+        if part == "**":
+            out.append(".*")
+        elif part == "*":
+            out.append("[^/]*")
+        else:
+            out.append(re.escape(part))
+    return "".join(out)
+
+
+def _glob_to_regex(pattern: str) -> str:
+    """Expand `*` wildcards, escaping everything else. Any number, at any position."""
+    return "".join(
+        ".*" if part == "*" else re.escape(part)
+        for part in re.split(r"(\*)", pattern)
+    )
+
+
+def _declared_mcp_servers(value: object) -> tuple[set[str], list[str]]:
+    """Server names an agent declares, plus any malformed entries.
+
+    The documented shape is a **sequence** whose members are either a server name or a
+    one-key inline definition:
+
+        mcpServers:
+          - playwright:
+              type: stdio
+          - github
+
+    A top-level mapping is rejected rather than read as a set of declarations. It looks
+    plausible because that is the `.mcp.json` shape, but the subagent frontmatter uses the
+    list form - and accepting it here would let a definition the host cannot use suppress
+    the MCP-only empty-grant guard, which is the one thing this exemption must not do.
+
+    The inline form's **value** is checked for the same reason. Counting any one-key
+    mapping as a declaration meant `- slack: nope` declared `slack`, and that name then
+    exempted `tools: mcp__slack__post` from the empty-grant guard - while the host, given
+    no server config, resolves the grant to nothing. The exemption is only as sound as the
+    declaration it trusts, so a declaration the host cannot act on must not grant it.
+    Returned problems are full descriptions rather than bare values: the fix differs
+    between the two malformed shapes, and the caller cannot tell them apart.
+
+    The two entry forms are **not** equivalent for this purpose, which the reference states
+    directly: a string is "a server name referencing an already-configured server", while an
+    inline definition supplies "a full MCP server config as value". Only the second makes a
+    grant self-contained. A string entry is therefore counted as a declaration only when this
+    repository's own `.mcp.json` configures that server; otherwise it names a dependency the
+    checkout does not satisfy, and the MCP-only guard should still fire - a repository agent
+    whose only tools come from a server nobody here configures is precisely the empty grant
+    this validator exists to catch.
+    """
+    if not isinstance(value, list):
+        return set(), []
+    names: set[str] = set()
+    malformed: list[str] = []
+    for item in value:
+        if isinstance(item, str) and item.strip():
+            names.add(item.strip())
+            continue
+        if isinstance(item, dict) and len(item) == 1:
+            key, config = next(iter(item.items()))
+            if not isinstance(key, str) or not key.strip():
+                malformed.append(f"entry key {key!r} is not a server name")
+            elif not isinstance(config, dict):
+                malformed.append(
+                    f"entry '{key}' has {_render_value(config)} where an inline "
+                    "definition needs a server config mapping; drop the colon to "
+                    "reference an already configured server by name"
+                )
+            elif not MCP_TRANSPORT_KEYS & config.keys():
+                malformed.append(
+                    f"entry '{key}' declares no transport; an inline definition needs "
+                    f"{' or '.join(sorted(MCP_TRANSPORT_KEYS))} so the host can reach the "
+                    "server"
+                )
+            else:
+                names.add(key.strip())
+            continue
+        malformed.append(
+            f"entry {item!r} is neither a server name nor an inline server definition"
+        )
+    return names, malformed
+
+
+
+def _render_value(value: object) -> str:
+    if value is None:
+        return "no value"
+    return f"a {type(value).__name__} value"
+
+
+def _domain_covers(deny_value: str, allow_value: str) -> bool:
+    """Domain matching for `WebFetch(domain:...)`, which is not a plain glob.
+
+    Per https://code.claude.com/docs/en/permissions#webfetch a wildcard "matches only the
+    text between two dots" unless it is a leading `*.` or a bare `*`:
+    `WebFetch(domain:example.*)` matches `example.org` but **not** `example.evil.com`,
+    "which keeps a trailing wildcard from matching domains an attacker could register".
+    Applying the Bash-style `.*` here would let a deny cancel a grant the host would leave
+    live - reporting an empty tool set that is not empty.
+
+    Matching is case-insensitive, and a trailing `.` is stripped from both sides.
+    """
+    deny = deny_value.strip().lower().rstrip(".")
+    allow = allow_value.strip().lower().rstrip(".")
+    if deny == "*":
+        return True
+    if deny.startswith("*."):
+        # Any subdomain at any depth, but never the bare domain itself.
+        return allow.endswith("." + deny[2:])
+    # Every other wildcard is confined to a single label.
+    return re.fullmatch(
+        "".join("[^.]*" if part == "*" else re.escape(part)
+                for part in re.split(r"(\*)", deny)),
+        allow,
+    ) is not None
+
+
+def _scope_regex(head: str, scope: str) -> re.Pattern[str]:
+    """Compile a permission scope into a matcher.
+
+    Wildcards may appear anywhere - the reference documents `Bash(git * main)` and
+    `Bash(* install)` alongside the trailing form - so this is a glob, not a prefix test.
+    An earlier version only recognised a trailing `*`, which silently treated
+    `Bash(git * main)` as an exact command and let it cancel nothing.
+
+    Two spellings mean the same thing at the end of a *command* scope: `Bash(ls *)` and
+    `Bash(ls:*)` match identically. The dialog writes the space-separated form when you
+    choose "Yes, don't ask again"; `:*` is the equivalent suffix, recognised only at the
+    end - in `Bash(git:* push)` the colon is literal.
+
+    Both trailing forms carry a word boundary: `Bash(ls *)` matches `ls -la` but not
+    `lsof`, while `Bash(ls*)` without the space matches both.
+    """
+    scope = _normalize_scope(head, scope)
+
+    if head in PATH_SCOPED_TOOLS:
+        # File rules are gitignore patterns, not shell globs, and carry no trailing-wildcard
+        # word-boundary form - `*` and `**` are the whole vocabulary.
+        return re.compile(_path_glob_to_regex(scope) + r"\Z", _scope_flags(head))
+
+    if scope.endswith(" *"):
+        # Word-bounded: the prefix alone, or the prefix followed by whitespace. The prefix
+        # is still glob-expanded - `Bash(* --help *)` carries an internal wildcard as well
+        # as the trailing one, and escaping the whole prefix literally made that pattern
+        # match nothing.
+        return re.compile(_glob_to_regex(scope[:-2].rstrip()) + r"(?:\s.*)?\Z", _scope_flags(head))
+
+    return re.compile(_glob_to_regex(scope) + r"\Z", _scope_flags(head))
+
+
+def _scope_covers(head: str, deny_scope: str, allow_scope: str) -> bool:
+    """True when a deny scope subsumes an allow scope.
+
+    An earlier version compared raw frontmatter strings, so `Bash(git:*)` did not cancel
+    `Bash(git push:*)`: `"git push:*".startswith("git:")` is False. That reported an
+    effectively empty grant as surviving - the exact defect class this validator exists to
+    catch, in the validator itself.
+
+    **Both** sides are normalised before the WebFetch branch is selected. Testing the raw
+    deny meant `disallowedTools: WebFetch(domain :example.*)` skipped the domain rules and
+    fell through to the generic glob, whose `.*` crosses dots - so it cancelled a grant for
+    `example.evil.com` that the host would leave live.
+    """
+    if deny_scope == allow_scope:
+        return True
+    deny_scope = _normalize_scope(head, deny_scope)
+    allow_scope = _normalize_scope(head, allow_scope)
+    if (
+        head == "WebFetch"
+        and deny_scope.startswith("domain:")
+        and allow_scope.startswith("domain:")
+    ):
+        return _domain_covers(deny_scope[len("domain:"):], allow_scope[len("domain:"):])
+    if head == "Bash":
+        # The allow side is the *command*; the deny side is the rule matched against it, and
+        # the host normalises the command before matching. Stripping both would invent
+        # cancellations: a rule literally reading `Bash(timeout 30 npm test)` matches nothing,
+        # because every command it could match has already had `timeout 30` removed.
+        allow_scope = _strip_command_prefixes(allow_scope)
+    return _scope_regex(head, deny_scope).match(allow_scope) is not None
+
+
+def _strip_command_prefixes(command: str) -> str:
+    """Remove the wrappers the host strips before matching a Bash command.
+
+    Enumerated in https://code.claude.com/docs/en/permissions: "Before matching Bash rules,
+    Claude Code strips a fixed set of wrappers, so a rule like `Bash(npm test *)` also
+    matches `timeout 30 npm test`." Unlike the PowerShell alias table, this list *is*
+    published in full and is stated to be "built in and ... not configurable", so
+    reproducing it adds detection without guessing.
+
+    Three documented exclusions are honoured, because each would otherwise produce a
+    cancellation the host does not apply:
+
+    - `command -v` looks a command up rather than running one, so it is not stripped
+      (`nocorrect` is likewise absent from the list and therefore left alone).
+    - `xargs` is stripped only with no flags; `xargs -n1 grep pattern` "is matched as an
+      `xargs` command", so a rule for the inner command does not cover it.
+    - Environment runners - `direnv exec`, `devbox run`, `mise exec`, `npx`, `docker exec` -
+      are explicitly *not* in the list, so they are not stripped either.
+
+    Leading environment assignments are stripped unconditionally because this function only
+    ever prepares the allow side for comparison against a **deny**, and "a deny or ask rule
+    matches past any leading assignment". The narrower known-safe-variable rule governs
+    allow-vs-command matching, which is not what happens here.
+    """
+    tokens = command.split()
+    index = 0
+    progressed = True
+    while progressed and index < len(tokens):
+        progressed = False
+        while index < len(tokens) and ENV_ASSIGNMENT.match(tokens[index]):
+            index += 1
+            progressed = True
+        if index >= len(tokens):
+            break
+        token = tokens[index]
+        if token in BASH_WRAPPERS:
+            if token == "command" and tokens[index + 1 : index + 2] == ["-v"]:
+                break
+            index += 1
+            progressed = True
+            # Wrappers carry their own arguments before the real command: `timeout 30`,
+            # `nice -n 5`, `stdbuf -oL`. Flags are skipped, and so are bare numeric tokens -
+            # a duration or a flag's separate value. A number is never a command name, so
+            # skipping one cannot swallow the command this comparison is about.
+            while index < len(tokens) and (
+                tokens[index].startswith("-") or DURATION.fullmatch(tokens[index])
+            ):
+                index += 1
+        elif token == "xargs":
+            if tokens[index + 1 : index + 2] and tokens[index + 1].startswith("-"):
+                break
+            index += 1
+            progressed = True
+    stripped = " ".join(tokens[index:])
+    # A scope that is nothing but wrappers has no command to compare; keep the original
+    # rather than collapsing it to an empty string that every pattern would match.
+    return stripped or command
 
 
 def _is_near_miss(candidate: str, known: str) -> bool:
@@ -487,6 +951,9 @@ def validate_agent(path: Path) -> list[str]:
         frontmatter, "description", path, errors, note="; the host routes on it"
     )
 
+    declared_servers, malformed_servers = _declared_mcp_servers(frontmatter.get("mcpServers"))
+    for problem in malformed_servers:
+        errors.append(f"{path.name}: `mcpServers` {problem}")
     resolved: dict[str, list[str]] = {}
     for field in TOOL_FIELDS:
         if field not in frontmatter:
@@ -506,23 +973,42 @@ def validate_agent(path: Path) -> list[str]:
                 continue
             if MCP_PATTERN.match(head):
                 continue
-            if head == MCP_ALL_SERVERS and field != ALLOW_LIST_FIELD:
+            if "*" in head and field != ALLOW_LIST_FIELD:
+                # Deny and ask rules accept a tool-name glob matching the full name - `*`,
+                # `B*`, `mcp__*`, `mcp__github*`. Allow rules accept one only after a
+                # literal `mcp__<server>__` prefix, which `MCP_PATTERN` already covers, and
+                # an unanchored allow glob "is skipped with a warning and doesn't
+                # auto-approve anything". Typo detection survives, because an entry with no
+                # `*` still has to resolve.
                 continue
             errors.append(
                 f"{path.name}: `{field}` entry '{head}' is not a known tool"
                 f"{describe_unknown(field, head)}"
             )
 
-        # Which MCP servers exist is a property of the host session, not of this
-        # repository - the same reason this file's guidance discourages naming one.
-        # An allow-list made only of MCP patterns therefore resolves to nothing on
-        # any session without that server, which is the empty grant that made the
+        # Which MCP servers exist is normally a property of the host session, not of
+        # this repository - the same reason this file's guidance discourages naming
+        # one. An allow-list made only of MCP patterns therefore resolves to nothing
+        # on any session without that server, which is the empty grant that made the
         # whole agent layer inert. A deny-list has no such failure mode.
+        #
+        # `mcpServers` is the exception: an agent that declares or references its own
+        # servers has made them a property of the *definition*, so
+        # `tools: mcp__playwright` alongside an `mcpServers` entry is a grant that
+        # resolves. The exemption is per **server**, not a blanket one - declaring
+        # `mcpServers: [playwright]` while granting `tools: mcp__github` still resolves
+        # to nothing on a session without github, so only entries whose server is
+        # actually declared are exempt.
         if (
             field == ALLOW_LIST_FIELD
             and entries
             and builtin_count == 0
             and all(MCP_PATTERN.match(entry_head(entry)[0]) for entry in entries)
+            and not all(
+                entry_head(entry)[0].split("__")[1] in declared_servers
+                for entry in entries
+                if len(entry_head(entry)[0].split("__")) > 1
+            )
         ):
             errors.append(
                 f"{path.name}: `{field}` names only MCP entries; an MCP server is a "
@@ -548,7 +1034,17 @@ def validate_agent(path: Path) -> list[str]:
         # declared: `tools: Read, mcp__github__*` with `disallowedTools: Read` leaves an
         # MCP entry standing and passed both checks, while a session without that server
         # still resolves nothing.
-        elif not any(entry_head(entry)[0] in KNOWN_TOOLS for entry in surviving):
+        #
+        # The declared-server exemption applies here too. It was added to the per-field
+        # guard only, so `tools: Read, mcp__playwright` with `mcpServers: [playwright]`
+        # and `disallowedTools: Read` failed at this second gate even though the surviving
+        # Playwright tools resolve from the definition - the exemption has to follow the
+        # rule it exempts, to every place that rule is enforced.
+        elif not any(entry_head(entry)[0] in KNOWN_TOOLS for entry in surviving) and not all(
+            entry_head(entry)[0].split("__")[1] in declared_servers
+            for entry in surviving
+            if len(entry_head(entry)[0].split("__")) > 1
+        ):
             errors.append(
                 f"{path.name}: `disallowedTools` removes every built-in from `tools`, "
                 "leaving only MCP entries that resolve to nothing on a session without "
