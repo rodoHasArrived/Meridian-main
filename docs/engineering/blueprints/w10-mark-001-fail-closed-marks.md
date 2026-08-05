@@ -52,7 +52,8 @@ unknown, which is why the obsolete shim exists rather than a bare deletion.
 
 `MarkPriceQualityPolicy` is likewise **public** (`DailyMarkToMarketService.cs:60`), with a public
 constructor (`:68-73`) and a public `Standard` preset (`:62-66`), and it is positional parameter 8 of
-the public `DailyMarkToMarketRequest` constructor (`:208`). Phase 2 deletes it. An earlier draft
+the public `DailyMarkToMarketRequest` constructor (`:208`). Phase 2 **obsoletes and converts** it;
+Phase 5 deletes it, with the other three shims. An earlier draft
 listed the deletion in the Phase 2 checklist without a migration entry, which understated the change:
 external callers that name the type, use `Standard`, or pass it positionally all stop compiling, and
 adding `ValuationRunId` to the same constructor moves the following parameter as well.
@@ -274,6 +275,19 @@ the control, because nothing on the posting path reads it.*
 - `AutomatedJournalIntakeRunner:295-307` persists drafts **before** `DailyValuationScheduler:436-458`
   maps a result to a state at all, and the ids handed on at `:541` are collected from both `Created`
   and `Skipped`.
+**`RequireCompleteCoverage` no longer governs absent quotes, and the document has to say so.**
+Routing the null-quote branch through `AssessUnavailable` makes a missing mark blocking
+*unconditionally* — there is no policy field that switches `Unavailable` off, by design. So the
+coverage flag's original job, deciding whether a partially priced run may proceed, is now done by the
+verdict regardless of how the flag is set. It is retained on `MarkFreshnessPolicy` because it remains
+part of `PolicyVersion` and because the migration table maps it across unchanged, **not** because it
+still gates anything about absence. An implementer reading the field list would otherwise reasonably
+assume toggling it re-enables partial coverage, and it does not.
+
+Whether the field should therefore be removed is a separate decision from this row, and it needs the
+same evidence the other removals got: a check for external callers that set it. It is left in place
+here rather than quietly deleted, and flagged as **open question 8**.
+
 - `MarkPriceQualityPolicy.Standard` sets `RequireCompleteCoverage: false`
   (`DailyMarkToMarketService.cs:65`), so the partial-coverage branch at `:419` — which collects
   rejects into `unpriced` and lets the surviving marks build approvals at `:480` — **is the default
@@ -448,20 +462,40 @@ per member.
 
 ### New — override store
 
-**Namespace:** `Meridian.Contracts.Ledger` — **not** `Meridian.Ledger`.
+**Namespace:** `Meridian.Storage.Valuation` — **not** `Meridian.Ledger`, and **not**
+`Meridian.Contracts`.
 
-`IMarkOverrideStore` and every record below take `LedgerTenantScope`, which lands in
-`Meridian.Contracts` so `Meridian.Storage` can implement the store without inverting the existing
-Ui.Shared → Storage reference. Declaring the seam in `Meridian.Ledger` would therefore force
-Ledger → Contracts, and Ledger references only Core and FSharp.Ledger — the same project-graph
-inversion this design already refused when it kept `MarkFreshnessPolicy` on Ledger-owned primitives
-rather than taking `MarkPriceQuote`. It would also turn Phase 1's policy work into a
-project-reference change the phase explicitly says it is not.
+These records straddle two projects that cannot see each other, so the seam has to live above both.
+The reference graph, read from the `.csproj` files rather than assumed:
 
-Nothing in `Meridian.Ledger` needs this seam: `MarkFreshnessPolicy` is a pure function over its
-inputs and never consults an override. The claiming happens in `Meridian.Application.Accounting`,
-the preview in `Meridian.Ui.Shared`, and the implementation in `Meridian.Storage.Valuation` — all
-three already see Contracts.
+| Project | References |
+| --- | --- |
+| `Meridian.Contracts` | **none** |
+| `Meridian.Ledger` | `Meridian.Core`, `Meridian.FSharp.Ledger` |
+| `Meridian.Storage` | `Core`, `Domain`, **`Contracts`**, **`Ledger`**, `Reporting`, `ProviderSdk` |
+| `Meridian.Application` | `Storage`, `Contracts`, `Ledger`, … |
+| `Meridian.Ui.Shared` | `Contracts`, `Application`, `Storage`, … |
+
+Every record here needs **both** sides: `LedgerTenantScope` is Contracts-owned, while
+`MarkQuoteEvidence` carries `DailyPortfolioPriceConfidence` (declared in
+`src/Meridian.Ledger/DailyPortfolioPriceMark.cs`) and `MarkFreshnessVerdict`, which this design adds
+to Ledger. So `Meridian.Ledger` is impossible — it would need Contracts — and `Meridian.Contracts`
+is impossible too, because it has **no project references at all** and would need Ledger. An earlier
+revision moved the seam from the first to the second, which swapped one impossible dependency for
+the other.
+
+`Meridian.Storage` is the lowest project that already references both, and it is where
+`PostgresMarkOverrideStore` lives anyway. Every consumer reaches it: Application claims through
+`DailyMarkToMarketService`, Ui.Shared previews, and both reference Storage today. No project-graph
+change is required, which is the point — Phase 1 stays policy work plus a seam, not a layering
+migration.
+
+The same reasoning places `IValuationAttemptStore` and `IMarkFreshnessAssessmentStore`, which carry
+the same pair of dependencies. `BlockedMarkDto`, `OverriddenMarkDto`, and `LedgerTenantScope` stay in
+`Meridian.Contracts`: they are primitive-only and are consumed by clients that must not see Storage.
+
+Nothing in `Meridian.Ledger` needs any of this: `MarkFreshnessPolicy` is a pure function over its
+inputs and never consults an override.
 
 ```csharp
 /// <summary>
@@ -1243,6 +1277,15 @@ executing, so the value exists at the top of the call and only needs carrying; n
 it. Required rather than nullable, for the same reason `ValuationRunId` is: a nullable tenant on a
 request that reaches a tenant-checked store is a guard that silently does nothing.
 
+**Which makes the obsolete request overload a stated public break, not a silent one.** A legacy
+caller has no tenant value to pass, and the two ways to keep the overload source-compatible are
+both worse than breaking it: invent a permissive scope, which disables the very guard the
+required member exists to make reachable, or accept null and re-create the nullable case. So
+the compatibility overload is **not** extended to cover the scope — it is removed in Phase 2
+alongside the policy-parameter change, and the release note names it with the other
+source-breaking changes. A compatibility shim that quietly turns off a tenant check is not
+compatibility; it is a security regression wearing a migration window.
+
 #### The run identity has to exist before the first claim
 
 Per-run claim idempotency is keyed on `MarkOverrideConsumption.ValuationRunId`, and today there is
@@ -1864,6 +1907,13 @@ public interface IMarkFreshnessAssessmentStore
     /// review-required case list. Takes **no** valuation date: an operator whose three-day-old
     /// valuation was overwritten in the schedule row cannot supply a date they do not know, so a
     /// date-parameterised read is not a queue, it is a lookup for a case you already found.
+    ///
+    /// **Excludes `Voided` attempts, like `ReadByValuationAsync`.** The filter was added there and
+    /// not here, which left the queue reporting cases from attempts an operator had explicitly
+    /// closed — and those cases are unresolvable by construction, since a voided attempt is terminal
+    /// and cannot resume. The operator's own remedy for a stuck valuation would have permanently
+    /// populated the queue it was meant to clear. Both reads answer "what is still live", so both
+    /// carry the same state filter.
     /// </summary>
     ValueTask<IReadOnlyList<UnresolvedValuationCase>> ListUnresolvedAsync(
         Guid ledgerBookId, LedgerTenantScope scope, CancellationToken ct = default);
@@ -2613,6 +2663,7 @@ through their own services rather than inferring them from the schedule state.
 | `FundPortfolioPosition_PrefersAnUnoverriddenBlockerOverAHigherSeverityOverriddenOne` | `tests/Meridian.Tests` | stage 1 of the selection — partitioning on effective blocking, so a non-null `OverrideId` can never pair with a sibling's `IsBlocking` |
 | `FundLedgerViewModel_BlockedPosition_SurfacesReviewRequired` | `tests/Meridian.Wpf.Tests` | criterion 3 desktop lane |
 | `FundLedgerPage_UnavailableVerdict_RendersRed` | `tests/Meridian.Wpf.Tests` | the most severe verdict must not render as default foreground |
+| `StrategyRunPortfolioViewModel_CarriesMarkFreshness` | `tests/Meridian.Wpf.Tests` | the third WPF surface Phase 4 names. Asserts a populated value, or the "not applicable" rendering when open question 6 gates it — but never silence, which is how this surface would otherwise satisfy the plan while shipping no mark-age column at all |
 | `FundLedgerPage_MarkAgeColumn_RendersDashForNullAge` | `tests/Meridian.Wpf.Tests` | the nullable-age contract at the surface |
 | mark-freshness banner and column rendering | dashboard Vitest | criterion 3 browser lane |
 
@@ -2635,7 +2686,7 @@ dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true \
 
 # WPF desktop lane
 dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true \
-  --filter "FullyQualifiedName~FundLedger|FullyQualifiedName~FundPortfolioPosition"
+  --filter "FullyQualifiedName~FundLedger|FullyQualifiedName~FundPortfolioPosition|FullyQualifiedName~StrategyRunPortfolio"
 
 # browser workstation lane
 npm --prefix src/Meridian.Ui/dashboard run test
@@ -2693,7 +2744,8 @@ the *implementations* they front still arrive later.
       freshness. Phase 2 then blocks those same positions as `Unavailable`, so the rollout evidence
       the Phase 2 gate is weighed against **undercounts precisely the population most likely to
       block**. A gate decided on a number that omits the worst category is not a gate.
-- [ ] Add `IMarkOverrideStore` with **`PeekApprovedAsync` only**, plus a null implementation
+- [ ] Add `IMarkOverrideStore` with **the two reading operations only** — `PeekApprovedAsync` and
+      `ReadAsync` — plus a null implementation
       returning no override. The consuming operations arrive in Phase 3; this is the read seam the
       preview binds to so it never has to be rewritten. `PeekApprovedAsync` takes `currentEvidence`
       from the start and applies the claim's fingerprint check without transitioning — the preview is
@@ -2787,6 +2839,13 @@ enrich a queue that by then exists rather than being what makes one exist.
 - [ ] **One policy field:** remove `DailyMarkToMarketRequest`'s policy parameter rather than retyping
       it; both compatibility overloads fold inward to `DailyPortfolioPricingPolicy.MarkFreshnessPolicy`,
       and supplying both throws.
+- [ ] **Extend `IMarkOverrideStore` with `TryClaimAsync` and `MarkOverrideConsumption` here, not
+      in Phase 3.** This phase's `DailyMarkToMarketService` already claims for blocking marks
+      and splits the result into `BlockedPositions` and `OverriddenPositions`, so deferring the
+      claim contract leaves PR 2 with nothing to compile against short of a throwaway no-claim
+      path. The *implementation* still arrives in Phase 3 — until then the null store's
+      `TryClaimAsync` fails rather than returning null, which is the documented fail-closed
+      posture for a store that has not shipped.
 - [ ] **Block draft persistence** in `AutomatedJournalIntakeRunner` when `BlockedPositions` is
       non-empty.
 - [ ] **Block posting** in the shared lifecycle validation chain via `RequireFreshValuationMarks`,
@@ -2894,6 +2953,14 @@ non-empty uncorrectable backlog, which is what the previous wording permitted by
       phase does not claim criterion 4 for it. Shipping it anyway means guessing a book, and a
       guessed book attaches one book's verdict to another book's position — a wrong freshness
       verdict on a real position is worse than a blank, because it reads as verified.
+- [ ] **`FundPortfolioPosition` is gated with it, because it has no independent source.**
+      `FundLedgerViewModel` builds those rows by aggregating the same `PortfolioPositionSummary`
+      values, so if the upstream surface renders an honest null this one cannot render a
+      populated value without inventing it. Gating only the upstream surface would leave the
+      FundLedger page still owing criterion 4 against a source that is explicitly blank —
+      which is the fabrication the gate exists to prevent, one layer further on. Either both
+      surfaces ship populated or both render "not applicable"; a separate join that does not
+      depend on the strategy-run mapping would decouple them, and none is specified.
 - [ ] Write the scheduler, producer, and both-lane UI tests.
 
 **Every surface the modified contracts reach, not just two.** Criterion 4 asks for freshness
@@ -2940,6 +3007,7 @@ and the test asserts that, so the absence stays deliberate rather than looking l
 | 5 | Does `WorkstationTradingPositionRow` get live-mark freshness, or an honest null? | Engineering + Product | Decides whether `ResolveLiveMark` grows an observation timestamp in Phase 4 or the member renders "not applicable". |
 | 6 | How does a strategy run map to a ledger book? | Engineering | The persisted assessment is keyed by ledger book, but a strategy-run snapshot carries no ledger-book field. Until this is settled `PortfolioPositionSummary` cannot be joined without guessing, and guessing risks showing one book's verdict against another book's position. |
 | 7 | Is an operator-supplied mark ever acceptable for a position with **no** quote at all? | Product | This design says no: `Unavailable` is refused an override and remediated by supplying the mark. If the answer is yes, it needs its own governed manual-quote workflow with its own approval and evidence model — widening `MarkQuoteEvidence` to make the fields nullable would let a freshness approval silently carry a price-invention approval. |
+| 8 | Should `RequireCompleteCoverage` be removed now that `Unavailable` makes absence blocking unconditionally? | Engineering + Product | It survives as a policy field and a `PolicyVersion` input while no longer governing what its name says. Removing it is a public API change needing the same external-caller check as the other removals; leaving it invites an operator to toggle it expecting partial coverage back. |
 
 ## Risks
 
