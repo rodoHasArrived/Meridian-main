@@ -130,6 +130,19 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 
     private sealed class InMemoryNoOpLedgerJournalStore : ILedgerJournalStore
     {
+        private static readonly LedgerAccountingPeriod TestAccountingPeriod = new(
+            PeriodId: Guid.Parse("58190d5b-2306-4e0d-a818-a2fb5e087bbf"),
+            LedgerBookId: null,
+            FiscalYear: 2026,
+            PeriodNo: 1,
+            Label: "2026",
+            StartDate: new DateOnly(2026, 1, 1),
+            EndDate: new DateOnly(2026, 12, 31),
+            Status: "Open",
+            OpenedAt: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            ClosedAt: null,
+            Version: 0);
+
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) => Task.CompletedTask;
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default) =>
@@ -139,7 +152,8 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
 
         public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
-            Task.FromResult<LedgerAccountingPeriod?>(null);
+            Task.FromResult<LedgerAccountingPeriod?>(
+                periodId == TestAccountingPeriod.PeriodId ? TestAccountingPeriod : null);
 
         public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
             Guid? ledgerBookId = null,
@@ -147,7 +161,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             string? fundProfileId = null,
             Guid? fundStructureNodeId = null,
             CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([TestAccountingPeriod]);
 
         public Task<LedgerAccountingPeriod> SavePeriodAsync(
             LedgerAccountingPeriod period,
