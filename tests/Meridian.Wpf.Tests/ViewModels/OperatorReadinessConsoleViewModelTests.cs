@@ -14,7 +14,7 @@ public sealed class OperatorReadinessConsoleViewModelTests
     [
         "HomeWorkspace", "TradingShell", "PortfolioShell", "AccountingShell", "ReportingShell",
         "StrategyShell", "DataShell", "SettingsShell", "StrategyRuns", "SecurityMaster",
-        "FundReconciliation", "FundReportPack", "FundAccountingClose"
+        "FundReconciliation", "FundReportPack", "FundAccountingClose", "Provider"
     ];
 
     private static bool IsRegistered(string tag)
@@ -63,6 +63,10 @@ public sealed class OperatorReadinessConsoleViewModelTests
     [Theory]
     [InlineData("FundReconciliation", OperatorWorkItemKindDto.ReportPackApproval, null, "FundReconciliation")]
     [InlineData("NotARegisteredTag", OperatorWorkItemKindDto.ReportPackApproval, null, "FundReportPack")]
+    [InlineData("AccountingShell", OperatorWorkItemKindDto.ReconciliationBreak, null, "FundReconciliation")]
+    [InlineData("ReportingShell", OperatorWorkItemKindDto.ReportPackApproval, null, "FundReportPack")]
+    [InlineData("AccountingShell", (OperatorWorkItemKindDto)999, null, "AccountingShell")]
+    [InlineData("ProviderConnectionCenter", OperatorWorkItemKindDto.BrokerageSync, "settings", "Provider")]
     [InlineData(null, OperatorWorkItemKindDto.LedgerPeriodClose, null, "FundAccountingClose")]
     [InlineData(null, (OperatorWorkItemKindDto)999, "reporting", "ReportingShell")]
     [InlineData(null, (OperatorWorkItemKindDto)999, "unknown-lane", "HomeWorkspace")]
@@ -97,6 +101,9 @@ public sealed class OperatorReadinessConsoleViewModelTests
         viewModel.HasBreaksError.Should().BeTrue();
         viewModel.HasRunsError.Should().BeTrue();
         viewModel.OverallStatusText.Should().Be("Unavailable");
+        viewModel.OverallTone.Should().Be(
+            WorkstationReadinessTone.SignoffRequired,
+            "a missing readiness payload is a review state the operator must act on, not a neutral one");
         viewModel.GateRows.Should().BeEmpty();
         viewModel.WorkItemRows.Should().BeEmpty();
         viewModel.SummaryFacts.Should().HaveCount(6, "the summary strip stays populated with unavailability facts");
@@ -203,6 +210,43 @@ public sealed class OperatorReadinessConsoleViewModelTests
     }
 
     [Fact]
+    public async Task RefreshAsync_BreakQueueOutage_SurfacesBreaksErrorInsteadOfEmptyQueue()
+    {
+        using var viewModel = CreateViewModel(
+            new FakeReadinessProvider { Readiness = CreateReadiness() },
+            new FakeInboxClient { Inbox = CreateInbox() },
+            new FakeReconciliationClient { Breaks = null },
+            runWorkspaceService: null);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.HasBreaksError.Should().BeTrue("a failed break-queue call must not render as an empty queue");
+        viewModel.BreakRows.Should().BeEmpty();
+        viewModel.SummaryFacts[3].Value.Should().Be("Unavailable");
+    }
+
+    [Theory]
+    [InlineData("Signed", WorkstationReadinessTone.EvidenceLinked)]
+    [InlineData("approved", WorkstationReadinessTone.EvidenceLinked)]
+    [InlineData("Completed", WorkstationReadinessTone.EvidenceLinked)]
+    [InlineData("Unsigned", WorkstationReadinessTone.SignoffRequired)]
+    [InlineData("not-signed", WorkstationReadinessTone.SignoffRequired)]
+    [InlineData("Pending", WorkstationReadinessTone.SignoffRequired)]
+    public void BuildTrustRows_MapsSignoffStatusWithExactCompletionSet(string signoffStatus, WorkstationReadinessTone expectedTone)
+    {
+        var readiness = CreateReadiness();
+        readiness = readiness with
+        {
+            TrustGate = readiness.TrustGate with { OperatorSignoffStatus = signoffStatus }
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildTrustRows(readiness);
+
+        rows[0].ReadinessTone.Should().Be(
+            expectedTone, "the desktop must reuse the server's exact sign-off completion set, not substring matching");
+    }
+
+    [Fact]
     public void BuildWorkItemRows_DuplicateIds_KeepMoreSevereToneThenNewerTimestamp()
     {
         var readinessItems = new[]
@@ -302,6 +346,30 @@ public sealed class OperatorReadinessConsoleViewModelTests
                 WorkstationReadinessTone.SignoffRequired
             },
             "a failed run must not render with the success tone");
+    }
+
+    [Fact]
+    public void BuildPromotionRows_UsesServerPromotionGateAsToneAuthority()
+    {
+        var readiness = CreateReadiness();
+        readiness = readiness with
+        {
+            Promotion = readiness.Promotion! with { RequiresReview = false },
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto(
+                    "promotion",
+                    "Promotion trace",
+                    TradingAcceptanceGateStatusDto.Blocked,
+                    "Promotion evidence is incomplete.")
+            ]
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildPromotionRows(readiness);
+
+        rows[0].ReadinessTone.Should().Be(
+            WorkstationReadinessTone.Blocked,
+            "a promotion the server's gate marks blocked must not render green just because RequiresReview is false");
     }
 
     [Fact]
@@ -562,9 +630,9 @@ public sealed class OperatorReadinessConsoleViewModelTests
 
     private sealed class FakeReconciliationClient : IWorkstationReconciliationApiClient
     {
-        public IReadOnlyList<ReconciliationBreakQueueItem> Breaks { get; set; } = [];
+        public IReadOnlyList<ReconciliationBreakQueueItem>? Breaks { get; set; } = [];
 
-        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>?> GetBreakQueueAsync(CancellationToken ct = default)
             => Task.FromResult(Breaks);
 
         public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)

@@ -10,7 +10,7 @@
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <DataTemplate x:Key="ReadinessPanelRowTemplate">
-            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+            <Border Style="{StaticResource WorkspaceToneQueueCardStyle}" Margin="0,0,0,8">
                 <StackPanel>
                     <WrapPanel>
                         <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,0,8,0" />
@@ -183,7 +183,7 @@
                                           AutomationProperties.AutomationId="OperatorReadinessConsoleGateList">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                        <Border Style="{StaticResource WorkspaceToneQueueCardStyle}" Margin="0,0,0,8">
                                             <StackPanel>
                                                 <WrapPanel>
                                                     <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,0,8,0" />
@@ -228,7 +228,7 @@
                                           AutomationProperties.AutomationId="OperatorReadinessConsoleWorkItemList">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                        <Border Style="{StaticResource WorkspaceToneQueueCardStyle}" Margin="0,0,0,8">
                                             <StackPanel>
                                                 <WrapPanel>
                                                     <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,0,8,0" />
@@ -292,6 +292,14 @@
                             AutomationProperties.AutomationId="OperatorReadinessConsoleSessionPanel">
                         <StackPanel>
                             <TextBlock Text="Paper session" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ReadinessErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasReadinessError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsoleSessionError" />
                             <ItemsControl ItemsSource="{Binding SessionRows}"
                                           ItemTemplate="{StaticResource ReadinessPanelRowTemplate}"
                                           Margin="0,10,0,0"
@@ -304,6 +312,14 @@
                             AutomationProperties.AutomationId="OperatorReadinessConsoleTrustPanel">
                         <StackPanel>
                             <TextBlock Text="Provider trust" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ReadinessErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasReadinessError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsoleTrustError" />
                             <ItemsControl ItemsSource="{Binding TrustRows}"
                                           ItemTemplate="{StaticResource ReadinessPanelRowTemplate}"
                                           Margin="0,10,0,0"
@@ -316,6 +332,14 @@
                             AutomationProperties.AutomationId="OperatorReadinessConsolePromotionPanel">
                         <StackPanel>
                             <TextBlock Text="Promotion" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ReadinessErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasReadinessError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsolePromotionError" />
                             <ItemsControl ItemsSource="{Binding PromotionRows}"
                                           ItemTemplate="{StaticResource ReadinessPanelRowTemplate}"
                                           Margin="0,10,0,0"

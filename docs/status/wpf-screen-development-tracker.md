@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `8eb13911168a`
+- Source fingerprint: `9505c60308d3`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `95`
 - Open automated tasks: `3`
@@ -571,7 +571,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as OperatorReadinessConsole (OperatorReadinessConsolePage).
 - [ ] Capture a fixture-mode desktop screenshot for OperatorReadinessConsole or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs.
 
 ### Data
 

@@ -180,7 +180,7 @@ public static class OperatorReadinessConsoleMapper
         var trustGate = readiness.TrustGate;
         var trustTone = trustGate.Blockers.Count > 0
             ? WorkstationReadinessTone.Blocked
-            : trustGate.OperatorSignoffStatus.Contains("signed", StringComparison.OrdinalIgnoreCase)
+            : !trustGate.OperatorSignoffRequired || IsOperatorSignoffComplete(trustGate.OperatorSignoffStatus)
                 ? WorkstationReadinessTone.EvidenceLinked
                 : WorkstationReadinessTone.SignoffRequired;
         var rows = new List<OperatorReadinessPanelRowModel>
@@ -237,9 +237,16 @@ public static class OperatorReadinessConsoleMapper
         }
 
         var promotion = readiness.Promotion;
-        var tone = promotion.RequiresReview
-            ? WorkstationReadinessTone.SignoffRequired
-            : WorkstationReadinessTone.EvidenceLinked;
+        // The server's own promotion acceptance gate is the tone authority when present — a
+        // promotion with RequiresReview == false can still have an incomplete trace, and the gate
+        // is where the server expresses that. RequiresReview is only the fallback signal.
+        var promotionGate = readiness.AcceptanceGates.FirstOrDefault(
+            static gate => string.Equals(gate.GateId, "promotion", StringComparison.OrdinalIgnoreCase));
+        var tone = promotionGate is not null
+            ? ToReadinessTone(promotionGate.Status)
+            : promotion.RequiresReview
+                ? WorkstationReadinessTone.SignoffRequired
+                : WorkstationReadinessTone.EvidenceLinked;
         return
         [
             new OperatorReadinessPanelRowModel(
@@ -357,21 +364,33 @@ public static class OperatorReadinessConsoleMapper
             .ToArray();
     }
 
+    /// <summary>
+    /// Workspace-shell landing tags are coarse routing targets: an inbox item that carries one
+    /// (the shared endpoint labels many kinds with their owning shell) still deserves the deeper
+    /// kind-specific page when the desktop has one registered.
+    /// </summary>
+    private static readonly HashSet<string> CoarseWorkspaceShellTags = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "TradingShell", "PortfolioShell", "AccountingShell", "ReportingShell",
+        "StrategyShell", "DataShell", "SettingsShell"
+    };
+
     public static string ResolveWorkItemPageTag(OperatorWorkItemDto item, Func<string, bool> isRegisteredPageTag)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(isRegisteredPageTag);
 
-        if (!string.IsNullOrWhiteSpace(item.TargetPageTag) && isRegisteredPageTag(item.TargetPageTag))
+        var hasRegisteredTarget = !string.IsNullOrWhiteSpace(item.TargetPageTag) && isRegisteredPageTag(item.TargetPageTag);
+        if (hasRegisteredTarget && !CoarseWorkspaceShellTags.Contains(item.TargetPageTag!))
         {
-            return item.TargetPageTag;
+            return item.TargetPageTag!;
         }
 
         var kindTag = item.Kind switch
         {
             OperatorWorkItemKindDto.PaperReplay => "StrategyRuns",
             OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
-            OperatorWorkItemKindDto.BrokerageSync => "TradingShell",
+            OperatorWorkItemKindDto.BrokerageSync => "Provider",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
             OperatorWorkItemKindDto.ReportPackApproval => "FundReportPack",
@@ -384,6 +403,11 @@ public static class OperatorReadinessConsoleMapper
         if (kindTag is not null && isRegisteredPageTag(kindTag))
         {
             return kindTag;
+        }
+
+        if (hasRegisteredTarget)
+        {
+            return item.TargetPageTag!;
         }
 
         var workspaceTag = item.Workspace?.Trim().ToLowerInvariant() switch
@@ -426,8 +450,12 @@ public static class OperatorReadinessConsoleMapper
                 readiness is null ? "Trading readiness did not load" : $"As of {FormatTimestamp(readiness.AsOf)}"),
             new OperatorReadinessFactModel(
                 "Acceptance gates",
-                totalGateCount == 0 ? "None" : $"{readyGateCount}/{totalGateCount} ready",
-                totalGateCount == 0 ? "No acceptance gates were returned" : "Server-evaluated readiness gates"),
+                readiness is null
+                    ? "Unavailable"
+                    : totalGateCount == 0 ? "None" : $"{readyGateCount}/{totalGateCount} ready",
+                readiness is null
+                    ? "Trading readiness did not load"
+                    : totalGateCount == 0 ? "No acceptance gates were returned" : "Server-evaluated readiness gates"),
             new OperatorReadinessFactModel(
                 "Inbox",
                 inbox is null ? "Unavailable" : Pluralize(inbox.Items.Count, "work item"),
@@ -487,6 +515,17 @@ public static class OperatorReadinessConsoleMapper
             OperatorWorkItemToneDto.Info => 2,
             _ => 3
         };
+
+    /// <summary>
+    /// Mirrors the exact case-insensitive completion set the readiness server uses
+    /// (<c>TradingOperatorReadinessService.IsOperatorSignoffComplete</c>) so substring states like
+    /// "unsigned" or "not-signed" never restyle as complete on the desktop.
+    /// </summary>
+    private static bool IsOperatorSignoffComplete(string status) =>
+        string.Equals(status, "signed", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "approved", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "complete", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase);
 
     private static string Pluralize(int count, string singular)
         => count == 1 ? $"1 {singular}" : $"{count} {singular}s";

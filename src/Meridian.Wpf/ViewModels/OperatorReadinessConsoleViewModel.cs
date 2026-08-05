@@ -348,7 +348,10 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
 
         try
         {
-            return (await _reconciliationClient.GetBreakQueueAsync(ct).ConfigureAwait(true), string.Empty);
+            var breaks = await _reconciliationClient.GetBreakQueueAsync(ct).ConfigureAwait(true);
+            return breaks is null
+                ? (null, "Reconciliation break queue failed to load from the shared workstation API.")
+                : (breaks, string.Empty);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -426,9 +429,11 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
         var criticalCount = inbox?.CriticalCount ?? 0;
         if (readiness is null)
         {
+            // A missing readiness payload is a review state, not a neutral one — the operator
+            // still has to act on the outage (the browser console makes the same distinction).
             SetOverallStatus(
                 criticalCount > 0 ? "Blocked" : "Unavailable",
-                criticalCount > 0 ? WorkstationReadinessTone.Blocked : WorkstationReadinessTone.Neutral);
+                criticalCount > 0 ? WorkstationReadinessTone.Blocked : WorkstationReadinessTone.SignoffRequired);
             return;
         }
 
