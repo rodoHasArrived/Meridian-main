@@ -809,9 +809,39 @@ definition of the key rather than two that must agree.
 /// <summary>Criterion 5 — how many current valuations the new default would block, before enabling it.</summary>
 public interface IMarkFreshnessPreviewService
 {
+    /// <summary>One book, one date. `scope` is required for the reason below — not optional.</summary>
     ValueTask<MarkFreshnessPreview> PreviewAsync(
-        Guid ledgerBookId, DateOnly valuationDate, MarkFreshnessPolicy candidate, CancellationToken ct = default);
+        Guid ledgerBookId, DateOnly valuationDate, MarkFreshnessPolicy candidate,
+        LedgerTenantScope scope, CancellationToken ct = default);
+
+    /// <summary>
+    /// Every configured daily-valuation schedule in the caller's tenant, which is the number the
+    /// Phase 2 gate is decided on — a per-book preview alone lets the gate be marked reviewed on a
+    /// sample of one. It takes no book or date: the point is to enumerate what the operator has not
+    /// thought to check. The scope is what bounds that enumeration.
+    /// </summary>
+    ValueTask<MarkFreshnessRolloutPreview> PreviewRolloutAsync(
+        MarkFreshnessPolicy candidate, LedgerTenantScope scope, CancellationToken ct = default);
 }
+
+public sealed record MarkFreshnessRolloutPreview(
+    int ValuationsEvaluated,
+    int ValuationsBlocked,
+    int PositionsEvaluated,
+    int PositionsBlocked,
+    int PositionsOverridden,
+    /// <summary>
+    /// Split by remediability, because the Phase 2 gate rule turns on it: a blocker with a quote
+    /// behind it becomes authorisable once Phase 3 lands, while an `Unavailable` position has no
+    /// governed exception path at all. A single blocked count cannot answer the question the gate
+    /// asks.
+    /// </summary>
+    int PositionsUnavailable,
+    IReadOnlyList<MarkFreshnessRolloutValuation> Valuations);
+
+public sealed record MarkFreshnessRolloutValuation(
+    Guid LedgerBookId, DateOnly ValuationDate,
+    int PositionsEvaluated, int PositionsBlocked, int PositionsOverridden, int PositionsUnavailable);
 
 public sealed record MarkFreshnessPreview(
     int PositionsEvaluated,
@@ -953,9 +983,13 @@ GET  /api/ledger/journal-automation/daily-mark-to-market-freshness-cases/{ledger
 POST /api/ledger/journal-automation/daily-mark-to-market-freshness-preview-rollout
      Body   { maximumAgeDays, minimumConfidence, requireObservedDate, requireCompleteCoverage }
      200    { valuationsEvaluated, valuationsBlocked, positionsEvaluated, positionsBlocked,
-              positionsOverridden,
+              positionsOverridden, positionsUnavailable,
               valuations: [ { ledgerBookId, valuationDate, positionsEvaluated,
-                              positionsBlocked, positionsOverridden } ] }
+                              positionsBlocked, positionsOverridden,
+                              positionsUnavailable } ] }
+     ← `positionsUnavailable` is split out because the Phase 2 gate rule turns on it: an
+       overridable blocker gains an exception path when Phase 3 lands, an unavailable one
+       does not, and a single blocked count cannot answer that question
 
 GET  /api/ledger/journal-automation/daily-mark-to-market-overrides/{ledgerBookId}?state=pending
      200 { overrides: [ { overrideId, scope, quoteEvidence, reason, requestedBy,
@@ -1330,10 +1364,30 @@ So Phase 2 adds one command with two outcomes, on the draft rather than the atte
 /// Either outcome is terminal for the draft and audited with actor, reason, and timestamp. This is
 /// deliberately not `VoidAttemptAsync`: that closes an attempt, and these drafts have none.
 /// </summary>
-ValueTask<LegacyValuationDraftResolution> ResolveLegacyValuationDraftAsync(
-    string draftId, string? reassociateWithRunId, string resolvedBy, string reason,
-    LedgerTenantScope expectedTenant, CancellationToken ct = default);
+public interface ILegacyValuationDraftService
+{
+    ValueTask<LegacyValuationDraftResolution> ResolveLegacyValuationDraftAsync(
+        string draftId, string? reassociateWithRunId, string resolvedBy, string reason,
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
+}
+
+public sealed record LegacyValuationDraftResolution(
+    string DraftId,
+    /// <summary>`Reassociated` or `Discarded`; both are terminal for the draft.</summary>
+    LegacyValuationDraftOutcome Outcome,
+    string? ValuationRunId,
+    string ResolvedBy, DateTimeOffset ResolvedAtUtc, string Reason);
+
+public enum LegacyValuationDraftOutcome { Reassociated, Discarded }
 ```
+
+This one is a **service**, not a store: it reads the attempt through `IValuationAttemptStore`,
+checks that attempt's assessments, and mutates a draft in the *file-backed*
+`IManualJournalEntryDraftStore`. Two backing stores with no shared transaction means it needs a
+component that coordinates them, so it lives on `ILegacyValuationDraftService` in
+`Meridian.Ui.Shared.Services`, beside the posting guard that creates the need for it. Ordering
+matters for the same reason as step 4: the draft mutation happens last, so a crash leaves a draft
+still refused rather than one silently released.
 
 ```text
 POST /api/ledger/journal-automation/daily-mark-to-market-legacy-drafts/{draftId}/resolve
@@ -2010,6 +2064,75 @@ ValueTask<ValuationAttemptVoidResult> VoidAttemptAsync(
     LedgerTenantScope expectedTenant, CancellationToken ct = default);
 ```
 
+It belongs to **`IValuationAttemptStore`**, in `Meridian.Contracts.Ledger` for the same reason
+`IMarkOverrideStore` does — it takes `LedgerTenantScope`. The attempt lifecycle was described across
+several sections without ever being given an owning type, which leaves an implementer to invent one
+and to guess which component owns the transitions:
+
+```csharp
+public enum ValuationAttemptState
+{
+    Claiming, Assessed, DraftsRetained, Complete, ReviewRequired, Voided,
+}
+
+public sealed record ValuationAttempt(
+    string ValuationRunId, Guid LedgerBookId, DateOnly ValuationDate,
+    ValuationAttemptState State, int AttemptOrdinal,
+    DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc,
+    string? VoidedBy, DateTimeOffset? VoidedAtUtc, string? VoidReason);
+
+/// <summary>The approvals a clean run prepared, stored as `prepared_draft_payload`.</summary>
+public sealed record PreparedDraftPayload(
+    IReadOnlyList<PreparedValuationDraft> Drafts);
+
+public sealed record PreparedValuationDraft(
+    /// <summary>Deterministic from the approval set, which is why a re-drive finds the draft present.</summary>
+    string DraftId,
+    ManualJournalEntryDraftDto Draft);
+
+public sealed record ValuationAttemptVoidResult(
+    string ValuationRunId, string VoidedBy, DateTimeOffset VoidedAtUtc, string VoidReason);
+
+public interface IValuationAttemptStore
+{
+    /// <summary>Step 1 — committed before the first claim, which is what makes the id recoverable.</summary>
+    ValueTask<ValuationAttempt> OpenAsync(
+        Guid ledgerBookId, DateOnly valuationDate, string valuationRunId,
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
+
+    /// <summary>The live attempt on (book, date), or null. Recovery starts here.</summary>
+    ValueTask<ValuationAttempt?> ReadLiveAsync(
+        Guid ledgerBookId, DateOnly valuationDate,
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
+
+    ValueTask<ValuationAttempt?> ReadByRunAsync(
+        string valuationRunId, LedgerTenantScope expectedTenant, CancellationToken ct = default);
+
+    /// <summary>
+    /// Steps 4's tail and beyond. Every transition carries `AND state NOT IN ('Voided','Complete')`
+    /// in its predicate, so a resurfacing worker cannot walk a terminal attempt forward; a zero
+    /// affected-row count is surfaced as a failure rather than swallowed.
+    /// </summary>
+    ValueTask<ValuationAttempt> TransitionAsync(
+        string valuationRunId, ValuationAttemptState nextState,
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
+
+    /// <summary>Idempotent; the re-drive calls it for every payload draft. See step 4.</summary>
+    ValueTask RecordRetainedDraftsAsync(
+        string valuationRunId, IReadOnlyList<string> draftIds,
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
+
+    /// <summary>True when this attempt retained this draft — the posting guard's check.</summary>
+    ValueTask<bool> RetainedDraftAsync(
+        string valuationRunId, string draftId,
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
+
+    ValueTask<ValuationAttemptVoidResult> VoidAttemptAsync(
+        string valuationRunId, string voidedBy, string voidReason,
+        LedgerTenantScope expectedTenant, CancellationToken ct = default);
+}
+```
+
 `voidedBy`, `voidReason`, and the server-stamped `voided_at_utc` land on the attempt row itself
 rather than in a separate audit table. An attempt has exactly **one** terminal void event, so a row
 holds it without loss — unlike an override, whose request → decision → consumption lifecycle is
@@ -2556,7 +2679,8 @@ the *implementations* they front still arrive later.
       from the start and applies the claim's fingerprint check without transitioning — the preview is
       what the Phase 2 gate is weighed against, so it must not count authorisations a claim would
       refuse.
-- [ ] Add `IMarkFreshnessPreviewService` and `MarkFreshnessPreviewService`, plus the per-book read
+- [ ] Add `IMarkFreshnessPreviewService` with **both** `PreviewAsync` and `PreviewRolloutAsync`
+      (each taking `LedgerTenantScope`), `MarkFreshnessRolloutPreview`, and the per-book read
       routes **and the rollout preview** over configured daily-valuation schedules, with constants in
       `UiApiRoutes.cs` and the authorization trio. The rollout route is what the Phase 2 gate weighs;
       a per-book preview alone lets the gate be marked reviewed on a sample of one.
@@ -2604,6 +2728,10 @@ enrich a queue that by then exists rather than being what makes one exist.
       guard verifies against, and it must outlive both the payload and attempt completion.
 - [ ] A blocked run parks the attempt at `ReviewRequired`, **not** `Complete`, so a corrective rerun
       resumes under the same `ValuationRunId` and re-claims its own consumed overrides.
+- [ ] Add `IValuationAttemptStore` in `Meridian.Contracts.Ledger` with the attempt lifecycle,
+      the retained-draft association, and `ValuationAttemptState` / `ValuationAttempt` /
+      `PreparedDraftPayload`. The protocol was described across several sections without an
+      owning type, which left the transitions and their terminal-state predicates unassigned.
 - [ ] Implement the `Voided` action as a real command — `VoidAttemptAsync`, the `voided_by` /
       `voided_at_utc` / `void_reason` columns, and the `…/valuation-attempts/{runId}/void` route
       under `AdminMaintenance`. It ships **in this phase, with the attempt record**, because removing
@@ -2614,7 +2742,7 @@ enrich a queue that by then exists rather than being what makes one exist.
       The field is **server-owned**: written only by automated intake, rejected on manual saves,
       immutable once set, and the posting guard verifies the attempt actually retained this draft
       before reading its assessments — otherwise the guard's own input becomes the bypass.
-- [ ] Add `ResolveLegacyValuationDraftAsync` and its route, so the pre-change approved fair-value
+- [ ] Add `ILegacyValuationDraftService` in `Meridian.Ui.Shared.Services` and its route, so the pre-change approved fair-value
       drafts the guard now refuses have a supported remedy instead of being stranded.
 - [ ] **Minimal remediation surface, moved forward from Phase 4:** append `ReviewRequired = 8`,
       replace the null-projection guard with the documented precedence, and add `BlockedMarks`
