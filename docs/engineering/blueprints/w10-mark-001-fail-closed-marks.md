@@ -613,9 +613,23 @@ public interface IMarkOverrideStore
     /// audited inside this transaction and the decision is **refused**, telling the reviewer to ask
     /// the requester for a fresh request rather than silently recording a decision that cannot take
     /// effect.
+    ///
+    /// **And so is the evidence, for exactly the same reason.** A quote can be superseded while the
+    /// request sits pending. Approving against the stored snapshot then returns a successful
+    /// `Approved` for an authorisation the first claim immediately retires as `EvidenceSuperseded` —
+    /// the same false success as the expired-pending case, reached by the other route an approval
+    /// can stop being valid. <paramref name="currentEvidence"/> is re-resolved by the caller from
+    /// `IMarkPriceSource` and compared here; on mismatch the pending row is transitioned to
+    /// `EvidenceSuperseded`, audited, and the decision refused, which frees the partial index slot
+    /// so the requester can submit against the new mark.
+    ///
+    /// The comparison belongs inside this transaction rather than in the endpoint: a pre-check
+    /// leaves a window in which the quote moves between the read and the mutation, which is the
+    /// argument already made for the tenant check above.
     /// </summary>
     ValueTask<MarkFreshnessOverride> RecordApprovalDecisionAsync(
-        string overrideId, bool approved, string reviewedBy, string? note, DateTimeOffset nowUtc,
+        string overrideId, bool approved, string reviewedBy, string? note,
+        MarkQuoteEvidence currentEvidence, DateTimeOffset nowUtc,
         LedgerTenantScope expectedTenant, CancellationToken ct = default);
 
     ValueTask<IReadOnlyList<MarkFreshnessOverride>> ListAsync(
@@ -661,6 +675,10 @@ public sealed record MarkQuoteEvidence(
 // dependency on `Meridian.Ledger`, which the layer graph does not allow. `MarkFreshnessRef`
 // already settled the convention by carrying its verdict as a string for TS/JSON parity, so
 // the boundary keeps it:
+public sealed record MarkOverrideScopeDto(
+    Guid LedgerBookId, Guid? SecurityId, string Symbol, string? FinancialAccountId,
+    DateOnly ValuationDate, DateOnly? MarkObservedOn, string PolicyVersion);
+
 public sealed record MarkQuoteEvidenceDto(
     decimal Price, string Source, string EvidenceReference,
     string Confidence,          // DailyPortfolioPriceConfidence name
@@ -1165,10 +1183,14 @@ Three rules close it, and all three are needed:
    it would let a client believe the association took.
 2. **Immutable once set.** No route rewrites it — re-association is its own audited command, below.
 3. **Verified, not trusted.** `RequireFreshValuationMarks` confirms the attempt named by the draft
-   actually retained *this* draft, via the `prepared_draft_payload` written with the assessments,
+   actually retained *this* draft, via the `ledger_valuation_attempt_draft` row written at retention,
    before reading its assessments. A run id that names a real clean attempt but not this draft is
    refused. Rule 1 makes forgery hard; rule 3 makes it useless, which is the one that has to hold if
    any write path is ever missed.
+
+   It checks that table and **not** `prepared_draft_payload`, which an earlier revision named: the
+   payload is cleared at `Complete`, and a governed draft is normally posted after its attempt
+   completes, so the check would have had nothing to read on the ordinary path.
 
 ##### The legacy remedy, since "re-associate or void" named no command
 
@@ -1622,10 +1644,22 @@ public interface IMarkFreshnessAssessmentStore
     /// The delete is scoped to `(book, valuation date, valuationRunId)`. Scoping it to
     /// `(book, valuation date)` alone would reintroduce the cross-attempt overwrite the run id was
     /// added to the key to prevent.
+    ///
+    /// **All three of step 3's writes are one call, because they are one transaction.** The
+    /// protocol requires the assessments, `prepared_draft_payload`, and the attempt-state
+    /// transition to commit together. A signature taking only the assessments would leave an
+    /// implementer updating the attempt separately and reopening exactly the crash window the
+    /// protocol closes: assessments durable with no recoverable payload, or with the attempt still
+    /// reading `Claiming`. The store owns the transaction because it owns the connection, and the
+    /// name says which protocol step it is rather than describing its arguments.
     /// </summary>
-    ValueTask WriteAsync(
+    ValueTask WriteAssessedAsync(
         Guid ledgerBookId, DateOnly valuationDate, string valuationRunId,
         IReadOnlyList<MarkPositionFreshnessAssessment> assessments,
+        /// <summary>Stored on the attempt row; null for a blocked run, which retains nothing.</summary>
+        PreparedDraftPayload? preparedDrafts,
+        /// <summary>`Assessed` for a clean run, `ReviewRequired` when anything still blocks.</summary>
+        ValuationAttemptState nextState,
         LedgerTenantScope scope, CancellationToken ct = default);
 
     /// <summary>
@@ -1676,7 +1710,16 @@ public sealed record UnresolvedValuationCase(
     int PositionsBlocked,
     int PositionsOverridden,
     DateTimeOffset AssessedAtUtc,
-    IReadOnlyList<BlockedMarkDto> Blocked);
+    IReadOnlyList<BlockedMarkDto> Blocked,
+    /// <summary>
+    /// The positions a claim authorised, named rather than counted. Every other freshness
+    /// surface reports `OverriddenMarks` beside the blocked list precisely so a bypass stays
+    /// visible; a case carrying `PositionsOverridden` as a bare integer would drop that
+    /// ledger on the **remediation** surface, which is where an operator or auditor is most
+    /// likely to be looking at it. A count answers "were there any"; the review queue needs
+    /// "which ones, and on whose authority".
+    /// </summary>
+    IReadOnlyList<OverriddenMarkDto> Overridden);
 ```
 
 ##### There is no single transaction available, so the protocol is explicit
@@ -1717,6 +1760,33 @@ would retain drafts inconsistent with the durable assessments the posting guard 
 The payload is written in the **same PostgreSQL transaction as the assessment rows**, before the
 state advances to `Assessed` — genuinely atomic, both being in one database, unlike the file-store
 write in step 4. It is cleared when the attempt reaches `Complete` or `Voided`.
+
+**Clearing it is why the draft association needs its own table.** The payload is a *recovery*
+artifact — it exists so an `Assessed` attempt can re-drive retention without recomputing — and it is
+correctly transient. But the posting guard's anti-forgery check needs to prove the named attempt
+actually retained *this* draft, and drafts are normally posted **after** the attempt completes, by
+which time the payload is gone. Verifying against it would therefore refuse every governed draft, or
+silently skip the check on exactly the normal path. An earlier revision specified precisely that.
+
+So step 4 also writes **`ledger_valuation_attempt_draft`** — `(tenant_id, company_id,
+valuation_run_id, draft_id)`, unique on the pair, inserted in the same file-then-record ordering as
+retention itself:
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `tenant_id`, `company_id` | `text` | ownership |
+| `valuation_run_id` | `text` | the attempt that retained the draft |
+| `draft_id` | `text` | the retained draft |
+| `retained_at_utc` | `timestamptz` | |
+
+It is the durable record of *what was retained*, so it outlives both the payload and the attempt's
+completion, and it is what `RequireFreshValuationMarks` checks before reading assessments. Rows are
+pruned only when their draft is posted or discarded — never at attempt completion, which is the
+mistake this replaces.
+
+A separate table rather than a column on the draft: the draft already carries `ValuationRunId`, and
+that is the field a forger would set. The guard needs a mapping the *server* wrote, which is the
+whole point of checking rather than trusting.
 
 The sequence, and what recovery does at each point:
 
@@ -1868,7 +1938,11 @@ valuation history is pruned. They are evidence about a specific dated valuation,
 The migrations take their ordinals from the reservation table in
 [`docs/engineering/blueprints/README.md`](README.md#ledger-migration-ordinals). **036–038 are
 reserved for this blueprint** — override plus audit, the assessment table, and the valuation attempt
-record. Re-derive the next
+record. `ledger_valuation_attempt_draft` is created by **038 alongside `ledger_valuation_attempt`**
+rather than taking a fourth ordinal: it is part of the same attempt protocol, lands in the same
+phase, and is meaningless without the table it references, so splitting them would allow a
+half-applied protocol. The reservation therefore still reads 036–038 and the README table needs no
+edit. Re-derive the next
 free ordinal from disk at implementation time and update that table if an unrelated lane lands
 first; do not renumber a migration that has already shipped.
 
@@ -2133,6 +2207,13 @@ through their own services rather than inferring them from the schedule state.
 | `AssessmentStore_ReadByValuationAsync_SkipsAVoidedHighestOrdinalAttempt` | the `Voided` filter is what makes a resurfacing worker's late rows inert |
 | `MarkOverrideRequest_ExpiresOnBeforeToday_ForAHistoricalValuation_IsRejected` | `max(valuationDate, nowUtc.Date)` — an override that reaches the queue already expired wastes the reviewer |
 | `OverrideStateColumn_AcceptsEvidenceSuperseded` | the migration's check constraint must admit all six states |
+| `RecordApprovalDecisionAsync_EvidenceSupersededPendingRow_IsRefusedAndTransitioned` | the reviewer must not be told they unblocked a valuation the first claim will refuse |
+| `RecordApprovalDecisionAsync_EvidenceMismatch_FreesTheIndexSlot` | so the requester can submit against the new mark |
+| `WriteAssessedAsync_CommitsAssessmentsPayloadAndStateTogether` | step 3 is one transaction; a partial commit reopens the crash window |
+| `WriteAssessedAsync_BlockedRun_StoresNoPayloadAndParksAtReviewRequired` | a blocked run retains nothing |
+| `PostingGuard_AfterAttemptCompletion_StillVerifiesTheDraftAssociation` | **the association outlives `prepared_draft_payload`**, which is cleared at `Complete` while drafts are posted after it |
+| `AttemptDraftAssociation_PrunedOnlyWhenTheDraftIsPostedOrDiscarded` | not at attempt completion, which is the mistake this replaces |
+| `UnresolvedCase_NamesOverriddenPositionsNotJustACount` | the bypass ledger has to survive onto the remediation surface |
 | `TryClaimAsync_DifferentRunId_AfterConsumption_ReturnsNull` | the one-shot guarantee still holds across runs |
 | `TryClaimAsync_QuoteFingerprintChanged_ReturnsNullAndAuditsEvidenceChanged` | an approval is of a mark, not a slot |
 | `TryClaimAsync_ExpiredApprovedRow_IsTransitionedToExpiredAndAudited` | expiry is a transition, not a filter |
@@ -2257,11 +2338,27 @@ the *implementations* they front still arrive later.
       the preview's result types and the scope value the store seam takes. `LedgerTenantScope` lands
       here and not in `Meridian.Ui.Shared`, so `Meridian.Storage` can implement the store without
       inverting the existing Ui.Shared → Storage reference.
-- [ ] Add `MarkOverrideScope` and `MarkQuoteEvidence` — **the record types only**, with their
-      normalisation and fingerprint rules. `PeekApprovedAsync` takes both in its signature, so
-      leaving them to Phase 3 makes PR 1 unbuildable; the states, the store operations, and the
-      tables that consume them still arrive in Phase 3. This is the same argument that moved
-      `BlockedMarkDto` forward, applied to the two types the peek signature added.
+- [ ] Add `MarkOverrideScope`, `MarkQuoteEvidence`, **`MarkFreshnessOverride`, and
+      `MarkOverrideState`** — the record and enum types only, with their normalisation and
+      fingerprint rules. `PeekApprovedAsync` takes the first two as arguments and **returns
+      `MarkFreshnessOverride?`**, which carries a `MarkOverrideState`, so all four are part of the
+      seam's signature; leaving any of them to Phase 3 makes PR 1 unbuildable or forces a throwaway
+      return shape, which is what a stable seam is supposed to avoid. The store *operations*, the
+      audit entry, the consumption record, and the tables still arrive in Phase 3. An earlier
+      revision moved the two argument types forward and left the return type behind — half of one
+      signature.
+- [ ] **Register `IMarkPriceSource` in both compositions here**, not in Phase 3. The preview must
+      resolve current marks to build `MarkFreshnessInput` *and* the `currentEvidence` it passes to
+      `PeekApprovedAsync`, and it is registered nowhere today — constructed inline as a private
+      constructor argument in `WorkstationServiceCollectionExtensions.cs:874` and
+      `AccountingFeatureModule.cs:170`. Deferring the registration leaves PR 1 either unwireable or
+      building a second price source, which is the drift the override-request section warns against.
+- [ ] **Add the `Unavailable` verdict and `MarkFreshnessPolicy.AssessUnavailable` here too.**
+      `GetMarkPriceAsync` returning null yields no `MarkFreshnessInput`, so without this entry point
+      the preview cannot assess a missing-quote position at all — it skips it or counts it outside
+      freshness. Phase 2 then blocks those same positions as `Unavailable`, so the rollout evidence
+      the Phase 2 gate is weighed against **undercounts precisely the population most likely to
+      block**. A gate decided on a number that omits the worst category is not a gate.
 - [ ] Add `IMarkOverrideStore` with **`PeekApprovedAsync` only**, plus a null implementation
       returning no override. The consuming operations arrive in Phase 3; this is the read seam the
       preview binds to so it never has to be rewritten. `PeekApprovedAsync` takes `currentEvidence`
@@ -2304,9 +2401,11 @@ enrich a queue that by then exists rather than being what makes one exist.
 - [ ] Add required `ValuationRunId` to `DailyMarkToMarketRequest` and `DailyMarkToMarketRun`; mint it
       in `AutomatedJournalIntakeRunner` and **commit the `ledger_valuation_attempt` row before the
       first claim**, so a crash mid-run can recover the id instead of minting a new one.
-- [ ] Migration: `ledger_valuation_attempt`, with the attempt-state lifecycle, the
-      `prepared_draft_payload` column, and the one-live-attempt-per-valuation unique index — which is
-      the whole concurrency control, since there is deliberately no lease-reassignment rule.
+- [ ] Migration: `ledger_valuation_attempt` **and `ledger_valuation_attempt_draft`** in one ordinal
+      (038), with the attempt-state lifecycle, the `prepared_draft_payload` column, and the
+      one-live-attempt-per-valuation unique index — which is the whole concurrency control, since
+      there is deliberately no lease-reassignment rule. The association table is what the posting
+      guard verifies against, and it must outlive both the payload and attempt completion.
 - [ ] A blocked run parks the attempt at `ReviewRequired`, **not** `Complete`, so a corrective rerun
       resumes under the same `ValuationRunId` and re-claims its own consumed overrides.
 - [ ] Implement the `Voided` action as a real command — `VoidAttemptAsync`, the `voided_by` /
@@ -2333,11 +2432,10 @@ enrich a queue that by then exists rather than being what makes one exist.
       would leave Phase 2 enforcing on state that does not survive the run. The unique key includes
       `valuation_run_id` and the row carries `handling`; ship `ReadByValuationAsync` alongside
       `ReadByRunAsync`, since every caller but the posting guard has a date and no run id.
-- [ ] Add the `Unavailable` verdict **and `MarkFreshnessPolicy.AssessUnavailable`**, then route the
-      null-quote branch (`DailyMarkToMarketService.cs:339-347`) through it instead of `continue`, so
-      an absent mark reaches the intake guard on the permissive-coverage path. `Assess` cannot take
-      the null — `MarkFreshnessInput.Price` is a non-nullable `decimal` — so without the second entry
-      point the branch would have to invent quote data or build policy output outside the policy.
+- [ ] Route the null-quote branch (`DailyMarkToMarketService.cs:339-347`) through `AssessUnavailable`
+      instead of `continue`, so an absent mark reaches the intake guard on the permissive-coverage
+      path. The verdict and the entry point themselves landed in Phase 1, because the preview needs
+      them to count missing-quote positions in the rollout evidence.
 - [ ] **One policy field:** remove `DailyMarkToMarketRequest`'s policy parameter rather than retyping
       it; both compatibility overloads fold inward to `DailyPortfolioPricingPolicy.MarkFreshnessPolicy`,
       and supplying both throws.
@@ -2350,11 +2448,30 @@ enrich a queue that by then exists rather than being what makes one exist.
 - [ ] Mark **both** `StalePricePolicy` and `MarkPriceQualityPolicy` `[Obsolete]`, each with a
       converter and a compatibility constructor overload; delete unread `StalePricedSymbols` /
       `IsBlocked`. Neither type is deleted in this phase — Phase 5 removes both shims together.
-- [ ] **Gate:** preview evidence from Phase 1 reviewed and the override backlog sized before merge.
+- [ ] **Gate:** preview evidence from Phase 1 reviewed and the override backlog sized before merge —
+      and the gate has a **decision rule**, not just a number to look at. See below.
 
-Until Phase 3 lands there is no override store, so `BlockedPositions` is the only outcome and
-`OverriddenPositions` is always empty. That is the correct posture for a fail-closed default whose
-escape hatch has not shipped yet — it is also why the Phase 1 preview gate matters.
+**Between Phase 2 and Phase 3 there is no audited exception path, and the gate has to be honest
+about that.** Once the default flips, a stale-but-business-acceptable mark halts the close and the
+only remedy is data correction or backfill; the override workflow that the roadmap criterion calls
+for — reviewed, expiring, audited — does not exist until the next PR. An earlier revision described
+this as "the correct posture for a fail-closed default whose escape hatch has not shipped yet", which
+is a reasonable position but not a decision rule, and it left the sizing exercise with nothing to
+decide.
+
+So the gate resolves one way or the other on the evidence:
+
+- **Backlog empty, or every blocked position correctable by backfill before the flip** → Phase 2
+  merges alone. There is nothing an override would have authorised.
+- **Backlog non-empty with positions that cannot be corrected** → Phase 2 and Phase 3 merge
+  **together**. Blocking a close with no supported way to authorise the exception is an outage
+  wearing a control's clothing, and the operator's only alternative would be reverting the default —
+  which is the fail-open state the whole row exists to remove.
+
+Deferring the whole flip until Phase 3 was the other candidate and is rejected: it makes Phase 2 a
+PR that changes nothing observable, and the preview gate already exists to answer this question with
+evidence rather than by assumption. What is *not* acceptable is merging Phase 2 alone against a
+non-empty uncorrectable backlog, which is what the previous wording permitted by omission.
 
 ### Phase 3 — Overrides (PR 3)
 - [ ] Add `MarkFreshnessOverride`, `MarkOverrideState`, `MarkOverrideConsumption`, and
