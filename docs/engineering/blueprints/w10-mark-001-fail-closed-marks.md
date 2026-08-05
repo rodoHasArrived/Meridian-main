@@ -124,6 +124,18 @@ So the consolidation is asymmetric on purpose:
   choosing: two conflicting freshness intentions is a caller bug, and silently honouring one is how
   the original split survived this long.
 
+  **That throw needs provenance to be implementable, so the shim records it.** By the time the
+  request overload runs, a `StalePricePolicy` supplied through the obsolete pricing-policy
+  constructor has *already* been converted, and the overload sees only a `MarkFreshnessPolicy` —
+  indistinguishable from one a modern caller set directly. Without a marker it cannot tell "supplied
+  both" from "supplied a quality policy alongside an ordinary pricing policy", so the rule would be
+  unenforceable and conflicting intentions would be reconciled by whichever conversion ran first,
+  which is exactly the silent precedence this bullet forbids. The obsolete constructor therefore
+  sets an `internal bool ConvertedFromLegacyStalePricePolicy` on the pricing policy, and the request
+  overload throws when that flag is set *and* a positional quality policy is supplied. Internal
+  rather than public, and it is removed in Phase 5 with the shims that need it — a marker that
+  outlived its shim would be a permanent field describing a migration nobody is running any more.
+
 ---
 
 ## Scope
@@ -740,9 +752,21 @@ public readonly record struct LedgerTenantScope(string TenantId, string CompanyI
 
 **Note on scope equality.** `MarkToMarketCarryingValueKey` normalises `Symbol` to trimmed upper case
 and blank `FinancialAccountId` to null, and its equality is the record default. `MarkOverrideScope`
-must normalise identically at construction, or a case difference in `FinancialAccountId` silently
-mints a distinct key and an override quietly stops matching. Mirror the normalisation; do not
-restate it.
+mirrors that; do not restate it.
+
+**It also canonicalises `FinancialAccountId`'s case, which the mirrored normalisation does not.**
+That normalisation trims and null-blanks but leaves case alone, so `ACC-1` and `acc-1` remain
+distinct — while existing ledger reads compare account ids case-insensitively, and the operator
+typing a request has no reason to match the casing the engine stored. The consequence runs both
+ways: a valid request rejected because its scope does not match the stored assessment, or two
+*active* override rows for what the ledger treats as one position, since the partial unique index is
+case-sensitive too. The paragraph above previously named this exact hazard and then prescribed a
+normalisation that does not prevent it.
+
+So `MarkOverrideScope` trims and upper-cases `FinancialAccountId` alongside `Symbol`, **and** the
+`ledger_mark_override` unique index is built on the canonical form, so the record key and the
+database key cannot diverge. Canonicalising rather than making the index case-insensitive keeps one
+definition of the key rather than two that must agree.
 
 ### New — `Meridian.Ui.Shared`
 
@@ -768,7 +792,24 @@ public sealed record MarkFreshnessPreview(
     /// </summary>
     int PositionsOverridden,
     IReadOnlyList<OverriddenMarkDto> Overridden,
-    MarkFreshnessPolicy Candidate);
+    /// <summary>
+    /// The candidate as a **wire DTO**, not the Ledger `MarkFreshnessPolicy`. The policy carries
+    /// `DailyPortfolioPriceConfidence` and `StalePriceHandling`, and `UiServer`'s
+    /// `ConfigureHttpJsonOptions` adds only the default resolver — no global enum-string
+    /// converter — so returning the policy itself would serialize those as **numbers** while the
+    /// route contract and the TS mirror expect names. Same reasoning, and the same fix, as the
+    /// override boundary DTOs.
+    /// </summary>
+    MarkFreshnessPolicyDto Candidate);
+
+public sealed record MarkFreshnessPolicyDto(
+    bool Enabled,
+    int MaximumAgeDays,
+    string MinimumConfidence,   // DailyPortfolioPriceConfidence name
+    bool RequireObservedDate,
+    bool RequireCompleteCoverage,
+    string Handling,            // StalePriceHandling name
+    string PolicyVersion);
 ```
 
 The preview uses `PeekApprovedAsync`, never `TryClaimAsync` — a preview that consumed a one-shot
@@ -1815,8 +1856,19 @@ The sequence, and what recovery does at each point:
 3. **Write assessments and payload** — one PostgreSQL transaction that writes the assessment rows,
    stores `prepared_draft_payload`, *and* advances the attempt to `Assessed`. Atomic, because all
    three are in the same database.
-4. **Retain drafts** — the file-backed draft store write from the stored payload, then advance to
-   `DraftsRetained`, then `Complete`.
+4. **Retain drafts** — the file-backed draft store write from the stored payload, then the
+   `ledger_valuation_attempt_draft` rows, then advance to `DraftsRetained`, then `Complete`.
+
+   **The association insert is idempotent and is a precondition of `DraftsRetained`, not a
+   side-effect of it.** These are two stores with no shared transaction, so a crash between them is
+   reachable: the draft exists on disk and has no server-written association, and
+   `RequireFreshValuationMarks` — which verifies exactly that association — would refuse it forever.
+   Recovery from `Assessed` re-drives retention and finds the draft already present (its id is
+   deterministic from the payload), so a re-drive that treated "draft exists" as "nothing to do"
+   would advance straight past the missing row and make the gap permanent. So the re-drive inserts
+   the association `ON CONFLICT DO NOTHING` for every draft in the payload whether or not the draft
+   write was needed, and the attempt does not reach `DraftsRetained` until every payload draft has
+   its row. That ordering is what makes the crash window recoverable rather than merely narrow.
 
 **Recovery is by attempt state, and it is why the run id survives a crash.** A worker starting a
 valuation first looks for a live attempt on (book, date):
@@ -2100,11 +2152,20 @@ unlikely.
    stable rather than dependent on enumeration order.
 
 `OverrideId`, `ObservedOn`, and `AgeDays` are then whatever that assessment carries — including null,
-which is honest. `IsBlocking` remains a true aggregate: it is true when **any** contributing
-assessment blocks, not only the selected one, because a fresh selection must never present a position
-as postable while a blocking sibling exists. With the partition in place the two can no longer
-disagree about *which* assessment is responsible — when `IsBlocking` is true and any unoverridden
-blocker exists, the selected row is one of them.
+which is honest. `IsBlocking` remains a true aggregate rather than the selected row's own flag,
+because a fresh selection must never present a position as postable while a blocking sibling exists.
+
+But it is an aggregate over **effective** blockers — `is_blocking && override_id IS NULL` — not over
+raw ones. An earlier revision said "any contributing assessment blocks", which made a position whose
+every blocker had been authorised still report `IsBlocking = true`. That contradicts the run model
+directly: `BlockedPositions` excludes overridden positions precisely because an authorised mark is not
+a blocker, so the read models would have rendered and filtered an authorised valuation as blocked
+while the run that produced it called it clean. The bypass stays visible through `OverrideId` and the
+amber "overridden" glyph, which is what those exist for — a tolerated mark should look tolerated, not
+blocked.
+
+With the partition in place the two can no longer disagree about *which* assessment is responsible:
+when `IsBlocking` is true an unoverridden blocker exists, and stage 1 selected from exactly that set.
 
 **On `WorkstationTradingPositionRow`'s all-strings shape:** its nine members are pre-formatted
 display strings, and `MarkPrice` already carries `"—"` for absent. Adding `MarkFreshnessRef` as a
@@ -2248,6 +2309,15 @@ through their own services rather than inferring them from the schedule state.
 | `PostingGuard_AfterAttemptCompletion_StillVerifiesTheDraftAssociation` | **the association outlives `prepared_draft_payload`**, which is cleared at `Complete` while drafts are posted after it |
 | `AttemptDraftAssociation_PrunedOnlyWhenTheDraftIsPostedOrDiscarded` | not at attempt completion, which is the mistake this replaces |
 | `AssessmentPruning_SkipsARunStillNamedByARetainedDraft` | valuation-history pruning must not strand a draft the guard then refuses on an empty read |
+| `RetentionRedrive_AfterACrashBeforeTheAssociation_InsertsTheMissingRow` | the draft already exists, so a re-drive that treats "draft present" as done makes the gap permanent |
+| `RetentionRedrive_AssociationInsertIsIdempotent` | `ON CONFLICT DO NOTHING`, since the re-drive covers every payload draft |
+| `Attempt_DoesNotReachDraftsRetained_UntilEveryPayloadDraftHasAnAssociation` | the ordering is what makes the crash window recoverable |
+| `MarkFreshnessRef_AllBlockersOverridden_IsNotBlocking` | **effective** blockers, matching `BlockedPositions`; an authorised mark must not render as blocked |
+| `MarkFreshnessRef_OneUnoverriddenBlockerAmongOverridden_IsBlocking` | the other direction of the same rule |
+| `MarkOverrideScope_FinancialAccountIdCaseVariants_ResolveToOneScope` | the ledger compares account ids case-insensitively; the scope key must not be stricter |
+| `UniqueScopeIndex_RejectsACaseVariantDuplicateActiveScope` | the database key is built on the canonical form, so it cannot diverge from the record key |
+| `DailyMarkToMarketRequest_LegacyQualityPolicyAndLegacyStalePricePolicy_Throws` | the provenance flag is what makes the documented throw implementable |
+| `PreviewRoutes_SerializeCandidateEnumsAsNames` | the candidate crosses the wire as a DTO, not as the Ledger policy |
 | `UnresolvedCase_NamesOverriddenPositionsNotJustACount` | the bypass ledger has to survive onto the remediation surface |
 | `TryClaimAsync_DifferentRunId_AfterConsumption_ReturnsNull` | the one-shot guarantee still holds across runs |
 | `TryClaimAsync_QuoteFingerprintChanged_ReturnsNullAndAuditsEvidenceChanged` | an approval is of a mark, not a slot |
