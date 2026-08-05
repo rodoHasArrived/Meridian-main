@@ -8,6 +8,7 @@ export function formatDecimal(value: number, digits: number): string {
   return value.toFixed(digits);
 }
 
+/** Input is already in percent units (42.5 -> "42.5%"). For fractions use `formatRatioAsPercent`. */
 export function formatPercent(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return `${(value * 100).toFixed(1)}%`;

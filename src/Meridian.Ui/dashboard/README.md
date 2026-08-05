@@ -1075,7 +1075,14 @@ ledger-book mutation checks, authenticated tenant/company scoping, and approval 
 server-owned. Browser route `fundProfileId` and `ledgerBookId` values now flow into the shared
 manual journal workbench query and are preserved on save, validate, submit, evidence attachment,
 and lifecycle transition requests so scoped Accounting work cannot silently fall back to fund-level
-manual JE drafts. The same workstream renders the shared
+manual JE drafts. The journal composer adds a sticky health and command bar, keyboard-oriented
+line navigation with insert and duplicate actions, debounced governed draft autosave, and a scoped
+local recovery snapshot for changes that have not reached the server. Recovery state is explicitly
+labelled as non-authoritative and can be discarded back to the loaded server draft. Validation
+issues retain their shared target identifiers and navigate operators to the affected header or line,
+while the selected-line inspector edits the existing line entity, allocation, tax-lot, Security
+Master, and shared journal dimension fields without moving accounting rules into React. The same
+workstream renders the shared
 private-capital activity projection as fund-event rows, capital-account aggregates, signed net
 activity, ordered capital-account subledger movements with running net activity, posted fund-event
 counts, ledger-impact readiness, published report-output counts, report-output readiness
