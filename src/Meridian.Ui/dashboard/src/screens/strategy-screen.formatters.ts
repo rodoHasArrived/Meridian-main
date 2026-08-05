@@ -82,6 +82,7 @@ export function formatCount(value: number | null | undefined): string {
   return value.toLocaleString();
 }
 
+/** Input is a fraction of 1 (0.425 -> "+42.50%"), not percent units. */
 export function formatSignedPercent(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "Unavailable";
