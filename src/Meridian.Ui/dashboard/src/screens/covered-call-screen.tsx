@@ -857,6 +857,7 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
   );
 }
 
+/** Input is a fraction of 1 (0.425 -> "42.50%"), not percent units. */
 function fmtPct(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return `${(value * 100).toFixed(2)}%`;

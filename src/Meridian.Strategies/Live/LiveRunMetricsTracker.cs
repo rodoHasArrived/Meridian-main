@@ -22,7 +22,8 @@ internal sealed class LiveRunMetricsTracker
     private decimal _previousEquity;
     private decimal _peakEquity;
     private decimal _maxDrawdown;
-    private decimal _maxDrawdownPercent;
+    /// <summary>Fraction of peak equity (0.15 = a 15% drawdown), matching <see cref="BacktestMetrics.MaxDrawdownPercent"/>.</summary>
+    private decimal _maxDrawdownFraction;
     private double _sumReturns;
     private double _sumSquaredReturns;
     private double _sumSquaredDownsideReturns;
@@ -93,7 +94,7 @@ internal sealed class LiveRunMetricsTracker
         if (drawdown > _maxDrawdown)
         {
             _maxDrawdown = drawdown;
-            _maxDrawdownPercent = _peakEquity > 0m ? drawdown / _peakEquity * 100m : 0m;
+            _maxDrawdownFraction = _peakEquity > 0m ? drawdown / _peakEquity : 0m;
         }
 
         _snapshots.Add(new PortfolioSnapshot(
@@ -136,7 +137,7 @@ internal sealed class LiveRunMetricsTracker
             sortino = downsideDev > 0 ? mean / downsideDev * Math.Sqrt(252) : 0;
         }
 
-        var calmar = _maxDrawdownPercent > 0m ? (double)(annualizedReturn / (_maxDrawdownPercent / 100m)) : 0;
+        var calmar = _maxDrawdownFraction > 0m ? (double)(annualizedReturn / _maxDrawdownFraction) : 0;
 
         var metrics = new BacktestMetrics(
             InitialCapital: _initialEquity,
@@ -149,7 +150,7 @@ internal sealed class LiveRunMetricsTracker
             SortinoRatio: sortino,
             CalmarRatio: calmar,
             MaxDrawdown: _maxDrawdown,
-            MaxDrawdownPercent: _maxDrawdownPercent,
+            MaxDrawdownPercent: _maxDrawdownFraction,
             MaxDrawdownRecoveryDays: 0,
             ProfitFactor: 0,
             WinRate: 0,

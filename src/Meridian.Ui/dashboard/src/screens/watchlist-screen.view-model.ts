@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
-import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { describeApiError, isAbortError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { formatRelativeAge as formatRelative } from "@/lib/time";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
@@ -1355,12 +1355,6 @@ function stableSymbolId(value: string): string {
 
 function formatCount(value: number): string {
   return value.toLocaleString();
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException
-    ? error.name === "AbortError"
-    : error instanceof Error && error.name === "AbortError";
 }
 
 function formatPrice(value: number | null | undefined): string {

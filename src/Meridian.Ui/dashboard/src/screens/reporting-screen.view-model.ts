@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
-import { describeApiError } from "@/lib/api-errors";
+import { describeApiError, isAbortError } from "@/lib/api-errors";
 import {
   EXPORT_API_ENDPOINTS,
   exportPreviewEndpoint,
@@ -2678,10 +2678,6 @@ export function buildExportStatusFailure(profileName: string, error: unknown): R
     warnings: detail.details,
     artifacts: []
   };
-}
-
-function isAbortError(error: unknown): boolean {
-  return (error instanceof DOMException || error instanceof Error) && error.name === "AbortError";
 }
 
 function buildExportResultFields(requestedProfileId: string, result: ExportAnalysisResult): ReportingDetailField[] {

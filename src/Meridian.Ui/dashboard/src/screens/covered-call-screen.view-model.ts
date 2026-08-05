@@ -19,7 +19,7 @@ import {
   formatCount,
   formatDecimal,
   formatExitReason,
-  formatPercent,
+  formatRatioAsPercent,
   formatPrice,
   formatSignedMoney,
   formatUtcDateTime
@@ -1274,7 +1274,7 @@ function buildCoveredCallTradeTimelineDetail(
       { label: "Total net PnL", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },
-      { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatPercent(trade.entryImpliedVolatility) },
+      { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatRatioAsPercent(trade.entryImpliedVolatility) },
       { label: "Assignment", value: trade.wasAssigned ? "Assigned" : "Not assigned" }
     ],
     ariaLabel: `Selected covered-call trade ${index + 1}: ${underlyingSymbol} ${strikeLabel} call`
@@ -1424,7 +1424,7 @@ function buildChainPreviewDetail(
       { label: "DTE", value: formatCount(row.daysToExpiration) },
       { label: "Bid / Ask", value: `${formatPrice(row.bid)} / ${formatPrice(row.ask)}` },
       { label: "Delta", value: formatDecimal(row.delta, 2) },
-      { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatPercent(row.impliedVolatility) },
+      { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatRatioAsPercent(row.impliedVolatility) },
       { label: "Open interest", value: formatCount(row.openInterest) },
       { label: "Volume", value: formatCount(row.volume) }
     ],
@@ -1443,7 +1443,7 @@ export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): C
     const startedAtLabel = formatUtcDateTime(row.startedAt);
     const rangeLabel = `${row.from} to ${row.to}`;
     const statusBadgeVariant = statusBadgeVariantForHistory(row.status);
-    const cagrLabel = row.cagr === null ? "—" : formatPercent(row.cagr);
+    const cagrLabel = row.cagr === null ? "—" : formatRatioAsPercent(row.cagr);
     const sharpeRatioLabel = row.sharpeRatio === null ? "—" : formatDecimal(row.sharpeRatio, 2);
     const labelText = row.label?.trim() || "Unlabeled";
 
