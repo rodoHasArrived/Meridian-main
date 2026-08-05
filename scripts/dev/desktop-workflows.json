@@ -127,6 +127,12 @@
           "notes": "Capture the Fund operations screen from the registered WPF shell catalog."
         },
         {
+          "title": "Operations continuity",
+          "pageTag": "OperationsContinuity",
+          "captureName": "wpf-operations-continuity",
+          "notes": "Capture the Operations continuity screen from the registered WPF shell catalog."
+        },
+        {
           "title": "Run ledger",
           "pageTag": "RunLedger",
           "captureName": "wpf-run-ledger",
@@ -215,6 +221,12 @@
           "pageTag": "EvidenceWorkbench",
           "captureName": "wpf-evidence-workbench",
           "notes": "Capture the Evidence packets screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Operations record release",
+          "pageTag": "OperationsRecordRelease",
+          "captureName": "wpf-operations-record-release",
+          "notes": "Capture the Operations record release screen from the registered WPF shell catalog."
         },
         {
           "title": "Reporting dashboard",
