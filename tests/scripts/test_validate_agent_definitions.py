@@ -390,6 +390,26 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertEqual([], module.validate_agent(path))
 
+    def test_partial_tool_wildcard_is_accepted(self) -> None:
+        # `mcp__github__get_*` is documented as matching that server's `get_` tools, and
+        # the first pattern rejected it: the tool character class excluded `*`, so only a
+        # bare `*` matched. A valid declaration was failing the gate.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Read, mcp__github__get_*",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_bare_server_entry_stays_valid(self) -> None:
+        # Reviewed and deliberately kept: `mcp__puppeteer` "matches any tool provided by
+        # the puppeteer server", so it resolves. This validator exists to catch grants
+        # that resolve to nothing, and tightening this would reject working definitions
+        # for no safety gain - the same over-restriction that made KNOWN_FIELDS fail.
+        self.assertTrue(module.MCP_PATTERN.match("mcp__puppeteer"))
+
     def test_all_server_wildcard_is_rejected_in_tools(self) -> None:
         # As an allow-list entry it resolves to nothing when no server is connected,
         # which is the empty grant this validator exists to catch.
@@ -574,6 +594,75 @@ class ValidateAgentTests(unittest.TestCase):
 
                 self.assertEqual([], module.validate_agent(path))
 
+    def test_permission_modes_cover_every_documented_mode(self) -> None:
+        # Pinned literally rather than derived from PERMISSION_MODES, because a test that
+        # iterates the constant passes no matter what the constant omits. This set has now
+        # been short twice - `dontAsk` first, then `auto` and `manual` - and each omission
+        # rejected a valid definition. Source: the permissionMode row of the frontmatter
+        # table at https://code.claude.com/docs/en/sub-agents.
+        self.assertEqual(
+            {
+                "default",
+                "acceptEdits",
+                "auto",
+                "bypassPermissions",
+                "dontAsk",
+                "plan",
+                "manual",
+            },
+            set(module.PERMISSION_MODES),
+        )
+
+    def test_known_fields_cover_every_documented_frontmatter_field(self) -> None:
+        # Same reasoning as the mode set above: this allowlist rejects anything it omits,
+        # so it has to be pinned against the documented surface rather than grown one
+        # review finding at a time. It was short by four - maxTurns, mcpServers, effort,
+        # and initialPrompt - and review caught only two of them.
+        self.assertEqual(
+            {
+                "name",
+                "description",
+                "tools",
+                "disallowedTools",
+                "model",
+                "permissionMode",
+                "maxTurns",
+                "skills",
+                "mcpServers",
+                "hooks",
+                "memory",
+                "background",
+                "effort",
+                "isolation",
+                "color",
+                "initialPrompt",
+            },
+            set(module.KNOWN_FIELDS),
+        )
+
+    def test_newly_recognised_fields_validate_their_shape(self) -> None:
+        for frontmatter, expect_error in (
+            ("maxTurns: 12", False),
+            ("maxTurns: true", True),  # bool is a subclass of int; must not satisfy it
+            ("maxTurns: many", True),
+            ("mcpServers:\n  - slack", False),
+            ("mcpServers:\n  slack:\n    command: slack-mcp", False),
+            ("mcpServers: slack", True),  # a bare scalar is neither list nor mapping
+            ("effort: high", False),
+            ("initialPrompt: Start by reading the register.", False),
+        ):
+            with self.subTest(frontmatter=frontmatter):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\ntools: Read\n"
+                    + frontmatter,
+                )
+
+                errors = module.validate_agent(path)
+
+                self.assertEqual(expect_error, bool(errors), errors)
+
     def test_background_must_be_a_boolean(self) -> None:
         path = write_agent(
             self.directory,
@@ -686,6 +775,49 @@ class ValidateAgentTests(unittest.TestCase):
             "sample-agent",
             "name: sample-agent\ndescription: Does a thing.\n"
             "tools: Bash(git:*)\ndisallowedTools: Bash(git push:*)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_broader_deny_cancels_a_narrower_grant(self) -> None:
+        # The reverse direction, and the one the first implementation got wrong:
+        # `"git push:*".startswith("git:")` is False, so a raw string comparison
+        # reported this effectively empty grant as surviving.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(git push:*)\ndisallowedTools: Bash(git:*)",
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_deny_cancels_across_both_wildcard_spellings(self) -> None:
+        # `command:*` and `command *` mean the same thing and both appear in this
+        # repository's settings, so a deny in one spelling must cancel a grant in the
+        # other or the check is trivially evaded by choosing a different form.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(git push:*)\ndisallowedTools: Bash(git *)",
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_word_boundary_keeps_a_similarly_named_command_alive(self) -> None:
+        # Per the permission reference, a space before `*` enforces a word boundary:
+        # `Bash(ls *)` matches `ls -la` but not `lsof`. A naive prefix fix would swallow
+        # `gitfoo` into `git:*` and report a live grant as cancelled.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(gitfoo:*)\ndisallowedTools: Bash(git:*)",
         )
 
         self.assertEqual([], module.validate_agent(path))

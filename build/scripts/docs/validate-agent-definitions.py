@@ -116,9 +116,17 @@ KNOWN_TOOLS = frozenset(
     }
 )
 
-# `mcp__server`, `mcp__server__tool`, or `mcp__server__*`. The all-server
-# `mcp__*` is handled separately because it is only valid in `disallowedTools`.
-MCP_PATTERN = re.compile(r"^mcp__[A-Za-z0-9_.-]+(?:__(?:[A-Za-z0-9_.-]+|\*))?$")
+# `mcp__server`, `mcp__server__tool`, `mcp__server__*`, or a partial tool wildcard
+# such as `mcp__github__get_*`. All four forms are documented at
+# https://code.claude.com/docs/en/permissions - "`mcp__puppeteer` matches any tool provided
+# by the `puppeteer` server", and "`mcp__github__get_*` matches its `get_` tools". The
+# bare-server form is deliberately still accepted: an earlier review read it as invalid,
+# but it resolves, and rejecting it would block legitimate declarations for no safety gain
+# - this validator exists to catch grants that resolve to *nothing*, which a bare server
+# entry is not. The all-server `mcp__*` is handled separately because an allow rule
+# containing it is skipped with a warning rather than honoured, so it is meaningful only
+# in `disallowedTools`.
+MCP_PATTERN = re.compile(r"^mcp__[A-Za-z0-9_.-]+(?:__(?:\*|[A-Za-z0-9_.-]+\*?))?$")
 MCP_ALL_SERVERS = "mcp__*"
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TOOL_FIELDS = ("tools", "disallowedTools")
@@ -132,6 +140,12 @@ ALLOW_LIST_FIELD = "tools"
 # notice. That check only earns its place if the allowlist is complete, since this gate
 # now runs on every agent change — a field the host supports but this set omits would
 # block legitimate work. Add new host fields here as they ship.
+#
+# Checked against the "Supported frontmatter fields" table at
+# https://code.claude.com/docs/en/sub-agents rather than assembled from memory. The first
+# version of this set omitted four of them, and review caught only two - the gap is easy
+# to make and hard to see, so re-derive from that table when adding fields rather than
+# appending one at a time.
 KNOWN_FIELDS = frozenset(
     {
         "name",
@@ -146,6 +160,10 @@ KNOWN_FIELDS = frozenset(
         "memory",
         "background",
         "isolation",
+        "maxTurns",
+        "mcpServers",
+        "effort",
+        "initialPrompt",
     }
 )
 
@@ -157,12 +175,22 @@ KNOWN_FIELDS = frozenset(
 # confidence get a value check here. The rest are type-checked instead, which
 # catches the shape errors (a mapping where a string belongs, a string where a
 # boolean belongs) without inventing a vocabulary.
+#
+# `auto` and `manual` were both missing from the first version, which made this check
+# reject two documented modes - the same failure the `dontAsk` omission produced earlier.
+# The full set is the "Permission mode" row of the frontmatter table at
+# https://code.claude.com/docs/en/sub-agents; `manual` is an alias for `default`.
 PERMISSION_MODES = frozenset(
-    {"default", "acceptEdits", "bypassPermissions", "dontAsk", "plan"}
+    {"default", "acceptEdits", "auto", "bypassPermissions", "dontAsk", "plan", "manual"}
 )
 
 # Expected Python type per field once the frontmatter has been resolved. `bool`
 # is checked before `int` because Python treats bool as a subclass of int.
+#
+# `effort` and `memory` are type-checked but not value-checked, deliberately. Their
+# documented value sets are small, but every value check here is a chance to reject a
+# value the host later adds, and neither field fails open the way the permission fields
+# do - a bad `effort` costs an unhelpful effort level, not an unintended grant.
 FIELD_TYPES: dict[str, tuple[type, ...]] = {
     "name": (str,),
     "description": (str,),
@@ -173,8 +201,14 @@ FIELD_TYPES: dict[str, tuple[type, ...]] = {
     "permissionMode": (str,),
     "memory": (str,),
     "isolation": (str,),
+    "effort": (str,),
+    "initialPrompt": (str,),
     "background": (bool,),
+    "maxTurns": (int,),
     "skills": (str, list),
+    # A server name referencing an already-configured server, or an inline definition
+    # keyed by server name - so a list of strings or a mapping, never a bare scalar.
+    "mcpServers": (list, dict),
     "hooks": (dict,),
 }
 
@@ -408,15 +442,56 @@ def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
         if allow_scope is None:
             # A scoped deny narrows an unscoped grant rather than removing it.
             continue
-        # Prefix containment: the deny covers the allow only when the allow's scope
-        # falls entirely inside it. `Bash(git:*)` denied by `Bash(git:*)` cancels;
-        # denied by `Bash(git push:*)` does not.
-        if allow_scope == deny_scope or allow_scope.startswith(deny_scope.rstrip("*")):
-            if deny_scope.endswith("*") and allow_scope.startswith(deny_scope[:-1]):
-                return True
-            if allow_scope == deny_scope:
-                return True
+        if _scope_covers(deny_scope, allow_scope):
+            return True
     return False
+
+
+def _scope_prefix(scope: str) -> tuple[str, bool, bool]:
+    """Split a permission scope into (command prefix, has wildcard, word-bounded).
+
+    Two wildcard spellings are in use and both appear in this repository's own
+    `.claude/settings.local.json`: the `command:*` form Claude Code writes when a command
+    is approved permanently (`Bash(cat:*)`, `Bash(gh:*)`), and the glob form the
+    permission reference documents (`Bash(dotnet test *)`, `Bash(gh pr *)`). They mean the
+    same thing, so they have to normalise to the same prefix or a deny written in one
+    spelling silently fails to cancel a grant written in the other.
+
+    The third element records the word boundary. Per
+    https://code.claude.com/docs/en/permissions, a `*` preceded by a space "enforces a
+    word boundary, requiring the prefix to be followed by a space or end-of-string" -
+    `Bash(ls *)` matches `ls -la` but not `lsof`, while `Bash(ls*)` matches both. The
+    `command:*` form is bounded for the same reason: it names a command, not a substring.
+    """
+    if scope.endswith(":*"):
+        return scope[:-2].strip(), True, True
+    if scope.endswith(" *"):
+        return scope[:-2].strip(), True, True
+    if scope.endswith("*"):
+        return scope[:-1], True, False
+    return scope, False, False
+
+
+def _scope_covers(deny_scope: str, allow_scope: str) -> bool:
+    """True when a deny scope subsumes an allow scope.
+
+    The earlier version compared raw frontmatter strings, so `Bash(git:*)` did not cancel
+    `Bash(git push:*)`: `"git push:*".startswith("git:")` is False. That reported an
+    effectively empty grant as surviving - the exact defect class this validator exists to
+    catch, in the validator itself.
+    """
+    if deny_scope == allow_scope:
+        return True
+    deny_prefix, deny_wild, deny_bounded = _scope_prefix(deny_scope)
+    if not deny_wild:
+        # An exact deny removes only that one command.
+        return False
+    allow_prefix, _, _ = _scope_prefix(allow_scope)
+    if not deny_bounded:
+        return allow_prefix.startswith(deny_prefix)
+    # Bounded: the allow must be the same command or a sub-command of it, never a
+    # different command that merely shares a leading substring.
+    return allow_prefix == deny_prefix or allow_prefix.startswith(deny_prefix + " ")
 
 
 def _is_near_miss(candidate: str, known: str) -> bool:
