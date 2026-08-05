@@ -5,6 +5,15 @@ import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { renderWithRouter } from "@/test/render";
 
 describe("WorkspaceNav", () => {
+  it("keeps the Daily Control Tower outside the seven-workspace active state", () => {
+    renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/"] });
+
+    expect(document.querySelectorAll(".operator-nav-item")).toHaveLength(7);
+    expect(document.querySelectorAll(".operator-nav-item.active")).toHaveLength(0);
+    expect(screen.queryByText("Available · Current")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Trading pages" })).not.toBeInTheDocument();
+  });
+
   it("renders the seven root workspaces through the design-system rail contract", () => {
     renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
 

@@ -161,7 +161,14 @@ public sealed record StrategyRunPromotionSummary(
     string? ManualOverrideId = null,
     string? ApprovedBy = null,
     IReadOnlyList<string>? ApprovalChecklist = null,
-    IReadOnlyList<string>? EvidenceReferences = null);
+    IReadOnlyList<string>? EvidenceReferences = null)
+{
+    /// <summary>
+    /// Timestamp from the durable promotion decision, when one exists. This remains outside the
+    /// primary constructor so established constructor and deconstruction signatures stay stable.
+    /// </summary>
+    public DateTimeOffset? PromotedAt { get; init; }
+}
 
 /// <summary>
 /// Shared governed-control summary used by audit and control surfaces.
@@ -271,6 +278,173 @@ public sealed record BiasDisclosureDto(
     IReadOnlyList<BiasDisclosureItemDto> Items);
 
 /// <summary>
+/// Read-only decision posture for one canonical strategy-promotion checklist requirement.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunAcceptanceChecklistStatusDto>))]
+public enum StrategyRunAcceptanceChecklistStatusDto : byte
+{
+    ReviewRequired,
+    Ready,
+    Rejected
+}
+
+/// <summary>
+/// A canonical promotion checklist requirement projected from durable promotion history. A ready
+/// item always has both the canonical checklist id and its keyed evidence reference in the same
+/// durable decision record.
+/// </summary>
+public sealed record StrategyRunAcceptanceChecklistItemDto(
+    string ChecklistId,
+    string Label,
+    StrategyRunAcceptanceChecklistStatusDto Status,
+    string? EvidenceReference = null,
+    string? DecidedBy = null,
+    DateTimeOffset? DecidedAt = null,
+    string? AuditReference = null,
+    string? Blocker = null);
+
+/// <summary>
+/// Retained operator criteria and cross-workflow references that close the bounded Backtest Studio
+/// evidence loop for a strategy run.
+/// </summary>
+public sealed record StrategyRunEvidenceLoop(
+    IReadOnlyList<string> OperatorAcceptanceCriteria,
+    IReadOnlyList<string> RetainedEvidenceReferences,
+    IReadOnlyList<string> AccountingRecordReferences,
+    IReadOnlyList<string> ApprovalReferences,
+    IReadOnlyList<string> PaperValidationReferences,
+    IReadOnlyList<string> GovernedReportReferences)
+{
+    private static readonly string[] RetainedEvidenceSchemes = ["evidence"];
+    private static readonly string[] AccountingRecordSchemes =
+    [
+        "ledger",
+        "posting",
+        "economic-event",
+        "fixed-asset",
+        "direct-lending"
+    ];
+    private static readonly string[] ApprovalSchemes = ["approval"];
+    private static readonly string[] PaperValidationSchemes = ["workflow", "operations"];
+    private static readonly string[] GovernedReportSchemes = ["reporting-run", "reporting-artifact"];
+
+    /// <summary>
+    /// Validates and normalizes the minimum evidence required before a bounded Backtest Studio run
+    /// may invoke an engine or runner.
+    /// </summary>
+    public static bool TryCreateRequired(
+        string? strategyIdentity,
+        IEnumerable<string>? operatorAcceptanceCriteria,
+        IEnumerable<string>? retainedEvidenceReferences,
+        IEnumerable<string>? accountingRecordReferences,
+        IEnumerable<string>? approvalReferences,
+        IEnumerable<string>? paperValidationReferences,
+        IEnumerable<string>? governedReportReferences,
+        out StrategyRunEvidenceLoop evidenceLoop,
+        out string validationError)
+    {
+        evidenceLoop = new StrategyRunEvidenceLoop(
+            Normalize(operatorAcceptanceCriteria),
+            Normalize(retainedEvidenceReferences),
+            Normalize(accountingRecordReferences),
+            Normalize(approvalReferences),
+            Normalize(paperValidationReferences),
+            Normalize(governedReportReferences));
+
+        if (string.IsNullOrWhiteSpace(strategyIdentity))
+        {
+            validationError = "A nonblank strategy identity is required for a Backtest Studio evidence run.";
+            return false;
+        }
+
+        if (evidenceLoop.OperatorAcceptanceCriteria.Count == 0)
+        {
+            validationError = "At least one nonblank operator acceptance criterion is required for a Backtest Studio evidence run.";
+            return false;
+        }
+
+        if (evidenceLoop.RetainedEvidenceReferences.Count == 0 &&
+            evidenceLoop.AccountingRecordReferences.Count == 0 &&
+            evidenceLoop.ApprovalReferences.Count == 0 &&
+            evidenceLoop.PaperValidationReferences.Count == 0 &&
+            evidenceLoop.GovernedReportReferences.Count == 0)
+        {
+            validationError = "At least one retained evidence, accounting, approval, paper-validation, or governed-report reference is required for a Backtest Studio evidence run.";
+            return false;
+        }
+
+        if (!TryValidateReferences(
+                evidenceLoop.RetainedEvidenceReferences,
+                "retained evidence",
+                RetainedEvidenceSchemes,
+                out validationError) ||
+            !TryValidateReferences(
+                evidenceLoop.AccountingRecordReferences,
+                "accounting record",
+                AccountingRecordSchemes,
+                out validationError) ||
+            !TryValidateReferences(
+                evidenceLoop.ApprovalReferences,
+                "approval",
+                ApprovalSchemes,
+                out validationError) ||
+            !TryValidateReferences(
+                evidenceLoop.PaperValidationReferences,
+                "paper-validation",
+                PaperValidationSchemes,
+                out validationError) ||
+            !TryValidateReferences(
+                evidenceLoop.GovernedReportReferences,
+                "governed-report",
+                GovernedReportSchemes,
+                out validationError))
+        {
+            return false;
+        }
+
+        validationError = string.Empty;
+        return true;
+    }
+
+    private static bool TryValidateReferences(
+        IReadOnlyList<string> references,
+        string category,
+        IReadOnlyList<string> allowedSchemes,
+        out string validationError)
+    {
+        foreach (var reference in references)
+        {
+            if (!Uri.TryCreate(reference, UriKind.Absolute, out var uri) ||
+                !Uri.IsWellFormedUriString(reference, UriKind.Absolute) ||
+                !allowedSchemes.Contains(uri.Scheme, StringComparer.OrdinalIgnoreCase) ||
+                string.IsNullOrWhiteSpace(uri.Authority) ||
+                string.IsNullOrWhiteSpace(uri.AbsolutePath) ||
+                string.Equals(uri.AbsolutePath, "/", StringComparison.Ordinal))
+            {
+                validationError =
+                    $"Every {category} reference must be a stable absolute URI with a nonempty authority and path using {FormatSchemes(allowedSchemes)} syntax.";
+                return false;
+            }
+        }
+
+        validationError = string.Empty;
+        return true;
+    }
+
+    private static string FormatSchemes(IReadOnlyList<string> schemes)
+        => string.Join(
+            " or ",
+            schemes.Select(static scheme => $"'{scheme}://authority/path'"));
+
+    private static string[] Normalize(IEnumerable<string>? values)
+        => values?
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray() ?? [];
+}
+
+/// <summary>
 /// Expanded detail for a single run, including derived portfolio and ledger views.
 /// </summary>
 public sealed record StrategyRunDetail(
@@ -283,7 +457,27 @@ public sealed record StrategyRunDetail(
     StrategyRunGovernanceSummary? Governance = null,
     // PR-02: governance hooks for approval/audit/compliance seams
     IReadOnlyList<StrategyRunGovernanceHook>? GovernanceHooks = null,
-    BiasDisclosureDto? BiasDisclosure = null);
+    BiasDisclosureDto? BiasDisclosure = null)
+{
+    private IReadOnlyList<StrategyRunAcceptanceChecklistItemDto> _acceptanceChecklist = [];
+
+    /// <summary>
+    /// Optional W6 evidence-loop projection. Kept outside the primary constructor so the
+    /// established CLR constructor and deconstruction signatures remain compatible.
+    /// </summary>
+    public StrategyRunEvidenceLoop? EvidenceLoop { get; init; }
+
+    /// <summary>
+    /// Read-only canonical promotion requirements and their durable decision posture. Kept outside
+    /// the primary constructor so established CLR constructor and deconstruction signatures remain
+    /// compatible.
+    /// </summary>
+    public IReadOnlyList<StrategyRunAcceptanceChecklistItemDto> AcceptanceChecklist
+    {
+        get => _acceptanceChecklist;
+        init => _acceptanceChecklist = value ?? [];
+    }
+}
 
 /// <summary>
 /// Security Master coverage state associated with a workstation security reference.

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -12,6 +13,9 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class PromotionServiceTests
 {
+    private const string CanonicalPromotionVaultReference =
+        "evidence://evidence-vault/ev-0123456789abcdef01234567";
+
     // ---- EvaluateAsync ----
 
     [Fact]
@@ -100,15 +104,18 @@ public sealed class PromotionServiceTests
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
         };
+        run = WithCanonicalInputHash(run);
         await store.RecordRunAsync(run);
 
         var result = await service.ApproveAsync(new PromotionApprovalRequest(
             run.RunId,
             ApprovedBy: "ops",
             ApprovalReason: "Metrics cleared for paper.",
-            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper)));
 
         result.Success.Should().BeTrue();
         result.NewRunId.Should().NotBeNullOrWhiteSpace();
@@ -121,6 +128,336 @@ public sealed class PromotionServiceTests
         history[0].ApprovedBy.Should().Be("ops");
         history[0].ApprovalReason.Should().Be("Metrics cleared for paper.");
         history[0].ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
+    }
+
+    [Fact]
+    public async Task ApproveAsync_OperatorRetryAfterServiceReload_ReturnsDurableDecisionWithoutDuplicatePaperRunOrLaunch()
+    {
+        var promotionStore = new JsonlPromotionRecordStore(
+            Path.Combine(CreateTempRoot(), "promotion-history"),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+        var runStore = new StrategyRunStore();
+        var firstLauncher = new RecordingPromotedRunLauncher();
+        var firstService = new PromotionService(
+            runStore,
+            new BacktestToLivePromoter(),
+            promotionStore,
+            NullLogger<PromotionService>.Instance,
+            runLauncher: firstLauncher);
+        var run = StrategyRunEntry.Start("retry-strategy", "Retry Strategy", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
+        };
+        run = WithCanonicalInputHash(run);
+        await runStore.RecordRunAsync(run);
+        var request = new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "operator-retry",
+            ApprovalReason: "Paper evidence reviewed.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper));
+
+        var first = await firstService.ApproveAsync(request);
+        var retryLauncher = new RecordingPromotedRunLauncher();
+        var reloadedService = new PromotionService(
+            runStore,
+            new BacktestToLivePromoter(),
+            promotionStore,
+            NullLogger<PromotionService>.Instance,
+            runLauncher: retryLauncher);
+        var retry = await reloadedService.ApproveAsync(request);
+        var retainedRuns = await LoadRunsAsync(runStore);
+
+        first.Success.Should().BeTrue();
+        retry.Success.Should().BeTrue();
+        retry.PromotionId.Should().Be(first.PromotionId);
+        retry.NewRunId.Should().Be(first.NewRunId);
+        retry.AuditReference.Should().Be(first.AuditReference);
+        retry.Reason.Should().Contain("already approved");
+        (await reloadedService.GetPromotionHistoryAsync()).Should().ContainSingle();
+        retainedRuns.Should().ContainSingle(candidate =>
+            candidate.ParentRunId == run.RunId && candidate.RunType == RunType.Paper);
+        firstLauncher.LaunchCount.Should().Be(1);
+        retryLauncher.LaunchCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ApproveAsync_ConcurrentIndependentDurableStores_CommitOneDecisionPaperRunAuditAndLaunch()
+    {
+        var tempRoot = CreateTempRoot();
+        var historyRoot = Path.Combine(tempRoot, "promotion-history");
+        var firstPromotionStore = new JsonlPromotionRecordStore(
+            historyRoot,
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+        var secondPromotionStore = new JsonlPromotionRecordStore(
+            historyRoot,
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+        var runStore = new StrategyRunStore();
+        var launcher = new RecordingPromotedRunLauncher();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            Path.Combine(tempRoot, "audit"),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var firstService = new PromotionService(
+            runStore,
+            new BacktestToLivePromoter(),
+            firstPromotionStore,
+            NullLogger<PromotionService>.Instance,
+            auditTrail: auditTrail,
+            runLauncher: launcher);
+        var secondService = new PromotionService(
+            runStore,
+            new BacktestToLivePromoter(),
+            secondPromotionStore,
+            NullLogger<PromotionService>.Instance,
+            auditTrail: auditTrail,
+            runLauncher: launcher);
+        var run = StrategyRunEntry.Start("concurrent-strategy", "Concurrent Strategy", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
+        };
+        run = WithCanonicalInputHash(run);
+        await runStore.RecordRunAsync(run);
+        var request = new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "operator-concurrent",
+            ApprovalReason: "Paper evidence reviewed.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper));
+
+        var decisions = await Task.WhenAll(
+            Enumerable.Range(0, 12).Select(index =>
+                (index & 1) == 0
+                    ? firstService.ApproveAsync(request)
+                    : secondService.ApproveAsync(request)));
+        var retainedRuns = await LoadRunsAsync(runStore);
+        var approvalAudits = (await auditTrail.GetAllAsync())
+            .Where(entry =>
+                entry.Category == "Promotion" &&
+                entry.Action == "PromotionApproved")
+            .ToArray();
+
+        decisions.Should().OnlyContain(static decision => decision.Success);
+        decisions.Select(static decision => decision.PromotionId).Distinct().Should().ContainSingle();
+        decisions.Select(static decision => decision.NewRunId).Distinct().Should().ContainSingle();
+        decisions.Select(static decision => decision.AuditReference).Distinct().Should().ContainSingle();
+        (await firstService.GetPromotionHistoryAsync()).Should().ContainSingle();
+        retainedRuns.Should().ContainSingle(candidate =>
+            candidate.ParentRunId == run.RunId && candidate.RunType == RunType.Paper);
+        approvalAudits.Should().ContainSingle(entry =>
+            entry.CorrelationId == decisions[0].PromotionId);
+        launcher.LaunchCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenDurableDecisionReservationFails_DoesNotRecordAuditTargetOrLaunch()
+    {
+        var tempRoot = CreateTempRoot();
+        var runStore = new StrategyRunStore();
+        var launcher = new RecordingPromotedRunLauncher();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            Path.Combine(tempRoot, "audit"),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = new PromotionService(
+            runStore,
+            new BacktestToLivePromoter(),
+            new FailingDecisionReservationStore(),
+            NullLogger<PromotionService>.Instance,
+            auditTrail: auditTrail,
+            runLauncher: launcher);
+        var run = WithCanonicalInputHash(
+            StrategyRunEntry.Start("reservation-failure", "Reservation Failure", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult(),
+                RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
+            });
+        await runStore.RecordRunAsync(run);
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "operator-failure",
+            ApprovalReason: "Paper evidence reviewed.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper)));
+
+        result.Success.Should().BeFalse();
+        result.PromotionId.Should().BeNull();
+        result.NewRunId.Should().BeNull();
+        result.Reason.Should().Contain("durably recorded");
+        (await LoadRunsAsync(runStore)).Should().NotContain(candidate => candidate.ParentRunId == run.RunId);
+        (await auditTrail.GetAllAsync()).Should().BeEmpty();
+        launcher.LaunchCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ApproveAsync_RetryAfterTargetRecordFailure_RepairsExactRetainedTargetWithoutDuplicateAuditOrLaunch()
+    {
+        var tempRoot = CreateTempRoot();
+        var historyRoot = Path.Combine(tempRoot, "promotion-history");
+        var repository = new FailOncePromotedRunRepository();
+        var launcher = new RecordingPromotedRunLauncher();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            Path.Combine(tempRoot, "audit"),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var run = WithCanonicalInputHash(
+            StrategyRunEntry.Start("repair-strategy", "Repair Strategy", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult(),
+                RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
+            });
+        await repository.RecordRunAsync(run);
+        var request = new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "operator-first",
+            ApprovalReason: "Paper evidence reviewed.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper));
+        var firstService = new PromotionService(
+            repository,
+            new BacktestToLivePromoter(),
+            new JsonlPromotionRecordStore(historyRoot, NullLogger<JsonlPromotionRecordStore>.Instance),
+            NullLogger<PromotionService>.Instance,
+            auditTrail: auditTrail,
+            runLauncher: launcher);
+
+        var first = await firstService.ApproveAsync(request);
+
+        first.Success.Should().BeFalse();
+        first.PromotionId.Should().NotBeNullOrWhiteSpace();
+        first.NewRunId.Should().NotBeNullOrWhiteSpace();
+        (await LoadRunsAsync(repository)).Should().NotContain(candidate => candidate.ParentRunId == run.RunId);
+        launcher.LaunchCount.Should().Be(0);
+
+        var restartedService = new PromotionService(
+            repository,
+            new BacktestToLivePromoter(),
+            new JsonlPromotionRecordStore(historyRoot, NullLogger<JsonlPromotionRecordStore>.Instance),
+            NullLogger<PromotionService>.Instance,
+            auditTrail: auditTrail,
+            runLauncher: launcher);
+        var repaired = await restartedService.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "operator-later",
+            ApprovalReason: "Retry retained decision."));
+        var retainedRuns = await LoadRunsAsync(repository);
+        var approvalAudits = (await auditTrail.GetAllAsync())
+            .Where(entry => entry.Action == "PromotionApproved")
+            .ToArray();
+
+        repaired.Success.Should().BeTrue();
+        repaired.PromotionId.Should().Be(first.PromotionId);
+        repaired.NewRunId.Should().Be(first.NewRunId);
+        repaired.ApprovedBy.Should().Be("operator-first");
+        retainedRuns.Should().ContainSingle(candidate =>
+            candidate.RunId == first.NewRunId &&
+            candidate.ParentRunId == run.RunId &&
+            candidate.RunType == RunType.Paper);
+        approvalAudits.Should().ContainSingle(entry => entry.CorrelationId == first.PromotionId);
+        launcher.LaunchCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ApproveAsync_AfterRejectedDecision_FailsWithoutOverwritingOrLaunching()
+    {
+        var promotionStore = new JsonlPromotionRecordStore(
+            Path.Combine(CreateTempRoot(), "promotion-history"),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+        var runStore = new StrategyRunStore();
+        var launcher = new RecordingPromotedRunLauncher();
+        var service = new PromotionService(
+            runStore,
+            new BacktestToLivePromoter(),
+            promotionStore,
+            NullLogger<PromotionService>.Instance,
+            runLauncher: launcher);
+        var run = StrategyRunEntry.Start("rejected-strategy", "Rejected Strategy", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
+        };
+        run = WithCanonicalInputHash(run);
+        await runStore.RecordRunAsync(run);
+
+        var rejected = await service.RejectAsync(new PromotionRejectionRequest(
+            run.RunId,
+            "Paper evidence requires remediation.",
+            RejectedBy: "operator-first"));
+        var retryRejection = await service.RejectAsync(new PromotionRejectionRequest(
+            run.RunId,
+            "A later duplicate rationale.",
+            RejectedBy: "operator-later"));
+        var approval = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "operator-later",
+            ApprovalReason: "Attempted override.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper)));
+
+        rejected.Success.Should().BeTrue();
+        retryRejection.Success.Should().BeTrue();
+        retryRejection.PromotionId.Should().Be(rejected.PromotionId);
+        retryRejection.AuditReference.Should().Be(rejected.AuditReference);
+        approval.Success.Should().BeFalse();
+        approval.PromotionId.Should().Be(rejected.PromotionId);
+        approval.Reason.Should().Contain("already rejected");
+        (await service.GetPromotionHistoryAsync()).Should().ContainSingle(record =>
+            record.Decision == PromotionDecisionKinds.Rejected &&
+            record.ApprovedBy == "operator-first");
+        (await LoadRunsAsync(runStore)).Should().NotContain(candidate => candidate.ParentRunId == run.RunId);
+        launcher.LaunchCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RejectAsync_AfterApprovedDecision_FailsWithoutAppendingConflictingDecision()
+    {
+        var promotionStore = new JsonlPromotionRecordStore(
+            Path.Combine(CreateTempRoot(), "promotion-history"),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+        var runStore = new StrategyRunStore();
+        var launcher = new RecordingPromotedRunLauncher();
+        var service = new PromotionService(
+            runStore,
+            new BacktestToLivePromoter(),
+            promotionStore,
+            NullLogger<PromotionService>.Instance,
+            runLauncher: launcher);
+        var run = StrategyRunEntry.Start("approved-strategy", "Approved Strategy", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
+        };
+        run = WithCanonicalInputHash(run);
+        await runStore.RecordRunAsync(run);
+        var approved = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "operator-first",
+            ApprovalReason: "Paper evidence reviewed.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper)));
+
+        var rejection = await service.RejectAsync(new PromotionRejectionRequest(
+            run.RunId,
+            "Attempted reversal.",
+            RejectedBy: "operator-later"));
+
+        approved.Success.Should().BeTrue();
+        rejection.Success.Should().BeFalse();
+        rejection.PromotionId.Should().Be(approved.PromotionId);
+        rejection.NewRunId.Should().Be(approved.NewRunId);
+        rejection.Reason.Should().Contain("already approved");
+        (await service.GetPromotionHistoryAsync()).Should().ContainSingle(record =>
+            record.Decision == PromotionDecisionKinds.Approved &&
+            record.ApprovedBy == "operator-first");
+        (await LoadRunsAsync(runStore)).Should().ContainSingle(candidate =>
+            candidate.ParentRunId == run.RunId && candidate.RunType == RunType.Paper);
+        launcher.LaunchCount.Should().Be(1);
     }
 
     [Fact]
@@ -293,14 +630,17 @@ public sealed class PromotionServiceTests
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
         };
+        run = WithCanonicalInputHash(run);
         await store.RecordRunAsync(run);
         await service.ApproveAsync(new PromotionApprovalRequest(
             run.RunId,
             ApprovedBy: "ops",
             ApprovalReason: "Metrics cleared for paper.",
-            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper)));
 
         var history = await service.GetPromotionHistoryAsync();
 
@@ -326,17 +666,21 @@ public sealed class PromotionServiceTests
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
         };
+        run = WithCanonicalInputHash(run);
         await store.RecordRunAsync(run);
         await service.ApproveAsync(new PromotionApprovalRequest(
             run.RunId,
             ReviewNotes: "Ready for paper",
             ApprovedBy: "ops",
             ApprovalReason: "Metrics cleared",
-            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper)));
 
-        var restarted = BuildService(out _, durableStore);
+        var restarted = BuildService(out var restartedRunStore, durableStore);
+        await restartedRunStore.RecordRunAsync(run);
         var history = await restarted.GetPromotionHistoryAsync();
 
         history.Should().ContainSingle();
@@ -370,6 +714,7 @@ public sealed class PromotionServiceTests
             PromotedAt: DateTimeOffset.UtcNow,
             ApprovalReason: "approved",
             ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper),
             AuditReference: "audit-valid",
             ApprovedBy: "ops");
         var malformed = valid with { PromotionId = "promotion-malformed", ApprovedBy = "" };
@@ -382,6 +727,346 @@ public sealed class PromotionServiceTests
 
         records.Should().ContainSingle();
         records[0].PromotionId.Should().Be("promotion-valid");
+    }
+
+    [Fact]
+    public async Task ScopedPromotionWorkflow_WithExactTenantAndCompany_ApprovesAndReturnsOnlyScopedHistory()
+    {
+        var service = BuildService(out var store);
+        var scope = new StrategyRunReadScope("tenant-a", "company-a");
+        var run = WithScope(
+            StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult(),
+                RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
+            },
+            "tenant-a",
+            "company-a");
+        await store.RecordRunAsync(run);
+
+        var evaluation = await service.EvaluateAsync(run.RunId, scope);
+        var decision = await service.ApproveAsync(
+            new PromotionApprovalRequest(
+                run.RunId,
+                ApprovedBy: "operator-a",
+                ApprovalReason: "Scoped evidence reviewed.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+                EvidenceReferences: CreateEvidenceReferences(RunType.Paper)
+                    .Select(static reference => reference.ToUpperInvariant())
+                    .ToArray()),
+            scope);
+        var history = await service.GetPromotionHistoryAsync(scope);
+
+        evaluation.Found.Should().BeTrue();
+        evaluation.IsEligible.Should().BeTrue();
+        decision.Success.Should().BeTrue();
+        history.Should().ContainSingle(record =>
+            record.SourceRunId == run.RunId &&
+            record.ApprovedBy == "operator-a");
+        var promotedRun = await store.GetRunByIdAsync(decision.NewRunId!);
+        promotedRun.Should().NotBeNull();
+        promotedRun!.ParameterSet.Should().ContainKey("workstationTenantId").WhoseValue.Should().Be("tenant-a");
+        promotedRun.ParameterSet.Should().ContainKey("workstationCompanyId").WhoseValue.Should().Be("company-a");
+    }
+
+    [Fact]
+    public async Task ScopedPromotionWorkflow_WithForeignScope_FailsClosedWithoutMutation()
+    {
+        var service = BuildService(out var store);
+        var ownerScope = new StrategyRunReadScope("tenant-a", "company-a");
+        var foreignScope = new StrategyRunReadScope("tenant-b", "company-b");
+        var run = WithScope(
+            StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult()
+            },
+            "tenant-a",
+            "company-a");
+        await store.RecordRunAsync(run);
+
+        var evaluation = await service.EvaluateAsync(run.RunId, foreignScope);
+        var approval = await service.ApproveAsync(
+            new PromotionApprovalRequest(
+                run.RunId,
+                ApprovedBy: "foreign-operator",
+                ApprovalReason: "Attempted foreign approval.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+                EvidenceReferences: CreateEvidenceReferences(RunType.Paper)),
+            foreignScope);
+        var rejection = await service.RejectAsync(
+            new PromotionRejectionRequest(run.RunId, "Attempted foreign rejection.", RejectedBy: "foreign-operator"),
+            foreignScope);
+        var evidence = await service.RecordWalkForwardEvidenceAsync(
+            run.RunId,
+            new StrategyRunWalkForwardEvidence(1.1d, 0.05m, 0.8d, 4, DateTimeOffset.UtcNow),
+            foreignScope);
+
+        evaluation.Found.Should().BeFalse();
+        approval.Success.Should().BeFalse();
+        rejection.Success.Should().BeFalse();
+        evidence.Should().BeNull();
+        (await service.GetPromotionHistoryAsync(ownerScope)).Should().BeEmpty();
+        (await service.GetPromotionHistoryAsync(foreignScope)).Should().BeEmpty();
+        (await store.GetRunByIdAsync(run.RunId))!.WalkForwardEvidence.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ScopedPromotionWorkflow_WithPartialOrBlankRetainedScope_FailsClosed()
+    {
+        var service = BuildService(out var store);
+        var requestedScope = new StrategyRunReadScope("tenant-a", "company-a");
+        var partialRuns = new[]
+        {
+            StrategyRunEntry.Start("partial-tenant", "Partial Tenant", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult(),
+                ParameterSet = new Dictionary<string, string> { ["workstationTenantId"] = "tenant-a" }
+            },
+            StrategyRunEntry.Start("partial-company", "Partial Company", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult(),
+                ParameterSet = new Dictionary<string, string> { ["workstationCompanyId"] = "company-a" }
+            },
+            WithScope(
+                StrategyRunEntry.Start("blank-scope", "Blank Scope", RunType.Backtest) with
+                {
+                    EndedAt = DateTimeOffset.UtcNow,
+                    Metrics = BuildPassingResult()
+                },
+                " ",
+                "company-a")
+        };
+        foreach (var run in partialRuns)
+        {
+            await store.RecordRunAsync(WithCanonicalInputHash(run));
+        }
+
+        foreach (var run in partialRuns)
+        {
+            var evaluation = await service.EvaluateAsync(run.RunId, requestedScope);
+            evaluation.Found.Should().BeFalse(run.RunId);
+        }
+    }
+
+    [Fact]
+    public async Task LegacyPromotionOverloads_HideScopedCoveredCallAndScopedOverloadsHideLegacyRun()
+    {
+        var service = BuildService(out var store);
+        var scope = new StrategyRunReadScope("tenant-a", "company-a");
+        var legacyRun = StrategyRunEntry.Start("legacy-strategy", "Legacy Strategy", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        var scopedCoveredCall = WithScope(
+            StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult()
+            },
+            "tenant-a",
+            "company-a");
+        await store.RecordRunAsync(legacyRun);
+        await store.RecordRunAsync(scopedCoveredCall);
+
+        (await service.EvaluateAsync(legacyRun.RunId)).Found.Should().BeTrue();
+        (await service.EvaluateAsync(scopedCoveredCall.RunId)).Found.Should().BeFalse();
+        (await service.EvaluateAsync(legacyRun.RunId, scope)).Found.Should().BeFalse();
+        (await service.EvaluateAsync(scopedCoveredCall.RunId, scope)).Found.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ApproveAsync_BacktestToPaper_MissingOrInvalidKeyedEvidenceFailsWithoutMutation()
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("paper-evidence", "Paper Evidence", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
+        };
+        run = WithCanonicalInputHash(run);
+        await store.RecordRunAsync(run);
+        var checklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+
+        var missing = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Missing evidence.",
+            ApprovalChecklist: checklist));
+        var invalid = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Invalid evidence.",
+            ApprovalChecklist: checklist,
+            EvidenceReferences: checklist
+                .Select(static item => $"{item}:arbitrary-not-retained/{item.ToLowerInvariant()}")
+                .ToArray()));
+
+        missing.Success.Should().BeFalse();
+        missing.Reason.Should().Contain("Backtest -> Paper promotion evidence is incomplete");
+        invalid.Success.Should().BeFalse();
+        invalid.Reason.Should().Contain("Backtest -> Paper promotion evidence references are invalid");
+        invalid.Reason.Should().Contain("must match evidence retained on source run");
+        (await service.GetPromotionHistoryAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ApproveAsync_ScopedCoveredCallWithMatchingNonVaultEvidence_FailsClosed()
+    {
+        var service = BuildService(out var store);
+        var scope = new StrategyRunReadScope("tenant-a", "company-a");
+        var checklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+        var categorizedEvidence = checklist
+            .Select(static item => $"{item}:report://governed/{item.ToLowerInvariant()}")
+            .ToArray();
+        var run = WithScope(
+            StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult(),
+                RetainedEvidenceReferences = categorizedEvidence
+                    .Select(static reference => reference[(reference.IndexOf(':') + 1)..])
+                    .ToArray()
+            },
+            "tenant-a",
+            "company-a");
+        await store.RecordRunAsync(run);
+
+        var decision = await service.ApproveAsync(
+            new PromotionApprovalRequest(
+                run.RunId,
+                ApprovedBy: "ops",
+                ApprovalReason: "Non-vault evidence attempted.",
+                ApprovalChecklist: checklist,
+                EvidenceReferences: categorizedEvidence),
+            scope);
+
+        decision.Success.Should().BeFalse();
+        decision.Reason.Should().Contain("must reference evidence://evidence-vault/{vaultId}");
+        (await service.GetPromotionHistoryAsync(scope)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("evidence://evidence-vault/ev-0123456789abcdef01234567/extra")]
+    [InlineData("evidence://evidence-vault/%2e%2e")]
+    [InlineData("evidence://evidence-vault/%252e%252e")]
+    [InlineData("evidence://evidence-vault/ev-0123456789abcdef012345%2f")]
+    [InlineData("evidence://evidence-vault/ev-0123456789abcdef012345%252f")]
+    [InlineData("evidence://evidence-vault/vault-covered-call")]
+    [InlineData("evidence://evidence-vault/ev-0123456789abcdef0123456g")]
+    [InlineData("evidence://evidence-vault:444/ev-0123456789abcdef01234567")]
+    [InlineData("evidence://operator@evidence-vault/ev-0123456789abcdef01234567")]
+    [InlineData("evidence://evidence-vault/ev-0123456789abcdef01234567?download=true")]
+    [InlineData("evidence://evidence-vault/ev-0123456789abcdef01234567#fragment")]
+    public async Task ApproveAsync_ScopedCoveredCallWithMalformedVaultReference_FailsClosed(
+        string malformedReference)
+    {
+        var service = BuildService(out var store);
+        var scope = new StrategyRunReadScope("tenant-a", "company-a");
+        var checklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+        var run = WithScope(
+            StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult(),
+                RetainedEvidenceReferences = [malformedReference]
+            },
+            scope.TenantId,
+            scope.CompanyId);
+        await store.RecordRunAsync(run);
+
+        var decision = await service.ApproveAsync(
+            new PromotionApprovalRequest(
+                run.RunId,
+                ApprovedBy: "ops",
+                ApprovalReason: "Malformed Vault reference attempted.",
+                ApprovalChecklist: checklist,
+                EvidenceReferences: checklist
+                    .Select(item => $"{item}:{malformedReference}")
+                    .ToArray()),
+            scope);
+
+        decision.Success.Should().BeFalse();
+        decision.Reason.Should().Contain("must reference evidence://evidence-vault/{vaultId}");
+        (await service.GetPromotionHistoryAsync(scope)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ApproveAsync_LegacyBacktestWithMatchingCategorizedEvidence_RemainsSupported()
+    {
+        var service = BuildService(out var store);
+        var checklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+        var categorizedEvidence = checklist
+            .Select(static item => $"{item}:report://governed/{item.ToLowerInvariant()}")
+            .ToArray();
+        var run = StrategyRunEntry.Start("legacy-paper", "Legacy Paper", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = categorizedEvidence
+                .Select(static reference => reference[(reference.IndexOf(':') + 1)..])
+                .ToArray()
+        };
+        run = WithCanonicalInputHash(run);
+        await store.RecordRunAsync(run);
+
+        var decision = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Categorized evidence reviewed.",
+            ApprovalChecklist: checklist,
+            EvidenceReferences: categorizedEvidence));
+
+        decision.Success.Should().BeTrue();
+        (await service.GetPromotionHistoryAsync()).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task GetPromotionHistoryAsync_WithDurableRecords_FiltersByExactSourceRunScope()
+    {
+        var durableStore = new JsonlPromotionRecordStore(
+            new PromotionRecordStoreOptions(Path.Combine(CreateTempRoot(), "promotion-history")),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+        var service = BuildService(out var runStore, durableStore);
+        var scopeA = new StrategyRunReadScope("tenant-a", "company-a");
+        var scopeB = new StrategyRunReadScope("tenant-b", "company-b");
+        var runA = WithScope(
+            StrategyRunEntry.Start("strategy-a", "Strategy A", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult()
+            },
+            "tenant-a",
+            "company-a");
+        var runB = WithScope(
+            StrategyRunEntry.Start("strategy-b", "Strategy B", RunType.Backtest) with
+            {
+                EndedAt = DateTimeOffset.UtcNow,
+                Metrics = BuildPassingResult()
+            },
+            "tenant-b",
+            "company-b");
+        await runStore.RecordRunAsync(runA);
+        await runStore.RecordRunAsync(runB);
+        (await service.RejectAsync(new PromotionRejectionRequest(runA.RunId, "A review", RejectedBy: "operator-a"), scopeA)).Success.Should().BeTrue();
+        (await service.RejectAsync(new PromotionRejectionRequest(runB.RunId, "B review", RejectedBy: "operator-b"), scopeB)).Success.Should().BeTrue();
+
+        var restarted = new PromotionService(
+            runStore,
+            new BacktestToLivePromoter(),
+            durableStore,
+            NullLogger<PromotionService>.Instance);
+        var historyA = await restarted.GetPromotionHistoryAsync(scopeA);
+        var historyB = await restarted.GetPromotionHistoryAsync(scopeB);
+
+        historyA.Should().ContainSingle(record => record.SourceRunId == runA.RunId);
+        historyB.Should().ContainSingle(record => record.SourceRunId == runB.RunId);
+        (await restarted.GetPromotionHistoryAsync()).Should().BeEmpty();
     }
 
     // ---- Helpers ----
@@ -408,6 +1093,154 @@ public sealed class PromotionServiceTests
         var path = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static async Task<IReadOnlyList<StrategyRunEntry>> LoadRunsAsync(IStrategyRepository store)
+    {
+        var runs = new List<StrategyRunEntry>();
+        await foreach (var run in store.GetAllRunsAsync())
+        {
+            runs.Add(run);
+        }
+
+        return runs;
+    }
+
+    private sealed class FailingDecisionReservationStore : IPromotionRecordStore
+    {
+        public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<StrategyPromotionRecord>>([]);
+
+        public Task<PromotionDecisionReservation> ReserveFirstDecisionAsync(
+            StrategyPromotionRecord record,
+            CancellationToken ct = default) =>
+            Task.FromException<PromotionDecisionReservation>(new IOException("Injected decision reservation failure."));
+
+        public Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default) =>
+            Task.FromException(new IOException("Injected append failure."));
+    }
+
+    private sealed class FailOncePromotedRunRepository : IStrategyRepository
+    {
+        private readonly StrategyRunStore _inner = new();
+        private int _failNextPromotedRun = 1;
+
+        public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default)
+        {
+            if (entry.ParentRunId is not null &&
+                Interlocked.Exchange(ref _failNextPromotedRun, 0) == 1)
+            {
+                return Task.FromException(new IOException("Injected target-run persistence failure."));
+            }
+
+            return _inner.RecordRunAsync(entry, ct);
+        }
+
+        public IAsyncEnumerable<StrategyRunEntry> GetRunsAsync(
+            string strategyId,
+            CancellationToken ct = default) =>
+            _inner.GetRunsAsync(strategyId, ct);
+
+        public Task<StrategyRunEntry?> GetLatestRunAsync(
+            string strategyId,
+            CancellationToken ct = default) =>
+            _inner.GetLatestRunAsync(strategyId, ct);
+
+        public IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(CancellationToken ct = default) =>
+            _inner.GetAllRunsAsync(ct);
+
+        public Task<StrategyRunEntry?> GetRunByIdAsync(
+            string runId,
+            CancellationToken ct = default) =>
+            _inner.GetRunByIdAsync(runId, ct);
+    }
+
+    private sealed class RecordingPromotedRunLauncher : IPromotedRunLauncher
+    {
+        private int _launchCount;
+
+        public int LaunchCount => Volatile.Read(ref _launchCount);
+
+        public Task<RunLaunchResult> TryLaunchAsync(
+            StrategyRunEntry run,
+            CancellationToken ct = default)
+        {
+            ArgumentNullException.ThrowIfNull(run);
+            ct.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref _launchCount);
+            return Task.FromResult(RunLaunchResult.Success());
+        }
+    }
+
+    private static string[] CreateEvidenceReferences(RunType targetRunType) =>
+        PromotionApprovalChecklist
+            .CreateRequiredFor(targetRunType)
+            .Select(static item => $"{item}:{CanonicalPromotionVaultReference}")
+            .ToArray();
+
+    private static string[] CreateRetainedEvidenceReferences(RunType targetRunType) =>
+        CreateEvidenceReferences(targetRunType)
+            .Select(static reference => reference[(reference.IndexOf(':') + 1)..])
+            .ToArray();
+
+    private static StrategyRunEntry WithScope(
+        StrategyRunEntry run,
+        string tenantId,
+        string companyId)
+    {
+        var scopedRun = run with
+        {
+            ParameterSet = new Dictionary<string, string>
+            {
+                ["workstationTenantId"] = tenantId,
+                ["workstationCompanyId"] = companyId
+            }
+        };
+        return WithCanonicalInputHash(scopedRun);
+    }
+
+    private static StrategyRunEntry WithCanonicalInputHash(StrategyRunEntry run)
+    {
+        var hasEvidence = run.OperatorAcceptanceCriteria.Any(static value => !string.IsNullOrWhiteSpace(value)) ||
+            run.RetainedEvidenceReferences.Any(static value => !string.IsNullOrWhiteSpace(value)) ||
+            run.AccountingRecordReferences.Any(static value => !string.IsNullOrWhiteSpace(value)) ||
+            run.ApprovalReferences.Any(static value => !string.IsNullOrWhiteSpace(value)) ||
+            run.PaperValidationReferences.Any(static value => !string.IsNullOrWhiteSpace(value)) ||
+            run.GovernedReportReferences.Any(static value => !string.IsNullOrWhiteSpace(value));
+        var hash = hasEvidence
+            ? StrategyRunEntry.ComputeEvidenceBoundInputHash(
+                run.StrategyId,
+                run.StrategyName,
+                run.RunType,
+                run.DatasetReference,
+                run.FeedReference,
+                run.Engine,
+                run.ParameterSet,
+                run.ParentRunId,
+                run.PortfolioId,
+                run.LedgerReference,
+                run.AuditReference,
+                run.FundProfileId,
+                run.OperatorAcceptanceCriteria,
+                run.RetainedEvidenceReferences,
+                run.AccountingRecordReferences,
+                run.ApprovalReferences,
+                run.PaperValidationReferences,
+                run.GovernedReportReferences)
+            : StrategyRunEntry.ComputeInputHash(
+                run.StrategyId,
+                run.StrategyName,
+                run.RunType,
+                run.DatasetReference,
+                run.FeedReference,
+                run.Engine,
+                run.ParameterSet,
+                run.ParentRunId,
+                run.PortfolioId,
+                run.LedgerReference,
+                run.AuditReference,
+                run.FundProfileId);
+        return run with { InputHashSha256 = hash };
     }
 
     private static BacktestResult BuildPassingResult()
@@ -481,8 +1314,10 @@ public sealed class PromotionServiceTests
         var run = StrategyRunEntry.Start("strat-test", "Session Test Strategy", RunType.Backtest) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
         };
+        run = WithCanonicalInputHash(run);
         await store.RecordRunAsync(run);
 
         // Evaluate promotion (verifies run is found and eligible)
@@ -498,7 +1333,8 @@ public sealed class PromotionServiceTests
             run.RunId,
             ApprovedBy: "operator-qa",
             ApprovalReason: "Session replay verified and portfolio consistent",
-            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper));
         var decision = await service.ApproveAsync(approvalRequest);
         decision.Success.Should().BeTrue("Approval should succeed");
         decision.PromotionId.Should().NotBeNull("Audit reference should be created");

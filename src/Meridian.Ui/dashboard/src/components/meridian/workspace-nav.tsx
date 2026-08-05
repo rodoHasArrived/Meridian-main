@@ -39,7 +39,7 @@ export function WorkspaceNav({
   const location = useLocation();
   const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
   const compact = density === "compact";
-  const activeWorkspaceKey = viewModel.items.find((item) => item.active)?.key ?? viewModel.items[0]?.key;
+  const activeWorkspaceKey = viewModel.activeWorkspaceKey ?? undefined;
   const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey);
 
   return (

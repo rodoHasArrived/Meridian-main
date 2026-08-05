@@ -1404,28 +1404,24 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     [Fact]
-    public async Task PlaceOrderAsync_WhenGatewayFaults_ReArmsTheConsumedGovernedApproval()
+    public async Task PlaceOrderAsync_WhenGatewayFaultsAfterDispatch_RetiresTheConsumedGovernedApproval()
     {
         // A validator that approves while reporting it consumed a one-shot approval.
         var queue = new RiskEscalationQueueService(
             NullLogger<RiskEscalationQueueService>.Instance,
             options: new RiskEscalationQueueOptions(
                 Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
-        var parked = queue.Park(
-            new OrderRequest { Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Market, Quantity = 1 },
-            "above band");
+        var order = new OrderRequest { Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Market, Quantity = 1 };
+        var parked = queue.Park(order, "above band");
         queue.Approve(parked.EscalationId, actor: "risk-desk");
-        queue.TryConsumeApproval(new OrderRequest
+        var releaseRequest = order with
         {
-            Symbol = "AAPL",
-            Side = OrderSide.Buy,
-            Type = OrderType.Market,
-            Quantity = 1,
             Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId
             }
-        }).Should().NotBeNull();
+        };
+        queue.TryConsumeApproval(releaseRequest).Should().NotBeNull();
 
         var riskValidator = Substitute.For<IRiskValidator>();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
@@ -1444,19 +1440,14 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             riskValidator: riskValidator,
             escalationQueue: queue);
 
-        var result = await oms.PlaceOrderAsync(new OrderRequest
-        {
-            Symbol = "AAPL",
-            Side = OrderSide.Buy,
-            Type = OrderType.Market,
-            Quantity = 1,
-            ClientOrderId = "CLIENT-FAULT"
-        });
+        var result = await oms.PlaceOrderAsync(order with { ClientOrderId = "CLIENT-FAULT" });
 
         result.Success.Should().BeFalse();
         queue.TryGet(parked.EscalationId)!.Status.Should().Be(
-            RiskEscalationStatus.Approved,
-            "the gateway faulted before anything routed, so the operator's approval must be retryable");
+            RiskEscalationStatus.Released,
+            "a fault after dispatch is ambiguous, so the one-shot approval cannot authorize a retry");
+        queue.TryConsumeApproval(releaseRequest).Should().BeNull(
+            "an ambiguous submission may still execute and the consumed approval must not be replayed");
     }
 
     [Fact]
@@ -1598,7 +1589,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     [Fact]
-    public async Task PlaceOrderAsync_WhenGatewayFaults_ReArmsEveryConsumedApproval()
+    public async Task PlaceOrderAsync_WhenGatewayFaultsAfterDispatch_RetiresEveryConsumedApproval()
     {
         var queue = new RiskEscalationQueueService(
             NullLogger<RiskEscalationQueueService>.Instance,
@@ -1635,9 +1626,17 @@ public sealed class OrderManagementSystemGateTests : IDisposable
 
         await oms.PlaceOrderAsync(order with { ClientOrderId = "CLIENT-MULTI-FAULT" });
 
-        // Both decisions must be retryable — the joined token set is not a single id.
-        queue.TryGet(first.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
-        queue.TryGet(second.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+        // Every decision in the joined token set stays retired after ambiguous dispatch.
+        queue.TryGet(first.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
+        queue.TryGet(second.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
+        queue.TryConsumeApprovals(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = tokens
+            }
+        }).Should().BeEmpty(
+            "an ambiguous submission may still execute and none of its one-shot approvals may be replayed");
     }
 
     [Fact]

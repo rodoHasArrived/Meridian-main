@@ -11,7 +11,9 @@ using Xunit;
 namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
-public sealed class ReportingArtifactCatalogAuditStoreTests : IClassFixture<ReportingArtifactDatabaseFixture>
+public sealed class ReportingArtifactCatalogAuditStoreTests :
+    IClassFixture<ReportingArtifactDatabaseFixture>,
+    IAsyncLifetime
 {
     private static readonly DateTimeOffset StoredAtUtc =
         new(2026, 7, 15, 8, 30, 0, TimeSpan.Zero);
@@ -26,6 +28,10 @@ public sealed class ReportingArtifactCatalogAuditStoreTests : IClassFixture<Repo
         _catalog = new PostgresReportingArtifactCatalog(database.Options);
         _audit = new PostgresReportingArtifactAuditStore(database.Options);
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task AddPackageAsync_IsAtomicTenantScopedAndExactlyIdempotent()

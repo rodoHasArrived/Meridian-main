@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 978 |
-| Valid | 561 |
+| Total code blocks | 971 |
+| Valid | 554 |
 | Invalid | 0 |
 | Skipped | 417 |
 
@@ -17,11 +17,11 @@
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
-| `(none)` | 102 | 0 | 0 | 102 |
-| `bash` | 157 | 157 | 0 | 0 |
+| `(none)` | 103 | 0 | 0 | 103 |
+| `bash` | 156 | 156 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 311 | 311 | 0 | 0 |
+| `csharp` | 305 | 305 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 62 | 62 | 0 | 0 |
@@ -30,11 +30,11 @@
 | `makefile` | 1 | 0 | 0 | 1 |
 | `markdown` | 16 | 0 | 0 | 16 |
 | `md` | 10 | 0 | 0 | 10 |
-| `mermaid` | 37 | 0 | 0 | 37 |
+| `mermaid` | 36 | 0 | 0 | 36 |
 | `powershell` | 84 | 0 | 0 | 84 |
 | `python` | 3 | 3 | 0 | 0 |
-| `sql` | 8 | 0 | 0 | 8 |
-| `text` | 62 | 0 | 0 | 62 |
+| `sql` | 7 | 0 | 0 | 7 |
+| `text` | 63 | 0 | 0 | 63 |
 | `toml` | 31 | 0 | 0 | 31 |
 | `ts` | 8 | 0 | 0 | 8 |
 | `xml` | 9 | 9 | 0 | 0 |
@@ -113,7 +113,7 @@ No invalid code examples found.
 | `docs/docfx/api/index.md` | 1 |
 | `docs/engineering/README.md` | 1 |
 | `docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md` | 9 |
-| `docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md` | 14 |
+| `docs/engineering/blueprints/risk-engine-severity-and-decision-journal-blueprint.md` | 7 |
 | `docs/engineering/live-trading-engine.md` | 1 |
 | `docs/engineering/production-certification-evidence-chain.md` | 2 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |

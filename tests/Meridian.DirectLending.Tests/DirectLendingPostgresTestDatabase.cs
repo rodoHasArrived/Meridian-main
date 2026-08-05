@@ -83,16 +83,24 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             return null;
         }
 
-        var schema = PostgresTestSchema.NewSchemaName("dl");
         var server = await PostgresTestServer.CreateAsync(
                 EnvVar,
                 new PostgresTestContainerOptions { Database = "meridian_dl_test" })
             .ConfigureAwait(false);
+        var schema = server.CreateSchemaName("dl");
 
         var database = new DirectLendingPostgresTestDatabase(server, schema);
-        var runner = new DirectLendingMigrationRunner(database.Options);
-        await runner.EnsureMigratedAsync().ConfigureAwait(false);
-        return database;
+        try
+        {
+            var runner = new DirectLendingMigrationRunner(database.Options);
+            await runner.EnsureMigratedAsync().ConfigureAwait(false);
+            return database;
+        }
+        catch
+        {
+            await database.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
     }
 
     public async Task<long> CountSnapshotsAsync(Guid loanId)
@@ -117,17 +125,6 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        // External databases persist across runs, so the run-scoped schema must be dropped;
-        // containers are discarded whole by the shared server.
-        if (_server.UsesExternalConnection)
-        {
-            await using var connection = new NpgsqlConnection(ConnectionString);
-            await connection.OpenAsync().ConfigureAwait(false);
-            await using var command = connection.CreateCommand();
-            command.CommandText = $"drop schema if exists {Schema} cascade;";
-            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-        }
-
         await _server.DisposeAsync().ConfigureAwait(false);
     }
 

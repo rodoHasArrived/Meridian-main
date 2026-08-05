@@ -40,6 +40,11 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_shutdown.IsCancellationRequested, this);
 
+        if (!request.TryCreateRequiredEvidenceLoop(out var evidenceLoop, out var validationError))
+        {
+            throw new ArgumentException(validationError, nameof(request));
+        }
+
         var engine = ResolveEngine(request.Engine);
         var handle = await engine.StartAsync(request, ct).ConfigureAwait(false);
 
@@ -52,7 +57,7 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
                 request.StrategyId);
         }
 
-        var entry = StrategyRunEntry.Start(
+        var entry = StrategyRunEntry.StartWithEvidence(
             request.StrategyId,
             request.StrategyName,
             RunType.Backtest,
@@ -60,17 +65,17 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
             datasetReference: request.DatasetReference,
             feedReference: request.FeedReference,
             engine: handle.Engine.ToString(),
-            parameterSet: request.Parameters) with
+            parameterSet: request.Parameters,
+            operatorAcceptanceCriteria: evidenceLoop.OperatorAcceptanceCriteria,
+            retainedEvidenceReferences: evidenceLoop.RetainedEvidenceReferences,
+            accountingRecordReferences: evidenceLoop.AccountingRecordReferences,
+            approvalReferences: evidenceLoop.ApprovalReferences,
+            paperValidationReferences: evidenceLoop.PaperValidationReferences,
+            governedReportReferences: evidenceLoop.GovernedReportReferences) with
         {
             SweepId = request.SweepId,
             SweepDefinitionHash = computedSweepHash,
-            SweepObjective = request.SweepObjective,
-            OperatorAcceptanceCriteria = NormalizeLinks(request.OperatorAcceptanceCriteria),
-            RetainedEvidenceReferences = NormalizeLinks(request.RetainedEvidenceReferences),
-            AccountingRecordReferences = NormalizeLinks(request.AccountingRecordReferences),
-            ApprovalReferences = NormalizeLinks(request.ApprovalReferences),
-            PaperValidationReferences = NormalizeLinks(request.PaperValidationReferences),
-            GovernedReportReferences = NormalizeLinks(request.GovernedReportReferences)
+            SweepObjective = request.SweepObjective
         };
 
         await _repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
@@ -252,10 +257,4 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         return Convert.ToHexString(bytes);
     }
 
-    private static string[] NormalizeLinks(IEnumerable<string>? values)
-        => values?
-            .Where(static value => !string.IsNullOrWhiteSpace(value))
-            .Select(static value => value.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray() ?? [];
 }

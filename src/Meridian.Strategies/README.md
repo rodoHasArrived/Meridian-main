@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-03
 ---
 
 # src/Meridian.Strategies
@@ -50,6 +50,19 @@ data-root-backed durable history store.
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do
 not need to infer backtest acceptance from dashboard-only state.
+Scoped Covered Call runs are visible only through exact tenant/company repository reads. Their
+Backtest-to-Paper checklist is projected from the durable promotion record and exact retained Paper
+child lineage, not from eligibility or declaration presence: all four canonical Paper checklist
+ids require an operator, audit reference, decision time, keyed source-run evidence, and a same-scope
+Paper target whose parent and strategy identities match. Unscoped APIs remain limited to genuinely
+legacy, non-Covered-Call records.
+Promotion decisions are first-decision-wins per source run and target mode. Sequential retries and
+concurrent requests across independent hosts targeting the same JSONL authority reuse the original
+approved or rejected record under a cross-process authority lease; a conflicting later transition
+cannot create another target, append another decision, or repeat launcher and audit side effects.
+An approval is retained and audited before its target becomes runnable. If target persistence fails,
+a retry repairs the exact retained target id under the same authority lease, while an unconfirmed
+decision write leaves no target for the startup resume sweep to activate.
 Completed runs may receive a subsequent append-only walk-forward evidence snapshot when the
 snapshot changes only that evidence; durable replay preserves the completed lifecycle state while
 allowing paper-to-live promotion to evaluate the newly retained out-of-sample evidence.

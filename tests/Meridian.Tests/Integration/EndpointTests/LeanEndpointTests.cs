@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -13,14 +14,18 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class LeanEndpointTests
+public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
+    private readonly HttpClient _strategyMutationClient;
 
     public LeanEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
+        _strategyMutationClient = fixture.CreatePermittedClient(UserPermission.ManageStrategies);
     }
+
+    public void Dispose() => _strategyMutationClient.Dispose();
 
     // -------------------------------------------------------------------------
     // GET /api/lean/status
@@ -319,7 +324,7 @@ public sealed class LeanEndpointTests
         var payload = new { resultsFilePath = (string?)null };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/lean/results/ingest", content);
+        var response = await _strategyMutationClient.PostAsync("/api/lean/results/ingest", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -333,7 +338,7 @@ public sealed class LeanEndpointTests
         var payload = new { resultsFilePath = "/nonexistent/path/results.json" };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/lean/results/ingest", content);
+        var response = await _strategyMutationClient.PostAsync("/api/lean/results/ingest", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -350,7 +355,7 @@ public sealed class LeanEndpointTests
             var payload = new { resultsFilePath = tempFile };
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync("/api/lean/results/ingest", content);
+            var response = await _strategyMutationClient.PostAsync("/api/lean/results/ingest", content);
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var body = await response.Content.ReadAsStringAsync();
@@ -385,7 +390,7 @@ public sealed class LeanEndpointTests
             var payload = new { resultsFilePath = tempFile, algorithmName = "TestAlgorithm" };
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync("/api/lean/results/ingest", content);
+            var response = await _strategyMutationClient.PostAsync("/api/lean/results/ingest", content);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 

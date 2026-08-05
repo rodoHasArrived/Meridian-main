@@ -5,6 +5,13 @@ import * as api from "@/lib/api";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { PaperSessionSummary, TradingWorkspaceResponse } from "@/types";
 
+const paperPromotionEvidenceReferences = [
+  "DK1_TRUST_PACKET_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+  "RUN_LINEAGE_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+  "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+  "RISK_CONTROLS_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567"
+];
+
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
@@ -654,6 +661,9 @@ describe("TradingScreen", () => {
     fireEvent.change(within(promotionGate).getByLabelText("Approval reason"), { target: { value: "Meets risk constraints" } });
     fireEvent.change(within(promotionGate).getByLabelText("Review notes"), { target: { value: "Checked replay consistency" } });
     fireEvent.change(within(promotionGate).getByLabelText("Manual override id"), { target: { value: "override-9" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Promotion evidence references"), {
+      target: { value: paperPromotionEvidenceReferences.join("\n") }
+    });
     await user.click(within(promotionGate).getByRole("button", { name: /evaluate gate checks/i }));
     await waitFor(() => {
       expect(within(promotionGate).getByText("Evaluation results").parentElement).toHaveTextContent("Eligible: Yes");
@@ -665,6 +675,7 @@ describe("TradingScreen", () => {
       approvedBy: "operator-7",
       approvalReason: "Meets risk constraints",
       approvalChecklist: ["DK1_TRUST_PACKET_REVIEWED", "RUN_LINEAGE_REVIEWED", "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED", "RISK_CONTROLS_REVIEWED"],
+      evidenceReferences: paperPromotionEvidenceReferences,
       reviewNotes: "Checked replay consistency",
       manualOverrideId: "override-9"
     });

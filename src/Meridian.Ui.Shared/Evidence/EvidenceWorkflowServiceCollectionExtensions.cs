@@ -88,7 +88,8 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         {
             return new ReportingStatementImportEvidenceRetainer(
                 authority,
-                FileEvidenceArtifactStore.ResolveDataRoot(serviceProvider));
+                FileEvidenceArtifactStore.ResolveDataRoot(serviceProvider),
+                serviceProvider.GetRequiredService<IEvidenceArtifactStore>());
         }
 
         if (isProductionComposition)

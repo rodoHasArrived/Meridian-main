@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-07-31
+Snapshot date: 2026-08-03
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -31,12 +31,12 @@ Snapshot date: 2026-07-31
 | W5-ACCT-001 | Accounting records and operational evidence | done | green | high | Accounting and Ledger |
 | W5-MASSET-001 | Multi-asset operational coverage proof lane | done | green | high | Accounting and Ledger |
 | W5X-CONNECT-001 | Custodian and broker statement connector library | done | green | high | Accounting and Ledger |
-| W5X-EVIDENCE-001 | Evidence Vault productization | in_progress | green | high | Accounting and Ledger |
+| W5X-EVIDENCE-001 | Evidence Vault productization | done | green | high | Accounting and Ledger |
 | W5X-FINOPS-001 | Financial operations control center | done | green | high | Accounting and Ledger |
 | W5X-FREX-001 | Shared financial record explorers | done | green | high | Workstation Shell and UX |
 | W5X-OEG-001 | Operational evidence graph product surface | planned | green | high | Workstation Shell and UX |
-| W5X-STMT-ONBOARD-001 | Statement reconciliation onboarding wedge | in_progress | green | high | Accounting and Ledger |
-| W6-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy Analytics |
+| W5X-STMT-ONBOARD-001 | Statement reconciliation onboarding wedge | done | green | high | Accounting and Ledger |
+| W6-BTSTUDIO-001 | Backtesting studio evidence loop | done | green | medium | Strategy Analytics |
 | W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |
 | W8-UX-CONSOL-001 | Browser workstation screen consolidation | in_progress | on_track | medium | Workstation Shell and UX |
 | W8-WPF-PARITY-001 | WPF desktop workstation reactivation and web-UI parity | in_progress | on_track | high | Desktop Workstation |

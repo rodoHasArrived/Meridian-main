@@ -6,6 +6,7 @@ import {
   buildCommandPaletteTriggerState,
   buildDevelopmentFixtureNoticeViewModel,
   normalizeWorkspace,
+  resolveAppShellLocation,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkspacePayload
 } from "@/app-shell.view-model";
@@ -244,6 +245,14 @@ describe("app shell view model", () => {
     expect(normalizeWorkspace("/unknown")).toBe("trading");
   });
 
+  it("models the root as shell home without adding an eighth workspace", () => {
+    expect(resolveAppShellLocation("/")).toEqual({ kind: "home" });
+    expect(resolveAppShellLocation("/accounting/reconciliation")).toEqual({
+      kind: "workspace",
+      workspaceKey: "accounting"
+    });
+  });
+
   it("treats the root route as the Daily Control Tower shell focus", () => {
     const state = buildAppShellViewState({
       pathname: "/",
@@ -258,6 +267,8 @@ describe("app shell view model", () => {
       documentTitle: "Daily Control Tower - Meridian",
       fallbackElementId: "workbench-content"
     });
+    expect(state.location).toEqual({ kind: "home" });
+    expect(state.workflowContinuity.contextValue).toBe("Daily Control Tower / Today");
     expect(state.workflowContinuity.title).toBe("Daily Control Tower");
     expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
       "Today",

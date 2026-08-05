@@ -81,10 +81,16 @@ public sealed class IngestionOperationsService
         string action,
         IngestionOperationActionRequestDto request,
         string actor,
+        string tenantId,
+        string companyId,
         CancellationToken ct)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        tenantId = tenantId.Trim();
+        companyId = companyId.Trim();
         CleanupIdempotencyCache();
-        var idempotencyKey = $"{jobId}:{action}:{request.IdempotencyKey.Trim()}";
+        var idempotencyKey = $"{tenantId}:{companyId}:{jobId}:{action}:{request.IdempotencyKey.Trim()}";
         if (_idempotency.TryGetValue(idempotencyKey, out var prior))
             return prior.Result;
 
@@ -105,6 +111,8 @@ public sealed class IngestionOperationsService
             target,
             request.Rationale.Trim(),
             actor,
+            tenantId,
+            companyId,
             recordedAt,
             ct).ConfigureAwait(false);
         var result = new IngestionOperationActionResultDto(
@@ -135,6 +143,8 @@ public sealed class IngestionOperationsService
         IngestionJobState current,
         string rationale,
         string actor,
+        string tenantId,
+        string companyId,
         DateTimeOffset recordedAt,
         CancellationToken ct)
     {
@@ -165,7 +175,8 @@ public sealed class IngestionOperationsService
         {
             Classification = EvidenceDocumentClassificationDto.AuditRequestSupport,
             Actor = actor,
-            Scope = "Data"
+            TenantId = tenantId,
+            Scope = companyId
         }, ct).ConfigureAwait(false);
     }
 

@@ -4,6 +4,7 @@ using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,8 +43,18 @@ public static partial class WorkstationEndpoints
         StrategyRunSummary? run = null;
         if (readService is not null)
         {
-            var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
-            run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
+            var scope = ResolveStrategyRunReadScope(context);
+            var runs = (await readService
+                    .GetRunsAsync(
+                        strategyId: null,
+                        runType: null,
+                        scope: scope,
+                        ct: context.RequestAborted)
+                    .ConfigureAwait(false))
+                .ToArray();
+            run = TradingOperatorReadinessService.FindScopedCoveredCallPaperTarget(runs)
+                ?? runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper)
+                ?? runs.FirstOrDefault();
         }
 
         var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);

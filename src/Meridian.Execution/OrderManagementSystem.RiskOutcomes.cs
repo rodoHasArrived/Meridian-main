@@ -112,7 +112,8 @@ public sealed partial class OrderManagementSystem
             OrderState = parkedState,
             RequiresApproval = true,
             EscalationId = riskResult.EscalationId,
-            RiskWarnings = riskResult.Warnings.Count > 0 ? riskResult.Warnings : null
+            RiskWarnings = riskResult.Warnings.Count > 0 ? riskResult.Warnings : null,
+            RiskDecision = riskResult.ToSummary()
         };
     }
 
@@ -551,10 +552,17 @@ public sealed partial class OrderManagementSystem
     /// to hand back to the caller, or the speculative <paramref name="Reservation"/> that
     /// publishes the amended size to concurrent placements while the amendment routes.
     /// </summary>
+    /// <param name="RiskDecision">
+    /// The approved amendment's risk decision, carrying any capacity a stateful rule reserved to
+    /// admit it. Null when no validator ran or the amendment was refused — a refusal releases its
+    /// own capacity before returning, so only an approved amendment hands anything to the caller,
+    /// which settles it once the gateway has answered.
+    /// </param>
     private readonly record struct AmendmentGateResult(
         OrderState? Reservation,
         string? Refusal,
-        IReadOnlyList<string>? Warnings);
+        IReadOnlyList<string>? Warnings,
+        RiskValidationResult? RiskDecision = null);
 
     /// <summary>
     /// Revalidates a risk-increasing amendment and reserves the amended exposure under the
@@ -571,6 +579,11 @@ public sealed partial class OrderManagementSystem
         IReadOnlyList<string>? warnings = null;
         string? consumedApprovalId = null;
 
+        // An amendment revalidation goes through the same reserving rules a placement does, so it
+        // takes real capacity. Discarding the result would hold that slot for the process's
+        // lifetime and eventually block every later order.
+        RiskValidationResult? amendmentDecision = null;
+
         await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -579,12 +592,16 @@ public sealed partial class OrderManagementSystem
                 var amendedRisk = await _riskValidator.ValidateOrderAsync(amendmentProbe, ct).ConfigureAwait(false);
                 warnings = amendedRisk.Warnings.Count > 0 ? amendedRisk.Warnings : null;
                 consumedApprovalId = amendedRisk.ConsumedApprovalId;
+                amendmentDecision = amendedRisk;
 
                 if (!amendedRisk.IsApproved)
                 {
                     // An amendment is never parked: the original order stays live and the
                     // caller is told the increase was refused. Any approval token consumed
                     // by this evaluation is re-armed because nothing changed.
+                    // Refused: nothing routes, so release the capacity now rather than handing an
+                    // unsettleable handle to a caller whose only outcome is a refusal.
+                    SettleRiskReservations(amendmentDecision, commit: false, orderId);
                     RestoreConsumedApprovals(consumedApprovalId, "an amendment refused by risk validation");
                     var refusal = amendedRisk.RequiresApproval
                         ? $"Modification requires governed approval and was not applied: {amendedRisk.RejectReason}"
@@ -605,8 +622,14 @@ public sealed partial class OrderManagementSystem
             };
             if (_orders.TryUpdate(orderId, reservation, state))
             {
-                return new AmendmentGateResult(reservation, null, warnings);
+                return new AmendmentGateResult(reservation, null, warnings, amendmentDecision);
             }
+        }
+        catch
+        {
+            // Cancelled or faulted before the amendment could be published: nothing routed.
+            SettleRiskReservations(amendmentDecision, commit: false, orderId);
+            throw;
         }
         finally
         {
@@ -616,6 +639,8 @@ public sealed partial class OrderManagementSystem
         // The order moved underneath the gate, so the amended exposure was never published.
         // Routing the amendment anyway would raise the broker-side size while every
         // concurrent placement still measured the smaller order, so refuse it instead.
+        // The amendment lost the race and never published its exposure, so nothing can route.
+        SettleRiskReservations(amendmentDecision, commit: false, orderId);
         RestoreConsumedApprovals(consumedApprovalId, "an amendment whose exposure could not be reserved");
         _logger.LogWarning(
             "Order {OrderId} amendment was not applied: the order changed while its amended exposure was being reserved",
@@ -790,6 +815,59 @@ public sealed partial class OrderManagementSystem
         return metadata;
     }
 
+    /// <summary>
+    /// Serializes the whole decision into the rejection audit: the headline names one breach, but
+    /// every rule is evaluated before a decision is taken, so a rejection can carry several.
+    /// Without these fields a breach behind the headline exists only on the transient
+    /// <see cref="OrderResult"/> and never reaches rule status or history.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string>? BuildRiskDecisionAuditMetadata(
+        RiskValidationResult decision)
+    {
+        if (decision.Violations.Count == 0 && decision.Warnings.Count == 0)
+        {
+            return null;
+        }
+
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["decisionSource"] = "risk",
+            ["decision"] = decision.Decision.ToString(),
+        };
+
+        AppendRiskWarningsMetadata(metadata, decision.Warnings);
+
+        if (decision.Violations.Count == 0)
+        {
+            return metadata;
+        }
+
+        // Invariant culture on the numerics: a WAL written under one locale has to parse under
+        // another, and these are read back by the status projection.
+        metadata["violation.count"] = decision.Violations.Count.ToString(CultureInfo.InvariantCulture);
+        for (var i = 0; i < decision.Violations.Count; i++)
+        {
+            var violation = decision.Violations[i];
+            var prefix = string.Create(CultureInfo.InvariantCulture, $"violation.{i}");
+            metadata[$"{prefix}.rule"] = violation.RuleName;
+            metadata[$"{prefix}.code"] = violation.Code;
+            metadata[$"{prefix}.message"] = violation.Message;
+            metadata[$"{prefix}.severity"] = violation.Severity.ToString();
+
+            if (violation.ObservedValue is { } observed)
+            {
+                metadata[$"{prefix}.observed"] = observed.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (violation.LimitValue is { } limit)
+            {
+                metadata[$"{prefix}.limit"] = limit.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        return metadata;
+    }
+
     private static void AppendRiskWarningsMetadata(
         IDictionary<string, string> metadata,
         IReadOnlyList<string> warnings)
@@ -867,5 +945,115 @@ public sealed partial class OrderManagementSystem
         public bool SessionRecorded { get; set; }
         public bool ExecutionReportPublished { get; set; }
         public volatile bool IsComplete;
+    }
+
+    /// <summary>
+    /// Settles the capacity the risk gate reserved for this order, exactly once, at the routing
+    /// boundary.
+    /// </summary>
+    /// <param name="decision">
+    /// The approved decision holding the reservations, or <see langword="null"/> when no validator
+    /// ran or the order never passed the gate. A non-approved decision has already released its own
+    /// capacity inside the validator, so there is nothing here to settle.
+    /// </param>
+    /// <param name="commit">
+    /// <see langword="true"/> when the order reached — or may have reached — a venue.
+    /// </param>
+    /// <remarks>
+    /// Never throws. Settlement runs on failure paths that are already unwinding, and a reservation
+    /// whose commit faults must not replace the outcome the caller is about to receive, nor stop the
+    /// remaining reservations from being settled.
+    /// </remarks>
+    private void SettleRiskReservations(RiskValidationResult? decision, bool commit, string orderId)
+    {
+        if (decision is null || decision.Reservations.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            if (commit)
+            {
+                decision.CommitReservations();
+            }
+            else
+            {
+                decision.RollbackReservations();
+            }
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                _logger.LogError(
+                    ex,
+                    "Risk reservations for order {OrderId} could not be settled ({Settlement})",
+                    LogSanitizer.Sanitize(orderId),
+                    commit ? "commit" : "rollback");
+            }
+            catch
+            {
+                // The logging provider is the thing that failed. Nothing left to report with,
+                // and the settlement outcome must not become the caller's exception.
+            }
+        }
+    }
+
+    private async Task<OrderResult> RejectDuplicateClientOrderIdAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        CancellationToken ct)
+    {
+        var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
+
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            message,
+            ct,
+            rejectionSource: "duplicate client order id guard",
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = message
+        };
+    }
+
+    private static OrderState CreateRejectedState(
+        string orderId,
+        OrderRequest request,
+        string? reason)
+    {
+        return new OrderState
+        {
+            OrderId = orderId,
+            Symbol = request.Symbol,
+            Side = request.Side,
+            Type = request.Type,
+            Quantity = request.Quantity,
+            LimitPrice = request.LimitPrice,
+            StopPrice = request.StopPrice,
+            Status = OrderStatus.Rejected,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow,
+            StrategyId = request.StrategyId,
+            // Fund scope survives a rejection: a parked order's state is built here, and
+            // cancelling one withdraws its approval — authorized against this field.
+            FundAccountId = request.FundAccountId,
+            AverageFillPrice = null,
+            FilledQuantity = 0m
+        };
     }
 }

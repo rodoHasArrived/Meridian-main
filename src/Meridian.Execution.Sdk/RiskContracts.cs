@@ -1,0 +1,138 @@
+using System.Text.Json.Serialization;
+
+namespace Meridian.Execution.Sdk;
+
+/// <summary>
+/// How seriously a rule treats its own findings.
+/// <para>
+/// This is the single lever that decides admission. The validator maps it to an outcome and no
+/// rule can override that mapping per order, so a rule's declared severity and its effect can
+/// never disagree.
+/// </para>
+/// <para>
+/// Lives here rather than in <c>Meridian.Risk</c> because <see cref="RiskViolation"/> carries it
+/// and <c>Meridian.Execution</c>'s <c>RiskValidationResult</c> exposes those violations.
+/// <c>Meridian.Risk</c> references <c>Meridian.Execution</c>, so the reverse reference would be a
+/// project cycle.
+/// </para>
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<RiskRuleSeverity>))]
+public enum RiskRuleSeverity
+{
+    /// <summary>Recorded and surfaced. Admits the order.</summary>
+    Info,
+
+    /// <summary>Recorded and surfaced more prominently. Admits the order.</summary>
+    Warning,
+
+    /// <summary>Blocks the order.</summary>
+    Error,
+
+    /// <summary>
+    /// Blocks the order and parks it in the governed approval queue instead of rejecting it
+    /// outright. An operator can release the parked order with a one-shot approval token.
+    /// </summary>
+    Escalate,
+
+    /// <summary>
+    /// Blocks the order and trips the execution circuit breaker, halting all further routing
+    /// until an operator closes it. Reserved for guardrails whose breach implies a halt.
+    /// </summary>
+    Critical
+}
+
+/// <summary>Aggregate verdict for one pre-trade evaluation.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<RiskDecisionKind>))]
+public enum RiskDecisionKind
+{
+    /// <summary>Admitted with no findings.</summary>
+    Approved,
+
+    /// <summary>Admitted; findings recorded for operator visibility.</summary>
+    ApprovedWithWarnings,
+
+    /// <summary>
+    /// <b>Not admitted.</b> The order was parked in the governed approval queue rather than
+    /// rejected outright, and routes only if an operator releases it.
+    /// <para>
+    /// Distinct from <see cref="Rejected"/> only in what an operator can do next — a parked order
+    /// is recoverable, a rejected one must be resubmitted. Both are non-routing outcomes, so any
+    /// caller deciding whether to send an order treats this exactly like a rejection.
+    /// </para>
+    /// </summary>
+    Escalated,
+
+    /// <summary>Blocked.</summary>
+    Rejected
+}
+
+/// <summary>
+/// A breach attributed to the rule that raised it, as the validator records it.
+/// <para>
+/// Constructed by the validator, which is what guarantees <see cref="Severity"/> is the declaring
+/// rule's own and not a value chosen per order.
+/// </para>
+/// </summary>
+public sealed record RiskViolation(
+    string RuleName,
+    RiskRuleSeverity Severity,
+    string Code,
+    string Message,
+    decimal? ObservedValue = null,
+    decimal? LimitValue = null,
+    bool RequiresAcknowledgement = false)
+{
+    /// <summary>
+    /// True when this violation is one that blocks. Derived from <see cref="Severity"/> so it can
+    /// never disagree with the validator's own admission logic.
+    /// <para>
+    /// Stated as "not explicitly non-blocking" rather than "Error or Critical". A C# enum can hold
+    /// any value of its underlying type — a cast or a numeric deserialization in host code is
+    /// enough — and this is a public SDK contract on a fail-closed gate. Listing the blocking
+    /// severities would admit an unrecognised one with warnings; listing the safe ones rejects it.
+    /// </para>
+    /// </summary>
+    public bool IsBlocking => Severity is not (RiskRuleSeverity.Info or RiskRuleSeverity.Warning);
+}
+
+/// <summary>
+/// Compact decision summary returned to the submitter on <see cref="OrderResult"/>, so an order
+/// ticket can render findings for both admitted and rejected submissions without a second query.
+/// </summary>
+public sealed record RiskDecisionSummary(
+    RiskDecisionKind Decision,
+    IReadOnlyList<RiskViolation> Violations);
+
+/// <summary>
+/// Capacity held for one in-flight evaluation by a rule that consumes a finite resource
+/// (rate windows, burst counters).
+/// <para>
+/// Exactly one of <see cref="Commit"/> or <see cref="Rollback"/> takes effect; both are idempotent
+/// so a cleanup path can settle unconditionally without double-settling.
+/// </para>
+/// <para>
+/// Ownership moves: the validator rolls reservations back if evaluation throws or is cancelled, and
+/// transfers them to the caller on a normal return. Only the caller commits, and only once the
+/// order has actually been routed.
+/// </para>
+/// </summary>
+public interface IRiskReservation
+{
+    /// <summary>Keeps the reserved capacity — the order was routed.</summary>
+    void Commit();
+
+    /// <summary>
+    /// Returns the reserved capacity — the order was blocked, was cancelled before dispatch, or
+    /// definitively failed before reaching the venue.
+    /// <para>
+    /// <b>Not for an ambiguous submission failure.</b> When a gateway call throws after dispatch may
+    /// already have happened, the order may still execute, so the caller commits instead: for a rate
+    /// limiter the safe direction is to over-count. Under-counting would let a runaway algorithm
+    /// bypass the ceiling by producing ambiguous submissions, which is the behaviour the control
+    /// exists to stop. Roll back only when nothing can have reached the venue — a rejection, a
+    /// duplicate client order id, a gateway report of <c>Rejected</c>, or a cancellation observed
+    /// before the gateway was called.
+    /// </para>
+    /// </summary>
+    void Rollback();
+}

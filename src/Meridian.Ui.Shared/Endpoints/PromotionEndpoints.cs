@@ -29,7 +29,11 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var result = await service.EvaluateAsync(runId, ct: context.RequestAborted).ConfigureAwait(false);
+            var result = await service.EvaluateAsync(
+                    runId,
+                    ResolveStrategyRunScope(context),
+                    ct: context.RequestAborted)
+                .ConfigureAwait(false);
 
             if (!result.Found)
                 return Results.NotFound(result);
@@ -41,7 +45,8 @@ public static class PromotionEndpoints
         .Produces(401)
         .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost("/approve", async (PromotionApprovalRequest request, HttpContext context) =>
         {
@@ -57,7 +62,11 @@ public static class PromotionEndpoints
 
             var normalizedRequest = request with { ApprovedBy = actor };
 
-            var result = await service.ApproveAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
+            var result = await service.ApproveAsync(
+                    normalizedRequest,
+                    ResolveStrategyRunScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
 
             return result.Success
                 ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
@@ -69,6 +78,7 @@ public static class PromotionEndpoints
         .Produces(401)
         .Produces<PromotionDecisionResult>(403)
         .Produces(501)
+        .RequireWorkstationTenantCompanyScope()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost("/reject", async (PromotionRejectionRequest request, HttpContext context) =>
@@ -85,7 +95,11 @@ public static class PromotionEndpoints
 
             var normalizedRequest = request with { RejectedBy = actor };
 
-            var result = await service.RejectAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
+            var result = await service.RejectAsync(
+                    normalizedRequest,
+                    ResolveStrategyRunScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("RejectPromotion")
@@ -93,6 +107,7 @@ public static class PromotionEndpoints
         .Produces(401)
         .Produces<PromotionDecisionResult>(403)
         .Produces(501)
+        .RequireWorkstationTenantCompanyScope()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet("/history", async (HttpContext context) =>
@@ -104,14 +119,18 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var history = await service.GetPromotionHistoryAsync(context.RequestAborted).ConfigureAwait(false);
+            var history = await service.GetPromotionHistoryAsync(
+                    ResolveStrategyRunScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(history, jsonOptions);
         })
         .WithName("GetPromotionHistory")
         .Produces<IReadOnlyList<StrategyPromotionRecord>>(200)
         .Produces(401)
         .Produces(403)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost("/runs/{runId}/walk-forward-evidence", async (
             string runId,
@@ -142,7 +161,12 @@ public static class PromotionEndpoints
             if (evidence.Validate() is { } validationError)
                 return Results.BadRequest(new { error = validationError });
 
-            var updated = await service.RecordWalkForwardEvidenceAsync(runId, evidence, context.RequestAborted).ConfigureAwait(false);
+            var updated = await service.RecordWalkForwardEvidenceAsync(
+                    runId,
+                    evidence,
+                    ResolveStrategyRunScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return updated is null
                 ? Results.NotFound(new { error = $"Run '{runId}' was not found." })
                 : Results.Json(updated.WalkForwardEvidence, jsonOptions, statusCode: StatusCodes.Status201Created);
@@ -154,7 +178,14 @@ public static class PromotionEndpoints
         .Produces(403)
         .Produces(404)
         .Produces(501)
+        .RequireWorkstationTenantCompanyScope()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+    }
+
+    private static StrategyRunReadScope ResolveStrategyRunScope(HttpContext context)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return new StrategyRunReadScope(tenantContext.TenantId, tenantContext.CompanyId);
     }
 
     private static IResult? TryAuthorizePromotionRead(HttpContext context)

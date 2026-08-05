@@ -211,6 +211,12 @@
           "notes": "Capture the Report run status screen from the registered WPF shell catalog."
         },
         {
+          "title": "Evidence packets",
+          "pageTag": "EvidenceWorkbench",
+          "captureName": "wpf-evidence-workbench",
+          "notes": "Capture the Evidence packets screen from the registered WPF shell catalog."
+        },
+        {
           "title": "Reporting dashboard",
           "pageTag": "Dashboard",
           "captureName": "wpf-dashboard",
