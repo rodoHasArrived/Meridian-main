@@ -456,8 +456,14 @@ public sealed class OperatorReadinessConsoleViewModelTests
 
         OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered)
             .Should().Be(
+                "TradingShell",
+                "without a catalog the shared route map resolves the trading-readiness route the same way the main shell does");
+
+        var routelessItem = item with { TargetRoute = null, TargetPageTag = null };
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(routelessItem, IsRegistered)
+            .Should().Be(
                 "FundAuditTrail",
-                "without a catalog the routeless desktop fallback for trust items still applies");
+                "a genuinely routeless trust item falls back to the audit-history kind mapping");
     }
 
     [Fact]
