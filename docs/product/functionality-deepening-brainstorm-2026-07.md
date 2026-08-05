@@ -20,7 +20,64 @@
 > or around* it and says so explicitly.
 >
 > This is a dated working design input, not a canonical status source. Use the roadmap registry
-> for live status.
+> for live status, and read the Status Update section below first — pull-request review found
+> several premises that were overbroad at writing time or have since been implemented.
+
+---
+
+## Status Update (2026-08-05) — Post-Review Corrections and Landed Lanes
+
+This snapshot was written against the 2026-07-28 tree. Pull-request review (Copilot and Codex,
+2026-08-05) plus re-verification against current source surfaced two kinds of drift, corrected
+in place throughout the document and summarized here. The W10 depth slate
+([`w10-depth-slate-2026-07.md`](w10-depth-slate-2026-07.md), `W10-MARK-001`…`W10-CONSOL-001`)
+now owns live sequencing for much of this territory; treat this document as grounding and
+rationale, not as the current backlog.
+
+**Corrections — claims that were overbroad or missed existing code at writing time:**
+
+- `RiskDecision.Escalate` was never "unconstructed anywhere": the interop layer maps a
+  `DecisionKind = "escalate"` DTO to `Escalate` (`src/Meridian.FSharp/Interop.fs`). The accurate
+  gap was that no shipped risk rule ever produced that decision.
+- The four walk-forward promotion criteria were already enforced on the active path: since
+  2026-07-21, `PromotionService` passes `RequireWalkForwardEvidenceForLive`,
+  `MinOutOfSampleSharpe`, `MinWalkForwardDegradationRatio`, and `MaxOutOfSampleDrawdownPercent`
+  into the F# promotion policy (`src/Meridian.Strategies/Services/PromotionService.cs`), covered
+  by `PromotionWalkForwardGateTests`. Only the standalone
+  `BacktestToLivePromoter.EvaluatePromotionThresholds` helper still evaluates the three legacy
+  thresholds; idea 3 is re-scoped accordingly.
+- Reconciliation operator decisions were never discarded: `FileReconciliationDecisionJournal`
+  and the break-queue casework store persist resolution and root-cause codes, notes, actors,
+  evidence, approvals, and timestamps. Idea 5's opportunity is deriving fingerprints and
+  rankings from those existing durable labels, not introducing decision capture.
+- Expected statement activity was already modeled: persisted `StatementFetchSchedule` records
+  (connector, account, source institution, cadence, period, next-due time) run through the
+  registered `StatementFetchSchedulerService`. Idea 8 is an extension of that scheduler —
+  coverage matrix, late/missing projection, chase — not a new expected-statement model.
+- A scheduled backfill subsystem already existed: `ScheduledBackfillService`
+  (`src/Meridian.Application/Scheduling/`) with `BackfillSchedule`, `BackfillScheduleManager`,
+  and `BackfillSchedulePresets` (daily gap-fill, weekly full, EOD) — but it is not registered in
+  the composition root. Idea 9's grounded gap is activation plus market-calendar policy and
+  post-remediation verification: itself an instance of this session's "built but not wired"
+  pattern.
+- The order-class capability strings are real where they matter: `AlpacaBrokerageGateway`
+  normalizes, validates, and serializes bracket/OCO/OTO (and multi-leg) order classes. Idea 11's
+  cleanup is scoped to the `OrderLifecycleManager` last-write-wins cache only — do not remove
+  advertised Alpaca order-class functionality.
+
+**Landed since the snapshot (accurate then, superseded now):**
+
+- **Idea 4 (reconciliation matching floor) shipped on 2026-07-28** (PR #2541): scored
+  best-first assignment, one-to-many/many-to-one split groups, `BusinessDayAccountingCalendar`
+  and `FileAccountingCalendar`, and bounded-concurrency ingestion with retries. The idea text is
+  retained as rationale; its sequencing role is done.
+- **Idea 1 is partially landed**: `RiskContext` now carries portfolio-aware fields —
+  `CreatePortfolioContext` with gross-exposure, symbol-concentration, and order-notional gates
+  fed from the live aggregated portfolio, plus `EscalateOrderNotional`. Re-survey the remaining
+  scope (severity semantics, honest guardrail rail) before implementing.
+- **Idea 10 is now `W10-MARK-001`**, rank 1 of the W10 depth slate; the `W10-RECON` rows cover
+  idea 5's territory (break lineage identity, clustering and bulk resolution, tolerance
+  what-if replay, operator-taught match rules).
 
 ---
 
@@ -32,13 +89,15 @@ that promise depth the implementation never delivers, and in two places UI copy 
 controls which do not exist in code:
 
 - `RiskContext` declares `PortfolioExposure` and `RecentOrderRate`; **no risk rule ever reads
-  either field**. `RiskDecision.Escalate` is never constructed anywhere in the repo.
-  `RiskRuleSeverity` is logged and never acted on — a `Warning` rejects exactly as hard as a
-  `Critical`.
+  either field**. `RiskDecision.Escalate` is reachable only through the interop DTO mapping —
+  **no shipped rule ever produces it**. `RiskRuleSeverity` is logged and never acted on — a
+  `Warning` rejects exactly as hard as a `Critical`.
 - `PromotionCriteria` documents four walk-forward/out-of-sample gates
   (`MinOutOfSampleSharpe`, `MinWalkForwardDegradationRatio`, `RequireWalkForwardEvidenceForLive`,
-  `MaxOutOfSampleDrawdownPercent`); **none of the four is passed to the evaluator** in
-  `BacktestToLivePromoter`.
+  `MaxOutOfSampleDrawdownPercent`); the standalone
+  `BacktestToLivePromoter.EvaluatePromotionThresholds` helper passes none of them, evaluating
+  only the three legacy thresholds. (The active `PromotionService` path does enforce all four —
+  see the Status Update; the original survey overstated this.)
 - The Trading workspace hardcodes guardrail sentences ("Single-name concentration cap set at 30%
   notional.", "Auto-throttle activates above 70% intraday buying power.") in
   `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs` — **controls that do not
@@ -62,7 +121,7 @@ cheap for their value: the seams, registries, stores, and UI surfaces already ex
 | 1 | Portfolio-aware risk engine: real exposure aggregation, severity semantics, honest guardrail rail | M | I, H | High | — |
 | 2 | One alerting spine: SLO evaluation loop + dispatcher wiring + dual-stack merge | M | I, H, Q | High | — |
 | 3 | Promotion contract monitor: wire dead criteria, live-vs-paper drift, auto-demotion | M | I, H | High | 2 (delivery) |
-| 4 | Reconciliation matching floor: best-match assignment, split matching, business calendar | M | I | High | — |
+| 4 | Reconciliation matching floor — **shipped 2026-07-28**, see Status Update | M | I | High | — |
 | 5 | Break intelligence: recurrence fingerprints + match-suggestion learning | L | I | Med-High | 4 |
 | 6 | Approval matrix that enforces: route binding, governed policy changes, delegation/escalation | M | I | High | — |
 | 7 | Period evidence-completeness certificate (close data gate) | M | I | High | 8 (partial) |
@@ -79,6 +138,9 @@ Effort: **S** = days, **M** = 1–2 weeks, **L** = 1+ month. Audience: **H** = h
 ## The Ideas
 
 ### 1. Portfolio-aware risk engine — make the risk rail true
+
+> **Status 2026-08-05:** partially landed on `main` (portfolio-aware `RiskContext` and
+> exposure/concentration/notional gates) — see the Status Update section before implementing.
 
 `src/Meridian.Risk/` is the widest promise/delivery gap in the platform: an
 `IRiskRule`/`CompositeRiskValidator` architecture with priorities, severities, a shared
@@ -100,10 +162,11 @@ pre-trade risk as a Meridian differentiator that only Bloomberg matches.
   for rules worth tuning.
 - **Give severity and `Escalate` semantics.** `Warning` → allow and flag on the order record;
   `Error` → reject; `Critical` → reject and trip the existing
-  `ExecutionOperatorControlService` circuit breaker. Construct `Escalate` at last: an escalated
-  order parks in a pending-approval state routed through the operations approval matrix (idea
-  6), so a limit breach within tolerance becomes a governed override instead of a hard stop.
-  This turns the dead three-way `RiskDecision` type into the product feature it was modeling.
+  `ExecutionOperatorControlService` circuit breaker. Give `Escalate` a producer at last: an
+  escalated order parks in a pending-approval state routed through the operations approval
+  matrix (idea 6), so a limit breach within tolerance becomes a governed override instead of a
+  hard stop. This turns the never-produced third `RiskDecision` outcome into the product feature
+  it was modeling.
 - **Make the rail honest.** Replace the hardcoded guardrail strings in
   `WorkstationEndpoints.Trading.cs` with descriptions *generated from the live rule registry* —
   each rail row shows the actual rule, its current threshold, its utilization (e.g. "Gross
@@ -162,21 +225,27 @@ add an evaluator," which is why the impact/effort ratio here is the best in this
 
 ### 3. Promotion contract monitor — the promotion record becomes a living contract
 
-Paper→live promotion currently evaluates exactly three numbers (`MinSharpeRatio`,
-`MaxAllowedDrawdownPercent`, `MinTotalReturn`) — while `PromotionCriteria` publicly documents
-four more walk-forward/out-of-sample gates that are **never passed to the evaluator**
-(`src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs`). The 14-item live checklist in
-`PromotionApprovalChecklist` is real governance, but its items are operator-asserted strings,
-not machine-verified conditions. And after promotion, nothing watches: `LiveRunMetricsTracker`
+> **Status 2026-08-05:** premise corrected — the active `PromotionService` path enforces all
+> four walk-forward criteria (see the Status Update). The quick fix is re-scoped to the
+> standalone helper; the post-promotion monitor remains fully open.
+
+The active promotion path is well-gated: `PromotionService` feeds all seven criteria — the
+three legacy thresholds plus the four walk-forward/out-of-sample gates — into the F# promotion
+policy, and the 14-item live checklist in `PromotionApprovalChecklist` adds governance on top
+(though its items are operator-asserted strings, not machine-verified conditions). The
+standalone `BacktestToLivePromoter.EvaluatePromotionThresholds` helper, however, still evaluates
+only the three legacy thresholds — an inconsistency that misleads any caller that reaches the
+helper instead of the service. And after promotion, nothing watches: `LiveRunMetricsTracker`
 already builds a `BacktestResult` from live fills — the exact comparable artifact — and nothing
 consumes it. A strategy that qualified at Sharpe 1.8 can decay to 0.3 and nothing in the
 platform notices, demotes, or even annotates.
 
 **What to build.**
 
-- **First, the embedded quick fix (S, do immediately):** pass the four declared criteria through
-  to the evaluator, or delete them. Dead governance knobs on a promotion contract are worse
-  than absent ones — they document rigor that isn't happening.
+- **First, the embedded quick fix (S, do immediately):** align the standalone helper with the
+  `PromotionService` policy path — evaluate the same seven criteria — or retire the helper so
+  there is exactly one promotion evaluator. Two evaluators with different rigor is how a
+  promotion contract quietly weakens.
 - **Then the monitor:** a post-promotion conformance service that periodically compares the
   live envelope (rolling Sharpe, realized drawdown, slippage vs. paper assumptions, hit rate)
   from `LiveRunMetricsTracker` against the qualifying thresholds pinned in the strategy's
@@ -201,6 +270,10 @@ regime event, with that override itself audit-recorded.
 ---
 
 ### 4. Reconciliation matching floor — give the superstructure a foundation to stand on
+
+> **Status 2026-08-05:** shipped on 2026-07-28 (PR #2541) — scored best-first assignment, split
+> groups, business-day calendar, and real ingestion scheduling are on `main`. Retained as
+> rationale; the sequencing role of this idea is done.
 
 Reconciliation is the deepest subsystem in the repo (~14k LOC): versioned tolerance profiles,
 `MatchEvidence` with rule and profile lineage, a 5,400-line break-queue repository, business-hour
@@ -239,10 +312,12 @@ instead of layering on `near[0]` semantics.
 
 ### 5. Break intelligence — the break queue starts learning from its operators
 
-The break-queue and casework layers are production-grade, and every match already carries
-`MatchEvidence` with rule id and tolerance-profile version. What no one has built: memory.
-Every operator decision — match accepted, break resolved with reason code, tolerance overridden
-— is discarded as workflow exhaust instead of being treated as labeled data.
+The break-queue and casework layers are production-grade, every match already carries
+`MatchEvidence` with rule id and tolerance-profile version, and operator decisions are durably
+retained — `FileReconciliationDecisionJournal` plus the break-queue casework store persist
+resolution and root-cause codes, notes, actors, evidence, and timestamps. What no one has
+built: the layer that *learns* from them. Those durable labels sit unread — never fingerprinted,
+never clustered, never ranked — so every recurring break is re-investigated as if it were new.
 
 **What to build.** Three layers on the existing queue:
 
@@ -265,11 +340,13 @@ prior-resolution context. Aging stops being driven by re-investigation of known 
 
 **Tradeoffs.** This is deterministic statistics over the queue's own history — not an ML
 service and deliberately not the session-9 MCP break-resolution *agent* idea; it is the data
-layer such an agent would later consume. Suggestion quality depends on capturing decisions with
-reason codes from day one, so the schema change to record decisions-as-labels should land early
-even if the intelligence ships later. Cold start is real: the feature earns trust over its
-first two or three close cycles, not its first day. Depends on idea 4 only in the sense that
-suggestions built on bad assignment semantics learn the wrong lessons.
+layer such an agent would later consume. The labels already exist in the decision journal and
+casework store, so the work is the derivation layer over them, not new capture — though label
+*consistency* (reason codes actually filled in) determines suggestion quality, and the first
+two or three close cycles are the trust-earning period. Depends on idea 4 only in the sense
+that suggestions built on bad assignment semantics learn the wrong lessons. The `W10-RECON`
+slate rows (lineage identity, clustering and bulk resolution, tolerance what-if replay,
+operator-taught match rules) now carry this territory in the roadmap.
 
 ---
 
@@ -351,47 +428,55 @@ data and evidence presence for any period, every period.
 
 Statement ingestion is genuinely built — BAI2 and CAMT.053 connectors, checkpoint stores, an
 evidence bridge, casework handoff (`src/Meridian.FinancialOperations/Reconciliation/`,
-`src/Meridian.Ui.Shared/Evidence/`). But the platform only knows about statements that
-*arrived*. Nothing models which statements are *expected*, so a custodian quietly skipping an
-account for a month is invisible until reconciliation fails or close stalls.
+`src/Meridian.Ui.Shared/Evidence/`) — and expectations are modeled too: persisted
+`StatementFetchSchedule` records (connector, account, source institution, cadence, period,
+next-due time) run through the registered `StatementFetchSchedulerService`. What's missing is
+the *coverage* view over those schedules: nothing projects received-versus-expected per account
+per period, so a custodian quietly skipping an account for a month is still invisible until
+reconciliation fails or close stalls.
 
-**What to build.** Per-account statement terms (source, frequency, expected arrival lag — e.g.
-"camt.053 daily, T+1 by 07:00") feeding a coverage matrix read model: accounts × periods,
+**What to build.** An extension of the existing schedule/runner, not a new expected-statement
+model: a coverage matrix read model derived from `StatementFetchSchedule` — accounts × periods,
 each cell received/late/missing, with received cells linking to their import evidence. Missing
-cells past the expected lag auto-open a chase task through the existing casework handoff
-(`StatementReconciliationCaseworkHandoffService`), with escalation through the alerting spine.
-The coverage matrix is the direct feed for certificate item (b) in idea 7.
+cells past the schedule's next-due time auto-open a chase task through the existing casework
+handoff (`StatementReconciliationCaseworkHandoffService`), with escalation through the alerting
+spine. The coverage matrix is the direct feed for certificate item (b) in idea 7.
 
 **The user moment.** The Accounting workspace shows a coverage strip: 47 of 48 expected
 statements received for July; the missing cell is amber at T+2 with a chase task already open
 and assigned. Nobody discovers a missing statement during close week anymore.
 
-**Tradeoffs.** Small, contained, and mostly a modeling exercise — the risk is terms drift
-(custodians change delivery schedules), so terms need an owner and a "last confirmed" date.
-Deepens `W5X-STMT-ONBOARD-001` directly: onboarding a connector now ends by declaring what it's
-expected to deliver, which is what makes the connector's silence detectable.
+**Tradeoffs.** Small, contained, and mostly a projection exercise over the existing schedule
+records — the risk is schedule drift (custodians change delivery cadence), so schedules need an
+owner and a "last confirmed" date. Deepens `W5X-STMT-ONBOARD-001` directly: the schedules
+declare what a connector is expected to deliver; the coverage matrix is what finally makes the
+connector's silence visible.
 
 ---
 
 ### 9. Closed-loop backfill — scheduled sweeps and verified remediation
 
 `AutoGapRemediationService` is 1,206 lines of real depth: idempotency keys, cooldowns, SLA
-tiers, multiple entry points. But it is purely *reactive* — there is no scheduled backfill
-anywhere: no nightly sweep, no catch-up-on-startup, no market-calendar awareness. The direct
-gap-backfill path is fire-and-forget with no retry and a hardcoded `"composite"` provider
-label. And remediation is open-loop: success means "the backfill request didn't error," not
-"the gap is closed" — nothing re-runs gap analysis over the remediated window, and the 622-line
+tiers, multiple entry points. A scheduling layer exists too — `ScheduledBackfillService` in
+`src/Meridian.Application/Scheduling/`, with `BackfillSchedule`, `BackfillScheduleManager`, and
+`BackfillSchedulePresets` (daily gap-fill, weekly full, end-of-day) — **but it is not
+registered in the composition root**, so in a running system remediation is purely reactive:
+this session's "built but not wired" pattern, live in the data lane. The direct gap-backfill
+path is fire-and-forget with no retry and a hardcoded `"composite"` provider label. And
+remediation is open-loop: success means "the backfill request didn't error," not "the gap is
+closed" — nothing re-runs gap analysis over the remediated window, and the 622-line
 `CrossSourceBackfillReconciliationService` that could verify against a second source is never
 invoked by the remediation path.
 
-**What to build.** A `BackgroundService` sweep: on startup and on a market-calendar schedule
-(after each session close), run gap analysis over the active symbol universe and enqueue
-remediation for findings — turning "the collector was down overnight" from a silent hole into a
-morning-report line item. Convert the fire-and-forget path into a durable bounded queue with
-retry policy and real provider attribution. Close the loop: after each remediation, re-run gap
-analysis on the window and only then mark the gap closed; for instruments feeding accounting
-periods, optionally chain cross-source verification so the certificate (idea 7) can cite
-"remediated and verified" rather than "remediation requested."
+**What to build.** Activation, not another scheduler: register `ScheduledBackfillService` in
+the composition root, add catch-up-on-startup and market-calendar awareness to its schedule
+evaluation (after each session close, run gap analysis over the active symbol universe) —
+turning "the collector was down overnight" from a silent hole into a morning-report line item.
+Convert the fire-and-forget path into a durable bounded queue with retry policy and real
+provider attribution. Close the loop: after each remediation, re-run gap analysis on the window
+and only then mark the gap closed; for instruments feeding accounting periods, optionally chain
+cross-source verification so the certificate (idea 7) can cite "remediated and verified" rather
+than "remediation requested."
 
 **The user moment.** The Data workspace's gap panel gains a lifecycle: detected → queued →
 backfilled → **verified**, with timestamps. An operator arriving after a feed outage sees the
@@ -439,16 +524,18 @@ cite mark freshness.
 `OrderManagementSystem` is 1,833 lines of genuine governance depth, but its lifecycle companion
 `OrderLifecycleManager` is a 100-line `Dictionary<string, OrderStatusUpdate>` — last write
 wins, no transition validation, no timeout detection, no history. An out-of-order execution
-report (Filled arriving before PartiallyFilled) silently regresses state. `BrokerageCapabilities`
-meanwhile advertises `"simple,bracket,oco,oto"` order classes the platform cannot construct —
-another declared-but-dead string to retire.
+report (Filled arriving before PartiallyFilled) silently regresses state. (The
+`"simple,bracket,oco,oto"` capability strings, by contrast, are real where they matter:
+`AlpacaBrokerageGateway` normalizes, validates, and serializes those order classes — the
+strategy-context path just can't reach them yet. The cleanup here is the cache, not the
+capability advertisement.)
 
 **What to build.** A proper state machine over `OrderStatus` with a legal-transition table:
 illegal transitions are rejected, logged, and flagged on the order record instead of applied;
 every transition appends to a lifecycle event history (which the blotter's order drill-down can
 finally render as a timeline); stale-state detection flags orders sitting in `PendingNew` or
 `PendingCancel` beyond gateway-appropriate timeouts and raises through the alerting spine.
-Trim the capability strings to what's real.
+Leave the Alpaca order-class capabilities alone — they are genuinely implemented.
 
 **The user moment.** An operator drills into an order and sees its full lifecycle timeline —
 submitted 09:31:02, acked 09:31:02, partial 300/1000 09:31:47, replaced 09:33:10 — instead of
@@ -484,21 +571,23 @@ makes `W9-SAFETY-007`'s rules land in an engine worthy of them.
   statement expectations (#8), and expected-session logic for the certificate (#7). One
   implementation, four consumers.
 
-**Cross-cutting theme: retire "declared but dead."** Dead `RiskContext` fields, an
-unconstructed `Escalate`, four unpassed promotion criteria, capability strings for absent order
-classes, guardrail copy describing nonexistent controls, `Var95: "—"` — each is a small
-truthfulness debt, and together they are the same defect `W9-TRUTH-001` targets at the
-simulation boundary. A one-day sweep that wires-or-deletes each of these is the cheapest
-credibility purchase available to the program.
+**Cross-cutting theme: retire "declared but dead."** Dead `RiskContext` fields (since landed —
+see the Status Update), a never-produced `Escalate` outcome, a legacy three-threshold promotion
+helper out of step with the enforced policy path, an unregistered backfill scheduler, guardrail
+copy describing nonexistent controls, `Var95: "—"` — each is a small truthfulness debt, and
+together they are the same defect `W9-TRUTH-001` targets at the simulation boundary. A one-day
+sweep that wires-or-deletes each of these is the cheapest credibility purchase available to the
+program.
 
 **Sequencing.**
 
-1. **Days, not weeks:** #10 honest marks, #3's criteria-wiring fix, #11 lifecycle state
+1. **Days, not weeks:** #10 honest marks, #3's helper-alignment fix, #11 lifecycle state
    machine, #8 statement coverage — four small, independent truth/coverage wins, two of which
    (#11, #10) should land before `W9-ALPACA-004` puts live data behind them.
 2. **The spine:** #2 alerting, then #6 approval enforcement — the two seams later ideas
    deliver through.
-3. **The floors:** #1 risk engine and #4 matching floor (parallelizable; different subsystems).
+3. **The floors:** #1 risk engine and #4 matching floor (#4 shipped 2026-07-28 — see the
+   Status Update; #1 is partially landed and needs a re-survey first).
 4. **The loops:** #9 verified backfill, #7 completeness certificate (consumes #8, #9, #4's
    calendar), #3's full drift monitor (consumes #2).
 5. **The long game:** #5 break intelligence, once #4's floor is stable and decision-labeling
