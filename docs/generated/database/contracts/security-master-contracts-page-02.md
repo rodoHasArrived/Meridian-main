@@ -202,6 +202,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermField["SecurityAssetTermField"] {
         +IReadOnlyList~string~ Aliases
+        +IReadOnlyList~SecurityAssetTermField~ ElementFields
         +string Key
         +bool Required
         +SecurityAssetTermFieldType Type

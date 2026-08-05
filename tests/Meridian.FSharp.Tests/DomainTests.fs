@@ -801,6 +801,7 @@ let ``IO strip StructuredProductTerms sets IsInterestOnly true`` () =
     let sp = {
         Factor = None
         FactorDate = None
+        FactorSchedule = []
         WeightedAvgCoupon = None
         WeightedAvgMaturityMonths = None
         WeightedAvgLoanAgeMos = None
