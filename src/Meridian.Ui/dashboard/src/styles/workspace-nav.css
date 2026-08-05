@@ -48,7 +48,7 @@
 .operator-rail-section {
   padding: 0.625rem 0.625rem 0.3125rem;
   font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   font-variant: all-small-caps;
   letter-spacing: 0.04em;
@@ -71,7 +71,7 @@
 
 .operator-nav-scope span:first-child {
   font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   font-variant: all-small-caps;
   letter-spacing: 0.04em;
@@ -196,7 +196,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   color: var(--mds-nav-rail-text-muted, var(--ws-text-muted, #59636F));
 }
 
@@ -254,7 +254,7 @@
   overflow: hidden;
   color: var(--mds-nav-rail-text-muted, var(--ws-text-muted, #59636F));
   font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   font-variant: all-small-caps;
   letter-spacing: 0.04em;

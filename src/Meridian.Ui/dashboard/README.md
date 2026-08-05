@@ -72,7 +72,8 @@ The contract standardizes:
 
 Current dense-row detail consumers covered by regression tests include Portfolio positions,
 Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
-Security Master lots.
+Security Master lots. The Daily Control Tower finance queue uses the same table/inspector contract,
+including row selection, focus handoff, and Escape return behavior.
 
 The Data backfill workstream reads `/api/backfill/executions` as the durable remediation evidence
 source. Its remediation SLA queue keeps server-owned tier, deadline, status, provider, workflow,
@@ -1157,12 +1158,20 @@ metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, 
 event labels also normalize retained source names before entering the visible evidence timeline.
 The browser workstation root (`/`) now opens the Daily Control Tower, a read-only shell projection
 of workflow continuity, trust posture, linked context, and timestamped evidence. Its landing model
+is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
+items is marked current, and the operating-context copy identifies the Daily Control Tower instead
+of falling back to Trading. Before the combined finance queue is shown, operators choose an
+operating scope or explicitly opt into cross-scope review.
+The landing model
 now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, Ledger, Reports,
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
 queue, trust posture, linked context, and evidence events before the queued work, so the first screen
 explains why the operator should act, who owns the issue, what output is affected, which action is
 next, and which retained evidence supports it. Scope, freshness, and provider-connectivity trust
 cards expose their remediation actions in the card that reports the warning.
+Queue evidence association is fail-closed on the stable item/evidence identifier. Similar route,
+workspace, severity, or list position never attaches an unrelated proof event; missing correlation
+is displayed as unavailable evidence and timestamp posture.
 Legacy `/overview` links redirect to that root while suffixed overview routes continue through the
 retained workspace alias path.
 The app shell exposes the active route as a named workbench landmark and marks that landmark busy
@@ -1171,6 +1180,12 @@ workspace with explicit loading posture.
 Shared workstation primitives render visual search context as read-only textboxes and shared tab
 strips move focus and the active tab stop with Arrow, Home, and End keys, so route-owned filters and
 inspector tabs do not need screen-local keyboard handling.
+The first-10-minutes coach mark offers task journeys for Financial Operations, Trading and
+Portfolio, Strategy and Research, and Administration. Journey progress is route-backed and retained
+in the existing versioned onboarding storage record; switching journeys preserves completed work.
+Supporting and metadata typography has a 12px floor in the dense setting. Global accessibility
+styles retain visible focus, selected/current state, status boundaries, and data-table structure in
+Windows forced-colors mode; reduced-motion mode suppresses non-essential animation and transitions.
 The app shell keeps cross-workspace ranking and disclosure chrome centralized, while workspace
 linked-context builders, workspace operator-focus candidate construction, workspace
 evidence-timeline projection, workflow-continuity trail definitions, trail selection, active-route
