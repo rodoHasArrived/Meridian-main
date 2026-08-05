@@ -425,6 +425,38 @@ def _entry_scope(entry: str) -> str | None:
     return entry[entry.index("(") + 1 : -1].strip()
 
 
+def _head_covers(deny_head: str, allow_head: str) -> bool:
+    """True when a deny entry's tool name covers an allow entry's tool name.
+
+    Built-in names match exactly. MCP names do not: they are hierarchical, so
+    `disallowedTools: mcp__github` removes every tool that server provides, and
+    `mcp__github__get_*` removes the matching subset. Comparing MCP heads for string
+    equality meant `tools: mcp__github__get_issue` beside `disallowedTools: mcp__github`
+    reported a surviving grant - and because the survivor was MCP-only with its server
+    declared, the declared-server exemption then suppressed the remaining guard too, so a
+    fully cancelled grant passed clean.
+
+    Direction is preserved, as it is for scopes: a per-tool deny does not cancel a
+    whole-server grant, and a wildcard in the *allow* tool segment is matched literally
+    rather than expanded.
+    """
+    if deny_head == allow_head:
+        return True
+    if not deny_head.startswith("mcp__") or not allow_head.startswith("mcp__"):
+        return False
+    if deny_head == MCP_ALL_SERVERS:
+        return True  # every MCP tool, on every server
+    deny_server, _, deny_tool = deny_head[len("mcp__") :].partition("__")
+    allow_server, _, allow_tool = allow_head[len("mcp__") :].partition("__")
+    if deny_server != allow_server:
+        return False
+    if not deny_tool:
+        return True  # a bare server deny covers every tool that server provides
+    if not allow_tool:
+        return False  # but a per-tool deny leaves the rest of the server standing
+    return re.fullmatch(_glob_to_regex(deny_tool), allow_tool) is not None
+
+
 def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
     """True when some deny entry covers this allow entry.
 
@@ -439,7 +471,7 @@ def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
     allow_scope = _entry_scope(allowed)
     for deny in denied:
         deny_head, _ = entry_head(deny)
-        if deny_head != allow_head:
+        if not _head_covers(deny_head, allow_head):
             continue
         deny_scope = _entry_scope(deny)
         if deny_scope is None:
@@ -466,26 +498,54 @@ def _scope_flags(head: str) -> int:
 
     PowerShell matching is case-insensitive per the permission reference, and it "uses the
     same shape as Bash rules". Bash commands are case-sensitive, so only the PowerShell
-    side relaxes. Alias canonicalisation - `PowerShell(Get-ChildItem *)` also matching
-    `gci`, `ls`, `dir` - is deliberately **not** reproduced here: guessing at the host's
-    alias table would create false cancellations, which is the more damaging error for a
-    check whose whole job is deciding whether a grant survives.
+    side relaxes.
     """
     return re.DOTALL | (re.IGNORECASE if head == "PowerShell" else 0)
+
+
+# PowerShell aliases the permission reference names as canonicalized before matching, so
+# `PowerShell(Get-ChildItem *)` also covers `gci`, `ls`, and `dir`. Exactly the three the
+# reference lists, and no more: the host's full alias table is not enumerable from the
+# documentation, and inventing entries here would manufacture cancellations the host would
+# never apply - the more damaging direction for a check whose job is deciding whether a
+# grant survives. Definitions using an undocumented alias are therefore still compared
+# literally, which under-reports rather than over-reports.
+POWERSHELL_ALIASES = {
+    "gci": "Get-ChildItem",
+    "ls": "Get-ChildItem",
+    "dir": "Get-ChildItem",
+}
+
+
+def _canonicalize_powershell(scope: str) -> str:
+    """Rewrite a leading documented alias to its canonical cmdlet name.
+
+    Only the command token, and only when it stands alone: `PowerShell(ls*)` keeps its
+    glob, because `ls*` also covers `lsof` and is not the alias.
+    """
+    command, separator, rest = scope.partition(" ")
+    canonical = POWERSHELL_ALIASES.get(command.lower())
+    if canonical is None:
+        return scope
+    return canonical + separator + rest
 
 
 def _normalize_scope(head: str, scope: str) -> str:
     """Put a scope into the one spelling the matcher compares against.
 
-    Applied to **both** sides. Normalising only the deny left mixed spellings uncovered in
-    one direction: `disallowedTools: Bash(git *)` did not cancel `tools: Bash(git:*)`,
-    because the deny regex was matched against the raw allow text.
+    Applied to **both** sides, at every comparison site. Normalising only the deny left
+    mixed spellings uncovered in one direction: `disallowedTools: Bash(git *)` did not
+    cancel `tools: Bash(git:*)`, because the deny regex was matched against the raw allow
+    text; and `WebFetch(domain :example.*)` missed the domain branch entirely, falling
+    through to a glob that crosses dots.
     """
     scope = scope.strip()
     if head in COMMAND_SCOPED_TOOLS:
         # `command:*` is an equivalent trailing wildcard on both shell tools.
         if scope.endswith(":*"):
-            return scope[:-2].rstrip() + " *"
+            scope = scope[:-2].rstrip() + " *"
+        if head == "PowerShell":
+            scope = _canonicalize_powershell(scope)
         return scope
     # Parameter scopes: "Whitespace around the colon is ignored".
     parameter, separator, value = scope.partition(":")
@@ -517,6 +577,14 @@ def _declared_mcp_servers(value: object) -> tuple[set[str], list[str]]:
     plausible because that is the `.mcp.json` shape, but the subagent frontmatter uses the
     list form - and accepting it here would let a definition the host cannot use suppress
     the MCP-only empty-grant guard, which is the one thing this exemption must not do.
+
+    The inline form's **value** is checked for the same reason. Counting any one-key
+    mapping as a declaration meant `- slack: nope` declared `slack`, and that name then
+    exempted `tools: mcp__slack__post` from the empty-grant guard - while the host, given
+    no server config, resolves the grant to nothing. The exemption is only as sound as the
+    declaration it trusts, so a declaration the host cannot act on must not grant it.
+    Returned problems are full descriptions rather than bare values: the fix differs
+    between the two malformed shapes, and the caller cannot tell them apart.
     """
     if not isinstance(value, list):
         return set(), []
@@ -525,15 +593,30 @@ def _declared_mcp_servers(value: object) -> tuple[set[str], list[str]]:
     for item in value:
         if isinstance(item, str) and item.strip():
             names.add(item.strip())
-        elif isinstance(item, dict) and len(item) == 1:
-            key = next(iter(item))
-            if isinstance(key, str) and key.strip():
+            continue
+        if isinstance(item, dict) and len(item) == 1:
+            key, config = next(iter(item.items()))
+            if not isinstance(key, str) or not key.strip():
+                malformed.append(f"entry key {key!r} is not a server name")
+            elif isinstance(config, dict):
                 names.add(key.strip())
             else:
-                malformed.append(repr(key))
-        else:
-            malformed.append(repr(item))
+                malformed.append(
+                    f"entry '{key}' has {_render_value(config)} where an inline "
+                    "definition needs a server config mapping; drop the colon to "
+                    "reference an already configured server by name"
+                )
+            continue
+        malformed.append(
+            f"entry {item!r} is neither a server name nor an inline server definition"
+        )
     return names, malformed
+
+
+def _render_value(value: object) -> str:
+    if value is None:
+        return "no value"
+    return f"a {type(value).__name__} value"
 
 
 def _domain_covers(deny_value: str, allow_value: str) -> bool:
@@ -598,9 +681,15 @@ def _scope_covers(head: str, deny_scope: str, allow_scope: str) -> bool:
     `Bash(git push:*)`: `"git push:*".startswith("git:")` is False. That reported an
     effectively empty grant as surviving - the exact defect class this validator exists to
     catch, in the validator itself.
+
+    **Both** sides are normalised before the WebFetch branch is selected. Testing the raw
+    deny meant `disallowedTools: WebFetch(domain :example.*)` skipped the domain rules and
+    fell through to the generic glob, whose `.*` crosses dots - so it cancelled a grant for
+    `example.evil.com` that the host would leave live.
     """
     if deny_scope == allow_scope:
         return True
+    deny_scope = _normalize_scope(head, deny_scope)
     allow_scope = _normalize_scope(head, allow_scope)
     if (
         head == "WebFetch"
@@ -680,11 +769,8 @@ def validate_agent(path: Path) -> list[str]:
     )
 
     declared_servers, malformed_servers = _declared_mcp_servers(frontmatter.get("mcpServers"))
-    for entry in malformed_servers:
-        errors.append(
-            f"{path.name}: `mcpServers` entry {entry} is neither a server name nor an "
-            "inline server definition"
-        )
+    for problem in malformed_servers:
+        errors.append(f"{path.name}: `mcpServers` {problem}")
     resolved: dict[str, list[str]] = {}
     for field in TOOL_FIELDS:
         if field not in frontmatter:

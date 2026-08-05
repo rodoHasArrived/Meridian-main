@@ -547,6 +547,38 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertEqual([], module.validate_agent(path))
 
+    def test_inline_mcp_server_needs_a_config_mapping_as_its_value(self) -> None:
+        # Counting any one-key mapping as a declaration meant `- slack: nope` declared
+        # `slack`, and that name then exempted the MCP-only grant below from the
+        # empty-grant guard - while the host, given no server config, resolves it to
+        # nothing. The exemption is only as sound as the declaration it trusts.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__slack\nmcpServers:\n  - slack: nope",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("needs a server config mapping", errors)
+        self.assertIn("names only MCP entries", errors)
+
+    def test_inline_mcp_server_with_no_value_is_reported_as_empty(self) -> None:
+        # `- slack:` with nothing under it is an inline definition missing its config,
+        # not a name reference - the name form has no colon. Say which one it is, since
+        # the fix differs.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\nmcpServers:\n  - slack:",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("no value", errors)
+        self.assertIn("drop the colon", errors)
+
     def test_malformed_mcp_server_entry_is_rejected(self) -> None:
         # Each entry is a server name or a keyed inline definition; `- 123` is neither,
         # and must not silently count as a declaration that suppresses the guard.
@@ -559,6 +591,171 @@ class ValidateAgentTests(unittest.TestCase):
         errors = " | ".join(module.validate_agent(path))
 
         self.assertIn("neither a server name", errors)
+
+    def test_bare_server_deny_cancels_a_tool_grant_from_that_server(self) -> None:
+        # `disallowedTools: mcp__github` removes every tool that server provides, so this
+        # grant is empty. Comparing MCP heads for string equality reported it surviving,
+        # and the declared-server exemption then suppressed the remaining guard - a fully
+        # cancelled grant passing clean through both gates.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github__get_issue\nmcpServers:\n  - github\n"
+            "disallowedTools: mcp__github",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
+
+    def test_mcp_tool_wildcard_deny_cancels_the_matching_tools(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github__get_issue\nmcpServers:\n  - github\n"
+            "disallowedTools: mcp__github__get_*",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
+
+    def test_all_server_deny_cancels_every_mcp_grant(self) -> None:
+        # `mcp__*` is rejected in `tools` as an empty grant, but in `disallowedTools` it
+        # is meaningful - and it covers every server, not just one spelled that way.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github__get_issue\nmcpServers:\n  - github\n"
+            "disallowedTools: mcp__*",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
+
+    def test_mcp_deny_direction_is_preserved(self) -> None:
+        # The reverse of the rule above, which a symmetric fix would get wrong: a
+        # per-tool deny narrows a whole-server grant rather than removing it, and a deny
+        # naming a different server removes nothing at all.
+        narrower = write_agent(
+            self.directory,
+            "narrow-agent",
+            "name: narrow-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github\nmcpServers:\n  - github\n"
+            "disallowedTools: mcp__github__get_issue",
+        )
+        self.assertEqual([], module.validate_agent(narrower))
+
+        other = write_agent(
+            self.directory,
+            "other-agent",
+            "name: other-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github__get_issue\nmcpServers:\n  - github\n"
+            "disallowedTools: mcp__slack",
+        )
+        self.assertEqual([], module.validate_agent(other))
+
+    def test_allow_side_tool_wildcard_is_not_expanded_by_a_literal_deny(self) -> None:
+        # `disallowedTools: mcp__github__get_issue` must not cancel
+        # `tools: mcp__github__get_*`: the wildcard belongs to the grant, and expanding
+        # it on the allow side would let one narrow deny erase a broad one.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github__get_*\nmcpServers:\n  - github\n"
+            "disallowedTools: mcp__github__get_issue",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_powershell_documented_aliases_canonicalize(self) -> None:
+        # "Common aliases are canonicalized": `gci`, `ls`, and `dir` all resolve to
+        # `Get-ChildItem`, so a deny written with any of them covers a grant written with
+        # another. Only these three - the host's full alias table is not enumerable from
+        # the documentation, and a guessed entry would invent a cancellation.
+        for alias in ("gci", "ls", "dir"):
+            with self.subTest(alias=alias):
+                path = write_agent(
+                    self.directory,
+                    "sample-agent",
+                    "name: sample-agent\ndescription: Does a thing.\n"
+                    "tools: PowerShell(Get-ChildItem C:/Temp)\n"
+                    f"disallowedTools: PowerShell({alias} *)",
+                )
+
+                errors = " | ".join(module.validate_agent(path))
+
+                self.assertIn("cancels every entry", errors)
+
+    def test_powershell_alias_canonicalization_respects_the_word_boundary(self) -> None:
+        # `ls*` is a glob that also covers `lsof`, not the alias, so it keeps its own
+        # meaning; and canonicalisation rewrites the command token only, never an
+        # argument that happens to spell an alias.
+        globbed = write_agent(
+            self.directory,
+            "glob-agent",
+            "name: glob-agent\ndescription: Does a thing.\n"
+            "tools: PowerShell(lsof -i)\ndisallowedTools: PowerShell(ls*)",
+        )
+        self.assertTrue(
+            any("cancels every entry" in e for e in module.validate_agent(globbed)),
+            module.validate_agent(globbed),
+        )
+
+        argument = write_agent(
+            self.directory,
+            "arg-agent",
+            "name: arg-agent\ndescription: Does a thing.\n"
+            "tools: PowerShell(Get-Content ls)\ndisallowedTools: PowerShell(Get-Content dir)",
+        )
+        self.assertEqual([], module.validate_agent(argument))
+
+    def test_bash_does_not_canonicalize_powershell_aliases(self) -> None:
+        # The alias table is a PowerShell property. `ls` and `dir` are unrelated commands
+        # in a POSIX shell, and rewriting either would cancel a grant the host keeps.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(Get-ChildItem /tmp)\ndisallowedTools: Bash(ls *)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_webfetch_domain_scope_normalizes_before_the_domain_rules_apply(self) -> None:
+        # "Whitespace around the colon is ignored", and the deny side was tested raw - so
+        # `domain :example.*` skipped the domain branch, fell through to the generic glob
+        # whose `.*` crosses dots, and cancelled a grant the host leaves live. Same shape
+        # of defect as normalising one side of a comparison and not the other.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: WebFetch(domain:example.evil.com)\n"
+            'disallowedTools: "WebFetch(domain : example.*)"',
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_webfetch_domain_scope_still_cancels_across_spellings(self) -> None:
+        # The other direction of the same normalisation: whitespace must not stop a deny
+        # that genuinely covers the grant from being recognised.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: WebFetch(domain:a.example.com)\n"
+            'disallowedTools: "WebFetch(domain : *.example.com)"',
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
 
     def test_webfetch_domain_wildcard_does_not_cross_a_dot(self) -> None:
         # "`WebFetch(domain:example.*)` matches `example.org` … but not

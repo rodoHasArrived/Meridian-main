@@ -454,23 +454,42 @@ MCP entries accept `mcp__server` and `mcp__server__tool`, with the tool segment 
 the all-server `mcp__*` is therefore valid only in `disallowedTools`, where it is honoured rather
 than skipped with a warning.
 
+MCP names are also **hierarchical** when a deny is matched against an allow, unlike built-ins, which
+match exactly. `disallowedTools: mcp__github` removes every tool that server provides,
+`mcp__github__get_*` removes the matching subset, and `mcp__*` removes all of them. Direction is
+preserved as it is for scopes: a per-tool deny narrows a whole-server grant instead of erasing it,
+and a wildcard on the *allow* side is compared literally rather than expanded.
+
 An allow-list naming *only* MCP entries is normally an error, since which servers exist is a
 property of the host session and the grant would resolve to nothing without them. Declaring
 `mcpServers` lifts that **per server**: `tools: mcp__playwright` alongside `mcpServers: [playwright]`
 resolves, while granting `mcp__github` against that same declaration does not. Each `mcpServers`
-entry must be a server name or a keyed inline definition; anything else is reported rather than
-counted as a declaration.
+entry must be a server name or a keyed inline definition **whose value is a server config mapping**;
+anything else is reported rather than counted as a declaration. That last clause carries weight
+beyond tidiness — the exemption is only as sound as the declaration it trusts, so `- slack: nope`
+must not buy an MCP-only grant a pass the host would not honour.
 
 `WebFetch(domain:...)` scopes are matched with domain semantics rather than the command glob. A
 leading `*.` matches subdomains at any depth but not the bare domain, a bare `*` matches everything,
 and a wildcard anywhere else is confined to one label — so `WebFetch(domain:example.*)` covers
 `example.org` but not `example.evil.com`, which is what stops a trailing wildcard from reaching
-domains an attacker could register.
+domains an attacker could register. Whitespace around the colon is ignored on **both** sides before
+that branch is chosen — testing the deny raw let `WebFetch(domain : example.*)` skip the domain
+rules and fall through to the generic glob, whose `.*` does cross a dot.
 
 Parenthesised scopes such as `Bash(git diff:*)` are supported, and coverage between a deny and an
 allow is evaluated as a **glob**, not a prefix test. Wildcards may appear anywhere, so
 `Bash(git * main)` and `Bash(* install)` behave as documented rather than being mistaken for exact
 commands.
+
+`PowerShell` scopes match case-insensitively, and the three aliases the reference names — `gci`,
+`ls`, `dir` — are canonicalised to `Get-ChildItem` before comparison, so a deny written with any of
+them covers a grant written with another. Only those three: the host's alias table is not
+enumerable from the documentation, and a guessed entry would invent a cancellation the host never
+applies, which is the more damaging direction for a check that decides whether a grant survives.
+Canonicalisation rewrites the command token only, so `PowerShell(ls*)` keeps its glob — it also
+covers `lsof` — and an argument that happens to spell an alias is left alone. `Bash` gets none of
+this; `ls` and `dir` are unrelated commands in a POSIX shell.
 
 For `Bash` and `PowerShell`, a trailing `:*` is an equivalent spelling of a trailing wildcard —
 `Bash(ls:*)` matches what `Bash(ls *)` matches. The permission dialog writes the space-separated
