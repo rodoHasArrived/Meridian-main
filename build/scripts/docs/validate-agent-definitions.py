@@ -438,7 +438,9 @@ def _head_covers(deny_head: str, allow_head: str) -> bool:
 
     Direction is preserved, as it is for scopes: a per-tool deny does not cancel a
     whole-server grant, and a wildcard in the *allow* tool segment is matched literally
-    rather than expanded.
+    rather than expanded. But "per-tool" has to mean *some* tools - `mcp__github__*` names
+    every tool the server has, so it does cancel a bare `mcp__github`. Returning False for
+    any deny carrying a tool segment applied the direction rule past where it holds.
     """
     if deny_head == allow_head:
         return True
@@ -453,7 +455,11 @@ def _head_covers(deny_head: str, allow_head: str) -> bool:
     if not deny_tool:
         return True  # a bare server deny covers every tool that server provides
     if not allow_tool:
-        return False  # but a per-tool deny leaves the rest of the server standing
+        # A bare-server grant *is* every tool that server provides, so only a deny that
+        # covers every tool cancels it: `mcp__github__*` does, `mcp__github__get_*` does
+        # not. A tool segment of nothing but wildcards is the one form that provably
+        # matches any name.
+        return not deny_tool.strip("*")
     return re.fullmatch(_glob_to_regex(deny_tool), allow_tool) is not None
 
 

@@ -637,6 +637,35 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertIn("cancels every entry", errors)
 
+    def test_all_tools_deny_cancels_a_bare_server_grant(self) -> None:
+        # `mcp__github__*` names every tool the server has, so it covers `mcp__github`
+        # exactly rather than narrowing it. Returning False for any deny carrying a tool
+        # segment applied the direction rule past where it holds.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github\nmcpServers:\n  - github\n"
+            "disallowedTools: mcp__github__*",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("cancels every entry", errors)
+
+    def test_partial_tool_wildcard_does_not_cancel_a_bare_server_grant(self) -> None:
+        # The boundary the fix above must not cross: `get_*` covers some of the server's
+        # tools, so the grant survives on the rest.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github\nmcpServers:\n  - github\n"
+            "disallowedTools: mcp__github__get_*",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
     def test_mcp_deny_direction_is_preserved(self) -> None:
         # The reverse of the rule above, which a symmetric fix would get wrong: a
         # per-tool deny narrows a whole-server grant rather than removing it, and a deny
