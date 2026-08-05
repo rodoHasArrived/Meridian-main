@@ -259,7 +259,7 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
 
             ApplyReadiness(readiness);
             ApplyInbox(inbox);
-            ApplyOverallStatus(readiness, inbox);
+            ApplyOverallStatus(readiness, inbox, breaks);
             ApplyRows(BreakRows, breaks is null ? [] : OperatorReadinessConsoleMapper.BuildBreakRows(breaks));
             ApplyRows(RunRows, runSummary is null ? [] : OperatorReadinessConsoleMapper.BuildRunRows(runSummary));
             ApplyWorkItems(readiness, inbox);
@@ -418,15 +418,22 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
             : $"{inbox.CriticalCount} critical · {inbox.WarningCount} warning · {inbox.ReviewCount} review — {inbox.Summary}";
 
     /// <summary>
-    /// Derives the headline status from the readiness payload escalated by the operator inbox,
-    /// mirroring the browser console: critical inbox items or a blocked acceptance gate force
-    /// "Blocked" even when the server overall status is Ready, and a Ready status is demoted to
-    /// "Review pending" while the inbox is unavailable or any gate still needs review. The
-    /// server's raw overall status stays visible in the readiness-gates panel.
+    /// Derives the headline status from the readiness payload escalated by the operator inbox and
+    /// the reconciliation break queue, mirroring the browser console: critical inbox items, a
+    /// blocked acceptance gate, or an open reconciliation break force "Blocked" even when the
+    /// server overall status is Ready (the browser folds break rows into its reconciliation-clear
+    /// checkpoint), and a Ready status is demoted to "Review pending" while the inbox is
+    /// unavailable or breaks are still in review. The server's raw overall status stays visible
+    /// in the readiness-gates panel.
     /// </summary>
-    private void ApplyOverallStatus(TradingOperatorReadinessDto? readiness, OperatorInboxDto? inbox)
+    private void ApplyOverallStatus(
+        TradingOperatorReadinessDto? readiness,
+        OperatorInboxDto? inbox,
+        IReadOnlyList<ReconciliationBreakQueueItem>? breaks)
     {
         var criticalCount = inbox?.CriticalCount ?? 0;
+        var hasOpenBreak = breaks?.Any(static item => item.Status == ReconciliationBreakQueueStatus.Open) == true;
+        var hasBreakInReview = breaks?.Any(static item => item.Status == ReconciliationBreakQueueStatus.InReview) == true;
         if (readiness is null)
         {
             // A missing readiness payload is a review state, not a neutral one — the operator
@@ -439,7 +446,7 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
 
         var serverLabel = OperatorReadinessConsoleMapper.FormatStatus(readiness.OverallStatus);
         var anyGateBlocked = readiness.AcceptanceGates.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked);
-        if (readiness.OverallStatus == TradingAcceptanceGateStatusDto.Blocked || criticalCount > 0 || anyGateBlocked)
+        if (readiness.OverallStatus == TradingAcceptanceGateStatusDto.Blocked || criticalCount > 0 || anyGateBlocked || hasOpenBreak)
         {
             SetOverallStatus("Blocked", WorkstationReadinessTone.Blocked);
             return;
@@ -449,7 +456,8 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
         if (readiness.OverallStatus == TradingAcceptanceGateStatusDto.Ready
             && inbox is not null
             && inbox.WarningCount == 0
-            && allGatesReady)
+            && allGatesReady
+            && !hasBreakInReview)
         {
             SetOverallStatus(serverLabel, WorkstationReadinessTone.EvidenceLinked);
             return;

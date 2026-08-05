@@ -200,13 +200,81 @@ public sealed class OperatorReadinessConsoleViewModelTests
         using var viewModel = CreateViewModel(
             new FakeReadinessProvider { Readiness = readiness },
             new FakeInboxClient { Inbox = null },
-            new FakeReconciliationClient { Breaks = CreateBreaks() },
+            new FakeReconciliationClient { Breaks = [] },
             runWorkspaceService: null);
 
         await viewModel.RefreshAsync();
 
         viewModel.OverallStatusText.Should().Be(
             "Review pending", "a Ready headline is demoted while the operator inbox is unavailable");
+        viewModel.OverallTone.Should().Be(WorkstationReadinessTone.SignoffRequired);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_OpenReconciliationBreak_EscalatesHeadlineToBlocked()
+    {
+        var readiness = CreateReadiness() with
+        {
+            OverallStatus = TradingAcceptanceGateStatusDto.Ready,
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto("gate-replay", "Replay parity", TradingAcceptanceGateStatusDto.Ready, "Replay matches persisted state.")
+            ]
+        };
+        var quietInbox = new OperatorInboxDto(
+            AsOf: DateTimeOffset.Parse("2026-08-05T06:00:00Z"),
+            Items: [],
+            CriticalCount: 0,
+            WarningCount: 0,
+            ReviewCount: 0,
+            Summary: "No operator work items need attention.");
+        using var viewModel = CreateViewModel(
+            new FakeReadinessProvider { Readiness = readiness },
+            new FakeInboxClient { Inbox = quietInbox },
+            new FakeReconciliationClient
+            {
+                Breaks = [CreateBreak("brk-open", ReconciliationBreakQueueStatus.Open, DateTimeOffset.Parse("2026-08-05T05:00:00Z"))]
+            },
+            runWorkspaceService: null);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.OverallStatusText.Should().Be(
+            "Blocked", "an open reconciliation break folds into the headline like the browser's reconciliation-clear checkpoint");
+        viewModel.OverallTone.Should().Be(WorkstationReadinessTone.Blocked);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_InReviewBreakOnly_DemotesReadyHeadlineToReviewPending()
+    {
+        var readiness = CreateReadiness() with
+        {
+            OverallStatus = TradingAcceptanceGateStatusDto.Ready,
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto("gate-replay", "Replay parity", TradingAcceptanceGateStatusDto.Ready, "Replay matches persisted state.")
+            ]
+        };
+        var quietInbox = new OperatorInboxDto(
+            AsOf: DateTimeOffset.Parse("2026-08-05T06:00:00Z"),
+            Items: [],
+            CriticalCount: 0,
+            WarningCount: 0,
+            ReviewCount: 0,
+            Summary: "No operator work items need attention.");
+        using var viewModel = CreateViewModel(
+            new FakeReadinessProvider { Readiness = readiness },
+            new FakeInboxClient { Inbox = quietInbox },
+            new FakeReconciliationClient
+            {
+                Breaks = [CreateBreak("brk-review", ReconciliationBreakQueueStatus.InReview, DateTimeOffset.Parse("2026-08-05T05:00:00Z"))]
+            },
+            runWorkspaceService: null);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.OverallStatusText.Should().Be(
+            "Review pending", "in-review breaks keep the console out of the Ready state without blocking it");
         viewModel.OverallTone.Should().Be(WorkstationReadinessTone.SignoffRequired);
     }
 
