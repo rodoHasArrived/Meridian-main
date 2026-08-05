@@ -197,53 +197,44 @@ _PATH_TOKEN_RE = re.compile(r"/[0-9a-z_{}:./-]*")
 def _index_docs(docs_text: str) -> tuple[frozenset[str], frozenset[str]]:
     """Tokenize the corpus **once** into the names and paths it mentions.
 
-    The boundary rule below is a property of the corpus, not of the term, so it can be decided by
-    membership instead of by a scan. An earlier revision ran one `re.search` per item over the
-    whole concatenated corpus — 906 contracts plus 617 routes against roughly ten megabytes — and
-    turned a 6.8s generator into a 106s one, which is a regression in routine docs automation
-    however correct the answer is. Indexing is one pass and the lookups are O(1).
+    A name counts as documented only when a doc names *it*. The check used to be a plain substring
+    test, which credited a name for appearing inside a longer one. Observed on this repository's
+    own docs: `ApprovalDecision` counted because a blueprint named a `RecordApprovalDecisionAsync`
+    method; `SettlementInstruction` and `WorkflowLibraryDto` counted because a **file path** —
+    `SettlementInstructionCommands.fs`, `WorkflowLibraryDtos.cs` — appeared in a doc; and
+    `StartWorkflow` and `RecommendedActionDto` counted because a *different* contract,
+    `OperationsStartWorkflowRequestDto` and `SecurityMasterRecommendedActionDto`, was documented
+    and separately gets its own credit. This is the same failure `GENERATED_DOC_ROOTS` already
+    guards against — coverage rising without a document being written — and it is worse than a
+    wrong number, because the metric moves in the reassuring direction and nothing in the output
+    shows why.
 
-    Splitting on non-identifier characters *is* the boundary rule: `recordapprovaldecisionasync`
-    is a single token, so `approvaldecision` is absent, while `Workstation/ApprovalDecision` and
-    `ApprovalDecision.` both yield it. Paths are tokenized separately because `/` and `{}` are part
-    of a route; `/api/backfill/run` is absent from a corpus that only mentions
-    `/api/backfill/run/{id}`, which is a different endpoint that is scanned on its own.
+    Splitting on non-identifier characters *is* that boundary rule, expressed as membership rather
+    than as a scan: `recordapprovaldecisionasync` is a single token, so `approvaldecision` is
+    absent, while `Workstation/ApprovalDecision` and `ApprovalDecision.` both yield it. Paths are
+    tokenized separately because `/` and `{}` are part of a route; `/api/backfill/run` is absent
+    from a corpus that only mentions `/api/backfill/run/{id}`, a different endpoint scanned on its
+    own.
+
+    Deciding it by membership rather than per item is also what keeps this affordable. An earlier
+    revision ran one `re.search` per item over the whole concatenated corpus — 906 contracts plus
+    617 routes against roughly ten megabytes — and turned a 6.8s generator into a 106s one, which
+    is a regression in routine docs automation however correct the answer is. Indexing is one pass
+    and the lookups are O(1).
     """
     identifiers = set(_IDENTIFIER_TOKEN_RE.findall(docs_text))
     paths: set[str] = set()
     for token in _PATH_TOKEN_RE.findall(docs_text):
         paths.add(token)
-        trimmed = token.rstrip("./-")       # sentence punctuation, not part of the route
+        # Only characters that end a *sentence* are trimmed. `/` and `-` are part of a path, and
+        # stripping them re-creates the bug this module exists to fix: the corpus mentions
+        # `/api/security-master/*` — the route family — and trimming the `/` would credit the
+        # specific `/api/security-master` endpoint for it, exactly as `/api/backfill/run/{id}`
+        # must not credit `/api/backfill/run`.
+        trimmed = token.rstrip(".:")
         if trimmed:
             paths.add(trimmed)
     return frozenset(identifiers), frozenset(paths)
-
-
-def _mentions(term: str, docs_text: str) -> bool:
-    """True when `docs_text` names `term` itself, rather than merely containing its characters.
-
-    A plain `in` test counted any substring hit, which credits a name for appearing inside a
-    longer one. Observed on the repository's own docs: `ApprovalDecision` counted as documented
-    because a design blueprint named a `RecordApprovalDecisionAsync` method; `SettlementInstruction`
-    and `WorkflowLibraryDto` counted because a **file path** — `SettlementInstructionCommands.fs`,
-    `WorkflowLibraryDtos.cs` — appeared in a doc; and `StartWorkflow` and `RecommendedActionDto`
-    counted because a *different* contract, `OperationsStartWorkflowRequestDto` and
-    `SecurityMasterRecommendedActionDto`, was documented and separately gets its own credit.
-
-    This is the same failure the generated-doc exclusion above already guards against: coverage
-    rising without any contract being documented. It is worse than a wrong number, because the
-    metric moves in the reassuring direction — adding a document that merely *mentions* a name is
-    enough, and nothing in the output shows why.
-
-    So a hit must sit on an identifier boundary. `/` is a boundary before the term but not after:
-    a doc writing `Workstation/ApprovalDecision` is referring to the contract, while
-    `/api/backfill/run` inside `/api/backfill/run/{id}` is a different endpoint that is scanned and
-    credited on its own.
-    """
-    return re.search(
-        r"(?<![0-9a-z_-])" + re.escape(term) + r"(?![0-9a-z_/-])",
-        docs_text,
-    ) is not None
 
 
 def build_dashboard(root: Path) -> dict:
