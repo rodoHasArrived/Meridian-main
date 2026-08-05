@@ -456,8 +456,16 @@ than skipped with a warning.
 
 An allow-list naming *only* MCP entries is normally an error, since which servers exist is a
 property of the host session and the grant would resolve to nothing without them. Declaring
-`mcpServers` lifts that: it makes the servers a property of the definition, so `tools: mcp__playwright`
-alongside an `mcpServers` entry is a grant that resolves.
+`mcpServers` lifts that **per server**: `tools: mcp__playwright` alongside `mcpServers: [playwright]`
+resolves, while granting `mcp__github` against that same declaration does not. Each `mcpServers`
+entry must be a server name or a keyed inline definition; anything else is reported rather than
+counted as a declaration.
+
+`WebFetch(domain:...)` scopes are matched with domain semantics rather than the command glob. A
+leading `*.` matches subdomains at any depth but not the bare domain, a bare `*` matches everything,
+and a wildcard anywhere else is confined to one label — so `WebFetch(domain:example.*)` covers
+`example.org` but not `example.evil.com`, which is what stops a trailing wildcard from reaching
+domains an attacker could register.
 
 Parenthesised scopes such as `Bash(git diff:*)` are supported, and coverage between a deny and an
 allow is evaluated as a **glob**, not a prefix test. Wildcards may appear anywhere, so

@@ -469,6 +469,59 @@ def _glob_to_regex(pattern: str) -> str:
     )
 
 
+def _declared_mcp_servers(value: object) -> tuple[set[str], list[str]]:
+    """Server names an agent declares, plus any malformed entries.
+
+    `mcpServers` is "either a server name referencing an already-configured server (e.g.
+    `"slack"`) or an inline definition with the server name as key". So a list yields its
+    string members, a mapping yields its keys, and anything else in a list - `- 123`, a
+    nested list - is malformed and reported rather than silently treated as a declaration.
+    """
+    if isinstance(value, dict):
+        return {str(key) for key in value if isinstance(key, str)}, [
+            repr(key) for key in value if not isinstance(key, str)
+        ]
+    if isinstance(value, list):
+        names: set[str] = set()
+        malformed: list[str] = []
+        for item in value:
+            if isinstance(item, str) and item.strip():
+                names.add(item.strip())
+            elif isinstance(item, dict):
+                names.update(str(key) for key in item if isinstance(key, str))
+            else:
+                malformed.append(repr(item))
+        return names, malformed
+    return set(), []
+
+
+def _domain_covers(deny_value: str, allow_value: str) -> bool:
+    """Domain matching for `WebFetch(domain:...)`, which is not a plain glob.
+
+    Per https://code.claude.com/docs/en/permissions#webfetch a wildcard "matches only the
+    text between two dots" unless it is a leading `*.` or a bare `*`:
+    `WebFetch(domain:example.*)` matches `example.org` but **not** `example.evil.com`,
+    "which keeps a trailing wildcard from matching domains an attacker could register".
+    Applying the Bash-style `.*` here would let a deny cancel a grant the host would leave
+    live - reporting an empty tool set that is not empty.
+
+    Matching is case-insensitive, and a trailing `.` is stripped from both sides.
+    """
+    deny = deny_value.strip().lower().rstrip(".")
+    allow = allow_value.strip().lower().rstrip(".")
+    if deny == "*":
+        return True
+    if deny.startswith("*."):
+        # Any subdomain at any depth, but never the bare domain itself.
+        return allow.endswith("." + deny[2:])
+    # Every other wildcard is confined to a single label.
+    return re.fullmatch(
+        "".join("[^.]*" if part == "*" else re.escape(part)
+                for part in re.split(r"(\*)", deny)),
+        allow,
+    ) is not None
+
+
 def _scope_regex(head: str, scope: str) -> re.Pattern[str]:
     """Compile a permission scope into a matcher.
 
@@ -508,6 +561,12 @@ def _scope_covers(head: str, deny_scope: str, allow_scope: str) -> bool:
     """
     if deny_scope == allow_scope:
         return True
+    if (
+        head == "WebFetch"
+        and deny_scope.startswith("domain:")
+        and allow_scope.startswith("domain:")
+    ):
+        return _domain_covers(deny_scope[len("domain:"):], allow_scope[len("domain:"):])
     return _scope_regex(head, deny_scope).match(allow_scope) is not None
 
 
@@ -579,6 +638,12 @@ def validate_agent(path: Path) -> list[str]:
         frontmatter, "description", path, errors, note="; the host routes on it"
     )
 
+    declared_servers, malformed_servers = _declared_mcp_servers(frontmatter.get("mcpServers"))
+    for entry in malformed_servers:
+        errors.append(
+            f"{path.name}: `mcpServers` entry {entry} is neither a server name nor an "
+            "inline server definition"
+        )
     resolved: dict[str, list[str]] = {}
     for field in TOOL_FIELDS:
         if field not in frontmatter:
@@ -611,18 +676,23 @@ def validate_agent(path: Path) -> list[str]:
         # on any session without that server, which is the empty grant that made the
         # whole agent layer inert. A deny-list has no such failure mode.
         #
-        # `mcpServers` is the exception, and it is why this guard is conditional: an
-        # agent that declares or references its own servers has made them a property
-        # of the *definition*, so `tools: mcp__playwright` alongside an `mcpServers`
-        # entry is a grant that resolves. Keeping the guard unconditional would reject
-        # that valid shape - and the shape only became expressible because this same
-        # change added `mcpServers` to the recognised fields.
+        # `mcpServers` is the exception: an agent that declares or references its own
+        # servers has made them a property of the *definition*, so
+        # `tools: mcp__playwright` alongside an `mcpServers` entry is a grant that
+        # resolves. The exemption is per **server**, not a blanket one - declaring
+        # `mcpServers: [playwright]` while granting `tools: mcp__github` still resolves
+        # to nothing on a session without github, so only entries whose server is
+        # actually declared are exempt.
         if (
             field == ALLOW_LIST_FIELD
             and entries
             and builtin_count == 0
-            and not frontmatter.get("mcpServers")
             and all(MCP_PATTERN.match(entry_head(entry)[0]) for entry in entries)
+            and not all(
+                entry_head(entry)[0].split("__")[1] in declared_servers
+                for entry in entries
+                if len(entry_head(entry)[0].split("__")) > 1
+            )
         ):
             errors.append(
                 f"{path.name}: `{field}` names only MCP entries; an MCP server is a "

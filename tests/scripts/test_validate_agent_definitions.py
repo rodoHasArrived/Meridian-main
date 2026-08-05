@@ -429,6 +429,80 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertEqual([], module.validate_agent(path))
 
+    def test_mcp_exemption_is_per_server_not_blanket(self) -> None:
+        # Declaring one server must not exempt a grant naming a different one: a session
+        # without github still resolves nothing from `tools: mcp__github`.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__github\nmcpServers:\n  - playwright",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("names only MCP entries", errors)
+
+    def test_inline_mcp_server_definition_exempts_its_own_server(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__slack\nmcpServers:\n  slack:\n    command: slack-mcp",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_malformed_mcp_server_entry_is_rejected(self) -> None:
+        # Each entry is a server name or a keyed inline definition; `- 123` is neither,
+        # and must not silently count as a declaration that suppresses the guard.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\ntools: Read\nmcpServers:\n  - 123",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("neither a server name", errors)
+
+    def test_webfetch_domain_wildcard_does_not_cross_a_dot(self) -> None:
+        # "`WebFetch(domain:example.*)` matches `example.org` … but not
+        # `example.evil.com`, where `*` would have to cross a dot. This keeps a trailing
+        # wildcard from matching domains an attacker could register." A Bash-style `.*`
+        # here would report a grant the host leaves live as fully cancelled.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: WebFetch(domain:example.evil.com)\n"
+            "disallowedTools: WebFetch(domain:example.*)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_webfetch_leading_star_dot_matches_subdomains_but_not_the_bare_domain(self) -> None:
+        cancelled = write_agent(
+            self.directory,
+            "sub-agent",
+            "name: sub-agent\ndescription: Does a thing.\n"
+            "tools: WebFetch(domain:a.b.example.com)\n"
+            "disallowedTools: WebFetch(domain:*.example.com)",
+        )
+        self.assertTrue(
+            any("cancels every entry" in e for e in module.validate_agent(cancelled)),
+            module.validate_agent(cancelled),
+        )
+
+        bare = write_agent(
+            self.directory,
+            "bare-agent",
+            "name: bare-agent\ndescription: Does a thing.\n"
+            "tools: WebFetch(domain:example.com)\n"
+            "disallowedTools: WebFetch(domain:*.example.com)",
+        )
+        self.assertEqual([], module.validate_agent(bare))
+
     def test_mcp_only_grant_without_declared_servers_is_still_rejected(self) -> None:
         path = write_agent(
             self.directory,
