@@ -60,9 +60,17 @@ rationale, not as the current backlog.
 - A scheduled backfill subsystem already existed: `ScheduledBackfillService`
   (`src/Meridian.Application/Scheduling/`) with `BackfillSchedule`, `BackfillScheduleManager`,
   and `BackfillSchedulePresets` (daily gap-fill, weekly full, EOD) — but it is not registered in
-  the composition root. Idea 9's grounded gap is activation plus market-calendar policy and
-  post-remediation verification: itself an instance of this session's "built but not wired"
-  pattern.
+  the composition root, and it exposes an explicit `StartAsync`/`StopAsync` lifecycle rather
+  than `IHostedService`, so activation requires a hosted wrapper plus its worker dependencies,
+  not a bare singleton registration. Idea 9's grounded gap is that activation plus
+  market-calendar policy and post-remediation verification: itself an instance of this
+  session's "built but not wired" pattern.
+- The close was never data-blind: `OperationsContinuityWorkflowService.EvaluateCloseReadiness`
+  already fail-closes the close with typed blockers spanning provider freshness, position/cash
+  coverage, pricing, reconciliation, report, and approval components. Idea 7 is re-scoped to
+  extend that seam with what it does not yet prove — per-instrument market-data completeness,
+  statement coverage against expected schedules, evidence linkage, and a retained certificate
+  artifact.
 - The order-class capability strings are real where they matter: `AlpacaBrokerageGateway`
   normalizes, validates, and serializes bracket/OCO/OTO (and multi-leg) order classes. Idea 11's
   cleanup is scoped to the `OrderLifecycleManager` last-write-wins cache only — do not remove
@@ -414,13 +422,15 @@ so a mis-edit can't lock the matrix permanently.
 
 ### 7. Period evidence-completeness certificate — the close gate that checks the data, not just the checklist
 
-The close workflow already gates on approvals, report packs, and checklist control approvals
-(the approval matrix's `operations-continuity.close` row requires all three). What no gate
-checks: whether the *data under the period* is complete. Market-data completeness scoring
-exists (`CompletenessScoreCalculator`), gap remediation SLA state exists
-(`AutoGapRemediationService`), statement checkpoints exist, recon runs and break counts exist,
-evidence artifacts exist (`IEvidenceArtifactStore`) — but nothing aggregates them into a
-per-period verdict, so a close can proceed over a hole nobody surfaced.
+The close workflow already fails closed on readiness:
+`OperationsContinuityWorkflowService.EvaluateCloseReadiness` blocks a close with typed blockers
+spanning provider freshness, position/cash coverage, pricing, reconciliation, report, and
+approval components, alongside the approval matrix's `operations-continuity.close` row. What
+that seam does not yet *prove*: per-instrument market-data completeness for the period's
+session ranges (`CompletenessScoreCalculator` and `AutoGapRemediationService` SLA state exist
+but do not feed it), statement coverage against expected fetch schedules, evidence linkage for
+every import in the period — or a retained, signed artifact recording what was checked. The
+certificate extends the existing readiness seam with those proofs; it is not a parallel gate.
 
 **What to build.** A certificate service that, for an accounting period and entity, aggregates:
 (a) market-data completeness for every held instrument's session range, with unremediated gaps
@@ -428,10 +438,11 @@ listed; (b) statement coverage — every expected statement received and importe
 8); (c) reconciliation freshness — runs current through period end, open breaks above severity
 threshold enumerated; (d) evidence linkage — every import in the period has its retained
 artifact. The result is a signed, hash-stamped certificate document (stored through
-`IEvidenceArtifactStore` like any other evidence) rendered as a gate row in the close workflow:
-green with drill-down, or red with the exact list of what's missing. Proceeding over a red
-certificate is possible — as a governed override through the approval matrix, which is what
-makes this a control rather than a dashboard.
+`IEvidenceArtifactStore` like any other evidence) whose failures surface as blockers through
+the existing `EvaluateCloseReadiness` seam — green with drill-down, or red with the exact list
+of what's missing — extending the fail-closed gate rather than adding a parallel one.
+Proceeding over a red certificate is possible — as a governed override through the approval
+matrix, which is what makes this a control rather than a dashboard.
 
 **The user moment.** Before submitting June close, the controller opens the period and sees
 "Evidence completeness: 96% — 2 blockers: custodian statement for account X not received;
@@ -494,9 +505,13 @@ closed" — nothing re-runs gap analysis over the remediated window, and the 622
 `CrossSourceBackfillReconciliationService` that could verify against a second source is never
 invoked by the remediation path.
 
-**What to build.** Activation, not another scheduler: register `ScheduledBackfillService` in
-the composition root, add catch-up-on-startup and market-calendar awareness to its schedule
-evaluation (after each session close, run gap analysis over the active symbol universe) —
+**What to build.** Activation, not another scheduler — and activation means more than a
+singleton registration: `ScheduledBackfillService` exposes an explicit `StartAsync`/`StopAsync`
+lifecycle rather than implementing `IHostedService`, so it needs a hosted wrapper (a
+`BackgroundService` adapter that starts it with the host and drains it on shutdown) plus
+registration of its worker and schedule-manager dependencies. With the loops actually running,
+add catch-up-on-startup and market-calendar awareness to its schedule evaluation (after each
+session close, run gap analysis over the active symbol universe) —
 turning "the collector was down overnight" from a silent hole into a morning-report line item.
 Convert the fire-and-forget path into a durable bounded queue with retry policy and real
 provider attribution. Close the loop: after each remediation, re-run gap analysis on the window
