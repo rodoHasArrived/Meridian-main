@@ -440,8 +440,24 @@ opening them.
 Per file it verifies that the frontmatter parses with no duplicate keys, that `name` matches the
 filename, that `description` is present and non-empty, that every frontmatter key is one the host
 supports and carries a value of the right shape, and that every `tools` / `disallowedTools` entry
-resolves to a known built-in or a valid `mcp__<server>` pattern. Parenthesised scopes such as
-`Bash(git diff:*)` are supported.
+resolves to a known built-in or a valid MCP pattern.
+
+Both the field allowlist and the permission-mode set are checked against the "Supported frontmatter
+fields" table at <https://code.claude.com/docs/en/sub-agents> and pinned by tests that assert a
+literal set. That is deliberate: each set *rejects* anything it omits, so an incomplete one blocks
+legitimate work, and a test that iterates the constant passes no matter what the constant leaves
+out. Re-derive from that table when the host adds a field rather than appending one name at a time.
+
+Four MCP forms are accepted — `mcp__server`, `mcp__server__tool`, `mcp__server__*`, and partial tool
+wildcards such as `mcp__github__get_*`. The all-server `mcp__*` is valid only in `disallowedTools`,
+because an allow rule containing it is skipped with a warning rather than honoured.
+
+Parenthesised scopes such as `Bash(git diff:*)` are supported, in both spellings that appear in
+practice: the `command:*` form Claude Code writes when a command is approved permanently, and the
+`command *` glob form the permission reference documents. They normalise to the same command prefix,
+so a deny written in either spelling cancels a grant written in the other. Coverage respects the
+documented word boundary, so `Bash(git:*)` cancels `Bash(git push:*)` but leaves `Bash(gitfoo:*)`
+alone — the same rule that makes `Bash(ls *)` match `ls -la` but not `lsof`.
 
 The checks fail closed by design: a YAML sequence, an empty or punctuation-only value, an
 MCP-only allow-list, a misspelled permission key, an unterminated scalar, and a missing or empty
