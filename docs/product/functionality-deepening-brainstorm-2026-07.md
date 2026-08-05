@@ -71,10 +71,13 @@ rationale, not as the current backlog.
   best-first assignment, one-to-many/many-to-one split groups, `BusinessDayAccountingCalendar`
   and `FileAccountingCalendar`, and bounded-concurrency ingestion with retries. The idea text is
   retained as rationale; its sequencing role is done.
-- **Idea 1 is partially landed**: `RiskContext` now carries portfolio-aware fields —
-  `CreatePortfolioContext` with gross-exposure, symbol-concentration, and order-notional gates
-  fed from the live aggregated portfolio, plus `EscalateOrderNotional`. Re-survey the remaining
-  scope (severity semantics, honest guardrail rail) before implementing.
+- **Idea 1 is substantially landed**: `GrossExposureRule`, `SymbolConcentrationRule`, and
+  `OrderNotionalRule` now read the portfolio-aware `RiskContext`, `CompositeRiskValidator`
+  implements the proposed severity semantics (Info/Warning non-blocking, `Escalate` parks the
+  order for governed approval, `Critical` rejects and halts), and the hardcoded guardrail copy
+  is gone from the Trading endpoint. Remaining at review time: the `Var95: "—"` placeholder, a
+  `RecentOrderRate`-fed order-rate context, and residual rail polish — re-survey before
+  implementing.
 - **Idea 10 is now `W10-MARK-001`**, rank 1 of the W10 depth slate; the `W10-RECON` rows cover
   idea 5's territory (break lineage identity, clustering and bulk resolution, tolerance
   what-if replay, operator-taught match rules).
@@ -88,20 +91,23 @@ wired." The depth survey behind this session found its sibling: **declared but d
 that promise depth the implementation never delivers, and in two places UI copy that describes
 controls which do not exist in code:
 
-- `RiskContext` declares `PortfolioExposure` and `RecentOrderRate`; **no risk rule ever reads
-  either field**. `RiskDecision.Escalate` is reachable only through the interop DTO mapping —
-  **no shipped rule ever produces it**. `RiskRuleSeverity` is logged and never acted on — a
-  `Warning` rejects exactly as hard as a `Critical`.
+- At survey time, `RiskContext` declared `PortfolioExposure` and `RecentOrderRate` with no risk
+  rule reading either field, `RiskDecision.Escalate` was reachable only through the interop DTO
+  mapping with no shipped rule producing it, and `RiskRuleSeverity` was logged and never acted
+  on — a `Warning` rejected exactly as hard as a `Critical`. (Since landed: exposure-reading
+  rules, escalation parking, and severity semantics — see the Status Update; `RecentOrderRate`
+  remains unread.)
 - `PromotionCriteria` documents four walk-forward/out-of-sample gates
   (`MinOutOfSampleSharpe`, `MinWalkForwardDegradationRatio`, `RequireWalkForwardEvidenceForLive`,
   `MaxOutOfSampleDrawdownPercent`); the standalone
   `BacktestToLivePromoter.EvaluatePromotionThresholds` helper passes none of them, evaluating
   only the three legacy thresholds. (The active `PromotionService` path does enforce all four —
   see the Status Update; the original survey overstated this.)
-- The Trading workspace hardcodes guardrail sentences ("Single-name concentration cap set at 30%
-  notional.", "Auto-throttle activates above 70% intraday buying power.") in
-  `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs` — **controls that do not
-  exist in code** — next to a literal `Var95: "—"`.
+- At survey time, the Trading workspace hardcoded guardrail sentences ("Single-name
+  concentration cap set at 30% notional.", "Auto-throttle activates above 70% intraday buying
+  power.") in `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs` — controls
+  that did not exist in code — next to a literal `Var95: "—"`. (Since landed: the hardcoded
+  copy is gone; the `Var95: "—"` placeholder remains.)
 - Three well-designed alerting registries (`IAlertDispatcher`, `AlertRunbookRegistry`,
   `SloDefinitionRegistry` with error budgets) are **never registered in DI, never connected to
   each other, and never connected to delivery**.
@@ -139,8 +145,8 @@ Effort: **S** = days, **M** = 1–2 weeks, **L** = 1+ month. Audience: **H** = h
 
 ### 1. Portfolio-aware risk engine — make the risk rail true
 
-> **Status 2026-08-05:** partially landed on `main` (portfolio-aware `RiskContext` and
-> exposure/concentration/notional gates) — see the Status Update section before implementing.
+> **Status 2026-08-05:** substantially landed on `main` — portfolio-aware rules, severity
+> semantics, and escalation parking shipped; see the Status Update for the remaining scope.
 
 `src/Meridian.Risk/` is the widest promise/delivery gap in the platform: an
 `IRiskRule`/`CompositeRiskValidator` architecture with priorities, severities, a shared
