@@ -189,6 +189,46 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   same break-queue item collection and maps it into the Fund Ledger queue. Lineage and occurrence
   fields added for the browser alone would leave the two co-equal lanes with different queue
   semantics.
+- **Absence from a run is only evidence of clearing when that run finished — and "finished" is not
+  `Completed`.** `StatementRunStatus` (`StatementReconciliationDtos.cs:9-20`) carries both
+  `ReviewRequired = 6` and `Completed = 7` as successful terminal states. An implementation gating
+  the diff on `status == Completed` would suppress run-over-run comparison precisely when breaks
+  exist: in a successor where break A remains and break B disappeared, B would never clear. The
+  conclusive successor is a *successfully reconciled terminal run* — `ReviewRequired` or
+  `Completed` — while `ValidationFailed`, `Failed`, and `Canceled` are inconclusive. Both compared
+  runs must be conclusive in that sense and bound to the same account, source, period, and profile
+  identity; otherwise the prior break stays open or its state reads as unknown.
+- **`Completed` means "nothing is open", not "nothing was found" — and the four derivation sites do
+  not agree.** Two of them test for zero break *records*: `ReconciliationApiService.cs:92`
+  (`breakDtos.Length == 0 ? Completed : ReviewRequired`) and `:232` (`breaks.Length == 0`). The
+  other two test only whether a break is still *open* — `:186-188` returns `Completed` unless
+  `breaks.Any(item => item.Status == "Open")`, and `:634` derives it from
+  `ResolveOpenExceptionCount`. So the status a reader receives from `GetStatementRunAsync` or from
+  a summary projection also covers runs that found breaks and resolved every one of them. Lineage
+  must therefore read break records, never the run status: a run whose breaks all resolved is the
+  most informative successor there is — it is where clearing actually happened — and status alone
+  cannot tell it apart from a run that produced no breaks at all. Collapsing the two discards the
+  resolved historical occurrences that the run-over-run diff exists to preserve.
+- **"Profile version" is two pairs, and both are currently unrecorded.** `StatementRunDto`
+  (`StatementReconciliationDtos.cs:277-282`) exposes `MappingProfileId` / `MappingProfileVersion`
+  *and* `ToleranceProfileId` / `ToleranceProfileVersion` as independent nullable members, and the
+  adapter at `ReconciliationApiService.cs:693-696` hardcodes **both versions to `null`** while
+  passing the ids through. A naive equality check would therefore compare `null == null` and read
+  two materially different runs as matching. The comparison needs both ids *and* both versions, and
+  must treat an absent version as unknown rather than as agreement — which in turn means the
+  adapter has to start recording them.
+- **A run status is inferred, never recorded — so a *failed* run can present as a successful one.**
+  `StatementRunWorkflowService.CreateAsync`
+  (`FinancialOperations/Reconciliation/StatementRunWorkflowService.cs`) persists the import through
+  `brokerStatementService.ImportAsync` **before** it loads internal populations, runs
+  `StatementRunMatcher.Match`, or calls `breakStore.WriteAsync`. A throw anywhere in that later
+  stretch leaves a durable import with no breaks attached. `ReconciliationApiService.cs:634` then
+  labels any retained import by counting open exceptions —
+  `openExceptionCount > 0 ? ReviewRequired : Completed` — so that half-finished run reads as
+  `Completed`. The terminal-status pair is therefore not sufficient evidence on its own: gating
+  lineage on `ReviewRequired`-or-`Completed` would let a run that never reconciled clear every prior
+  break. Conclusiveness has to come from a durably recorded reconciliation outcome, not from an
+  absence of breaks.
 - The queue carries a single break identifier and nothing distinguishing a lineage from an occurrence
   of it. Adding lineage alone leaves a cleared-then-recurring break able to reopen its original item
   and keep the original SLA age, or to overwrite the interval during which it was clear. Lineage and
@@ -224,6 +264,31 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   present in prose but not queryable on a stored break.
 - Grouping must not include the lineage key from `W10-RECON-001` — that key identifies a single
   break, so including it would make every group contain exactly one member.
+- **Materiality is a per-break property, not a group property.** The classifier sets `IsMaterial`
+  from each break's absolute variance. A group whose signed aggregate falls below a group threshold
+  can still contain a material member, and gating only on the aggregate lets that member bypass the
+  independent approval it individually requires. Any group cap must be measured on gross exposure,
+  and the presence of one material or high-risk member must force the approval separation.
+- **But gross exposure has no safe summation rule today, because the amounts are not commensurable.**
+  `ReconciliationBreakQueueItem.Variance` (`Workstation/ReconciliationDtos.cs:407-414`) is a bare
+  `decimal` with no currency and no unit, while the typed item-level measures beside it
+  (`ReconciliationBreakMeasureDto`, `:376-383`) carry a `Kind` of `Value`, `Quantity`, or `CostBasis`
+  and a free-text `Unit`, and the queue projection can put a quantity delta into that same top-level
+  variance. Summing absolute variances across a cause group can therefore add shares to cash, or USD
+  to EUR, and trip or skip the group threshold on a number that means nothing. Gross exposure has to
+  be aggregated within a comparable measure and currency — or across a governed translation — with an
+  unknown unit or an unavailable rate failing closed to the stricter approval rather than being
+  quietly summed.
+- **And matching measure and unit is not sufficient for quantity, because the unit is a constant.**
+  `ReconciliationBreakQueueProjection.BuildStatementBreakMeasures` (`:223-263`) stamps the literal
+  string `"units"` on every quantity measure regardless of instrument, and
+  `ReconciliationBreakQueueItem` (`Workstation/ReconciliationDtos.cs:407-`) carries no security id,
+  symbol, or any other instrument dimension — `ExternalAccountId`, `CustodianId`, `Counterparty`, and
+  `FundAccountId` are the closest it comes. So 100 shares of one security and 100 shares of another
+  present as the same measure in the same unit, and a rule that fails closed on an *unknown* unit
+  never fires, because the unit is always known and always identical. Quantity exposure needs the
+  instrument itself, which means the queue contract has to start carrying one; until it does, a cause
+  group mixing instruments holds at the stricter approval.
 - **The bulk request carries no expected versions and no preview receipt.** It holds break IDs, an
   action, an actor, command and correlation IDs, a source, an idempotency key, dry-run and
   partial-success flags, and optional reason, assignee, and priority — and the repository reads each
@@ -244,6 +309,26 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   path all already exist for monthly automated journals. Copy that pattern.
 - The existing intake carries evidence links and an evidence assessment; a recurring draft must pass
   the same admission gate rather than relying on persistence and lock checks alone.
+- **Idempotent posting does not imply idempotent drafting.** The due-occurrence calculation keeps
+  returning an occurrence until it is confirmed posted, so a runner polling while the first draft
+  awaits approval will enqueue another one every pass. Preventing duplicate *postings* leaves the
+  approval queue accumulating conflicting drafts for the same occurrence. The claim has to be taken
+  at initial enqueue, keyed by schedule and occurrence date, with retries returning the existing
+  draft.
+- **But a schedule/date claim alone returns drafts built from content the schedule no longer has.**
+  `FundAdministrationControlService.ScheduleRecurringJournal` (`:105-130`) overwrites in place —
+  `_recurringSchedules[schedule.ScheduleId] = schedule;` — and `RecurringJournalSchedule`
+  (`src/Meridian.Ledger/RecurringJournalSchedule.cs:22-36`) carries no version member. Re-scheduling
+  the same id with a changed template, ledger book, or parameters therefore leaves the claim
+  resolving to a draft materialized from the *old* definition, and returning it applies stale
+  content silently. Adding the version to the claim key is not the fix either — that would let two
+  approval drafts exist for one logical occurrence, which is the duplicate the claim exists to
+  prevent. The occurrence claim has to *retain* the schedule and template versions and fail closed on
+  drift until the existing draft is explicitly superseded or corrected. The codebase already treats
+  this as a hazard one level up: the template-registration comment at
+  `FundAdministrationControlService.cs:80-82` notes that "recurring schedules resolve the current
+  template at materialization, so the chain must preserve which version was approved" — the schedule
+  overwrite has no equivalent guard.
 
 ### `W10-TAX-001` — tax character and relief
 
@@ -260,6 +345,42 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   method change, regenerating an earlier pack fails outright, or silently produces different relief
   and realized-gain figures if the new policy is backdated. Append-only effective-dated versions are
   required for reproducibility.
+- **An open replacement window makes zero exposure provisional, not settled.** The wash-sale policy
+  defines a symmetric window before and after the sale, so an acquisition after the disposal can
+  still change the disallowed loss. The engine will happily compute zero from the acquisitions known
+  today, and a generic incomplete-input rule does not catch that — the inputs are complete, the
+  window simply has not closed. The figure needs an as-of/provisional label, the remaining window,
+  and re-evaluation or governed finalization when it closes.
+- **An open window does not always mean an open answer, though — the disallowance saturates.**
+  `ComputeWashSale` caps the match at the quantity sold —
+  `matchedQuantity = Math.Min(input.QuantitySold, matching.Sum(r => r.Quantity))` — and derives
+  `disallowedLoss = RoundCurrency(totalLoss * (matchedQuantity / input.QuantitySold))`, then bounds
+  it again with `Math.Min(disallowedLoss, totalLoss)`
+  (`LedgerTaxLotReliefProjector.cs:246-259`). Once known replacement acquisitions cover the whole
+  quantity sold, the ratio is already 1 and the entire realized loss is already disallowed, so no
+  later acquisition inside the remaining window can raise either number. Labelling that disposal
+  provisional promises a re-evaluation with nothing left to re-evaluate — the same defect the
+  governing-policy and gain-only narrowings above correct, in a third form. Provisional belongs to
+  the disposals where additional eligible acquisitions could still increase the disallowance.
+- **But provisional is not the right label for every open-window disposal.** `ComputeWashSale`
+  (`LedgerTaxLotReliefProjector.cs:225-232`) returns `null` when `realizedGainOrLoss >= 0m`, so a
+  disposal whose relieved lots all realize a gain cannot attract a wash sale no matter what is
+  acquired later — its exposure is settled while the calendar window is still open, and marking it
+  provisional would force re-evaluation that can never change the answer. The one caveat is in the
+  method's own doc comment: a *net* gain that nonetheless contains loss shares is not yet
+  decomposed to defer only those shares, so that case cannot currently be excluded and does stay
+  provisional. Provisional therefore belongs to loss-generating disposals and to mixed gain/loss
+  reliefs, not to every recent one.
+- **Nor to a disposal the policy does not govern at all — which is the default.** The same guard
+  clause at `LedgerTaxLotReliefProjector.cs:232` short-circuits on `!AppliesOn(input.SaleDate)`
+  before it ever looks at the realized result, and `WashSalePolicy.AppliesOn`
+  (`WashSale.cs:66-67`) is `Enabled && (EffectiveDate is not { } effective || saleDate >=
+  effective)`. `WashSalePolicy.Disabled` (`WashSale.cs:47`) is the named default, so an account
+  with no wash-sale policy configured, or one whose policy takes effect after the sale date, can
+  never accrue exposure however the window moves. The store-side query applies the same gate
+  (`PostgresLedgerJournalStore.WashSale.cs:26`), so a disposal outside policy governance is not
+  merely zero today — it is settled, and provisional labelling would promise a re-evaluation that
+  has nothing to re-evaluate. Governance is therefore the first test, ahead of the loss test.
 - The realized gain and loss contract that already reaches the workstation exposes a single scalar
   with no character split — extending it is the lowest-friction first move.
 - The shared contracts must not reference the ledger implementation assembly; define contract-side
@@ -284,6 +405,30 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
   carries the false-ready path forward rather than closing it: a lane that is unregistered or failing
   is indistinguishable from a lane with nothing to report. The projection needs an explicit
   contributor manifest, so an absent contributor is a blocking incomplete state.
+- **Present and fresh is not the same as about the same thing.** `FundLedgerViewModel.cs:1037-1038`
+  calls `IFinancialOperationsCommandCenterReadService.GetCommandCenterAsync(fundProfileId:
+  activeFund.FundProfileId, ct: ct)` — only the fund profile id, leaving fund account, ledger book,
+  period, and entity null. `FinancialOperationsCommandCenterReadService.cs:42-43` then calls
+  `ListAsync(fundAccountId, periodId, status: null, ct, ledgerBookId: ledgerBookId)` with all three
+  null, so the listing spans every fund; `ResolveActiveWorkflow` picks one, `:57` adopts its fund via
+  `effectiveFundAccountId = fundAccountId ?? activeWorkflow?.FundAccountId`, and `:66` queries the
+  cockpit with the *requested* profile. So a projection can combine one fund's workflow blockers with
+  another fund's cockpit while every contributor is registered, healthy, and current.
+- **The scope itself is inferred, so contributor agreement is not enough.** Every dimension of
+  `GetCommandCenterAsync` is optional (`FinancialOperationsCommandCenterReadService.cs:32-43`), and
+  `:56-58` fills the gaps from whichever workflow was selected —
+  `effectiveFundAccountId = fundAccountId ?? activeWorkflow?.FundAccountId`, and the same for the
+  period. Requiring contributors merely to agree *with each other* still lets a recently updated
+  workflow for the wrong book or period become the supposedly consistent subject, and a null
+  dimension cannot register as a mismatch because there is nothing to compare it against. The
+  request — or an explicit operator selection — has to establish the canonical close scope, and a
+  missing or ambiguous dimension has to block.
+- **A second subject-binding gap, same-fund this time.** `FundOperationsWorkspaceReadService` does
+  scope correctly by fund — `:2600-2614` filters workflow summaries to the requested fund's account
+  ids before taking the most recently updated one — but that selection ignores the summary's
+  `LedgerBookId` and `PeriodId`. The result is a right-fund, wrong-book-or-period mismatch. Subject
+  binding across fund profile, ledger book, fund account, entity, and period is a separate
+  requirement from presence, and both services need it.
 
 ### `W10-RECON-003` — tolerance and replay
 
