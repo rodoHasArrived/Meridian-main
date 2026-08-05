@@ -308,12 +308,12 @@ The browser `AccountingApprovals` approval route also resolves in WPF to the Fun
 surface, so the design-document approval step has a route-compatible desktop target for approval
 history, retained evidence, and accounting audit references.
 Shared evidence workflow target routing is also explicit: `EvidenceWorkbench` resolves to the WPF
-Fund Audit Trail surface while the browser resolves the same shared tag to `/reporting/evidence`.
-Parameterized desktop targets such as `EvidenceWorkbench:accounting-record/{recordId}` preserve the
-canonical evidence subject for row/readiness metadata while resolving to the same Fund Audit Trail
-route. Direct WPF navigation and embedded page-content creation canonicalize those parameterized
-targets before resolving page content and carry the subject plus source target through
-`FundOperationsNavigationContext`, so view models can use the same shared target string carried by
+Evidence packets page (`EvidenceWorkbenchPage`, Reporting workspace) while the browser resolves the
+same shared tag to `/reporting/evidence`. Parameterized desktop targets such as
+`EvidenceWorkbench:accounting-record/{recordId}` preserve the canonical evidence subject: direct WPF
+navigation and embedded page-content creation canonicalize those parameterized targets before
+resolving page content and pass the `{subjectKind}/{subjectId}` subject string through the page's
+navigation parameter, so the Evidence packets view model focuses the same shared subject carried by
 browser routes, workflow rows, and saved presets.
 The route-registry parity test covers all built-in workflow entry and action target tags so shared
 workflow catalog updates cannot silently become browser-only or desktop-only.
@@ -406,11 +406,12 @@ telemetry. It surfaces report writer datasets and retained grids, branded report
 PDF/XLSX/CSV delivery, secure-portal and email-link distribution, Top-N/contribution analytics,
 custom-formula grid validation, cross-fund consolidation roll-ups with shadow-NAV, regulatory and
 warehouse exports, user/group/company access posture, and audit lineage through registered WPF
-targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`, `ExportPresets`,
-`ReportLineProvenanceExplorer`, `FundAuditTrail`, and `DataQuality`) rather than desktop-local
-reporting logic. The Reporting shell default pane set and command surface now include
-`ReportLineProvenanceExplorer`, matching the browser `/reporting/evidence` route for report-line
-evidence and provenance review. Its home chrome stays compact: the Daily Reporting Cockpit strip
+targets (`FundReportPack`, `ReportRunStatus`, `EvidenceWorkbench`, `Dashboard`, `AnalysisExport`,
+`ExportPresets`, `ReportLineProvenanceExplorer`, `FundAuditTrail`, and `DataQuality`) rather than
+desktop-local reporting logic. The Reporting shell default pane set and command surface now include
+`ReportLineProvenanceExplorer`, and the Evidence packets page (`EvidenceWorkbench`) provides the
+canonical desktop parity surface for the browser `/reporting/evidence` evidence workbench alongside
+report-line evidence and provenance review. Its home chrome stays compact: the Daily Reporting Cockpit strip
 puts the shared summary text, writer, approval, and delivery posture beside direct report-pack, run
 status, evidence, and export routes before the decision queue instead of rendering a separate
 page-level hero.
