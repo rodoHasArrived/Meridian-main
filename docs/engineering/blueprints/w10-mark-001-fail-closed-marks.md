@@ -844,9 +844,16 @@ public sealed record MarkFreshnessRolloutValuation(
     int PositionsEvaluated, int PositionsBlocked, int PositionsOverridden, int PositionsUnavailable);
 
 public sealed record MarkFreshnessPreview(
+    /// <summary>
+    /// Echoed back: the request body carries it and both preview routes return it. The
+    /// list members below are named for the wire too - `Blocked` and `Overridden` would
+    /// serialize as `blocked` and `overridden`, against routes that document
+    /// `blockedMarks` and `overriddenMarks` and a TS mirror generated from them.
+    /// </summary>
+    DateOnly ValuationDate,
     int PositionsEvaluated,
     int PositionsBlocked,
-    IReadOnlyList<BlockedMarkDto> Blocked,
+    IReadOnlyList<BlockedMarkDto> BlockedMarks,
     /// <summary>
     /// Positions the candidate policy would block but an approved override already covers. Reported
     /// separately because a count of blockers alone is not a measure of policy pressure: once
@@ -856,7 +863,7 @@ public sealed record MarkFreshnessPreview(
     /// this is where they come from.
     /// </summary>
     int PositionsOverridden,
-    IReadOnlyList<OverriddenMarkDto> Overridden,
+    IReadOnlyList<OverriddenMarkDto> OverriddenMarks,
     /// <summary>
     /// The candidate as a **wire DTO**, not the Ledger `MarkFreshnessPolicy`. The policy carries
     /// `DailyPortfolioPriceConfidence` and `StalePriceHandling`, and `UiServer`'s
@@ -977,7 +984,7 @@ POST /api/ledger/journal-automation/daily-mark-to-market-freshness-preview/{ledg
 
 GET  /api/ledger/journal-automation/daily-mark-to-market-freshness-cases/{ledgerBookId}
      200 { cases: [ { valuationDate, valuationRunId, positionsBlocked, positionsOverridden,
-                      assessedAtUtc, blockedMarks: [...] } ] }
+                      assessedAtUtc, blockedMarks: [...], overriddenMarks: [...] } ] }
      ← no valuationDate parameter, by design
 
 POST /api/ledger/journal-automation/daily-mark-to-market-freshness-preview-rollout
@@ -1373,8 +1380,13 @@ public interface ILegacyValuationDraftService
 
 public sealed record LegacyValuationDraftResolution(
     string DraftId,
-    /// <summary>`Reassociated` or `Discarded`; both are terminal for the draft.</summary>
-    LegacyValuationDraftOutcome Outcome,
+    /// <summary>
+    /// `LegacyValuationDraftOutcome` **name** - `Reassociated` or `Discarded`, both terminal for
+    /// the draft. A string for the same reason as `ValuationAttemptVoidResult.State`: this record
+    /// is the route's response body.
+    /// </summary>
+    string Outcome,
+    /// <summary>The attempt it was attached to, or null when discarded.</summary>
     string? ValuationRunId,
     string ResolvedBy, DateTimeOffset ResolvedAtUtc, string Reason);
 
@@ -1392,7 +1404,8 @@ still refused rather than one silently released.
 ```text
 POST /api/ledger/journal-automation/daily-mark-to-market-legacy-drafts/{draftId}/resolve
      Body   { reassociateWithRunId, reason }   ← null run id discards the draft
-     200    { draftId, outcome: "Reassociated" | "Discarded", resolvedBy, resolvedAtUtc }
+     200    { draftId, outcome: "Reassociated" | "Discarded", valuationRunId, resolvedBy,
+              resolvedAtUtc, reason }   ← valuationRunId is null on a discard
      409    { "error": "named attempt does not match this draft's book and valuation date" }
      422    { "error": "named attempt still has blocking unoverridden positions" }
 ```
@@ -1894,7 +1907,7 @@ public sealed record UnresolvedValuationCase(
     int PositionsBlocked,
     int PositionsOverridden,
     DateTimeOffset AssessedAtUtc,
-    IReadOnlyList<BlockedMarkDto> Blocked,
+    IReadOnlyList<BlockedMarkDto> BlockedMarks,
     /// <summary>
     /// The positions a claim authorised, named rather than counted. Every other freshness
     /// surface reports `OverriddenMarks` beside the blocked list precisely so a bypass stays
@@ -1903,7 +1916,7 @@ public sealed record UnresolvedValuationCase(
     /// likely to be looking at it. A count answers "were there any"; the review queue needs
     /// "which ones, and on whose authority".
     /// </summary>
-    IReadOnlyList<OverriddenMarkDto> Overridden);
+    IReadOnlyList<OverriddenMarkDto> OverriddenMarks);
 ```
 
 ##### There is no single transaction available, so the protocol is explicit
@@ -2091,7 +2104,16 @@ public sealed record PreparedValuationDraft(
     ManualJournalEntryDraftDto Draft);
 
 public sealed record ValuationAttemptVoidResult(
-    string ValuationRunId, string VoidedBy, DateTimeOffset VoidedAtUtc, string VoidReason);
+    string ValuationRunId,
+    /// <summary>
+    /// `ValuationAttemptState` **name**, not the enum. This record is returned straight to the
+    /// void route, so it is a wire shape: the UI host adds no global enum-string converter, and
+    /// the route contract above promises `state: "Voided"`. Returning the enum would answer with
+    /// an ordinal - the third time this design has had to make that call, after the override DTOs
+    /// and the preview candidate.
+    /// </summary>
+    string State,
+    string VoidedBy, DateTimeOffset VoidedAtUtc, string VoidReason);
 
 public interface IValuationAttemptStore
 {
@@ -2144,12 +2166,10 @@ and "why" is the only thing distinguishing an orphaned worker from an abandoned 
 
 Reached through:
 
-```text
-POST /api/ledger/journal-automation/daily-mark-to-market-valuation-attempts/{valuationRunId}/void
-```
-
-Same `AdminMaintenance` authorisation as the override decision route, since both are operator
-actions that unblock a governed process.
+Reached through the `…/valuation-attempts/{valuationRunId}/void` route defined once in the REST
+surface above, under the same `AdminMaintenance` authorisation as the override decision route, since
+both are operator actions that unblock a governed process. Restating the route body here would give
+it two declaration points that can disagree.
 
 **One writer per valuation, stated rather than fenced.** The unique index above is the whole of the
 concurrency control: at most one live attempt per (book, valuation date), and the worker that created
