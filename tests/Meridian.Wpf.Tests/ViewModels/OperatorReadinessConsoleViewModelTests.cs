@@ -14,7 +14,8 @@ public sealed class OperatorReadinessConsoleViewModelTests
     [
         "HomeWorkspace", "TradingShell", "PortfolioShell", "AccountingShell", "ReportingShell",
         "StrategyShell", "DataShell", "SettingsShell", "StrategyRuns", "SecurityMaster",
-        "FundReconciliation", "FundReportPack", "FundAccountingClose", "Provider", "FundAuditTrail"
+        "FundReconciliation", "FundReportPack", "FundAccountingClose", "Provider", "FundAuditTrail",
+        "AccountPortfolio", "RunRisk"
     ];
 
     private static bool IsRegistered(string tag)
@@ -66,8 +67,9 @@ public sealed class OperatorReadinessConsoleViewModelTests
     [InlineData("AccountingShell", OperatorWorkItemKindDto.ReconciliationBreak, null, "FundReconciliation")]
     [InlineData("ReportingShell", OperatorWorkItemKindDto.ReportPackApproval, null, "FundReportPack")]
     [InlineData("AccountingShell", (OperatorWorkItemKindDto)999, null, "AccountingShell")]
-    [InlineData("ProviderConnectionCenter", OperatorWorkItemKindDto.BrokerageSync, "settings", "Provider")]
+    [InlineData("ProviderConnectionCenter", OperatorWorkItemKindDto.BrokerageSync, "settings", "AccountPortfolio")]
     [InlineData("TradingShell", OperatorWorkItemKindDto.PaperReplay, "trading", "FundAuditTrail")]
+    [InlineData(null, OperatorWorkItemKindDto.ExecutionControl, "trading", "RunRisk")]
     [InlineData(null, OperatorWorkItemKindDto.LedgerPeriodClose, null, "FundAccountingClose")]
     [InlineData(null, (OperatorWorkItemKindDto)999, "reporting", "ReportingShell")]
     [InlineData(null, (OperatorWorkItemKindDto)999, "unknown-lane", "HomeWorkspace")]
@@ -434,6 +436,71 @@ public sealed class OperatorReadinessConsoleViewModelTests
     }
 
     [Fact]
+    public void ResolveWorkItemPageTag_HonorsTargetRouteBeforeKindFallback()
+    {
+        var item = CreateWorkItem(
+            "wi-brokerage",
+            OperatorWorkItemToneDto.Warning,
+            DateTimeOffset.Parse("2026-08-05T05:00:00Z"),
+            targetRoute: "/api/fund-accounts/brokerage-sync/accounts?fundAccountId=0e2a1c94-3f5b-4f6c-9a51-1c2d3e4f5a6b");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered).Should().Be(
+            "AccountPortfolio",
+            "an account-scoped TargetRoute names the recovery workflow more precisely than the kind fallback");
+    }
+
+    [Fact]
+    public void BuildWorkItemRows_DuplicateIdsDifferingByCase_MergeToOneRow()
+    {
+        var readinessItems = new[]
+        {
+            CreateWorkItem("WI-DUPE", OperatorWorkItemToneDto.Critical, DateTimeOffset.Parse("2026-08-05T05:45:00Z"))
+        };
+        var inboxItems = new[]
+        {
+            CreateWorkItem("wi-dupe", OperatorWorkItemToneDto.Info, DateTimeOffset.Parse("2026-08-05T02:00:00Z"))
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildWorkItemRows(inboxItems, readinessItems, IsRegistered);
+
+        rows.Should().ContainSingle(
+                "case-variant ids are the same work item under the server's case-insensitive dedup and must not burn two capped rows")
+            .Which.ReadinessTone.Should().Be(WorkstationReadinessTone.Blocked);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_BreaksOutage_DemotesReadyHeadlineToReviewPending()
+    {
+        var readiness = CreateReadiness() with
+        {
+            OverallStatus = TradingAcceptanceGateStatusDto.Ready,
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto("gate-replay", "Replay parity", TradingAcceptanceGateStatusDto.Ready, "Replay matches persisted state.")
+            ]
+        };
+        var quietInbox = new OperatorInboxDto(
+            AsOf: DateTimeOffset.Parse("2026-08-05T06:00:00Z"),
+            Items: [],
+            CriticalCount: 0,
+            WarningCount: 0,
+            ReviewCount: 0,
+            Summary: "No operator work items need attention.");
+        using var viewModel = CreateViewModel(
+            new FakeReadinessProvider { Readiness = readiness },
+            new FakeInboxClient { Inbox = quietInbox },
+            new FakeReconciliationClient { Breaks = null },
+            runWorkspaceService: null);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.OverallStatusText.Should().Be(
+            "Review pending", "the console must not headline Ready while the reconciliation queue state is unknown");
+        viewModel.OverallTone.Should().Be(WorkstationReadinessTone.SignoffRequired);
+        viewModel.HasBreaksError.Should().BeTrue();
+    }
+
+    [Fact]
     public void BuildTrustRows_UsesServerTrustGateAsToneAuthority()
     {
         var readiness = CreateReadiness();
@@ -643,14 +710,16 @@ public sealed class OperatorReadinessConsoleViewModelTests
         string id,
         OperatorWorkItemToneDto tone,
         DateTimeOffset createdAt,
-        int priorityScore = 0)
+        int priorityScore = 0,
+        string? targetRoute = null)
         => new(
             WorkItemId: id,
             Kind: OperatorWorkItemKindDto.ReconciliationBreak,
             Label: $"Item {id}",
             Detail: "Detail",
             Tone: tone,
-            CreatedAt: createdAt)
+            CreatedAt: createdAt,
+            TargetRoute: targetRoute)
         {
             PriorityScore = priorityScore
         };

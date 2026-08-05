@@ -1763,49 +1763,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     private static string? ResolveOperatorInboxRoutePageTag(string? targetRoute)
-    {
-        if (string.IsNullOrWhiteSpace(targetRoute))
-        {
-            return null;
-        }
-
-        var normalizedRoute = targetRoute.Split('?', 2)[0].TrimEnd('/');
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ReconciliationBreakQueue))
-        {
-            return "FundReconciliation";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.OperationsContinuity))
-        {
-            return "OperationsContinuity";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
-        {
-            return "SecurityMaster";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerBooks) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerPeriods))
-        {
-            return "FundTrialBalance";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||
-            normalizedRoute.Contains("/brokerage-sync", StringComparison.OrdinalIgnoreCase))
-        {
-            return "AccountPortfolio";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationTradingReadiness) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionSessions) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls))
-        {
-            return "TradingShell";
-        }
-
-        return null;
-    }
+        => OperatorInboxRouteMap.ResolvePageTag(targetRoute);
 
     private static bool RouteEqualsOrStartsWith(string route, string knownRoute)
     {

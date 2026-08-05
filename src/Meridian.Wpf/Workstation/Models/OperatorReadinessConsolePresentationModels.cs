@@ -339,7 +339,9 @@ public static class OperatorReadinessConsoleMapper
         ArgumentNullException.ThrowIfNull(readinessItems);
         ArgumentNullException.ThrowIfNull(isRegisteredPageTag);
 
-        var merged = new Dictionary<string, OperatorWorkItemDto>(StringComparer.Ordinal);
+        // Case-insensitive ids match the server-side inbox dedup (BuildOperatorInboxAsync groups
+        // with OrdinalIgnoreCase), so a case-variant duplicate never burns one of the capped rows.
+        var merged = new Dictionary<string, OperatorWorkItemDto>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in readinessItems.Concat(inboxItems))
         {
             if (!merged.TryGetValue(item.WorkItemId, out var existing) || ShouldReplaceWorkItem(existing, item))
@@ -397,18 +399,26 @@ public static class OperatorReadinessConsoleMapper
             return item.TargetPageTag!;
         }
 
+        // An account/route-scoped TargetRoute names the recovery workflow more precisely than the
+        // item's kind; the shared route map keeps this console and the main shell's inbox landing
+        // on the same page for the same item.
+        var routeTag = Services.OperatorInboxRouteMap.ResolvePageTag(item.TargetRoute);
+        if (routeTag is not null && !CoarseWorkspaceShellTags.Contains(routeTag) && isRegisteredPageTag(routeTag))
+        {
+            return routeTag;
+        }
+
+        // Kind fallbacks mirror the main shell's inbox mapping so both surfaces route identically.
         var kindTag = item.Kind switch
         {
-            // Replay work items route to the replay-evidence surface (same mapping the main
-            // shell's inbox uses), not run history — the verification action lives there.
             OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
             OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
-            OperatorWorkItemKindDto.BrokerageSync => "Provider",
+            OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
             OperatorWorkItemKindDto.ReportPackApproval => "FundReportPack",
-            OperatorWorkItemKindDto.ProviderTrustGate => "DataShell",
-            OperatorWorkItemKindDto.ExecutionControl => "TradingShell",
+            OperatorWorkItemKindDto.ProviderTrustGate => "FundAuditTrail",
+            OperatorWorkItemKindDto.ExecutionControl => "RunRisk",
             OperatorWorkItemKindDto.LedgerPeriodClose => "FundAccountingClose",
             OperatorWorkItemKindDto.BrokerExecutionReconciliation => "TradingShell",
             _ => null

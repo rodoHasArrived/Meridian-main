@@ -457,6 +457,7 @@ public sealed class OperatorReadinessConsoleViewModel : BindableBase, IDisposabl
             && inbox is not null
             && inbox.WarningCount == 0
             && allGatesReady
+            && breaks is not null
             && !hasBreakInReview)
         {
             SetOverallStatus(serverLabel, WorkstationReadinessTone.EvidenceLinked);

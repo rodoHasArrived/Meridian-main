@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `40f38986d72b`
+- Source fingerprint: `e2cff86c215f`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `95`
 - Open automated tasks: `3`
@@ -187,7 +187,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as RunRisk (RunRiskPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-risk.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +11 more.
 
 #### Trading hours (`TradingHours`)
 
@@ -221,7 +221,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as AccountPortfolio (AccountPortfolioPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-account-portfolio.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +11 more.
 
 #### Aggregate portfolio (`AggregatePortfolio`)
 
