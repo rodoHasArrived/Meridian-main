@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `926fa1189d7d`
+- Source fingerprint: `2f692059fe46`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `94`
 - Open automated tasks: `2`
@@ -77,7 +77,7 @@ gantt
     Reporting Workspace evidence :done, reporting_reportingshell, 2026-06-26, 1d
     Fund report pack evidence :done, reporting_fundreportpack, 2026-06-26, 1d
     Report run status evidence :done, reporting_reportrunstatus, 2026-06-26, 1d
-    Evidence workbench Needs screenshot :crit, active, reporting_evidenceworkbench, 2026-06-17, 3d
+    Evidence packets Needs screenshot :crit, active, reporting_evidenceworkbench, 2026-06-17, 3d
     Reporting dashboard evidence :done, reporting_dashboard, 2026-06-26, 1d
     Analysis export evidence :done, reporting_analysisexport, 2026-06-26, 1d
     Report-line provenance evidence :done, reporting_reportlineprovenanceexplorer, 2026-06-26, 1d
@@ -410,7 +410,7 @@ gantt
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-run-status.png (2026-06-26).
 - [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, +2 more.
 
-#### Evidence workbench (`EvidenceWorkbench`)
+#### Evidence packets (`EvidenceWorkbench`)
 
 - Workspace section: `Report Packs`; visibility: `Primary`; page class: `EvidenceWorkbenchPage`.
 - Status: `Needs screenshot`.
