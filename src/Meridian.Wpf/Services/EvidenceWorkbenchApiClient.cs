@@ -16,17 +16,20 @@ public interface IEvidenceWorkbenchApiClient
     Task<ApiResponse<EvidencePacketDto>> GetPacketAsync(
         string subjectKind,
         string subjectId,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default);
 
     Task<ApiResponse<EvidenceCompletenessDto>> ValidatePacketAsync(
         string subjectKind,
         string subjectId,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default);
 
     Task<ApiResponse<EvidencePacketExportResponse>> ExportManifestAsync(
         string subjectKind,
         string subjectId,
         EvidencePacketExportRequest request,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default);
 
     Task<ApiResponse<EvidenceVaultRequestListEntryDto[]>> ListOpenRequestListsAsync(
@@ -57,17 +60,19 @@ public sealed class EvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
     public Task<ApiResponse<EvidencePacketDto>> GetPacketAsync(
         string subjectKind,
         string subjectId,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<EvidencePacketDto>(
-            SubjectRoute(UiApiRoutes.WorkstationEvidenceSubjectPacket, subjectKind, subjectId),
+            SubjectRoute(UiApiRoutes.WorkstationEvidenceSubjectPacket, subjectKind, subjectId, ledgerBookId),
             ct);
 
     public Task<ApiResponse<EvidenceCompletenessDto>> ValidatePacketAsync(
         string subjectKind,
         string subjectId,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<EvidenceCompletenessDto>(
-            SubjectRoute(UiApiRoutes.WorkstationEvidenceSubjectValidate, subjectKind, subjectId),
+            SubjectRoute(UiApiRoutes.WorkstationEvidenceSubjectValidate, subjectKind, subjectId, ledgerBookId),
             body: null,
             ct: ct);
 
@@ -75,9 +80,10 @@ public sealed class EvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
         string subjectKind,
         string subjectId,
         EvidencePacketExportRequest request,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<EvidencePacketExportResponse>(
-            SubjectRoute(UiApiRoutes.WorkstationEvidenceSubjectExportManifest, subjectKind, subjectId),
+            SubjectRoute(UiApiRoutes.WorkstationEvidenceSubjectExportManifest, subjectKind, subjectId, ledgerBookId),
             request,
             ct: ct);
 
@@ -103,11 +109,19 @@ public sealed class EvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
                 BuildScopedQuery(subjectKind, subjectId, maxResults)),
             ct);
 
-    private static string SubjectRoute(string route, string subjectKind, string subjectId)
-        => UiApiRoutes.WithParam(
+    private static string SubjectRoute(string route, string subjectKind, string subjectId, Guid? ledgerBookId = null)
+    {
+        var resolved = UiApiRoutes.WithParam(
             UiApiRoutes.WithParam(route, "subjectKind", subjectKind),
             "subjectId",
             subjectId);
+
+        // Book-scoped subjects (e.g. private-capital fund events) resolve their packet, validate,
+        // and export routes against the owning ledger book; unscoped subjects omit the query.
+        return ledgerBookId is null
+            ? resolved
+            : UiApiRoutes.WithQuery(resolved, $"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+    }
 
     private static string BuildScopedQuery(
         string? subjectKind,

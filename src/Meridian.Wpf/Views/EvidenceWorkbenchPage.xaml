@@ -287,6 +287,14 @@
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap"
                                        Margin="0,6,0,10" />
+                            <TextBlock Text="{Binding RequestListErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,10"
+                                       Visibility="{Binding HasRequestListError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="EvidenceWorkbenchRequestListError" />
                             <ItemsControl ItemsSource="{Binding RequestListRows}"
                                           AutomationProperties.AutomationId="EvidenceWorkbenchRequestListRows">
                                 <ItemsControl.ItemTemplate>
@@ -328,6 +336,14 @@
                             AutomationProperties.AutomationId="EvidenceWorkbenchDocumentPanel">
                         <StackPanel>
                             <TextBlock Text="Evidence Vault documents" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding DocumentQueueErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasDocumentQueueError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="EvidenceWorkbenchDocumentQueueError" />
                             <WrapPanel Margin="0,6,0,0">
                                 <Border Style="{StaticResource WorkstationFilterChipStyle}">
                                     <TextBlock Text="{Binding DocumentQueue.SummaryText}"

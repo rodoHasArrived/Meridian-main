@@ -1,5 +1,6 @@
 using System.Text;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Workstation.Models;
@@ -9,7 +10,8 @@ public sealed record EvidenceWorkbenchSubjectRowModel(
     string SubjectId,
     string Label,
     string Workspace,
-    string SubjectKey)
+    string SubjectKey,
+    Guid? LedgerBookId = null)
 {
     public static EvidenceWorkbenchSubjectRowModel FromDto(EvidenceSubjectDto subject)
     {
@@ -20,7 +22,8 @@ public sealed record EvidenceWorkbenchSubjectRowModel(
             subject.SubjectId,
             string.IsNullOrWhiteSpace(subject.Label) ? $"{subject.SubjectKind}/{subject.SubjectId}" : subject.Label,
             string.IsNullOrWhiteSpace(subject.Workspace) ? "Workstation" : subject.Workspace,
-            $"{subject.SubjectKind}/{subject.SubjectId}");
+            $"{subject.SubjectKind}/{subject.SubjectId}",
+            subject.LedgerBookId);
     }
 }
 
@@ -273,7 +276,22 @@ public static class EvidenceWorkbenchPresentationMapper
             action.Label,
             action.Detail,
             action.TargetPageTag,
-            $"Open {NormalizeActionTargetText(action.TargetPageTag)}");
+            BuildPacketActionTargetText(action));
+
+    private static string BuildPacketActionTargetText(WorkflowActionDto action)
+    {
+        if (string.Equals(action.ActionId, WorkflowActionIds.EvidenceValidate, StringComparison.OrdinalIgnoreCase))
+        {
+            return "Run validation";
+        }
+
+        if (string.Equals(action.ActionId, WorkflowActionIds.EvidenceExportManifest, StringComparison.OrdinalIgnoreCase))
+        {
+            return "Export manifest";
+        }
+
+        return $"Open {NormalizeActionTargetText(action.TargetPageTag)}";
+    }
 
     private static string NormalizeActionTargetText(string targetPageTag)
     {

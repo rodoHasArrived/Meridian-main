@@ -2,6 +2,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
@@ -170,7 +171,7 @@ public sealed class EvidenceWorkbenchViewModelTests
         client.LastExportRequest.RequestedBy.Should().BeNull("the server resolves the export actor");
         viewModel.HasExportResult.Should().BeTrue();
         viewModel.ExportResultText.Should().Be(
-            "Manifest retained at evidence/strategy-run/run-42/manifest.json (3 evidence, 1 warnings). Vault vault-77.");
+            "Manifest retained at evidence/strategy-run/run-42/manifest.json (3 evidence items, 1 warning). Vault vault-77.");
         viewModel.StatusText.Should().Be("Evidence manifest retained for Strategy run 42.");
     }
 
@@ -192,6 +193,172 @@ public sealed class EvidenceWorkbenchViewModelTests
         client.LastValidateSubject.Should().BeNull();
         client.LastExportSubject.Should().BeNull();
     }
+
+    [Fact]
+    public async Task SelectedSubject_SwitchDuringInFlightRefresh_SupersedesStalePacket()
+    {
+        var client = CreateLoadedClient();
+        var secondSubject = CreateSubject("run-43", "Strategy run 43");
+        client.SubjectsResponse = ApiResponse<EvidenceSubjectDto[]>.Ok(
+            [client.SubjectsResponse.Data![0], secondSubject]);
+        var firstPacketGate = new TaskCompletionSource<ApiResponse<EvidencePacketDto>>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        client.PacketTasksBySubjectId["run-42"] = firstPacketGate.Task;
+        var secondPacket = CreateLightPacket(secondSubject, score: 50);
+        var firstPacket = client.PacketResponse;
+        client.PacketResponse = ApiResponse<EvidencePacketDto>.Ok(secondPacket);
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+
+        var firstRefresh = viewModel.RefreshAsync();
+        viewModel.IsRefreshing.Should().BeTrue("the first packet load is still pending");
+
+        viewModel.SelectedSubject = viewModel.Subjects.First(subject => subject.SubjectId == "run-43");
+        firstPacketGate.SetResult(firstPacket);
+        await firstRefresh;
+
+        viewModel.SelectedSubject!.SubjectId.Should().Be("run-43");
+        viewModel.Title.Should().Be("Strategy run 43", "the superseded first packet must not display under the new subject");
+        viewModel.ScoreText.Should().Be("50% complete");
+        viewModel.IsRefreshing.Should().BeFalse();
+        client.LastPacketSubject.Should().Be(("strategy-run", "run-43"));
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ResultArrivingAfterSubjectSwitch_IsNotApplied()
+    {
+        var client = CreateLoadedClient();
+        var secondSubject = CreateSubject("run-43", "Strategy run 43");
+        client.SubjectsResponse = ApiResponse<EvidenceSubjectDto[]>.Ok(
+            [client.SubjectsResponse.Data![0], secondSubject]);
+        client.PacketTasksBySubjectId["run-42"] = Task.FromResult(client.PacketResponse);
+        client.PacketResponse = ApiResponse<EvidencePacketDto>.Ok(CreateLightPacket(secondSubject, score: 50));
+        var validationGate = new TaskCompletionSource<ApiResponse<EvidenceCompletenessDto>>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        client.ValidateTask = validationGate.Task;
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+        await viewModel.RefreshAsync();
+        viewModel.ScoreText.Should().Be("82% complete");
+
+        var validation = viewModel.ValidateAsync();
+        viewModel.SelectedSubject = viewModel.Subjects.First(subject => subject.SubjectId == "run-43");
+        validationGate.SetResult(ApiResponse<EvidenceCompletenessDto>.Ok(new EvidenceCompletenessDto(
+            Score: 100,
+            Status: EvidenceStatusDto.Ready,
+            RequiredIds: [],
+            ReadyIds: [],
+            MissingIds: [],
+            StaleIds: [],
+            BlockingWorkItemIds: [])));
+        await validation;
+
+        client.LastValidateSubject.Should().Be(("strategy-run", "run-42"));
+        viewModel.ScoreText.Should().Be("50% complete", "a validation result for the previous subject must not restyle the new packet");
+        viewModel.CompletenessStatusText.Should().Be("Review Required");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_VaultEndpointFailures_SurfacePerPanelErrors()
+    {
+        var client = CreateLoadedClient();
+        client.RequestListsResponse = ApiResponse<EvidenceVaultRequestListEntryDto[]>.Fail(
+            "Evidence Vault request-list index is unavailable.");
+        client.DocumentsResponse = ApiResponse<EvidenceVaultDocumentEntryDto[]>.Fail(
+            "Evidence Vault document index is unavailable.");
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.HasPacket.Should().BeTrue("packet loading is independent of the vault queues");
+        viewModel.RequestListRows.Should().BeEmpty();
+        viewModel.HasRequestListError.Should().BeTrue();
+        viewModel.RequestListErrorText.Should().Be("Evidence Vault request-list index is unavailable.");
+        viewModel.HasDocumentQueueError.Should().BeTrue();
+        viewModel.DocumentQueueErrorText.Should().Be("Evidence Vault document index is unavailable.");
+        viewModel.DocumentQueue.Documents.Should().BeEmpty();
+        viewModel.HasError.Should().BeFalse("per-panel vault failures must not hide the loaded packet behind a global error");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_BookScopedSubject_PassesLedgerBookIdToSubjectRoutes()
+    {
+        var ledgerBookId = Guid.Parse("7d9f3d6a-6f0f-4f7a-9d6b-2f9a1c3e5b7d");
+        var client = CreateLoadedClient();
+        var scopedSubject = client.SubjectsResponse.Data![0] with { LedgerBookId = ledgerBookId };
+        client.SubjectsResponse = ApiResponse<EvidenceSubjectDto[]>.Ok([scopedSubject]);
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+
+        await viewModel.RefreshAsync();
+        await viewModel.ValidateAsync();
+        await viewModel.ExportManifestAsync();
+
+        client.LastPacketLedgerBookId.Should().Be(ledgerBookId);
+        client.LastValidateLedgerBookId.Should().Be(ledgerBookId);
+        client.LastExportLedgerBookId.Should().Be(ledgerBookId);
+        viewModel.SelectedSubject!.LedgerBookId.Should().Be(ledgerBookId);
+    }
+
+    [Fact]
+    public async Task OpenPacketActionCommand_ValidateAndExportActions_DispatchToApiCommands()
+    {
+        var client = CreateLoadedClient();
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+        await viewModel.RefreshAsync();
+
+        viewModel.OpenPacketActionCommand.Execute(new EvidencePacketActionRowModel(
+            "workflow.evidence.validate", "Validate Evidence", "detail", "EvidenceWorkbench", "Run validation"));
+        viewModel.OpenPacketActionCommand.Execute(new EvidencePacketActionRowModel(
+            "workflow.evidence.export-manifest", "Export Evidence Manifest", "detail", "EvidenceWorkbench", "Export manifest"));
+
+        client.LastValidateSubject.Should().Be(("strategy-run", "run-42"),
+            "the validate packet action must invoke the API command instead of navigating");
+        client.LastExportSubject.Should().Be(("strategy-run", "run-42"),
+            "the export packet action must invoke the API command instead of navigating");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_FailureAfterSuccessfulLoad_ClearsRetainedVaultRows()
+    {
+        var client = CreateLoadedClient();
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+        await viewModel.RefreshAsync();
+        viewModel.RequestListRows.Should().NotBeEmpty();
+        viewModel.DocumentQueue.Documents.Should().NotBeEmpty();
+
+        client.SubjectsResponse = ApiResponse<EvidenceSubjectDto[]>.Fail("Evidence subjects endpoint is unavailable.");
+        await viewModel.RefreshAsync();
+
+        viewModel.HasError.Should().BeTrue();
+        viewModel.Subjects.Should().BeEmpty("stale subjects must not read as current during an outage");
+        viewModel.RequestListRows.Should().BeEmpty("stale vault requests must not read as current during an outage");
+        viewModel.DocumentQueue.Documents.Should().BeEmpty("stale retained documents must not read as current during an outage");
+        viewModel.HasPacket.Should().BeFalse();
+    }
+
+    private static EvidenceSubjectDto CreateSubject(string subjectId, string label)
+        => new(
+            SubjectId: subjectId,
+            SubjectKind: "strategy-run",
+            Label: label,
+            Workspace: "Strategy",
+            Route: null,
+            PageTag: "StrategyRuns");
+
+    private static EvidencePacketDto CreateLightPacket(EvidenceSubjectDto subject, int score)
+        => new(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.Parse("2026-08-02T09:00:00Z"),
+            Nodes: [],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(
+                Score: score,
+                Status: EvidenceStatusDto.ReviewRequired,
+                RequiredIds: [],
+                ReadyIds: [],
+                MissingIds: [],
+                StaleIds: [],
+                BlockingWorkItemIds: []),
+            Actions: [],
+            Warnings: []);
 
     private static FakeEvidenceWorkbenchApiClient CreateLoadedClient()
     {
@@ -381,6 +548,12 @@ public sealed class EvidenceWorkbenchViewModelTests
 
         public (string SubjectKind, string SubjectId)? LastExportSubject { get; private set; }
 
+        public Guid? LastPacketLedgerBookId { get; private set; }
+
+        public Guid? LastValidateLedgerBookId { get; private set; }
+
+        public Guid? LastExportLedgerBookId { get; private set; }
+
         public EvidencePacketExportRequest? LastExportRequest { get; private set; }
 
         public (string? SubjectKind, string? SubjectId, int MaxResults)? LastRequestListQuery { get; private set; }
@@ -390,32 +563,45 @@ public sealed class EvidenceWorkbenchViewModelTests
         public Task<ApiResponse<EvidenceSubjectDto[]>> ListSubjectsAsync(CancellationToken ct = default)
             => Task.FromResult(SubjectsResponse);
 
+        public Dictionary<string, Task<ApiResponse<EvidencePacketDto>>> PacketTasksBySubjectId { get; } =
+            new(StringComparer.OrdinalIgnoreCase);
+
+        public Task<ApiResponse<EvidenceCompletenessDto>>? ValidateTask { get; set; }
+
         public Task<ApiResponse<EvidencePacketDto>> GetPacketAsync(
             string subjectKind,
             string subjectId,
+            Guid? ledgerBookId = null,
             CancellationToken ct = default)
         {
             LastPacketSubject = (subjectKind, subjectId);
-            return Task.FromResult(PacketResponse);
+            LastPacketLedgerBookId = ledgerBookId;
+            return PacketTasksBySubjectId.TryGetValue(subjectId, out var pending)
+                ? pending
+                : Task.FromResult(PacketResponse);
         }
 
         public Task<ApiResponse<EvidenceCompletenessDto>> ValidatePacketAsync(
             string subjectKind,
             string subjectId,
+            Guid? ledgerBookId = null,
             CancellationToken ct = default)
         {
             LastValidateSubject = (subjectKind, subjectId);
-            return Task.FromResult(ValidateResponse);
+            LastValidateLedgerBookId = ledgerBookId;
+            return ValidateTask ?? Task.FromResult(ValidateResponse);
         }
 
         public Task<ApiResponse<EvidencePacketExportResponse>> ExportManifestAsync(
             string subjectKind,
             string subjectId,
             EvidencePacketExportRequest request,
+            Guid? ledgerBookId = null,
             CancellationToken ct = default)
         {
             LastExportSubject = (subjectKind, subjectId);
             LastExportRequest = request;
+            LastExportLedgerBookId = ledgerBookId;
             return Task.FromResult(ExportResponse);
         }
 

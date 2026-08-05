@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
 
@@ -22,6 +23,7 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
     private bool _isDisposed;
     private bool _hasLoaded;
     private bool _suppressSelectionLoad;
+    private int _loadRevision;
     private object? _parameter;
     private string? _requestedSubjectKind;
     private string? _requestedSubjectId;
@@ -42,6 +44,8 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
     private string _proofChainSummaryText = "Proof-chain coverage was not returned by this packet.";
     private string _proofChainCoverageText = "No proof-chain coverage";
     private string _exportResultText = string.Empty;
+    private string _requestListErrorText = string.Empty;
+    private string _documentQueueErrorText = string.Empty;
     private EvidenceVaultDocumentQueuePresentationModel _documentQueue =
         EvidenceVaultPresentationMapper.BuildDocumentQueue([], null);
 
@@ -255,6 +259,34 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
 
     public bool HasExportResult => !string.IsNullOrWhiteSpace(ExportResultText);
 
+    public string RequestListErrorText
+    {
+        get => _requestListErrorText;
+        private set
+        {
+            if (SetProperty(ref _requestListErrorText, value))
+            {
+                OnPropertyChanged(nameof(HasRequestListError));
+            }
+        }
+    }
+
+    public bool HasRequestListError => !string.IsNullOrWhiteSpace(RequestListErrorText);
+
+    public string DocumentQueueErrorText
+    {
+        get => _documentQueueErrorText;
+        private set
+        {
+            if (SetProperty(ref _documentQueueErrorText, value))
+            {
+                OnPropertyChanged(nameof(HasDocumentQueueError));
+            }
+        }
+    }
+
+    public bool HasDocumentQueueError => !string.IsNullOrWhiteSpace(DocumentQueueErrorText);
+
     public EvidenceVaultDocumentQueuePresentationModel DocumentQueue
     {
         get => _documentQueue;
@@ -294,17 +326,25 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
 
     public async Task RefreshAsync(CancellationToken ct = default)
     {
-        if (_isDisposed || IsRefreshing)
+        if (_isDisposed)
         {
             return;
         }
 
+        // A newer refresh supersedes any in-flight one (e.g. the operator switches subject while a
+        // packet is still loading); superseded continuations stop before applying any state.
+        var revision = ++_loadRevision;
         IsRefreshing = true;
         ErrorText = string.Empty;
         ExportResultText = string.Empty;
         try
         {
             var subjectsResponse = await _apiClient.ListSubjectsAsync(ct).ConfigureAwait(true);
+            if (IsStale(revision))
+            {
+                return;
+            }
+
             if (!subjectsResponse.Success)
             {
                 ApplyLoadFailure(subjectsResponse.ErrorMessage ?? "Evidence subjects failed to load.");
@@ -321,9 +361,13 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
                 selection?.SubjectKind, selection?.SubjectId, VaultQueueMaxResults, ct);
             var packetResponse = selection is null
                 ? null
-                : await _apiClient.GetPacketAsync(selection.SubjectKind, selection.SubjectId, ct).ConfigureAwait(true);
+                : await _apiClient.GetPacketAsync(selection.SubjectKind, selection.SubjectId, selection.LedgerBookId, ct).ConfigureAwait(true);
             var requestListsResponse = await requestListsTask.ConfigureAwait(true);
             var documentsResponse = await documentsTask.ConfigureAwait(true);
+            if (IsStale(revision))
+            {
+                return;
+            }
 
             ApplyVaultQueues(requestListsResponse, documentsResponse);
             ApplyPacketResponse(selection, packetResponse);
@@ -333,25 +377,48 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         {
             // Navigation or disposal cancelled the in-flight refresh; leave current state as-is.
         }
+        catch (Exception ex)
+        {
+            // Selection-triggered refreshes are fire-and-forget, so an unexpected failure must
+            // surface in the workbench instead of vanishing as an unobserved task exception.
+            LoggingService.Instance.LogError("Evidence workbench refresh failed.", ex);
+            if (!IsStale(revision))
+            {
+                ApplyLoadFailure(ex.Message);
+            }
+        }
         finally
         {
-            IsRefreshing = false;
+            if (revision == _loadRevision)
+            {
+                IsRefreshing = false;
+            }
         }
     }
 
     public async Task ValidateAsync(CancellationToken ct = default)
     {
         var subject = SelectedSubject;
-        if (_isDisposed || subject is null || _packet is null)
+        if (_isDisposed || subject is null || _packet is null || IsRefreshing)
         {
+            // While a refresh is in flight the displayed packet is about to change, so a
+            // validation started now could bind its result to the wrong revision.
             return;
         }
 
+        var revision = _loadRevision;
         IsValidating = true;
         ErrorText = string.Empty;
         try
         {
-            var response = await _apiClient.ValidatePacketAsync(subject.SubjectKind, subject.SubjectId, ct).ConfigureAwait(true);
+            var response = await _apiClient.ValidatePacketAsync(subject.SubjectKind, subject.SubjectId, subject.LedgerBookId, ct).ConfigureAwait(true);
+            if (IsStale(revision) || _packet is null)
+            {
+                // A newer refresh replaced the packet while validation was in flight; its result
+                // no longer describes the displayed subject.
+                return;
+            }
+
             if (!response.Success || response.Data is null)
             {
                 ErrorText = response.ErrorMessage ?? "Evidence validation failed.";
@@ -374,11 +441,12 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
     public async Task ExportManifestAsync(CancellationToken ct = default)
     {
         var subject = SelectedSubject;
-        if (_isDisposed || subject is null || _packet is null)
+        if (_isDisposed || subject is null || _packet is null || IsRefreshing)
         {
             return;
         }
 
+        var revision = _loadRevision;
         IsExporting = true;
         ErrorText = string.Empty;
         ExportResultText = string.Empty;
@@ -388,7 +456,14 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
                 RequestedBy: null,
                 Reason: $"Desktop evidence workbench export for {subject.SubjectKey}.",
                 IncludeWarnings: true);
-            var response = await _apiClient.ExportManifestAsync(subject.SubjectKind, subject.SubjectId, request, ct).ConfigureAwait(true);
+            var response = await _apiClient.ExportManifestAsync(subject.SubjectKind, subject.SubjectId, request, subject.LedgerBookId, ct).ConfigureAwait(true);
+            if (IsStale(revision))
+            {
+                // The workbench moved to another subject mid-export; the manifest stays retained
+                // server-side, but its result must not display under the new subject.
+                return;
+            }
+
             if (!response.Success || response.Data is null)
             {
                 ErrorText = response.ErrorMessage ?? "Evidence manifest export failed.";
@@ -441,8 +516,13 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         var retention = response.Retained ? "retained" : "generated";
         var vault = response.VaultIdentity is null ? string.Empty : $" Vault {response.VaultIdentity.VaultId}.";
         return $"Manifest {retention} at {response.ManifestPath} " +
-               $"({response.EvidenceCount} evidence, {response.WarningCount} warnings).{vault}";
+               $"({Pluralize(response.EvidenceCount, "evidence item")}, {Pluralize(response.WarningCount, "warning")}).{vault}";
     }
+
+    private static string Pluralize(int count, string singular)
+        => count == 1 ? $"1 {singular}" : $"{count} {singular}s";
+
+    private bool IsStale(int revision) => _isDisposed || revision != _loadRevision;
 
     private void ApplyRequestedSubject((string SubjectKind, string SubjectId)? subject)
     {
@@ -517,12 +597,21 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         RequestListRows.Clear();
         if (requestListsResponse.Success)
         {
+            RequestListErrorText = string.Empty;
             foreach (var row in EvidenceWorkbenchPresentationMapper.BuildRequestListRows(requestListsResponse.Data ?? []))
             {
                 RequestListRows.Add(row);
             }
         }
+        else
+        {
+            // An empty panel must not masquerade as "no open requests" when the endpoint failed.
+            RequestListErrorText = requestListsResponse.ErrorMessage ?? "Evidence Vault request lists failed to load.";
+        }
 
+        DocumentQueueErrorText = documentsResponse.Success
+            ? string.Empty
+            : documentsResponse.ErrorMessage ?? "Evidence Vault documents failed to load.";
         DocumentQueue = EvidenceVaultPresentationMapper.BuildDocumentQueue(
             documentsResponse.Success ? documentsResponse.Data ?? [] : [],
             manifestSnapshot: null);
@@ -660,6 +749,25 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
     private void ApplyLoadFailure(string message)
     {
         _packet = null;
+
+        // Retained rows from the previous refresh must not read as current evidence during an
+        // outage; the global error banner owns the failure story.
+        _suppressSelectionLoad = true;
+        try
+        {
+            Subjects.Clear();
+            SelectedSubject = null;
+        }
+        finally
+        {
+            _suppressSelectionLoad = false;
+        }
+
+        OnPropertyChanged(nameof(HasSubjects));
+        RequestListRows.Clear();
+        RequestListErrorText = string.Empty;
+        DocumentQueueErrorText = string.Empty;
+        DocumentQueue = EvidenceVaultPresentationMapper.BuildDocumentQueue([], null);
         ApplyPacketProjection(null);
         ErrorText = message;
         StatusText = "Evidence workbench failed to load.";
@@ -668,12 +776,47 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
 
     private void OpenPacketAction(EvidencePacketActionRowModel? action)
     {
-        if (action is null || string.IsNullOrWhiteSpace(action.TargetPageTag))
+        if (action is null)
         {
             return;
         }
 
-        NavigationService.Instance.NavigateTo(action.TargetPageTag);
+        // Validate/export packet actions are API commands, not navigation destinations; their
+        // shared TargetPageTag is the generic workbench tag and must not respawn the page.
+        if (string.Equals(action.ActionId, WorkflowActionIds.EvidenceValidate, StringComparison.OrdinalIgnoreCase))
+        {
+            if (ValidateCommand.CanExecute(null))
+            {
+                ValidateCommand.Execute(null);
+            }
+
+            return;
+        }
+
+        if (string.Equals(action.ActionId, WorkflowActionIds.EvidenceExportManifest, StringComparison.OrdinalIgnoreCase))
+        {
+            if (ExportManifestCommand.CanExecute(null))
+            {
+                ExportManifestCommand.Execute(null);
+            }
+
+            return;
+        }
+
+        var target = action.TargetPageTag;
+        if (string.IsNullOrWhiteSpace(target))
+        {
+            return;
+        }
+
+        if (string.Equals(target.Trim(), "EvidenceWorkbench", StringComparison.OrdinalIgnoreCase) &&
+            SelectedSubject is not null)
+        {
+            // Keep the current subject focused instead of respawning the picker view.
+            target = $"EvidenceWorkbench:{SelectedSubject.SubjectKey}";
+        }
+
+        NavigationService.Instance.NavigateTo(target);
     }
 
     private void NotifyBusyChanged()
