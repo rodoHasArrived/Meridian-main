@@ -15,7 +15,13 @@ property of this document.
 
 ## ⚠️ Breaking Change — source-breaking, not merely behavioural
 
-Phase 2 deletes **two** public types, not one.
+Phase 2 changes the behaviour of **two** public types, and Phase 5 deletes them.
+
+Getting that split right matters to anyone planning against this document: Phase 2 flips the
+defaults and retypes the constructors, but both types survive it as `[Obsolete]` shims with
+converters and compatibility overloads, exactly as the migration window below promises. Deletion is
+the last phase. An earlier revision of this header said Phase 2 deleted them, which would have had
+an implementer remove source compatibility two PRs before external callers were told to expect it.
 
 `StalePricePolicy` is a **public** record in `Meridian.Ledger`. Any external caller that names the
 type, constructs it, or passes it to `DailyPortfolioPricingPolicy` **fails to compile** — this is not
@@ -523,6 +529,20 @@ public interface IMarkOverrideStore
     /// *later* position strands the first authorisation: the retry finds it consumed, returns null,
     /// and the valuation can never complete even though no draft was ever retained. A different run
     /// id still gets null — the one-shot guarantee holds across runs, which is what it is for.
+    ///
+    /// **Idempotency does not exempt the evidence check.** The re-return applies only when
+    /// <paramref name="currentEvidence"/> still matches the fingerprint stored on the row. A retry
+    /// can be minutes or hours after the first claim, and the provider may have re-quoted in
+    /// between; returning the consumed row unconditionally would value the *new* mark under an
+    /// approval given for the *old* one — the precise substitution the fingerprint exists to stop,
+    /// reached through the recovery path instead of the claim path. The `EvidenceSuperseded`
+    /// transition does not cover it either, because that only applies to rows still `Approved`.
+    ///
+    /// On mismatch the consumed row is left `Consumed` — it was genuinely used, and rewriting its
+    /// terminal state would falsify the audit — and the claim returns null, so the position blocks
+    /// and a fresh request is made against the new mark. The audit entry records
+    /// `evidence-changed-on-retry`, distinct from `evidence-changed`, because the operator question
+    /// differs: an approval was already spent on a mark that has since moved.
     /// </summary>
     /// <param name="currentEvidence">
     /// The mark being claimed against, **now**. Required, and the reason the comparison below can
@@ -560,9 +580,13 @@ public interface IMarkOverrideStore
     /// <paramref name="quoteEvidence"/> pins what was actually reviewed; see "An approval is of a
     /// mark, not of a slot" below.
     ///
-    /// <paramref name="expiresOn"/> is **validated against a server-owned maximum**, not accepted as
-    /// given: it must be on or after <c>scope.ValuationDate</c> and no later than
-    /// <c>nowUtc.Date + MarkOverridePolicy.MaximumLifetime</c>. Without that ceiling a requester can
+    /// <paramref name="expiresOn"/> is **validated against a server-owned window**, not accepted as
+    /// given: it must be on or after <c>max(scope.ValuationDate, nowUtc.Date)</c> and no later than
+    /// <c>nowUtc.Date + MarkOverridePolicy.MaximumLifetime</c>. The lower bound takes the later of
+    /// the two because expiry is evaluated at time of use: for a historical valuation date, a bound
+    /// of `ValuationDate` alone admits an `expiresOn` already in the past, so the request inserts as
+    /// `Pending` and the first decision or claim immediately expires it — an override that reaches
+    /// the reviewer queue unusable, which wastes the reviewer rather than protecting anything. Without that ceiling a requester can
     /// submit <c>9999-12-31</c>, and once approved the authorisation for that exact valuation stays
     /// claimable indefinitely — a standing bypass, which is the one thing the roadmap criterion
     /// requiring overrides to expire or be re-reviewed exists to prevent. A date outside the window
@@ -629,6 +653,32 @@ public sealed record MarkQuoteEvidence(
     MarkFreshnessVerdict BlockingVerdict,
     /// <summary>Hash over the fields above, compared at claim time.</summary>
     string Fingerprint);
+
+// These are store and domain records, not wire types. The override routes return
+// `quoteEvidence` and `state`, and returning these directly would either serialize
+// `DailyPortfolioPriceConfidence` and `MarkFreshnessVerdict` as **numbers** - the standard UI
+// endpoint JSON options add no global enum-string converter - or force a `Meridian.Contracts`
+// dependency on `Meridian.Ledger`, which the layer graph does not allow. `MarkFreshnessRef`
+// already settled the convention by carrying its verdict as a string for TS/JSON parity, so
+// the boundary keeps it:
+public sealed record MarkQuoteEvidenceDto(
+    decimal Price, string Source, string EvidenceReference,
+    string Confidence,          // DailyPortfolioPriceConfidence name
+    string BlockingVerdict,     // MarkFreshnessVerdict name
+    string Fingerprint);
+
+public sealed record MarkFreshnessOverrideDto(
+    string OverrideId, MarkOverrideScopeDto Scope, MarkQuoteEvidenceDto QuoteEvidence,
+    string Reason, string RequestedBy, DateTimeOffset RequestedAtUtc, DateOnly ExpiresOn,
+    string State);              // MarkOverrideState name
+
+public sealed record MarkOverrideAuditEntryDto(
+    string OverrideId, string? FromState, string ToState, string Actor,
+    DateTimeOffset OccurredAtUtc, string? Note, string? ValuationRunId, string? CorrelationId);
+
+// The mapping lives in `Meridian.Ui.Shared`, which already references both sides. A numeric
+// enum on this boundary would not fail loudly - it would render as `3` in the reviewer queue
+// and in the TS mirror, which is why this is settled here rather than left to the endpoint.
 
 public sealed record MarkOverrideAuditEntry(
     string OverrideId,
@@ -1099,10 +1149,63 @@ Nullable, because drafts retained *before* this change necessarily lack it — a
 drafts the guard exists for, so "no run id" cannot mean "not governed". The classification rule is
 therefore fail-closed rather than permissive: a draft whose `EntryType` or automation-evidence
 assessment marks it as a daily-valuation fair-value draft, and which carries **no** `ValuationRunId`,
-is refused at posting with an explicit reason. It becomes postable only after an operator
-re-associates it with a fresh valuation run or explicitly voids it — a migration action, audited,
-not an implicit exemption. Treating a null as "not a valuation draft" would reopen the bypass on
-precisely the population the guard was added to catch.
+is refused at posting with an explicit reason. Treating a null as "not a valuation draft" would
+reopen the bypass on precisely the population the guard was added to catch.
+
+**The field is server-owned, and the guard verifies the association rather than trusting the
+field.** Putting a run id on a *public* draft DTO hands the generic save and lifecycle routes a new
+way to satisfy the posting guard: attach the id of a clean valuation to a blocked or legacy
+fair-value draft, and `RequireFreshValuationMarks` reads that run's assessments — all passing — and
+posts a draft those assessments never described. That turns the guard's own input into the bypass.
+
+Three rules close it, and all three are needed:
+
+1. **Write-only from automated intake.** `AutomatedJournalIntakeRunner` sets `ValuationRunId`.
+   A manual save or lifecycle request carrying one is **rejected**, not ignored: silently dropping
+   it would let a client believe the association took.
+2. **Immutable once set.** No route rewrites it — re-association is its own audited command, below.
+3. **Verified, not trusted.** `RequireFreshValuationMarks` confirms the attempt named by the draft
+   actually retained *this* draft, via the `prepared_draft_payload` written with the assessments,
+   before reading its assessments. A run id that names a real clean attempt but not this draft is
+   refused. Rule 1 makes forgery hard; rule 3 makes it useless, which is the one that has to hold if
+   any write path is ever missed.
+
+##### The legacy remedy, since "re-associate or void" named no command
+
+An earlier revision said a legacy draft "becomes postable only after an operator re-associates it
+with a fresh valuation run or explicitly voids it", and specified neither. Both need to exist or the
+named population is stranded: `VoidAttemptAsync` operates on an *attempt* and needs a run id these
+drafts do not have, and the manual-journal lifecycle has no void action at all — `Reject` is valid
+only from `Submitted`, while these drafts sit `Approved`.
+
+So Phase 2 adds one command with two outcomes, on the draft rather than the attempt:
+
+```csharp
+/// <summary>
+/// Resolves a governed fair-value draft that carries no `ValuationRunId`.
+///
+/// `ReassociateWith` names an attempt that must be `Complete` or `ReviewRequired` for the **same**
+/// ledger book and valuation date, and whose assessments must be non-blocking or fully overridden —
+/// re-association attaches evidence, it does not manufacture it. Null discards the draft instead.
+///
+/// Either outcome is terminal for the draft and audited with actor, reason, and timestamp. This is
+/// deliberately not `VoidAttemptAsync`: that closes an attempt, and these drafts have none.
+/// </summary>
+ValueTask<LegacyValuationDraftResolution> ResolveLegacyValuationDraftAsync(
+    string draftId, string? reassociateWithRunId, string resolvedBy, string reason,
+    LedgerTenantScope expectedTenant, CancellationToken ct = default);
+```
+
+```text
+POST /api/ledger/journal-automation/daily-mark-to-market-legacy-drafts/{draftId}/resolve
+     Body   { reassociateWithRunId, reason }   ← null run id discards the draft
+     200    { draftId, outcome: "Reassociated" | "Discarded", resolvedBy, resolvedAtUtc }
+     409    { "error": "named attempt does not match this draft's book and valuation date" }
+     422    { "error": "named attempt still has blocking unoverridden positions" }
+```
+
+Without this, the fail-closed flip strands every pre-change approved fair-value draft behind a guard
+with no operator remedy — enforcement that an operator cannot clear is an outage, not a control.
 
 **Tested at the orchestration level, not only the store.** A store test proves
 `TryClaimAsync` returns the same row twice for one run id; it cannot prove the runner presents the
@@ -1249,6 +1352,15 @@ Evaluates the candidate policy against today's marks without mutating state, usi
 mark has since been re-quoted is not counted as cover the eventual claim would refuse. Reuses the same
 `Assess` call as enforcement so the preview cannot drift from it.
 
+**Every method takes `LedgerTenantScope`, resolved by the endpoint and passed down.** Two things make
+this a contract requirement rather than an implementation detail: `PeekApprovedAsync` takes the scope
+and cannot be called correctly without one, and the rollout preview enumerates *configured
+daily-valuation schedules*, which must be tenant-filtered at the source. A service holding only a
+book, a date, and a candidate policy leaves an implementer with two bad options — reach for ambient
+HTTP state from a layer that should not know about it, or skip the filter — and the second silently
+counts another tenant's valuations and overrides into the number the Phase 2 gate is decided on.
+Cross-tenant rejection is asserted for both preview routes, not only the mutating ones.
+
 ### `PostgresMarkOverrideStore`
 
 **Namespace:** `Meridian.Storage.Valuation`
@@ -1354,7 +1466,7 @@ phase rather than left to the implementer. Two tables, both tenant-owned:
 | `valuation_date` | `date` | |
 | `mark_observed_on` | `date` **null** | null is a real scope value — the missing-observation case |
 | `policy_version` | `text` | |
-| `state` | `text` | `Pending`/`Approved`/`Rejected`/`Expired`/`Consumed` |
+| `state` | `text` | `Pending`/`Approved`/`Rejected`/`Expired`/`Consumed`/**`EvidenceSuperseded`** — all six, since a check constraint written from this row would otherwise reject the evidence-mismatch transition and leave the active-scope slot uncleanable |
 | `reason`, `requested_by`, `approved_by`, `note` | `text` | `approved_by` null until decided |
 | `requested_at_utc`, `approved_at_utc` | `timestamptz` | |
 | `expires_on` | `date` | compared against the clock at claim time, not the valuation date; bounded at request time by `MarkOverridePolicy.MaximumLifetime` |
@@ -1446,11 +1558,13 @@ by this column. Reconstructing the record from a row without it would have to gu
 differ in what downstream surfacing is expected to do.
 
 **Which attempt a date-scoped read means.** With the run id in the key, `(book, valuation_date)` no
-longer identifies one set of rows, so any read not given a run id resolves the **latest attempt**:
-the row set whose `valuation_run_id` carries the highest `attempt_ordinal` on
-`ledger_valuation_attempt`. Ordinal rather than `assessed_at_utc` — the ordinal is monotonic by
-construction, while two attempts can share a timestamp and leave the "latest" ambiguous exactly when
-it matters.
+longer identifies one set of rows, so any read not given a run id resolves the **latest live
+attempt**: the row set whose `valuation_run_id` carries the highest `attempt_ordinal` on
+`ledger_valuation_attempt` *among attempts whose state is not `Voided`*. Ordinal rather than
+`assessed_at_utc` — the ordinal is monotonic by construction, while two attempts can share a
+timestamp and leave the "latest" ambiguous exactly when it matters. The `Voided` exclusion matters
+just as much: a voided attempt keeps its ordinal and is typically the highest, so without the filter
+every date-scoped read would return the assessments an operator just discarded.
 
 **Retention.** Superseded attempts are not pruned while anything still references them: an
 assessment set is retained while its attempt is live, or while a retained draft names its
@@ -1540,7 +1654,13 @@ public interface IMarkFreshnessAssessmentStore
     /// freshness on non-blocking positions would all be unreachable — every position that is fine is
     /// invisible, which is most of them.
     ///
-    /// "Latest" is the highest `attempt_ordinal`, not the newest timestamp; see the table notes.
+    /// "Latest" is the highest `attempt_ordinal` **among attempts that are not `Voided`**, not the
+    /// newest timestamp; see the table notes. The state filter is load-bearing rather than tidy: a
+    /// voided attempt keeps its ordinal, and it is usually the highest one, since voiding is what
+    /// closes the most recent stuck attempt. Selecting by ordinal alone would surface exactly the
+    /// rows an operator explicitly discarded — and it would falsify the claim made with
+    /// `VoidAttemptAsync` that a resurfacing worker's late writes are inert because this read skips
+    /// them. They are inert only because of this clause.
     /// Returns empty when the valuation has never been attempted, which is a legitimate answer here
     /// and is why this read is separate from the fail-closed <see cref="ReadByRunAsync"/>.
     /// </summary>
@@ -1798,8 +1918,15 @@ Steps 1–4 as above.
    distinction that lets the run proceed. It still surfaces its `MarkFreshnessRef` with `OverrideId`
    set, so the UI shows it was overridden rather than fresh, and it is counted in
    `PositionsOverridden` so the bypass stays visible rather than reading as clean.
-8. `AutomatedJournalIntakeRunner` sees an empty `BlockedPositions` and, in one transaction, persists
-   the drafts and commits the run's assessments.
+8. `AutomatedJournalIntakeRunner` sees an empty `BlockedPositions` and follows the four-step attempt
+   protocol — **not** one transaction. One PostgreSQL transaction writes the assessments and
+   `prepared_draft_payload` and advances the attempt to `Assessed`; the file-backed draft store write
+   follows, then `DraftsRetained`, then `Complete`. The two cannot share a transaction:
+   `IManualJournalEntryDraftStore` is bound to `FileManualJournalEntryDraftStore`
+   (`WorkstationServiceCollectionExtensions.cs:807-809`) while assessments are PostgreSQL-backed, and
+   neither API accepts an ambient one. This step said "in one transaction" through the round that
+   established the protocol, which would have had an implementer attempt something the same document
+   proves impossible — and, worse, trust an atomicity guarantee that does not hold.
 
 ### Future-dated mark
 
@@ -2001,6 +2128,11 @@ through their own services rather than inferring them from the schedule state.
 | `TryClaimAsync_AppendsAuditEntryInSameTransaction` | audit cannot be lost from the evidence model |
 | `TryClaimAsync_AuditEntryRecordsActorAndValuationRun` | the trail says *where* the authorisation was used |
 | `TryClaimAsync_SameRunIdAfterAConsumedClaim_ReturnsTheSameOverride` | **per-run idempotency** — a later position blocking must not strand an earlier claim |
+| `TryClaimAsync_SameRunIdAfterARequote_ReturnsNull` | idempotency does **not** exempt the fingerprint check; a retry must not value the new mark under the old approval |
+| `TryClaimAsync_SameRunIdAfterARequote_LeavesTheRowConsumed` | the row was genuinely used; rewriting its terminal state would falsify the audit |
+| `AssessmentStore_ReadByValuationAsync_SkipsAVoidedHighestOrdinalAttempt` | the `Voided` filter is what makes a resurfacing worker's late rows inert |
+| `MarkOverrideRequest_ExpiresOnBeforeToday_ForAHistoricalValuation_IsRejected` | `max(valuationDate, nowUtc.Date)` — an override that reaches the queue already expired wastes the reviewer |
+| `OverrideStateColumn_AcceptsEvidenceSuperseded` | the migration's check constraint must admit all six states |
 | `TryClaimAsync_DifferentRunId_AfterConsumption_ReturnsNull` | the one-shot guarantee still holds across runs |
 | `TryClaimAsync_QuoteFingerprintChanged_ReturnsNullAndAuditsEvidenceChanged` | an approval is of a mark, not a slot |
 | `TryClaimAsync_ExpiredApprovedRow_IsTransitionedToExpiredAndAudited` | expiry is a transition, not a filter |
@@ -2041,6 +2173,14 @@ through their own services rather than inferring them from the schedule state.
 | `VoidAttempt_ReleasesTheSlotForANewAttempt` | the whole point: the partial unique index admits a fresh attempt afterwards |
 | `VoidAttempt_DoesNotReleaseConsumedOverrides` | a one-shot authorisation must not be silently re-armed |
 | `VoidAttempt_CrossTenantRunId_Is404` | not `403`; the route must not confirm someone else's run id exists |
+| `ManualDraftSave_CarryingAValuationRunId_IsRejected` | the field is server-owned; a client must not be able to attach one |
+| `PostingGuard_RunIdNamingAnAttemptThatDidNotRetainThisDraft_IsRefused` | **verified, not trusted** — the guard checks the attempt-to-draft association before reading assessments |
+| `LegacyDraftResolve_ReassociateWithABlockingAttempt_Is422` | re-association attaches evidence, it cannot manufacture it |
+| `LegacyDraftResolve_ReassociateWithAnotherBooksAttempt_Is409` | book and valuation date must match |
+| `LegacyDraftResolve_NullRunId_DiscardsAndAudits` | the discard branch, since these drafts have no attempt to void |
+| `PreviewRoutes_CrossTenantLedgerBook_AreRejected` | the rollout preview enumerates schedules, so the filter belongs at the source |
+| `RolloutPreview_CountsOnlyTheCallersTenant` | the Phase 2 gate is decided on this number |
+| `OverrideRoutes_SerializeEnumsAsNames` | a numeric enum on this boundary renders as `3` in the reviewer queue rather than failing loudly |
 | `MarkOverrideRequest_EvidenceAndObservationDateComeFromTheResolvedQuote` | the endpoint cannot assert which mark it is overriding |
 | `MarkOverrideRequest_PositionWithNoBlockingAssessment_Is422` | nothing to override is not a silent success |
 | `MarkOverrideRequest_CurrentlyStaleButNeverBlockedValuation_Is422` | **the store read, not just the fresh assessment** — "stale today" is not "an unresolved case exists to override" |
@@ -2176,6 +2316,11 @@ enrich a queue that by then exists rather than being what makes one exist.
       attempt protocol whose sole recovery path does not exist.
 - [ ] Add nullable `ValuationRunId` to `ManualJournalEntryDraftDto` and the prepared-draft intake
       request, and the fail-closed classification rule for legacy fair-value drafts that have none.
+      The field is **server-owned**: written only by automated intake, rejected on manual saves,
+      immutable once set, and the posting guard verifies the attempt actually retained this draft
+      before reading its assessments — otherwise the guard's own input becomes the bypass.
+- [ ] Add `ResolveLegacyValuationDraftAsync` and its route, so the pre-change approved fair-value
+      drafts the guard now refuses have a supported remedy instead of being stranded.
 - [ ] **Minimal remediation surface, moved forward from Phase 4:** append `ReviewRequired = 8`,
       replace the null-projection guard with the documented precedence, and add `BlockedMarks`
       beside the existing `Blockers` on the schedule-status contract, projecting freshness blockers
@@ -2264,6 +2409,13 @@ escape hatch has not shipped yet — it is also why the Phase 1 preview gate mat
       the documented severity/age/symbol ordering, with `IsBlocking` the single aggregate field.
 - [ ] Add `MarkFreshnessRef` to the three read models **with their producer joins**; decide the
       `WorkstationTradingPositionRow` question; update the TS mirror.
+- [ ] **`PortfolioPositionSummary` is gated on open question 6, not on this phase's effort.** Its
+      join needs `LedgerBookId` and a strategy-run snapshot carries none, so the mapping contract has
+      to be settled *before* this phase starts. If it is unresolved when Phase 4 opens, that one
+      surface drops out of the populated-freshness requirement and renders an honest null, and the
+      phase does not claim criterion 4 for it. Shipping it anyway means guessing a book, and a
+      guessed book attaches one book's verdict to another book's position — a wrong freshness
+      verdict on a real position is worse than a blank, because it reads as verified.
 - [ ] Write the scheduler, producer, and both-lane UI tests.
 
 **Every surface the modified contracts reach, not just two.** Criterion 4 asks for freshness
