@@ -211,9 +211,9 @@ FIELD_TYPES: dict[str, tuple[type, ...]] = {
     "background": (bool,),
     "maxTurns": (int,),
     "skills": (str, list),
-    # A server name referencing an already-configured server, or an inline definition
-    # keyed by server name - so a list of strings or a mapping, never a bare scalar.
-    "mcpServers": (list, dict),
+    # A sequence whose members are a server name or a one-key inline definition. Not a
+    # top-level mapping: that is the `.mcp.json` shape, not the frontmatter one.
+    "mcpServers": (list,),
     "hooks": (dict,),
 }
 
@@ -461,6 +461,39 @@ def _is_cancelled_by(allowed: str, denied: Sequence[str]) -> bool:
 COMMAND_SCOPED_TOOLS = frozenset({"Bash", "PowerShell"})
 
 
+def _scope_flags(head: str) -> int:
+    """Regex flags for a scope comparison.
+
+    PowerShell matching is case-insensitive per the permission reference, and it "uses the
+    same shape as Bash rules". Bash commands are case-sensitive, so only the PowerShell
+    side relaxes. Alias canonicalisation - `PowerShell(Get-ChildItem *)` also matching
+    `gci`, `ls`, `dir` - is deliberately **not** reproduced here: guessing at the host's
+    alias table would create false cancellations, which is the more damaging error for a
+    check whose whole job is deciding whether a grant survives.
+    """
+    return re.DOTALL | (re.IGNORECASE if head == "PowerShell" else 0)
+
+
+def _normalize_scope(head: str, scope: str) -> str:
+    """Put a scope into the one spelling the matcher compares against.
+
+    Applied to **both** sides. Normalising only the deny left mixed spellings uncovered in
+    one direction: `disallowedTools: Bash(git *)` did not cancel `tools: Bash(git:*)`,
+    because the deny regex was matched against the raw allow text.
+    """
+    scope = scope.strip()
+    if head in COMMAND_SCOPED_TOOLS:
+        # `command:*` is an equivalent trailing wildcard on both shell tools.
+        if scope.endswith(":*"):
+            return scope[:-2].rstrip() + " *"
+        return scope
+    # Parameter scopes: "Whitespace around the colon is ignored".
+    parameter, separator, value = scope.partition(":")
+    if separator:
+        return f"{parameter.strip()}:{value.strip()}"
+    return scope
+
+
 def _glob_to_regex(pattern: str) -> str:
     """Expand `*` wildcards, escaping everything else. Any number, at any position."""
     return "".join(
@@ -472,27 +505,35 @@ def _glob_to_regex(pattern: str) -> str:
 def _declared_mcp_servers(value: object) -> tuple[set[str], list[str]]:
     """Server names an agent declares, plus any malformed entries.
 
-    `mcpServers` is "either a server name referencing an already-configured server (e.g.
-    `"slack"`) or an inline definition with the server name as key". So a list yields its
-    string members, a mapping yields its keys, and anything else in a list - `- 123`, a
-    nested list - is malformed and reported rather than silently treated as a declaration.
+    The documented shape is a **sequence** whose members are either a server name or a
+    one-key inline definition:
+
+        mcpServers:
+          - playwright:
+              type: stdio
+          - github
+
+    A top-level mapping is rejected rather than read as a set of declarations. It looks
+    plausible because that is the `.mcp.json` shape, but the subagent frontmatter uses the
+    list form - and accepting it here would let a definition the host cannot use suppress
+    the MCP-only empty-grant guard, which is the one thing this exemption must not do.
     """
-    if isinstance(value, dict):
-        return {str(key) for key in value if isinstance(key, str)}, [
-            repr(key) for key in value if not isinstance(key, str)
-        ]
-    if isinstance(value, list):
-        names: set[str] = set()
-        malformed: list[str] = []
-        for item in value:
-            if isinstance(item, str) and item.strip():
-                names.add(item.strip())
-            elif isinstance(item, dict):
-                names.update(str(key) for key in item if isinstance(key, str))
+    if not isinstance(value, list):
+        return set(), []
+    names: set[str] = set()
+    malformed: list[str] = []
+    for item in value:
+        if isinstance(item, str) and item.strip():
+            names.add(item.strip())
+        elif isinstance(item, dict) and len(item) == 1:
+            key = next(iter(item))
+            if isinstance(key, str) and key.strip():
+                names.add(key.strip())
             else:
-                malformed.append(repr(item))
-        return names, malformed
-    return set(), []
+                malformed.append(repr(key))
+        else:
+            malformed.append(repr(item))
+    return names, malformed
 
 
 def _domain_covers(deny_value: str, allow_value: str) -> bool:
@@ -538,17 +579,16 @@ def _scope_regex(head: str, scope: str) -> re.Pattern[str]:
     Both trailing forms carry a word boundary: `Bash(ls *)` matches `ls -la` but not
     `lsof`, while `Bash(ls*)` without the space matches both.
     """
-    if head in COMMAND_SCOPED_TOOLS and scope.endswith(":*"):
-        scope = scope[:-2].rstrip() + " *"
+    scope = _normalize_scope(head, scope)
 
     if scope.endswith(" *"):
         # Word-bounded: the prefix alone, or the prefix followed by whitespace. The prefix
         # is still glob-expanded - `Bash(* --help *)` carries an internal wildcard as well
         # as the trailing one, and escaping the whole prefix literally made that pattern
         # match nothing.
-        return re.compile(_glob_to_regex(scope[:-2].rstrip()) + r"(?:\s.*)?\Z", re.DOTALL)
+        return re.compile(_glob_to_regex(scope[:-2].rstrip()) + r"(?:\s.*)?\Z", _scope_flags(head))
 
-    return re.compile(_glob_to_regex(scope) + r"\Z", re.DOTALL)
+    return re.compile(_glob_to_regex(scope) + r"\Z", _scope_flags(head))
 
 
 def _scope_covers(head: str, deny_scope: str, allow_scope: str) -> bool:
@@ -561,6 +601,7 @@ def _scope_covers(head: str, deny_scope: str, allow_scope: str) -> bool:
     """
     if deny_scope == allow_scope:
         return True
+    allow_scope = _normalize_scope(head, allow_scope)
     if (
         head == "WebFetch"
         and deny_scope.startswith("domain:")
@@ -718,7 +759,17 @@ def validate_agent(path: Path) -> list[str]:
         # declared: `tools: Read, mcp__github__*` with `disallowedTools: Read` leaves an
         # MCP entry standing and passed both checks, while a session without that server
         # still resolves nothing.
-        elif not any(entry_head(entry)[0] in KNOWN_TOOLS for entry in surviving):
+        #
+        # The declared-server exemption applies here too. It was added to the per-field
+        # guard only, so `tools: Read, mcp__playwright` with `mcpServers: [playwright]`
+        # and `disallowedTools: Read` failed at this second gate even though the surviving
+        # Playwright tools resolve from the definition - the exemption has to follow the
+        # rule it exempts, to every place that rule is enforced.
+        elif not any(entry_head(entry)[0] in KNOWN_TOOLS for entry in surviving) and not all(
+            entry_head(entry)[0].split("__")[1] in declared_servers
+            for entry in surviving
+            if len(entry_head(entry)[0].split("__")) > 1
+        ):
             errors.append(
                 f"{path.name}: `disallowedTools` removes every built-in from `tools`, "
                 "leaving only MCP entries that resolve to nothing on a session without "

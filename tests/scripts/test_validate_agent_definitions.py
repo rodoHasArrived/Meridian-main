@@ -429,6 +429,100 @@ class ValidateAgentTests(unittest.TestCase):
 
         self.assertEqual([], module.validate_agent(path))
 
+    def test_deny_space_form_cancels_allow_colon_form(self) -> None:
+        # The reverse mixing of the two spellings. Normalising only the deny left this
+        # direction uncovered: the deny regex was matched against raw allow text, so
+        # `Bash(git *)` did not cover `Bash(git:*)`.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(git:*)\ndisallowedTools: Bash(git *)",
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_parameter_scope_ignores_whitespace_around_the_colon(self) -> None:
+        # "Whitespace around the colon is ignored", so `Agent(model: *)` covers
+        # `Agent(model:opus)`. The word-boundary branch was reading the space as part of
+        # a command pattern instead.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            'tools: Agent(model:opus)\ndisallowedTools: "Agent(model: *)"',
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_powershell_scopes_match_case_insensitively(self) -> None:
+        # "Matching is case-insensitive" for PowerShell; Bash is not, so only the shell
+        # that documents the relaxation gets it.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: PowerShell(Get-ChildItem C:/Temp)\n"
+            "disallowedTools: PowerShell(get-childitem *)",
+        )
+
+        errors = module.validate_agent(path)
+
+        self.assertTrue(any("cancels every entry" in error for error in errors), errors)
+
+    def test_bash_scopes_stay_case_sensitive(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Bash(GIT push)\ndisallowedTools: Bash(git *)",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_top_level_mcp_servers_mapping_is_rejected(self) -> None:
+        # The documented shape is a sequence of names or one-key inline definitions. A
+        # top-level mapping is the `.mcp.json` shape, and accepting it would let a
+        # definition the host cannot use suppress the MCP-only guard.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: mcp__slack\nmcpServers:\n  slack:\n    command: slack-mcp",
+        )
+
+        errors = " | ".join(module.validate_agent(path))
+
+        self.assertIn("expected a sequence", errors)
+
+    def test_declared_server_exemption_survives_deny_filtering(self) -> None:
+        # The exemption was added to the per-field guard only, so this reached the
+        # survivor check and failed even though the remaining entry resolves.
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Read, mcp__playwright\nmcpServers:\n  - playwright\n"
+            "disallowedTools: Read",
+        )
+
+        self.assertEqual([], module.validate_agent(path))
+
+    def test_survivor_check_still_rejects_an_undeclared_server(self) -> None:
+        path = write_agent(
+            self.directory,
+            "sample-agent",
+            "name: sample-agent\ndescription: Does a thing.\n"
+            "tools: Read, mcp__github\nmcpServers:\n  - playwright\n"
+            "disallowedTools: Read",
+        )
+
+        self.assertNotEqual([], module.validate_agent(path))
+
     def test_mcp_exemption_is_per_server_not_blanket(self) -> None:
         # Declaring one server must not exempt a grant naming a different one: a session
         # without github still resolves nothing from `tools: mcp__github`.
@@ -448,7 +542,7 @@ class ValidateAgentTests(unittest.TestCase):
             self.directory,
             "sample-agent",
             "name: sample-agent\ndescription: Does a thing.\n"
-            "tools: mcp__slack\nmcpServers:\n  slack:\n    command: slack-mcp",
+            "tools: mcp__slack\nmcpServers:\n  - slack:\n      command: slack-mcp",
         )
 
         self.assertEqual([], module.validate_agent(path))
@@ -757,7 +851,8 @@ class ValidateAgentTests(unittest.TestCase):
             ("maxTurns: true", True),  # bool is a subclass of int; must not satisfy it
             ("maxTurns: many", True),
             ("mcpServers:\n  - slack", False),
-            ("mcpServers:\n  slack:\n    command: slack-mcp", False),
+            ("mcpServers:\n  - slack:\n      command: slack-mcp", False),
+            ("mcpServers:\n  slack:\n    command: slack-mcp", True),  # top-level map
             ("mcpServers: slack", True),  # a bare scalar is neither list nor mapping
             ("effort: high", False),
             ("initialPrompt: Start by reading the register.", False),
