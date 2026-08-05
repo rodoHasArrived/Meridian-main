@@ -64,6 +64,10 @@ rationale, not as the current backlog.
   normalizes, validates, and serializes bracket/OCO/OTO (and multi-leg) order classes. Idea 11's
   cleanup is scoped to the `OrderLifecycleManager` last-write-wins cache only — do not remove
   advertised Alpaca order-class functionality.
+- The alerting registries were never unmapped from each other: `SloDefinitionRegistry` names
+  each SLO's alert rule and runbook section, `AlertRunbookRegistry` maps back, and a consistency
+  test asserts the pairing. Idea 2's gap is narrowed to runtime activation — DI registration,
+  an evaluation loop, and delivery — not mapping.
 
 **Landed since the snapshot (accurate then, superseded now):**
 
@@ -78,8 +82,11 @@ rationale, not as the current backlog.
   is gone from the Trading endpoint. Remaining at review time: the `Var95: "—"` placeholder, a
   `RecentOrderRate`-fed order-rate context, and residual rail polish — re-survey before
   implementing.
-- **Idea 10 is now `W10-MARK-001`**, rank 1 of the W10 depth slate; the `W10-RECON` rows cover
-  idea 5's territory (break lineage identity, clustering and bulk resolution, tolerance
+- **Idea 10 is now `W10-MARK-001`**, rank 1 of the W10 depth slate, and its no-mark display
+  premise has since improved: the Trading endpoint renders `MarkPrice`/`Exposure` as dashes and
+  preserves the position's own `UnrealizedPnl` when no live mark exists. Mark-source and
+  freshness metadata remain unthreaded — that is the row's substance. The `W10-RECON` rows
+  cover idea 5's territory (break lineage identity, clustering and bulk resolution, tolerance
   what-if replay, operator-taught match rules).
 
 ---
@@ -109,10 +116,13 @@ controls which do not exist in code:
   that did not exist in code — next to a literal `Var95: "—"`. (Since landed: the hardcoded
   copy is gone; the `Var95: "—"` placeholder remains.)
 - Three well-designed alerting registries (`IAlertDispatcher`, `AlertRunbookRegistry`,
-  `SloDefinitionRegistry` with error budgets) are **never registered in DI, never connected to
-  each other, and never connected to delivery**.
-- Portfolio marks silently fall back to `AverageCostBasis` when no live mark exists, reporting
-  `0` unrealized P&L instead of flagging a stale mark.
+  `SloDefinitionRegistry` with error budgets) are statically cross-mapped — each SLO names its
+  alert rule and runbook section, with a consistency test — but **never registered in DI, with
+  no evaluation loop and no delivery path**: the mapping exists, the runtime wiring does not.
+- At survey time, portfolio marks silently fell back to `AverageCostBasis` when no live mark
+  existed. (Since changed: the no-mark path now renders `MarkPrice` and `Exposure` as dashes
+  and preserves the position's own `UnrealizedPnl`; an aggregate-path cost-basis fallback
+  remains, and no surface threads mark-source or freshness metadata — the `W10-MARK-001` gap.)
 
 Deepening, for this codebase, mostly means **making existing declarations true** — which is also
 exactly the truthful-posture direction `W9-TRUTH-001` set. That makes these ideas unusually
@@ -199,9 +209,11 @@ the engine those rules deserve, and neither blocks the other.
 The monitoring layer contains an `IAlertDispatcher` with filtered subscriptions and statistics
 (`src/Meridian.Core/Monitoring/Core/`, impl in `src/Meridian.Platform/Monitoring/Core/`), an
 `AlertRunbookRegistry` mapping alerts to probable causes and actions, and an
-`SloDefinitionRegistry` with targets, windows, and error budgets. None of the three is
-registered in DI; nothing evaluates metrics against the SLO definitions; the dispatcher never
-reaches the one delivery implementation that exists (`DailySummaryWebhook`, which already
+`SloDefinitionRegistry` with targets, windows, and error budgets. The static mapping between
+them already exists and is consistency-tested — each SLO names its alert rule and runbook
+section — so the work here is runtime activation, not mapping. None of the three is registered
+in DI; nothing evaluates metrics against the SLO definitions; the dispatcher never reaches the
+one delivery implementation that exists (`DailySummaryWebhook`, which already
 formats Slack/Discord/Teams payloads). A *second*, unrelated alert stack — the 608-line static
 `AlertService` in `Meridian.Ui.Services` with dedup, snooze, suppression, and playbooks — is
 WPF-only. Two `AlertSeverity` enums, two histories, zero connection.
@@ -499,12 +511,18 @@ and typed SLA metadata); this is about *scheduling and closing the loop*, not pr
 
 ### 10. Honest marks — provenance and staleness on every position surface
 
-`WorkstationEndpoints.Trading.cs` falls back to `AverageCostBasis` when no live mark exists —
-silently reporting zero unrealized P&L as if it were information. The ledger side already has
-`StalePricePolicy` and `FairValueLevel`; the portfolio surfaces have neither. This is the
-smallest idea in the session and arguably the most brand-critical: a fund-ops platform whose
-position screen can quietly show cost basis as a mark has a truth problem on its most-viewed
-number.
+> **Status 2026-08-05:** roadmapped as `W10-MARK-001` (rank 1 of the W10 depth slate). The
+> no-mark display path has since improved — dashes instead of a silent cost-basis mark — but
+> mark-source and freshness metadata remain unthreaded, which is this idea's substance.
+
+At survey time, `WorkstationEndpoints.Trading.cs` fell back to `AverageCostBasis` when no live
+mark existed. The display path has since been made more honest (the no-mark case renders
+`MarkPrice` and `Exposure` as dashes and preserves the position's own `UnrealizedPnl`), but an
+aggregate-path cost-basis fallback remains, and no surface tells the operator *where a mark
+came from or how old it is*. The ledger side already has `StalePricePolicy` and
+`FairValueLevel`; the portfolio surfaces have neither. This is the smallest idea in the session
+and arguably the most brand-critical: a fund-ops platform whose position screen cannot answer
+"is this mark fresh?" has a truth problem on its most-viewed number.
 
 **What to build.** A mark-provenance field on every position read model: source (live tick /
 official close / carried-forward / **cost-basis fallback**), as-of timestamp, and staleness
