@@ -429,6 +429,34 @@ python3 check-ai-inventory.py \
   --json-output docs/status/ai-inventory-report.json
 ```
 
+### validate-agent-definitions.py
+
+Validates every Claude agent definition under `.claude/agents/` (recursively) against the host's
+tool vocabulary and frontmatter schema. It exists because a declaration naming tools the host
+cannot resolve does not produce a *reduced* grant but an **empty** one — the host refuses to launch
+the subagent — and until 2026-08 all thirteen definitions were in exactly that state with no check
+opening them.
+
+Per file it verifies that the frontmatter parses with no duplicate keys, that `name` matches the
+filename, that `description` is present and non-empty, that every frontmatter key is one the host
+supports and carries a value of the right shape, and that every `tools` / `disallowedTools` entry
+resolves to a known built-in or a valid `mcp__<server>` pattern. Parenthesised scopes such as
+`Bash(git diff:*)` are supported.
+
+The checks fail closed by design: a YAML sequence, an empty or punctuation-only value, an
+MCP-only allow-list, a misspelled permission key, an unterminated scalar, and a missing or empty
+agent directory are all errors rather than silent passes. The validator requires PyYAML at runtime.
+Before running the commands below, install it with
+`python3 -m pip install --requirement build/scripts/docs/requirements.txt`.
+
+```bash
+python3 build/scripts/docs/validate-agent-definitions.py
+python3 -m unittest tests/scripts/test_validate_agent_definitions.py
+```
+
+Runs in the `verify_docs` lane of `scripts/ci.sh` and in the docs-automation profiles that include
+`validate-docs-structure`.
+
 ### check-ai-handoff.py
 
 Checks that required host-level AI guidance references shared orchestration guidance:
