@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   ONBOARDING_TOUR_STEPS,
+  ONBOARDING_JOURNEYS,
   buildOnboardingTourViewModel,
   resolveVisitedStepId
 } from "./app-shell.onboarding";
@@ -12,6 +13,7 @@ import {
   emptyOnboardingState,
   readOnboardingState,
   withCompletedStep,
+  withSelectedOnboardingJourney,
   writeOnboardingState,
   type OnboardingState
 } from "@/lib/onboarding";
@@ -29,7 +31,7 @@ describe("onboarding persistence", () => {
   beforeEach(() => localStorage.clear());
 
   it("returns an empty state when nothing is stored", () => {
-    expect(readOnboardingState()).toEqual({ version: 1, completedStepIds: [], dismissed: false });
+    expect(readOnboardingState()).toEqual({ version: 1, journeyId: "financial-operations", completedStepIds: [], dismissed: false });
   });
 
   it("round-trips and normalizes stored state", () => {
@@ -49,13 +51,20 @@ describe("onboarding persistence", () => {
     expect(withCompletedStep(base, "quote")).toBe(base);
     expect(withCompletedStep(base, "backtest").completedStepIds).toEqual(["quote", "backtest"]);
   });
+
+  it("selects a task journey without discarding progress", () => {
+    const base = state({ completedStepIds: ["financial-operations:import"] });
+    const next = withSelectedOnboardingJourney(base, "administration");
+    expect(next.journeyId).toBe("administration");
+    expect(next.completedStepIds).toEqual(base.completedStepIds);
+  });
 });
 
 describe("buildOnboardingTourViewModel", () => {
   it("marks the first incomplete step active and reports progress", () => {
     const vm = buildOnboardingTourViewModel({
-      pathname: "/data/quotes",
-      state: state({ completedStepIds: ["quote"] })
+      state: state({ completedStepIds: ["financial-operations:import"] }),
+      pathname: "/accounting/statement-import"
     });
     expect(vm.visible).toBe(true);
     expect(vm.completedCount).toBe(1);
@@ -64,7 +73,7 @@ describe("buildOnboardingTourViewModel", () => {
     expect(vm.steps[0].status).toBe("complete");
     expect(vm.steps[1].status).toBe("active");
     expect(vm.steps[2].status).toBe("upcoming");
-    expect(vm.steps.find((s) => s.id === "quote")?.isCurrentRoute).toBe(true);
+    expect(vm.steps.find((s) => s.id === "financial-operations:import")?.isCurrentRoute).toBe(true);
   });
 
   it("hides once every step is complete", () => {
@@ -84,8 +93,9 @@ describe("buildOnboardingTourViewModel", () => {
   });
 
   it("resolves the visited step id from a route, ignoring trailing slashes", () => {
-    expect(resolveVisitedStepId("/data/quotes")).toBe("quote");
-    expect(resolveVisitedStepId("/accounting/ledger/")).toBe("ledger");
+    expect(resolveVisitedStepId("/accounting/statement-import")).toBe("financial-operations:import");
+    expect(resolveVisitedStepId("/accounting/ledger/")).toBe("financial-operations:validate");
+    expect(resolveVisitedStepId("/data/quotes", "trading-portfolio")).toBe("trading-portfolio:quotes");
     expect(resolveVisitedStepId("/nowhere")).toBeNull();
   });
 });
@@ -116,11 +126,23 @@ describe("onboarding tour rendering", () => {
 
   it("auto-completes a step when its route is visited", async () => {
     const user = userEvent.setup();
-    render(<Harness initial="/data/quotes" />);
-    await waitFor(() => expect(readOnboardingState().completedStepIds).toContain("quote"));
+    render(<Harness initial="/accounting/statement-import" />);
+    await waitFor(() => expect(readOnboardingState().completedStepIds).toContain("financial-operations:import"));
     // Progress is visible once the operator opens the coach mark from the ring.
     await user.click(screen.getByRole("button", { name: /Getting started/ }));
     expect(screen.getByText(`1 / ${ONBOARDING_TOUR_STEPS.length} steps complete`)).toBeInTheDocument();
+  });
+
+  it("switches to a role-relevant journey and updates its guidance", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial="/somewhere" />);
+    await user.click(screen.getByRole("button", { name: /Getting started/ }));
+
+    await user.selectOptions(screen.getByLabelText("Choose your task journey"), "administration");
+
+    expect(screen.getByText(ONBOARDING_JOURNEYS.find((journey) => journey.id === "administration")!.description))
+      .toBeInTheDocument();
+    expect(readOnboardingState().journeyId).toBe("administration");
   });
 
   it("stays docked to the header ring until the operator opens it", () => {

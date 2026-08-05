@@ -177,7 +177,7 @@
   border-radius: var(--radius-chip, 2px);
   color: #8A929B;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -258,7 +258,7 @@
   background: #0F1216;
   color: #AEB7C0;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   text-decoration: none;
   white-space: normal;
 }
