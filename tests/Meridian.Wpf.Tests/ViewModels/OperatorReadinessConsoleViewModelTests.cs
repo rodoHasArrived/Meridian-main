@@ -461,6 +461,26 @@ public sealed class OperatorReadinessConsoleViewModelTests
     }
 
     [Fact]
+    public void ResolveWorkItemPageTag_KindBoundCatalogActionOutranksCatalogRouteLanding()
+    {
+        var item = new OperatorWorkItemDto(
+            WorkItemId: "wi-replay",
+            Kind: OperatorWorkItemKindDto.PaperReplay,
+            Label: "Verify replay",
+            Detail: "Replay verification is stale.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-08-05T05:00:00Z"),
+            Workspace: "Trading",
+            TargetRoute: Meridian.Contracts.Api.UiApiRoutes.WorkstationTradingReadiness,
+            TargetPageTag: "TradingShell");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered, new FakeWorkflowActionCatalog())
+            .Should().Be(
+                "FundAuditTrail",
+                "a replay item keeps the replay-evidence surface even though it carries the generic trading-readiness route");
+    }
+
+    [Fact]
     public void ResolveWorkItemPageTag_HonorsTargetRouteBeforeKindFallback()
     {
         var item = CreateWorkItem(
@@ -816,9 +836,20 @@ public sealed class OperatorReadinessConsoleViewModelTests
             RouteContains: [],
             Aliases: []);
 
+        private static readonly WorkflowActionDto ReplayEvidenceAction = new(
+            ActionId: "accounting.review-audit-trail",
+            Label: "Review Audit Trail",
+            Detail: "Inspect approvals, replay evidence, and trust-gate audit history.",
+            TargetPageTag: "FundAuditTrail",
+            Tone: "Primary",
+            WorkItemKind: OperatorWorkItemKindDto.PaperReplay,
+            RoutePrefixes: [],
+            RouteContains: [],
+            Aliases: []);
+
         public IReadOnlyList<WorkflowDefinitionDto> GetWorkflowDefinitions() => [];
 
-        public IReadOnlyList<WorkflowActionDto> GetActions() => [ReadinessAction];
+        public IReadOnlyList<WorkflowActionDto> GetActions() => [ReadinessAction, ReplayEvidenceAction];
 
         public WorkflowActionDto? ResolveAction(string? actionId)
             => actionId == ReadinessAction.ActionId ? ReadinessAction : null;

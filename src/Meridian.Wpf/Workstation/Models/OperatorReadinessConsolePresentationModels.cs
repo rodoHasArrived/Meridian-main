@@ -400,7 +400,10 @@ public static class OperatorReadinessConsoleMapper
         // The shared workflow catalog resolves first, mirroring the main shell's inbox chain: its
         // answer is the workflow's deliberate entry surface, so it is never demoted as coarse —
         // e.g. a routed DK1 trust item lands on the trading readiness surface, not audit history.
-        var catalogTag = workflowActionCatalog?.ResolveOperatorWorkItem(item)?.TargetPageTag;
+        // A kind-bound catalog action outranks the catalog's route landing: replay items keep the
+        // replay-evidence surface even though they carry the generic trading-readiness route (the
+        // browser makes the same exception by ignoring shared targets for PaperReplay).
+        var catalogTag = ResolveCatalogPageTag(item, workflowActionCatalog);
         if (!string.IsNullOrWhiteSpace(catalogTag) && isRegisteredPageTag(catalogTag))
         {
             return catalogTag;
@@ -541,6 +544,20 @@ public static class OperatorReadinessConsoleMapper
         }
 
         return candidate.CreatedAt >= existing.CreatedAt;
+    }
+
+    private static string? ResolveCatalogPageTag(
+        OperatorWorkItemDto item,
+        Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog)
+    {
+        if (workflowActionCatalog is null)
+        {
+            return null;
+        }
+
+        var kindAction = workflowActionCatalog.GetActions()
+            .FirstOrDefault(action => action.WorkItemKind == item.Kind);
+        return kindAction?.TargetPageTag ?? workflowActionCatalog.ResolveOperatorWorkItem(item)?.TargetPageTag;
     }
 
     private static int TonePriority(OperatorWorkItemToneDto tone)
