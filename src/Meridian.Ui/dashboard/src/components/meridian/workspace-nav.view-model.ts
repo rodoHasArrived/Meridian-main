@@ -59,6 +59,8 @@ export interface WorkspaceNavCurrentWorkspaceViewModel {
 }
 
 export interface WorkspaceNavViewModel {
+  isHome: boolean;
+  activeWorkspaceKey: WorkspaceKey | null;
   brandTitle: string;
   brandSubtitle: string;
   modelEyebrow: string;
@@ -142,13 +144,14 @@ export function buildWorkspaceNavViewModel(
   search = "",
   operatingContextScope: AppShellOperatingScopeInput | null = null
 ): WorkspaceNavViewModel {
+  const isHome = pathname === "/";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const currentWorkspace =
     visibleWorkspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? visibleWorkspaces[0];
   const operatingScope = buildOperatingScopeFromSearch(search, operatingContextScope);
 
   const items = visibleWorkspaces.map<WorkspaceNavItemViewModel>((workspace) => {
-    const active = isWorkspacePathActive(pathname, workspace.key);
+    const active = !isHome && isWorkspacePathActive(pathname, workspace.key);
     const maturityTone = workspaceMaturityTone(workspace.maturity);
     const workspaceCanonicalRoute = workspacePath(workspace.key);
     const exactWorkspaceActive = isExactRouteActive(pathname, workspaceCanonicalRoute);
@@ -211,6 +214,8 @@ export function buildWorkspaceNavViewModel(
   const contextItems = buildContextItems(pathname, currentWorkspace.key, operatingScope, search);
 
   return {
+    isHome,
+    activeWorkspaceKey: isHome ? null : currentWorkspace.key,
     brandTitle: "Meridian",
     brandSubtitle: "Operator Workstation",
     modelEyebrow: "Operating model",
