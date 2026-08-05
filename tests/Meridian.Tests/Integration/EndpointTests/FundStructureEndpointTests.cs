@@ -27,19 +27,18 @@ namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class FundStructureEndpointTests : IClassFixture<EndpointTestFixture>
+public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndpointTestFixture>
 {
     private const string TestPassHash = "pbkdf2-sha256$210000$DdocJLRlUqhBZlBR8YAatA==$MpNJJHhFb6+it6jMKuIzwHtg9Lq/WehIjKrC1m6TRQU=";
 
-    private readonly EndpointTestFixture _fixture;
+    private readonly FundStructureEndpointTestFixture _fixture;
     private readonly HttpClient _client;
 
-    public FundStructureEndpointTests(EndpointTestFixture fixture)
+    public FundStructureEndpointTests(FundStructureEndpointTestFixture fixture)
     {
         _fixture = fixture;
         _client = fixture.Client;
     }
-
 
     [Fact]
     public async Task SetupDraftValidate_WithMissingFields_ReturnsSharedValidationSummary()

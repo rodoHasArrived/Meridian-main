@@ -215,27 +215,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _configureTestServices?.Invoke(builder.Services);
 
         _app = builder.Build();
-        if (LedgerStartup.IsConfigured())
-        {
-            // AddUiSharedServices selects the PostgreSQL ledger adapter when the hosted
-            // certification lane publishes a database URL, but this direct TestServer host does
-            // not pass through HostStartup's database-readiness phase. Migrate the fixture-owned
-            // schema before workspace endpoints can resolve the ledger store.
-            await LedgerStartup
-                .EnsureDatabaseReadyAsync(_app.Services)
-                .ConfigureAwait(false);
-        }
-
-        if (FundAccountsStartup.IsConfigured())
-        {
-            // AddUiSharedServices selects the PostgreSQL fund-account adapter when the hosted
-            // certification lane publishes a database URL, but this direct TestServer host does
-            // not pass through HostStartup's database-readiness phase. Migrate the fixture-owned
-            // schema before any endpoint test can resolve the adapter.
-            await FundAccountsStartup
-                .EnsureDatabaseReadyAsync(_app.Services)
-                .ConfigureAwait(false);
-        }
+        await EnsureDatabaseSchemasReadyAsync(_app.Services).ConfigureAwait(false);
 
         // Mirror the production UiServer pipeline order: session auth first so the API-key
         // gate can exempt session-authenticated browser requests. The X-Test-Auth marker
@@ -441,6 +421,21 @@ public sealed class EndpointTestFixture : IAsyncLifetime
             "MERIDIAN_MONEY_MARKET_CONNECTION_STRING",
             "MERIDIAN_MONEY_MARKET_SCHEMA",
             "endpoint_money_market").ConfigureAwait(false);
+    }
+
+    private static async Task EnsureDatabaseSchemasReadyAsync(IServiceProvider services)
+    {
+        // A direct TestServer host does not run HostStartup's database-initialization hosted
+        // service. Mirror its production order so every PostgreSQL adapter selected by
+        // AddUiSharedServices uses a migrated fixture-owned schema.
+        await LedgerStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
+        await SecurityMasterStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
+        await DirectLendingStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
+        await AssetOperationsStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
+        await FundAccountsStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
+        await FundStructureStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
+        await BankingStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
+        await MoneyMarketStartup.EnsureDatabaseReadyAsync(services).ConfigureAwait(false);
     }
 
     private async Task AddDatabaseSchemaScopeAsync(
