@@ -397,31 +397,35 @@ public static class OperatorReadinessConsoleMapper
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(isRegisteredPageTag);
 
-        // The shared workflow catalog resolves first, mirroring the main shell's inbox chain: its
-        // answer is the workflow's deliberate entry surface, so it is never demoted as coarse —
-        // e.g. a routed DK1 trust item lands on the trading readiness surface, not audit history.
-        // A kind-bound catalog action outranks the catalog's route landing: replay items keep the
-        // replay-evidence surface even though they carry the generic trading-readiness route (the
-        // browser makes the same exception by ignoring shared targets for PaperReplay).
-        var catalogTag = ResolveCatalogPageTag(item, workflowActionCatalog);
-        if (!string.IsNullOrWhiteSpace(catalogTag) && isRegisteredPageTag(catalogTag))
-        {
-            return catalogTag;
-        }
+        // Replay items ignore shared targets, routes, and catalog landings entirely — the browser
+        // trading view makes the same kind-specific exception — so they always reach the
+        // replay-evidence surface through the kind fallback instead of a generic shell landing.
+        var isReplayItem = item.Kind == OperatorWorkItemKindDto.PaperReplay;
 
         var hasRegisteredTarget = !string.IsNullOrWhiteSpace(item.TargetPageTag) && isRegisteredPageTag(item.TargetPageTag);
-        if (hasRegisteredTarget && !CoarseWorkspaceShellTags.Contains(item.TargetPageTag!))
+        if (!isReplayItem && hasRegisteredTarget && !CoarseWorkspaceShellTags.Contains(item.TargetPageTag!))
         {
             return item.TargetPageTag!;
         }
 
-        // An account/route-scoped TargetRoute names the recovery workflow more precisely than the
-        // item's kind; the shared route map keeps this console and the main shell's inbox landing
-        // on the same page for the same item.
-        var routeTag = Services.OperatorInboxRouteMap.ResolvePageTag(item.TargetRoute);
-        if (routeTag is not null && !CoarseWorkspaceShellTags.Contains(routeTag) && isRegisteredPageTag(routeTag))
+        // Route resolution comes before kind fallbacks (the browser is route-first): the shared
+        // workflow catalog first — its answer is the workflow's deliberate entry surface and is
+        // never demoted as coarse, e.g. a routed DK1 trust item lands on the trading readiness
+        // surface — then the desktop route map for routes the catalog does not know (such as
+        // settings provider-setup links).
+        if (!isReplayItem)
         {
-            return routeTag;
+            var catalogTag = workflowActionCatalog?.ResolveOperatorWorkItem(item)?.TargetPageTag;
+            if (!string.IsNullOrWhiteSpace(catalogTag) && isRegisteredPageTag(catalogTag))
+            {
+                return catalogTag;
+            }
+
+            var routeTag = Services.OperatorInboxRouteMap.ResolvePageTag(item.TargetRoute);
+            if (routeTag is not null && isRegisteredPageTag(routeTag))
+            {
+                return routeTag;
+            }
         }
 
         // Kind fallbacks mirror the main shell's inbox mapping so both surfaces route identically.
@@ -543,21 +547,15 @@ public static class OperatorReadinessConsoleMapper
             return toneDelta < 0;
         }
 
-        return candidate.CreatedAt >= existing.CreatedAt;
-    }
-
-    private static string? ResolveCatalogPageTag(
-        OperatorWorkItemDto item,
-        Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog)
-    {
-        if (workflowActionCatalog is null)
+        // Same tone: the scored copy wins regardless of recency — the shared inbox is the only
+        // feed that applies PriorityScore, and losing it would demote the row in the score-aware
+        // ordering below. Recency only breaks score ties.
+        if (candidate.PriorityScore != existing.PriorityScore)
         {
-            return null;
+            return candidate.PriorityScore > existing.PriorityScore;
         }
 
-        var kindAction = workflowActionCatalog.GetActions()
-            .FirstOrDefault(action => action.WorkItemKind == item.Kind);
-        return kindAction?.TargetPageTag ?? workflowActionCatalog.ResolveOperatorWorkItem(item)?.TargetPageTag;
+        return candidate.CreatedAt >= existing.CreatedAt;
     }
 
     private static int TonePriority(OperatorWorkItemToneDto tone)

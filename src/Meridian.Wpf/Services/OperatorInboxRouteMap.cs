@@ -18,6 +18,15 @@ public static class OperatorInboxRouteMap
         }
 
         var normalizedRoute = targetRoute.Split('?', 2)[0].TrimEnd('/');
+
+        // Settings provider-setup links (e.g. /settings#alpaca-provider-setup) name the
+        // credential/integration workflow; the desktop's provider configuration page owns it.
+        if (normalizedRoute.StartsWith("/settings", StringComparison.OrdinalIgnoreCase)
+            && normalizedRoute.Contains("provider-setup", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Provider";
+        }
+
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ReconciliationBreakQueue))
         {
             return "FundReconciliation";

@@ -461,7 +461,7 @@ public sealed class OperatorReadinessConsoleViewModelTests
     }
 
     [Fact]
-    public void ResolveWorkItemPageTag_KindBoundCatalogActionOutranksCatalogRouteLanding()
+    public void ResolveWorkItemPageTag_ReplayItemsIgnoreSharedTargetsAndRoutes()
     {
         var item = new OperatorWorkItemDto(
             WorkItemId: "wi-replay",
@@ -477,7 +477,40 @@ public sealed class OperatorReadinessConsoleViewModelTests
         OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered, new FakeWorkflowActionCatalog())
             .Should().Be(
                 "FundAuditTrail",
-                "a replay item keeps the replay-evidence surface even though it carries the generic trading-readiness route");
+                "replay items ignore shared targets and routes (the browser makes the same exception) and keep the replay-evidence surface");
+    }
+
+    [Fact]
+    public void ResolveWorkItemPageTag_SettingsProviderSetupRoute_OpensProviderPage()
+    {
+        var item = CreateWorkItem(
+            "wi-credentials",
+            OperatorWorkItemToneDto.Critical,
+            DateTimeOffset.Parse("2026-08-05T05:00:00Z"),
+            targetRoute: "/settings#alpaca-provider-setup");
+
+        OperatorReadinessConsoleMapper.ResolveWorkItemPageTag(item, IsRegistered).Should().Be(
+            "Provider",
+            "a settings provider-setup link names the credential workflow, not account holdings");
+    }
+
+    [Fact]
+    public void BuildWorkItemRows_SameToneDuplicate_KeepsTheScoredInboxCopy()
+    {
+        var readinessItems = new[]
+        {
+            CreateWorkItem("wi-dupe", OperatorWorkItemToneDto.Warning, DateTimeOffset.Parse("2026-08-05T05:45:00Z"))
+        };
+        var inboxItems = new[]
+        {
+            CreateWorkItem("wi-dupe", OperatorWorkItemToneDto.Warning, DateTimeOffset.Parse("2026-08-05T05:00:00Z"), priorityScore: 90)
+        };
+
+        var rows = OperatorReadinessConsoleMapper.BuildWorkItemRows(inboxItems, readinessItems, IsRegistered);
+
+        rows.Should().ContainSingle()
+            .Which.PriorityScore.Should().Be(
+                90, "a newer unscored readiness copy must not strip the server triage score from the merged row");
     }
 
     [Fact]
