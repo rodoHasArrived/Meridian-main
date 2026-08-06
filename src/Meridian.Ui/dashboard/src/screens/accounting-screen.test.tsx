@@ -1636,11 +1636,11 @@ describe("AccountingScreen", () => {
       }
     });
 
-    const scope = screen.getByRole("group", { name: "Operations control center scope" });
-    expect(scope).toHaveTextContent("Portfolio coverage");
-    expect(scope).toHaveTextContent("all-portfolios, equity");
-    expect(scope).toHaveTextContent("Account coverage");
-    expect(scope).toHaveTextContent("fund-alpha");
+    const controlCenter = screen.getByRole("region", { name: "Operations control center" });
+    expect(within(controlCenter).getByText("Portfolio coverage")).toBeInTheDocument();
+    expect(controlCenter).toHaveTextContent("all-portfolios, equity");
+    expect(within(controlCenter).getByText("Account coverage")).toBeInTheDocument();
+    expect(controlCenter).toHaveTextContent("fund-alpha");
     expect(screen.queryByRole("combobox", { name: /portfolio filter/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: /account filter/i })).not.toBeInTheDocument();
     expect(screen.getByText(/does not present a selector until the service supplies per-scope measures/i)).toBeInTheDocument();
