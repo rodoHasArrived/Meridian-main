@@ -53,31 +53,26 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | report-run-parameters-screen | `Views/AnalysisExportWizardPage.xaml` + Reporting shell | Partial |
 | finance-standard-pages-screen (evidence-detail stub retired per `W8-UX-CONSOL-001`; `/accounting/evidence/detail` redirects into the reporting evidence workbench) | `Views/AnalysisExportPage.xaml` + Reporting shell | Partial |
 | strategy-designer-screen | `Views/QuantScriptPage.xaml` + `Views/BacktestPage.xaml` | Partial — authoring present, no designer canvas |
-| operations-continuity-screen | `Services/OperationsControlCenterClient.cs` (surfaced as a Settings tab) | **Gap-leaning** — no dedicated page |
+| operations-continuity-screen | `Views/OperationsContinuityPage.xaml` + `ViewModels/OperationsContinuityViewModel.cs` (Wave P3, delivered 2026-08-05) | Partial — workflow queue with detail (gates, blockers, checklist, next action), the unified open-item operator queue, and the promoted close-calendar and approval-policy cards ship read-only over the widened `IOperationsControlCenterClient`; approval/close/reopen commands and the dashboard, cockpit, timeline, and reviewed-automation panels remain browser-first |
 | evidence-workbench-screen (canonical mount `/reporting/evidence` per `W8-UX-CONSOL-001`; former `/accounting/evidence` and `/data/evidence` mounts redirect there) | `Views/EvidenceWorkbenchPage.xaml` + `ViewModels/EvidenceWorkbenchViewModel.cs` (Wave P1, delivered 2026-08-05) | Partial — subjects, packet completeness, proof chain, lineage, vault request lists/documents, validate, and manifest export ship over the shared evidence endpoints; document intake and reviewer accept/reject remain browser-first |
 | operator-readiness-console | `Views/OperatorReadinessConsolePage.xaml` + `ViewModels/OperatorReadinessConsoleViewModel.cs` (Wave P2, delivered 2026-08-05) | Partial — cross-lane gates, session/trust/promotion/run/break panels, and the prioritized operator work-item queue ship over the shared readiness, inbox, reconciliation, and run-summary seams; browser-only extras (per-endpoint API source strip, fund-account switcher, next-action hero) remain browser-first |
-| operations-record-release-screen | none (adjacent: `Views/RetentionAssurancePage.xaml`, `Views/ArchiveHealthPage.xaml`) | **Gap** — no record-release / publish-gating page |
+| operations-record-release-screen | `Views/OperationsRecordReleasePage.xaml` + `ViewModels/OperationsRecordReleaseViewModel.cs` (Wave P3, delivered 2026-08-05) | Partial — the six-step release path composes the continuity workflow's gates, accounting-record summary, and close package with the browser's tone-combination gating; the source-data step and reporting recipients/distribution columns remain browser-first |
 | covered-call-screen | `Views/OptionsPage.xaml` (chain viewer only) | **Gap** — no covered-call writing/roll workflow |
 | strategy-formula-workbench (tab of quant-lab-screen at `/strategy/quant-lab?view=formulas`; consolidated per `W8-UX-CONSOL-001`) | `Views/QuantScriptPage.xaml` | Not a gap — the web surface is a placeholder tab inside Quant Lab |
 
 ## True Gaps (ranked by operator centrality)
 
-1. **operations-record-release-screen** — period-close record release / publish gating with readiness
-   and evidence gates. No WPF page. Web source: `screens/operations-record-release-screen.tsx` + `.view-model.ts`.
-2. **operations-continuity-screen** — cross-lane operational continuity / approval-policy /
-   close-calendar. WPF surfaces only a fraction through `OperationsControlCenterClient` as a Settings
-   tab; no dedicated page. Web source: `screens/operations-continuity-screen.tsx` + `.view-model.ts`.
-3. **covered-call-screen** — a staged covered-call income-strategy workflow (chain preview, trade
+1. **covered-call-screen** — a staged covered-call income-strategy workflow (chain preview, trade
    timeline, run history). WPF `OptionsPage` is a read-only chain viewer. Web source:
    `screens/covered-call-screen.tsx` + `.view-model.ts`.
-4. **data-operations-assurance-workstreams** — add Data workspace pages for the browser-first
+2. **data-operations-assurance-workstreams** — add Data workspace pages for the browser-first
    Ingestion Operations Center and Storage & Data Assurance. Consume
    `DataOperationsAssuranceDtos` and the shared workstation endpoints; do not reconstruct job
    transitions, maintenance permissions, preview fingerprints, or assurance summaries in WPF.
-5. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
+3. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
    WPF covers authoring via `QuantScriptPage`/`BacktestPage` but has no designer canvas.
 
-Closed gaps: **evidence-workbench-screen** (Wave P1) and **operator-readiness-console** (Wave P2)
+Closed gaps: **evidence-workbench-screen** (Wave P1), **operator-readiness-console** (Wave P2), and **operations-continuity-screen** + **operations-record-release-screen** (Wave P3)
 shipped 2026-08-05 — see the matrix rows above and the delivery notes under each wave.
 
 ## Closure Sequence
@@ -133,11 +128,31 @@ view model must consume the same shared read model the browser screen consumes.
 
 ### Wave P3 — Operations Continuity + Record Release
 
-- Promote the existing `OperationsControlCenterClient` Settings tab into a dedicated
-  `Views/OperationsContinuityPage.xaml` (Accounting/Reporting) matching `operations-continuity-screen`.
-- Add `Views/OperationsRecordReleasePage.xaml` for close record release / publish gating, reusing the
-  Operations Continuity + report-pack readiness read models.
-- Tests: continuity queue projection; record-release gate blocking.
+**Delivered 2026-08-05.**
+
+- `Views/OperationsContinuityPage.xaml` + `ViewModels/OperationsContinuityViewModel.cs` promote the
+  former Settings "Operations Control" tab into a dedicated accounting page: the continuity workflow
+  queue with selected-workflow detail (gates, blockers, close checklist, and the server-recommended
+  next action picked by gate-status priority), the unified open-item operator queue with its
+  blocked/review/clear rollup, and the promoted close-calendar and approval-policy cards.
+  `IOperationsControlCenterClient` was widened with the workflow list/detail read routes (null on
+  API failure, so an outage never renders as an empty queue).
+- `Views/OperationsRecordReleasePage.xaml` + `ViewModels/OperationsRecordReleaseViewModel.cs` follow
+  the browser record-release screen's six-step release path over the most recently updated
+  continuity workflow, with the browser's tone-combination gating (blocked outranks review outranks
+  neutral outranks ready, and an unknown step keeps the release out of Ready).
+- The `OperationsContinuity` tag was promoted from a `FundLedger` alias to a real page, so the
+  shared inbox route map's continuity entry now lands on the dedicated surface; `OperationsClose`
+  keeps its ledger alias.
+- Tests: `OperationsContinuityViewModelTests` (workflow/queue projection, next-action priority,
+  per-panel degradation) and `OperationsRecordReleaseViewModelTests` (step gating, tone
+  combination, fail-closed accounting record, publication readiness) plus updated shell routing and
+  feature-module tests.
+- Follow-up (tracked, not blocking P3): the continuity mutations (assign/resolve breaks, checklist
+  acknowledge, approval submit/approve/reject, close, governed reopen) and the dashboard, cockpit,
+  timeline, evidence-package, and reviewed-automation panels remain browser-first, as do the
+  record-release source-data step (Data-workspace payload) and the reporting recipients/
+  distribution columns.
 
 ### Wave P4 — Covered Call workflow + partial-parity polish
 

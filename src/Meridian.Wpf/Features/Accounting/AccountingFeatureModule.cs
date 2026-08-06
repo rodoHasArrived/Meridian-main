@@ -289,6 +289,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddTransient<FundLedgerViewModel>();
         services.AddTransient<FinancialRecordExplorerViewModel>();
         services.AddTransient<AccountPortfolioViewModel>();
+        // Null-tolerant factory: the continuity page degrades into explicit per-panel error text
+        // when the shared client is absent from the composition.
+        services.AddTransient(static sp => new OperationsContinuityViewModel(
+            sp.GetService<IOperationsControlCenterClient>()));
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Capability.Pages;
