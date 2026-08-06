@@ -136,6 +136,7 @@ public sealed class OrderManagementSystemReportStreamTests
         // Reading both published fills is the portfolio barrier: each increment is applied before
         // its report is published, so observing the second one means both have landed. Order
         // status is not a barrier: the OMS mutates it before applying the fill.
+
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var first = await oms.ExecutionReports.ReadAsync(readCts.Token);
         var second = await oms.ExecutionReports.ReadAsync(readCts.Token);
@@ -225,6 +226,7 @@ public sealed class OrderManagementSystemReportStreamTests
 
         // The published fill is the portfolio barrier: ProcessFillReportAsync applies the fill
         // and only then writes to the execution-report channel.
+
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
         published.FilledQuantity.Should().Be(30m,
