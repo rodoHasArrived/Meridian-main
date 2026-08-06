@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Application.Composition;
 using Meridian.Contracts.Workstation;
+using Meridian.Core.Scheduling;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Storage.Archival;
@@ -691,6 +692,13 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         {
             throw new InvalidDataException("Reporting schedule is structurally invalid.");
         }
+
+        if (!CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
+            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, TimeZoneInfo.Utc) is null)
+        {
+            throw new InvalidDataException(
+                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or no future UTC occurrence.");
+        }
     }
 
     private static bool HasValidRunParameters(ReportingRunParametersDto? parameters) =>
@@ -1172,13 +1180,7 @@ public sealed partial class ReportingScheduleService
         foreach (var schedule in _store?.Load() ?? [])
         {
             var identity = ReportingScheduleIdentity.From(schedule);
-            if (identity.TenantId.Length > 0
-                && (!HasValidAccessPolicySnapshot(schedule)
-                    || !HasValidScheduledExecutionPrincipal(schedule)))
-            {
-                throw new InvalidDataException(
-                    $"Reporting schedule '{schedule.ScheduleId}' has no valid immutable access-policy or execution-principal snapshot.");
-            }
+            ValidateRetainedSchedule(schedule, identity);
             if (!_schedules.TryAdd(identity, schedule))
             {
                 throw new InvalidDataException(
@@ -1272,6 +1274,8 @@ public sealed partial class ReportingScheduleService
         {
             throw new ArgumentOutOfRangeException(nameof(request), "maxRetries must be zero or greater.");
         }
+
+        ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc);
 
         EnsureTemplateAccess(request.TemplateId, accessContext);
         EnsureBoundContext(accessContext);

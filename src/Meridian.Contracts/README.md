@@ -137,6 +137,10 @@ references that do not name the resolved symbol or Security Master id. Operation
 journal candidate lines also carry optional `LedgerDimensionSetDto` scope so reviewed close,
 reconciliation, or accrual postings can preserve line-level fund/entity/cost-center/counterparty
 and external-GL dimensions through the Financial Operations posting gate.
+Strategy-run reconciliation summaries and rows also carry optional bank-entity/source scope,
+Operations Continuity correlation keys, a versioned logical-break identity, and the retained first
+observation time. These additive fields let shared governance and workstation consumers distinguish
+entity-scoped incidents without changing the legacy positional record constructors.
 Reconciliation break queue items carry optional `LedgerBookId` scope so shared Accounting,
 Reconciliation, and close-readiness surfaces can filter explicit book cases without inferring
 accounting ownership from fund labels, routes, or exception text.
@@ -1386,6 +1390,16 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W10-TAX-001` | Tax character, wash-sale, and lot-relief operator surface |
+| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
+| `W10-PERF-001` | Portfolio and investor return measurement |
+| `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

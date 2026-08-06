@@ -12,6 +12,39 @@ public static class ComplianceEndpoints
 {
     public static WebApplication MapComplianceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        app.MapPost("/api/compliance/approval-requests", (
+            HttpContext http,
+            ComplianceApprovalRequestCommand request,
+            [FromServices] IComplianceApprovalStore approvals) =>
+        {
+            var actor = BuildActorContext(http);
+            var result = approvals.CreateRequest(actor, request);
+            return Results.Json(result, statusCode: StatusCodes.Status201Created, options: jsonOptions);
+        })
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+
+        app.MapPost("/api/compliance/approval-requests/{approvalRequestId}/decisions", (
+            HttpContext http,
+            string approvalRequestId,
+            ComplianceApprovalDecisionCommand request,
+            [FromServices] IComplianceApprovalStore approvals) =>
+        {
+            try
+            {
+                var actor = BuildActorContext(http);
+                return Results.Ok(approvals.RecordDecision(approvalRequestId, actor, request.Approved));
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = "Compliance approval request was not found." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+
         app.MapPost("/api/compliance/actions/evaluate", (
             HttpContext http,
             ComplianceActionRequest request,
@@ -49,11 +82,34 @@ public static class ComplianceEndpoints
             }))
             .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
 
-        app.MapPost("/api/compliance/access-reviews/run", (
+        app.MapPost("/api/compliance/access-reviews/assess", async (
+            HttpContext http,
             AccessReviewRunRequest request,
-            [FromServices] AccessReviewService reviews) =>
+            [FromServices] AccessReviewService reviews,
+            CancellationToken ct) =>
         {
-            var result = reviews.ReviewDormantPermissions(request.ActorId, request.ReviewedBy, request.CurrentRoles, request.LastUsedAtUtc);
+            var reviewer = BuildActorContext(http).ActorId;
+            var result = await reviews.AssessDormantPermissionsAsync(
+                request.ActorId,
+                reviewer,
+                request.LastUsedAtUtc,
+                ct).ConfigureAwait(false);
+            return Results.Ok(result);
+        })
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+
+        app.MapPost("/api/compliance/access-reviews/run", async (
+            HttpContext http,
+            AccessReviewRunRequest request,
+            [FromServices] AccessReviewService reviews,
+            CancellationToken ct) =>
+        {
+            var reviewer = BuildActorContext(http).ActorId;
+            var result = await reviews.ApplyDormantPermissionRemediationAsync(
+                request.ActorId,
+                reviewer,
+                request.LastUsedAtUtc,
+                ct).ConfigureAwait(false);
             return Results.Ok(result);
         })
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
@@ -85,4 +141,6 @@ public static class ComplianceEndpoints
     }
 }
 
-public sealed record AccessReviewRunRequest(string ActorId, string ReviewedBy, string[] CurrentRoles, DateTimeOffset LastUsedAtUtc);
+public sealed record ComplianceApprovalDecisionCommand(bool Approved);
+
+public sealed record AccessReviewRunRequest(string ActorId, DateTimeOffset LastUsedAtUtc);

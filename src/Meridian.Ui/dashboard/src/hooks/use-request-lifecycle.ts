@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { describeApiError } from "@/lib/api-errors";
 
-export type RequestLifecyclePhase = "idle" | "running" | "succeeded" | "failed" | "aborted" | "stale";
+export type RequestLifecyclePhase = "idle" | "running" | "succeeded" | "partial" | "failed" | "aborted" | "stale";
 
 export interface RequestBackoffMetadata {
   attempt: number;
@@ -271,6 +271,34 @@ export function useRequestLifecycle({
     return true;
   }, [clearScheduledRetry, isCurrentVersion, markStale, successMessage]);
 
+  const partial = useCallback((token: RequestLifecycleToken, error: unknown, options: FailRequestOptions = {}) => {
+    if (!isCurrentVersion(token.version)) {
+      markStale(token.version);
+      return false;
+    }
+
+    clearScheduledRetry();
+    if (controllerRef.current?.signal === token.signal) {
+      controllerRef.current = null;
+    }
+    inFlightRef.current = false;
+    const display = describeApiError(error, options.fallback ?? failureMessage);
+    setStatus((current) => ({
+      ...current,
+      phase: "partial",
+      inFlight: false,
+      version: token.version,
+      message: options.message ?? display.summary,
+      error: display.summary,
+      settledAt: new Date().toISOString(),
+      backoff: {
+        ...current.backoff,
+        nextRetryDelayMs: null
+      }
+    }));
+    return true;
+  }, [clearScheduledRetry, failureMessage, isCurrentVersion, markStale]);
+
   const fail = useCallback((token: RequestLifecycleToken, error: unknown, options: FailRequestOptions = {}) => {
     if (!isCurrentVersion(token.version)) {
       markStale(token.version);
@@ -353,11 +381,12 @@ export function useRequestLifecycle({
     status,
     start,
     succeed,
+    partial,
     fail,
     finish,
     abort,
     invalidate,
     isCurrentVersion,
     markStale
-  }), [abort, fail, finish, invalidate, isCurrentVersion, markStale, start, status, succeed]);
+  }), [abort, fail, finish, invalidate, isCurrentVersion, markStale, partial, start, status, succeed]);
 }

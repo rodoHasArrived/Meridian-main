@@ -53,7 +53,8 @@ public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
                 source.Id,
                 "realtime",
                 typeof(IMarketDataClient),
-                source.IsRealtime,
+                source.CapabilityKeys.Contains(DataSourceCapabilityContracts.MarketDataClient, StringComparer.Ordinal)
+                    || source.CapabilityKeys.Contains(DataSourceCapabilityContracts.RealtimeDataSource, StringComparer.Ordinal),
                 source.ImplementationType,
                 registry.SupportedStreamingSources.Contains(source.Id, StringComparer.OrdinalIgnoreCase) ||
                     typeof(IRealtimeDataSource).IsAssignableFrom(source.ImplementationType),
@@ -66,7 +67,8 @@ public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
                 source.Id,
                 "historical",
                 typeof(IHistoricalDataProvider),
-                source.IsHistorical,
+                source.CapabilityKeys.Contains(DataSourceCapabilityContracts.HistoricalDataProvider, StringComparer.Ordinal)
+                    || source.CapabilityKeys.Contains(DataSourceCapabilityContracts.HistoricalDataSource, StringComparer.Ordinal),
                 source.ImplementationType,
                 registry.GetProviders<IHistoricalDataProvider>().Any(p => string.Equals(p.ProviderId, source.Id, StringComparison.OrdinalIgnoreCase)) ||
                     typeof(IHistoricalDataSource).IsAssignableFrom(source.ImplementationType),

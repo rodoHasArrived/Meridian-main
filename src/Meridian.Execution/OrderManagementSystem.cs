@@ -64,6 +64,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private long _droppedExecutionReports;
     private Task? _disposeTask;
     private TaskCompletionSource? _operationsDrained;
+    private Exception? _terminalReportPumpFailure;
     private int _orderSequence;
     private int _activeOperations;
     private int _disposeStarted;
@@ -570,8 +571,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 await ProcessFillReportAsync(
                         sessionId,
                         report,
-                        previousFilledQuantity,
-                        ct)
+                        previousFilledQuantity)
                     .ConfigureAwait(false);
             }
 
@@ -1038,8 +1038,17 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             }).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Compatibility bridge for callers that cannot yet use <c>await using</c>. Shutdown is
+    /// executed on the thread pool so a single-threaded synchronization context cannot prevent
+    /// asynchronous pump continuations from completing.
+    /// </summary>
     public void Dispose()
-        => DisposeAsync().AsTask().GetAwaiter().GetResult();
+        => Task.Run(
+                async () => await DisposeAsync().ConfigureAwait(false),
+                CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
 
     /// <summary>
     /// Stops report intake and awaits both the broker-report and retained-handoff pumps before
@@ -1048,6 +1057,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     /// </summary>
     public ValueTask DisposeAsync()
     {
+        TaskCompletionSource? startGate = null;
+        Task disposeTask;
         lock (_disposeSync)
         {
             Interlocked.Exchange(ref _disposeStarted, 1);
@@ -1058,17 +1069,23 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 ? Task.CompletedTask
                 : (_operationsDrained ??= new TaskCompletionSource(
                     TaskCreationOptions.RunContinuationsAsynchronously)).Task;
-            _disposeTask = DisposeCoreAsync(operationsDrained);
-            return new ValueTask(_disposeTask);
+            startGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            disposeTask = DisposeCoreAsync(startGate.Task, operationsDrained);
+            _disposeTask = disposeTask;
         }
+
+        // Start the asynchronous shutdown only after releasing _disposeSync. This retains the
+        // no-context-capture guarantee without invoking cancellation callbacks under the lock.
+        startGate!.SetResult();
+        return new ValueTask(disposeTask);
     }
 
-    private async Task DisposeCoreAsync(Task operationsDrained)
+    private async Task DisposeCoreAsync(Task startGate, Task operationsDrained)
     {
         // Do not cancel report intake until every operation admitted before disposal has
         // completed. In particular, a broker submit may return a fill whose accounting
         // handoff still needs to reach the primary publisher or durable fallback.
-        await Task.Yield();
+        await startGate.ConfigureAwait(false);
         await operationsDrained.ConfigureAwait(false);
 
         Exception? shutdownFailure = null;
@@ -1095,10 +1112,34 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 ? ex
                 : new AggregateException(shutdownFailure, ex);
         }
+
+        // Every public operation admitted before shutdown and every report already dequeued by
+        // the gateway pump has now completed its authoritative side effects. Only now complete
+        // subscriber writers so consumers can drain their accepted reports. An abandoned reader
+        // is finalized through its bounded recovery/failure handler rather than silently settled.
+        try
+        {
+            await CloseLosslessExecutionReportSubscriptionsAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            shutdownFailure = shutdownFailure is null
+                ? ex
+                : new AggregateException(shutdownFailure, ex);
+        }
         finally
         {
             _executionChannel.Writer.TryComplete();
             _reportPumpCts.Dispose();
+        }
+
+        // A consumer can fail after it accepted a channel item, outside the OMS gateway-pump
+        // stack. Preserve that terminal failure for the lifecycle owner even if no later broker
+        // report arrived to make the internal pump observe it directly.
+        if (shutdownFailure is null
+            && Volatile.Read(ref _terminalReportPumpFailure) is { } terminalReportFailure)
+        {
+            shutdownFailure = terminalReportFailure;
         }
 
         if (shutdownFailure is not null)
@@ -1107,7 +1148,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
     /// <summary>
     /// Provides a read-only view of fill and partial-fill execution reports for consumption
-    /// by portfolio trackers and audit subscribers.  Reports are published as each order
+    /// by diagnostics and compatibility observers. Reports are published as each order
     /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>,
     /// with <see cref="ExecutionReport.FilledQuantity"/> normalised to the fill increment
     /// (gateways report cumulative quantities). This is a lossy observer stream: when a
@@ -1115,6 +1156,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     /// the oldest unread report is dropped (logged and counted via
     /// <see cref="DroppedExecutionReports"/>) rather than blocking the fill path. Order state,
     /// session fill history, and the durable accounting handoff remain authoritative and lossless.
+    /// Consumers that drive strategy state must use
+    /// <see cref="SubscribeLosslessExecutionReports()"/> instead of sharing this reader.
     /// </summary>
     public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
 
@@ -1149,6 +1192,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             if (_disposeStarted != 0)
                 throw new ObjectDisposedException(nameof(OrderManagementSystem));
 
+            if (Volatile.Read(ref _terminalReportPumpFailure) is { } reportPumpFailure)
+            {
+                throw new InvalidOperationException(
+                    "The authoritative broker-report pump failed and the OMS is closed to new operations.",
+                    reportPumpFailure);
+            }
+
             checked
             {
                 _activeOperations++;
@@ -1166,6 +1216,19 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             if (_activeOperations == 0)
                 _operationsDrained?.TrySetResult();
         }
+    }
+
+    private void MarkTerminalReportPumpFailure(Exception failure, string message)
+    {
+        if (Interlocked.CompareExchange(ref _terminalReportPumpFailure, failure, null) is not null)
+        {
+            return;
+        }
+
+        _logger.LogCritical(
+            failure,
+            "{Message} The OMS is closed to new operations because future accepted fills would have no authoritative consumer.",
+            message);
     }
 
     private string GenerateOrderId()
@@ -1273,6 +1336,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 return;
+            }
+            catch (ExecutionReportDeliveryException ex)
+            {
+                MarkTerminalReportPumpFailure(
+                    ex,
+                    $"Execution report delivery from gateway '{_gateway.GatewayId}' failed without durable accounting; the OMS report pump is stopping.");
+                throw;
             }
             catch (Exception ex)
             {
@@ -1426,8 +1496,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 await ProcessFillReportAsync(
                         sessionId,
                         report,
-                        previousFilledQuantity,
-                        ct)
+                        previousFilledQuantity)
                     .ConfigureAwait(false);
             }
 
@@ -1457,8 +1526,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private async Task ProcessFillReportAsync(
         string? sessionId,
         ExecutionReport report,
-        decimal previousFilledQuantity,
-        CancellationToken postHandoffCt)
+        decimal previousFilledQuantity)
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
         if (!_fillProcessing.TryGetValue(report, out var progress))
@@ -1490,8 +1558,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
 
         // A broker-accepted fill may not be abandoned because the caller or report-pump token
-        // was cancelled after dequeue. Admission to the durable accounting handoff is therefore
-        // non-cancellable; only downstream session/channel bookkeeping observes cancellation.
+        // was cancelled after dequeue. Every post-accept side effect in this funnel is therefore
+        // non-cancellable; shutdown awaits the admitted operation/report instead of truncating it.
         await progress.Gate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
         try
         {
@@ -1533,7 +1601,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
             if (!progress.TradeEventPublished)
             {
-                if (_tradeEventPublisher is not null && progress.IsTrackedOrder)
+                // Materialise the deterministic identity even when no accounting publisher is
+                // configured. Paper-session durability uses the same FillId as the accounting
+                // handoff rather than inventing a second replay identity.
+                if (progress.IsTrackedOrder
+                    && (_tradeEventPublisher is not null || !string.IsNullOrWhiteSpace(sessionId)))
                 {
                     progress.TradeEvent ??= CreateTradeExecutedEvent(
                         fillIncrement,
@@ -1541,18 +1613,22 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                         progress.RealizedPnl,
                         progress.NewCash,
                         ResolveFinancialAccountId(orderId));
+                }
+
+                if (_tradeEventPublisher is not null && progress.IsTrackedOrder)
+                {
                     try
                     {
-                        _tradeEventPublisher.Publish(progress.TradeEvent);
+                        _tradeEventPublisher.Publish(progress.TradeEvent!);
                     }
                     catch (Exception ex)
                     {
                         var wasRetained = await RetainAccountingHandoffFailureAsync(
-                                progress.TradeEvent,
+                                progress.TradeEvent!,
                                 ex,
                                 CancellationToken.None)
                             .ConfigureAwait(false);
-                        throw new AccountingHandoffException(progress.TradeEvent, wasRetained, ex);
+                        throw new AccountingHandoffException(progress.TradeEvent!, wasRetained, ex);
                     }
                 }
 
@@ -1561,40 +1637,57 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
             if (!progress.SessionRecorded)
             {
+                if (string.IsNullOrWhiteSpace(sessionId))
+                {
+                    progress.SessionRecorded = true;
+                }
+
                 try
                 {
-                    await RecordSessionFillAsync(sessionId, fillIncrement, postHandoffCt).ConfigureAwait(false);
-                    progress.SessionRecorded = true;
+                    if (!progress.SessionRecorded)
+                    {
+                        await RecordSessionFillAsync(
+                                sessionId,
+                                progress.TradeEvent!.FillId,
+                                fillIncrement,
+                                CancellationToken.None)
+                            .ConfigureAwait(false);
+                        progress.SessionRecorded = true;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(
+                    _logger.LogCritical(
                         ex,
-                        "Accounting accepted fill {FillId}, but paper-session fill history could not be recorded",
+                        "Accounting accepted fill {FillId}, but paper-session fill history could not be recorded; fill completion remains unacknowledged and will fail closed",
                         progress.TradeEvent?.FillId);
+                    throw;
                 }
             }
 
             if (!progress.ExecutionReportPublished)
             {
-                // DropOldest semantics: this write completes without blocking even when the
-                // observer channel is full — the channel's drop callback logs and counts the
-                // evicted report. The fill path must never stall on observer lag.
-                try
+                if (!progress.LosslessSubscribersPublished)
                 {
-                    await _executionChannel.Writer.WriteAsync(fillIncrement, postHandoffCt).ConfigureAwait(false);
-                    progress.ExecutionReportPublished = true;
+                    await PublishToLosslessExecutionReportSubscribersAsync(progress).ConfigureAwait(false);
                 }
-                catch (Exception ex)
+
+                // The shared compatibility reader is deliberately best effort. DropOldest
+                // handles observer saturation, and a completed writer during shutdown is not an
+                // authoritative delivery failure.
+                if (!_executionChannel.Writer.TryWrite(fillIncrement))
                 {
-                    _logger.LogError(
-                        ex,
-                        "Accounting accepted fill {FillId}, but the execution-report subscriber channel could not publish it",
+                    _logger.LogDebug(
+                        "Best-effort execution-report observer was closed before fill {FillId} could be published",
                         progress.TradeEvent?.FillId);
                 }
+
+                progress.ExecutionReportPublished = true;
             }
 
-            if (progress.SessionRecorded && progress.ExecutionReportPublished)
+            if (progress.SessionRecorded
+                && progress.LosslessSubscribersPublished
+                && progress.ExecutionReportPublished)
             {
                 progress.IsComplete = true;
                 TrackCompletedFill(report);
@@ -1602,6 +1695,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
         catch (AccountingHandoffException)
         {
+            throw;
+        }
+        catch (ExecutionReportDeliveryException)
+        {
+            // The subscription already attempted its explicit durable recovery/fail-closed seam.
+            // Do not relabel a strategy-delivery failure as an accounting-publisher failure.
             throw;
         }
         catch (Exception ex)
@@ -1698,6 +1797,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
     private async Task RecordSessionFillAsync(
         string? sessionId,
+        Guid fillId,
         ExecutionReport report,
         CancellationToken ct)
     {
@@ -1706,7 +1806,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             return;
         }
 
-        await _sessionPersistence.RecordFillAsync(sessionId, report, ct).ConfigureAwait(false);
+        await _sessionPersistence.RecordFillAsync(sessionId, fillId, report, ct).ConfigureAwait(false);
     }
 
     private string? ResolveSessionId(string orderId) =>

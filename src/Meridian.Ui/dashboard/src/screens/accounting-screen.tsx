@@ -1,4 +1,4 @@
-import { BookCheck, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, UserCheck, WalletCards, X } from "lucide-react";
+import { BookCheck, Copy, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
@@ -50,6 +50,13 @@ import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-act
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
 import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
+import {
+  focusManualJournalCell,
+  handleManualJournalCellKeyDown,
+  ManualJournalDimensionsInspector,
+  ManualJournalHealthBar,
+  ManualJournalValidationNavigator
+} from "@/screens/accounting-screen.journal-entry-enhancements";
 import {
   InstrumentPassportPanel,
   ReferenceDataWorkbenchPanel,
@@ -2549,21 +2556,23 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 <AccountingValue label="Close readiness" value={data.controlCenter.closeReadiness} />
                 <AccountingValue label="SLA breach count" value={String(data.controlCenter.slaBreachCount)} />
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Portfolio filter</span>
-                  <select className="w-full rounded border bg-background px-2 py-1 text-sm">
-                    {data.controlCenter.portfolioFilterOptions.map((option) => <option key={option}>{option}</option>)}
-                  </select>
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Account filter</span>
-                  <select className="w-full rounded border bg-background px-2 py-1 text-sm">
-                    <option>all-accounts</option>
-                    {data.controlCenter.accountFilterOptions.map((option) => <option key={option}>{option}</option>)}
-                  </select>
-                </label>
+              <div
+                className="grid gap-3 sm:grid-cols-2"
+                role="group"
+                aria-label="Operations control center scope"
+              >
+                <AccountingValue
+                  label="Portfolio coverage"
+                  value={data.controlCenter.portfolioFilterOptions.join(", ") || "All portfolios"}
+                />
+                <AccountingValue
+                  label="Account coverage"
+                  value={data.controlCenter.accountFilterOptions.join(", ") || "All accounts"}
+                />
               </div>
+              <p className="text-xs text-muted-foreground">
+                Control-center measures are aggregate service results. Meridian does not present a selector until the service supplies per-scope measures.
+              </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {data.controlCenter.trendSnapshots.map((snapshot) => (
                   <div key={snapshot.metric} className="rounded border border-border/70 px-2 py-1">
@@ -4793,7 +4802,6 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
       handleAmountChange(lineId, side, input);
     }
   };
-
   if (!view.available) {
     return (
       <section className="workspace-section-band" aria-labelledby="manual-je-heading">
@@ -4820,7 +4828,6 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
     );
   }
 
-  const selectedLine = view.draft.lines.find((line) => line.lineId === view.selectedLineId) ?? view.draft.lines[0] ?? null;
   const nextLineSide = view.draft.totalDebits <= view.draft.totalCredits ? "Debit" : "Credit";
   const evidenceAttachments = view.draft.evidenceAttachments ?? [];
   const attachmentUris = new Set(evidenceAttachments.map((attachment) => attachment.uri));
@@ -4830,10 +4837,6 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
     ...evidenceAttachments.map((attachment) => attachment.uri),
     ...retainedEvidenceLinks
   ]).size;
-  const selectedAccountLabel = selectedLine
-    ? view.accountOptions.find((option) => option.value === selectedLine.accountPath)?.label ?? "Not selected"
-    : "Not selected";
-
   return (
     <section className="workspace-section-band" aria-labelledby="manual-je-heading">
       <div className="workspace-section-subheader">
@@ -4850,35 +4853,6 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
             Refresh
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            busy={view.validateBusy}
-            disabled={hasInvalidAmountEdits}
-            disabledReason={hasInvalidAmountEdits ? invalidAmountReason : null}
-            onClick={() => void view.validate()}
-          >
-            Validate
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            busy={view.saveBusy}
-            disabled={hasInvalidAmountEdits}
-            disabledReason={hasInvalidAmountEdits ? invalidAmountReason : null}
-            onClick={() => void view.save()}
-          >
-            Save draft
-          </Button>
-          <Button
-            size="sm"
-            busy={view.submitBusy}
-            disabled={!view.canSubmit || hasInvalidAmountEdits}
-            disabledReason={hasInvalidAmountEdits ? invalidAmountReason : view.submitDisabledReason}
-            onClick={() => void view.submit()}
-          >
-            Submit approval
-          </Button>
         </div>
       </div>
 
@@ -4887,6 +4861,8 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
           {view.errorText}
         </div>
       ) : null}
+
+      <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
         <div className="space-y-4">
@@ -4941,6 +4917,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
               <label>
                 <span>Date</span>
                 <input
+                  id="manual-je-header-accountingDate"
                   type="date"
                   value={view.draft.accountingDate}
                   onChange={(event) => view.updateHeader("accountingDate", event.target.value)}
@@ -4949,6 +4926,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
               <label>
                 <span>Prepared by</span>
                 <input
+                  id="manual-je-header-preparedBy"
                   readOnly
                   value={view.draft.preparedBy || "Current operator"}
                 />
@@ -4956,21 +4934,22 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
               <label className="md:col-span-2 xl:col-span-1">
                 <span>Memo</span>
                 <input
+                  id="manual-je-header-memo"
                   value={view.draft.memo}
                   onChange={(event) => view.updateHeader("memo", event.target.value)}
                 />
               </label>
               <label>
                 <span>Fund profile</span>
-                <input className="font-mono" value={view.draft.fundProfileId} onChange={(event) => view.updateHeader("fundProfileId", event.target.value)} />
+                <input id="manual-je-header-fundProfileId" className="font-mono" value={view.draft.fundProfileId} onChange={(event) => view.updateHeader("fundProfileId", event.target.value)} />
               </label>
               <label>
                 <span>Period</span>
-                <input className="font-mono" value={view.draft.periodId ?? ""} onChange={(event) => view.updateHeader("periodId", event.target.value)} />
+                <input id="manual-je-header-periodId" className="font-mono" value={view.draft.periodId ?? ""} onChange={(event) => view.updateHeader("periodId", event.target.value)} />
               </label>
               <label>
                 <span>Currency</span>
-                <input className="font-mono" value={view.draft.currency} onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())} />
+                <input id="manual-je-header-currency" className="font-mono" value={view.draft.currency} onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())} />
               </label>
             </div>
 
@@ -4985,6 +4964,10 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                 <div><dt className="text-muted-foreground">Record version</dt><dd className="mt-1 font-mono text-foreground">{view.draft.version}</dd></div>
               </dl>
             </TechnicalDetails>
+
+            <p className="accounting-journal-keyboard-hint" id="manual-je-keyboard-hint">
+              Keyboard: Arrow Up or Down and Enter move within a column; Ctrl+Enter inserts a line beneath the current row.
+            </p>
 
             <div className="accounting-journal-table-wrap">
               <table className="accounting-journal-table">
@@ -5002,9 +4985,26 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                     const badges = view.getLineBadges(line.lineId);
                     const isDebit = line.side === "Debit";
                     return (
-                      <tr key={line.lineId} className={cn(line.lineId === view.selectedLineId && "is-selected")}>
+                      <tr
+                        key={line.lineId}
+                        id={`manual-je-line-${line.lineId}`}
+                        className={cn(line.lineId === view.selectedLineId && "is-selected")}
+                        tabIndex={-1}
+                      >
                         <td>
-                          <select value={line.accountPath} onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })} onFocus={() => view.selectLine(line.lineId)} aria-label={`GL account for line ${line.lineId}`}>
+                          <select
+                            id={`manual-je-account-${line.lineId}`}
+                            value={line.accountPath}
+                            onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })}
+                            onFocus={() => view.selectLine(line.lineId)}
+                            onKeyDown={(event) => {
+                              if (event.ctrlKey && event.key === "Enter") {
+                                handleManualJournalCellKeyDown(event, view, line.lineId, "account", line.side);
+                              }
+                            }}
+                            aria-label={`GL account for line ${line.lineId}`}
+                            aria-describedby="manual-je-keyboard-hint"
+                          >
                             <option value="">Select GL account</option>
                             {view.accountOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
@@ -5012,7 +5012,9 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                         </td>
                         <td>
                           <input
+                            id={`manual-je-debit-${line.lineId}`}
                             aria-label={`Debit amount for line ${line.lineId}`}
+                            aria-describedby="manual-je-keyboard-hint"
                             className="text-right font-mono"
                             type="number"
                             value={amountDrafts[`${line.lineId}:Debit`] ?? (isDebit ? line.amount : 0)}
@@ -5020,14 +5022,17 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                             onChange={(event) => handleAmountChange(line.lineId, "Debit", event.target)}
                             onBlur={(event) => handleAmountBlur(line.lineId, "Debit", event.target)}
                             onFocus={() => view.selectLine(line.lineId)}
+                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "debit", "Debit")}
                           />
                           {`${line.lineId}:Debit` in amountDrafts ? (
-                            <p className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
+                            <p id={`manual-je-debit-error-${line.lineId}`} className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
                           ) : null}
                         </td>
                         <td>
                           <input
+                            id={`manual-je-credit-${line.lineId}`}
                             aria-label={`Credit amount for line ${line.lineId}`}
+                            aria-describedby={`${line.lineId}:Credit` in amountDrafts ? `manual-je-keyboard-hint manual-je-credit-error-${line.lineId}` : "manual-je-keyboard-hint"}
                             className="text-right font-mono"
                             type="number"
                             value={amountDrafts[`${line.lineId}:Credit`] ?? (isDebit ? 0 : line.amount)}
@@ -5035,9 +5040,10 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                             onChange={(event) => handleAmountChange(line.lineId, "Credit", event.target)}
                             onBlur={(event) => handleAmountBlur(line.lineId, "Credit", event.target)}
                             onFocus={() => view.selectLine(line.lineId)}
+                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "credit", "Credit")}
                           />
                           {`${line.lineId}:Credit` in amountDrafts ? (
-                            <p className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
+                            <p id={`manual-je-credit-error-${line.lineId}`} className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
                           ) : null}
                         </td>
                         <td>
@@ -5050,24 +5056,42 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                             <span className="block truncate font-mono text-[11px] text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
                           </button>
                           <input
+                            id={`manual-je-description-${line.lineId}`}
                             className="mt-2"
                             aria-label={`Description for line ${line.lineId}`}
+                            aria-describedby="manual-je-keyboard-hint"
                             value={line.description ?? ""}
                             onChange={(event) => view.updateLine(line.lineId, { description: event.target.value })}
                             onFocus={() => view.selectLine(line.lineId)}
+                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "description", line.side)}
                           />
                         </td>
                         <td>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            aria-label={`Remove journal line ${line.lineId}`}
-                            disabled={view.draft.lines.length <= 2}
-                            disabledReason={view.draft.lines.length <= 2 ? "A balanced journal entry needs at least two lines." : null}
-                            onClick={() => view.removeLine(line.lineId)}
-                          >
-                            <X className="h-3.5 w-3.5" aria-hidden="true" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={`Duplicate journal line ${line.lineId}`}
+                              onClick={() => {
+                                const duplicateId = view.duplicateLine(line.lineId);
+                                if (duplicateId) {
+                                  focusManualJournalCell(duplicateId, "account");
+                                }
+                              }}
+                            >
+                              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={`Remove journal line ${line.lineId}`}
+                              disabled={view.draft.lines.length <= 2}
+                              disabledReason={view.draft.lines.length <= 2 ? "A balanced journal entry needs at least two lines." : null}
+                              onClick={() => view.removeLine(line.lineId)}
+                            >
+                              <X className="h-3.5 w-3.5" aria-hidden="true" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -5323,85 +5347,8 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)]">
-            <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h4 className="text-sm font-semibold text-foreground">Validation</h4>
-                  <Badge variant={view.validationIsCurrent ? "success" : "warning"} dot>
-                    {view.validationIsCurrent ? "Current" : "Required"}
-                  </Badge>
-                </div>
-                <div className="mt-3 space-y-2">
-                  {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
-                    <div key={issue.id} className={cn("rounded border px-3 py-2 text-sm", issue.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : issue.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "border-border/70 bg-background/50 text-muted-foreground")}>
-                      <div className="font-semibold">{issue.label}</div>
-                      <div className="mt-1">{issue.message}</div>
-                      <div className="mt-1 text-xs">{issue.detail}</div>
-                    </div>
-                  )) : (
-                    <p className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
-                      {view.validationIsCurrent
-                        ? "Validation is current for this draft and no issues were returned."
-                        : "Validation has not completed for the current draft. Use Validate before approval submission."}
-                    </p>
-                  )}
-                </div>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
-                <h4 className="text-sm font-semibold text-foreground">Selected line</h4>
-                {selectedLine ? (
-                  <div className="mt-3 space-y-3 text-sm">
-                    <dl className="grid gap-2">
-                      <div><dt className="text-xs text-muted-foreground">GL account</dt><dd className="text-foreground">{selectedAccountLabel}</dd></div>
-                      <div><dt className="text-xs text-muted-foreground">Security</dt><dd className="break-all text-foreground">{selectedLine.securityDisplayName || "No Security Master reference"}</dd></div>
-                    </dl>
-                    <TechnicalDetails label="Line system details">
-                      <dl className="grid gap-2 text-xs">
-                        <div><dt className="text-muted-foreground">Line ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.lineId}</dd></div>
-                        <div><dt className="text-muted-foreground">GL path</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.accountPath || "Not selected"}</dd></div>
-                        <div><dt className="text-muted-foreground">Security ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.securityId || "Not selected"}</dd></div>
-                      </dl>
-                    </TechnicalDetails>
-                    <div className="rounded border border-border/70 bg-background/50 p-2">
-                      <label className="space-y-1 text-sm">
-                        <span className="text-xs font-semibold uppercase text-muted-foreground">Security Master picker</span>
-                        <div className="flex gap-2">
-                          <input
-                            className="min-h-9 min-w-0 flex-1 rounded border border-border bg-background px-2"
-                            value={view.securitySearchQuery}
-                            placeholder="Ticker, ISIN, CUSIP, FIGI, name"
-                            onChange={(event) => view.updateSecuritySearchQuery(event.target.value)}
-                          />
-                          <Button size="icon" variant="outline" busy={view.securitySearchBusy} aria-label="Search Security Master" onClick={() => void view.searchSecurityMaster()}>
-                            <Search className="h-3.5 w-3.5" aria-hidden="true" />
-                          </Button>
-                        </div>
-                      </label>
-                      <p role="status" className={cn("mt-2 text-xs", view.securitySearchErrorText ? "text-danger" : "text-muted-foreground")}>{view.securitySearchStatusText}</p>
-                      <div className="mt-2 space-y-2">
-                        {view.securitySearchResults.map((security) => (
-                          <button
-                            key={security.securityId}
-                            type="button"
-                            className="w-full rounded border border-border/70 bg-secondary/30 px-3 py-2 text-left hover:border-primary/50 hover:bg-primary/10"
-                            onClick={() => view.selectSecurity(selectedLine.lineId, security)}
-                          >
-                            <span className="block font-semibold text-foreground">{security.displayName}</span>
-                            <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{security.securityId} / {security.classification.assetClass} / {security.classification.primaryIdentifierValue}</span>
-                          </button>
-                        ))}
-                      </div>
-                      {selectedLine.securityId ? (
-                        <Button className="mt-2" size="sm" variant="ghost" onClick={() => view.clearSecurity(selectedLine.lineId)}>
-                          <X className="h-3.5 w-3.5" aria-hidden="true" />
-                          Clear security
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-muted-foreground">Select a line to inspect attribution.</p>
-                )}
-            </div>
+            <ManualJournalValidationNavigator view={view} />
+            <ManualJournalDimensionsInspector view={view} />
           </div>
         </div>
       </div>

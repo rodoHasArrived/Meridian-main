@@ -142,6 +142,17 @@ maintenance distinguishes complete success, partial `CompletedWithWarnings`, tot
 no-input blocking from attempted/succeeded/failed input counts; cancelled work is not converted to
 a false terminal failure.
 
+Archive-maintenance schedule mutations persist a validated candidate snapshot before publishing it
+to readers under an in-process gate and a cross-process file lease; revision-aware replacements
+reject stale snapshots while legacy revision-zero callers retain deterministic merge compatibility.
+Retained invalid schedules are durably disabled with repair evidence, unreadable source documents
+are copied to the maintenance quarantine, and the exact legacy monthly-compression preset is
+migrated to the explicit first-Sunday expression `0 1 * * 0#1` without rewriting custom POSIX
+schedules. Due and manually triggered executions create a durable claim/outbox record in the same
+schedule snapshot that advances the occurrence. Active services renew the claim lease, restarts
+requeue an unpublished occurrence with the same execution identity, and an expired claim already
+marked running is retained as an interrupted/ambiguous failure instead of being replayed blindly.
+
 ### Market data and evidence
 
 Market data and evidence records enter through storage sinks. File-backed writes use the

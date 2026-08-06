@@ -17,6 +17,7 @@ public sealed class ReportingFeatureModuleTests
             "FundReportPack",
             "ReportRunStatus",
             "EvidenceWorkbench",
+            "OperationsRecordRelease",
             "ReportLineProvenanceExplorer",
             "Dashboard",
             "AnalysisExport",

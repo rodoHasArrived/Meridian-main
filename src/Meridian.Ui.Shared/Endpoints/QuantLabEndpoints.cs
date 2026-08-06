@@ -18,8 +18,10 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// when not registered, calls return <c>503 Service Unavailable</c>.
 /// </summary>
 /// <remarks>
-/// The QuantScript runner compiles and executes arbitrary C# in-process. Hosts must
-/// enable Quant Lab only behind the operator workstation's existing authentication.
+/// QuantScript compiles and executes each request in a dedicated, killable worker process with
+/// bounded admission, protocol, output, time, memory, CPU, process-count, and host-data RPC usage.
+/// The worker still has the launching user's file/network permissions, so this is containment for
+/// trusted operators rather than a hostile-code sandbox. Keep the routes behind workstation auth.
 /// </remarks>
 public static class QuantLabEndpoints
 {

@@ -42,7 +42,7 @@ public sealed class StatementImportServiceTests : IDisposable
         ]);
 
         var statementStore = new JsonCanonicalStatementStore(_root);
-        _workflow = new StatementRunWorkflowService(
+        _workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
             new JsonReconciliationCaseStore(_root),
             new JsonReconciliationBreakStore(_root),

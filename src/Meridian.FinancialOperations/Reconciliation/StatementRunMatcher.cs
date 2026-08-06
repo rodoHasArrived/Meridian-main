@@ -104,7 +104,7 @@ internal static class StatementRunMatcher
             var sourceReference = result.BrokerEvidenceReference
                 ?? result.InternalEvidenceReference
                 ?? $"{import.ImportId}:unmatched";
-            var toleranceBreached = result.MatchTier == StatementMatchTier.Unmatched;
+            var toleranceBreached = IsToleranceBreached(result);
 
             var record = new ReconciliationBreakRecord(
                 BreakId: Guid.NewGuid().ToString("N"),
@@ -280,6 +280,21 @@ internal static class StatementRunMatcher
 
     private static decimal ResolveToleranceAmount(StatementMatchTolerance tolerance) =>
         Math.Max(tolerance.Quantity ?? 0m, tolerance.Amount ?? 0m);
+
+    private static bool IsToleranceBreached(StatementMatchResult result)
+    {
+        if (result.Variance.Quantity is { } quantityVariance
+            && Math.Abs(quantityVariance) > (result.Tolerance.Quantity ?? 0m))
+        {
+            return true;
+        }
+
+        var amountTolerance = result.Tolerance.Amount ?? 0m;
+        return (result.Variance.MarketValue is { } marketValueVariance
+                && Math.Abs(marketValueVariance) > amountTolerance)
+            || (result.Variance.Amount is { } amountVariance
+                && Math.Abs(amountVariance) > amountTolerance);
+    }
 
     private static string BuildBreakCode(StatementMatchResult result)
     {

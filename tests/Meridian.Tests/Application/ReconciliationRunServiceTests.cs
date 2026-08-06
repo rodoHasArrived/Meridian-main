@@ -599,6 +599,36 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WhenBreakIsObservedAgain_PreservesFirstObservedTimestamp()
+    {
+        var firstRunAt = new DateTimeOffset(2026, 8, 5, 8, 0, 0, TimeSpan.Zero);
+        var clock = new MutableTimeProvider(firstRunAt);
+        var store = new StrategyRunStore();
+        var repository = new InMemoryReconciliationRunRepository();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun(
+            "run-break-retry",
+            portfolioCashOverride: 950m));
+        var service = CreateService(
+            store,
+            repository,
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
+            timeProvider: clock);
+
+        var first = await service.RunAsync(new ReconciliationRunRequest("run-break-retry"));
+        var originalBreak = first!.Breaks.Single(item => item.CheckId == "cash-balance");
+        clock.SetUtcNow(firstRunAt.AddHours(6));
+
+        var updated = await service.RunAsync(new ReconciliationRunRequest("run-break-retry"));
+        var updatedBreak = updated!.Breaks.Single(item => item.CheckId == "cash-balance");
+
+        originalBreak.FirstObservedAt.Should().Be(firstRunAt);
+        updatedBreak.FirstObservedAt.Should().Be(firstRunAt);
+        updated.Summary.CreatedAt.Should().Be(firstRunAt.AddHours(6));
+        updated.Summary.ReconciliationRunId.Should().NotBe(first.Summary.ReconciliationRunId);
+    }
+
+    [Fact]
     public async Task RunAsync_WithNearTimingDrift_ShouldPreservePartialMatchStatusAndUnresolvedCounts()
     {
         var store = new StrategyRunStore();
@@ -639,6 +669,321 @@ public sealed class ReconciliationRunServiceTests
         history.Select(item => item.ReconciliationRunId).Should().Contain([first!.Summary.ReconciliationRunId, second!.Summary.ReconciliationRunId]);
     }
 
+    [Fact]
+    public void PublicConstructor_PreservesLegacyClrSignatureAndOptionalDefaults()
+    {
+        var constructor = typeof(ReconciliationRunService).GetConstructor(
+        [
+            typeof(StrategyRunReadService),
+            typeof(ReconciliationProjectionService),
+            typeof(IReconciliationRunRepository),
+            typeof(IBankTransactionSource),
+            typeof(IStrategyLedgerReconciliationSourceAdapter),
+            typeof(IStrategyPortfolioReconciliationSourceAdapter),
+            typeof(IInternalCashReconciliationSourceAdapter),
+            typeof(IExternalStatementReconciliationSourceAdapter),
+            typeof(ISecurityValidationGateService),
+            typeof(ISecurityMasterAccountingEventService),
+            typeof(ISecurityMasterAccountingEventSourceAdapter)
+        ]);
+
+        constructor.Should().NotBeNull();
+        constructor!.GetParameters().Skip(3).Should().OnlyContain(static parameter =>
+            parameter.IsOptional && parameter.DefaultValue == null);
+
+        var timeProviderConstructor = typeof(ReconciliationRunService).GetConstructor(
+        [
+            typeof(StrategyRunReadService),
+            typeof(ReconciliationProjectionService),
+            typeof(IReconciliationRunRepository),
+            typeof(IBankTransactionSource),
+            typeof(IStrategyLedgerReconciliationSourceAdapter),
+            typeof(IStrategyPortfolioReconciliationSourceAdapter),
+            typeof(IInternalCashReconciliationSourceAdapter),
+            typeof(IExternalStatementReconciliationSourceAdapter),
+            typeof(ISecurityValidationGateService),
+            typeof(ISecurityMasterAccountingEventService),
+            typeof(ISecurityMasterAccountingEventSourceAdapter),
+            typeof(TimeProvider)
+        ]);
+        timeProviderConstructor.Should().NotBeNull();
+        timeProviderConstructor!.GetParameters().Should().OnlyContain(static parameter =>
+            !parameter.IsOptional);
+    }
+
+    [Fact]
+    public async Task RepositoryDefaultContinuityWrite_FailsClosedForLegacyImplementation()
+    {
+        IReconciliationRunRepository repository = new LegacyReconciliationRunRepository();
+        var detail = BuildRepositoryDetail(
+            "reconciliation-legacy-repository",
+            "run-legacy-repository",
+            new DateTimeOffset(2026, 8, 5, 9, 0, 0, TimeSpan.Zero));
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
+            repository.SaveWithFirstObservationContinuityAsync(detail));
+
+        exception.Message.Should().Contain("atomic first-observation continuity");
+    }
+
+    [Fact]
+    public async Task Repository_PreservesLegacyFirstObservationAcrossUnevaluatedGap()
+    {
+        var repository = new InMemoryReconciliationRunRepository();
+        var firstObservedAt = new DateTimeOffset(2026, 8, 1, 8, 0, 0, TimeSpan.Zero);
+        var gapAt = firstObservedAt.AddHours(4);
+        var repeatedAt = firstObservedAt.AddHours(8);
+
+        await repository.SaveAsync(BuildRepositoryDetail(
+            "reconciliation-gap-first",
+            "run-gap",
+            firstObservedAt,
+            breakItem: BuildRepositoryBreak("Cash-Balance", firstObservedAt: null)));
+        await repository.SaveAsync(BuildRepositoryDetail(
+            "reconciliation-gap-unevaluated",
+            "run-gap",
+            gapAt));
+
+        var repeated = await repository.SaveWithFirstObservationContinuityAsync(BuildRepositoryDetail(
+            "reconciliation-gap-repeated",
+            "run-gap",
+            repeatedAt,
+            breakItem: BuildRepositoryBreak("cash-balance", repeatedAt)));
+
+        repeated.Breaks.Should().ContainSingle();
+        repeated.Breaks[0].FirstObservedAt.Should().Be(firstObservedAt);
+        repeated.Breaks[0].LogicalBreakIdentity.Should().NotBeNullOrWhiteSpace();
+        repeated.Breaks[0].CorrelationKeys!.RunId.Should().Be("run-gap");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Repository_ReopenedBreakStartsNewIncidentAfterExplicitMatchOrResolution(
+        bool closeWithMatch)
+    {
+        var repository = new InMemoryReconciliationRunRepository();
+        var firstObservedAt = new DateTimeOffset(2026, 8, 2, 8, 0, 0, TimeSpan.Zero);
+        var closedAt = firstObservedAt.AddHours(1);
+        var reopenedAt = firstObservedAt.AddHours(2);
+        await repository.SaveAsync(BuildRepositoryDetail(
+            "reconciliation-close-first",
+            "run-close",
+            firstObservedAt,
+            breakItem: BuildRepositoryBreak("cash-balance", firstObservedAt)));
+
+        await repository.SaveAsync(closeWithMatch
+            ? BuildRepositoryDetail(
+                "reconciliation-close-explicit-match",
+                "run-close",
+                closedAt,
+                match: BuildRepositoryMatch("cash-balance"))
+            : BuildRepositoryDetail(
+                "reconciliation-close-explicit-resolution",
+                "run-close",
+                closedAt,
+                breakItem: BuildRepositoryBreak(
+                    "cash-balance",
+                    closedAt,
+                    ReconciliationBreakStatus.Resolved)));
+
+        var reopened = await repository.SaveWithFirstObservationContinuityAsync(BuildRepositoryDetail(
+            "reconciliation-close-reopened",
+            "run-close",
+            reopenedAt,
+            breakItem: BuildRepositoryBreak("cash-balance", reopenedAt)));
+
+        reopened.Breaks.Should().ContainSingle();
+        reopened.Breaks[0].FirstObservedAt.Should().Be(reopenedAt);
+    }
+
+    [Fact]
+    public async Task Repository_UsesNormalizedBankEntityScopeForLogicalBreakIdentity()
+    {
+        var repository = new InMemoryReconciliationRunRepository();
+        var entityA = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+        var entityB = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+        var firstAt = new DateTimeOffset(2026, 8, 3, 8, 0, 0, TimeSpan.Zero);
+        var secondAt = firstAt.AddHours(1);
+        var repeatedAt = firstAt.AddHours(2);
+
+        var entityAFirst = await repository.SaveWithFirstObservationContinuityAsync(BuildRepositoryDetail(
+            "reconciliation-bank-a-first",
+            "run-bank-scope",
+            firstAt,
+            breakItem: BuildRepositoryBreak(
+                "BANK-NET-VS-LEDGER-CASH",
+                firstAt,
+                bankEntityId: entityA,
+                sourceScope: " BANK "),
+            bankEntityId: entityA));
+        var entityBFirst = await repository.SaveWithFirstObservationContinuityAsync(BuildRepositoryDetail(
+            "reconciliation-bank-b-first",
+            "run-bank-scope",
+            secondAt,
+            breakItem: BuildRepositoryBreak(
+                "bank-net-vs-ledger-cash",
+                secondAt,
+                bankEntityId: entityB,
+                sourceScope: "bank"),
+            bankEntityId: entityB));
+        var entityARepeated = await repository.SaveWithFirstObservationContinuityAsync(BuildRepositoryDetail(
+            "reconciliation-bank-a-repeated",
+            "run-bank-scope",
+            repeatedAt,
+            breakItem: BuildRepositoryBreak(
+                "bank-net-vs-ledger-cash",
+                repeatedAt,
+                bankEntityId: entityA,
+                sourceScope: "bank"),
+            bankEntityId: entityA));
+
+        var entityABreak = entityAFirst.Breaks.Single();
+        var entityBBreak = entityBFirst.Breaks.Single();
+        var repeatedEntityABreak = entityARepeated.Breaks.Single();
+        entityABreak.LogicalBreakIdentity.Should().Be(repeatedEntityABreak.LogicalBreakIdentity);
+        entityABreak.LogicalBreakIdentity.Should().NotBe(entityBBreak.LogicalBreakIdentity);
+        repeatedEntityABreak.FirstObservedAt.Should().Be(firstAt);
+        entityBBreak.FirstObservedAt.Should().Be(secondAt);
+        repeatedEntityABreak.SourceScope.Should().Be("bank");
+    }
+
+    [Fact]
+    public async Task RunAsync_ExternalStatementSourceSetsUseUnambiguousLogicalIdentity()
+    {
+        var firstAt = new DateTimeOffset(2026, 8, 3, 8, 0, 0, TimeSpan.Zero);
+        var secondAt = firstAt.AddHours(1);
+        var clock = new MutableTimeProvider(firstAt);
+        var store = new StrategyRunStore();
+        var repository = new InMemoryReconciliationRunRepository();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-source-scope"));
+
+        var firstService = CreateService(
+            store,
+            repository,
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
+            externalStatementAdapter: new StaticExternalStatementAdapter(
+            [
+                new ReconciliationExternalStatementInput("row-1", 5m, firstAt, "a,b"),
+                new ReconciliationExternalStatementInput("row-2", 5m, firstAt, "c")
+            ]),
+            timeProvider: clock);
+        var first = await firstService.RunAsync(new ReconciliationRunRequest("run-source-scope"));
+        var firstBreak = first!.Breaks.Single(item =>
+            item.CheckId == "external-statement-vs-internal-cash");
+
+        clock.SetUtcNow(secondAt);
+        var secondService = CreateService(
+            store,
+            repository,
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
+            externalStatementAdapter: new StaticExternalStatementAdapter(
+            [
+                new ReconciliationExternalStatementInput("row-3", 5m, secondAt, "a"),
+                new ReconciliationExternalStatementInput("row-4", 5m, secondAt, "b,c")
+            ]),
+            timeProvider: clock);
+        var second = await secondService.RunAsync(new ReconciliationRunRequest("run-source-scope"));
+        var secondBreak = second!.Breaks.Single(item =>
+            item.CheckId == "external-statement-vs-internal-cash");
+
+        firstBreak.SourceScope.Should().NotBe(secondBreak.SourceScope);
+        firstBreak.LogicalBreakIdentity.Should().NotBe(secondBreak.LogicalBreakIdentity);
+        secondBreak.FirstObservedAt.Should().Be(secondAt);
+    }
+
+    private static ReconciliationRunDetail BuildRepositoryDetail(
+        string reconciliationRunId,
+        string runId,
+        DateTimeOffset createdAt,
+        ReconciliationBreakDto? breakItem = null,
+        ReconciliationMatchDto? match = null,
+        Guid? bankEntityId = null)
+    {
+        var unresolvedBreakCount = breakItem is not null
+            && breakItem.Status is not ReconciliationBreakStatus.Matched
+                and not ReconciliationBreakStatus.Resolved
+            ? 1
+            : 0;
+        var summary = new ReconciliationRunSummary(
+            reconciliationRunId,
+            runId,
+            createdAt,
+            null,
+            null,
+            match is null ? 0 : 1,
+            breakItem is null ? 0 : 1,
+            unresolvedBreakCount,
+            false,
+            0.01m,
+            5)
+        {
+            BankEntityId = bankEntityId
+        };
+        return new ReconciliationRunDetail(
+            summary,
+            match is null ? [] : [match],
+            breakItem is null ? [] : [breakItem]);
+    }
+
+    private static ReconciliationBreakDto BuildRepositoryBreak(
+        string checkId,
+        DateTimeOffset? firstObservedAt,
+        ReconciliationBreakStatus status = ReconciliationBreakStatus.Open,
+        Guid? bankEntityId = null,
+        string? sourceScope = null) => new(
+            checkId,
+            "Repository continuity check",
+            ReconciliationBreakCategory.AmountMismatch,
+            status,
+            "ledger",
+            1m,
+            2m,
+            1m,
+            ReconciliationBreakSeverity.High,
+            "Repository continuity test break.",
+            null,
+            null)
+        {
+            FirstObservedAt = firstObservedAt,
+            BankEntityId = bankEntityId,
+            SourceScope = sourceScope
+        };
+
+    private static ReconciliationMatchDto BuildRepositoryMatch(string checkId) => new(
+        checkId,
+        "Repository continuity check",
+        "portfolio",
+        "ledger",
+        1m,
+        1m,
+        0m,
+        null,
+        null);
+
+    private sealed class LegacyReconciliationRunRepository : IReconciliationRunRepository
+    {
+        public Task SaveAsync(ReconciliationRunDetail detail, CancellationToken ct = default) =>
+            Task.CompletedTask;
+
+        public Task<ReconciliationRunDetail?> GetByIdAsync(
+            string reconciliationRunId,
+            CancellationToken ct = default) =>
+            Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(
+            string runId,
+            CancellationToken ct = default) =>
+            Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(
+            string runId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<ReconciliationRunSummary>>([]);
+    }
+
     private static IReconciliationRunService CreateService(
         StrategyRunStore store,
         out IReconciliationRunRepository repository)
@@ -673,7 +1018,9 @@ public sealed class ReconciliationRunServiceTests
         IBankTransactionSource? bankTransactionSource,
         ISecurityValidationGateService? securityValidationGate = null,
         ISecurityMasterAccountingEventService? securityMasterAccountingEventService = null,
-        ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null)
+        ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null,
+        IExternalStatementReconciliationSourceAdapter? externalStatementAdapter = null,
+        TimeProvider? timeProvider = null)
     {
         IStrategyRepository strategyRepository = store;
         var portfolioReadService = securityReferenceLookup is null
@@ -683,14 +1030,54 @@ public sealed class ReconciliationRunServiceTests
             ? new LedgerReadService()
             : new LedgerReadService(securityReferenceLookup);
         var runReadService = new StrategyRunReadService(strategyRepository, portfolioReadService, ledgerReadService);
+        if (timeProvider is null)
+        {
+            return new ReconciliationRunService(
+                runReadService: runReadService,
+                projectionService: new ReconciliationProjectionService(),
+                repository: repository,
+                bankTransactionSource: bankTransactionSource,
+                externalStatementAdapter: externalStatementAdapter,
+                securityValidationGate: securityValidationGate,
+                securityMasterAccountingEventService: securityMasterAccountingEventService,
+                securityMasterAccountingEventSourceAdapter: securityMasterAccountingEventSourceAdapter);
+        }
+
         return new ReconciliationRunService(
             runReadService: runReadService,
             projectionService: new ReconciliationProjectionService(),
             repository: repository,
             bankTransactionSource: bankTransactionSource,
+            ledgerAdapter: null,
+            portfolioAdapter: null,
+            internalCashAdapter: null,
+            externalStatementAdapter: externalStatementAdapter,
             securityValidationGate: securityValidationGate,
             securityMasterAccountingEventService: securityMasterAccountingEventService,
-            securityMasterAccountingEventSourceAdapter: securityMasterAccountingEventSourceAdapter);
+            securityMasterAccountingEventSourceAdapter: securityMasterAccountingEventSourceAdapter,
+            timeProvider: timeProvider);
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        private DateTimeOffset _utcNow = utcNow;
+
+        public override DateTimeOffset GetUtcNow() => _utcNow;
+
+        public void SetUtcNow(DateTimeOffset value) => _utcNow = value;
+    }
+
+    private sealed class StaticExternalStatementAdapter(
+        IReadOnlyList<ReconciliationExternalStatementInput> rows)
+        : IExternalStatementReconciliationSourceAdapter
+    {
+        public Task<IReadOnlyList<ReconciliationExternalStatementInput>> GetStatementRowsAsync(
+            ReconciliationRunRequest request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(rows);
+        }
     }
 
     private sealed class StaticSecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
@@ -1019,9 +1406,12 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.Summary.BankBreakCount.Should().BeGreaterThan(0);
-        detail.Breaks.Should().Contain(b =>
-            b.CheckId == "bank-ledger-coverage-missing" &&
-            b.Category == ReconciliationBreakCategory.MissingLedgerCoverage);
+        var bankBreak = detail.Breaks.Single(b => b.CheckId == "bank-ledger-coverage-missing");
+        bankBreak.Category.Should().Be(ReconciliationBreakCategory.MissingLedgerCoverage);
+        bankBreak.BankEntityId.Should().Be(entityId);
+        bankBreak.SourceScope.Should().Be("bank");
+        bankBreak.CorrelationKeys!.RunId.Should().Be("run-no-ledger");
+        bankBreak.LogicalBreakIdentity.Should().StartWith("reconciliation-break:v1:");
     }
 
     private static IAssetOperationsQueryService CreateAssetOperationsQueryService(

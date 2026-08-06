@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Options">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />

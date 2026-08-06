@@ -87,6 +87,12 @@ class RunDotnetCiTestsTests(unittest.TestCase):
 
         self.assertEqual(missing, [], "every tests/ project must be wired to the ubuntu or windows lane")
 
+    def test_process_helper_is_classified_as_support_instead_of_a_test_project(self):
+        helper_path = "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj"
+
+        self.assertIn(helper_path, MODULE.SUPPORT_TEST_PROJECTS)
+        self.assertNotIn(helper_path, {project[1] for project in MODULE.DEFAULT_TEST_PROJECTS})
+
     def test_build_dotnet_test_command_uses_ci_filter_and_trx_prefix(self):
         project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")
         results_dir = Path("artifacts/test-results/dotnet")

@@ -10,7 +10,7 @@ public sealed class ShellRouteRegistryTests
     [InlineData("ResearchShell", "StrategyShell", "strategy")]
     [InlineData("DataOperationsShell", "DataShell", "data")]
     [InlineData("GovernanceShell", "AccountingShell", "accounting")]
-    [InlineData("OperationsContinuity", "FundLedger", "accounting")]
+    [InlineData("OperationsContinuity", "OperationsContinuity", "accounting")]
     [InlineData("OperationsClose", "FundLedger", "accounting")]
     [InlineData("AccountingApprovals", "FundAuditTrail", "accounting")]
     [InlineData("LedgerExplorer", "LedgerExplorer", "accounting")]

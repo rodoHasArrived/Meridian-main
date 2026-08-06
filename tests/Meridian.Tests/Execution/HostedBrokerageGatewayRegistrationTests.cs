@@ -28,6 +28,8 @@ public sealed class HostedBrokerageGatewayRegistrationTests
         var robinhood = provider.GetRequiredKeyedService<IBrokerageGateway>("robinhood");
 
         alpaca.Should().BeOfType<AlpacaBrokerageGateway>();
+        var alpacaTradeUpdates = provider.GetRequiredService<AlpacaTradeUpdatesClient>();
+        ((AlpacaBrokerageGateway)alpaca).TradeUpdatesClient.Should().BeSameAs(alpacaTradeUpdates);
         ib.Should().BeOfType<IBBrokerageGateway>();
         ibkr.Should().BeSameAs(ib);
         robinhood.Should().BeOfType<RobinhoodBrokerageGateway>();

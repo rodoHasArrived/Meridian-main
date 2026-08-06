@@ -6273,6 +6273,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.governance.view-model.ts
 │   │   │   │   │   ├── accounting-screen.journal-entries.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.journal-entries.view-model.ts
+│   │   │   │   │   ├── accounting-screen.journal-entry-enhancements.tsx
 │   │   │   │   │   ├── accounting-screen.linked-context.ts
 │   │   │   │   │   ├── accounting-screen.operations-panels.tsx
 │   │   │   │   │   ├── accounting-screen.operator-focus.test.ts
@@ -7386,6 +7387,7 @@ Meridian-main
 │   │   │   ├── NotificationService.cs
 │   │   │   ├── OfflineTrackingPersistenceService.cs
 │   │   │   ├── OperationsControlCenterClient.cs
+│   │   │   ├── OperatorInboxRouteMap.cs
 │   │   │   ├── PendingOperationsQueueService.cs
 │   │   │   ├── QuantScriptExecutionHistoryService.cs
 │   │   │   ├── QuantScriptLayoutService.cs
@@ -7539,6 +7541,9 @@ Meridian-main
 │   │   │   ├── MainWindowViewModel.cs
 │   │   │   ├── MessagingHubViewModel.cs
 │   │   │   ├── NotificationCenterViewModel.cs
+│   │   │   ├── OperationsContinuityViewModel.cs
+│   │   │   ├── OperationsRecordReleaseViewModel.cs
+│   │   │   ├── OperatorReadinessConsoleViewModel.cs
 │   │   │   ├── OptionsViewModel.cs
 │   │   │   ├── OrderBookHeatmapViewModel.cs
 │   │   │   ├── OrderBookViewModel.cs
@@ -7710,6 +7715,12 @@ Meridian-main
 │   │   │   ├── MessagingHubPage.xaml.cs
 │   │   │   ├── NotificationCenterPage.xaml
 │   │   │   ├── NotificationCenterPage.xaml.cs
+│   │   │   ├── OperationsContinuityPage.xaml
+│   │   │   ├── OperationsContinuityPage.xaml.cs
+│   │   │   ├── OperationsRecordReleasePage.xaml
+│   │   │   ├── OperationsRecordReleasePage.xaml.cs
+│   │   │   ├── OperatorReadinessConsolePage.xaml
+│   │   │   ├── OperatorReadinessConsolePage.xaml.cs
 │   │   │   ├── OptionsPage.xaml
 │   │   │   ├── OptionsPage.xaml.cs
 │   │   │   ├── OrderBookHeatmapControl.xaml
@@ -7865,6 +7876,9 @@ Meridian-main
 │   │   │   ├── Models
 │   │   │   │   ├── EvidenceVaultPresentationModels.cs
 │   │   │   │   ├── EvidenceWorkbenchPresentationModels.cs
+│   │   │   │   ├── OperationsContinuityPresentationModels.cs
+│   │   │   │   ├── OperationsRecordReleasePresentationModels.cs
+│   │   │   │   ├── OperatorReadinessConsolePresentationModels.cs
 │   │   │   │   └── WorkstationPresentationModels.cs
 │   │   │   ├── Primitives
 │   │   │   │   └── WorkstationPrimitiveControls.cs
@@ -8961,6 +8975,7 @@ Meridian-main
 │   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── LiveRunMetricsTrackerTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
@@ -9414,6 +9429,9 @@ Meridian-main
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
+│   │   │   ├── OperationsContinuityViewModelTests.cs
+│   │   │   ├── OperationsRecordReleaseViewModelTests.cs
+│   │   │   ├── OperatorReadinessConsoleViewModelTests.cs
 │   │   │   ├── OrderBookHeatmapViewModelTests.cs
 │   │   │   ├── OrderBookViewModelTests.cs
 │   │   │   ├── PageActivationLifetimeContractTests.cs
@@ -9517,6 +9535,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── setup-verification.sh
 │   │   ├── test_ai_setup_dotnet_channel.py
+│   │   ├── test_api_contract_coverage_dashboard.py
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_buildctl_artifact_retention.py

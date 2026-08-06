@@ -943,8 +943,17 @@ public sealed partial class OrderManagementSystem
         public bool PortfolioApplied { get; set; }
         public bool TradeEventPublished { get; set; }
         public bool SessionRecorded { get; set; }
+        public LosslessExecutionReportSubscriber[]? LosslessSubscriberTargets { get; set; }
+        public HashSet<long> DeliveredLosslessSubscriberIds { get; } = [];
+        public bool LosslessSubscribersPublished { get; set; }
         public bool ExecutionReportPublished { get; set; }
         public volatile bool IsComplete;
+
+        public void ReleaseLosslessSubscriberProgress()
+        {
+            LosslessSubscriberTargets = null;
+            DeliveredLosslessSubscriberIds.Clear();
+        }
     }
 
     /// <summary>

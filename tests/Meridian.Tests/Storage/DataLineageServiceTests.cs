@@ -203,4 +203,133 @@ public sealed class DataLineageServiceTests : IDisposable
         var exception = act.Should().Throw<Exception>().Which;
         (exception is IOException || exception is UnauthorizedAccessException).Should().BeTrue();
     }
+
+    [Fact]
+    public void RecordIngestion_WhenAtomicWriteFails_DoesNotPublishOrSmuggleFailedCandidateAfterRestart()
+    {
+        using var writer = new AtomicSnapshotTestWriter();
+        var logger = new Mock<ILogger<DataLineageService>>();
+        var service = new DataLineageService(
+            _lineagePath,
+            logger.Object,
+            writer.Write,
+            writer.WriteAsync);
+        service.RecordIngestion(
+            "/data/baseline.jsonl",
+            new IngestionRecord(
+                new DateTime(2026, 8, 5, 13, 59, 0, DateTimeKind.Utc),
+                "stooq",
+                "DIA",
+                "HistoricalBar",
+                5));
+        writer.FailNextWrite();
+
+        var act = () => service.RecordIngestion(
+            "/data/failed.jsonl",
+            new IngestionRecord(
+                new DateTime(2026, 8, 5, 14, 0, 0, DateTimeKind.Utc),
+                "alpaca",
+                "IWM",
+                "Trade",
+                10));
+
+        act.Should().Throw<IOException>();
+        service.GetLineageGraph("/data/baseline.jsonl").Should().NotBeNull();
+        service.GetLineageGraph("/data/failed.jsonl").Should().BeNull();
+
+        service.RecordIngestion(
+            "/data/committed.jsonl",
+            new IngestionRecord(
+                new DateTime(2026, 8, 5, 14, 1, 0, DateTimeKind.Utc),
+                "polygon",
+                "QQQ",
+                "Trade",
+                20));
+
+        var restarted = new DataLineageService(_lineagePath, logger.Object);
+        restarted.GetLineageGraph("/data/baseline.jsonl").Should().NotBeNull();
+        restarted.GetLineageGraph("/data/failed.jsonl").Should().BeNull();
+        restarted.GetLineageGraph("/data/committed.jsonl").Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task RecordTransformation_WhileAtomicWriteIsBlocked_PublishesBothSidesTogetherAfterCommit()
+    {
+        using var writer = new AtomicSnapshotTestWriter();
+        var logger = new Mock<ILogger<DataLineageService>>();
+        var service = new DataLineageService(
+            _lineagePath,
+            logger.Object,
+            writer.Write,
+            writer.WriteAsync);
+        var block = writer.BlockNextWrite();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var persistence = Task.Run(() => service.RecordTransformation(
+            "/data/source.jsonl",
+            "/data/target.parquet",
+            new TransformationRecord(
+                new DateTime(2026, 8, 5, 14, 30, 0, DateTimeKind.Utc),
+                "format_conversion",
+                "JSONL to Parquet")));
+
+        try
+        {
+            await block.WaitUntilEnteredAsync(timeout.Token);
+            service.GetLineageGraph("/data/source.jsonl").Should().BeNull();
+            service.GetLineageGraph("/data/target.parquet").Should().BeNull();
+        }
+        finally
+        {
+            block.Release();
+        }
+
+        await persistence.WaitAsync(timeout.Token);
+        service.GetLineageGraph("/data/source.jsonl")!.Downstream
+            .Should().ContainSingle("/data/target.parquet");
+        service.GetLineageGraph("/data/target.parquet")!.Upstream
+            .Should().ContainSingle("/data/source.jsonl");
+
+        var restarted = new DataLineageService(_lineagePath, logger.Object);
+        restarted.GetLineageGraph("/data/source.jsonl")!.Downstream
+            .Should().ContainSingle("/data/target.parquet");
+        restarted.GetLineageGraph("/data/target.parquet")!.Upstream
+            .Should().ContainSingle("/data/source.jsonl");
+    }
+
+    [Fact]
+    public void RecordIngestion_CallerAndGetterMutation_DoesNotChangePublishedOrPersistedSnapshot()
+    {
+        const string filePath = "/data/defensive.jsonl";
+        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["channel"] = "sip"
+        };
+        _service.RecordIngestion(filePath, new IngestionRecord(
+            new DateTime(2026, 8, 5, 15, 0, 0, DateTimeKind.Utc),
+            "alpaca",
+            "SPY",
+            "Trade",
+            500,
+            Parameters: parameters));
+
+        parameters["channel"] = "mutated";
+        var returned = _service.GetLineageGraph(filePath)!;
+        returned.FilePath = "mutated";
+        returned.Upstream.Add("leaked");
+        var returnedParameters = (IDictionary<string, string>)returned.Ingestions[0].Parameters!;
+        returnedParameters["channel"] = "leaked";
+        returned.Ingestions.Clear();
+
+        var retained = _service.GetLineageGraph("/DATA/DEFENSIVE.JSONL")!;
+        retained.FilePath.Should().Be(filePath);
+        retained.Upstream.Should().BeEmpty();
+        retained.Ingestions.Should().ContainSingle();
+        retained.Ingestions[0].Parameters.Should().Contain("channel", "sip");
+
+        var logger = new Mock<ILogger<DataLineageService>>();
+        var restarted = new DataLineageService(_lineagePath, logger.Object);
+        restarted.GetLineageGraph(filePath)!.Ingestions[0].Parameters
+            .Should().Contain("channel", "sip");
+    }
 }

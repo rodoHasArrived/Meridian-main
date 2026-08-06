@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
@@ -157,6 +158,13 @@ public sealed class FileAccountingTenantAdministrationProfileStore :
             .Select(static item => item!.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var retainedEvidence = NormalizeRetainedEvidence(
+            request.Profile.RetainedEvidence.Concat(request.RetainedEvidence));
+        EnsureCertificationArtifacts(
+            request.Profile,
+            tenantId,
+            companyId,
+            retainedEvidence);
         EnsureTenantCompanyScopedEvidence(request.Profile, tenantId, companyId, evidence);
         var approvalQueueConfigurations = NormalizeApprovalQueueConfigurations(request.Profile.ApprovalQueueConfigurations);
         var dimensionMappingConfigurations = NormalizeDimensionMappingConfigurations(request.Profile.DimensionMappingConfigurations);
@@ -169,12 +177,109 @@ public sealed class FileAccountingTenantAdministrationProfileStore :
             UpdatedAtUtc = request.Profile.UpdatedAtUtc == default ? DateTimeOffset.UtcNow : request.Profile.UpdatedAtUtc,
             UpdatedBy = actor,
             EvidenceReferences = evidence,
+            FundProfileId = TrimOrNull(request.Profile.FundProfileId),
+            RetainedEvidence = retainedEvidence,
             CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
                 ? request.Profile.CorrelationId
                 : request.CorrelationId.Trim(),
             ApprovalQueueConfigurations = approvalQueueConfigurations,
             DimensionMappingConfigurations = dimensionMappingConfigurations
         };
+    }
+
+    private static void EnsureCertificationArtifacts(
+        AccountingTenantAdministrationProfileDto profile,
+        string tenantId,
+        string companyId,
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
+    {
+        foreach (var artifact in profile.CertificationArtifacts.Where(static item =>
+                     item.Status == AccountingCertificationArtifactStatusDto.Certified))
+        {
+            var fundProfileId = RequireText(profile.FundProfileId, "certification fund profile id");
+            if (!profile.LedgerBookId.HasValue || profile.LedgerBookId == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "Accounting tenant administration certification requires a ledger book id.");
+            }
+
+            if (string.IsNullOrWhiteSpace(artifact.CertificationId) ||
+                string.IsNullOrWhiteSpace(artifact.CertifiedBy) ||
+                string.IsNullOrWhiteSpace(artifact.SourceService) ||
+                artifact.CertifiedAtUtc == default ||
+                artifact.CertifiedAtUtc.Offset != TimeSpan.Zero)
+            {
+                throw new ArgumentException(
+                    "Accounting tenant administration certification metadata must be complete and UTC.");
+            }
+
+            if (artifact.LedgerBookId != profile.LedgerBookId ||
+                !string.Equals(artifact.TenantId.Trim(), tenantId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(artifact.CompanyId.Trim(), companyId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(artifact.FundProfileId.Trim(), fundProfileId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    "Accounting tenant administration certification artifact scope must match the selected tenant, company, fund profile, and ledger book.");
+            }
+
+            if (artifact.Lanes.Count == 0 ||
+                artifact.Lanes.Any(static lane =>
+                    lane.Status != AccountingCertificationArtifactLaneStatusDto.Passed))
+            {
+                throw new ArgumentException(
+                    "Certified accounting tenant administration artifacts must include passed lane results.");
+            }
+
+            if (!retainedEvidence.Any(evidence =>
+                    AccountingProductionCertificationEvidenceValidator.BindsTo(
+                        evidence,
+                        AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                        artifact.CertificationId)))
+            {
+                throw new ArgumentException(
+                    "Accounting tenant administration certification requires retained evidence bound to its certification id.");
+            }
+        }
+    }
+
+    private static IReadOnlyList<RetainedEvidenceIdentityDto> NormalizeRetainedEvidence(
+        IEnumerable<RetainedEvidenceIdentityDto> retainedEvidence)
+    {
+        var normalized = new List<RetainedEvidenceIdentityDto>();
+        foreach (var evidence in retainedEvidence.Where(static item => item is not null))
+        {
+            var issues = RetainedEvidenceIdentityValidator.Validate(evidence);
+            if (issues.Count > 0 ||
+                !AccountingProductionCertificationEvidenceValidator.IsEligible(evidence))
+            {
+                throw new ArgumentException(
+                    $"Accounting tenant administration retained evidence is invalid: {string.Join(" ", issues)}");
+            }
+
+            normalized.Add(evidence with
+            {
+                EvidenceId = evidence.EvidenceId.Trim(),
+                EvidenceUri = evidence.EvidenceUri.Trim(),
+                ContentHashSha256 = evidence.ContentHashSha256.Trim().ToLowerInvariant(),
+                SourceSystem = evidence.SourceSystem.Trim(),
+                SourceReference = evidence.SourceReference.Trim(),
+                ReviewStatus = evidence.ReviewStatus.Trim(),
+                ReviewedBy = evidence.ReviewedBy.Trim(),
+                RetainedBy = evidence.RetainedBy.Trim(),
+                SubjectType = evidence.SubjectType.Trim(),
+                SubjectId = evidence.SubjectId.Trim()
+            });
+        }
+
+        return normalized
+            .GroupBy(static item =>
+                $"{item.EvidenceId}|{item.SubjectType}|{item.SubjectId}",
+                StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.SubjectType, StringComparer.Ordinal)
+            .ThenBy(static item => item.SubjectId, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static void EnsureStudioConfigurations(

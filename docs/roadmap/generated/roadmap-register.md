@@ -903,7 +903,7 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 
 - A break keeps one identity across runs even when its amount, tolerance, or as-of date changes.
 - A break that clears and later recurs is recognizable as the same lineage while remaining a distinct occurrence, so a recurrence neither inherits the age of the original nor overwrites the interval during which it was clear.
-- The queue shows what is new, what remains open and for how long, and what cleared since the prior run, without hiding open work behind a default filter.
+- The queue shows what is new, what remains open and for how long, and what cleared since the prior run, without hiding open work behind a default filter. A break reads as cleared only when the successor run durably recorded that reconciliation itself completed over the same account, source, period, and both the mapping and tolerance profile at a known matching version - a completed run that still carries open breaks counts, while a run whose recorded outcome is failed, validation-failed, or cancelled does not, and neither an unrecorded profile version nor a run status merely inferred from an absence of breaks is treated as agreement; after an inconclusive or scope-divergent run the prior break stays open rather than disappearing.
 - Break age derived from that identity drives escalation before an SLA is missed, measured against the business and holiday calendars the SLA policy names rather than a weekends-only approximation.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the lineage identity, the diff projection, the queue surfaces on both workstation lanes, and the identity-stability and calendar-boundary tests.
 
@@ -966,7 +966,7 @@ Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than c
 
 - An operator can resolve a group of related breaks in one governed action instead of one action per break.
 - Every member of a resolved group retains its own case transition, actor, and evidence alongside the shared justification.
-- Groups above materiality require the same approval separation an individual material break requires.
+- A group requires the same approval separation an individual material break requires whenever any member is material or high-risk, and any additional group threshold is measured on gross exposure rather than a signed net that can offset a material member below it. That exposure is only ever aggregated across members whose amounts are genuinely comparable - value exposure within one currency or translated under a governed rate, and quantity exposure only across members that name the same instrument under a governed quantity unit - and a member whose instrument, unit, or rate cannot be established holds the group at the stricter approval rather than being summed into a total that mixes shares of one security with shares of another, or shares with cash.
 - A preview shows the effect of a group action before any state changes, and the action that follows applies only to the breaks the preview showed in the state it showed them; drift returns the operator to a fresh preview rather than through.
 - Break classification is queryable on a stored break rather than readable only in prose.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the persisted classification, the grouping projection, the wired bulk surface, and the per-break evidence retention tests.
@@ -998,7 +998,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 ### Exit Criteria
 
 - Recurring schedules, their posting history, the template versions occurrences materialize from, and the period-lock state they honor all survive a restart, and the runner fails closed when any of that durable state is unavailable rather than treating a locked period as open.
-- A due occurrence becomes a draft for human approval and never posts on its own, and a repeated run cannot produce a duplicate posting.
+- A due occurrence becomes a draft for human approval and never posts on its own, and a repeated run can produce neither a duplicate posting nor a second approval draft for the same occurrence - a retry claims or returns the draft that already exists, provided that draft was materialized from the same schedule and template definition the retry resolves. An occurrence claim that names an earlier definition fails closed until the existing draft is explicitly superseded or corrected, rather than silently returning a draft built from content the schedule no longer has.
 - A recurring draft cannot reach approval without retained source evidence, and that evidence stays attached through posting.
 - Occurrences blocked by a locked period name the lock owner and the governed reopen path rather than failing silently.
 - The accounting draft queue shows what the calendar generated, what awaits approval, and what a period lock blocked.
@@ -1008,6 +1008,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-LEDGER`
+- `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
@@ -1030,7 +1031,7 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 ### Exit Criteria
 
 - Tax character, holding period, and wash-sale impact are visible on the positions and disposals they belong to rather than only inside an export artifact.
-- An operator comparing cost-basis relief methods for a pending disposal sees realized gain, character split, and wash-sale exposure per method, and any figure the engine cannot yet compute completely renders as incomplete rather than as a settled zero.
+- An operator comparing cost-basis relief methods for a pending disposal sees realized gain, character split, and wash-sale exposure per method, and any figure the engine cannot yet compute completely renders as incomplete rather than as a settled zero. A disposal that could still attract a wash sale while its replacement window is open - one a wash-sale policy actually governs on its own sale date, that either realizes a loss or holds mixed gain and loss lots meaning a loss cannot yet be excluded, and whose known replacement acquisitions do not yet cover the entire quantity sold - is labelled provisional with the remaining window shown and is re-evaluated or governed-finalized once that window closes. A disposal no governing policy reaches, whose every relieved lot realizes a gain, or whose matched quantity and disallowed loss have already reached their maximum, reads as settled rather than being marked provisional for a window that cannot change it.
 - Reopening or regenerating an earlier period reproduces the tax figures originally reported, including after a relief-policy change.
 - Changing an account standing relief policy requires approval and a retained rationale, and every surface presents the comparison as decision support rather than tax advice.
 - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the operator surfaces on both workstation lanes, the relief comparison, the reproducibility guarantee, and the character and wash-sale tests.
@@ -1060,7 +1061,7 @@ Rank 7 of the 2026-07 W10 depth slate. Close readiness has several independent o
 
 ### Exit Criteria
 
-- One close-readiness projection is the shared source both workstation lanes consume rather than each lane deriving its own.
+- One close-readiness projection is the shared source both workstation lanes consume rather than each lane deriving its own, and the caller or an explicit operator selection establishes the complete close scope - fund profile, ledger book, fund account, entity, and period - rather than the projection inferring any dimension from whichever workflow it happened to select; every contribution answers for that declared scope, and a dimension that is missing, ambiguous, or mismatched blocks the projection rather than being merged into it.
 - Every blocker names its type, count, severity, owner, and the records causing it.
 - A contributing lane that is unregistered, failing, stale, or out of scope makes the projection incomplete and blocking rather than silently absent, so readiness is never reported because a contributor did not answer.
 - The contributing services report into that projection instead of publishing independent readiness vocabularies, and the asset-class coverage service no longer reads as close readiness.
@@ -1104,6 +1105,7 @@ Rank 8 of the 2026-07 W10 depth slate and the largest row in the reconciliation 
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
+- `SRC-WPF`
 
 ## W10-RECON-004 - Operator-taught match rules with promotion gate
 | Field | Value |
@@ -1171,6 +1173,7 @@ Rank 10 of the 2026-07 W10 depth slate and one of its four new-capability rows, 
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
+- `SRC-WPF`
 
 ## W10-CONSOL-001 - Intercompany elimination on consolidated ledger views
 | Field | Value |
@@ -1202,4 +1205,5 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 - `SRC-LEDGER`
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
 - `SRC-WPF`

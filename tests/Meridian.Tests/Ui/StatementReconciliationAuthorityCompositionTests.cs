@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Infrastructure.Reconciliation;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Evidence;
@@ -77,6 +78,30 @@ public sealed class StatementReconciliationAuthorityCompositionTests : IDisposab
             .Should().BeSameAs(provider.GetRequiredService<StatementImportEvidenceBridge>());
         provider.GetRequiredService<StatementReconciliationReportWorkflowService>()
             .IsDurablyComposed.Should().BeFalse();
+    }
+
+    [Fact]
+    public void MissingStatementCaseworkCommitAuthority_HandoffResolutionFailsClosed()
+    {
+        using var quietProductionEnvironment =
+            new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable,
+            null);
+        using var reporting = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_CONNECTION_STRING",
+            null);
+        using var ledger = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_LEDGER_CONNECTION_STRING",
+            null);
+        var services = CreateMinimalWorkstationServices();
+        services.AddWorkstationSharedServices();
+        using var provider = services.BuildServiceProvider();
+
+        Action resolve = () => provider.GetRequiredService<IStatementReconciliationCaseworkHandoffService>();
+
+        resolve.Should().Throw<InvalidOperationException>()
+            .WithMessage($"*{nameof(IStatementCaseworkCommitStore)}*");
     }
 
     private ServiceCollection CreateMinimalWorkstationServices()

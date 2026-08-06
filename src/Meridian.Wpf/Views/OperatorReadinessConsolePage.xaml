@@ -1,0 +1,392 @@
+<Page x:Class="Meridian.Wpf.Views.OperatorReadinessConsolePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="{Binding Title}"
+      AutomationProperties.AutomationId="OperatorReadinessConsolePage">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <DataTemplate x:Key="ReadinessPanelRowTemplate">
+            <Border Style="{StaticResource WorkspaceToneQueueCardStyle}" Margin="0,0,0,8">
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding Value}"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                    </WrapPanel>
+                    <TextBlock Text="{Binding Detail}"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0" />
+                    <TextBlock Text="{Binding Meta}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
+        <Grid MaxWidth="1320">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource WorkspaceContextStripStyle}"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="OperatorReadinessConsoleActionStrip"
+                    AutomationProperties.Name="{Binding Title}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,18,0">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Subtitle}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,10,0,0">
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding OverallStatusText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="OperatorReadinessConsoleOverallChip" />
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding AsOfText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="OperatorReadinessConsoleAsOfChip" />
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding InboxSummaryText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="OperatorReadinessConsoleInboxChip" />
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                MinWidth="300"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="OperatorReadinessConsoleActionPosture">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Refresh"
+                                    Command="{Binding RefreshCommand}"
+                                    ToolTip="Reload readiness, inbox, reconciliation, and run sources."
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    AutomationProperties.AutomationId="OperatorReadinessConsoleRefreshButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Open trading"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="TradingShell"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="OperatorReadinessConsoleOpenTradingButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Open reconciliation"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="FundReconciliation"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="OperatorReadinessConsoleOpenReconciliationButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Open report packs"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="FundReportPack"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="OperatorReadinessConsoleOpenReportPacksButton"
+                                    Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding StatusText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="OperatorReadinessConsoleStatusText" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <ItemsControl Grid.Row="1"
+                          ItemsSource="{Binding SummaryFacts}"
+                          Margin="0,0,0,14"
+                          AutomationProperties.AutomationId="OperatorReadinessConsoleSummaryStrip">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="6" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource CardStyle}"
+                                Margin="0,0,10,10">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Label}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding Value}"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="0,4,0,0"
+                                           TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Detail}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperatorReadinessConsoleGatePanel">
+                        <StackPanel>
+                            <TextBlock Text="Readiness gates" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Server-evaluated acceptance gates for the current operating scope."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0" />
+                            <TextBlock Text="{Binding ReadinessErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasReadinessError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsoleReadinessError" />
+                            <ItemsControl ItemsSource="{Binding GateRows}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperatorReadinessConsoleGateList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource WorkspaceToneQueueCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <WrapPanel>
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding StatusText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                </WrapPanel>
+                                                <TextBlock Text="{Binding Detail}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                                <TextBlock Text="{Binding RequiredNextAction}"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,2,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperatorReadinessConsoleWorkItemPanel">
+                        <StackPanel>
+                            <TextBlock Text="Operator work items" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Highest-priority items from the shared operator inbox and readiness feeds."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0" />
+                            <TextBlock Text="{Binding InboxErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasInboxError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsoleInboxError" />
+                            <ItemsControl ItemsSource="{Binding WorkItemRows}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperatorReadinessConsoleWorkItemList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource WorkspaceToneQueueCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <WrapPanel>
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding ToneText}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding WorkspaceText}"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </WrapPanel>
+                                                <TextBlock Text="{Binding Detail}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" />
+                                                <TextBlock Text="{Binding CreatedText}"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           Margin="0,2,0,0" />
+                                                <Button Content="Open owning workspace"
+                                                        Command="{Binding DataContext.OpenWorkItemCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        HorizontalAlignment="Left"
+                                                        MinWidth="150"
+                                                        Margin="0,8,0,0"
+                                                        AutomationProperties.AutomationId="{Binding WorkItemId}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperatorReadinessConsoleBreakPanel">
+                        <StackPanel>
+                            <TextBlock Text="Reconciliation breaks" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Open and in-review break-queue items from the shared reconciliation API."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0" />
+                            <TextBlock Text="{Binding BreaksErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasBreaksError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsoleBreaksError" />
+                            <ItemsControl ItemsSource="{Binding BreakRows}"
+                                          ItemTemplate="{StaticResource ReadinessPanelRowTemplate}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperatorReadinessConsoleBreakList" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperatorReadinessConsoleSessionPanel">
+                        <StackPanel>
+                            <TextBlock Text="Paper session" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ReadinessErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasReadinessError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsoleSessionError" />
+                            <ItemsControl ItemsSource="{Binding SessionRows}"
+                                          ItemTemplate="{StaticResource ReadinessPanelRowTemplate}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperatorReadinessConsoleSessionList" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperatorReadinessConsoleTrustPanel">
+                        <StackPanel>
+                            <TextBlock Text="Provider trust" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ReadinessErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasReadinessError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsoleTrustError" />
+                            <ItemsControl ItemsSource="{Binding TrustRows}"
+                                          ItemTemplate="{StaticResource ReadinessPanelRowTemplate}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperatorReadinessConsoleTrustList" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperatorReadinessConsolePromotionPanel">
+                        <StackPanel>
+                            <TextBlock Text="Promotion" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ReadinessErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasReadinessError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsolePromotionError" />
+                            <ItemsControl ItemsSource="{Binding PromotionRows}"
+                                          ItemTemplate="{StaticResource ReadinessPanelRowTemplate}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperatorReadinessConsolePromotionList" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperatorReadinessConsoleRunPanel">
+                        <StackPanel>
+                            <TextBlock Text="Latest runs" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding RunsErrorText}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding HasRunsError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="OperatorReadinessConsoleRunsError" />
+                            <ItemsControl ItemsSource="{Binding RunRows}"
+                                          ItemTemplate="{StaticResource ReadinessPanelRowTemplate}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperatorReadinessConsoleRunList" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="OperatorReadinessConsoleWarningPanel">
+                        <StackPanel>
+                            <TextBlock Text="Warnings" Style="{StaticResource CardHeaderStyle}" />
+                            <ItemsControl ItemsSource="{Binding Warnings}"
+                                          Margin="0,10,0,0"
+                                          AutomationProperties.AutomationId="OperatorReadinessConsoleWarningList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

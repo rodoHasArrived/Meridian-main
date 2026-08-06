@@ -202,8 +202,9 @@ public partial class App : System.Windows.Application
 
         // Desktop sign-out must also end the shared workstation API session so no request
         // can ride the old server cookies (mirrors LifecycleControlClient's subscription).
+        var apiClientService = Services.GetRequiredService<ApiClientService>();
         Services.GetRequiredService<WpfServices.DesktopAuthenticationSession>().SignedOut +=
-            static (_, _) => _ = ApiClientService.Instance.SignOutAsync();
+            (_, _) => _ = apiClientService.SignOutAsync();
 
         // Provide the DI container to NavigationService so it can resolve pages
         WpfServices.NavigationService.Instance.SetServiceProvider(Services);
@@ -331,6 +332,7 @@ public partial class App : System.Windows.Application
 
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
+        services.AddDesktopApiClient();
 
         // ILogger<T> infrastructure — must be first so all services can resolve loggers
         services.AddLogging();
@@ -343,8 +345,7 @@ public partial class App : System.Windows.Application
             ?? new Meridian.Contracts.Configuration.ConnectivityProbeOptions());
 
         // Shared API infrastructure
-        services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
-        services.AddSingleton<WpfServices.WpfRemoteWorkstationClient>(_ => WpfServices.WpfRemoteWorkstationClient.Instance);
+        services.AddSingleton<WpfServices.WpfRemoteWorkstationClient>();
         services.AddSingleton<IRemoteWorkstationClient>(sp => sp.GetRequiredService<WpfServices.WpfRemoteWorkstationClient>());
 
         // ── Fixture mode service (offline mock data) ────────────────────────
