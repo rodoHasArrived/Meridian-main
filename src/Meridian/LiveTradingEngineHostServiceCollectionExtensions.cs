@@ -184,7 +184,10 @@ internal sealed class LiveTradingEngineHostedService : IHostedService
     private readonly LiveTradingEngine _engine;
     private readonly ILogger<LiveTradingEngineHostedService> _logger;
     private readonly CancellationTokenSource _stopping = new();
+    private readonly object _stopSync = new();
     private Task? _resumeTask;
+    private Task? _stopTask;
+    private int _backgroundObservationStarted;
 
     public LiveTradingEngineHostedService(
         LiveTradingEngine engine,
@@ -218,20 +221,74 @@ internal sealed class LiveTradingEngineHostedService : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _stopping.Cancel();
-        if (_resumeTask is { } resume)
+        Task stopTask;
+        lock (_stopSync)
         {
-            try
-            {
-                await resume.ConfigureAwait(false);
-            }
-            catch
-            {
-                // Resume failures were already logged by the sweep task.
-            }
+            // Start cleanup independently of the host deadline. If the deadline expires, the
+            // same owned task continues draining OMS fills and sessions and is explicitly observed.
+            _stopTask ??= StopCoreAsync();
+            stopTask = _stopTask;
         }
 
-        await _engine.DisposeAsync().ConfigureAwait(false);
-        _stopping.Dispose();
+        try
+        {
+            await stopTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            ObserveBackgroundCleanup(stopTask);
+            throw;
+        }
+    }
+
+    private async Task StopCoreAsync()
+    {
+        try
+        {
+            await _stopping.CancelAsync().ConfigureAwait(false);
+            if (_resumeTask is { } resume)
+            {
+                try
+                {
+                    await resume.ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Resume failures were already logged by the sweep task.
+                }
+            }
+
+            await _engine.DisposeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _stopping.Dispose();
+        }
+    }
+
+    private void ObserveBackgroundCleanup(Task stopTask)
+    {
+        if (Interlocked.Exchange(ref _backgroundObservationStarted, 1) != 0)
+        {
+            return;
+        }
+
+        _ = ObserveBackgroundCleanupAsync(stopTask);
+    }
+
+    private async Task ObserveBackgroundCleanupAsync(Task stopTask)
+    {
+        try
+        {
+            await stopTask.ConfigureAwait(false);
+            _logger.LogInformation(
+                "Live trading engine cleanup completed after the host shutdown deadline elapsed.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(
+                ex,
+                "Live trading engine cleanup failed after the host shutdown deadline elapsed.");
+        }
     }
 }

@@ -1619,6 +1619,33 @@ describe("AccountingScreen", () => {
     expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
   });
 
+  it("presents control-center scope as aggregate metadata instead of inert filters", async () => {
+    await renderAccountingScreen({
+      ...data,
+      controlCenter: {
+        closeReadiness: "ReviewRequired",
+        portfolioFilterOptions: ["all-portfolios", "equity"],
+        accountFilterOptions: ["fund-alpha"],
+        blockerSeverityDistribution: [],
+        agingCurves: [],
+        ownerWorkload: [],
+        slaBreachCount: 1,
+        trendSnapshots: [],
+        drillLinks: [],
+        alerts: []
+      }
+    });
+
+    const scope = screen.getByRole("group", { name: "Operations control center scope" });
+    expect(scope).toHaveTextContent("Portfolio coverage");
+    expect(scope).toHaveTextContent("all-portfolios, equity");
+    expect(scope).toHaveTextContent("Account coverage");
+    expect(scope).toHaveTextContent("fund-alpha");
+    expect(screen.queryByRole("combobox", { name: /portfolio filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /account filter/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/does not present a selector until the service supplies per-scope measures/i)).toBeInTheDocument();
+  });
+
   it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
     const generatedPostings: GeneratedPostingLine[] = [
       {

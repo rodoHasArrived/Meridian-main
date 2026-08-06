@@ -103,6 +103,41 @@ export type WorkstationRoutePath = (typeof WORKSTATION_ROUTE_CATALOG)[Workstatio
 export type WorkstationRouteQueryValue = string | number | boolean | null | undefined;
 
 /**
+ * Exact routes owned by the shared Data workbench. Keeping this list next to the
+ * typed catalog prevents an arbitrary `/data/*` path from silently rendering the
+ * Data root view.
+ */
+export const DATA_WORKSTATION_SCREEN_ROUTES: readonly WorkstationRoutePath[] = [
+  WORKSTATION_ROUTE_CATALOG.data,
+  WORKSTATION_ROUTE_CATALOG.dataImport,
+  WORKSTATION_ROUTE_CATALOG.dataProviders,
+  WORKSTATION_ROUTE_CATALOG.dataBackfills,
+  WORKSTATION_ROUTE_CATALOG.dataOperations,
+  WORKSTATION_ROUTE_CATALOG.dataAssurance,
+  WORKSTATION_ROUTE_CATALOG.dataExports,
+  WORKSTATION_ROUTE_CATALOG.dataQuery
+];
+
+/** Exact, non-parameterized routes owned by the Settings workbench. */
+export const SETTINGS_WORKSTATION_SCREEN_ROUTES: readonly WorkstationRoutePath[] = [
+  WORKSTATION_ROUTE_CATALOG.settings,
+  WORKSTATION_ROUTE_CATALOG.settingsPreferences,
+  WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems,
+  WORKSTATION_ROUTE_CATALOG.settingsIntegrations,
+  WORKSTATION_ROUTE_CATALOG.settingsAccess,
+  WORKSTATION_ROUTE_CATALOG.settingsProviders,
+  WORKSTATION_ROUTE_CATALOG.settingsDiagnostics,
+  WORKSTATION_ROUTE_CATALOG.settingsDiagnosticsAdvanced,
+  WORKSTATION_ROUTE_CATALOG.settingsFeatureCoverage
+];
+
+/** Parameterized provider routes accepted by React Router and Settings route state. */
+export const SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS = [
+  "/settings/providers/:providerId/setup",
+  "/settings/providers/:providerId/advanced"
+] as const;
+
+/**
  * Routes whose screens have no data source wired yet — they render a permanent
  * "not connected" empty state (Family Office is mounted without an
  * entityStructure; the Formula Workbench has no formula catalog endpoint).

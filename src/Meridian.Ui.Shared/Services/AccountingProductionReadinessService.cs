@@ -240,6 +240,17 @@ public sealed class AccountingProductionReadinessService
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var retainedEvidence = request.RetainedEvidence
+            .Concat(profile.RetainedEvidence)
+            .Where(AccountingProductionCertificationEvidenceValidator.IsEligible)
+            .DistinctBy(static item =>
+                $"{item.EvidenceId}|{item.SubjectType}|{item.SubjectId}",
+                StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var tenantAdminArtifacts = request.TenantAdminCertificationArtifacts
+            .Concat(profile.CertificationArtifacts)
+            .DistinctBy(static item => item.CertificationId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
         return request with
         {
@@ -266,7 +277,9 @@ public sealed class AccountingProductionReadinessService
             ApprovalQueueStudioConfigured = profile.ApprovalQueueStudioConfigured,
             DimensionMappingStudioConfigured = profile.DimensionMappingStudioConfigured,
             ImplementationSandboxConfigured = profile.ImplementationSandboxConfigured,
-            TenantAdministrationEvidenceLinks = evidence
+            TenantAdministrationEvidenceLinks = evidence,
+            RetainedEvidence = retainedEvidence,
+            TenantAdminCertificationArtifacts = tenantAdminArtifacts
         };
     }
 
@@ -3078,9 +3091,57 @@ public sealed class AccountingProductionReadinessService
         IEnumerable<string> evidenceReferences,
         params string[] aliases)
     {
-        _ = evidenceReferences;
-        _ = aliases;
-        return request.LedgerBookId.HasValue;
+        if (!request.LedgerBookId.HasValue || aliases.Length == 0)
+        {
+            return false;
+        }
+
+        var lane = aliases[0].ToLowerInvariant() switch
+        {
+            "tenant-scope" => AccountingTenantAdminCertificationLaneKindDto.TenantScope,
+            "admin-role" => AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile,
+            "scoped-access" => AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies,
+            "reporting-group" => AccountingTenantAdminCertificationLaneKindDto.ReportingGroups,
+            "accounting-admin-surface" => AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface,
+            "browser-admin-studio" => AccountingTenantAdminCertificationLaneKindDto.BrowserAccountingAdminSurface,
+            "wpf-admin-studio" => AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface,
+            "chart-admin" => AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio,
+            "rule-test-promotion" => AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio,
+            "close-setup" => AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio,
+            "provider-mapping" => AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio,
+            "tenant-company-report-group" => AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio,
+            "audit-review" => AccountingTenantAdminCertificationLaneKindDto.AuditReviewTooling,
+            "bulk-import-export" => AccountingTenantAdminCertificationLaneKindDto.BulkImportExportSafeguards,
+            "performance-validation" => AccountingTenantAdminCertificationLaneKindDto.PerformanceValidation,
+            "disaster-recovery" => AccountingTenantAdminCertificationLaneKindDto.DisasterRecoveryRunbook,
+            "ledger-book-admin" => AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio,
+            "posting-rule-authoring" => AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio,
+            "approval-queue" => AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio,
+            "dimension-mapping" => AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio,
+            "implementation-sandbox" => AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox,
+            _ => (AccountingTenantAdminCertificationLaneKindDto?)null
+        };
+        if (!lane.HasValue)
+        {
+            return false;
+        }
+
+        var visibleEvidence = evidenceReferences
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        return CertifiedTenantAdminArtifacts(request, fundProfileId)
+            .Any(artifact =>
+                artifact.Lanes.Any(result =>
+                    result.Kind == lane.Value &&
+                    result.Status == AccountingCertificationArtifactLaneStatusDto.Passed &&
+                    result.EvidenceReferences.Any(visibleEvidence.Contains)) &&
+                request.RetainedEvidence.Any(evidence =>
+                    AccountingProductionCertificationEvidenceValidator.BindsTo(
+                        evidence,
+                        AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                        artifact.CertificationId)));
     }
 
     private static IReadOnlyList<AccountingProductionGapDto> BuildProductionGaps(

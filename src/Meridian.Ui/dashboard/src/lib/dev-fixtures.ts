@@ -1584,6 +1584,24 @@ const fixtureAlpacaConnection: BrokerageConnectionStatus = {
   maskedKeyId: "********DEMO"
 };
 
+const fixtureRobinhoodConnection: BrokerageConnectionStatus = {
+  providerId: "robinhood",
+  displayName: "Robinhood read-only",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:45:00Z",
+  expiresAt: "2026-05-07T12:45:00Z",
+  lastError: null,
+  warnings: [],
+  scopes: ["read_accounts", "read_holdings", "read_transactions"],
+  environment: "read-only",
+  externalAccountId: "RH-DEMO",
+  verifiedAt: "2026-05-07T11:50:00Z",
+  maskedKeyId: null
+};
+
 const fixtureAlpacaPortfolio: BrokerageHouseholdPortfolio = {
   providerId: "alpaca",
   asOf: "2026-05-07T12:00:00Z",
@@ -6377,7 +6395,7 @@ const fixtures = {
   [REPLAY_API_ENDPOINTS.files]: fixtureReplayFiles,
   [PROMOTION_API_ENDPOINTS.history]: fixturePromotionHistory,
   [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
-  [brokerageConnectionStatusEndpoint("robinhood")]: fixtureAlpacaConnection,
+  [brokerageConnectionStatusEndpoint("robinhood")]: fixtureRobinhoodConnection,
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
   [WORKSTATION_API_ENDPOINTS.data]: fixtureDataWorkspace,
   "/api/workstation/data-operations": fixtureDataWorkspace,

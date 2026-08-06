@@ -14,7 +14,8 @@ last_reviewed: 2026-08-04
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
-and visibly labelled `SAMPLE · PAPER` throughout the shell.
+and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
+normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
 
 ## Purpose
 

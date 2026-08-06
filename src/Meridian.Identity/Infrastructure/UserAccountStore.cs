@@ -43,6 +43,7 @@ public interface IUserAccountStore
 
 public sealed class FileUserAccountStore : IUserAccountStore
 {
+    private const int MutationIntentVersion = 1;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
@@ -58,6 +59,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string _path;
     private readonly string _auditPath;
+    private readonly string _mutationIntentPath;
     private readonly ILogger<FileUserAccountStore>? _logger;
 
     public FileUserAccountStore(StorageOptions storageOptions, ILogger<FileUserAccountStore>? logger = null)
@@ -65,7 +67,9 @@ public sealed class FileUserAccountStore : IUserAccountStore
         ArgumentNullException.ThrowIfNull(storageOptions);
         _path = Path.Combine(storageOptions.RootPath, "governance", "user-accounts.json");
         _auditPath = Path.Combine(storageOptions.RootPath, "governance", "user-account-audit.jsonl");
+        _mutationIntentPath = Path.Combine(storageOptions.RootPath, "governance", "user-account-mutation-intent.json");
         _logger = logger;
+        RecoverPendingMutation();
     }
 
     public bool HasAccounts => ReadSnapshot().Accounts.Count > 0;
@@ -100,44 +104,53 @@ public sealed class FileUserAccountStore : IUserAccountStore
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_auditPath))
+        await _writeGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            return [];
-        }
-
-        var events = new List<UserAccountAuditEventDto>();
-        var lines = await File.ReadAllLinesAsync(_auditPath, ct).ConfigureAwait(false);
-        foreach (var line in lines)
-        {
-            if (string.IsNullOrWhiteSpace(line))
+            RecoverPendingMutation();
+            if (!File.Exists(_auditPath))
             {
-                continue;
+                return [];
             }
 
-            try
+            var events = new List<UserAccountAuditEventDto>();
+            var lines = await File.ReadAllLinesAsync(_auditPath, ct).ConfigureAwait(false);
+            foreach (var line in lines)
             {
-                var auditEvent = JsonSerializer.Deserialize<UserAccountAuditEventDto>(line, AuditJsonOptions);
-                if (auditEvent is not null)
+                if (string.IsNullOrWhiteSpace(line))
                 {
-                    events.Add(auditEvent);
+                    continue;
+                }
+
+                try
+                {
+                    var auditEvent = JsonSerializer.Deserialize<UserAccountAuditEventDto>(line, AuditJsonOptions);
+                    if (auditEvent is not null)
+                    {
+                        events.Add(auditEvent);
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    // Keep the account surface available even if one historical audit line is corrupt.
+                    _logger?.LogWarning(ex, "Skipping corrupt user-account audit line in {Path}.", _auditPath);
+                }
+                catch (NotSupportedException ex)
+                {
+                    // Keep the account surface available even if one historical audit line is corrupt.
+                    _logger?.LogWarning(ex, "Skipping unreadable user-account audit line in {Path}.", _auditPath);
                 }
             }
-            catch (JsonException ex)
-            {
-                // Keep the account surface available even if one historical audit line is corrupt.
-                _logger?.LogWarning(ex, "Skipping corrupt user-account audit line in {Path}.", _auditPath);
-            }
-            catch (NotSupportedException ex)
-            {
-                // Keep the account surface available even if one historical audit line is corrupt.
-                _logger?.LogWarning(ex, "Skipping unreadable user-account audit line in {Path}.", _auditPath);
-            }
-        }
 
-        return events
-            .OrderByDescending(item => item.OccurredAtUtc)
-            .Take(limit.GetValueOrDefault(100))
-            .ToArray();
+            return events
+                .OrderByDescending(item => item.OccurredAtUtc)
+                .Take(limit.GetValueOrDefault(100))
+                .ToArray();
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
     }
 
     public async Task<UserAccountMutationResultDto> UpsertAsync(
@@ -160,6 +173,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            RecoverPendingMutation();
             var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
             var accounts = snapshot.Accounts.ToList();
             var index = accounts.FindIndex(account => AccountKey(account.Username) == validated.AccountKey);
@@ -209,7 +223,6 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 accounts.Add(persisted);
             }
 
-            await SaveAsync(new UserAccountSnapshot(accounts), ct).ConfigureAwait(false);
             var dto = ToDto(persisted);
             var auditEvent = BuildAuditEvent(
                 auditId,
@@ -219,7 +232,10 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 dto,
                 validated.Rationale,
                 correlationId);
-            await AppendAuditAsync(auditEvent, ct).ConfigureAwait(false);
+            await CommitAccountMutationAsync(
+                new UserAccountSnapshot(accounts),
+                auditEvent,
+                ct).ConfigureAwait(false);
             return new UserAccountMutationResultDto(dto, auditEvent);
         }
         finally
@@ -246,6 +262,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            RecoverPendingMutation();
             var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
             var accounts = snapshot.Accounts.ToList();
             var index = accounts.FindIndex(account => AccountKey(account.Username) == accountKey);
@@ -266,8 +283,6 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 LastAuditId = auditId
             };
             accounts[index] = updated;
-            await SaveAsync(new UserAccountSnapshot(accounts), ct).ConfigureAwait(false);
-
             var dto = ToDto(updated);
             var auditEvent = BuildAuditEvent(
                 auditId,
@@ -278,7 +293,10 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 rationale,
                 IdentityGovernanceNormalization.NormalizeCorrelationId(request.CorrelationId, "user-password-reset"),
                 revokedSessionCount);
-            await AppendAuditAsync(auditEvent, ct).ConfigureAwait(false);
+            await CommitAccountMutationAsync(
+                new UserAccountSnapshot(accounts),
+                auditEvent,
+                ct).ConfigureAwait(false);
             return new UserAccountMutationResultDto(dto, auditEvent, revokedSessionCount);
         }
         finally
@@ -303,6 +321,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            RecoverPendingMutation();
             var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
             var accounts = snapshot.Accounts.ToList();
             var index = accounts.FindIndex(account => AccountKey(account.Username) == accountKey);
@@ -323,8 +342,6 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 LastAuditId = auditId
             };
             accounts[index] = updated;
-            await SaveAsync(new UserAccountSnapshot(accounts), ct).ConfigureAwait(false);
-
             var dto = ToDto(updated);
             var auditEvent = BuildAuditEvent(
                 auditId,
@@ -335,7 +352,10 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 rationale,
                 IdentityGovernanceNormalization.NormalizeCorrelationId(request.CorrelationId, request.IsDisabled ? "user-account-disabled" : "user-account-enabled"),
                 revokedSessionCount);
-            await AppendAuditAsync(auditEvent, ct).ConfigureAwait(false);
+            await CommitAccountMutationAsync(
+                new UserAccountSnapshot(accounts),
+                auditEvent,
+                ct).ConfigureAwait(false);
             return new UserAccountMutationResultDto(dto, auditEvent, revokedSessionCount);
         }
         finally
@@ -372,7 +392,16 @@ public sealed class FileUserAccountStore : IUserAccountStore
             IsDisabled: false,
             PasswordResetRequired: false,
             RevokedSessionCount: revokedSessionCount);
-        await AppendAuditAsync(auditEvent, ct).ConfigureAwait(false);
+        await _writeGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            RecoverPendingMutation();
+            await AppendAuditIfMissingAsync(auditEvent, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
 
         return new UserSessionRevokeResultDto(
             auditId,
@@ -387,14 +416,23 @@ public sealed class FileUserAccountStore : IUserAccountStore
 
     private UserAccountSnapshot ReadSnapshot()
     {
-        lock (_readGate)
+        _writeGate.Wait();
+        try
         {
-            if (!File.Exists(_path))
+            RecoverPendingMutation();
+            lock (_readGate)
             {
-                return new UserAccountSnapshot([]);
-            }
+                if (!File.Exists(_path))
+                {
+                    return new UserAccountSnapshot([]);
+                }
 
-            return ParseSnapshotSafe(File.ReadAllText(_path));
+                return ParseSnapshotSafe(File.ReadAllText(_path));
+            }
+        }
+        finally
+        {
+            _writeGate.Release();
         }
     }
 
@@ -437,21 +475,181 @@ public sealed class FileUserAccountStore : IUserAccountStore
 
     private async Task SaveAsync(UserAccountSnapshot snapshot, CancellationToken ct)
     {
-        var ordered = snapshot with
+        var json = JsonSerializer.Serialize(OrderSnapshot(snapshot), JsonOptions);
+        await AtomicFileWriter.WriteAsync(_path, json, ct).ConfigureAwait(false);
+    }
+
+    private void Save(UserAccountSnapshot snapshot)
+        => AtomicFileWriter.Write(_path, JsonSerializer.Serialize(OrderSnapshot(snapshot), JsonOptions));
+
+    private async Task CommitAccountMutationAsync(
+        UserAccountSnapshot snapshot,
+        UserAccountAuditEventDto auditEvent,
+        CancellationToken ct)
+    {
+        var intent = new UserAccountMutationIntent(
+            MutationIntentVersion,
+            auditEvent.AuditId,
+            DateTimeOffset.UtcNow,
+            OrderSnapshot(snapshot),
+            auditEvent);
+        ValidateMutationIntent(intent);
+
+        // The atomic intent is the commit point. Before it exists, cancellation leaves no effect;
+        // after it exists, completion is deliberately non-cancellable so callers never observe a
+        // cancellation while a recoverable mutation is already committed.
+        await AtomicFileWriter.WriteAsync(
+            _mutationIntentPath,
+            JsonSerializer.Serialize(intent, JsonOptions),
+            ct).ConfigureAwait(false);
+
+        await AppendAuditIfMissingAsync(auditEvent, CancellationToken.None).ConfigureAwait(false);
+        await SaveAsync(intent.Snapshot, CancellationToken.None).ConfigureAwait(false);
+        await DeleteMutationIntentAsync().ConfigureAwait(false);
+    }
+
+    private async Task AppendAuditIfMissingAsync(UserAccountAuditEventDto auditEvent, CancellationToken ct)
+    {
+        if (File.Exists(_auditPath))
+        {
+            var existingLines = await File.ReadAllLinesAsync(_auditPath, ct).ConfigureAwait(false);
+            if (ContainsAuditId(existingLines, auditEvent.AuditId))
+            {
+                return;
+            }
+        }
+
+        var json = JsonSerializer.Serialize(auditEvent, AuditJsonOptions);
+        await AtomicFileWriter.AppendLinesAsync(_auditPath, [json], ct).ConfigureAwait(false);
+    }
+
+    private void AppendAuditIfMissing(UserAccountAuditEventDto auditEvent)
+    {
+        var existing = File.Exists(_auditPath) ? File.ReadAllText(_auditPath) : string.Empty;
+        if (ContainsAuditId(existing.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries), auditEvent.AuditId))
+        {
+            return;
+        }
+
+        var separator = existing.Length == 0 || existing.EndsWith('\n')
+            ? string.Empty
+            : Environment.NewLine;
+        var line = JsonSerializer.Serialize(auditEvent, AuditJsonOptions);
+        AtomicFileWriter.Write(_auditPath, existing + separator + line + Environment.NewLine);
+    }
+
+    private void RecoverPendingMutation()
+    {
+        if (!File.Exists(_mutationIntentPath))
+        {
+            return;
+        }
+
+        UserAccountMutationIntent intent;
+        try
+        {
+            intent = JsonSerializer.Deserialize<UserAccountMutationIntent>(
+                File.ReadAllText(_mutationIntentPath),
+                JsonOptions) ?? throw new InvalidDataException("The user-account mutation intent is empty.");
+        }
+        catch (Exception ex) when (ex is JsonException or NotSupportedException)
+        {
+            throw new InvalidDataException(
+                $"The user-account mutation intent at '{_mutationIntentPath}' is corrupt; identity mutations are blocked pending recovery.",
+                ex);
+        }
+
+        ValidateMutationIntent(intent);
+        AppendAuditIfMissing(intent.AuditEvent);
+        Save(intent.Snapshot);
+        DeleteMutationIntent();
+        _logger?.LogWarning(
+            "Recovered committed user-account mutation {AuditId} from {Path}.",
+            intent.AuditEvent.AuditId,
+            _mutationIntentPath);
+    }
+
+    private static void ValidateMutationIntent(UserAccountMutationIntent intent)
+    {
+        if (intent.Version != MutationIntentVersion ||
+            string.IsNullOrWhiteSpace(intent.MutationId) ||
+            !string.Equals(intent.MutationId, intent.AuditEvent.AuditId, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("The user-account mutation intent has an invalid version or audit identity.");
+        }
+
+        var target = intent.Snapshot.Accounts.SingleOrDefault(account =>
+            AccountKey(account.Username) == AccountKey(intent.AuditEvent.Username));
+        if (target is null || !string.Equals(target.LastAuditId, intent.AuditEvent.AuditId, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                "The user-account mutation intent does not bind its target account snapshot to the audit event.");
+        }
+    }
+
+    private static bool ContainsAuditId(IEnumerable<string> lines, string auditId)
+    {
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            UserAccountAuditEventDto? existing;
+            try
+            {
+                existing = JsonSerializer.Deserialize<UserAccountAuditEventDto>(line, AuditJsonOptions);
+            }
+            catch (Exception ex) when (ex is JsonException or NotSupportedException)
+            {
+                throw new InvalidDataException(
+                    "The user-account audit stream is corrupt; mutation recovery cannot prove idempotency.",
+                    ex);
+            }
+
+            if (existing is null || string.IsNullOrWhiteSpace(existing.AuditId))
+            {
+                throw new InvalidDataException(
+                    "The user-account audit stream contains an entry without an audit identity.");
+            }
+
+            if (string.Equals(existing.AuditId, auditId, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task DeleteMutationIntentAsync()
+    {
+        File.Delete(_mutationIntentPath);
+        var directory = Path.GetDirectoryName(_mutationIntentPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
+        }
+    }
+
+    private void DeleteMutationIntent()
+    {
+        File.Delete(_mutationIntentPath);
+        var directory = Path.GetDirectoryName(_mutationIntentPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).GetAwaiter().GetResult();
+        }
+    }
+
+    private static UserAccountSnapshot OrderSnapshot(UserAccountSnapshot snapshot)
+        => snapshot with
         {
             Accounts = snapshot.Accounts
                 .OrderBy(account => account.Username, StringComparer.OrdinalIgnoreCase)
                 .ToArray()
         };
-        var json = JsonSerializer.Serialize(ordered, JsonOptions);
-        await AtomicFileWriter.WriteAsync(_path, json, ct).ConfigureAwait(false);
-    }
-
-    private async Task AppendAuditAsync(UserAccountAuditEventDto auditEvent, CancellationToken ct)
-    {
-        var json = JsonSerializer.Serialize(auditEvent, AuditJsonOptions);
-        await AtomicFileWriter.AppendLinesAsync(_auditPath, [json], ct).ConfigureAwait(false);
-    }
 
     private static ValidatedUserAccountRequest ValidateAccountRequest(
         string username,
@@ -577,6 +775,13 @@ public sealed class FileUserAccountStore : IUserAccountStore
         => username.Trim().ToLowerInvariant();
 
     private sealed record UserAccountSnapshot(IReadOnlyList<PersistedUserAccount> Accounts);
+
+    private sealed record UserAccountMutationIntent(
+        int Version,
+        string MutationId,
+        DateTimeOffset CreatedAtUtc,
+        UserAccountSnapshot Snapshot,
+        UserAccountAuditEventDto AuditEvent);
 
     private sealed record PersistedUserAccount(
         string Username,

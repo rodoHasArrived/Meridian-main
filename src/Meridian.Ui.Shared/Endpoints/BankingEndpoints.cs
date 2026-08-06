@@ -76,6 +76,57 @@ public static class BankingEndpoints
         .WithName("GetPendingPayments")
         .Produces<IReadOnlyList<PendingPaymentDto>>(StatusCodes.Status200OK);
 
+        group.MapPost("/payments/{pendingPaymentId:guid}/currency-remediation", async (Guid pendingPaymentId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+            if (!TryGetRequiredEntityId(context, out var entityId, out var entityError))
+                return entityError!;
+            if (!TryGetCurrentUsername(context, out var currentUser))
+                return Results.Problem("Unauthorized.", statusCode: StatusCodes.Status401Unauthorized);
+            if (!HasPermission(context, UserPermission.ManageDirectLending))
+                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
+
+            var payment = await service.GetPaymentAsync(
+                pendingPaymentId,
+                context.RequestAborted).ConfigureAwait(false);
+            if (payment is null || payment.EntityId != entityId)
+                return Results.NotFound();
+
+            var request = JsonSerializer.Deserialize<RemediatePaymentCurrencyRequest>(
+                body.GetRawText(),
+                jsonOptions);
+            if (request is null)
+            {
+                return Results.Problem(
+                    "Currency remediation request body is required.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var serverRequest = request with { RemediatedBy = currentUser };
+            try
+            {
+                var result = await service.RemediatePaymentCurrencyAsync(
+                    pendingPaymentId,
+                    serverRequest,
+                    context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (BankingException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("RemediatePaymentCurrency")
+        .Produces<PendingPaymentDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status422UnprocessableEntity);
+
         group.MapPost("/payments/{pendingPaymentId:guid}/approve", async (Guid pendingPaymentId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
@@ -99,8 +150,8 @@ public static class BankingEndpoints
                 return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
             }
 
-            var pending = await service.GetPendingPaymentsAsync(entityId, context.RequestAborted).ConfigureAwait(false);
-            if (!pending.Any(p => p.PendingPaymentId == pendingPaymentId))
+            var payment = await service.GetPaymentAsync(pendingPaymentId, context.RequestAborted).ConfigureAwait(false);
+            if (payment is null || payment.EntityId != entityId)
             {
                 return Results.NotFound();
             }
@@ -122,6 +173,7 @@ public static class BankingEndpoints
         .WithName("ApprovePayment")
         .Produces<PendingPaymentDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/payments/{pendingPaymentId:guid}/reject", async (Guid pendingPaymentId, JsonElement body, HttpContext context) =>
@@ -147,8 +199,8 @@ public static class BankingEndpoints
                 return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
             }
 
-            var pending = await service.GetPendingPaymentsAsync(entityId, context.RequestAborted).ConfigureAwait(false);
-            if (!pending.Any(p => p.PendingPaymentId == pendingPaymentId))
+            var payment = await service.GetPaymentAsync(pendingPaymentId, context.RequestAborted).ConfigureAwait(false);
+            if (payment is null || payment.EntityId != entityId)
             {
                 return Results.NotFound();
             }
@@ -174,6 +226,7 @@ public static class BankingEndpoints
         .WithName("RejectPayment")
         .Produces<PendingPaymentDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/payments/{pendingPaymentId:guid}/bank-evidence", async (Guid pendingPaymentId, JsonElement body, HttpContext context) =>
@@ -226,6 +279,7 @@ public static class BankingEndpoints
         .WithName("RecordPaymentBankEvidence")
         .Produces<BankTransactionDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status404NotFound);
 
         // -------------------------------------------------------------------
@@ -316,5 +370,9 @@ public static class BankingEndpoints
         Results.Problem("Banking service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
     private static IResult ToProblem(BankingException exception) =>
-        Results.Problem(exception.Message, statusCode: StatusCodes.Status422UnprocessableEntity);
+        Results.Problem(
+            exception.Message,
+            statusCode: exception is BankingConflictException
+                ? StatusCodes.Status409Conflict
+                : StatusCodes.Status422UnprocessableEntity);
 }

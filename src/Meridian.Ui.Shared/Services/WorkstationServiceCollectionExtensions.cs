@@ -141,6 +141,11 @@ public static class WorkstationServiceCollectionExtensions
                 StringComparison.OrdinalIgnoreCase)));
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
         services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
+        services.TryAddSingleton<IAccessRoleAssignmentStore, UserAccountAccessRoleAssignmentStore>();
+        services.TryAddSingleton<IComplianceApprovalStore, FileComplianceApprovalStore>();
+        services.TryAddSingleton<IComplianceApprovalResolver>(sp =>
+            sp.GetRequiredService<IComplianceApprovalStore>());
+        services.TryAddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
         {
             var hasProcessWideScopedAccessMigration = services.Any(
@@ -297,6 +302,9 @@ public static class WorkstationServiceCollectionExtensions
             new FileAccountingProductionCertificationProfileStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "production-certification-profiles.json"),
                 sp.GetRequiredService<ILogger<FileAccountingProductionCertificationProfileStore>>()));
+        services.TryAddSingleton<IAccountingProductionCertificationEvidenceAuthority,
+            EvidenceVaultAccountingProductionCertificationEvidenceAuthority>();
+        services.TryAddSingleton<AccountingProductionCertificationCommandService>();
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
@@ -666,6 +674,7 @@ public static class WorkstationServiceCollectionExtensions
         // seam. Canonical capital-account primary documents use the exact certified ledger pack.
         services.TryAddSingleton<IReportingPartnersCapitalSource>(sp =>
             new LedgerReportingPartnersCapitalSource(sp.GetService<ILedgerJournalStore>()));
+        services.TryAddSingleton<ReportingOrchestrationRetentionOptions>();
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
             new ReportingOrchestrationService(
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
@@ -674,7 +683,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IReportingRunStore>(),
                 // Null until the report-run stream broadcaster is registered (D1d); the null-object
                 // default keeps run execution unaffected in the meantime.
-                sp.GetService<IReportingRunNotifier>()));
+                sp.GetService<IReportingRunNotifier>(),
+                partnersCapitalSource: null,
+                retentionOptions: sp.GetRequiredService<ReportingOrchestrationRetentionOptions>()));
         if (!isProductionComposition)
         {
             services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
@@ -940,7 +951,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Infrastructure.Reconciliation.IReconciliationCaseStore>(),
                 sp.GetService<IStatementRunWorkflowService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<ILedgerJournalStore>()));
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementCaseworkCommitStore>()));
         services.TryAddSingleton<SecurityMasterExceptionCaseworkService>(sp =>
             new SecurityMasterExceptionCaseworkService(
                 sp.GetService<IReconciliationBreakQueueRepository>(),

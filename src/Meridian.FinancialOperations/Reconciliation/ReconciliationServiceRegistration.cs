@@ -31,6 +31,12 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementRunRecoveryRepository>(sp =>
+            new FileStatementRunRecoveryRepository(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementRunMatchArtifactStore>(sp =>
+            new FileStatementRunMatchArtifactStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementCaseworkCommitStore>(sp =>
+            new FileStatementCaseworkCommitStore(sp.GetRequiredService<StorageOptions>().RootPath));
         AddBrokerStatementServices(services);
         AddConnectorServices(services, static sp => sp.GetRequiredService<StorageOptions>().RootPath);
         return services;
@@ -51,6 +57,9 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(dataRoot));
         services.TryAddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(dataRoot));
         services.TryAddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(dataRoot));
+        services.TryAddSingleton<IStatementRunRecoveryRepository>(_ => new FileStatementRunRecoveryRepository(dataRoot));
+        services.TryAddSingleton<IStatementRunMatchArtifactStore>(_ => new FileStatementRunMatchArtifactStore(dataRoot));
+        services.TryAddSingleton<IStatementCaseworkCommitStore>(_ => new FileStatementCaseworkCommitStore(dataRoot));
         AddBrokerStatementServices(services);
         AddConnectorServices(services, _ => dataRoot);
         return services;

@@ -23,6 +23,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Reporting;
 using Meridian.Ui.Services.Services.Accounting;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -275,6 +276,13 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new FileAccountingProductionCertificationProfileStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "production-certification-profiles.json"),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingProductionCertificationProfileStore>>()));
+        services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
+            new FileEvidenceArtifactStore(
+                FileEvidenceArtifactStore.ResolveDataRoot(sp),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileEvidenceArtifactStore>>()));
+        services.TryAddSingleton<IAccountingProductionCertificationEvidenceAuthority,
+            EvidenceVaultAccountingProductionCertificationEvidenceAuthority>();
+        services.TryAddSingleton<AccountingProductionCertificationCommandService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());

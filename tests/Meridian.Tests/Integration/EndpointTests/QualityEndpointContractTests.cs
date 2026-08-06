@@ -197,6 +197,59 @@ public sealed class QualityEndpointContractTests
         payload.RecommendedProvider.Should().Be("Provider2");
     }
 
+    [Theory]
+    [InlineData("/api/quality/completeness?date=not-a-date", "date")]
+    [InlineData("/api/quality/reports/weekly?weekStart=03%2F20%2F2026", "weekStart")]
+    public async Task QualityDateParameters_WhenMalformed_ReturnValidationProblem(
+        string route,
+        string field)
+    {
+        var hostContext = await CreateHostAsync();
+        await using var host = hostContext.App;
+        using var client = host.GetTestClient();
+
+        var response = await client.GetAsync(route);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("type").GetString().Should().Be(ApiProblemTypes.Validation);
+        problem.RootElement.GetProperty("errors").TryGetProperty(field, out _).Should().BeTrue();
+        problem.RootElement.GetRawText().Should().NotContain("FormatException");
+    }
+
+    [Fact]
+    public async Task QualityDashboard_WhenDependencyFails_ReturnsSafeLoggedProblem()
+    {
+        var hostContext = await CreateHostAsync(new ThrowingCompositeQualityService());
+        await using var host = hostContext.App;
+        using var client = host.GetTestClient();
+
+        var response = await client.GetAsync(UiApiRoutes.QualityDashboard);
+
+        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("type").GetString().Should().Be(ApiProblemTypes.Internal);
+        problem.RootElement.GetProperty("detail").GetString().Should().Contain("could not be completed");
+        problem.RootElement.GetRawText().Should().NotContain("provider-secret-123");
+    }
+
+    [Fact]
+    public async Task QualityDashboard_WhenRequestIsAborted_PropagatesCancellationToDependency()
+    {
+        var composite = new BlockingCompositeQualityService();
+        var hostContext = await CreateHostAsync(composite);
+        await using var host = hostContext.App;
+        using var client = host.GetTestClient();
+        using var cts = new CancellationTokenSource();
+
+        var request = client.GetAsync(UiApiRoutes.QualityDashboard, cts.Token);
+        await composite.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => request);
+        await composite.CancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
     [Fact]
     public async Task QualityAnomalyAcknowledgement_ReturnsStableAcknowledgementContract()
     {
@@ -372,6 +425,48 @@ public sealed class QualityEndpointContractTests
             return new StubCompositeQualityService(
                 dashboard,
                 new CompositeDataQualityGap(gapResponse.GapId, dashboard.Version, gap, gapResponse.Provider));
+        }
+    }
+
+    private sealed class ThrowingCompositeQualityService : ICompositeDataQualityReadService
+    {
+        public Task<QualityCompositeDashboardResponse> GetDashboardAsync(CancellationToken ct = default)
+            => throw new InvalidOperationException("provider-secret-123");
+
+        public bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target)
+        {
+            target = null!;
+            return false;
+        }
+    }
+
+    private sealed class BlockingCompositeQualityService : ICompositeDataQualityReadService
+    {
+        public TaskCompletionSource Started { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource CancellationObserved { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task<QualityCompositeDashboardResponse> GetDashboardAsync(
+            CancellationToken ct = default)
+        {
+            Started.TrySetResult();
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+                throw new InvalidOperationException("Unreachable.");
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                CancellationObserved.TrySetResult();
+                throw;
+            }
+        }
+
+        public bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target)
+        {
+            target = null!;
+            return false;
         }
     }
 

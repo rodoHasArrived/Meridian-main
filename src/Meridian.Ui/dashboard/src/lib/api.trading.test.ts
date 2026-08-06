@@ -419,6 +419,44 @@ describe("trading endpoint wiring", () => {
     });
   });
 
+  it("does not invent a current heartbeat when the typed status payload omits timestamps", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      headers: { get: () => null },
+      json: async () => ({
+        systemStatus: "Degraded",
+        providersOnline: 0,
+        providersTotal: 1,
+        storageHealth: "Warning"
+      }),
+      text: async () => "{}"
+    });
+
+    await expect(getSystemStatus()).resolves.toMatchObject({
+      systemStatus: "Degraded",
+      lastHeartbeatUtc: null
+    });
+  });
+
+  it("does not fabricate a legacy status event timestamp when the host omits freshness", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      headers: { get: () => null },
+      json: async () => ({
+        isConnected: false,
+        metrics: {},
+        pipeline: {}
+      }),
+      text: async () => "{}"
+    });
+
+    await expect(getSystemStatus()).resolves.toMatchObject({
+      systemStatus: "Offline",
+      lastHeartbeatUtc: null,
+      recentEvents: []
+    });
+  });
+
   it("wires Alpaca brokerage connection endpoints", async () => {
     const controller = new AbortController();
     await getAlpacaConnectionStatus();

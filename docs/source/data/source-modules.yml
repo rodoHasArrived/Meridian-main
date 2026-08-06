@@ -837,7 +837,7 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Audit/Meridian.Audit.csproj /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CompliancePolicyEngineTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CompliancePolicyEngineTests|FullyQualifiedName~AccessReviewServiceTests" /p:EnableWindowsTargeting=true
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []

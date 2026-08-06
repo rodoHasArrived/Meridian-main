@@ -330,7 +330,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         IStatementToleranceProfileProvider? toleranceProfileProvider = null)
     {
         var importStore = new JsonCanonicalStatementStore(_root);
-        return new StatementRunWorkflowService(
+        return StatementRunWorkflowService.CreateEphemeralForTesting(
             importStore,
             new JsonReconciliationCaseStore(_root),
             new JsonReconciliationBreakStore(_root),

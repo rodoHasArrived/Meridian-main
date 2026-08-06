@@ -150,7 +150,7 @@ public static class AccountingSystemEndpoints
         group.MapPost(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
             AccountingProductionCertificationProfileUpsertRequestDto request,
             HttpContext context,
-            IAccountingProductionCertificationProfileStore store) =>
+            AccountingProductionCertificationCommandService command) =>
         {
             if (!HasAccountingCertificationAccess(context))
             {
@@ -170,7 +170,9 @@ public static class AccountingSystemEndpoints
             };
             try
             {
-                var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+                var result = await command
+                    .CertifyAsync(trustedRequest, trustedRequest.Actor, context.RequestAborted)
+                    .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)

@@ -326,6 +326,36 @@ describe("useRequestLifecycle", () => {
     expect(result.current.status.settledAt).not.toBeNull();
   });
 
+  it("Scenario_PartialRefreshAfterSuccess_PreservesTheLastCompleteFreshness", () => {
+    const { result } = renderHook(() => useRequestLifecycle({ operation: "workstation refresh" }));
+
+    let token: ReturnType<typeof result.current.start>;
+    act(() => {
+      token = result.current.start();
+    });
+    act(() => {
+      result.current.succeed(token!);
+    });
+
+    const lastSucceededAt = result.current.status.lastSucceededAt;
+    expect(lastSucceededAt).not.toBeNull();
+
+    act(() => {
+      token = result.current.start();
+    });
+    act(() => {
+      result.current.partial(token!, new Error("Provider status unavailable."), {
+        message: "Workstation data partially refreshed."
+      });
+    });
+
+    expect(result.current.status.phase).toBe("partial");
+    expect(result.current.status.message).toBe("Workstation data partially refreshed.");
+    expect(result.current.status.error).toBe("Provider status unavailable.");
+    expect(result.current.status.lastSucceededAt).toBe(lastSucceededAt);
+    expect(result.current.status.inFlight).toBe(false);
+  });
+
   it("Scenario_StaleSucceedDiscarded_DoesNotAdvanceLastSucceededAt", () => {
     const { result } = renderHook(() => useRequestLifecycle({ operation: "quote refresh" }));
 

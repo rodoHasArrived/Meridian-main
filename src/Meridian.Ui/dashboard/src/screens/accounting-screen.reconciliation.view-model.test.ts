@@ -255,6 +255,42 @@ describe("accounting-screen reconciliation view model", () => {
     expect(state.tabs[0].ariaLabel).toContain("statement run statement-run-1");
   });
 
+  it("orders statement runs by the latest retained service timestamp", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "older-run",
+          importId: "older-import",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          importedAtUtc: "2026-05-01T00:04:00Z",
+          positionMatches: 1,
+          cashMatches: 0,
+          transactionMatches: 0,
+          openExceptionCount: 0
+        },
+        {
+          runId: "newer-run",
+          importId: "newer-import",
+          startedAtUtc: "2026-05-02T00:00:00Z",
+          completedAtUtc: "2026-05-02T00:03:00Z",
+          importedAtUtc: "2026-05-02T00:04:00Z",
+          positionMatches: 1,
+          cashMatches: 0,
+          transactionMatches: 0,
+          openExceptionCount: 0
+        }
+      ],
+      fallbackQueue: [],
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows.map((row) => row.runId)).toEqual(["newer-run", "older-run"]);
+    expect(state.rows[0].isSelected).toBe(true);
+  });
+
   it("derives the compact reconciliation comparison from statement and cash-flow evidence", () => {
     const state = buildReconciliationComparisonViewState({
       statementRuns: [

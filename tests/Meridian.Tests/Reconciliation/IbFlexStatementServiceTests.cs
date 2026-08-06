@@ -367,7 +367,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     [Fact]
     public async Task StatementRunWorkflow_ImportsFlexStatementEndToEnd()
     {
-        var workflow = new StatementRunWorkflowService(
+        var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             _store,
             new JsonReconciliationCaseStore(_tempDir),
             new JsonReconciliationBreakStore(_tempDir),
@@ -412,7 +412,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     [Fact]
     public async Task StatementRunWorkflow_ImportsFlexStatementWithGenericBrokerKind()
     {
-        var workflow = new StatementRunWorkflowService(
+        var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             _store,
             new JsonReconciliationCaseStore(_tempDir),
             new JsonReconciliationBreakStore(_tempDir),

@@ -1,8 +1,6 @@
-using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 
 namespace Meridian.Execution;
 
@@ -26,21 +24,10 @@ public sealed partial class OrderManagementSystem
                 $"Fill report '{fillIncrement.OrderId}' for '{fillIncrement.Symbol}' has no execution price.");
         }
 
-        var canonicalIdentity = string.Join(
-            "|",
-            EncodeIdentityPart(fillIncrement.OrderId),
-            EncodeIdentityPart(fillIncrement.ClientOrderId),
-            EncodeIdentityPart(fillIncrement.GatewayOrderId),
-            EncodeIdentityPart(fillIncrement.Symbol),
-            ((int)fillIncrement.Side).ToString(CultureInfo.InvariantCulture),
-            fillIncrement.FilledQuantity.ToString(CultureInfo.InvariantCulture),
-            cumulativeFilledQuantity.ToString(CultureInfo.InvariantCulture),
-            fillPrice.ToString(CultureInfo.InvariantCulture),
-            (fillIncrement.Commission ?? 0m).ToString(CultureInfo.InvariantCulture),
-            fillIncrement.Timestamp.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture),
-            EncodeIdentityPart(financialAccountId));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity));
-        var fillId = new Guid(hash.AsSpan(0, 16));
+        var fillId = CreateDeterministicFillId(
+            fillIncrement,
+            cumulativeFilledQuantity,
+            financialAccountId);
 
         return new TradeExecutedEvent(
             fillId,
@@ -56,8 +43,21 @@ public sealed partial class OrderManagementSystem
             financialAccountId);
     }
 
-    private static string EncodeIdentityPart(string? value)
-        => value is null
-            ? "-"
-            : Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
+    /// <summary>
+    /// Derives the canonical OMS fill identity without requiring an accounting publisher.
+    /// Paper-session persistence uses this same identity so retries and restart replay share
+    /// the accounting handoff's idempotency key.
+    /// </summary>
+    internal static Guid CreateDeterministicFillId(
+        ExecutionReport fillIncrement,
+        decimal cumulativeFilledQuantity,
+        string? financialAccountId)
+    {
+        // PaperSessionFillRecord is the one canonical identity authority. Cumulative portfolio
+        // state and account scope are deliberately compatibility-only inputs here: including
+        // either would give the same broker fill different ids across producer paths or retries.
+        _ = cumulativeFilledQuantity;
+        _ = financialAccountId;
+        return PaperSessionFillRecord.ComputeCanonicalFillId(fillIncrement);
+    }
 }

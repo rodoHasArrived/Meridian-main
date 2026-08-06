@@ -55,6 +55,8 @@
     <ProjectReference Include="..\..\src\Meridian.Mcp\Meridian.Mcp.csproj" />
     <ProjectReference Include="..\Meridian.ProcessTestHelper\Meridian.ProcessTestHelper.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Platform\Meridian.Platform.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.QuantScript.Worker\Meridian.QuantScript.Worker.csproj"
+                      ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Meridian.ReferenceData\Meridian.ReferenceData.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Reporting\Meridian.Reporting.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Risk\Meridian.Risk.csproj" />
@@ -73,5 +75,7 @@
     <None Include="..\Meridian.ProcessTestHelper\Meridian.ProcessTestHelper.runtimeconfig.json" CopyToOutputDirectory="PreserveNewest" Link="Meridian.ProcessTestHelper.runtimeconfig.json" />
     <None Include="..\fixtures\corporate-actions\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\corporate-actions\golden\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+
+  <Import Project="..\..\src\Meridian.QuantScript.Worker\QuantScriptWorker.Sidecar.targets" />
 
 </Project>

@@ -127,6 +127,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     private string BaseUrl => CurrentCredentials.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
 
+    internal AlpacaTradeUpdatesClient? TradeUpdatesClient => _tradeUpdates;
+
     /// <inheritdoc />
     public async Task ConnectAsync(CancellationToken ct = default)
     {
@@ -140,7 +142,16 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
         var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
         if (_tradeUpdates is not null)
+        {
+            if (string.IsNullOrWhiteSpace(account.AccountId) ||
+                string.Equals(account.AccountId, "unknown", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(
+                    "Alpaca did not return a provider account identity required to scope durable execution state.");
+            }
+            _tradeUpdates.ConfigureDurableStateScope(account.AccountId, CurrentCredentials.Environment);
             await _tradeUpdates.StartAsync(ct).ConfigureAwait(false);
+        }
         _connected = true;
         _logger.LogInformation("Alpaca brokerage connected: account {AccountId}, status {Status}",
             account.AccountId, account.Status);
@@ -336,7 +347,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
         return new AccountInfo
         {
-            AccountId = account?.AccountNumber ?? "unknown",
+            AccountId = account?.Id ?? account?.AccountNumber ?? "unknown",
             Equity = ParseDecimal(account?.Equity),
             Cash = ParseDecimal(account?.Cash),
             BuyingPower = ParseDecimal(account?.BuyingPower),
@@ -631,24 +642,173 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     // Reconciliation deliberately reads the broker snapshot after every socket reconnect so orders
     // created outside Meridian and updates missed during the disconnect become immutable reports.
-    private async Task<IReadOnlyList<ExecutionReport>> ReconcileExecutionSnapshotsAsync(CancellationToken ct)
+    internal async Task<IReadOnlyList<AlpacaReconciliationReport>> ReconcileExecutionSnapshotsAsync(
+        DateTimeOffset? watermark,
+        CancellationToken ct)
     {
-        var orders = await GetOpenOrdersAsync(ct).ConfigureAwait(false);
-        return orders.Select(order => new ExecutionReport
+        using var client = CreateHttpClient();
+        using var response = await client.GetAsync(
+            $"{BaseUrl}/v2/orders?status=all&limit=500&direction=desc",
+            ct).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        var orders = await response.Content.ReadFromJsonAsync(
+                AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray,
+                ct)
+            .ConfigureAwait(false) ?? [];
+        var ordersById = orders
+            .Where(order => !string.IsNullOrWhiteSpace(order.Id))
+            .ToDictionary(order => order.Id!, StringComparer.Ordinal);
+        var fillActivities = await GetFillActivitiesAsync(watermark, ct).ConfigureAwait(false);
+        foreach (var orderId in fillActivities
+                     .Select(activity => activity.OrderId)
+                     .Where(orderId => !string.IsNullOrWhiteSpace(orderId))
+                     .Distinct(StringComparer.Ordinal))
         {
-            OrderId = order.OrderId,
-            GatewayOrderId = order.OrderId,
-            ClientOrderId = order.ClientOrderId,
-            Symbol = order.Symbol,
-            Side = order.Side,
-            OrderQuantity = order.Quantity,
-            FilledQuantity = order.FilledQuantity,
-            OrderStatus = order.Status,
-            ReportType = order.Status == OrderStatus.PartiallyFilled ? ExecutionReportType.PartialFill : ExecutionReportType.New,
-            Timestamp = order.CreatedAt,
-            Diagnostics = new ExecutionDiagnostics { Category = "alpaca-rest-reconciliation", RecommendedAction = "Reconciled after execution-stream reconnect." }
-        }).ToArray();
+            if (ordersById.ContainsKey(orderId!))
+                continue;
+
+            using var orderResponse = await client.GetAsync(
+                $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(orderId!)}",
+                ct).ConfigureAwait(false);
+            orderResponse.EnsureSuccessStatusCode();
+            var order = await orderResponse.Content.ReadFromJsonAsync(
+                    AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponse,
+                    ct)
+                .ConfigureAwait(false)
+                ?? throw new InvalidDataException(
+                    $"Alpaca reconciliation returned no order for fill activity order '{orderId}'.");
+            if (string.IsNullOrWhiteSpace(order.Id))
+                throw new InvalidDataException("Alpaca reconciliation returned an order without an id.");
+            ordersById[order.Id] = order;
+        }
+
+        var reconciled = new List<AlpacaReconciliationReport>(fillActivities.Count + ordersById.Count);
+        var ordersWithExactFills = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var activity in fillActivities)
+        {
+            var activityId = activity.Id ?? throw new InvalidDataException(
+                "Alpaca FILL activity omitted its stable activity id.");
+            var orderId = activity.OrderId ?? throw new InvalidDataException(
+                $"Alpaca FILL activity '{activityId}' omitted its order id.");
+            ordersById.TryGetValue(orderId, out var order);
+            var cumulativeQuantity = ParseRequiredDecimal(activity.CumQty, "cum_qty", activityId);
+            var leavesQuantity = ParseNullableDecimal(activity.LeavesQty);
+            var reportType = string.Equals(activity.Type, "fill", StringComparison.OrdinalIgnoreCase) ||
+                             leavesQuantity == 0m
+                ? ExecutionReportType.Fill
+                : ExecutionReportType.PartialFill;
+            var status = reportType == ExecutionReportType.Fill
+                ? OrderStatus.Filled
+                : OrderStatus.PartiallyFilled;
+            var fillPrice = ParseNullableDecimal(activity.Price) ?? throw new InvalidDataException(
+                $"Alpaca FILL activity '{activityId}' omitted its execution price.");
+            var timestamp = activity.TransactionTime ?? throw new InvalidDataException(
+                $"Alpaca FILL activity '{activityId}' omitted its transaction time.");
+            var symbol = activity.Symbol ?? order?.Symbol;
+            if (string.IsNullOrWhiteSpace(symbol))
+                throw new InvalidDataException($"Alpaca FILL activity '{activityId}' omitted its symbol.");
+
+            ordersWithExactFills.Add(orderId);
+            reconciled.Add(new AlpacaReconciliationReport(
+                "rest-fill-activity",
+                activityId,
+                new ExecutionReport
+                {
+                    OrderId = orderId,
+                    GatewayOrderId = orderId,
+                    ClientOrderId = order?.ClientOrderId,
+                    Symbol = symbol,
+                    Side = string.Equals(activity.Side ?? order?.Side, "sell", StringComparison.OrdinalIgnoreCase)
+                        ? OrderSide.Sell
+                        : OrderSide.Buy,
+                    OrderQuantity = ParseNullableDecimal(order?.Qty) ??
+                        (leavesQuantity is { } leaves ? cumulativeQuantity + leaves : cumulativeQuantity),
+                    FilledQuantity = cumulativeQuantity,
+                    FillPrice = fillPrice,
+                    OrderStatus = status,
+                    ReportType = reportType,
+                    Timestamp = timestamp,
+                    Diagnostics = new ExecutionDiagnostics
+                    {
+                        BrokerStatus = activity.Type,
+                        Category = "alpaca-rest-fill-reconciliation",
+                        RecommendedAction = "Replayed exact Alpaca FILL activity after execution-stream reconnect."
+                    }
+                }));
+        }
+
+        foreach (var order in ordersById.Values)
+        {
+            var status = MapAlpacaStatus(order.Status);
+            if (ordersWithExactFills.Contains(order.Id!) &&
+                status is OrderStatus.Filled or OrderStatus.PartiallyFilled)
+            {
+                continue;
+            }
+
+            var timestamp = ResolveReconciliationTimestamp(order, status);
+            var filledQuantity = ParseDecimal(order.FilledQty);
+            var report = new ExecutionReport
+            {
+                OrderId = order.Id ?? throw new InvalidDataException(
+                    "Alpaca reconciliation returned an order without an id."),
+                GatewayOrderId = order.Id,
+                ClientOrderId = order.ClientOrderId,
+                Symbol = order.Symbol ?? string.Empty,
+                Side = string.Equals(order.Side, "sell", StringComparison.OrdinalIgnoreCase)
+                    ? OrderSide.Sell
+                    : OrderSide.Buy,
+                OrderQuantity = ParseDecimal(order.Qty),
+                FilledQuantity = filledQuantity,
+                FillPrice = ParseNullableDecimal(order.FilledAvgPrice),
+                OrderStatus = status,
+                ReportType = MapReconciliationReportType(status),
+                Timestamp = timestamp,
+                Diagnostics = new ExecutionDiagnostics
+                {
+                    BrokerStatus = order.Status,
+                    Category = "alpaca-rest-reconciliation",
+                    RecommendedAction = "Reconciled after execution-stream reconnect."
+                }
+            };
+            var snapshotIdentity = FormattableString.Invariant(
+                $"{order.Id}|{order.Status}|{filledQuantity:G29}|{timestamp:O}");
+            reconciled.Add(new AlpacaReconciliationReport(
+                "rest-order-snapshot",
+                snapshotIdentity,
+                report));
+        }
+
+        return reconciled;
     }
+
+    private static ExecutionReportType MapReconciliationReportType(OrderStatus status) => status switch
+    {
+        OrderStatus.Filled => ExecutionReportType.Fill,
+        OrderStatus.PartiallyFilled => ExecutionReportType.PartialFill,
+        OrderStatus.Cancelled => ExecutionReportType.Cancelled,
+        OrderStatus.Expired => ExecutionReportType.Expired,
+        OrderStatus.Rejected => ExecutionReportType.Rejected,
+        _ => ExecutionReportType.New
+    };
+
+    private static DateTimeOffset ResolveReconciliationTimestamp(
+        AlpacaOrderResponse order,
+        OrderStatus status) => status switch
+    {
+        OrderStatus.Filled => order.FilledAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
+        OrderStatus.Cancelled => order.CanceledAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
+        OrderStatus.Expired => order.ExpiredAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
+        OrderStatus.Rejected => order.FailedAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
+        _ => order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp()
+    };
+
+    private static DateTimeOffset MissingTimestamp() => throw new InvalidDataException(
+        "Alpaca reconciliation returned an order without a stable transition timestamp.");
+
+    private static decimal ParseRequiredDecimal(string? value, string field, string activityId) =>
+        ParseNullableDecimal(value) ?? throw new InvalidDataException(
+            $"Alpaca FILL activity '{activityId}' omitted or malformed '{field}'.");
 
     private HttpClient CreateHttpClient()
     {
@@ -678,6 +838,52 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         var token = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{credentials.KeyId}:{credentials.SecretKey}"));
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
         return client;
+    }
+
+    private async Task<IReadOnlyList<AlpacaAccountActivityResponse>> GetFillActivitiesAsync(
+        DateTimeOffset? after,
+        CancellationToken ct)
+    {
+        using var client = CreateHttpClient();
+        var basePath = $"{BaseUrl}/v2/account/activities/FILL?direction=asc&page_size={AccountActivityPageSize}";
+        if (after.HasValue)
+        {
+            basePath += $"&after={Uri.EscapeDataString(after.Value.UtcDateTime.ToString("O", CultureInfo.InvariantCulture))}";
+        }
+
+        var activities = new List<AlpacaAccountActivityResponse>();
+        var observedPageTokens = new HashSet<string>(StringComparer.Ordinal);
+        string? pageToken = null;
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var path = pageToken is null
+                ? basePath
+                : $"{basePath}&page_token={Uri.EscapeDataString(pageToken)}";
+            using var response = await client.GetAsync(path, ct).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            var page = await response.Content.ReadFromJsonAsync(
+                    AlpacaBrokerageSerializerContext.Default.AlpacaAccountActivityResponseArray,
+                    ct)
+                .ConfigureAwait(false) ?? [];
+            activities.AddRange(page);
+            if (page.Length < AccountActivityPageSize)
+                return activities;
+
+            var nextPageToken = page[^1].Id;
+            if (string.IsNullOrWhiteSpace(nextPageToken))
+            {
+                throw new InvalidDataException(
+                    "Alpaca FILL activity pagination returned a full page without a terminal activity id.");
+            }
+            if (!observedPageTokens.Add(nextPageToken))
+            {
+                throw new InvalidDataException(
+                    "Alpaca FILL activity pagination repeated a page token before reaching a short page.");
+            }
+
+            pageToken = nextPageToken;
+        }
     }
 
     private async Task<IReadOnlyList<AlpacaAccountActivityResponse>> GetAccountActivitiesAsync(
@@ -1299,14 +1505,21 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("type")] public string? Type { get; set; }
         [JsonPropertyName("qty")] public string? Qty { get; set; }
         [JsonPropertyName("filled_qty")] public string? FilledQty { get; set; }
+        [JsonPropertyName("filled_avg_price")] public string? FilledAvgPrice { get; set; }
         [JsonPropertyName("limit_price")] public string? LimitPrice { get; set; }
         [JsonPropertyName("stop_price")] public string? StopPrice { get; set; }
         [JsonPropertyName("status")] public string? Status { get; set; }
         [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; set; }
+        [JsonPropertyName("updated_at")] public DateTimeOffset? UpdatedAt { get; set; }
+        [JsonPropertyName("filled_at")] public DateTimeOffset? FilledAt { get; set; }
+        [JsonPropertyName("canceled_at")] public DateTimeOffset? CanceledAt { get; set; }
+        [JsonPropertyName("expired_at")] public DateTimeOffset? ExpiredAt { get; set; }
+        [JsonPropertyName("failed_at")] public DateTimeOffset? FailedAt { get; set; }
     }
 
     internal sealed class AlpacaAccountResponse
     {
+        [JsonPropertyName("id")] public string? Id { get; set; }
         [JsonPropertyName("account_number")] public string? AccountNumber { get; set; }
         [JsonPropertyName("equity")] public string? Equity { get; set; }
         [JsonPropertyName("cash")] public string? Cash { get; set; }
@@ -1336,8 +1549,11 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("date")] public DateOnly? Date { get; set; }
         [JsonPropertyName("symbol")] public string? Symbol { get; set; }
         [JsonPropertyName("qty")] public string? Qty { get; set; }
+        [JsonPropertyName("cum_qty")] public string? CumQty { get; set; }
+        [JsonPropertyName("leaves_qty")] public string? LeavesQty { get; set; }
         [JsonPropertyName("price")] public string? Price { get; set; }
         [JsonPropertyName("side")] public string? Side { get; set; }
+        [JsonPropertyName("type")] public string? Type { get; set; }
         [JsonPropertyName("order_id")] public string? OrderId { get; set; }
         [JsonPropertyName("net_amount")] public string? NetAmount { get; set; }
         [JsonPropertyName("per_share_amount")] public string? PerShareAmount { get; set; }

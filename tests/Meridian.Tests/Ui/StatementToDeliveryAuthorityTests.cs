@@ -713,12 +713,14 @@ public sealed class StatementToDeliveryAuthorityTests
         var statementStore = new JsonCanonicalStatementStore(dataRoot);
         var statementBreakStore = new JsonReconciliationBreakStore(dataRoot);
         var statementCaseStore = new JsonReconciliationCaseStore(dataRoot);
-        var statementRuns = new StatementRunWorkflowService(
+        var statementCaseworkCommitStore = new FileStatementCaseworkCommitStore(dataRoot);
+        var statementRuns = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
             statementCaseStore,
             statementBreakStore,
             new CsvBrokerStatementService(statementStore),
-            new StatementReconciliationContextAdapter(new StatementReconciliationService()));
+            new StatementReconciliationContextAdapter(new StatementReconciliationService()),
+            caseworkCommitStore: statementCaseworkCommitStore);
         var profileCatalog = new StatementMappingProfileCatalog(
             new FileStatementMappingProfileStore(dataRoot));
         var importService = new StatementImportService(
@@ -764,7 +766,8 @@ public sealed class StatementToDeliveryAuthorityTests
             statementCaseStore,
             statementRuns,
             operations,
-            journalStore);
+            journalStore,
+            statementCaseworkCommitStore);
         var workflow = new StatementReconciliationReportWorkflowService(
             importService,
             new StatementImportEvidenceBridge(statementEvidenceStore, dataRoot),

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { resolveDevFixture } from "@/lib/dev-fixtures";
 import {
   SYMBOL_API_ENDPOINTS,
+  brokerageConnectionStatusEndpoint,
   historicalBarsEndpoint,
   marketDataQuotesSnapshotEndpoint,
   workstationFinancialRecordExplorerEndpoint
@@ -10,6 +11,7 @@ import type {
   FinancialRecordExplorerDto,
   HistoricalBarsResponse,
   QuotesSnapshotResponse,
+  BrokerageConnectionStatus,
   SymbolStatistics
 } from "@/types";
 
@@ -39,5 +41,27 @@ describe("dev fixtures", () => {
     expect(bars?.symbol).toBe("AAPL");
     expect(bars?.intervalMinutes).toBe(15);
     expect(bars?.bars.length).toBeGreaterThan(0);
+  });
+
+  it("keeps Robinhood and Alpaca brokerage fixtures provider-specific", () => {
+    const alpaca = resolveDevFixture<BrokerageConnectionStatus>(
+      brokerageConnectionStatusEndpoint("alpaca")
+    );
+    const robinhood = resolveDevFixture<BrokerageConnectionStatus>(
+      brokerageConnectionStatusEndpoint("robinhood")
+    );
+
+    expect(alpaca).toMatchObject({
+      providerId: "alpaca",
+      displayName: "Alpaca paper",
+      environment: "paper"
+    });
+    expect(robinhood).toMatchObject({
+      providerId: "robinhood",
+      displayName: "Robinhood read-only",
+      environment: "read-only",
+      externalAccountId: "RH-DEMO"
+    });
+    expect(robinhood).not.toEqual(alpaca);
   });
 });

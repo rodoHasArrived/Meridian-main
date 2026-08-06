@@ -20,6 +20,8 @@ namespace Meridian.Execution.Serialization;
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(PersistedSessionRecord))]
 [JsonSerializable(typeof(ExecutionReport))]
+[JsonSerializable(typeof(PaperSessionFillRecord))]
+[JsonSerializable(typeof(PaperSessionFillAppliedRecord))]
 [JsonSerializable(typeof(OrderState))]
 [JsonSerializable(typeof(List<string>))]
 [JsonSerializable(typeof(PersistedJournalEntryDto))]

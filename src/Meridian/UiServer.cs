@@ -393,16 +393,16 @@ public sealed class UiServer : IAsyncDisposable
             // strategies against the live market data feed through the OMS.
             builder.Services.AddLiveTradingEngine(builder.Configuration);
 
-            // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
-            // engine compiles and executes arbitrary C# in-process. Production/customer distributions
-            // fail closed until execution is moved behind a separately isolated worker boundary.
+            // Quant Lab — opt-in via "QuantLab:Enabled". Each run uses the dedicated contained worker,
+            // but that worker retains the launching identity's file/network permissions. Production and
+            // customer distributions therefore remain fail-closed pending OS-profile certification.
             var quantLabEnabled = builder.Configuration.GetValue<bool>("QuantLab:Enabled");
-            ProductionServiceRegistrationPolicy.EnsureInProcessQuantLabIsAllowed(
+            ProductionServiceRegistrationPolicy.EnsureIsolatedQuantLabIsAllowed(
                 builder.Services,
                 quantLabEnabled);
             if (quantLabEnabled)
             {
-                builder.Services.AddMeridianQuantScript();
+                builder.Services.AddMeridianQuantScript(builder.Configuration);
             }
 
             // Register OpenAPI/Swagger services

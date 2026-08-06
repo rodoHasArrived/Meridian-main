@@ -1,0 +1,397 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.Identity</name>
+    </assembly>
+    <members>
+        <member name="M:Meridian.Identity.FundStructureAccessScopeLineageProvider.TryMapAccessScopeKind(Meridian.Contracts.FundStructure.FundStructureNodeKindDto,Meridian.Identity.Auth.AccessScopeKindDto@)">
+            <summary>
+            Maps a fund-structure node kind to its authorizing access scope. Returns
+            <see langword="false"/> for any unmapped kind so callers can omit it from the scope
+            lineage rather than defaulting to the highest-privilege <see cref="F:Meridian.Identity.Auth.AccessScopeKindDto.Global"/>
+            scope (which would widen authority).
+            </summary>
+        </member>
+        <member name="T:Meridian.Identity.IdentityGovernanceNormalization">
+            <summary>
+            Shared normalization helpers for Identity governance stores and services.
+            Centralizes actor resolution, required-value normalization, correlation-id defaulting,
+            and audit-id generation that were previously duplicated across
+            <see cref="T:Meridian.Identity.FileUserAccountStore"/>, <see cref="T:Meridian.Identity.ScopedAccessService"/>, and
+            <see cref="T:Meridian.Identity.FileRolePermissionProfileStore"/>.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.IdentityGovernanceNormalization.AuditTimestampFormat">
+            <summary>Length of the <c>yyyyMMddHHmmssfff</c> timestamp component used in audit ids.</summary>
+        </member>
+        <member name="M:Meridian.Identity.IdentityGovernanceNormalization.NormalizeRequired(System.String,System.String)">
+            <summary>
+            Trims <paramref name="value"/> and throws when it is null, empty, or whitespace.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.IdentityGovernanceNormalization.ResolveActor(System.String,System.String)">
+            <summary>
+            Resolves the effective actor for a governed mutation: an explicit authenticated
+            <paramref name="actor"/> wins, otherwise the request-supplied
+            <paramref name="requestedBy"/> is required.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.IdentityGovernanceNormalization.NormalizeCorrelationId(System.String,System.String)">
+            <summary>
+            Returns the trimmed <paramref name="correlationId"/>, or a deterministic
+            <paramref name="prefix"/>-scoped value when none is supplied.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.IdentityGovernanceNormalization.NewAuditId(System.String,System.DateTimeOffset,System.Int32)">
+            <summary>
+            Builds a governance audit id of the form <c>{prefix}-{timestamp}-{guid}</c>, truncated to
+            <paramref name="maxLength"/> characters.
+            </summary>
+        </member>
+        <member name="T:Meridian.Identity.LoginSessionService">
+            <summary>
+            Session store for username/password authentication with role-based access control.
+            User accounts are resolved via <see cref="T:Meridian.Identity.UserProfileRegistry"/> from the governed account
+            store or hashed environment bootstrap records.
+            Authentication defaults to optional in Development/Test and required elsewhere.
+            Use MDC_AUTH_MODE=optional|required|auto to override the default environment-based mode.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.LoginSessionService.SessionDuration">
+            <summary>Session lifetime; exposed so the auth endpoint can set a matching cookie expiry.</summary>
+        </member>
+        <member name="P:Meridian.Identity.LoginSessionService.IsConfigured">
+            <summary>
+            Returns <see langword="true"/> when at least one user account is configured.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.LoginSessionService.CreateSession(System.String,System.String)">
+            <summary>
+            Validates the supplied credentials and creates a new session token on success.
+            Returns <see langword="null"/> when the credentials are invalid or no accounts are
+            configured.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.LoginSessionService.TryCreateSession(System.String,System.String,System.String)">
+            <summary>
+            Applies the owned login-attempt policy and creates a session when credentials are valid.
+            The caller supplies a stable client discriminator, normally the remote IP address.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.LoginSessionService.ValidateSession(System.String)">
+            <summary>
+            Returns <see langword="true"/> when the token corresponds to a valid, non-expired session.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.LoginSessionService.GetSessionProfile(System.String)">
+            <summary>
+            Returns the <see cref="T:Meridian.Identity.UserProfile"/> for the given session token, or
+            <see langword="null"/> when the token is missing or expired.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.LoginSessionService.RemoveSession(System.String)">
+            <summary>
+            Removes the session associated with the given token (logout).
+            </summary>
+        </member>
+        <member name="T:Meridian.Identity.PasswordHashing">
+            <summary>
+            Password hashing helper for Meridian-managed local accounts.
+            </summary>
+        </member>
+        <member name="T:Meridian.Identity.UserProfileRegistry">
+            <summary>
+            Manages the set of user accounts available for authentication.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserProfileRegistry.IsConfigured">
+            <summary>
+            Returns <see langword="true"/> when at least one user account is configured.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.UserProfileRegistry.Authenticate(System.String,System.String)">
+            <summary>
+            Validates <paramref name="username"/> and <paramref name="password"/> against the
+            configured user accounts.
+            </summary>
+            <returns>
+            The <see cref="T:Meridian.Identity.UserProfile"/> for the matching account, or <see langword="null"/> when
+            the credentials are invalid or no accounts are configured.
+            </returns>
+        </member>
+        <member name="M:Meridian.Identity.UserProfileRegistry.CryptographicEquals(System.String,System.String)">
+            <summary>Constant-time string comparison to prevent timing attacks.</summary>
+        </member>
+        <member name="T:Meridian.Identity.UserProfile">
+            <summary>
+            Represents an authenticated user's identity and role within a session.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.UserProfile.#ctor(System.String,Meridian.Identity.Auth.UserRole,System.Nullable{Meridian.Identity.Auth.UserPermission},System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Boolean,System.String)">
+            <summary>
+            Represents an authenticated user's identity and role within a session.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserProfile.Permissions">
+            <summary>The permissions granted to this user based on their <see cref="P:Meridian.Identity.UserProfile.Role"/>.</summary>
+        </member>
+        <member name="T:Meridian.Identity.UserAccountConfig">
+            <summary>
+            Configuration shape for a single user account loaded from the <c>MDC_USERS</c> environment variable.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.UserAccountConfig.#ctor(System.String,System.String,Meridian.Identity.Auth.UserRole,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Boolean,System.Boolean,System.String)">
+            <summary>
+            Configuration shape for a single user account loaded from the <c>MDC_USERS</c> environment variable.
+            </summary>
+        </member>
+        <member name="T:Meridian.Identity.UserAccountConfigArrayJsonContext">
+            <summary>AOT-safe JSON context for deserializing <see cref="P:Meridian.Identity.UserAccountConfigArrayJsonContext.UserAccountConfig"/> arrays.</summary>
+        </member>
+        <member name="P:Meridian.Identity.UserAccountConfigArrayJsonContext.Boolean">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserAccountConfigArrayJsonContext.UserRole">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserAccountConfigArrayJsonContext.UserAccountConfig">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserAccountConfigArrayJsonContext.UserAccountConfigArray">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserAccountConfigArrayJsonContext.IReadOnlyListString">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserAccountConfigArrayJsonContext.String">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserAccountConfigArrayJsonContext.Default">
+            <summary>
+            The default <see cref="T:System.Text.Json.Serialization.JsonSerializerContext"/> associated with a default <see cref="T:System.Text.Json.JsonSerializerOptions"/> instance.
+            </summary>
+        </member>
+        <member name="P:Meridian.Identity.UserAccountConfigArrayJsonContext.GeneratedSerializerOptions">
+            <summary>
+            The source-generated options associated with this context.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.UserAccountConfigArrayJsonContext.#ctor">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Identity.UserAccountConfigArrayJsonContext.#ctor(System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Identity.UserAccountConfigArrayJsonContext.GetTypeInfo(System.Type)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Meridian.Identity.Auth.RolePermissions">
+            <summary>
+            Canonical mapping from <see cref="T:Meridian.Identity.Auth.UserRole"/> to its granted <see cref="T:Meridian.Identity.Auth.UserPermission"/> set.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.Auth.RolePermissions.For(Meridian.Identity.Auth.UserRole)">
+            <summary>
+            Returns the <see cref="T:Meridian.Identity.Auth.UserPermission"/> flags granted to <paramref name="role"/>.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.Auth.RolePermissions.HasPermission(Meridian.Identity.Auth.UserRole,Meridian.Identity.Auth.UserPermission)">
+            <summary>
+            Returns <see langword="true"/> when <paramref name="role"/> has been granted all of the
+            specified <paramref name="required"/> permissions.
+            </summary>
+        </member>
+        <member name="T:Meridian.Identity.Auth.UserPermission">
+            <summary>
+            Fine-grained permission flags used to control access to individual platform features.
+            Roles are mapped to a combination of these flags by <see cref="T:Meridian.Identity.Auth.RolePermissions"/>.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.None">
+            <summary>No access.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewMarketData">
+            <summary>View real-time streaming market data.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewHistoricalData">
+            <summary>View historical bars, quotes, and trades.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.TriggerBackfill">
+            <summary>Trigger backfill jobs for historical data gaps.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageProviders">
+            <summary>Add, remove, or reconfigure data providers.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewTrades">
+            <summary>View trade records and order history.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ExecuteTrades">
+            <summary>Submit orders through the execution gateway.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageOrders">
+            <summary>Modify or cancel outstanding orders.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewAnalytics">
+            <summary>View analytics dashboards and reports.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ExportData">
+            <summary>Export data to CSV, Parquet, or other formats.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewConfig">
+            <summary>Read platform configuration settings.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ModifyConfig">
+            <summary>Change platform configuration settings.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageCredentials">
+            <summary>Add or rotate provider credentials.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewDiagnostics">
+            <summary>View diagnostic bundles and connection health.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageStorage">
+            <summary>Manage storage tiers, archival, and maintenance jobs.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.AdminMaintenance">
+            <summary>Run admin maintenance routines (WAL repair, reindex, etc.).</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageUsers">
+            <summary>Create, modify, or delete user accounts.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewStrategies">
+            <summary>View strategy definitions and backtest results.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageStrategies">
+            <summary>Create, promote, or delete strategies and run backtests.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewSecurityMaster">
+            <summary>Read security master reference data.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ModifySecurityMaster">
+            <summary>Create or update security master entries.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewDirectLending">
+            <summary>View direct-lending contracts and positions.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageDirectLending">
+            <summary>Create and service direct-lending contracts.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageFundStructure">
+            <summary>Create or modify fund-structure ownership and governance records.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ViewReporting">
+            <summary>View governed reporting runs, schedules, delivery posture, and evidence.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ManageReporting">
+            <summary>Create and manage reporting templates, schedules, runs, and work packages.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.ApproveReporting">
+            <summary>Approve, reject, publish, restate, and archive governed report packs.</summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserPermission.DeliverReporting">
+            <summary>Deliver report packs and record delivery failures or retry evidence.</summary>
+        </member>
+        <member name="T:Meridian.Identity.Auth.UserRole">
+            <summary>
+            Defines the built-in user roles for profile-based access control.
+            Each role maps to a fixed set of <see cref="T:Meridian.Identity.Auth.UserPermission"/> flags via
+            <see cref="T:Meridian.Identity.Auth.RolePermissions"/>.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.Admin">
+            <summary>
+            Platform administrator. Full access to all features including user management,
+            configuration, and system diagnostics.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.Developer">
+            <summary>
+            Software developer / platform engineer. Broad access for development and
+            debugging purposes; cannot manage users.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.TradeDesk">
+            <summary>
+            Trading desk operator. Access to market data, trade execution, strategy
+            management, and analytics.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.Analysis">
+            <summary>
+            Quant / research analyst. Read-only access to market and historical data,
+            analytics, and strategy results.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.Accounting">
+            <summary>
+            Accounting / finance team. Access to trade records, P&amp;L, direct lending,
+            and export functionality.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.Executive">
+            <summary>
+            Executive / management view. Read-only dashboard access across all
+            business domains.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.ReadOnly">
+            <summary>
+            Read-only guest access to market data and analytics dashboards only.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.FundAccountant">
+            <summary>
+            Fund accountant. Operates daily report packages, delivery readiness, and
+            fund-accounting evidence for assigned funds.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.ReportingAnalyst">
+            <summary>
+            Reporting analyst. Manages report runs, schedules, output review, and
+            supporting reporting evidence before approval.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.Controller">
+            <summary>
+            Controller. Approves and publishes governed report packs with retained
+            sign-off context.
+            </summary>
+        </member>
+        <member name="F:Meridian.Identity.Auth.UserRole.Compliance">
+            <summary>
+            Compliance user. Reviews reporting evidence, approvals, delivery posture,
+            and retained audit context.
+            </summary>
+        </member>
+        <member name="T:Meridian.Identity.DesignModule">
+            <summary>Physical module marker for the Identity bounded context.</summary>
+        </member>
+        <member name="T:Meridian.Identity.FundAccountTraversalQueryService">
+            <summary>
+            Authoritative traversal for fund account discovery:
+            Fund -> OwnershipRelationship (Owns) -> AccountDefinition.
+            Filters are applied on <see cref="P:Meridian.Contracts.FundStructure.AccountSummaryDto.AccountType"/> and active status.
+            </summary>
+        </member>
+        <member name="M:Meridian.Identity.FileUserAccountStore.ReadSnapshotAsync(System.Threading.CancellationToken)">
+            <summary>
+            Async snapshot read for the mutation paths, which already serialize on
+            <see cref="F:Meridian.Identity.FileUserAccountStore._writeGate"/> — the blocking <see cref="F:Meridian.Identity.FileUserAccountStore._readGate"/> is not taken here.
+            The snapshot file is written via <see cref="T:Meridian.Storage.Archival.AtomicFileWriter"/> (write + rename),
+            so a plain read never observes a partial write.
+            </summary>
+        </member>
+    </members>
+</doc>

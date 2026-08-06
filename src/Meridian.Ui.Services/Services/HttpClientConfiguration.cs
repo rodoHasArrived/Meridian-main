@@ -192,6 +192,23 @@ public static class HttpClientConfiguration
     }
 
     /// <summary>
+    /// Registers the compatibility API singleton against the host-owned client factory. This
+    /// preserves <see cref="ApiClientService.Instance"/> identity for legacy consumers while
+    /// ensuring its transport handlers and terminal disposal belong to the desktop host.
+    /// </summary>
+    public static IServiceCollection AddDesktopApiClient(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.AddSingleton(serviceProvider =>
+        {
+            var apiClient = ApiClientService.Instance;
+            apiClient.AttachHttpClientFactory(serviceProvider.GetRequiredService<IHttpClientFactory>());
+            return apiClient;
+        });
+        return services;
+    }
+
+    /// <summary>
     /// Adds standard resilience policies (retry with exponential backoff, circuit breaker)
     /// from the shared Infrastructure definition so desktop and service HTTP clients behave
     /// identically.
@@ -201,37 +218,23 @@ public static class HttpClientConfiguration
 }
 
 /// <summary>
-/// Static factory for creating HttpClient instances from IHttpClientFactory in desktop apps.
-/// Provides backward-compatible static access for services not yet fully converted to DI.
+/// Backward-compatible client creation for legacy services that are not constructed by DI.
 /// </summary>
 /// <remarks>
-/// This is a transitional pattern. New code should inject IHttpClientFactory directly.
+/// No service provider is built or retained here. Host-composed services must inject
+/// <see cref="IHttpClientFactory"/>; this process-local fallback exists only for legacy static
+/// entry points and gives each caller an independently disposable client/handler pair.
 /// </remarks>
 public static class HttpClientFactoryProvider
 {
-    private static readonly Lazy<IHttpClientFactory?> _factory = new(BuildFactory);
-
-    private static IHttpClientFactory? BuildFactory()
-    {
-        var services = new ServiceCollection();
-        services.AddDesktopHttpClients();
-        var provider = services.BuildServiceProvider();
-        return provider.GetService<IHttpClientFactory>();
-    }
+    internal static IHttpClientFactory CompatibilityFactory { get; } = new CompatibilityHttpClientFactory();
 
     /// <summary>
     /// Gets an HttpClient for the specified named client.
-    /// Auto-initializes on first use via thread-safe lazy initialization.
+    /// The returned fallback client is owned by the caller.
     /// </summary>
     public static HttpClient CreateClient(string name)
-    {
-        if (_factory.Value is { } factory)
-        {
-            return factory.CreateClient(name);
-        }
-
-        return new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-    }
+        => CompatibilityFactory.CreateClient(name);
 
     /// <summary>
     /// Gets an HttpClient for the specified named client with header configuration.
@@ -244,7 +247,65 @@ public static class HttpClientFactoryProvider
     }
 
     /// <summary>
-    /// Checks if the factory has been initialized.
+    /// Indicates that the compatibility factory is available.
     /// </summary>
-    public static bool IsInitialized => _factory.IsValueCreated;
+    public static bool IsInitialized => true;
+
+    private sealed class CompatibilityHttpClientFactory : IHttpClientFactory
+    {
+        private static readonly TimeSpan CompatibilityDefaultTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan CompatibilityShortTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan CompatibilityLongTimeout = TimeSpan.FromMinutes(60);
+
+        public HttpClient CreateClient(string name)
+        {
+            var sharesApiSession = string.Equals(name, HttpClientNames.ApiClient, StringComparison.Ordinal)
+                || string.Equals(name, HttpClientNames.BackfillClient, StringComparison.Ordinal);
+            var handler = new HttpClientHandler
+            {
+                UseCookies = sharesApiSession,
+                CookieContainer = sharesApiSession ? ApiClientSession.Cookies : new System.Net.CookieContainer()
+            };
+            var client = new HttpClient(handler, disposeHandler: true);
+            ConfigureClient(client, name);
+            return client;
+        }
+
+        private static void ConfigureClient(HttpClient client, string name)
+        {
+            client.Timeout = name switch
+            {
+                HttpClientNames.BackfillClient => CompatibilityLongTimeout,
+                HttpClientNames.CredentialTest or HttpClientNames.SetupWizard => CompatibilityShortTimeout,
+                _ => CompatibilityDefaultTimeout
+            };
+
+            if (name is HttpClientNames.Default
+                or HttpClientNames.ApiClient
+                or HttpClientNames.BackfillClient
+                or HttpClientNames.Alpaca
+                or HttpClientNames.Polygon
+                or HttpClientNames.Tiingo
+                or HttpClientNames.Finnhub
+                or HttpClientNames.AlphaVantage)
+            {
+                client.DefaultRequestHeaders.Accept.Add(
+                    new MediaTypeWithQualityHeaderValue("application/json"));
+            }
+
+            client.BaseAddress = name switch
+            {
+                HttpClientNames.Polygon => new Uri("https://api.polygon.io/"),
+                HttpClientNames.Tiingo => new Uri("https://api.tiingo.com/"),
+                HttpClientNames.Finnhub => new Uri("https://finnhub.io/api/v1/"),
+                HttpClientNames.AlphaVantage => new Uri("https://www.alphavantage.co/"),
+                HttpClientNames.OpenFigi => new Uri("https://api.openfigi.com/v3/"),
+                HttpClientNames.NasdaqDataLink => new Uri("https://data.nasdaq.com/api/v3/"),
+                _ => null
+            };
+
+            if (string.Equals(name, HttpClientNames.OpenFigi, StringComparison.Ordinal))
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
+        }
+    }
 }
