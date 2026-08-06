@@ -40,6 +40,21 @@ public sealed class AlpacaBrokerageGatewayTests
             equity = "100000.00",
             cash = "50000.00",
             buying_power = "90000.00",
+            multiplier = "2",
+            regt_buying_power = "85000.00",
+            initial_margin = "12500.00",
+            maintenance_margin = "10000.00",
+            last_maintenance_margin = "9750.00",
+            sma = "2500.00",
+            long_market_value = "50000.00",
+            short_market_value = "0.00",
+            non_marginable_buying_power = "40000.00",
+            trading_blocked = false,
+            transfers_blocked = false,
+            account_blocked = false,
+            shorting_enabled = true,
+            options_approved_level = 2,
+            options_trading_level = 2,
             currency = "USD",
             status
         });
@@ -793,6 +808,16 @@ public sealed class AlpacaBrokerageGatewayTests
                             market_value = "18750.00",
                             unrealized_pl = "1250.00",
                             asset_class = "equity",
+                        },
+                        new
+                        {
+                            symbol = "MSFT",
+                            qty = "-25",
+                            avg_entry_price = "430.00",
+                            current_price = "425.00",
+                            market_value = "-10625.00",
+                            unrealized_pl = "125.00",
+                            asset_class = "equity",
                         }
                     });
                 }
@@ -867,10 +892,21 @@ public sealed class AlpacaBrokerageGatewayTests
             account.AccountId == "TEST123" &&
             account.Currency == "USD");
         portfolio.Balance.Equity.Should().Be(100000m);
+        portfolio.AccountSnapshot.Should().NotBeNull();
+        portfolio.AccountSnapshot!.MarginRegime.Should().Be(BrokerageMarginRegime.RegulationT);
+        portfolio.AccountSnapshot.MaintenanceMargin.Should().Be(10000m);
+        portfolio.AccountSnapshot.ExcessLiquidity.Should().Be(90000m);
+        portfolio.AccountSnapshot.ShortingEnabled.Should().BeTrue();
+        portfolio.AccountSnapshot.OptionsTradingLevel.Should().Be(2);
         portfolio.Positions.Should().ContainSingle(position =>
             position.Symbol == "AAPL" &&
             position.Quantity == 100m &&
             position.MarketValue == 18750m);
+        portfolio.BorrowPositions.Should().ContainSingle(position =>
+            position.AccountId == "TEST123" &&
+            position.Symbol == "MSFT" &&
+            position.Quantity == -25m &&
+            position.Status == BrokerageBorrowStatus.Unknown);
         activity.Orders.Should().ContainSingle(order =>
             order.OrderId == "ord-open-1" &&
             order.Status == OrderStatus.Accepted);

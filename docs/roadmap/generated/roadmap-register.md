@@ -263,7 +263,7 @@ Completed the shared multi-asset operations proof lane by exposing Security Mast
 
 ### Current Summary
 
-Delivered 2026-07-02 and completed operator scheduled-fetch coverage 2026-07-18. Statement connectors ship as data, not code - declarative versioned CSV/OFX mapping-profile documents (operator-editable, atomic-write persisted, drift-detected), an IB Flex Report XML connector, an OFX 1.x/2.x bank and investment connector, and a fetch-capable Alpaca activity plus portfolio connector reusing the existing brokerage gateway and credential vault. Every connector classifies transactional, position, cash-balance, fee, and dividend data into canonical records, previews per-column mapping confidence and per-kind record breakdowns, and commits deterministically rendered canonical-CSV artifacts through the existing statement-run workflow into the reconciliation queue. The Accounting Import Statement surface now accepts file upload or remote provider preview, provides a live mapping-profile editor, and lets operators create, edit, pause, delete, refresh, and run persisted broker- or custodian-classified fetch schedules. Duplicate-key idempotency is preserved; transient scheduled-fetch failures do not advance the successful watermark or expose exception messages.
+Delivered 2026-07-02, completed operator scheduled-fetch coverage 2026-07-18, and deepened brokerage-account evidence 2026-07-18. Statement connectors ship as data, not code - declarative versioned CSV/OFX mapping-profile documents (operator-editable, atomic-write persisted, drift-detected), uploaded or remotely fetched IB Flex Report XML, OFX 1.x/2.x bank and investment statements, and a fetch-capable Alpaca activity plus portfolio connector reusing the existing brokerage gateway and credential vault. Alpaca activity uses bounded complete cursor pagination; IB Flex uses the documented v3 request/retrieve flow. Every connector classifies canonical records and retains a structured sidecar for account margin, activity subtype/completeness, option lifecycle, tax-lot, and borrow evidence. The Accounting Import Statement surface previews that evidence before committing into the existing reconciliation queue. Margin Control rolls evidence up across accounts and prime brokers, keeps provider margin authoritative, labels Meridian calculations as diagnostic shadows, and gates durable EOD certification on freshness, completeness, severity, and operator permission. Duplicate-key idempotency is preserved; transient scheduled-fetch failures do not advance the successful watermark or expose exception messages.
 
 ### Exit Criteria
 
@@ -272,6 +272,8 @@ Delivered 2026-07-02 and completed operator scheduled-fetch coverage 2026-07-18.
 - Committed imports enter the existing reconciliation queue with retained raw and canonical evidence and duplicate-key idempotency.
 - IB Flex XML, OFX bank and investment, Alpaca activity plus portfolio, and profile-driven CSV statements all normalize through one connector seam with golden-file regression coverage.
 - Format drift against a profile's last accepted layout is surfaced as a warning before rows map incorrectly.
+- Provider account margin, complete activity cursors, option lifecycle, tax-lot, and borrow evidence are retained without widening the legacy reconciliation CSV contract.
+- Multi-account and multi-prime evidence rolls into a provider-authoritative Margin Control Center with diagnostic shadow calculations and permission-checked EOD certification.
 
 ### Source Modules
 

@@ -66,6 +66,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     private const string LiveBaseUrl = "https://api.alpaca.markets";
     private const string BrokerApiSandboxBaseUrl = "https://broker-api.sandbox.alpaca.markets";
     private const string BrokerApiLiveBaseUrl = "https://broker-api.alpaca.markets";
+    private const int AccountActivityPageSize = 100;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
@@ -353,6 +354,21 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             BuyingPower = ParseDecimal(account?.BuyingPower),
             Currency = account?.Currency ?? "USD",
             Status = account?.Status ?? "unknown",
+            MarginMultiplier = ParseNullableDecimal(account?.Multiplier),
+            RegTBuyingPower = ParseNullableDecimal(account?.RegTBuyingPower),
+            InitialMargin = ParseNullableDecimal(account?.InitialMargin),
+            MaintenanceMargin = ParseNullableDecimal(account?.MaintenanceMargin),
+            LastMaintenanceMargin = ParseNullableDecimal(account?.LastMaintenanceMargin),
+            SpecialMemorandumAccount = ParseNullableDecimal(account?.SpecialMemorandumAccount),
+            LongMarketValue = ParseNullableDecimal(account?.LongMarketValue),
+            ShortMarketValue = ParseNullableDecimal(account?.ShortMarketValue),
+            NonMarginableBuyingPower = ParseNullableDecimal(account?.NonMarginableBuyingPower),
+            TradingBlocked = account?.TradingBlocked ?? false,
+            TransfersBlocked = account?.TransfersBlocked ?? false,
+            AccountBlocked = account?.AccountBlocked ?? false,
+            ShortingEnabled = account?.ShortingEnabled ?? false,
+            OptionsApprovedLevel = account?.OptionsApprovedLevel,
+            OptionsTradingLevel = account?.OptionsTradingLevel,
         };
     }
 
@@ -477,13 +493,23 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 ["environment"] = CurrentCredentials.Environment
             });
 
+        var retrievedAt = DateTimeOffset.UtcNow;
+        var restrictions = BuildAccountRestrictions(account);
+        var marginRegime = account.MarginMultiplier switch
+        {
+            <= 1m => BrokerageMarginRegime.Cash,
+            > 1m => BrokerageMarginRegime.RegulationT,
+            _ => BrokerageMarginRegime.Unknown
+        };
+
         return new BrokeragePortfolioSnapshotDto(
             Account: accountDto,
             Balance: new BrokerageBalanceSnapshotDto(
                 Cash: account.Cash,
                 Equity: account.Equity,
                 BuyingPower: account.BuyingPower,
-                Currency: account.Currency),
+                Currency: account.Currency,
+                MarginBalance: Math.Max(0m, -account.Cash)),
             Positions: positions
                 .Select(static position => new BrokeragePositionSnapshotDto(
                     Symbol: position.Symbol,
@@ -497,7 +523,50 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                     PositionId: position.PositionId,
                     Metadata: position.Metadata))
                 .ToArray(),
-            RetrievedAt: DateTimeOffset.UtcNow);
+            RetrievedAt: retrievedAt,
+            AccountSnapshot: new BrokerageAccountSnapshotDto(
+                ProviderId: GatewayId,
+                AccountId: account.AccountId,
+                AsOf: retrievedAt,
+                Currency: account.Currency,
+                Status: account.Status,
+                MarginRegime: marginRegime,
+                Cash: account.Cash,
+                Equity: account.Equity,
+                BuyingPower: account.BuyingPower,
+                LongMarketValue: account.LongMarketValue,
+                ShortMarketValue: account.ShortMarketValue,
+                RegTBuyingPower: account.RegTBuyingPower,
+                InitialMargin: account.InitialMargin,
+                MaintenanceMargin: account.MaintenanceMargin,
+                LastMaintenanceMargin: account.LastMaintenanceMargin,
+                ExcessLiquidity: account.MaintenanceMargin.HasValue
+                    ? account.Equity - account.MaintenanceMargin.Value
+                    : null,
+                SpecialMemorandumAccount: account.SpecialMemorandumAccount,
+                MarginLoan: account.Cash < 0m ? -account.Cash : null,
+                Multiplier: account.MarginMultiplier,
+                TradingBlocked: account.TradingBlocked,
+                TransfersBlocked: account.TransfersBlocked,
+                AccountBlocked: account.AccountBlocked,
+                ShortingEnabled: account.ShortingEnabled,
+                OptionsApprovedLevel: account.OptionsApprovedLevel,
+                OptionsTradingLevel: account.OptionsTradingLevel,
+                Restrictions: restrictions,
+                SourceAttributes: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["environment"] = CurrentCredentials.Environment,
+                    ["sourceAuthority"] = "ProviderReported"
+                }),
+            BorrowPositions: positions
+                .Where(static position => position.Quantity < 0m)
+                .Select(position => new BrokerageBorrowPositionSnapshotDto(
+                    Symbol: position.Symbol,
+                    Quantity: position.Quantity,
+                    Status: BrokerageBorrowStatus.Unknown,
+                    Currency: account.Currency,
+                    AccountId: account.AccountId))
+                .ToArray());
     }
 
     /// <inheritdoc />
@@ -551,7 +620,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         var fills = activities
             .Where(static activity => string.Equals(activity.ActivityType, "FILL", StringComparison.OrdinalIgnoreCase))
             .Select(activity => new BrokerageFillSnapshotDto(
-                FillId: activity.Id ?? Guid.NewGuid().ToString("N"),
+                FillId: BuildActivityId(activity),
                 OrderId: activity.OrderId,
                 Symbol: activity.Symbol ?? string.Empty,
                 Side: string.Equals(activity.Side, "sell", StringComparison.OrdinalIgnoreCase) ? OrderSide.Sell : OrderSide.Buy,
@@ -565,7 +634,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         var cashTransactions = activities
             .Where(static activity => !string.Equals(activity.ActivityType, "FILL", StringComparison.OrdinalIgnoreCase))
             .Select(activity => new BrokerageCashTransactionDto(
-                TransactionId: activity.Id ?? Guid.NewGuid().ToString("N"),
+                TransactionId: BuildActivityId(activity),
                 TransactionType: activity.ActivityType ?? "unknown",
                 Amount: ParseDecimal(activity.NetAmount),
                 Currency: activity.Currency ?? "USD",
@@ -594,7 +663,9 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                     UpdatedAt: null))
                 .ToArray(),
             Fills: fills,
-            CashTransactions: cashTransactions);
+            CashTransactions: cashTransactions,
+            Activities: activities.Select(BuildCanonicalActivityEvent).ToArray(),
+            Cursor: activityResult.Cursor);
     }
 
     private async Task<AccountInfo> RequireRequestedAccountAsync(
@@ -1353,6 +1424,200 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
             CultureInfo.InvariantCulture, out var result) ? result : null;
 
+    private static IReadOnlyList<string> BuildAccountRestrictions(AccountInfo account)
+    {
+        var restrictions = new List<string>();
+        if (account.TradingBlocked)
+            restrictions.Add("Trading blocked");
+        if (account.TransfersBlocked)
+            restrictions.Add("Transfers blocked");
+        if (account.AccountBlocked)
+            restrictions.Add("Account blocked");
+        if (!string.Equals(account.Status, "active", StringComparison.OrdinalIgnoreCase))
+            restrictions.Add($"Account status: {account.Status}");
+        return restrictions.AsReadOnly();
+    }
+
+    private static string BuildActivityId(AlpacaAccountActivityResponse activity)
+    {
+        if (!string.IsNullOrWhiteSpace(activity.Id))
+            return activity.Id;
+
+        return FormattableString.Invariant(
+            $"alpaca:{activity.ActivityType ?? "unknown"}:{ParseActivityTimestamp(activity):O}:{activity.OrderId}:{activity.Symbol}:{activity.NetAmount}:{activity.Qty}:{activity.Price}:{activity.Description}");
+    }
+
+    private static BrokerageActivityEventDto BuildCanonicalActivityEvent(AlpacaAccountActivityResponse activity)
+    {
+        var providerCode = activity.ActivityType?.Trim().ToUpperInvariant() ?? "UNKNOWN";
+        var (category, subtype) = MapActivityType(providerCode, activity.Description);
+        var option = category == BrokerageActivityCategory.OptionLifecycle
+            ? BuildOptionLifecycle(activity.Symbol, subtype)
+            : null;
+
+        return new BrokerageActivityEventDto(
+            EventId: BuildActivityId(activity),
+            ProviderCode: providerCode,
+            Category: category,
+            Subtype: subtype,
+            EffectiveAt: ParseActivityTimestamp(activity),
+            Currency: activity.Currency ?? "USD",
+            NetAmount: ParseDecimal(activity.NetAmount),
+            Symbol: activity.Symbol,
+            Quantity: ParseSignedActivityQuantity(activity),
+            Price: ParseNullableDecimal(activity.Price ?? activity.PerShareAmount),
+            OrderId: activity.OrderId,
+            RelatedEventId: activity.TradeId,
+            Description: activity.Description,
+            Option: option,
+            Metadata: BuildActivityMetadata(activity, providerCode));
+    }
+
+    private static decimal? ParseSignedActivityQuantity(AlpacaAccountActivityResponse activity)
+    {
+        var quantity = ParseNullableDecimal(activity.Qty);
+        if (!quantity.HasValue)
+            return null;
+
+        return string.Equals(activity.Side, "sell", StringComparison.OrdinalIgnoreCase)
+            ? -Math.Abs(quantity.Value)
+            : Math.Abs(quantity.Value);
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildActivityMetadata(
+        AlpacaAccountActivityResponse activity,
+        string providerCode)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["sourceAuthority"] = "ProviderReported",
+            ["providerActivityCode"] = providerCode
+        };
+        if (!string.IsNullOrWhiteSpace(activity.Side))
+            metadata["side"] = activity.Side;
+        if (!string.IsNullOrWhiteSpace(activity.Commission))
+            metadata["commission"] = activity.Commission;
+        if (!string.IsNullOrWhiteSpace(activity.Exchange))
+            metadata["exchange"] = activity.Exchange;
+        return metadata;
+    }
+
+    private static (BrokerageActivityCategory Category, BrokerageActivitySubtype Subtype) MapActivityType(
+        string providerCode,
+        string? description)
+    {
+        return providerCode switch
+        {
+            "FILL" or "TRADE" => (BrokerageActivityCategory.Trade, BrokerageActivitySubtype.TradeFill),
+            "COR" or "TRADE_CORRECTION" => (BrokerageActivityCategory.Trade, BrokerageActivitySubtype.TradeCorrection),
+            "BUST" or "TRADE_BUST" => (BrokerageActivityCategory.Trade, BrokerageActivitySubtype.TradeBust),
+            "CSD" => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashDeposit),
+            "CSW" => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashWithdrawal),
+            "FEE" or "DIVFEE" => (BrokerageActivityCategory.Fee, BrokerageActivitySubtype.Fee),
+            "CFEE" => (BrokerageActivityCategory.Fee, BrokerageActivitySubtype.CryptoFee),
+            "PTC" => (BrokerageActivityCategory.Fee, BrokerageActivitySubtype.PassThroughCharge),
+            "PTR" => (BrokerageActivityCategory.Fee, BrokerageActivitySubtype.PassThroughRebate),
+            "INT" => MapInterestActivity(description),
+            "DIV" or "DIVFT" => (BrokerageActivityCategory.Dividend, BrokerageActivitySubtype.CashDividend),
+            "DIVSTOCK" => (BrokerageActivityCategory.Dividend, BrokerageActivitySubtype.StockDividend),
+            "DIVCGL" or "DIVCGS" => (BrokerageActivityCategory.Dividend, BrokerageActivitySubtype.CapitalGainDistribution),
+            "DIVROC" => (BrokerageActivityCategory.Dividend, BrokerageActivitySubtype.ReturnOfCapital),
+            "DIVNRA" or "DIVTW" or "DIVTXEX" => (BrokerageActivityCategory.Tax, BrokerageActivitySubtype.DividendWithholding),
+            "ACATC" => (BrokerageActivityCategory.Transfer, BrokerageActivitySubtype.AcatsCash),
+            "ACATS" => (BrokerageActivityCategory.Transfer, BrokerageActivitySubtype.AcatsSecurity),
+            "TRANS" => (BrokerageActivityCategory.Transfer, BrokerageActivitySubtype.CashTransfer),
+            "JNL" or "JNLC" => (BrokerageActivityCategory.Journal, BrokerageActivitySubtype.CashJournal),
+            "JNLS" or "FOPT" => (BrokerageActivityCategory.Journal, BrokerageActivitySubtype.SecurityJournal),
+            "OPASN" => (BrokerageActivityCategory.OptionLifecycle, BrokerageActivitySubtype.OptionAssignment),
+            "OPXRC" => (BrokerageActivityCategory.OptionLifecycle, BrokerageActivitySubtype.OptionExercise),
+            "OPEXP" => (BrokerageActivityCategory.OptionLifecycle, BrokerageActivitySubtype.OptionExpiration),
+            "SSP" => (BrokerageActivityCategory.CorporateAction, BrokerageActivitySubtype.StockSplit),
+            "SSO" or "SPIN" => (BrokerageActivityCategory.CorporateAction, BrokerageActivitySubtype.Spinoff),
+            "MA" => (BrokerageActivityCategory.CorporateAction, BrokerageActivitySubtype.Merger),
+            "NC" or "SC" => (BrokerageActivityCategory.CorporateAction, BrokerageActivitySubtype.SymbolChange),
+            "REORG" => (BrokerageActivityCategory.CorporateAction, BrokerageActivitySubtype.Reorganization),
+            "HTB" or "BORROW_FEE" => (BrokerageActivityCategory.Borrow, BrokerageActivitySubtype.BorrowFee),
+            "BORROW_REBATE" => (BrokerageActivityCategory.Borrow, BrokerageActivitySubtype.BorrowRebate),
+            "TAX" or "TAX_WITHHOLDING" => (BrokerageActivityCategory.Tax, BrokerageActivitySubtype.TaxWithholding),
+            _ => (BrokerageActivityCategory.Other, BrokerageActivitySubtype.Other)
+        };
+    }
+
+    private static (BrokerageActivityCategory Category, BrokerageActivitySubtype Subtype) MapInterestActivity(
+        string? description)
+    {
+        if (description?.Contains("borrow", StringComparison.OrdinalIgnoreCase) == true ||
+            description?.Contains("short", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return (BrokerageActivityCategory.Borrow, BrokerageActivitySubtype.BorrowFee);
+        }
+
+        if (description?.Contains("margin", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return (BrokerageActivityCategory.Interest, BrokerageActivitySubtype.MarginInterest);
+        }
+
+        return (BrokerageActivityCategory.Interest, BrokerageActivitySubtype.CreditInterest);
+    }
+
+    private static BrokerageOptionLifecycleSnapshotDto BuildOptionLifecycle(
+        string? contractId,
+        BrokerageActivitySubtype subtype)
+    {
+        var lifecycleAction = subtype switch
+        {
+            BrokerageActivitySubtype.OptionAssignment => "Assignment",
+            BrokerageActivitySubtype.OptionExercise => "Exercise",
+            BrokerageActivitySubtype.OptionExpiration => "Expiration",
+            _ => "Other"
+        };
+
+        if (string.IsNullOrWhiteSpace(contractId) || contractId.Length <= 15)
+        {
+            return new BrokerageOptionLifecycleSnapshotDto(
+                ContractId: contractId ?? string.Empty,
+                UnderlyingSymbol: null,
+                OptionType: null,
+                StrikePrice: null,
+                ExpirationDate: null,
+                ContractMultiplier: 100m,
+                LifecycleAction: lifecycleAction);
+        }
+
+        var suffix = contractId[^15..];
+        var underlying = contractId[..^15].Trim();
+        var expiration = DateOnly.TryParseExact(
+            suffix[..6],
+            "yyMMdd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var parsedExpiration)
+            ? parsedExpiration
+            : (DateOnly?)null;
+        var optionType = suffix[6] switch
+        {
+            'C' => "Call",
+            'P' => "Put",
+            _ => null
+        };
+        var strikePrice = decimal.TryParse(
+            suffix[7..],
+            NumberStyles.None,
+            CultureInfo.InvariantCulture,
+            out var parsedStrike)
+            ? parsedStrike / 1_000m
+            : (decimal?)null;
+
+        return new BrokerageOptionLifecycleSnapshotDto(
+            ContractId: contractId,
+            UnderlyingSymbol: string.IsNullOrWhiteSpace(underlying) ? null : underlying,
+            OptionType: optionType,
+            StrikePrice: strikePrice,
+            ExpirationDate: expiration,
+            ContractMultiplier: 100m,
+            LifecycleAction: lifecycleAction);
+    }
+
     private static DateTimeOffset ParseActivityTimestamp(AlpacaAccountActivityResponse activity)
     {
         return TryGetActivityTimestamp(activity, out var occurredAt)
@@ -1524,6 +1789,21 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("equity")] public string? Equity { get; set; }
         [JsonPropertyName("cash")] public string? Cash { get; set; }
         [JsonPropertyName("buying_power")] public string? BuyingPower { get; set; }
+        [JsonPropertyName("multiplier")] public string? Multiplier { get; set; }
+        [JsonPropertyName("regt_buying_power")] public string? RegTBuyingPower { get; set; }
+        [JsonPropertyName("initial_margin")] public string? InitialMargin { get; set; }
+        [JsonPropertyName("maintenance_margin")] public string? MaintenanceMargin { get; set; }
+        [JsonPropertyName("last_maintenance_margin")] public string? LastMaintenanceMargin { get; set; }
+        [JsonPropertyName("sma")] public string? SpecialMemorandumAccount { get; set; }
+        [JsonPropertyName("long_market_value")] public string? LongMarketValue { get; set; }
+        [JsonPropertyName("short_market_value")] public string? ShortMarketValue { get; set; }
+        [JsonPropertyName("non_marginable_buying_power")] public string? NonMarginableBuyingPower { get; set; }
+        [JsonPropertyName("trading_blocked")] public bool? TradingBlocked { get; set; }
+        [JsonPropertyName("transfers_blocked")] public bool? TransfersBlocked { get; set; }
+        [JsonPropertyName("account_blocked")] public bool? AccountBlocked { get; set; }
+        [JsonPropertyName("shorting_enabled")] public bool? ShortingEnabled { get; set; }
+        [JsonPropertyName("options_approved_level")] public int? OptionsApprovedLevel { get; set; }
+        [JsonPropertyName("options_trading_level")] public int? OptionsTradingLevel { get; set; }
         [JsonPropertyName("currency")] public string? Currency { get; set; }
         [JsonPropertyName("status")] public string? Status { get; set; }
     }
@@ -1545,6 +1825,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     {
         [JsonPropertyName("id")] public string? Id { get; set; }
         [JsonPropertyName("activity_type")] public string? ActivityType { get; set; }
+        [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; set; }
         [JsonPropertyName("transaction_time")] public DateTimeOffset? TransactionTime { get; set; }
         [JsonPropertyName("date")] public DateOnly? Date { get; set; }
         [JsonPropertyName("symbol")] public string? Symbol { get; set; }
@@ -1555,6 +1836,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("side")] public string? Side { get; set; }
         [JsonPropertyName("type")] public string? Type { get; set; }
         [JsonPropertyName("order_id")] public string? OrderId { get; set; }
+        [JsonPropertyName("trade_id")] public string? TradeId { get; set; }
         [JsonPropertyName("net_amount")] public string? NetAmount { get; set; }
         [JsonPropertyName("per_share_amount")] public string? PerShareAmount { get; set; }
         [JsonPropertyName("commission")] public string? Commission { get; set; }

@@ -22,6 +22,58 @@ public static partial class WorkstationEndpoints
 
     private static void MapStatementConnectorEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationMarginControl), async (
+            HttpContext context,
+            [FromServices] Meridian.Ui.Shared.Services.MarginControlCenterReadService? marginControl) =>
+        {
+            if (marginControl is null)
+                return StatementConnectorsNotRegistered();
+
+            var result = await marginControl.GetAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetMarginControlCenter")
+        .Produces<MarginControlCenterDto>(200);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationMarginCertifications), async (
+            MarginCertificationRequestDto request,
+            HttpContext context,
+            [FromServices] Meridian.Ui.Shared.Services.MarginControlCenterReadService? marginControl) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+                return EndpointHelpers.Forbidden();
+            if (marginControl is null)
+                return StatementConnectorsNotRegistered();
+
+            try
+            {
+                var result = await marginControl.CertifyAsync(
+                    request,
+                    ResolveCurrentActor(context),
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (InvalidDataException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["note"] = [ex.Message] });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("CertifyMarginAccountSnapshot")
+        .Produces<MarginCertificationResultDto>(200)
+        .ProducesValidationProblem()
+        .Produces(403)
+        .Produces(404)
+        .Produces(409)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         MapStatementReconciliationReportEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementConnectors), (

@@ -176,6 +176,23 @@ public static class ProviderCredentialCatalog
             RecommendedActionWhenMissing: "Add QuickBooks Online OAuth client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
             ActionHref: "/settings#provider-quickbooks-connection"),
         new(
+            ProviderId: "ib-flex",
+            DisplayName: "Interactive Brokers Flex Web Service",
+            Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
+            RequiredFields:
+            [
+                new ProviderCredentialFieldDefinition("Token", ["IB_FLEX_TOKEN", "IBKR_FLEX_TOKEN"]),
+                new ProviderCredentialFieldDefinition("QueryId", ["IB_FLEX_QUERY_ID", "IBKR_FLEX_QUERY_ID"])
+            ],
+            AffectedWorkflows:
+            [
+                "Scheduled broker statement import",
+                "Margin and cash reconciliation",
+                "Tax-lot and options lifecycle evidence"
+            ],
+            RecommendedActionWhenMissing: "Create an IB Activity Flex Query, enable the required sections, and add its token and query ID.",
+            ActionHref: "/settings#provider-ib-flex-connection"),
+        new(
             ProviderId: "ib",
             DisplayName: "Interactive Brokers",
             Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
@@ -212,10 +229,8 @@ public static class ProviderCredentialCatalog
         ["alpaca-options"] = "alpaca",
         ["alphaVantage"] = "alphavantage",
         ["alpha-vantage"] = "alphavantage",
-        ["alphavantage-corp-actions"] = "alphavantage",
-        ["alphavantage-symbols"] = "alphavantage",
-        ["finnhub-corp-actions"] = "finnhub",
-        ["finnhub-symbols"] = "finnhub",
+        ["ibflex"] = "ib-flex",
+        ["ib-flex-web-service"] = "ib-flex",
         ["nasdaq"] = "nasdaqdatalink",
         ["nasdaq-corp-actions"] = "nasdaqdatalink",
         ["nasdaq-data-link"] = "nasdaqdatalink",

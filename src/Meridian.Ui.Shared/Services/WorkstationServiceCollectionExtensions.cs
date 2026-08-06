@@ -321,6 +321,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
+        services.TryAddSingleton(sp => new MarginCertificationStore(ResolveWorkstationDataDirectory(sp)));
+        services.TryAddSingleton<MarginControlCenterReadService>();
         // Reconcile statement runs against Meridian's own retained account records (positions + cash)
         // instead of the fail-closed empty book. Replace (not TryAdd) so this wins over the
         // EmptyInternalReconciliationPopulationProvider that AddStatementReconciliationServices

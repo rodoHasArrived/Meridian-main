@@ -117,6 +117,8 @@ public static class ReconciliationServiceRegistration
                 sp.GetService<ILogger<FileStatementMappingProfileStore>>()));
         services.TryAddSingleton<StatementMappingProfileCatalog>();
         services.TryAddSingleton(sp => sp.GetRequiredService<StatementMappingProfileCatalog>().BuildRegistry());
+        services.TryAddSingleton<IIbFlexWebServiceClient>(_ => new IbFlexWebServiceClient(
+            new HttpClient { Timeout = TimeSpan.FromMinutes(2) }));
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, CsvStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, OfxStatementConnector>());
@@ -125,6 +127,7 @@ public static class ReconciliationServiceRegistration
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Camt053StatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Bai2StatementConnector>());
         services.TryAddSingleton<StatementConnectorRegistry>();
+        services.TryAddSingleton(sp => new StatementCanonicalEvidenceReader(resolveDataRoot(sp)));
 
         services.TryAddSingleton(sp => new StatementImportService(
             sp.GetRequiredService<StatementConnectorRegistry>(),

@@ -175,6 +175,8 @@ public sealed class StatementImportServiceTests : IDisposable
 
         File.Exists(Path.Combine(_root, result.RetainedSourcePath)).Should().BeTrue();
         File.Exists(Path.Combine(_root, result.RetainedCanonicalPath)).Should().BeTrue();
+        result.RetainedCanonicalEvidencePath.Should().NotBeNull();
+        File.Exists(Path.Combine(_root, result.RetainedCanonicalEvidencePath!)).Should().BeTrue();
     }
 
     [Fact]
@@ -263,13 +265,13 @@ public sealed class StatementImportServiceTests : IDisposable
 
         var artifact = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
         artifact.Should().Be(
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
-            "FUND-A,AAPL,100,187.25,-18726.05,trade,2026-06-02,2026-06-04,USD,1.05,T-1001\n" +
-            "FUND-A,MSFT,-50,412.10,20603.98,trade,2026-06-15,2026-06-17,USD,1.02,T-1002\n" +
-            "FUND-A,AAPL,100,190.10,19010.00,position,2026-06-30,,USD,,\n" +
-            "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,\n" +
-            "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001\n" +
-            "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001\n");
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId,activityCategory,activitySubtype,providerActivityCode,relatedTransactionId,orderId,description\n" +
+            "FUND-A,AAPL,100,187.25,-18726.05,trade,2026-06-02,2026-06-04,USD,1.05,T-1001,,,,,,\n" +
+            "FUND-A,MSFT,-50,412.10,20603.98,trade,2026-06-15,2026-06-17,USD,1.02,T-1002,,,,,,\n" +
+            "FUND-A,AAPL,100,190.10,19010.00,position,2026-06-30,,USD,,,,,,,,\n" +
+            "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,,,,,,,\n" +
+            "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001,,,,,,\n" +
+            "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001,,,,,,\n");
     }
 
     [Fact]

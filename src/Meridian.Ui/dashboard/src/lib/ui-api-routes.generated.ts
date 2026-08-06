@@ -638,6 +638,8 @@ export const UI_API_ROUTES = {
   ReconciliationStatementFetchSchedules: "/api/workstation/reconciliation/statement-fetch-schedules",
   ReconciliationStatementFetchScheduleById: "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}",
   ReconciliationStatementFetchScheduleRun: "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}/run",
+  ReconciliationMarginControl: "/api/workstation/reconciliation/margin-control",
+  ReconciliationMarginCertifications: "/api/workstation/reconciliation/margin-control/certifications",
   ReconciliationOpenCases: "/api/workstation/reconciliation/cases",
   DirectLendingServicerStatementPreview: "/api/loans/servicer-statements/preview",
   DirectLendingServicerStatementImport: "/api/loans/servicer-statements/import",
