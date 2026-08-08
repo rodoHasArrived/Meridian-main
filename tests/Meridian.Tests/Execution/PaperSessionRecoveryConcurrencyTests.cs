@@ -608,7 +608,7 @@ public sealed class PaperSessionRecoveryConcurrencyTests : IDisposable
         ReportType = ExecutionReportType.Fill,
         Symbol = "AAPL",
         Side = OrderSide.Buy,
-        OrderStatus = OrderStatus.Filled,
+        OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
         OrderQuantity = quantity,
         FilledQuantity = quantity,
         FillPrice = price,
@@ -622,7 +622,7 @@ public sealed class PaperSessionRecoveryConcurrencyTests : IDisposable
         Side = OrderSide.Buy,
         Type = OrderType.Market,
         Quantity = 10m,
-        Status = OrderStatus.Accepted,
+        Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
         CreatedAt = FillTime.AddMinutes(-1)
     };
 

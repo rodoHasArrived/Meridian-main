@@ -66,7 +66,6 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     private const string LiveBaseUrl = "https://api.alpaca.markets";
     private const string BrokerApiSandboxBaseUrl = "https://broker-api.sandbox.alpaca.markets";
     private const string BrokerApiLiveBaseUrl = "https://broker-api.alpaca.markets";
-    private const int AccountActivityPageSize = 100;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
@@ -664,8 +663,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 .ToArray(),
             Fills: fills,
             CashTransactions: cashTransactions,
-            Activities: activities.Select(BuildCanonicalActivityEvent).ToArray(),
-            Cursor: activityResult.Cursor);
+            Activities: activities.Select(BuildCanonicalActivityEvent).ToArray());
     }
 
     private async Task<AccountInfo> RequireRequestedAccountAsync(

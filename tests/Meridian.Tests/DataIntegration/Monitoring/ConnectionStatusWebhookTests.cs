@@ -157,7 +157,7 @@ public sealed class ConnectionStatusWebhookTests
 
         public Task SendMonitoringMessageAsync(string message, string? title = null, CancellationToken ct = default)
         {
-            _messages.Add((message, title));
+            _messages.Enqueue((message, title));
             return Task.CompletedTask;
         }
     }

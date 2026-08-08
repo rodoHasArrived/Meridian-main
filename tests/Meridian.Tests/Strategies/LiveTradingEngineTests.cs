@@ -121,7 +121,7 @@ public sealed class LiveTradingEngineTests
 
         var failed = await repository.FailedRun.Task.WaitAsync(WaitBudget);
         failed.RunId.Should().Be(run.RunId);
-        failed.TerminalStatus.Should().Be(StrategyRunStatus.Failed);
+        failed.TerminalStatus.Should().Be(Meridian.Contracts.Workstation.StrategyRunStatus.Failed);
         failed.ExceptionMessage.Should().Contain("fractional quantity");
         failed.Metrics.Should().BeNull(
             "a 0.5-unit broker fill must never be recorded as a silently truncated zero-unit strategy fill");
@@ -619,8 +619,8 @@ public sealed class LiveTradingEngineTests
         ILiveStrategyCatalog? catalog = null,
         LiveTradingEngineOptions? options = null)
     {
-        var gateway = new PaperTradingGateway(
-            NullLogger<PaperTradingGateway>.Instance,
+        var gateway = new Meridian.Execution.Adapters.PaperTradingGateway(
+            NullLogger<Meridian.Execution.Adapters.PaperTradingGateway>.Instance,
             securityMaster: null,
             options: null,
             liveFeed: cache);

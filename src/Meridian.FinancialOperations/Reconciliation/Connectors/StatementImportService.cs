@@ -617,13 +617,13 @@ public sealed class StatementImportService(
                 .Append(record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(EncodeArtifactValue(record.Currency)).Append(',')
                 .Append(EncodeArtifactValue(record.FeesCommission?.ToString(CultureInfo.InvariantCulture))).Append(',')
-                .Append(SanitizeArtifactValue(record.ExternalTransactionId)).Append(',')
-                .Append(SanitizeArtifactValue(record.ActivityCategory)).Append(',')
-                .Append(SanitizeArtifactValue(record.ActivitySubtype)).Append(',')
-                .Append(SanitizeArtifactValue(record.ProviderActivityCode)).Append(',')
-                .Append(SanitizeArtifactValue(record.RelatedTransactionId)).Append(',')
-                .Append(SanitizeArtifactValue(record.OrderId)).Append(',')
-                .Append(SanitizeArtifactValue(record.Description)).Append('\n');
+                .Append(EncodeArtifactValue(record.ExternalTransactionId)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivityCategory)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivitySubtype)).Append(',')
+                .Append(EncodeArtifactValue(record.ProviderActivityCode)).Append(',')
+                .Append(EncodeArtifactValue(record.RelatedTransactionId)).Append(',')
+                .Append(EncodeArtifactValue(record.OrderId)).Append(',')
+                .Append(EncodeArtifactValue(record.Description)).Append('\n');
         }
 
         return builder.ToString();
