@@ -490,9 +490,11 @@ public sealed class StatementImportServiceTests : IDisposable
         const string source =
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
             "FUND-A,AAPL,1,100,-100,trade,2026-06-02\n";
+        // The pre-upgrade run is keyed by the hash of the canonical rendering, so this constant has
+        // to be the exact artifact the writer produces today — including every trailing column.
         const string canonical =
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
-            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,,,\n";
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId,activityCategory,activitySubtype,providerActivityCode,relatedTransactionId,orderId,description\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,,,,,,,,,\n";
         var document = new StatementSourceDocument("legacy-import.csv", Encoding.UTF8.GetBytes(source));
         var canonicalHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
         var rawHash = Convert.ToHexString(SHA256.HashData(document.Content.Span));

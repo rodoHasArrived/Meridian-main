@@ -255,6 +255,33 @@ public sealed class StatementImportService(
         var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
         var relativeCanonicalEvidence = ToRelativeRetainedPath(uploadId, "canonical-evidence.json");
 
+        // Statement run creation is idempotent: it resumes an import that is already retained rather
+        // than reporting one, so a re-import of the same statement would otherwise be indisting-
+        // uishable from a first import. Ask before creating, using the importer's own compatibility
+        // rule — the current raw-plus-canonical identity, then the canonical-only identity that runs
+        // imported before raw source hashes were retained separately still carry.
+        var compatibleDuplicateKeys = request.AccountingScope is null
+            ? StatementDuplicateKey.CreateCompatibleKeys(
+                runRequest.FundAccountId,
+                runRequest.StatementPeriodStart,
+                runRequest.StatementPeriodEnd,
+                rawHash,
+                canonicalHash)
+            : StatementDuplicateKey.CreateCompatibleKeys(
+                runRequest.FundAccountId,
+                runRequest.StatementPeriodStart,
+                runRequest.StatementPeriodEnd,
+                rawHash,
+                canonicalHash,
+                request.AccountingScope);
+        var retainedImportIds = (await workflow.ListImportsAsync(ct).ConfigureAwait(false))
+            .Select(static import => import.ImportId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (compatibleDuplicateKeys.FirstOrDefault(retainedImportIds.Contains) is { } retainedRunId)
+        {
+            return await DuplicateResultAsync(retainedRunId).ConfigureAwait(false);
+        }
+
         StatementRunWorkflowResult result;
         try
         {
@@ -646,29 +673,6 @@ public sealed class StatementImportService(
         }
 
         return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
-    }
-
-    /// <summary>
-    /// Flattens one provider-supplied identifier for the artifact: separator-hostile characters
-    /// become spaces rather than being quoted, so the value cannot reshape the row. Distinct from
-    /// <see cref="EncodeArtifactValue"/>, which preserves the source exactly by quoting it — these
-    /// trailing columns carry opaque broker identifiers where a lossy flatten is preferred to
-    /// quoting, and the callers below depend on that difference.
-    /// </summary>
-    private static string SanitizeArtifactValue(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return string.Empty;
-        }
-
-        var builder = new StringBuilder(value.Length);
-        foreach (var character in value)
-        {
-            builder.Append(character is ',' or '"' or '\r' or '\n' ? ' ' : character);
-        }
-
-        return builder.ToString().Trim();
     }
 
     private static string NormalizeSourceKind(string sourceKind)

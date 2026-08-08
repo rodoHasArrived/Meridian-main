@@ -204,6 +204,11 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         var version = AllocateRunVersion(contract);
         var runId = version.RunId;
+        // A retry is recorded before any attempt has produced a manifest, and an audit entry cannot
+        // be appended to a run that is not retained yet. Retry notes are held here and flushed the
+        // moment the run first exists, ahead of that attempt's own entry, so the trail still reads
+        // in attempt order.
+        var pendingRetryAudits = new List<string>();
         Exception? lastError = null;
         ActiveRunCreateClaim? createClaim = null;
         CancellationTokenSource? createClaimHeartbeatStop = null;
@@ -295,6 +300,11 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         CertifiedDatasetRows: certifiedDatasetRows);
 
                     PublishManifest(manifest);
+                    FlushPendingRetryAudits(
+                        pendingRetryAudits,
+                        manifest.OperationalScope?.TenantId,
+                        runId,
+                        contract.RequestedBy);
                     AppendAudit(
                         manifest.OperationalScope?.TenantId,
                         runId,
@@ -327,7 +337,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 catch (Exception ex) when (attempt <= contract.MaxRetries)
                 {
                     lastError = ex;
-                    AppendAudit(contract.OperationalScope?.TenantId, runId, "RunRetry", contract.RequestedBy, $"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={NormalizeOptional(contract.RetryReason) ?? "none"}; error={ex.Message}");
+                    pendingRetryAudits.Add($"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={NormalizeOptional(contract.RetryReason) ?? "none"}; error={ex.Message}");
                 }
                 catch (Exception ex)
                 {
@@ -365,6 +375,11 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         AuthoritativeSource: contract.AuthoritativeSource,
                         CertifiedDatasetRows: FreezeCertifiedRows(contract));
                     PublishManifest(failed);
+                    FlushPendingRetryAudits(
+                        pendingRetryAudits,
+                        failed.OperationalScope?.TenantId,
+                        runId,
+                        contract.RequestedBy);
                     AppendAudit(failed.OperationalScope?.TenantId, runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={failed.RetryReason ?? "none"}; error={ex.Message}");
                     await ThrowIfRunCreateLeaseLostAsync(createClaimHeartbeat).ConfigureAwait(false);
                     await PersistAsync(failed, cancellationToken, createClaim).ConfigureAwait(false);
@@ -804,6 +819,25 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 IsReloadVerified = false,
                 LastAccessSequence = NextRetentionSequence()
             });
+    }
+
+    private void FlushPendingRetryAudits(
+        List<string> pendingRetryAudits,
+        string? tenantId,
+        string runId,
+        string actor)
+    {
+        if (pendingRetryAudits.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var notes in pendingRetryAudits)
+        {
+            AppendAudit(tenantId, runId, "RunRetry", actor, notes);
+        }
+
+        pendingRetryAudits.Clear();
     }
 
     private void AppendAudit(string? tenantId, string runId, string action, string actor, string notes)

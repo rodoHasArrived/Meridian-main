@@ -4987,7 +4987,6 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 .ToArray();
 
     private void ApplyExternalGlMappingProfileDraft(ExternalGlMappingProfileDto profile)
-    private void ApplyExternalGlMappingProfileDraft(ExternalGlMappingProfileDto profile)
     {
         ExternalGlMappingProviderId = profile.ProviderId;
         ExternalGlMappingProfileId = profile.ProfileId;

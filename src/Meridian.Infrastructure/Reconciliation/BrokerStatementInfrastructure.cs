@@ -271,8 +271,17 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     private const int MaximumLineCharacters = 64 * 1024;
     private static readonly string[] ExpectedColumns =
         ["account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate"];
+    // The canonical artifact written by StatementImportService is this parser's own input, so the
+    // accepted optional suffix must stay a prefix-compatible superset of what that writer emits, in
+    // the same order. Widening here keeps narrower artifacts written before a column was added
+    // readable, because a shorter header is still a valid prefix of the full list. Only the first
+    // four are carried onto CanonicalStatementRow; the remainder are artifact-level provenance that
+    // reconciliation does not consume, and are tolerated rather than mapped.
     private static readonly string[] OptionalCanonicalColumns =
-        ["settlementDate", "currency", "feesCommission", "externalTransactionId"];
+    [
+        "settlementDate", "currency", "feesCommission", "externalTransactionId", "activityCategory",
+        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
+    ];
 
     public async Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
@@ -439,7 +448,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 throw new InvalidDataException($"Statement CSV row {recordStartLine} contains an invalid numeric or date value.");
             }
 
-            // Capture the optional canonical columns (settlementDate, currency, feesCommission,
+            // Capture the four optional canonical columns (settlementDate, currency, feesCommission,
             // externalTransactionId) that the header validation already guaranteed are present in
             // order. These flow into currency-aware, external-id-based matching downstream instead
             // of being discarded at the canonical-row boundary.

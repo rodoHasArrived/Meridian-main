@@ -1319,7 +1319,7 @@ public sealed class ReconciliationRunServiceTests
 
         // Adjust so net == 750 by seeding directly via approval
         var pending = await bankingService.InitiatePaymentAsync(entityId,
-            new InitiatePaymentRequest(750m, new DateOnly(2026, 3, 21), "RECON-TEST", null));
+            new InitiatePaymentRequest(750m, new DateOnly(2026, 3, 21), "RECON-TEST", null, "USD"));
         await bankingService.ApprovePaymentAsync(pending.PendingPaymentId,
             new ApprovePaymentRequest("Test approval", "test"));
         await bankingService.RecordPaymentBankEvidenceAsync(pending.PendingPaymentId,

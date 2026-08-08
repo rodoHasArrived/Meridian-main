@@ -1321,7 +1321,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         {
             if (CanCommitOperatingContextSelection(context.ContextKey, selectionRevision, token))
             {
-                LoggingService.Instance.LogDebug(
+                global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
                     "Operating-context selection failed.",
                     ("contextKey", context.ContextKey),
                     ("exception", ex.GetType().Name),
