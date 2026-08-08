@@ -10,6 +10,9 @@ namespace Meridian.Execution.Services;
 /// <summary>
 /// Serialisable snapshot of a paper session's metadata.
 /// Written atomically to <c>session.json</c> on every lifecycle change.
+/// <see cref="MatchingModelVersion"/> and <see cref="CostModelVersion"/> record which
+/// paper matching and cost policies produced the session's fills; sessions persisted
+/// before those policies existed load with <c>null</c> (unknown).
 /// </summary>
 public sealed record PersistedSessionRecord(
     string SessionId,
@@ -19,7 +22,9 @@ public sealed record PersistedSessionRecord(
     DateTimeOffset CreatedAt,
     DateTimeOffset? ClosedAt,
     bool IsActive,
-    List<string> Symbols);
+    List<string> Symbols,
+    string? MatchingModelVersion = null,
+    string? CostModelVersion = null);
 
 /// <summary>
 /// Lightweight serialisation DTO for a <see cref="Meridian.Ledger.LedgerAccount"/>.

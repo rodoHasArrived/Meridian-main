@@ -26,10 +26,13 @@ public sealed class OrderManagementSystemTests : IDisposable
     public OrderManagementSystemTests()
     {
         // These tests exercise OMS behavior over a gateway that fills feed-less market
-        // orders, so scaffold pricing is explicitly opted in.
+        // orders, so scaffold pricing is explicitly opted in. Costs are zeroed so cash
+        // assertions stay about fill application; cost math is covered by
+        // PaperTradingCostModelTests and PaperFillEnvelopeRegressionTests.
         _gateway = new ExecutionGateway(
             NullLogger<ExecutionGateway>.Instance,
-            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true });
+            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true },
+            costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
         _oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
     }
 

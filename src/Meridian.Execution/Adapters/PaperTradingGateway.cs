@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Exceptions;
 using Meridian.Execution.Models;
+using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Sdk;
 using GatewayExecutionMode = Meridian.Execution.Models.ExecutionMode;
 using GatewayOrderStatus = Meridian.Execution.Models.OrderStatus;
@@ -13,20 +14,24 @@ using Meridian.Core.Pipeline;
 namespace Meridian.Execution.Adapters;
 
 /// <summary>
-/// Simulated order gateway that routes no real orders to any exchange.
-/// Fills are priced from the limit/stop price or the live feed's last observed price;
-/// market orders with no available reference price are rejected unless scaffold notional
-/// pricing is explicitly enabled via
+/// Simulated order gateway that routes no real orders to any exchange. Orders are matched
+/// against observed market data under <see cref="PaperOrderMatchingPolicy"/>: market
+/// orders fill from the observed bid/ask/trade/bar in effect, limit orders fill only at
+/// or better than their limit price, stop orders trigger per the documented trade-preferred
+/// policy, and unmarketable orders rest and re-evaluate as new market data arrives.
+/// Commission, fee, and slippage costs from <see cref="PaperTradingCostModel"/> apply to
+/// every fill. Market orders with no observed reference price are rejected unless scaffold
+/// notional pricing is explicitly enabled via
 /// <see cref="PaperTradingGatewayOptions.AllowScaffoldMarketFills"/>.
 /// Implements ADR-015.
 /// </summary>
 [ImplementsAdr("ADR-015", "Simulated IOrderGateway over live Meridian feed — no real orders")]
-public sealed class PaperTradingGateway : IOrderGateway
+public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEvaluationTrigger
 {
     // Notional fallback fill price used for market orders when no live feed price is
     // available, configurable via PaperTradingGatewayOptions. When a live feed adapter
-    // is supplied, market fills are priced from the last trade (or quote midpoint).
-    // Scaffold pricing is opt-in: without it, priceless market orders are rejected.
+    // is supplied, market fills are priced from observed market data. Scaffold pricing
+    // is opt-in: without it, priceless market orders are rejected.
     private readonly decimal _scaffoldMarketFillPrice;
     private readonly bool _allowScaffoldMarketFills;
     private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
@@ -34,11 +39,24 @@ public sealed class PaperTradingGateway : IOrderGateway
 
     private readonly ILogger<PaperTradingGateway> _logger;
     private readonly PaperTradingGatewayTradingParameters _tradingParameters;
+    private readonly PaperTradingCostModel _costModel;
+    private readonly PaperSymbolEvaluationPump _evaluationPump;
     private readonly System.Threading.Channels.Channel<OrderStatusUpdate> _updates;
-    private readonly Dictionary<string, OrderRequest> _workingOrders = new();
+    private readonly Dictionary<string, WorkingPaperOrder> _workingOrders = new();
     private readonly ConcurrentDictionary<string, Task> _fillTasks = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _lock = new();
     private int _disposed;
+
+    /// <summary>One order working in the paper gateway, with its stop-trigger state.</summary>
+    private sealed class WorkingPaperOrder
+    {
+        public WorkingPaperOrder(OrderRequest request) => Request = request;
+
+        public OrderRequest Request { get; }
+
+        /// <summary>Set once the stop trigger condition has been met (never re-armed).</summary>
+        public bool StopTriggered { get; set; }
+    }
 
     /// <inheritdoc/>
     public string BrokerName => "Paper";
@@ -71,8 +89,10 @@ public sealed class PaperTradingGateway : IOrderGateway
         SupportsPartialFills: false,
         ProviderExtensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["priceSource"] = "scaffold",
-            ["supportsNativeTrailingStops"] = "false"
+            ["priceSource"] = "observed-market-data",
+            ["supportsNativeTrailingStops"] = "false",
+            ["matchingModel"] = PaperOrderMatchingPolicy.MatchingModelVersion,
+            ["costModel"] = PaperTradingCostModel.CostModelVersion
         });
 
     /// <summary>
@@ -88,14 +108,19 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// scaffold market fill price).
     /// </param>
     /// <param name="liveFeed">
-    /// Optional live feed adapter. When provided, market orders fill at the last observed
-    /// trade price (or quote midpoint) instead of the scaffold notional price.
+    /// Optional live feed adapter. When provided, orders match against the observed
+    /// market data (quotes, trades, bars) instead of the scaffold notional price.
+    /// </param>
+    /// <param name="costOptions">
+    /// Optional transaction-cost options. When omitted, the default per-share commission
+    /// schedule applies (see <see cref="PaperTradingCostOptions"/>).
     /// </param>
     public PaperTradingGateway(
         ILogger<PaperTradingGateway> logger,
         ISecurityMasterQueryService? securityMaster = null,
         PaperTradingGatewayOptions? options = null,
-        Interfaces.ILiveFeedAdapter? liveFeed = null)
+        Interfaces.ILiveFeedAdapter? liveFeed = null,
+        PaperTradingCostOptions? costOptions = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tradingParameters = new PaperTradingGatewayTradingParameters(
@@ -105,6 +130,8 @@ public sealed class PaperTradingGateway : IOrderGateway
         _scaffoldMarketFillPrice = PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
         _allowScaffoldMarketFills = PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
         _liveFeed = liveFeed;
+        _costModel = new PaperTradingCostModel(costOptions);
+        _evaluationPump = new PaperSymbolEvaluationPump(EvaluateRestingOrdersForSymbolAsync, _logger);
         // Use EventPipelinePolicy for consistent backpressure settings across the platform (ADR-013).
         // Disposal waits for in-flight fills before completing this bounded update channel.
         _updates = EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>(
@@ -131,7 +158,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             // Reject a duplicate id rather than overwriting the working entry: two fill tasks would
             // share one dictionary key, and once the first removes it the second would skip its
             // terminal update, leaving an accepted order with no fill or cancel event.
-            if (!_workingOrders.TryAdd(orderId, trackedRequest))
+            if (!_workingOrders.TryAdd(orderId, new WorkingPaperOrder(trackedRequest)))
             {
                 throw new UnsupportedOrderRequestException(
                     $"An order with client order id '{orderId}' is already working in the paper gateway.");
@@ -202,9 +229,9 @@ public sealed class PaperTradingGateway : IOrderGateway
         OrderRequest? cancelledRequest = null;
         lock (_lock)
         {
-            if (_workingOrders.Remove(orderId, out var req))
+            if (_workingOrders.Remove(orderId, out var working))
             {
-                cancelledRequest = req;
+                cancelledRequest = working.Request;
             }
         }
 
@@ -242,88 +269,181 @@ public sealed class PaperTradingGateway : IOrderGateway
         }
     }
 
+    /// <inheritdoc/>
+    public void EvaluateSymbol(string symbol)
+    {
+        if (IsDisposed || string.IsNullOrWhiteSpace(symbol))
+        {
+            return;
+        }
+
+        bool hasWorkForSymbol;
+        lock (_lock)
+        {
+            hasWorkForSymbol = _workingOrders.Values.Any(order =>
+                string.Equals(order.Request.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (hasWorkForSymbol)
+        {
+            _evaluationPump.Poke(symbol);
+        }
+    }
+
+    private async Task EvaluateRestingOrdersForSymbolAsync(string symbol)
+    {
+        List<(string OrderId, WorkingPaperOrder Order)> candidates;
+        lock (_lock)
+        {
+            candidates = _workingOrders
+                .Where(pair => string.Equals(pair.Value.Request.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+                .Select(pair => (pair.Key, pair.Value))
+                .ToList();
+        }
+
+        foreach (var (orderId, order) in candidates)
+        {
+            await EvaluateOrderAsync(orderId, order, initialSubmission: false, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+    }
+
     private async Task SimulateFillAsync(OrderRequest request, CancellationToken ct)
     {
         // Yield to allow the caller to receive the acknowledgement before the fill.
         await Task.Yield();
         var orderId = request.ClientOrderId ?? throw new InvalidOperationException("Paper orders must have a client order id before fill simulation.");
 
-        bool stillWorking;
+        WorkingPaperOrder? order;
         lock (_lock)
         {
-            stillWorking = _workingOrders.Remove(orderId);
+            _workingOrders.TryGetValue(orderId, out order);
         }
 
-        if (!stillWorking)
+        if (order is null)
         {
-            // The order left the working set before this simulated fill ran — it was cancelled
-            // (CancelAsync removes it and emits a terminal Cancelled update) or already filled.
-            // Emitting a Filled update here would contradict that terminal state.
+            // The order left the working set before the initial evaluation ran — it was
+            // cancelled (CancelAsync removes it and emits a terminal Cancelled update).
             _logger.LogDebug(
-                "Paper fill skipped for {OrderId}: order is no longer working (cancelled or already filled).",
+                "Paper evaluation skipped for {OrderId}: order is no longer working (cancelled or already filled).",
                 LogSanitizer.Sanitize(orderId));
             return;
         }
 
-        // For limit orders use the limit price; for market orders source the fill price
-        // from the live feed (last trade, then quote midpoint) before falling back to the
-        // scaffold notional price.
-        var referencePrice = ((OrderType)request.Type) switch
+        await EvaluateOrderAsync(orderId, order, initialSubmission: true, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Evaluates one working order against the current observation under
+    /// <see cref="PaperOrderMatchingPolicy"/>. Fills and terminal decisions remove the
+    /// order from the working set atomically, so concurrent evaluations cannot double-fill.
+    /// </summary>
+    private async Task EvaluateOrderAsync(
+        string orderId, WorkingPaperOrder order, bool initialSubmission, CancellationToken ct)
+    {
+        var request = order.Request;
+        var observation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+
+        bool stopTriggered;
+        lock (_lock)
         {
-            OrderType.Limit or OrderType.StopLimit => request.LimitPrice,
-            OrderType.StopMarket => request.StopPrice,
-            _ => null
-        };
+            stopTriggered = order.StopTriggered;
+        }
 
-        referencePrice ??= GetLiveReferencePrice(request.Symbol);
+        var result = PaperOrderMatchingPolicy.Evaluate(
+            request.Side,
+            (OrderType)request.Type,
+            request.LimitPrice,
+            request.StopPrice,
+            stopTriggered,
+            observation);
 
-        if (referencePrice is null)
+        switch (result.Outcome)
         {
-            if (!_allowScaffoldMarketFills)
-            {
-                var rejectReason = PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol);
-                _logger.LogWarning(
-                    "Paper order rejected: {ClientOrderId} {Symbol} — {RejectReason}",
-                    LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(rejectReason));
+            case PaperMatchOutcome.Filled:
+                await EmitFillIfStillWorkingAsync(orderId, request, result.FillPrice!.Value, observation, ct)
+                    .ConfigureAwait(false);
+                return;
 
-                var rejection = new OrderStatusUpdate(
-                    OrderId: orderId,
-                    ClientOrderId: orderId,
-                    Symbol: request.Symbol,
-                    Status: GatewayOrderStatus.Rejected,
-                    FilledQuantity: 0,
-                    AverageFillPrice: null,
-                    RejectReason: rejectReason,
-                    Timestamp: DateTimeOffset.UtcNow);
-
-                if (!_updates.Writer.TryWrite(rejection))
+            case PaperMatchOutcome.NoMarketData when (OrderType)request.Type is OrderType.Market:
+                if (_allowScaffoldMarketFills)
                 {
-                    _logger.LogWarning(
-                        "Paper rejection update for {OrderId} could not be queued because the update channel was unavailable.",
-                        LogSanitizer.Sanitize(orderId));
+                    WarnScaffoldPriceUsed();
+                    await EmitFillIfStillWorkingAsync(
+                        orderId, request, _scaffoldMarketFillPrice, observation, ct).ConfigureAwait(false);
+                    return;
+                }
+
+                EmitTerminalIfStillWorking(
+                    orderId,
+                    request,
+                    GatewayOrderStatus.Rejected,
+                    PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol));
+                return;
+
+            default:
+                // Resting (or a patient order with no observation yet): immediate-or-cancel
+                // and fill-or-kill orders cannot rest, so they cancel on the initial pass.
+                if (initialSubmission
+                    && request.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill)
+                {
+                    EmitTerminalIfStillWorking(
+                        orderId,
+                        request,
+                        GatewayOrderStatus.Cancelled,
+                        $"{request.TimeInForce} order was not immediately fillable against observed market data.");
+                    return;
+                }
+
+                if (result.StopTriggered)
+                {
+                    lock (_lock)
+                    {
+                        if (_workingOrders.TryGetValue(orderId, out var working))
+                        {
+                            working.StopTriggered = true;
+                        }
+                    }
                 }
 
                 return;
-            }
-
-            WarnScaffoldPriceUsed();
         }
+    }
 
-        var fillPrice = referencePrice ?? _scaffoldMarketFillPrice;
-
+    private async Task EmitFillIfStillWorkingAsync(
+        string orderId,
+        OrderRequest request,
+        decimal fillPrice,
+        PaperMarketObservation observation,
+        CancellationToken ct)
+    {
         // Best-effort tick-size rounding: snap fill price to the instrument's tick grid.
         fillPrice = await _tradingParameters.SnapToTickSizeAsync(request.Symbol, fillPrice, ct)
             .ConfigureAwait(false);
+
+        lock (_lock)
+        {
+            if (!_workingOrders.Remove(orderId))
+            {
+                return;
+            }
+        }
+
+        var quantity = decimal.Abs(request.Quantity);
+        var costs = _costModel.Compute(quantity, fillPrice, observation.MidPrice);
 
         var fill = new OrderStatusUpdate(
             OrderId: orderId,
             ClientOrderId: orderId,
             Symbol: request.Symbol,
             Status: GatewayOrderStatus.Filled,
-            FilledQuantity: decimal.Abs(request.Quantity),
+            FilledQuantity: quantity,
             AverageFillPrice: fillPrice,
             RejectReason: null,
-            Timestamp: DateTimeOffset.UtcNow);
+            Timestamp: DateTimeOffset.UtcNow,
+            Commission: costs.Commission,
+            Fees: costs.Fees,
+            SlippageCost: costs.SlippageCost);
 
         if (!_updates.Writer.TryWrite(fill))
         {
@@ -333,37 +453,42 @@ public sealed class PaperTradingGateway : IOrderGateway
         }
 
         _logger.LogInformation(
-            "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
-            LogSanitizer.Sanitize(request.ClientOrderId), request.Quantity, LogSanitizer.Sanitize(request.Symbol), fillPrice);
+            "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice} (commission {Commission}, fees {Fees}, slippage {Slippage})",
+            LogSanitizer.Sanitize(orderId), request.Quantity, LogSanitizer.Sanitize(request.Symbol),
+            fillPrice, costs.Commission, costs.Fees, costs.SlippageCost);
     }
 
-    /// <summary>
-    /// Returns the best live reference price for a symbol from the optional feed adapter:
-    /// last trade price first, then best-bid/offer midpoint; <c>null</c> when no feed is
-    /// wired or no tick has been observed yet.
-    /// </summary>
-    private decimal? GetLiveReferencePrice(string symbol)
+    private void EmitTerminalIfStillWorking(
+        string orderId, OrderRequest request, GatewayOrderStatus status, string reason)
     {
-        if (_liveFeed is null)
+        lock (_lock)
         {
-            return null;
-        }
-
-        if (_liveFeed.GetLastTrade(symbol) is { Price: > 0m } trade)
-        {
-            return trade.Price;
-        }
-
-        if (_liveFeed.GetLastQuote(symbol) is { } quote)
-        {
-            var mid = quote.MidPrice ?? (quote.BidPrice + quote.AskPrice) / 2m;
-            if (mid > 0m)
+            if (!_workingOrders.Remove(orderId))
             {
-                return mid;
+                return;
             }
         }
 
-        return null;
+        _logger.LogWarning(
+            "Paper order {Status}: {ClientOrderId} {Symbol} — {Reason}",
+            status, LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(reason));
+
+        var update = new OrderStatusUpdate(
+            OrderId: orderId,
+            ClientOrderId: orderId,
+            Symbol: request.Symbol,
+            Status: status,
+            FilledQuantity: 0,
+            AverageFillPrice: null,
+            RejectReason: reason,
+            Timestamp: DateTimeOffset.UtcNow);
+
+        if (!_updates.Writer.TryWrite(update))
+        {
+            _logger.LogWarning(
+                "Paper terminal update for {OrderId} could not be queued because the update channel was unavailable.",
+                LogSanitizer.Sanitize(orderId));
+        }
     }
 
     /// <summary>
@@ -405,9 +530,11 @@ public sealed class PaperTradingGateway : IOrderGateway
             }
         }
 
-        _updates.Writer.TryComplete();
+        // Drain resting-order evaluations before completing the update channel so a fill
+        // emitted by a late market-data poke is not lost.
+        await _evaluationPump.DisposeAsync().ConfigureAwait(false);
 
-        await Task.CompletedTask.ConfigureAwait(false);
+        _updates.Writer.TryComplete();
     }
 
     private bool IsDisposed => Volatile.Read(ref _disposed) != 0;
