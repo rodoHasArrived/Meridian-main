@@ -200,7 +200,7 @@ public sealed class PostgresBankingIntegrityTests : IAsyncLifetime
         start.SetResult();
         var outcomes = await Task.WhenAll(approve, reject);
 
-        outcomes.Should().ContainSingle(outcome => outcome.Payment is not null);
+        outcomes.Should().ContainSingle(outcome => outcome.Payment != null);
         outcomes.Should().ContainSingle(outcome => outcome.Error is BankingConflictException);
         var restarted = new PostgresBankingService(new PostgresBankingStore(options));
         var retained = await restarted.GetPaymentAsync(pending.PendingPaymentId, cts.Token);
@@ -282,7 +282,7 @@ public sealed class PostgresBankingIntegrityTests : IAsyncLifetime
         var retained = await Task.WhenAll(writes);
 
         retained.Should().OnlyContain(transaction =>
-            transaction is not null &&
+            transaction != null &&
             transaction.BankTransactionId == retained[0]!.BankTransactionId);
         (await service.GetBankTransactionsAsync(entityId, cts.Token)).Should().ContainSingle();
 

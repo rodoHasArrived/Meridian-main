@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**2727 / 8647** items documented (**31.5%**) &mdash; Grade: **F**
+**2735 / 8765** items documented (**31.2%**) &mdash; Grade: **F**
 
 ```text
-[======--------------] 31.5%
+[======--------------] 31.2%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2630 | 8169 | 32.2% | F |
-| API Endpoints | 85 | 325 | 26.2% | F |
+| Public Classes / Interfaces | 2638 | 8283 | 31.8% | F |
+| API Endpoints | 85 | 329 | 25.8% | F |
 | Configuration Options | 1 | 142 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (5539 undocumented)
+### Public Classes / Interfaces (5645 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,19 +77,20 @@
 | `MeridianDataProvenanceDeclaration` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:33` |
 | `MeridianDeploymentPostureServiceCollectionExtensions` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:34` |
 | `PersistenceStatusSnapshot` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:11` |
-| ... and 5489 more | |
+| ... and 5595 more | |
 
-### API Endpoints (240 undocumented)
+### API Endpoints (244 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
 | `/api/banking/payments` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:21` |
 | `/api/banking/payments/pending` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:55` |
-| `/api/banking/payments/{pendingPaymentId}/approve` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:79` |
-| `/api/banking/payments/{pendingPaymentId}/reject` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:127` |
-| `/api/banking/payments/{pendingPaymentId}/bank-evidence` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:179` |
-| `/api/banking/transactions` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:235` |
-| `/api/dev/seed/bank-transactions` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:254` |
+| `/api/banking/payments/{pendingPaymentId}/currency-remediation` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:79` |
+| `/api/banking/payments/{pendingPaymentId}/approve` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:130` |
+| `/api/banking/payments/{pendingPaymentId}/reject` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:179` |
+| `/api/banking/payments/{pendingPaymentId}/bank-evidence` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:232` |
+| `/api/banking/transactions` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:289` |
+| `/api/dev/seed/bank-transactions` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:308` |
 | `/api/brokerage-connections/robinhood/connect` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:18` |
 | `/api/brokerage-connections/robinhood/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:34` |
 | `/api/brokerage-connections/robinhood/callback` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:50` |
@@ -97,11 +98,14 @@
 | `/api/brokerage-connections/alpaca/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:82` |
 | `/api/brokerage-connections/alpaca/connect` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:98` |
 | `/api/brokerage-connections/alpaca` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:114` |
-| `/api/compliance/actions/evaluate` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:15` |
-| `/api/compliance/audit/extract` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:33` |
-| `/api/compliance/controls/attestation` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:37` |
-| `/api/compliance/access-reviews/run` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:52` |
-| `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:61` |
+| `/api/compliance/approval-requests` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:15` |
+| `/api/compliance/approval-requests/{approvalRequestId}/decisions` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:26` |
+| `/api/compliance/actions/evaluate` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:48` |
+| `/api/compliance/audit/extract` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:66` |
+| `/api/compliance/controls/attestation` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:70` |
+| `/api/compliance/access-reviews/assess` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:85` |
+| `/api/compliance/access-reviews/run` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:101` |
+| `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:117` |
 | `/api/loans` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:37` |
 | `/api/loans/{loanId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:67` |
 | `/api/loans/{loanId}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:82` |
@@ -129,11 +133,7 @@
 | `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:498` |
 | `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:522` |
 | `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:546` |
-| `/api/loans/servicer-statements/{batchId}/rows` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:556` |
-| `/api/loans/servicer-statements/{batchId}/apply` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:566` |
-| `/api/loans/{loanId}/collateral` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:590` |
-| `/api/loans/{loanId}/collateral/remove` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:630` |
-| ... and 190 more | |
+| ... and 194 more | |
 
 ### Configuration Options (141 undocumented)
 
@@ -193,8 +193,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 5539 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 5645 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+2. **API Endpoints**: 244 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---

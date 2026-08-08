@@ -318,35 +318,35 @@ internal sealed class QuantScriptWorkerClient(ILogger logger) : IQuantScriptWork
             switch (envelope.Kind)
             {
                 case QuantScriptWorkerProtocol.DataRequest:
-                {
-                    var dataRequest = QuantScriptWorkerProtocol.ReadPayload<WorkerDataRequest>(envelope);
-                    var response = await HandleDataRequestAsync(
-                        dataContext,
-                        dataRequest,
-                        rpcBudget,
-                        dataCt).ConfigureAwait(false);
-                    await channel.WriteAsync(
-                        QuantScriptWorkerProtocol.DataResponse,
-                        envelope.CorrelationId,
-                        response,
-                        ioCt).ConfigureAwait(false);
-                    break;
-                }
+                    {
+                        var dataRequest = QuantScriptWorkerProtocol.ReadPayload<WorkerDataRequest>(envelope);
+                        var response = await HandleDataRequestAsync(
+                            dataContext,
+                            dataRequest,
+                            rpcBudget,
+                            dataCt).ConfigureAwait(false);
+                        await channel.WriteAsync(
+                            QuantScriptWorkerProtocol.DataResponse,
+                            envelope.CorrelationId,
+                            response,
+                            ioCt).ConfigureAwait(false);
+                        break;
+                    }
                 case QuantScriptWorkerProtocol.Result:
-                {
-                    if (!string.Equals(envelope.CorrelationId, requestCorrelationId, StringComparison.Ordinal))
-                        throw new WorkerProtocolException("Worker result correlation id did not match its execute request.");
-                    var response = QuantScriptWorkerProtocol.ReadPayload<WorkerExecutionResponse>(envelope);
-                    var result = response.Result
-                        ?? throw new WorkerProtocolException("Worker result payload was null.");
-                    result.Validate();
-                    return result;
-                }
+                    {
+                        if (!string.Equals(envelope.CorrelationId, requestCorrelationId, StringComparison.Ordinal))
+                            throw new WorkerProtocolException("Worker result correlation id did not match its execute request.");
+                        var response = QuantScriptWorkerProtocol.ReadPayload<WorkerExecutionResponse>(envelope);
+                        var result = response.Result
+                            ?? throw new WorkerProtocolException("Worker result payload was null.");
+                        result.Validate();
+                        return result;
+                    }
                 case QuantScriptWorkerProtocol.FatalError:
-                {
-                    var failure = QuantScriptWorkerProtocol.ReadPayload<WorkerFatalError>(envelope);
-                    throw new WorkerProtocolException($"Worker failed closed: {failure.Message}");
-                }
+                    {
+                        var failure = QuantScriptWorkerProtocol.ReadPayload<WorkerFatalError>(envelope);
+                        throw new WorkerProtocolException($"Worker failed closed: {failure.Message}");
+                    }
                 default:
                     throw new WorkerProtocolException($"Worker returned unexpected frame kind '{envelope.Kind}'.");
             }

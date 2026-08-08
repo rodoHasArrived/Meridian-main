@@ -648,6 +648,29 @@ public sealed class StatementImportService(
         return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
     }
 
+    /// <summary>
+    /// Flattens one provider-supplied identifier for the artifact: separator-hostile characters
+    /// become spaces rather than being quoted, so the value cannot reshape the row. Distinct from
+    /// <see cref="EncodeArtifactValue"/>, which preserves the source exactly by quoting it — these
+    /// trailing columns carry opaque broker identifiers where a lossy flatten is preferred to
+    /// quoting, and the callers below depend on that difference.
+    /// </summary>
+    private static string SanitizeArtifactValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder(value.Length);
+        foreach (var character in value)
+        {
+            builder.Append(character is ',' or '"' or '\r' or '\n' ? ' ' : character);
+        }
+
+        return builder.ToString().Trim();
+    }
+
     private static string NormalizeSourceKind(string sourceKind)
     {
         var normalized = sourceKind?.Trim().ToLowerInvariant();
