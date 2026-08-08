@@ -131,6 +131,37 @@ public sealed class PromotionServiceTests
     }
 
     [Fact]
+    public async Task ApproveAsync_WhenSourceRunCarriesSimulatedProvenance_BlocksPromotion()
+    {
+        // W9-TRUTH-001: figures derived from simulated or seeded data carry a blocking
+        // simulation provenance mark and can never enter promotion evidence.
+        var service = BuildService(out var store, CreateTempRoot());
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult(),
+            RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper),
+            DataProvenanceToken = "seeded"
+        };
+        run = WithCanonicalInputHash(run);
+        await store.RecordRunAsync(run);
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Attempting to promote seeded demo output.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            EvidenceReferences: CreateEvidenceReferences(RunType.Paper)));
+
+        result.Success.Should().BeFalse();
+        result.NewRunId.Should().BeNull();
+        result.Reason.Should().Contain("seeded")
+            .And.Contain("cannot enter promotion evidence");
+        (await service.GetPromotionHistoryAsync()).Should().BeEmpty(
+            "a blocked simulated-provenance promotion must not record an approved decision");
+    }
+
+    [Fact]
     public async Task ApproveAsync_OperatorRetryAfterServiceReload_ReturnsDurableDecisionWithoutDuplicatePaperRunOrLaunch()
     {
         var promotionStore = new JsonlPromotionRecordStore(
@@ -1451,6 +1482,8 @@ public sealed class PromotionServiceTests
             "Rollback or kill-switch posture is required in Live mode");
         liveChecklist.Should().Contain(PromotionApprovalChecklist.AuditRetentionReviewed,
             "Audit-retention evidence is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.PaperExecutionModelReviewed,
+            "Live promotions must record the paper matching and cost model versions of the paper session they cite");
     }
 
     [Fact]
@@ -1458,9 +1491,14 @@ public sealed class PromotionServiceTests
     {
         var evidenceReferences = PromotionApprovalChecklist
             .CreateRequiredFor(RunType.Live)
-            .Select(static item => string.Equals(item, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
-                ? $"{item}:manual-override/override-live"
-                : $"{item}:evidence/{item.ToLowerInvariant()}")
+            .Select(static item => item switch
+            {
+                _ when string.Equals(item, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
+                    => $"{item}:manual-override/override-live",
+                _ when string.Equals(item, PromotionApprovalChecklist.PaperExecutionModelReviewed, StringComparison.Ordinal)
+                    => $"{item}:paper-match/1+paper-cost/1",
+                _ => $"{item}:evidence/{item.ToLowerInvariant()}"
+            })
             .ToArray();
         var record = new StrategyPromotionRecord(
             PromotionId: "promotion-live",
@@ -1489,5 +1527,51 @@ public sealed class PromotionServiceTests
 
         await append.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage($"*{PromotionApprovalChecklist.LiveOverrideReviewed}*active manual override id*");
+    }
+
+    [Fact]
+    public async Task Wave9_Scenario_ApprovedLivePromotionRecordValidation_RequiresPaperExecutionModelVersions()
+    {
+        // W9-PAPER-003: promotion evidence must record the matching and cost model version
+        // used by the paper session it cites; a value without both version tokens fails.
+        var evidenceReferences = PromotionApprovalChecklist
+            .CreateRequiredFor(RunType.Live)
+            .Select(static item => item switch
+            {
+                _ when string.Equals(item, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
+                    => $"{item}:manual-override/override-live",
+                _ when string.Equals(item, PromotionApprovalChecklist.PaperExecutionModelReviewed, StringComparison.Ordinal)
+                    => $"{item}:reviewed",
+                _ => $"{item}:evidence/{item.ToLowerInvariant()}"
+            })
+            .ToArray();
+        var record = new StrategyPromotionRecord(
+            PromotionId: "promotion-live-model",
+            StrategyId: "s-live",
+            StrategyName: "Live Strategy",
+            SourceRunType: RunType.Paper,
+            TargetRunType: RunType.Live,
+            SourceRunId: "run-paper",
+            TargetRunId: "run-live",
+            QualifyingSharpe: 1.1d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: DateTimeOffset.UtcNow,
+            ApprovalReason: "approved",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: evidenceReferences,
+            AuditReference: "audit-live",
+            ApprovedBy: "ops",
+            ManualOverrideId: "override-live");
+
+        var store = new JsonlPromotionRecordStore(
+            new PromotionRecordStoreOptions(Path.Combine(CreateTempRoot(), "promotion-history")),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+
+        var append = async () => await store.AppendAsync(record);
+
+        await append.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*{PromotionApprovalChecklist.PaperExecutionModelReviewed}*paper matching and cost model versions*");
     }
 }

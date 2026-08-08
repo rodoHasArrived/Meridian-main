@@ -150,7 +150,8 @@ public sealed class AutomatedJournalScheduleConcurrencyException : InvalidOperat
 /// <summary>In-memory source for deterministic tests and lightweight composition.</summary>
 public sealed class InMemoryAutomatedJournalScheduleStore :
     IAutomatedJournalScheduleStore,
-    IAutomatedJournalScheduleStatusSource
+    IAutomatedJournalScheduleStatusSource,
+    Meridian.Application.Composition.INonProductionOnlyService
 {
     private readonly object _gate = new();
     private readonly Dictionary<string, AutomatedJournalScheduleWorkItem> _items =

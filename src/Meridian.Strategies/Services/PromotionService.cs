@@ -361,6 +361,41 @@ public sealed class PromotionService
                     ?? "Promotion gate is blocked.");
         }
 
+        // W9-TRUTH-001: a run whose figures derive from simulated, seeded, or sample data
+        // carries a blocking simulation provenance mark and can never be approved into
+        // promotion evidence — fail closed before any checklist or evidence evaluation.
+        if (!string.IsNullOrWhiteSpace(run.DataProvenanceToken)
+            && !string.Equals(run.DataProvenanceToken.Trim(), "real", StringComparison.OrdinalIgnoreCase))
+        {
+            var provenanceReason =
+                $"Source run {run.RunId} is marked '{run.DataProvenanceToken.Trim().ToLowerInvariant()}': " +
+                "figures derived from simulated or seeded data cannot enter promotion evidence.";
+            await RecordPromotionAuditAsync(
+                action: "PromotionBlocked",
+                outcome: "Blocked",
+                actor: request.ApprovedBy,
+                runId: run.RunId,
+                promotionId: null,
+                message: provenanceReason,
+                reason: "PromotionSimulatedProvenanceBlocked",
+                scope: BuildPromotionAuditScope(run, targetRunType),
+                metadata: BuildPromotionControlMetadata(
+                    run,
+                    targetRunType,
+                    request.ManualOverrideId,
+                    approvalChecklist,
+                    evidenceReferences,
+                    auditReference,
+                    provenanceReason),
+                ct).ConfigureAwait(false);
+
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: provenanceReason);
+        }
+
         var missingChecklistItems = PromotionApprovalChecklist.GetMissingRequiredItems(targetRunType, approvalChecklist);
         if (missingChecklistItems.Length > 0)
         {
@@ -928,6 +963,16 @@ public sealed class PromotionService
                 !ContainsEvidenceReferenceToken(value, manualOverrideId!))
             {
                 invalid.Add($"{requiredItem} must reference active manual override {manualOverrideId}");
+            }
+
+            // Paper-to-live promotions must record which paper matching and cost model
+            // versions produced the cited paper session (e.g. paper-match/1+paper-cost/1),
+            // so promotion evidence names the execution realism policy behind it.
+            if (string.Equals(requiredItem, PromotionApprovalChecklist.PaperExecutionModelReviewed, StringComparison.OrdinalIgnoreCase) &&
+                (!value.Contains("paper-match/", StringComparison.OrdinalIgnoreCase)
+                    || !value.Contains("paper-cost/", StringComparison.OrdinalIgnoreCase)))
+            {
+                invalid.Add($"{requiredItem} must record the paper matching and cost model versions (paper-match/<n>+paper-cost/<n>)");
             }
         }
 

@@ -791,7 +791,8 @@ public sealed class PromotionServiceLiveGovernanceTests
             $"{PromotionApprovalChecklist.ExceptionHandlingReviewed}:exceptions/live-readiness",
             $"{PromotionApprovalChecklist.RollbackKillSwitchReviewed}:controls/kill-switch/live-readiness",
             $"{PromotionApprovalChecklist.AuditRetentionReviewed}:audit-retention/live-readiness",
-            $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/{manualOverrideId}"
+            $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/{manualOverrideId}",
+            $"{PromotionApprovalChecklist.PaperExecutionModelReviewed}:paper-match/1+paper-cost/1"
         ];
 
     private static string CreateTempRoot()

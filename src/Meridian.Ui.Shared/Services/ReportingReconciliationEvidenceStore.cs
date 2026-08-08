@@ -648,7 +648,8 @@ public sealed class ReportingReconciliationEvidenceMigrationRequiredException :
 }
 
 public sealed class InMemoryReportingReconciliationEvidenceStore :
-    IReportingReconciliationEvidenceRetentionStore
+    IReportingReconciliationEvidenceRetentionStore,
+    Meridian.Application.Composition.INonProductionOnlyService
 {
     private readonly object _gate = new();
     private readonly List<ReportingReconciliationEvidenceReceipt> _receipts = [];
