@@ -110,15 +110,46 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
     }
 
     [Fact]
+    public async Task CaptureAsync_DeadlineElapsedBeforeTheAdapterFinishes_StillEntersTheAdapter()
+    {
+        // Regression. Each attempt used to be dispatched as `Task.Run(..., attemptCts.Token)`, and
+        // that overload's token gates *scheduling* — per the API contract it "can be used to cancel
+        // the work if it has not yet started", and it is never handed to the delegate. So when the
+        // per-source deadline fired while the work item was still queued behind a saturated pool,
+        // the adapter was never invoked, yet the attempt was consumed and reported as a cooperative
+        // timeout. A source got blamed for missing a deadline it was never asked to meet, and every
+        // attempt could burn that way without the adapter running once.
+        //
+        // A 1ms deadline puts every attempt past its deadline while the adapter is still hanging.
+        // The adapter must be entered on each of them: cancellation is the token argument's job,
+        // not the scheduler's excuse to skip the call.
+        var adapter = new HangingAdapter(ReconciliationSourceType.Prime);
+        var scheduler = CreateScheduler(new ReconciliationIngestionOptions
+        {
+            MaxAttemptsPerSource = 3,
+            RetryBaseDelay = TimeSpan.Zero,
+            PerSourceTimeout = TimeSpan.FromMilliseconds(1),
+            // Wide enough that the hard fence cannot fire first and turn this terminal: the
+            // adapter honours its token, so each attempt ends cooperatively and retries.
+            CancellationGracePeriod = TimeSpan.FromSeconds(5)
+        });
+
+        var act = async () => await scheduler.CaptureAsync([adapter], Request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<TimeoutException>();
+        adapter.Attempts.Should().Be(3,
+            "every attempt must reach the adapter — a capture the scheduler never dispatched is not a source timeout");
+    }
+
+    [Fact]
     public async Task CaptureAsync_AdapterIgnoringCancellation_IsTerminalWithoutRetry()
     {
         var adapter = new StubbornAdapter(ReconciliationSourceType.Prime);
-        // The scheduler dispatches each attempt through Task.Run with the attempt's token. On a
-        // loaded runner the work item can sit queued past a 40ms timeout, and Task.Run given an
-        // already-cancelled token never invokes the delegate at all - leaving Attempts at 0 and
-        // the non-cooperative adapter this test is about never entered. The budget is widened so
-        // pool-dispatch latency cannot consume the whole window; the deadline still fires well
-        // inside the test.
+        // The budget is widened for pool-dispatch latency. The attempt is dispatched through
+        // Task.Run, and on a loaded runner the work item can sit queued: with a 40ms deadline the
+        // hard fence (deadline + grace) could elapse before the delegate is dequeued, leaving
+        // Attempts at 0 and the non-cooperative adapter this test is about never entered. The
+        // deadline still fires well inside the test.
         var scheduler = CreateScheduler(new ReconciliationIngestionOptions
         {
             MaxAttemptsPerSource = 5,
@@ -169,8 +200,11 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
         var act = async () => await scheduler.CaptureAsync([adapter], Request, cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
-        // Zero attempts is legal (cancellation can win the pool-dispatch race and stop the attempt
-        // before the adapter ever runs); what run cancellation must never do is retry.
+        // Still an upper bound rather than an exact count, but for a different reason now that the
+        // attempt is dispatched without a scheduling token: the adapter is guaranteed to be entered
+        // eventually, yet the abandoned capture may not have reached its counter by the time run
+        // cancellation propagates here. Zero is a timing artefact of reading it early; what run
+        // cancellation must never do is retry.
         adapter.Attempts.Should().BeLessThanOrEqualTo(1, "run cancellation must never be retried");
     }
 

@@ -16,7 +16,9 @@ namespace Meridian.FinancialOperations.Reconciliation;
 /// wrapper exception types. Adapters are invoked behind the deadline fence (their synchronous
 /// prefixes cannot stall the run), cooperative timeouts retry, and a source that ignores
 /// cancellation past the grace period fails terminally rather than stacking further live captures
-/// outside the concurrency accounting.
+/// outside the concurrency accounting. Every attempt that is counted is an attempt the adapter was
+/// actually asked to serve: the dispatch carries no scheduling token, so a deadline that elapses
+/// while the work item is queued cannot consume an attempt without the adapter running.
 /// </summary>
 public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIngestionScheduler
 {
@@ -115,7 +117,18 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
                 // inline where neither timeout nor cancellation could reach it. The linked token
                 // asks the adapter to stop cooperatively at PerSourceTimeout; WaitAsync enforces a
                 // hard deadline of timeout + grace for adapters that never observe their token.
-                captureTask = Task.Run(() => adapter.CaptureSnapshotAsync(request, attemptCts.Token), attemptCts.Token);
+                //
+                // The token is deliberately NOT passed to Task.Run itself. That overload's token
+                // "can be used to cancel the work if it has not yet started" — it gates scheduling,
+                // not the delegate, and is never handed to the delegate either. So when the
+                // deadline fired while the work item was still queued behind a saturated pool, the
+                // adapter was never invoked at all, yet the attempt was consumed and reported here
+                // as a cooperative timeout: a source blamed for exceeding a deadline it was never
+                // asked to meet, with every attempt burnable that way. Cancellation reaches the
+                // adapter through the token argument below, which is the one that does the work;
+                // dropping the scheduling token costs only the microseconds a doomed attempt
+                // spends observing an already-cancelled token.
+                captureTask = Task.Run(() => adapter.CaptureSnapshotAsync(request, attemptCts.Token));
                 var snapshot = _options.PerSourceTimeout is { } deadline
                     ? await captureTask.WaitAsync(deadline + _options.CancellationGracePeriod, ct).ConfigureAwait(false)
                     : await captureTask.WaitAsync(ct).ConfigureAwait(false);
