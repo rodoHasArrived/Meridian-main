@@ -7,6 +7,12 @@ using Meridian.Execution.Services;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging.Abstractions;
 
+// `Meridian.Execution.Models` and `Meridian.Execution.Sdk` both declare `OrderStatus`, and this
+// file imports both. The SDK one is meant here: `ExecutionReport.OrderStatus` and
+// `OrderState.Status` are declared in `Meridian.Execution.Sdk.Models`, so they resolve to that
+// namespace's enum.
+using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
+
 namespace Meridian.Tests.Execution;
 
 /// <summary>

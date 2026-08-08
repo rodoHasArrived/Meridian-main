@@ -685,7 +685,8 @@ public sealed class ApiClientService : IDisposable
                     return false;
                 }
 
-                checked { _leaseCount++; }
+                checked
+                { _leaseCount++; }
                 lease = new EndpointSessionLease(this);
                 return true;
             }

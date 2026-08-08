@@ -439,7 +439,8 @@ public sealed class PaymentApprovalTests
 
         retained.Should().OnlyContain(transaction =>
             transaction.PendingPaymentId == paymentId
-            && transaction.CanonicalInputHash is { Length: 64 });
+            && transaction.CanonicalInputHash != null
+            && transaction.CanonicalInputHash.Length == 64);
         retained.Select(transaction => transaction.CanonicalInputHash)
             .Should().OnlyHaveUniqueItems("every retained provenance change must alter replay identity");
     }
@@ -771,7 +772,7 @@ public sealed class PaymentApprovalTests
 
         var outcomes = await Task.WhenAll(approval, rejection);
 
-        outcomes.Should().ContainSingle(outcome => outcome.Payment is not null);
+        outcomes.Should().ContainSingle(outcome => outcome.Payment != null);
         outcomes.Should().ContainSingle(outcome => outcome.Error is BankingConflictException);
         var retained = await service.GetPaymentAsync(pending.PendingPaymentId, cts.Token);
         retained!.Status.Should().BeOneOf(PaymentApprovalStatus.Approved, PaymentApprovalStatus.Rejected);
