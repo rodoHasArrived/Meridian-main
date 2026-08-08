@@ -137,6 +137,16 @@ internal static class DemoWorkspaceCli
                 $"  reconciliation casework: {(report.Provisioning.ReconciliationLoaded ? "loaded" : "unavailable")} ({report.Provisioning.ReconciliationBreaksSeeded} new)");
             Console.WriteLine(
                 $"  paper strategy run:      {(report.Provisioning.StrategyRunLoaded ? "loaded" : "unavailable")}");
+            Console.WriteLine(
+                $"  fund account:            {(report.Provisioning.FundAccountLoaded ? "loaded" : "unavailable")}");
+            Console.WriteLine(
+                $"  portfolio positions:     {(report.Provisioning.PortfolioPositionsLoaded ? "loaded" : "unavailable")}");
+            Console.WriteLine(
+                $"  journal drafts:          {report.Provisioning.JournalDraftsSeeded} retained");
+            Console.WriteLine(
+                $"  report pack:             {(report.Provisioning.ReportPackLoaded ? "loaded" : "unavailable")}");
+            Console.WriteLine(
+                $"  market history:          {report.MarketHistoryTradePrintsSeeded} seeded trade prints");
             foreach (var warning in report.Provisioning.Warnings)
             {
                 Console.WriteLine($"  warning: {warning}");
