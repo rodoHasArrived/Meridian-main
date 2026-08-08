@@ -619,6 +619,9 @@ public sealed class LiveTradingEngineTests
         ILiveStrategyCatalog? catalog = null,
         LiveTradingEngineOptions? options = null)
     {
+        // `Meridian.Execution` and `Meridian.Execution.Adapters` both declare `PaperTradingGateway`
+        // and this file imports both. Only the Adapters one implements `IOrderGateway`, which is
+        // what `LiveTradingEngine` takes; the other implements `IExecutionGateway`.
         var gateway = new Meridian.Execution.Adapters.PaperTradingGateway(
             NullLogger<Meridian.Execution.Adapters.PaperTradingGateway>.Instance,
             securityMaster: null,

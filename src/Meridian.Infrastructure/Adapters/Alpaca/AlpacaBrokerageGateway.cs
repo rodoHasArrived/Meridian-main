@@ -60,12 +60,11 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 : null);
     }
 
-    private const int AccountActivityPageSize = 100;
-
     private const string PaperBaseUrl = "https://paper-api.alpaca.markets";
     private const string LiveBaseUrl = "https://api.alpaca.markets";
     private const string BrokerApiSandboxBaseUrl = "https://broker-api.sandbox.alpaca.markets";
     private const string BrokerApiLiveBaseUrl = "https://broker-api.alpaca.markets";
+    private const int AccountActivityPageSize = 100;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
@@ -663,6 +662,14 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 .ToArray(),
             Fills: fills,
             CashTransactions: cashTransactions,
+            // No cursor: `GetAccountActivitiesAsync` returns a plain list. A paged variant
+            // returning an `AlpacaActivityFetchResult` with a `BrokerageActivityCursorDto` existed
+            // on `codex/deepen-broker-statement-connectors` (716d56be), but the merge into main
+            // kept this call site while taking the list-returning fetch, leaving a reference to an
+            // `activityResult` local that no longer existed — main has not compiled since. The
+            // argument is dropped rather than the fetch restored because nothing reads
+            // `BrokerageActivitySnapshotDto.Cursor` today; re-landing Alpaca activity paging is a
+            // product decision, not a build fix.
             Activities: activities.Select(BuildCanonicalActivityEvent).ToArray());
     }
 
@@ -864,13 +871,13 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     private static DateTimeOffset ResolveReconciliationTimestamp(
         AlpacaOrderResponse order,
         OrderStatus status) => status switch
-    {
-        OrderStatus.Filled => order.FilledAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
-        OrderStatus.Cancelled => order.CanceledAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
-        OrderStatus.Expired => order.ExpiredAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
-        OrderStatus.Rejected => order.FailedAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
-        _ => order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp()
-    };
+        {
+            OrderStatus.Filled => order.FilledAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
+            OrderStatus.Cancelled => order.CanceledAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
+            OrderStatus.Expired => order.ExpiredAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
+            OrderStatus.Rejected => order.FailedAt ?? order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp(),
+            _ => order.UpdatedAt ?? order.CreatedAt ?? MissingTimestamp()
+        };
 
     private static DateTimeOffset MissingTimestamp() => throw new InvalidDataException(
         "Alpaca reconciliation returned an order without a stable transition timestamp.");

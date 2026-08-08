@@ -133,11 +133,11 @@ public sealed class ScriptRunner : IScriptRunner
             }
             else
             {
-            outcome = await _workerClient.ExecuteAsync(
-                request,
-                _dataContext,
-                _options,
-                ct).ConfigureAwait(false);
+                outcome = await _workerClient.ExecuteAsync(
+                    request,
+                    _dataContext,
+                    _options,
+                    ct).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)

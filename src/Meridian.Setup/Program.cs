@@ -15,7 +15,8 @@ internal static class Program
     private static int Main(string[] args)
     {
         var installRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Meridian");
-        if (args.Contains("--uninstall", StringComparer.OrdinalIgnoreCase)) return Uninstall(installRoot);
+        if (args.Contains("--uninstall", StringComparer.OrdinalIgnoreCase))
+            return Uninstall(installRoot);
         var detached = args.Contains("--detached", StringComparer.OrdinalIgnoreCase);
         try
         {
@@ -91,7 +92,8 @@ internal static class Program
     {
         var assembly = Assembly.GetExecutingAssembly();
         var resources = assembly.GetManifestResourceNames().Where(name => name.StartsWith("payload/", StringComparison.Ordinal)).ToArray();
-        if (resources.Length == 0) throw new InvalidOperationException("The signed installer does not contain a Meridian product payload.");
+        if (resources.Length == 0)
+            throw new InvalidOperationException("The signed installer does not contain a Meridian product payload.");
         var runtime = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "win-arm64" : "win-x64";
         var prefix = $"payload/{runtime}/";
         var runtimeResources = resources
@@ -259,7 +261,8 @@ internal static class Program
             StopOwnedRuntime(installRoot);
             InstallationTransaction.CleanupAbandonedStages(installRoot);
             var shortcut = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Programs", "Meridian.url");
-            if (File.Exists(shortcut)) File.Delete(shortcut);
+            if (File.Exists(shortcut))
+                File.Delete(shortcut);
             Registry.CurrentUser.DeleteSubKeyTree(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\Meridian", false);
             var rollback = InstallationTransaction.GetRollbackPath(installRoot);
             var cleanup = Path.Combine(Path.GetTempPath(), $"meridian-uninstall-{Guid.NewGuid():N}.cmd");
@@ -281,7 +284,8 @@ internal static class Program
     private static void StopOwnedRuntime(string installRoot)
     {
         var supervisor = Path.Combine(installRoot, "Meridian.LifecycleSupervisor.exe");
-        if (!File.Exists(supervisor)) return;
+        if (!File.Exists(supervisor))
+            return;
 
         var start = new ProcessStartInfo(supervisor)
         {
@@ -291,7 +295,8 @@ internal static class Program
         };
         start.ArgumentList.Add("stop");
         using var process = Process.Start(start);
-        if (process is null) throw new InvalidOperationException("Could not request Meridian shutdown before setup.");
+        if (process is null)
+            throw new InvalidOperationException("Could not request Meridian shutdown before setup.");
         if (!process.WaitForExit((int)TimeSpan.FromSeconds(140).TotalMilliseconds))
             throw new TimeoutException("Meridian did not stop before setup's file-replacement deadline.");
         if (process.ExitCode is not (0 or 3))
