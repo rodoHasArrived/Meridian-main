@@ -30,4 +30,11 @@ public interface ILiveFeedAdapter
     /// or <c>null</c> if no snapshot has been received yet.
     /// </summary>
     LOBSnapshot? GetLastOrderBook(string symbol);
+
+    /// <summary>
+    /// Returns the most recent completed bar for <paramref name="symbol"/>, or <c>null</c>
+    /// when no bar has been observed. Default implementation returns <c>null</c> so
+    /// tick-only adapters need not implement bar retention.
+    /// </summary>
+    HistoricalBar? GetLastBar(string symbol) => null;
 }

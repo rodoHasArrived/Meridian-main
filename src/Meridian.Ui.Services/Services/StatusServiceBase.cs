@@ -237,6 +237,7 @@ public abstract class StatusServiceBase
                 {
                     _lastSuccessfulUpdate = DateTime.UtcNow;
                     SetBackendReachable(true);
+                    await RefreshServerDataProvenanceAsync(ct);
                     LiveStatusReceived?.Invoke(this, new LiveStatusEventArgs
                     {
                         Status = status,
@@ -274,6 +275,60 @@ public abstract class StatusServiceBase
             // Update fixture mode detector so the global banner reflects connectivity
             FixtureModeDetector.Instance.UpdateBackendReachability(reachable);
         }
+    }
+
+    /// <summary>
+    /// Asks the connected backend whether it is serving demo/seeded data and routes the
+    /// answer into <see cref="FixtureModeDetector"/> so the persistent shell banner keeps
+    /// labeling simulated data (W9-TRUTH-001). Failures leave the last-known report
+    /// untouched: reachability handling owns the offline banner.
+    /// </summary>
+    private async Task RefreshServerDataProvenanceAsync(CancellationToken ct)
+    {
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(5));
+
+            var httpClient = GetHttpClient();
+            using var response = await httpClient.GetAsync($"{_baseUrl}/api/demo/mode", cts.Token);
+            if (!response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            var json = await response.Content.ReadAsStringAsync(cts.Token);
+            using var document = JsonDocument.Parse(json);
+            var enabled = document.RootElement.TryGetProperty("enabled", out var enabledElement)
+                && enabledElement.ValueKind == JsonValueKind.True;
+            string? provenance = null;
+            if (enabled)
+            {
+                provenance = "seeded";
+                if (document.RootElement.TryGetProperty("provenance", out var provenanceElement))
+                {
+                    provenance = provenanceElement.ValueKind switch
+                    {
+                        JsonValueKind.String => provenanceElement.GetString(),
+                        // DataProvenance serialized numerically: Real=0, Simulated=1, Seeded=2, Sample=3.
+                        JsonValueKind.Number => provenanceElement.GetInt32() switch
+                        {
+                            0 => null,
+                            1 => "simulated",
+                            3 => "sample",
+                            _ => "seeded"
+                        },
+                        _ => provenance
+                    };
+                }
+            }
+
+            FixtureModeDetector.Instance.ReportServerDataProvenance(provenance);
+        }
+        catch (OperationCanceledException) { }
+        catch (HttpRequestException) { }
+        catch (JsonException) { }
+        catch (InvalidOperationException) { }
     }
 
     public async Task<SimpleStatus?> GetStatusAsync(CancellationToken ct = default)

@@ -108,7 +108,10 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
             var inner = CreatePublisher(sp, existing);
             var tap = new LiveTradingMarketEventTap(
                 sp.GetRequiredService<LiveMarketDataCache>(),
-                sp.GetRequiredService<LiveMarketEventHub>());
+                sp.GetRequiredService<LiveMarketEventHub>(),
+                // Resolved lazily: paper gateways register as evaluation triggers so resting
+                // limit/stop orders re-evaluate as market data arrives (W9-PAPER-003).
+                () => sp.GetServices<IPaperFillEvaluationTrigger>());
             return new CompositePublisher(sp.GetService<ILogger<CompositePublisher>>(), inner, tap);
         });
     }
@@ -137,11 +140,17 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
 {
     private readonly LiveMarketDataCache _cache;
     private readonly LiveMarketEventHub _hub;
+    private readonly Func<IEnumerable<IPaperFillEvaluationTrigger>>? _evaluationTriggers;
+    private IPaperFillEvaluationTrigger[]? _resolvedTriggers;
 
-    public LiveTradingMarketEventTap(LiveMarketDataCache cache, LiveMarketEventHub hub)
+    public LiveTradingMarketEventTap(
+        LiveMarketDataCache cache,
+        LiveMarketEventHub hub,
+        Func<IEnumerable<IPaperFillEvaluationTrigger>>? evaluationTriggers = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _hub = hub ?? throw new ArgumentNullException(nameof(hub));
+        _evaluationTriggers = evaluationTriggers;
     }
 
     public bool TryPublish(in MarketEvent evt)
@@ -163,15 +172,47 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
             case LOBSnapshot orderBook:
                 _cache.RecordOrderBook(symbol, orderBook);
                 break;
-            case HistoricalBar:
-                break;
+            case HistoricalBar bar:
+                // Bars feed the observed price envelope used by paper matching; they are
+                // not published to the strategy hub, which consumes tick-level events.
+                _cache.RecordBar(symbol, bar);
+                PokeEvaluationTriggers(symbol);
+                return true;
             default:
                 // Heartbeats, integrity events, and other payloads carry no strategy signal.
                 return true;
         }
 
+        PokeEvaluationTriggers(symbol);
         _hub.Publish(new LiveMarketEvent(evt.Timestamp, symbol, evt.Payload));
         return true;
+    }
+
+    /// <summary>
+    /// Notifies paper gateways holding resting orders that fresh market data arrived for
+    /// <paramref name="symbol"/>. Trigger implementations only schedule work, so this stays
+    /// non-blocking on the market data path.
+    /// </summary>
+    private void PokeEvaluationTriggers(string symbol)
+    {
+        if (_evaluationTriggers is null)
+        {
+            return;
+        }
+
+        var triggers = _resolvedTriggers ??= _evaluationTriggers().ToArray();
+        foreach (var trigger in triggers)
+        {
+            try
+            {
+                trigger.EvaluateSymbol(symbol);
+            }
+            catch
+            {
+                // A failing evaluation trigger must never stall the market data pipeline;
+                // gateway-side logging owns the failure detail.
+            }
+        }
     }
 }
 

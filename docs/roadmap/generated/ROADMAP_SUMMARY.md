@@ -40,9 +40,9 @@ Snapshot date: 2026-08-03
 | W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |
 | W8-UX-CONSOL-001 | Browser workstation screen consolidation | in_progress | on_track | medium | Workstation Shell and UX |
 | W8-WPF-PARITY-001 | WPF desktop workstation reactivation and web-UI parity | in_progress | on_track | high | Desktop Workstation |
-| W9-TRUTH-001 | Loud fail-closed handling of simulated data and in-memory persistence | planned | green | critical | Data Confidence and Validation |
-| W9-DEMO-002 | One-command seeded demo with durable storage | planned | green | critical | Workstation Shell and UX |
-| W9-PAPER-003 | Paper-trading realism with limit/stop matching and costs | planned | green | critical | Execution and Fund Accounts |
+| W9-TRUTH-001 | Loud fail-closed handling of simulated data and in-memory persistence | in_progress | green | critical | Data Confidence and Validation |
+| W9-DEMO-002 | One-command seeded demo with durable storage | ready_for_acceptance | green | critical | Workstation Shell and UX |
+| W9-PAPER-003 | Paper-trading realism with limit/stop matching and costs | ready_for_acceptance | green | critical | Execution and Fund Accounts |
 | W9-ALPACA-004 | Alpaca fill streaming into order and ledger state | planned | green | high | Execution and Fund Accounts |
 | W9-REPORT-005 | Client-grade PDF/XLSX exports and partners-capital statement | planned | green | high | Accounting and Ledger |
 | W9-NAV-006 | Unitized NAV and real fee, waterfall, and capital-call economics | planned | green | high | Accounting and Ledger |

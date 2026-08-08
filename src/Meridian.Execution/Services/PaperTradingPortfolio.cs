@@ -447,13 +447,17 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             ? report.FilledQuantity
             : -report.FilledQuantity;
 
+        // Explicit transaction costs (commission, regulatory fees, and modeled slippage)
+        // all charge cash and book to commission expense so paper economics reflect them.
+        var explicitCosts = (report.Commission ?? 0m) + (report.Fees ?? 0m) + (report.SlippageCost ?? 0m);
+
         lock (_lock)
         {
             if (!_accounts.TryGetValue(accountId, out var account))
                 return;
 
             ApplyFillToAccount(account, report.Symbol, signedQty, report.FillPrice.Value,
-                report.Commission ?? 0m, report.Timestamp, report.OrderId,
+                explicitCosts, report.Timestamp, report.OrderId,
                 ownerAccountId, contractMultiplier);
         }
     }

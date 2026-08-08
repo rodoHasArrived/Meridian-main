@@ -73,9 +73,12 @@ Key properties:
 
 - **Isolated.** All demo data lives in a dedicated root, `{dataRoot}/demo-workspace`, that is never
   mixed with your real data root.
-- **Durable.** The reconciliation and strategy desks are written to durable, file-backed stores under
-  the demo root and survive a restart with zero configuration. Money-path stores such as the ledger
-  become durable only when PostgreSQL is configured — set
+- **Durable.** Reconciliation casework, the paper strategy run, market history for the Data desk,
+  the sample fund account and portfolio position snapshot, balanced draft journal entries, and a
+  review-required sample report pack are all written to durable, file-backed stores under the demo
+  root and survive a restart with zero configuration. Accounting records seed as drafts for human
+  review — the demo never posts ledger entries. Posted money-path stores such as the ledger become
+  durable only when PostgreSQL is configured — set
   `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian` before seeding for a
   fully database-backed demo.
 - **Idempotent.** Re-running `--seed-demo` never duplicates casework or runs.

@@ -160,6 +160,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 Portfolio = portfolio,
                 ReconstructedLedger = record.IsActive || hasUnappliedFill ? null : reconstruction.Ledger,
                 Reconstruction = reconstruction,
+                MatchingModelVersion = record.MatchingModelVersion,
+                CostModelVersion = record.CostModelVersion,
             };
             foreach (var appliedFill in appliedFillHashes)
                 session.AppliedFillHashes.Add(appliedFill.Key, appliedFill.Value);
@@ -242,6 +244,10 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 CreatedAt = DateTimeOffset.UtcNow,
                 Symbols = request.Symbols?.ToList() ?? [],
                 Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger),
+                // New sessions record the matching and cost policies in effect so promotion
+                // evidence can cite exactly which paper execution model produced them.
+                MatchingModelVersion = PaperMatching.PaperOrderMatchingPolicy.MatchingModelVersion,
+                CostModelVersion = PaperMatching.PaperTradingCostModel.CostModelVersion,
             };
 
             if (_store is not null)
@@ -1117,7 +1123,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 InitialCash: session.InitialCash,
                 CreatedAt: session.CreatedAt,
                 ClosedAt: session.ClosedAt,
-                IsActive: session.IsActive);
+                IsActive: session.IsActive,
+                MatchingModelVersion: session.MatchingModelVersion,
+                CostModelVersion: session.CostModelVersion);
         }
     }
 
@@ -1136,7 +1144,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 CreatedAt: session.CreatedAt,
                 ClosedAt: closedAt ?? session.ClosedAt,
                 IsActive: isActive ?? session.IsActive,
-                Symbols: session.Symbols.ToList());
+                Symbols: session.Symbols.ToList(),
+                MatchingModelVersion: session.MatchingModelVersion,
+                CostModelVersion: session.CostModelVersion);
         }
     }
 
@@ -1566,7 +1576,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                     session.InitialCash,
                     session.CreatedAt,
                     session.ClosedAt,
-                    session.IsActive),
+                    session.IsActive,
+                    session.MatchingModelVersion,
+                    session.CostModelVersion),
                 Symbols: session.Symbols.ToArray(),
                 Portfolio: portfolioSnapshot,
                 OrderHistory: orderHistory,
@@ -1576,7 +1588,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                     ? fillHistory.Max(static fill => fill.Timestamp)
                     : null,
                 LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(orderHistory),
-                FillHistory: fillHistory);
+                FillHistory: fillHistory,
+                TradingCosts: fillHistory.Sum(static fill =>
+                    (fill.Commission ?? 0m) + (fill.Fees ?? 0m) + (fill.SlippageCost ?? 0m)));
         }
     }
 
@@ -1591,6 +1605,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         public DateTimeOffset? ClosedAt { get; set; }
         public bool IsActive { get; set; } = true;
         public List<string> Symbols { get; init; } = [];
+        public string? MatchingModelVersion { get; init; }
+        public string? CostModelVersion { get; init; }
         public PaperTradingPortfolio? Portfolio { get; set; }
         public List<OrderState> OrderHistory { get; } = [];
         public List<ExecutionReport> FillHistory { get; } = [];
@@ -1623,9 +1639,14 @@ public sealed record PaperSessionSummaryDto(
     decimal InitialCash,
     DateTimeOffset CreatedAt,
     DateTimeOffset? ClosedAt,
-    bool IsActive);
+    bool IsActive,
+    string? MatchingModelVersion = null,
+    string? CostModelVersion = null);
 
-/// <summary>Detailed session DTO.</summary>
+/// <summary>
+/// Detailed session DTO. <see cref="TradingCosts"/> is the session's total explicit
+/// transaction cost (commission + fees + modeled slippage) across all fills.
+/// </summary>
 public sealed record PaperSessionDetailDto(
     PaperSessionSummaryDto Summary,
     IReadOnlyList<string> Symbols,
@@ -1635,7 +1656,8 @@ public sealed record PaperSessionDetailDto(
     int LedgerEntryCount,
     DateTimeOffset? LastFillAt,
     DateTimeOffset? LastOrderUpdatedAt,
-    IReadOnlyList<ExecutionReport>? FillHistory = null);
+    IReadOnlyList<ExecutionReport>? FillHistory = null,
+    decimal TradingCosts = 0m);
 
 /// <summary>Portfolio snapshot DTO for session detail.</summary>
 public sealed record ExecutionPortfolioSnapshotDto(

@@ -391,7 +391,10 @@ describe("App", () => {
     });
     expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
       .toHaveTextContent("ProvenanceSEEDED");
-    expect(screen.queryByRole("region", { name: "Data provenance" })).not.toBeInTheDocument();
+    // W9-TRUTH-001: seeded data keeps the persistent, non-dismissable provenance banner
+    // on screen above every workspace, alongside the trust-strip cell.
+    const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
+    expect(within(provenanceBanner).getByTestId("data-provenance-seeded")).toBeInTheDocument();
   });
 
   it("opens and closes the command palette with Control+K", async () => {
