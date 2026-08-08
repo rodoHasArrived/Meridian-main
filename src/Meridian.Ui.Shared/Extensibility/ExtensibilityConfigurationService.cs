@@ -19,7 +19,9 @@ public interface IExtensibilityConfigurationStore
     Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default);
 }
 
-public sealed class InMemoryExtensibilityConfigurationStore : IExtensibilityConfigurationStore
+public sealed class InMemoryExtensibilityConfigurationStore :
+    IExtensibilityConfigurationStore,
+    Meridian.Application.Composition.INonProductionOnlyService
 {
     private readonly Dictionary<string, Dictionary<string, TenantTemplateConfigurationBundleDto>> _tenantTemplatesByTenant = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, List<TenantTemplateActivationResultDto>> _activationHistoryByTenant = new(StringComparer.OrdinalIgnoreCase);

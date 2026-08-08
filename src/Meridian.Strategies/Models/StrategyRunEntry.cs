@@ -92,7 +92,8 @@ public sealed record StrategyRunEntry(
     string? ExceptionStackTrace = null,
     IReadOnlyList<string>? ArtifactReferences = null,
     IReadOnlyList<OperationArtifactReference>? RetainedArtifacts = null,
-    StrategyRunWalkForwardEvidence? WalkForwardEvidence = null)
+    StrategyRunWalkForwardEvidence? WalkForwardEvidence = null,
+    string? DataProvenanceToken = null)
 {
     public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
         OperatorAcceptanceCriteria ?? [];
