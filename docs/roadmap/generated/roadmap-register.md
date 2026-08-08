@@ -563,16 +563,16 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-08-08 |
 
 ### Current Summary
 
-Rank 1 of the 2026-07 first-order improvement slate. Fake-looking-real output is fatal for a prove-the-number product, so every simulated, sample, or synthetic surface must be loudly labeled and every in-memory or placeholder persistence selection must fail closed in supported production profiles, extending the PRD-000/PRD-005/PRD-007/PRD-012 posture in the production-readiness tracker.
+Core slice implemented 2026-08-08. The browser shell now mounts the persistent non-dismissable data-provenance banner above every workspace, and the WPF shell banner extends beyond fixture/offline to label a connected backend that reports seeded/simulated data (status poll feeds FixtureModeDetector; the dashboard badge parses the server token fail-closed). Startup rejection is proven per real prohibited binding - 62 focused tests pin every in-memory/no-op durable-role implementation against the production guard, the supported-local durability assertion, and the forced-simulated provenance resolution - and Ui.Shared in-memory durable stores now carry the explicit INonProductionOnlyService marker (lower layers stay on the enforced ADR-019 name-prefix mechanism). Evidence gating extends beyond the existing ledger validator - strategy runs, reconciliation break-queue items, and report-pack provenance now carry a data-provenance token, the seeded demo stamps it everywhere, and PromotionService fail-closes approval of any run marked simulated/seeded/sample with an audited PromotionSimulatedProvenanceBlocked decision. Remaining before done - per-screen WPF badges beyond the shell banner and Dashboard, hard entry-time blocks (not just carried marks plus review-required posture) at the reconciliation-intake and report-pack-validation seams, and wiring the supported-local durability assertion into host startup composition.
 
 ### Exit Criteria
 
@@ -594,16 +594,16 @@ Rank 1 of the 2026-07 first-order improvement slate. Fake-looking-real output is
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | critical |
 | Owner lane | Workstation Shell and UX |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-08 |
 
 ### Current Summary
 
-Rank 2 of the 2026-07 first-order improvement slate. The first evaluation hour currently ends in an empty screen; nothing else matters if evaluation fails, so a single documented command must stand up a seeded demo workspace over durable storage that shows the product working before any manual configuration.
+Implementation completed 2026-08-08 on the pre-existing --seed-demo/--demo/--reset-demo spine. One documented command now provisions all five required domains over durable file-backed stores rooted at the guarded demo workspace - deterministic provider market history (90 sessions x 3 symbols of trade-event JSONL the Data desk reads), a sample fund account plus a durable portfolio position snapshot, balanced draft journal entries in the accounting drafts queue (accounting records seed as drafts for human review; the demo never fabricates posted ledger entries, and posted money-path stores remain PostgreSQL-gated), the existing reconciliation casework, and a review-required governed sample report pack whose provenance carries the seeded mark. Every seeded record carries the W9-TRUTH-001 seeded provenance token, re-seeding is idempotent, restart-modelled durability is proven per domain, and the guarded one-command reset is unchanged. The demo-smoke CI lane runs the extended Meridian.Tests.Demo suite including the five-domain durability test.
 
 ### Exit Criteria
 
@@ -623,16 +623,16 @@ Rank 2 of the 2026-07 first-order improvement slate. The first evaluation hour c
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | critical |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-08 |
 
 ### Current Summary
 
-Rank 3 of the 2026-07 first-order improvement slate. The promotion gate currently launders overfit strategies because paper fills ignore limit/stop semantics and trading costs and can print placeholder prices; paper evidence must stop overstating live viability before it feeds promotion review.
+Implementation completed 2026-08-08. Both paper gateways now match through the shared documented PaperOrderMatchingPolicy (paper-match/1) - market orders transact against the observed ask/bid (falling back to last trade, then bar close) and never at placeholder prices, limit orders fill only at or better than their limit and otherwise rest, stops trigger per the documented trade-preferred policy with a quote fallback, and resting orders re-evaluate event-driven as the market event tap records fresh trades, quotes, and bars (bars now feed the observed envelope). Every fill applies the PaperTradingCostModel (paper-cost/1) commission/fee/slippage schedule with per-fill spread reporting, costs flow into paper-session economics (portfolio cost booking, per-fill report fields, session TradingCosts totals), and an FsCheck-backed regression suite proves no fill can print outside the observed market-data envelope for the bar or tick in effect. Paper sessions durably record the matching and cost model versions, and paper-to-live promotions now require the PAPER_EXECUTION_MODEL_REVIEWED evidence reference recording those versions, validated at approval and at the durable promotion-record store. The explicitly opted-in scaffold pricing escape hatch (default off, loudly warned) is unchanged.
 
 ### Exit Criteria
 
