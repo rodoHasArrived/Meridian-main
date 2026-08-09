@@ -244,6 +244,7 @@ public static class DefaultProviderSetupHandlers
             new PolygonProviderSetupHandler(),
             new PlaidProviderSetupHandler(),
             new QuickBooksProviderSetupHandler(),
+            new GenericReadOnlyDataProviderSetupHandler("ib-flex", aliases: ["ibflex", "ib-flex-web-service"]),
             new GenericReadOnlyDataProviderSetupHandler("finnhub"),
             new GenericReadOnlyDataProviderSetupHandler("tiingo"),
             new GenericReadOnlyDataProviderSetupHandler("alphavantage", aliases: ["alpha-vantage", "alphaVantage"]),

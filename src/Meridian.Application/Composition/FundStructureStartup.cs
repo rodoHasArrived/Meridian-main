@@ -43,8 +43,10 @@ internal static class FundStructureStartup
         }
 
         var options = serviceProvider.GetRequiredService<FundStructureStoreOptions>();
+        var readiness = serviceProvider.GetRequiredService<DatabaseMigrationReadinessReceipt>();
         var runner = new FundStructureMigrationRunner(options);
         await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
+        readiness.MarkFundStructureReady();
         logger?.LogInformation(
             "Fund structure schema '{Schema}' is ready.",
             options.Schema);

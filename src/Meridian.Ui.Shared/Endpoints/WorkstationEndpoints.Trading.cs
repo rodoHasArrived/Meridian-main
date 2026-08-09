@@ -4,6 +4,7 @@ using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,8 +43,18 @@ public static partial class WorkstationEndpoints
         StrategyRunSummary? run = null;
         if (readService is not null)
         {
-            var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
-            run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
+            var scope = ResolveStrategyRunReadScope(context);
+            var runs = (await readService
+                    .GetRunsAsync(
+                        strategyId: null,
+                        runType: null,
+                        scope: scope,
+                        ct: context.RequestAborted)
+                    .ConfigureAwait(false))
+                .ToArray();
+            run = TradingOperatorReadinessService.FindScopedCoveredCallPaperTarget(runs)
+                ?? runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper)
+                ?? runs.FirstOrDefault();
         }
 
         var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);
@@ -112,12 +123,10 @@ public static partial class WorkstationEndpoints
         // --- Risk state (derived from live portfolio when available) ---
         var riskState = "Healthy";
         var riskSummary = "Portfolio and order-book exposure are within configured paper thresholds.";
-        IReadOnlyList<string> activeGuardrails =
-        [
-            "Single-name concentration cap set at 30% notional.",
-            "Auto-throttle activates above 70% intraday buying power.",
-            "Strategy promotion to live blocked while state is Observe or Constrained."
-        ];
+        // Guardrails come exclusively from the live rule registry below — no synthetic
+        // placeholder entries when the runtime service is unavailable.
+        IReadOnlyList<string> activeGuardrails = [];
+        IReadOnlyList<WorkstationRiskGuardrail> guardrails = [];
         var grossExposure = 0m;
         var netExposureValue = 0m;
 
@@ -157,6 +166,19 @@ public static partial class WorkstationEndpoints
             riskState = runtimeRisk.State;
             riskSummary = runtimeRisk.Summary;
             activeGuardrails = runtimeRisk.ActiveGuardrails;
+            guardrails = runtimeRisk.Guardrails;
+        }
+
+        // The guardrail meters measure the same snapshot the pre-trade rules enforce
+        // against, which reserves accepted-but-unfilled orders. Displaying filled-only
+        // exposure beside them would show, say, $100k gross next to a gross guardrail
+        // reading $160k and Constrained — so the headline figures come from that snapshot
+        // whenever it is available, and fall back to filled positions when it is not.
+        if (context.RequestServices.GetService<Meridian.Risk.IPortfolioExposureProvider>() is { } exposureProvider)
+        {
+            var exposureSnapshot = exposureProvider.GetSnapshot();
+            grossExposure = exposureSnapshot.GrossExposure;
+            netExposureValue = exposureSnapshot.NetExposure;
         }
 
         var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
@@ -210,7 +232,8 @@ public static partial class WorkstationEndpoints
                 Var95: "—",
                 MaxDrawdown: maxDrawdownDisplay,
                 BuyingPowerUsed: buyingPowerUsedDisplay,
-                ActiveGuardrails: activeGuardrails),
+                ActiveGuardrails: activeGuardrails,
+                Guardrails: guardrails),
             Brokerage: new WorkstationTradingBrokerageState(
                 Provider: brokerageValidation.GatewayDisplayName,
                 Account: run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",

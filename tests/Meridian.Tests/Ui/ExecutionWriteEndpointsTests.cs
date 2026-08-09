@@ -27,6 +27,7 @@ using Meridian.Testing;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -154,6 +155,57 @@ public sealed class ExecutionWriteEndpointsTests
         result.Status.Should().Be("Completed");
         result.Message.Should().Contain("cancelled");
         orderManager.CancelledOrderIds.Should().ContainSingle().Which.Should().Be("ord-live-001");
+    }
+
+    [Fact]
+    public async Task CancelOrder_ForAnotherFundsOrder_IsForbidden()
+    {
+        // Cancelling a parked order durably withdraws its governed approval. The escalation
+        // routes only permit that within the caller's scoped authority over the owning fund,
+        // so reaching the same withdrawal by client order id must not bypass the check.
+        var ownedByAnotherFund = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        var callerScope = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        var orderState = CreateOrderState("ord-fund-b", "AAPL", 1m) with { FundAccountId = ownedByAnotherFund };
+        var orderManager = new RecordingOrderManager(orderState);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IOrderManager>(orderManager);
+            services.AddSingleton<IScopedAuthorizationService>(
+                _ => new SingleAccountScopedAuthorizationService(callerScope));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/ord-fund-b/cancel", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        orderManager.CancelledOrderIds.Should().BeEmpty("an unauthorized cancel must not reach the OMS");
+    }
+
+    private sealed class SingleAccountScopedAuthorizationService(Guid allowedAccountId) : IScopedAuthorizationService
+    {
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission required,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var isAllowed =
+                scopeKind == AccessScopeKindDto.Account &&
+                scopeId == allowedAccountId &&
+                (globalPermissions & required) == required;
+
+            return Task.FromResult(new ScopedAuthorizationDecisionDto(
+                IsAllowed: isAllowed,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: isAllowed ? "in scope" : "outside the caller's scoped accounts"));
+        }
     }
 
     // ------------------------------------------------------------------ //
@@ -1067,7 +1119,8 @@ public sealed class ExecutionWriteEndpointsTests
                 ReviewNotes: "Replay is consistent with durable fill log.",
                 ApprovedBy: "ops-promoter",
                 ApprovalReason: "Replay source and session continuity verified.",
-                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+                EvidenceReferences: CreatePromotionEvidenceReferences(RunType.Paper))));
         approveResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var approval = await ReadAsync<PromotionDecisionResult>(approveResponse);
 
@@ -1234,6 +1287,87 @@ public sealed class ExecutionWriteEndpointsTests
         historyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task PromotionEndpoints_ExposeTenantScopeMetadataOnEveryRoute()
+    {
+        await using var app = await CreateAppAsync(services => RegisterPromotionServices(services));
+        var promotionEndpoints = ((IEndpointRouteBuilder)app).DataSources
+            .SelectMany(static source => source.Endpoints)
+            .OfType<RouteEndpoint>()
+            .Where(static endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/promotion", StringComparison.Ordinal) == true)
+            .ToArray();
+
+        promotionEndpoints.Should().HaveCount(5);
+        promotionEndpoints.Should().OnlyContain(endpoint =>
+            endpoint.Metadata.GetMetadata<WorkstationTenantScopeMetadata>() != null);
+    }
+
+    [Fact]
+    public async Task PromotionEndpoints_WithoutTenantAndCompanyScope_ReturnForbidden()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterPromotionServices(services),
+            currentTenantId: null,
+            currentCompanyId: null);
+        var client = app.GetTestClient();
+
+        var evaluate = await client.GetAsync("/api/promotion/evaluate/run-backtest-01");
+        var approve = await client.PostAsync(
+            "/api/promotion/approve",
+            JsonContent(new PromotionApprovalRequest("run-backtest-01")));
+        var reject = await client.PostAsync(
+            "/api/promotion/reject",
+            JsonContent(new PromotionRejectionRequest("run-backtest-01", "Not approved.")));
+        var history = await client.GetAsync("/api/promotion/history");
+        var walkForward = await client.PostAsync(
+            "/api/promotion/runs/run-backtest-01/walk-forward-evidence",
+            JsonContent(new RecordWalkForwardEvidenceRequest(1.0d, 0.05m, 0.8d, 4)));
+
+        evaluate.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        approve.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        reject.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        history.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        walkForward.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task PromotionEndpoints_WithForeignScope_FailClosedWithoutMutation()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterPromotionServices(
+                services,
+                runTenantId: "owner-tenant",
+                runCompanyId: "owner-company"),
+            currentTenantId: "foreign-tenant",
+            currentCompanyId: "foreign-company");
+        var client = app.GetTestClient();
+
+        var evaluate = await client.GetAsync("/api/promotion/evaluate/run-backtest-01");
+        var approve = await client.PostAsync(
+            "/api/promotion/approve",
+            JsonContent(new PromotionApprovalRequest(
+                "run-backtest-01",
+                ApprovedBy: "forged-owner",
+                ApprovalReason: "Attempted foreign approval.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+                EvidenceReferences: CreatePromotionEvidenceReferences(RunType.Paper))));
+        var walkForward = await client.PostAsync(
+            "/api/promotion/runs/run-backtest-01/walk-forward-evidence",
+            JsonContent(new RecordWalkForwardEvidenceRequest(1.0d, 0.05m, 0.8d, 4)));
+        var history = await client.GetAsync("/api/promotion/history");
+        var historyRecords = await ReadAsync<StrategyPromotionRecord[]>(history);
+        var retainedRun = await app.Services
+            .GetRequiredService<StrategyRunStore>()
+            .GetRunByIdAsync("run-backtest-01");
+
+        evaluate.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        approve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        walkForward.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        history.StatusCode.Should().Be(HttpStatusCode.OK);
+        historyRecords.Should().BeEmpty();
+        retainedRun!.WalkForwardEvidence.Should().BeNull();
+    }
+
     // ------------------------------------------------------------------ //
     //  Helpers                                                            //
     // ------------------------------------------------------------------ //
@@ -1330,7 +1464,9 @@ public sealed class ExecutionWriteEndpointsTests
         string runId = "run-backtest-01",
         double sharpeRatio = 1.20d,
         decimal maxDrawdownPercent = 0.08m,
-        decimal totalReturn = 0.16m)
+        decimal totalReturn = 0.16m,
+        string runTenantId = "execution-test-tenant",
+        string runCompanyId = "execution-test-company")
     {
         var strategyRepository = new StrategyRunStore();
         strategyRepository
@@ -1340,15 +1476,25 @@ public sealed class ExecutionWriteEndpointsTests
                 strategyName: "Wave2 Continuity",
                 sharpeRatio: sharpeRatio,
                 maxDrawdownPercent: maxDrawdownPercent,
-                totalReturn: totalReturn))
+                totalReturn: totalReturn,
+                tenantId: runTenantId,
+                companyId: runCompanyId))
             .GetAwaiter()
             .GetResult();
 
         services.AddSingleton(strategyRepository);
         services.AddSingleton<BacktestToLivePromoter>();
+        var promotionArtifactRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "execution-write",
+            Guid.NewGuid().ToString("N"));
         services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
-            Path.Combine(Path.GetTempPath(), "meridian-tests", "execution-write", Guid.NewGuid().ToString("N")),
+            Path.Combine(promotionArtifactRoot, "promotions"),
             NullLogger<JsonlPromotionRecordStore>.Instance));
+        services.AddSingleton(_ => new ExecutionServices.ExecutionAuditTrailService(
+            new ExecutionServices.ExecutionAuditTrailOptions(Path.Combine(promotionArtifactRoot, "audit")),
+            NullLogger<ExecutionServices.ExecutionAuditTrailService>.Instance));
         services.AddSingleton<PromotionService>(sp => new PromotionService(
             sp.GetRequiredService<StrategyRunStore>(),
             sp.GetRequiredService<BacktestToLivePromoter>(),
@@ -1361,7 +1507,9 @@ public sealed class ExecutionWriteEndpointsTests
         Action<IServiceCollection>? configureServices = null,
         UserPermission currentUserPermissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders | UserPermission.ManageStrategies,
         string? currentUser = "ops-user",
-        IReadOnlyCollection<Guid>? allowedAccountScopes = null)
+        IReadOnlyCollection<Guid>? allowedAccountScopes = null,
+        string? currentTenantId = "execution-test-tenant",
+        string? currentCompanyId = "execution-test-company")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -1384,8 +1532,15 @@ public sealed class ExecutionWriteEndpointsTests
             }
 
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
-            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "execution-test-company";
-            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "execution-test-tenant";
+            if (!string.IsNullOrWhiteSpace(currentCompanyId))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = currentCompanyId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(currentTenantId))
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = currentTenantId;
+            }
             await next();
         });
 
@@ -1484,7 +1639,9 @@ public sealed class ExecutionWriteEndpointsTests
         string strategyName,
         double sharpeRatio,
         decimal maxDrawdownPercent,
-        decimal totalReturn)
+        decimal totalReturn,
+        string tenantId,
+        string companyId)
     {
         var now = DateTimeOffset.UtcNow;
         var request = new BacktestRequest(
@@ -1552,8 +1709,25 @@ public sealed class ExecutionWriteEndpointsTests
             Metrics: result,
             PortfolioId: $"{strategyId}-backtest-portfolio",
             LedgerReference: $"{strategyId}-backtest-ledger",
-            Engine: "MeridianNative");
+            Engine: "MeridianNative",
+            ParameterSet: new Dictionary<string, string>
+            {
+                ["workstationTenantId"] = tenantId,
+                ["workstationCompanyId"] = companyId
+            },
+            RetainedEvidenceReferences: CreatePromotionRetainedEvidenceReferences(RunType.Paper));
     }
+
+    private static string[] CreatePromotionEvidenceReferences(RunType targetRunType) =>
+        PromotionApprovalChecklist
+            .CreateRequiredFor(targetRunType)
+            .Select(static item => $"{item}:evidence://evidence-vault/{item.ToLowerInvariant()}")
+            .ToArray();
+
+    private static string[] CreatePromotionRetainedEvidenceReferences(RunType targetRunType) =>
+        CreatePromotionEvidenceReferences(targetRunType)
+            .Select(static reference => reference[(reference.IndexOf(':') + 1)..])
+            .ToArray();
 
     private static BrokerPosition CreateRobinhoodOptionPosition(
         string positionId,

@@ -748,6 +748,12 @@ public static class UiApiRoutes
     public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";
     public const string ReconciliationStatementImportPreview = "/api/workstation/reconciliation/statement-imports/preview";
     public const string ReconciliationStatementImportCommit = "/api/workstation/reconciliation/statement-imports/commit";
+    public const string ReconciliationStatementReconciliationReport = "/api/workstation/reconciliation/statement-reconciliation-report";
+    public const string ReconciliationStatementReconciliationReportById = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}";
+    public const string ReconciliationStatementReconciliationReportResume = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume";
+    public const string ReconciliationStatementReconciliationReportArtifact = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/artifacts/{artifactId}";
+    // Compatibility aliases keep retained pre-rename status/resume/download links recoverable.
+    // New clients and all newly persisted workflow projections use the truthful reconciliation-report name.
     public const string ReconciliationStatementToReport = "/api/workstation/reconciliation/statement-to-report";
     public const string ReconciliationStatementToReportById = "/api/workstation/reconciliation/statement-to-report/{workflowId}";
     public const string ReconciliationStatementToReportResume = "/api/workstation/reconciliation/statement-to-report/{workflowId}/resume";
@@ -756,6 +762,8 @@ public static class UiApiRoutes
     public const string ReconciliationStatementFetchSchedules = "/api/workstation/reconciliation/statement-fetch-schedules";
     public const string ReconciliationStatementFetchScheduleById = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}";
     public const string ReconciliationStatementFetchScheduleRun = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}/run";
+    public const string ReconciliationMarginControl = "/api/workstation/reconciliation/margin-control";
+    public const string ReconciliationMarginCertifications = "/api/workstation/reconciliation/margin-control/certifications";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";

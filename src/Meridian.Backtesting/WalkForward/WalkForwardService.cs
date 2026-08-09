@@ -138,6 +138,7 @@ public sealed class WalkForwardService : IWalkForwardService
         }
 
         var objective = ResolveObjective(request);
+        var parameterGridIndex = new ParameterGridIndex(request.ParameterGrid, ct);
         var sw = Stopwatch.StartNew();
         var windowResults = new List<WalkForwardWindowResult>(windows.Count);
 
@@ -148,9 +149,20 @@ public sealed class WalkForwardService : IWalkForwardService
         foreach (var window in windows)
         {
             ct.ThrowIfCancellationRequested();
-            windowResults.Add(await RunWindowAsync(request, window, windows.Count, objective, progress, ct).ConfigureAwait(false));
+            var windowResult = await RunWindowAsync(
+                    request,
+                    window,
+                    windows.Count,
+                    objective,
+                    parameterGridIndex,
+                    progress,
+                    ct)
+                .ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            windowResults.Add(windowResult);
         }
 
+        ct.ThrowIfCancellationRequested();
         sw.Stop();
         return BuildReport(request, windows, windowResults, sw.Elapsed);
     }
@@ -162,6 +174,7 @@ public sealed class WalkForwardService : IWalkForwardService
         WalkForwardWindow window,
         int windowCount,
         Func<BacktestMetrics, double> objective,
+        ParameterGridIndex parameterGridIndex,
         IProgress<WalkForwardProgress>? progress,
         CancellationToken ct)
     {
@@ -169,7 +182,7 @@ public sealed class WalkForwardService : IWalkForwardService
 
         var batchProgress = progress is null
             ? null
-            : new Progress<BatchBacktestProgress>(p => progress.Report(new WalkForwardProgress
+            : new InlineProgress<BatchBacktestProgress>(p => progress.Report(new WalkForwardProgress
             {
                 Phase = "training",
                 WindowIndex = window.Index,
@@ -179,25 +192,37 @@ public sealed class WalkForwardService : IWalkForwardService
                 CurrentLabel = p.CurrentLabel
             }));
 
-        var batch = await _batchService.RunBatchAsync(
-            new BatchBacktestRequest
-            {
-                BaseRequest = trainRequest,
-                ParameterGrid = request.ParameterGrid,
-                MaxConcurrency = request.MaxConcurrency,
-                StrategyDescriptor = request.StrategyDescriptor,
-                StrategyFactory = request.StrategyFactory
-            },
-            batchProgress!,
-            ct).ConfigureAwait(false);
+        var batchRequest = new BatchBacktestRequest
+        {
+            BaseRequest = trainRequest,
+            ParameterGrid = request.ParameterGrid,
+            MaxConcurrency = request.MaxConcurrency,
+            StrategyDescriptor = request.StrategyDescriptor,
+            StrategyFactory = request.StrategyFactory
+        };
+        var batch = await BacktestDependencyRunner.RunAsync(
+                () => _batchService.RunBatchAsync(batchRequest, batchProgress!, ct),
+                ct,
+                ex => _logger.LogWarning(
+                    ex,
+                    "Walk-forward window {Index} training batch faulted after caller cancellation",
+                    window.Index))
+            .ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
 
         var succeeded = batch.Runs.Where(static run => run.Result is not null).ToList();
         var failed = batch.Runs.Count - succeeded.Count;
 
         var best = succeeded
-            .Select(run => (Run: run, Objective: objective(run.Result!.Metrics)))
+            .Select(run => (
+                Run: run,
+                Objective: objective(run.Result!.Metrics),
+                ParameterGridIndex: parameterGridIndex.Resolve(run.Parameters),
+                ParameterLabel: BatchBacktestService.FormatParameterLabel(run.Parameters)))
             .Where(static candidate => !double.IsNaN(candidate.Objective))
             .OrderByDescending(static candidate => candidate.Objective)
+            .ThenBy(static candidate => candidate.ParameterGridIndex)
+            .ThenBy(static candidate => candidate.ParameterLabel, StringComparer.Ordinal)
             .FirstOrDefault();
 
         if (best.Run is null)
@@ -222,6 +247,7 @@ public sealed class WalkForwardService : IWalkForwardService
             WindowCount = windowCount,
             CurrentLabel = FormatParameterLabel(best.Run.Parameters)
         });
+        ct.ThrowIfCancellationRequested();
 
         var testRequest = BatchBacktestService.ApplyParameters(
             request.BaseRequest with { From = window.TestFrom, To = window.TestTo },
@@ -229,9 +255,20 @@ public sealed class WalkForwardService : IWalkForwardService
 
         try
         {
-            var engine = _engineFactory(testRequest);
-            var strategy = request.StrategyFactory(best.Run.Parameters);
-            var testResult = await _runExecutor(engine, testRequest, strategy, ct).ConfigureAwait(false);
+            var testResult = await BacktestDependencyRunner.RunAsync(
+                    () =>
+                    {
+                        var engine = _engineFactory(testRequest);
+                        var strategy = request.StrategyFactory(best.Run.Parameters);
+                        return _runExecutor(engine, testRequest, strategy, ct);
+                    },
+                    ct,
+                    ex => _logger.LogWarning(
+                        ex,
+                        "Walk-forward window {Index} out-of-sample run faulted after caller cancellation",
+                        window.Index))
+                .ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
 
             return new WalkForwardWindowResult
             {
@@ -399,6 +436,92 @@ public sealed class WalkForwardService : IWalkForwardService
             _ => static metrics => metrics.SharpeRatio
         };
 
+    private sealed class ParameterGridIndex
+    {
+        private readonly Dictionary<Dictionary<string, object>, int> _byReference =
+            new(ReferenceEqualityComparer.Instance);
+
+        private readonly Dictionary<IReadOnlyDictionary<string, object>, int> _byValue =
+            new(ParameterSetComparer.Instance);
+
+        public ParameterGridIndex(
+            IReadOnlyList<Dictionary<string, object>> parameterGrid,
+            CancellationToken ct)
+        {
+            for (var index = 0; index < parameterGrid.Count; index++)
+            {
+                ct.ThrowIfCancellationRequested();
+                var parameters = parameterGrid[index];
+                _byReference.TryAdd(parameters, index);
+                _byValue.TryAdd(parameters, index);
+            }
+        }
+
+        public int Resolve(Dictionary<string, object> selectedParameters)
+        {
+            if (_byReference.TryGetValue(selectedParameters, out var index) ||
+                _byValue.TryGetValue(selectedParameters, out index))
+            {
+                return index;
+            }
+
+            return int.MaxValue;
+        }
+    }
+
+    private sealed class ParameterSetComparer : IEqualityComparer<IReadOnlyDictionary<string, object>>
+    {
+        public static ParameterSetComparer Instance { get; } = new();
+
+        public bool Equals(
+            IReadOnlyDictionary<string, object>? left,
+            IReadOnlyDictionary<string, object>? right)
+        {
+            if (ReferenceEquals(left, right))
+                return true;
+            if (left is null || right is null || left.Count != right.Count)
+                return false;
+
+            using var leftEnumerator = left
+                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                .GetEnumerator();
+            using var rightEnumerator = right
+                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                .GetEnumerator();
+
+            while (leftEnumerator.MoveNext() && rightEnumerator.MoveNext())
+            {
+                if (!StringComparer.Ordinal.Equals(leftEnumerator.Current.Key, rightEnumerator.Current.Key) ||
+                    !object.Equals(leftEnumerator.Current.Value, rightEnumerator.Current.Value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public int GetHashCode(IReadOnlyDictionary<string, object> parameters)
+        {
+            unchecked
+            {
+                var hash = 17;
+                foreach (var (key, value) in parameters.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+                {
+                    hash = (hash * 31) + StringComparer.Ordinal.GetHashCode(key);
+                    hash = (hash * 31) + (value?.GetHashCode() ?? 0);
+                }
+
+                return hash;
+            }
+        }
+    }
+
     private static string FormatParameterLabel(IReadOnlyDictionary<string, object> parameters) =>
-        string.Join(", ", parameters.Select(static kvp => $"{kvp.Key}={kvp.Value}"));
+        BatchBacktestService.FormatParameterLabel(parameters);
+
+    private sealed class InlineProgress<T>(Action<T> report) : IProgress<T>
+    {
+        public void Report(T value) => report(value);
+    }
 }

@@ -36,6 +36,9 @@ Meridian reads credentials from configuration, with environment variables taking
 - Use provider-specific variables for live data and broker integrations.
 - Avoid storing secrets in repository files, logs, or user shell history.
 - For IBKR simulation builds, use the StockSharp connector surface in config and verify with local replay paths.
+- For IB Flex statement fetches, store `Token` and `QueryId` under the `ib-flex` provider id. These
+  credentials are separate from TWS/Gateway socket configuration and must remain in the credential
+  vault.
 - For Plaid, configure `PLAID_ENV`, `PLAID_CLIENT_ID`, and `PLAID_SECRET`, but keep access tokens
   and item secrets in the Meridian credential store only. Plaid access tokens must not be written
   to user environment variables, docs, support bundles, or logs.

@@ -527,8 +527,8 @@ public sealed class FundReconciliationWorkbenchServiceTests
         public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
             => Task.FromException<ReconciliationCalibrationSummaryDto?>(new InvalidOperationException("Workstation API is offline."));
 
-        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
-            => Task.FromException<IReadOnlyList<ReconciliationBreakQueueItem>>(new InvalidOperationException("Workstation API is offline."));
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>?> GetBreakQueueAsync(CancellationToken ct = default)
+            => Task.FromException<IReadOnlyList<ReconciliationBreakQueueItem>?>(new InvalidOperationException("Workstation API is offline."));
 
         public Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([]);

@@ -282,12 +282,10 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
-            if (_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                EnsureAllowed(stored.Summary, "record-balance-snapshot");
-                stored.Snapshots.Add(dto);
-                snapshot = CaptureSnapshotLocked();
-            }
+            var stored = RequireAccountLocked(request.AccountId);
+            EnsureAllowed(stored.Summary, "record-balance-snapshot");
+            stored.Snapshots.Add(dto);
+            snapshot = CaptureSnapshotLocked();
         }
 
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
@@ -352,13 +350,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
-            if (_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                EnsureAllowed(stored.Summary, "ingest-custodian-statement", allowSuspended: true);
-                stored.CustodianBatches.Add(batch);
-                UpsertCustodianPositions(stored.CustodianPositions, request.Lines);
-                snapshot = CaptureSnapshotLocked();
-            }
+            var stored = RequireAccountLocked(request.AccountId);
+            EnsureAllowed(stored.Summary, "ingest-custodian-statement", allowSuspended: true);
+            stored.CustodianBatches.Add(batch);
+            UpsertCustodianPositions(stored.CustodianPositions, request.Lines);
+            snapshot = CaptureSnapshotLocked();
         }
 
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
@@ -382,13 +378,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
-            if (_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                EnsureAllowed(stored.Summary, "ingest-bank-statement", allowSuspended: true);
-                stored.BankBatches.Add(batch);
-                UpsertBankStatementLines(stored.BankLines, request.Lines);
-                snapshot = CaptureSnapshotLocked();
-            }
+            var stored = RequireAccountLocked(request.AccountId);
+            EnsureAllowed(stored.Summary, "ingest-bank-statement", allowSuspended: true);
+            stored.BankBatches.Add(batch);
+            UpsertBankStatementLines(stored.BankLines, request.Lines);
+            snapshot = CaptureSnapshotLocked();
         }
 
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
@@ -406,6 +400,16 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             throw new AccountStatusPolicyException(summary.OperationalStatus, operation, isBackfill);
         }
+    }
+
+    private StoredAccount RequireAccountLocked(Guid accountId)
+    {
+        if (!_accounts.TryGetValue(accountId, out var stored))
+        {
+            throw new InvalidOperationException($"Account {accountId} not found.");
+        }
+
+        return stored;
     }
 
     public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
@@ -459,10 +463,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
         lock (_gate)
         {
-            if (!_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                throw new InvalidOperationException($"Account {request.AccountId} not found.");
-            }
+            var stored = RequireAccountLocked(request.AccountId);
 
             snapshot = stored.Snapshots
                 .Where(s => s.AsOfDate == request.AsOfDate)
@@ -506,12 +507,10 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshotToPersist = null;
         lock (_gate)
         {
-            if (_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                stored.ReconciliationRuns.Add(run);
-                stored.ReconciliationResults.AddRange(results);
-                snapshotToPersist = CaptureSnapshotLocked();
-            }
+            var stored = RequireAccountLocked(request.AccountId);
+            stored.ReconciliationRuns.Add(run);
+            stored.ReconciliationResults.AddRange(results);
+            snapshotToPersist = CaptureSnapshotLocked();
         }
 
         await PersistSnapshotAsync(snapshotToPersist, ct).ConfigureAwait(false);
@@ -734,10 +733,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
-            if (!_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                throw new InvalidOperationException($"Account {request.AccountId} not found.");
-            }
+            var stored = RequireAccountLocked(request.AccountId);
 
             var existingIndex = string.IsNullOrWhiteSpace(correlationId)
                 ? -1
@@ -871,10 +867,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? persistedSnapshot;
         lock (_gate)
         {
-            if (!_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                throw new InvalidOperationException($"Account {request.AccountId} not found.");
-            }
+            var stored = RequireAccountLocked(request.AccountId);
 
             var existingIndex = string.IsNullOrWhiteSpace(correlationId)
                 ? -1

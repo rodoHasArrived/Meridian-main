@@ -274,7 +274,20 @@ public sealed class PlaidWorkstationService : IPlaidIngestionService, IPlaidTran
             return Blocked("Plaid transfer authorization amount must match the approved Meridian payment.", request);
         }
 
-        if (!string.Equals(request.Currency, "USD", StringComparison.OrdinalIgnoreCase))
+        if (!TryNormalizeCurrency(payment.Currency, out var paymentCurrency))
+        {
+            return Blocked(
+                "Approved Meridian payment currency is unresolved; remediate the legacy payment intent before transfer authorization.",
+                request);
+        }
+
+        if (!TryNormalizeCurrency(request.Currency, out var requestedCurrency) ||
+            !string.Equals(requestedCurrency, paymentCurrency, StringComparison.Ordinal))
+        {
+            return Blocked("Plaid transfer authorization currency must match the approved Meridian payment.", request);
+        }
+
+        if (!string.Equals(requestedCurrency, "USD", StringComparison.Ordinal))
         {
             return Blocked("Plaid transfer authorization is currently limited to USD.", request);
         }
@@ -462,6 +475,13 @@ public sealed class PlaidWorkstationService : IPlaidIngestionService, IPlaidTran
 
     private static string? FirstNonBlank(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
+
+    private static bool TryNormalizeCurrency(string? value, out string normalized)
+    {
+        normalized = value?.Trim().ToUpperInvariant() ?? string.Empty;
+        return normalized.Length == 3 &&
+               normalized.All(static character => char.IsAsciiLetter(character));
+    }
 
     private static PlaidEnvironmentDto ParseEnvironment(string? value)
         => value?.Trim().ToLowerInvariant() switch

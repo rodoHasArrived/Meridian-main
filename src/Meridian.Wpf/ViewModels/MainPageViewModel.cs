@@ -41,6 +41,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly ShellRefreshCoordinator _shellRefreshCoordinator;
     private readonly MainPageNavigationSectionViewModel _navigationSection = new();
     private readonly MainPageChromeSectionViewModel _chromeSection = new();
+    private readonly object _operatingContextSelectionGate = new();
+    private readonly AsyncLocal<int?> _operatingContextSelectionEventRevision = new();
+    private readonly Func<string, CancellationToken, Task<WorkstationOperatingContext?>>? _selectOperatingContextAsync;
 
     private bool _suppressNavigation;
     private bool _suppressOperatingContextSelection;
@@ -58,6 +61,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private DateTimeOffset _shellLastUpdatedAt = DateTimeOffset.Now;
     private int _shellContextRevision;
     private int _workflowSummaryRevision;
+    private int _operatingContextSelectionRevision;
+    private string? _latestRequestedOperatingContextKey;
+    private WorkstationOperatingContext? _latestRequestedOperatingContext;
+    private CancellationTokenSource? _operatingContextSelectionCts;
+    private Task _operatingContextSelectionTask = Task.CompletedTask;
     private bool _disposed;
 
     public MainPageViewModel(
@@ -81,6 +89,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
+        _selectOperatingContextAsync = operatingContextService is null
+            ? null
+            : (contextKey, ct) => operatingContextService.SelectContextAsync(contextKey, ct: ct);
         _workspaceShellContextService = workspaceShellContextService;
         _workflowSummaryService = workflowSummaryService;
         _operatorInboxApiClient = operatorInboxApiClient;
@@ -142,7 +153,29 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RequestShellRefresh();
     }
 
+    internal MainPageViewModel(
+        INavigationService navigationService,
+        FixtureModeDetector fixtureModeDetector,
+        FundContextService fundContextService,
+        Func<string, CancellationToken, Task<WorkstationOperatingContext?>> selectOperatingContextAsync)
+        : this(navigationService, fixtureModeDetector, fundContextService)
+    {
+        _selectOperatingContextAsync = selectOperatingContextAsync
+            ?? throw new ArgumentNullException(nameof(selectOperatingContextAsync));
+    }
+
     public INavigationService NavigationService => _navigationService;
+
+    internal Task OperatingContextSelectionTask
+    {
+        get
+        {
+            lock (_operatingContextSelectionGate)
+            {
+                return _operatingContextSelectionTask;
+            }
+        }
+    }
 
     public CommandPaletteViewModel CommandPalette => _commandPalette;
 
@@ -221,12 +254,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         get => _selectedOperatingContext;
         set
         {
-            if (!SetProperty(ref _selectedOperatingContext, value) || _suppressOperatingContextSelection || value is null)
+            if (_disposed ||
+                !SetProperty(ref _selectedOperatingContext, value) ||
+                _suppressOperatingContextSelection ||
+                value is null)
             {
                 return;
             }
 
-            _ = SelectOperatingContextAsync(value);
+            BeginOperatingContextSelection(value);
         }
     }
 
@@ -673,12 +709,21 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
+        CancellationTokenSource? selectionCts;
+        lock (_operatingContextSelectionGate)
         {
-            return;
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _operatingContextSelectionRevision++;
+            selectionCts = _operatingContextSelectionCts;
+            _operatingContextSelectionCts = null;
         }
 
-        _disposed = true;
+        CancelAndDisposeOperatingContextSelection(selectionCts);
         _navigationService.Navigated -= OnNavigated;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
@@ -769,8 +814,57 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
+        WorkstationOperatingContext? retryContext = null;
+        int? retryRevision = null;
+        var eventSelectionRevision = _operatingContextSelectionEventRevision.Value;
+        var isSuperseded = false;
+        lock (_operatingContextSelectionGate)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            isSuperseded = eventSelectionRevision.HasValue &&
+                           !string.Equals(
+                               _latestRequestedOperatingContextKey,
+                               e.Context.ContextKey,
+                               StringComparison.OrdinalIgnoreCase);
+            if (isSuperseded &&
+                _latestRequestedOperatingContext is not null &&
+                string.Equals(
+                    _latestRequestedOperatingContext.ContextKey,
+                    _latestRequestedOperatingContextKey,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                retryContext = _latestRequestedOperatingContext;
+                retryRevision = _operatingContextSelectionRevision;
+            }
+            else if (!isSuperseded)
+            {
+                _latestRequestedOperatingContextKey = e.Context.ContextKey;
+                _latestRequestedOperatingContext = e.Context;
+            }
+        }
+
+        if (retryContext is not null)
+        {
+            BeginOperatingContextSelection(retryContext, retryRevision);
+            return;
+        }
+
+        if (isSuperseded)
+        {
+            return;
+        }
+
         DispatchToUi(() =>
         {
+            if (!CanCommitOperatingContextEvent(e.Context.ContextKey))
+            {
+                return;
+            }
+
             RefreshOperatingContexts();
             RefreshWindowMode();
             UpdateActiveFundDisplay();
@@ -783,6 +877,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         DispatchToUi(() =>
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             RefreshOperatingContexts();
             RequestShellRefresh();
         });
@@ -792,6 +891,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         DispatchToUi(() =>
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             RefreshWindowMode();
             UpdateShellRefreshStamp();
             RequestShellRefresh();
@@ -1128,14 +1232,107 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SwitchContextActionText));
     }
 
-    private async Task SelectOperatingContextAsync(WorkstationOperatingContext context)
+    private void BeginOperatingContextSelection(
+        WorkstationOperatingContext context,
+        int? expectedCurrentRevision = null)
     {
-        if (_operatingContextService is null)
+        if (_selectOperatingContextAsync is null)
         {
             return;
         }
 
-        await _operatingContextService.SelectContextAsync(context.ContextKey).ConfigureAwait(false);
+        var selectionCts = new CancellationTokenSource();
+        CancellationTokenSource? previousSelectionCts;
+        int selectionRevision;
+        lock (_operatingContextSelectionGate)
+        {
+            if (_disposed ||
+                (expectedCurrentRevision.HasValue &&
+                 expectedCurrentRevision.Value != _operatingContextSelectionRevision))
+            {
+                selectionCts.Dispose();
+                return;
+            }
+
+            _latestRequestedOperatingContextKey = context.ContextKey;
+            _latestRequestedOperatingContext = context;
+            selectionRevision = ++_operatingContextSelectionRevision;
+            previousSelectionCts = _operatingContextSelectionCts;
+            _operatingContextSelectionCts = selectionCts;
+        }
+
+        CancelAndDisposeOperatingContextSelection(previousSelectionCts);
+        var selectionTask = SelectOperatingContextAsync(context, selectionRevision, selectionCts);
+        lock (_operatingContextSelectionGate)
+        {
+            if (selectionRevision == _operatingContextSelectionRevision)
+            {
+                _operatingContextSelectionTask = selectionTask;
+            }
+        }
+
+        _ = selectionTask;
+    }
+
+    private async Task SelectOperatingContextAsync(
+        WorkstationOperatingContext context,
+        int selectionRevision,
+        CancellationTokenSource selectionCts)
+    {
+        var token = selectionCts.Token;
+        var previousEventRevision = _operatingContextSelectionEventRevision.Value;
+        _operatingContextSelectionEventRevision.Value = selectionRevision;
+        try
+        {
+            var selectedContext = await _selectOperatingContextAsync!(context.ContextKey, token).ConfigureAwait(false);
+            if (selectedContext is null ||
+                !string.Equals(selectedContext.ContextKey, context.ContextKey, StringComparison.OrdinalIgnoreCase) ||
+                !CanCommitOperatingContextSelection(context.ContextKey, selectionRevision, token))
+            {
+                return;
+            }
+
+            DispatchToUi(() =>
+            {
+                if (!CanCommitOperatingContextSelection(context.ContextKey, selectionRevision, token))
+                {
+                    return;
+                }
+
+                var catalogContext = _navigationSection.OperatingContextItems.FirstOrDefault(item =>
+                    string.Equals(item.ContextKey, selectedContext.ContextKey, StringComparison.OrdinalIgnoreCase));
+
+                _suppressOperatingContextSelection = true;
+                try
+                {
+                    SelectedOperatingContext = catalogContext ?? selectedContext;
+                }
+                finally
+                {
+                    _suppressOperatingContextSelection = false;
+                }
+            });
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // A newer picker choice or shell disposal superseded this selection.
+        }
+        catch (Exception ex)
+        {
+            if (CanCommitOperatingContextSelection(context.ContextKey, selectionRevision, token))
+            {
+                global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                    "Operating-context selection failed.",
+                    ("contextKey", context.ContextKey),
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
+            }
+        }
+        finally
+        {
+            _operatingContextSelectionEventRevision.Value = previousEventRevision;
+            CompleteOperatingContextSelection(selectionRevision, selectionCts);
+        }
     }
 
     private void RequestContextSelection()
@@ -1165,7 +1362,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
                 _navigationSection.OperatingContextItems.Add(context);
             }
 
+            string? requestedContextKey;
+            lock (_operatingContextSelectionGate)
+            {
+                requestedContextKey = _latestRequestedOperatingContextKey;
+            }
+
             SelectedOperatingContext = _navigationSection.OperatingContextItems.FirstOrDefault(context =>
+                                          string.Equals(context.ContextKey, requestedContextKey, StringComparison.OrdinalIgnoreCase))
+                                      ?? _navigationSection.OperatingContextItems.FirstOrDefault(context =>
                                           string.Equals(context.ContextKey, _operatingContextService.CurrentContext?.ContextKey, StringComparison.OrdinalIgnoreCase))
                                       ?? _navigationSection.OperatingContextItems.FirstOrDefault(context =>
                                           string.Equals(context.ContextKey, _operatingContextService.LastSelectedOperatingContextKey, StringComparison.OrdinalIgnoreCase));
@@ -1195,6 +1400,68 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
 
         RaisePropertyChanged(nameof(CurrentModeName));
+    }
+
+    private bool CanCommitOperatingContextSelection(
+        string contextKey,
+        int selectionRevision,
+        CancellationToken token)
+    {
+        lock (_operatingContextSelectionGate)
+        {
+            return !_disposed &&
+                   !token.IsCancellationRequested &&
+                   selectionRevision == _operatingContextSelectionRevision &&
+                   string.Equals(_latestRequestedOperatingContextKey, contextKey, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(_selectedOperatingContext?.ContextKey, contextKey, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private bool CanCommitOperatingContextEvent(string contextKey)
+    {
+        lock (_operatingContextSelectionGate)
+        {
+            return !_disposed &&
+                   string.Equals(
+                       _latestRequestedOperatingContextKey,
+                       contextKey,
+                       StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private void CompleteOperatingContextSelection(
+        int selectionRevision,
+        CancellationTokenSource selectionCts)
+    {
+        lock (_operatingContextSelectionGate)
+        {
+            if (selectionRevision == _operatingContextSelectionRevision &&
+                ReferenceEquals(_operatingContextSelectionCts, selectionCts))
+            {
+                _operatingContextSelectionCts = null;
+            }
+        }
+
+        selectionCts.Dispose();
+    }
+
+    private static void CancelAndDisposeOperatingContextSelection(CancellationTokenSource? selectionCts)
+    {
+        if (selectionCts is null)
+        {
+            return;
+        }
+
+        try
+        {
+            selectionCts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The superseded operation already completed and disposed its source.
+        }
+
+        selectionCts.Dispose();
     }
 
     private async Task RefreshShellContextAsync(CancellationToken ct = default)
@@ -1719,10 +1986,23 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return null;
         }
 
-        var catalogTarget = _workflowActionCatalog?.ResolveOperatorWorkItem(workItem)?.TargetPageTag;
-        if (!string.IsNullOrWhiteSpace(catalogTarget))
+        // Promotion reviews always open run review: every kind-level authority (the catalog's
+        // PromotionReview binding, the trading shell's queue, the kind fallbacks) targets
+        // StrategyRuns, and the generic trading-readiness route stamped on readiness-emitted
+        // promotion items names the data source, not the decision surface.
+        if (workItem.Kind == OperatorWorkItemKindDto.PromotionReview)
         {
-            return catalogTarget;
+            return "StrategyRuns";
+        }
+
+        // Explicit route resolution outranks every kind fallback: the catalog's route bindings
+        // first, then the kind specials, then the desktop route map. The catalog's kind binding
+        // waits until after the route map so an explicit settings provider link is not preempted
+        // by a kind default such as brokerage-sync's account-portfolio landing.
+        var catalogRouteTarget = _workflowActionCatalog?.ResolveRoute(workItem.TargetRoute)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogRouteTarget))
+        {
+            return catalogRouteTarget;
         }
 
         if (workItem.Kind == OperatorWorkItemKindDto.ReportPackApproval)
@@ -1741,10 +2021,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return routeTarget;
         }
 
+        var catalogKindTarget = _workflowActionCatalog?.ResolveOperatorWorkItem(workItem)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogKindTarget))
+        {
+            return catalogKindTarget;
+        }
+
         var kindTarget = workItem.Kind switch
         {
             OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
-            OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
             OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
@@ -1763,49 +2048,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     private static string? ResolveOperatorInboxRoutePageTag(string? targetRoute)
-    {
-        if (string.IsNullOrWhiteSpace(targetRoute))
-        {
-            return null;
-        }
-
-        var normalizedRoute = targetRoute.Split('?', 2)[0].TrimEnd('/');
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ReconciliationBreakQueue))
-        {
-            return "FundReconciliation";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.OperationsContinuity))
-        {
-            return "OperationsContinuity";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
-        {
-            return "SecurityMaster";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerBooks) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerPeriods))
-        {
-            return "FundTrialBalance";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||
-            normalizedRoute.Contains("/brokerage-sync", StringComparison.OrdinalIgnoreCase))
-        {
-            return "AccountPortfolio";
-        }
-
-        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationTradingReadiness) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionSessions) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls))
-        {
-            return "TradingShell";
-        }
-
-        return null;
-    }
+        => OperatorInboxRouteMap.ResolvePageTag(targetRoute);
 
     private static bool RouteEqualsOrStartsWith(string route, string knownRoute)
     {

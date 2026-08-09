@@ -43,7 +43,9 @@ internal static class LedgerStartup
             return;
         }
 
+        var readiness = serviceProvider.GetRequiredService<DatabaseMigrationReadinessReceipt>();
         await migrationRunner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
+        readiness.MarkLedgerReady();
         logger?.LogInformation("Ledger schema is ready.");
     }
 }

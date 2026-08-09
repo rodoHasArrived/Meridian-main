@@ -6,7 +6,7 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-25
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Ui.Services
@@ -33,6 +33,9 @@ contracts aligned with shared UI models and compatibility gates.
 
 Reporting status projections translate application report manifests into operator read models with template family, approval status, retry attempt, artifact, audit, and section lineage counts. Keep these projections aligned with browser and WPF Reporting surfaces so both shells show the same generated-run state.
 Preview and estimate services must fail closed when the API cannot return source-backed numbers.
+Analysis export projections also fail closed when an artifact omits its physical format or when the
+returned CSV, Parquet, XLSX, or Arrow format differs from the requested format; compatibility names
+such as `excel` and `feather` normalize only to `xlsx` and `arrow`, never to a substitute file.
 Do not return synthetic successful counts, latency values, sample sizes, or alignment metrics from
 UI-service fallbacks; callers should see an unavailable/error state instead of plausible-looking
 operational data.

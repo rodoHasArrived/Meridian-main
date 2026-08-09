@@ -30,6 +30,11 @@ public sealed class StrategyRunStore : IStrategyRepository
     private readonly Dictionary<string, StrategyRunEntry> _runsById = new(StringComparer.Ordinal);
     private readonly Dictionary<string, List<StrategyRunEntry>> _runsByStrategy = new(StringComparer.Ordinal);
     private readonly List<StrategyRunEntry> _runsByLastUpdated = [];
+    // These visibility-specific indexes let scoped queries merge only exact-scope and compatible
+    // legacy history, stopping at the requested limit without walking foreign retained runs.
+    private readonly List<StrategyRunEntry> _legacyVisibleRunsByLastUpdated = [];
+    private readonly Dictionary<StrategyRunRepositoryScopeKey, List<StrategyRunEntry>>
+        _scopedVisibleRunsByLastUpdated = [];
     private readonly HashSet<string> _persistedEventIds = new(StringComparer.Ordinal);
     private readonly Dictionary<string, RetainedCaseVersion> _retainedVersionsByRunId = new(StringComparer.Ordinal);
     private readonly IOperationalCaseHistoryStore? _historyStore;
@@ -58,6 +63,24 @@ public sealed class StrategyRunStore : IStrategyRepository
         {
             lock (_lock)
             {
+                var eventType = InferEventType(entry);
+                if (entry.OutputMetadata.Count > 0 &&
+                    eventType != StrategyRunLifecycleEventType.Completed)
+                {
+                    throw new InvalidOperationException(
+                        $"Strategy run '{entry.RunId}' lifecycle update is invalid: " +
+                        "run output metadata may only be retained with a completed lifecycle event");
+                }
+
+                if (_runsById.TryGetValue(entry.RunId, out var previous) &&
+                    previous.EndedAt is not null &&
+                    !CanonicalDictionaryEquals(previous.OutputMetadata, entry.OutputMetadata))
+                {
+                    throw new InvalidOperationException(
+                        $"Strategy run '{entry.RunId}' lifecycle update is invalid: " +
+                        "run output metadata changed after the terminal lifecycle event");
+                }
+
                 ApplyEntry(entry);
             }
             return;
@@ -248,6 +271,68 @@ public sealed class StrategyRunStore : IStrategyRepository
     }
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyList<StrategyRunEntry>> QueryVisibleRunsAsync(
+        StrategyRunRepositoryQuery query,
+        StrategyRunRepositoryScope? scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        await RefreshFromHistoryAsync(ct).ConfigureAwait(false);
+
+        var runTypeFilter = query.RunTypes is { Count: > 0 }
+            ? new HashSet<RunType>(query.RunTypes)
+            : null;
+        var limit = query.Limit <= 0 ? int.MaxValue : query.Limit;
+        var results = new List<StrategyRunEntry>(Math.Min(limit, 500));
+
+        lock (_lock)
+        {
+            IReadOnlyList<StrategyRunEntry> scopedRuns = [];
+            if (scope is not null &&
+                StrategyRunRepositoryVisibility.TryCreateScopeKey(scope, out var scopeKey) &&
+                _scopedVisibleRunsByLastUpdated.TryGetValue(scopeKey, out var retainedScopedRuns))
+            {
+                scopedRuns = retainedScopedRuns;
+            }
+
+            var legacyIndex = 0;
+            var scopedIndex = 0;
+            while (results.Count < limit &&
+                   (legacyIndex < _legacyVisibleRunsByLastUpdated.Count || scopedIndex < scopedRuns.Count))
+            {
+                ct.ThrowIfCancellationRequested();
+
+                StrategyRunEntry candidate;
+                if (legacyIndex >= _legacyVisibleRunsByLastUpdated.Count)
+                {
+                    candidate = scopedRuns[scopedIndex++];
+                }
+                else if (scopedIndex >= scopedRuns.Count)
+                {
+                    candidate = _legacyVisibleRunsByLastUpdated[legacyIndex++];
+                }
+                else if (StrategyRunRepositoryOrdering.LastUpdatedDescending.Compare(
+                             _legacyVisibleRunsByLastUpdated[legacyIndex],
+                             scopedRuns[scopedIndex]) <= 0)
+                {
+                    candidate = _legacyVisibleRunsByLastUpdated[legacyIndex++];
+                }
+                else
+                {
+                    candidate = scopedRuns[scopedIndex++];
+                }
+
+                if (MatchesQuery(candidate, query, runTypeFilter))
+                {
+                    results.Add(candidate);
+                }
+            }
+        }
+
+        return results;
+    }
+
+    /// <inheritdoc/>
     public async IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
     {
@@ -344,10 +429,20 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
 
         var canonicalInputHash = ComputeCanonicalInputHash(entry);
+        var evidenceBoundInputHash = ComputeEvidenceBoundInputHash(entry);
+        var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         if (!string.Equals(
                 entry.InputHashSha256,
                 canonicalInputHash,
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(
+                entry.InputHashSha256,
+                v2InputHash,
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(
+                entry.InputHashSha256,
+                evidenceBoundInputHash,
                 StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(
                 entry.InputHashSha256,
@@ -419,8 +514,7 @@ public sealed class StrategyRunStore : IStrategyRepository
     {
         var occurredAt = entry.LifecycleEventAtUtc ?? entry.EndedAt ?? entry.StartedAt;
         var evidence = BuildEvidence(entry);
-        var approvals = entry.ApprovalReferences
-            .Distinct(StringComparer.Ordinal)
+        var approvals = NormalizeCollection(entry.ApprovalReferences)
             .Select(reference => new OperationalCaseApproval
             {
                 ApprovalId = reference,
@@ -671,8 +765,14 @@ public sealed class StrategyRunStore : IStrategyRepository
         var eventType = InferEventType(entry);
         var occurredAt = entry.LifecycleEventAtUtc ?? entry.EndedAt ?? entry.StartedAt;
         var inputHash = ComputeCanonicalInputHash(entry);
+        var evidenceBoundInputHash = ComputeEvidenceBoundInputHash(entry);
+        var v2InputHash = ComputeV2InputHash(entry);
+        var legacyInputHash = ComputeLegacyInputHash(entry);
         if (!string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
-            !string.Equals(entry.InputHashSha256, inputHash, StringComparison.OrdinalIgnoreCase))
+            !string.Equals(entry.InputHashSha256, inputHash, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(entry.InputHashSha256, v2InputHash, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(entry.InputHashSha256, evidenceBoundInputHash, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(entry.InputHashSha256, legacyInputHash, StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException(
                 "Strategy run input hash does not match the canonical hash recomputed from its retained inputs.",
@@ -846,39 +946,80 @@ public sealed class StrategyRunStore : IStrategyRepository
             return $"non-terminal lifecycle event '{current.LastLifecycleEvent}' retains a run end timestamp";
         }
 
+        if (current.OutputMetadata.Count > 0 &&
+            current.LastLifecycleEvent != StrategyRunLifecycleEventType.Completed)
+        {
+            return "run output metadata may only be retained with a completed lifecycle event";
+        }
+
         if (previous is null)
         {
             return null;
         }
 
-        var immutableScopeChanged =
+        var outputMetadataChanged = !CanonicalDictionaryEquals(
+            previous.OutputMetadata,
+            current.OutputMetadata);
+        if (outputMetadataChanged && previous.EndedAt is not null)
+        {
+            return "run output metadata changed after the terminal lifecycle event";
+        }
+
+        var immutableInputsChanged =
+            !string.Equals(previous.DatasetReference, current.DatasetReference, StringComparison.Ordinal) ||
+            !string.Equals(previous.FeedReference, current.FeedReference, StringComparison.Ordinal) ||
+            !string.Equals(previous.Engine, current.Engine, StringComparison.Ordinal) ||
+            !CanonicalDictionaryEquals(previous.ParameterSet, current.ParameterSet) ||
             !string.Equals(previous.ParentRunId, current.ParentRunId, StringComparison.Ordinal) ||
             !string.Equals(previous.PortfolioId, current.PortfolioId, StringComparison.Ordinal) ||
             !string.Equals(previous.LedgerReference, current.LedgerReference, StringComparison.Ordinal) ||
             !string.Equals(previous.AuditReference, current.AuditReference, StringComparison.Ordinal) ||
-            !string.Equals(previous.FundProfileId, current.FundProfileId, StringComparison.Ordinal);
+            !string.Equals(previous.FundProfileId, current.FundProfileId, StringComparison.Ordinal) ||
+            !EvidenceLoopEquals(previous, current);
         var inputHashChanged = !string.Equals(
             previous.InputHashSha256,
             current.InputHashSha256,
             StringComparison.OrdinalIgnoreCase);
-        var isLegacyHashUpgrade =
+        var compatibleHashMatchesCurrentInputs =
+            (string.Equals(
+                 previous.InputHashSha256,
+                 ComputeLegacyInputHash(previous),
+                 StringComparison.OrdinalIgnoreCase) &&
+             string.Equals(
+                 previous.InputHashSha256,
+                 ComputeLegacyInputHash(current),
+                 StringComparison.OrdinalIgnoreCase)) ||
+            (string.Equals(
+                 previous.InputHashSha256,
+                 ComputeV2InputHash(previous),
+                 StringComparison.OrdinalIgnoreCase) &&
+             string.Equals(
+                 previous.InputHashSha256,
+                 ComputeV2InputHash(current),
+                 StringComparison.OrdinalIgnoreCase)) ||
+            (string.Equals(
+                 previous.InputHashSha256,
+                 ComputeEvidenceBoundInputHash(previous),
+                 StringComparison.OrdinalIgnoreCase) &&
+             string.Equals(
+                 previous.InputHashSha256,
+                 ComputeEvidenceBoundInputHash(current),
+                 StringComparison.OrdinalIgnoreCase));
+        var isCompatibleHashCanonicalization =
             inputHashChanged &&
-            string.Equals(
-                previous.InputHashSha256,
-                ComputeLegacyInputHash(previous),
-                StringComparison.OrdinalIgnoreCase) &&
+            compatibleHashMatchesCurrentInputs &&
             string.Equals(
                 current.InputHashSha256,
                 ComputeCanonicalInputHash(current),
                 StringComparison.OrdinalIgnoreCase) &&
-            !immutableScopeChanged;
+            !immutableInputsChanged;
 
         if (!string.Equals(previous.StrategyId, current.StrategyId, StringComparison.Ordinal) ||
             !string.Equals(previous.StrategyName, current.StrategyName, StringComparison.Ordinal) ||
             previous.RunType != current.RunType ||
             previous.StartedAt != current.StartedAt ||
-            immutableScopeChanged ||
-            (inputHashChanged && !isLegacyHashUpgrade) ||
+            immutableInputsChanged ||
+            (inputHashChanged && !isCompatibleHashCanonicalization) ||
             !string.Equals(previous.CorrelationId, current.CorrelationId, StringComparison.Ordinal))
         {
             return "immutable run identity changed after the first retained lifecycle event";
@@ -936,6 +1077,38 @@ public sealed class StrategyRunStore : IStrategyRepository
     }
 
     private static string ComputeCanonicalInputHash(StrategyRunEntry entry) =>
+        StrategyRunEntry.HasNonBlankEvidenceDeclarations(
+            entry.OperatorAcceptanceCriteria,
+            entry.RetainedEvidenceReferences,
+            entry.AccountingRecordReferences,
+            entry.ApprovalReferences,
+            entry.PaperValidationReferences,
+            entry.GovernedReportReferences)
+            ? ComputeEvidenceBoundInputHash(entry)
+            : ComputeV2InputHash(entry);
+
+    private static string ComputeEvidenceBoundInputHash(StrategyRunEntry entry) =>
+        StrategyRunEntry.ComputeEvidenceBoundInputHash(
+            entry.StrategyId,
+            entry.StrategyName,
+            entry.RunType,
+            entry.DatasetReference,
+            entry.FeedReference,
+            entry.Engine,
+            entry.ParameterSet,
+            entry.ParentRunId,
+            entry.PortfolioId,
+            entry.LedgerReference,
+            entry.AuditReference,
+            entry.FundProfileId,
+            entry.OperatorAcceptanceCriteria,
+            entry.RetainedEvidenceReferences,
+            entry.AccountingRecordReferences,
+            entry.ApprovalReferences,
+            entry.PaperValidationReferences,
+            entry.GovernedReportReferences);
+
+    private static string ComputeV2InputHash(StrategyRunEntry entry) =>
         StrategyRunEntry.ComputeInputHash(
             entry.StrategyId,
             entry.StrategyName,
@@ -959,6 +1132,36 @@ public sealed class StrategyRunStore : IStrategyRepository
             entry.FeedReference,
             entry.Engine,
             entry.ParameterSet);
+
+    private static bool EvidenceLoopEquals(StrategyRunEntry left, StrategyRunEntry right) =>
+        CanonicalCollectionEquals(left.OperatorAcceptanceCriteria, right.OperatorAcceptanceCriteria) &&
+        CanonicalCollectionEquals(left.RetainedEvidenceReferences, right.RetainedEvidenceReferences) &&
+        CanonicalCollectionEquals(left.AccountingRecordReferences, right.AccountingRecordReferences) &&
+        CanonicalCollectionEquals(left.ApprovalReferences, right.ApprovalReferences) &&
+        CanonicalCollectionEquals(left.PaperValidationReferences, right.PaperValidationReferences) &&
+        CanonicalCollectionEquals(left.GovernedReportReferences, right.GovernedReportReferences);
+
+    private static bool CanonicalCollectionEquals(
+        IEnumerable<string> left,
+        IEnumerable<string> right) =>
+        NormalizeCollection(left).SequenceEqual(NormalizeCollection(right), StringComparer.Ordinal);
+
+    private static IEnumerable<string> NormalizeCollection(IEnumerable<string> values) =>
+        values
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static value => value, StringComparer.Ordinal);
+
+    private static bool CanonicalDictionaryEquals(
+        IReadOnlyDictionary<string, string>? left,
+        IReadOnlyDictionary<string, string>? right) =>
+        (left?.Count ?? 0) == (right?.Count ?? 0) &&
+        (left is null || right is null || left
+            .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+            .SequenceEqual(
+                right.OrderBy(static pair => pair.Key, StringComparer.Ordinal),
+                EqualityComparer<KeyValuePair<string, string>>.Default));
 
     private static bool RequiresEndedAt(StrategyRunLifecycleEventType eventType) =>
         eventType is StrategyRunLifecycleEventType.Completed or
@@ -1105,6 +1308,24 @@ public sealed class StrategyRunStore : IStrategyRepository
 
         InsertSorted(strategyRuns, entry, StrategyRunRepositoryOrdering.StartedAtAscending);
         InsertSorted(_runsByLastUpdated, entry, StrategyRunRepositoryOrdering.LastUpdatedDescending);
+
+        if (StrategyRunRepositoryVisibility.IsLegacyUnscopedVisible(entry))
+        {
+            InsertSorted(
+                _legacyVisibleRunsByLastUpdated,
+                entry,
+                StrategyRunRepositoryOrdering.LastUpdatedDescending);
+        }
+        else if (StrategyRunRepositoryVisibility.TryGetRetainedScope(entry, out var scope))
+        {
+            if (!_scopedVisibleRunsByLastUpdated.TryGetValue(scope, out var scopedRuns))
+            {
+                scopedRuns = [];
+                _scopedVisibleRunsByLastUpdated[scope] = scopedRuns;
+            }
+
+            InsertSorted(scopedRuns, entry, StrategyRunRepositoryOrdering.LastUpdatedDescending);
+        }
     }
 
     private void RemoveIndexedEntry(StrategyRunEntry entry)
@@ -1119,6 +1340,40 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
 
         RemoveByRunId(_runsByLastUpdated, entry.RunId);
+
+        if (StrategyRunRepositoryVisibility.IsLegacyUnscopedVisible(entry))
+        {
+            RemoveByRunId(_legacyVisibleRunsByLastUpdated, entry.RunId);
+        }
+        else if (StrategyRunRepositoryVisibility.TryGetRetainedScope(entry, out var scope) &&
+                 _scopedVisibleRunsByLastUpdated.TryGetValue(scope, out var scopedRuns))
+        {
+            RemoveByRunId(scopedRuns, entry.RunId);
+            if (scopedRuns.Count == 0)
+            {
+                _scopedVisibleRunsByLastUpdated.Remove(scope);
+            }
+        }
+    }
+
+    private static bool MatchesQuery(
+        StrategyRunEntry run,
+        StrategyRunRepositoryQuery query,
+        HashSet<RunType>? runTypeFilter)
+    {
+        if (!string.IsNullOrWhiteSpace(query.StrategyId) &&
+            !string.Equals(run.StrategyId, query.StrategyId, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (runTypeFilter is not null && !runTypeFilter.Contains(run.RunType))
+        {
+            return false;
+        }
+
+        return !query.Status.HasValue ||
+            StrategyRunRepositoryOrdering.MapStatus(run) == query.Status.Value;
     }
 
     private static void InsertSorted(

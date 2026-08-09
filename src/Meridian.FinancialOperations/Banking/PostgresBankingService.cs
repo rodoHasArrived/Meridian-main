@@ -9,6 +9,7 @@ namespace Meridian.FinancialOperations.Banking;
 /// </summary>
 public sealed class PostgresBankingService : IBankingService
 {
+    private const int MaximumRemediationReasonLength = 1_000;
     private readonly IBankingStore _store;
 
     public PostgresBankingService(IBankingStore store)
@@ -24,8 +25,13 @@ public sealed class PostgresBankingService : IBankingService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (entityId == Guid.Empty)
+            throw new BankingException("Payment entity id is required.");
+
         if (request.Amount <= 0m)
             throw new BankingException("Payment amount must be positive.");
+
+        var currency = PaymentBankEvidenceFactory.NormalizeRequiredCurrency(request.Currency, "Payment");
 
         var pending = new PendingPaymentDto(
             PendingPaymentId: Guid.NewGuid(),
@@ -38,7 +44,8 @@ public sealed class PostgresBankingService : IBankingService
             ReviewedBy: null,
             ReviewNotes: null,
             InitiatedAt: DateTimeOffset.UtcNow,
-            ReviewedAt: null);
+            ReviewedAt: null,
+            Currency: currency);
 
         await _store.UpsertPendingPaymentAsync(pending, ct);
         return pending;
@@ -52,24 +59,55 @@ public sealed class PostgresBankingService : IBankingService
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, "approve payment requests");
 
-        var pending = await _store.GetPendingPaymentAsync(pendingPaymentId, ct);
-        if (pending is null)
+        var transitioned = await _store.TryTransitionPendingPaymentAsync(
+            pendingPaymentId,
+            PaymentApprovalStatus.Approved,
+            request.ReviewedBy,
+            request.ReviewNotes,
+            DateTimeOffset.UtcNow,
+            ct).ConfigureAwait(false);
+        if (transitioned is not null)
+            return transitioned;
+
+        return await ResolveFailedTransitionAsync(
+            pendingPaymentId,
+            PaymentApprovalStatus.Approved,
+            ct).ConfigureAwait(false);
+    }
+
+    public async Task<PendingPaymentDto?> RemediatePaymentCurrencyAsync(
+        Guid pendingPaymentId,
+        RemediatePaymentCurrencyRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "remediate payment currency");
+        var currency = PaymentBankEvidenceFactory.NormalizeRequiredCurrency(
+            request.Currency,
+            "Payment remediation");
+        var actor = NormalizeRemediationActor(request.RemediatedBy);
+        var reason = NormalizeRemediationReason(request.Reason);
+        var remediated = await _store.TryRemediatePendingPaymentCurrencyAsync(
+            pendingPaymentId,
+            currency,
+            actor,
+            reason,
+            DateTimeOffset.UtcNow,
+            ct).ConfigureAwait(false);
+        if (remediated is not null)
+            return remediated;
+
+        var current = await _store.GetPendingPaymentAsync(pendingPaymentId, ct).ConfigureAwait(false);
+        if (current is null)
             return null;
-
-        if (pending.Status != PaymentApprovalStatus.Pending)
-            throw new BankingException(
-                $"Payment '{pendingPaymentId}' is not in Pending status (current: {pending.Status}).");
-
-        var approved = pending with
+        if (current.Status != PaymentApprovalStatus.Pending)
         {
-            Status = PaymentApprovalStatus.Approved,
-            ReviewedBy = request.ReviewedBy,
-            ReviewNotes = request.ReviewNotes,
-            ReviewedAt = DateTimeOffset.UtcNow
-        };
+            throw new BankingConflictException(
+                $"Payment '{pendingPaymentId}' cannot be remediated after a review decision (current: {current.Status}).");
+        }
 
-        await _store.UpsertPendingPaymentAsync(approved, ct);
-        return approved;
+        throw new BankingConflictException(
+            $"Payment '{pendingPaymentId}' already has retained currency '{current.Currency}'. Currency is immutable once set.");
     }
 
     private static void EnsureHumanOrigin(
@@ -83,6 +121,28 @@ public sealed class PostgresBankingService : IBankingService
         }
     }
 
+    private static string NormalizeRemediationActor(string? actor)
+    {
+        if (string.IsNullOrWhiteSpace(actor))
+            throw new BankingException("Payment currency remediation requires the human operator identity.");
+        return actor.Trim();
+    }
+
+    private static string NormalizeRemediationReason(string? reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new BankingException("Payment currency remediation requires a reason.");
+
+        var normalized = reason.Trim();
+        if (normalized.Length > MaximumRemediationReasonLength)
+        {
+            throw new BankingException(
+                $"Payment currency remediation reason cannot exceed {MaximumRemediationReasonLength} characters.");
+        }
+
+        return normalized;
+    }
+
     public async Task<PendingPaymentDto?> RejectPaymentAsync(
         Guid pendingPaymentId,
         RejectPaymentRequest request,
@@ -93,24 +153,20 @@ public sealed class PostgresBankingService : IBankingService
         if (string.IsNullOrWhiteSpace(request.Reason))
             throw new BankingException("Rejection reason is required.");
 
-        var pending = await _store.GetPendingPaymentAsync(pendingPaymentId, ct);
-        if (pending is null)
-            return null;
+        var transitioned = await _store.TryTransitionPendingPaymentAsync(
+            pendingPaymentId,
+            PaymentApprovalStatus.Rejected,
+            request.ReviewedBy,
+            request.Reason.Trim(),
+            DateTimeOffset.UtcNow,
+            ct).ConfigureAwait(false);
+        if (transitioned is not null)
+            return transitioned;
 
-        if (pending.Status != PaymentApprovalStatus.Pending)
-            throw new BankingException(
-                $"Payment '{pendingPaymentId}' is not in Pending status (current: {pending.Status}).");
-
-        var rejected = pending with
-        {
-            Status = PaymentApprovalStatus.Rejected,
-            ReviewedBy = request.ReviewedBy,
-            ReviewNotes = request.Reason,
-            ReviewedAt = DateTimeOffset.UtcNow
-        };
-
-        await _store.UpsertPendingPaymentAsync(rejected, ct);
-        return rejected;
+        return await ResolveFailedTransitionAsync(
+            pendingPaymentId,
+            PaymentApprovalStatus.Rejected,
+            ct).ConfigureAwait(false);
     }
 
     public Task<PendingPaymentDto?> GetPaymentAsync(Guid pendingPaymentId, CancellationToken ct = default)
@@ -129,15 +185,23 @@ public sealed class PostgresBankingService : IBankingService
             return null;
         }
 
-        if (pending.Status != PaymentApprovalStatus.Approved)
+        var bankTx = PaymentBankEvidenceFactory.Create(pending, request);
+        var write = await _store.RecordPaymentBankEvidenceAsync(bankTx, ct).ConfigureAwait(false);
+        return write.Status switch
         {
-            throw new BankingException(
-                $"Payment '{pendingPaymentId}' must be approved before bank confirmation, return, or reversal evidence is recorded.");
-        }
-
-        var bankTx = BuildPaymentBankEvidenceTransaction(pending, request);
-        await _store.InsertBankTransactionAsync(bankTx, ct).ConfigureAwait(false);
-        return bankTx;
+            PaymentBankEvidenceWriteStatus.Inserted or PaymentBankEvidenceWriteStatus.Replay
+                => write.Transaction,
+            PaymentBankEvidenceWriteStatus.PaymentNotFound => null,
+            PaymentBankEvidenceWriteStatus.PaymentNotApproved => throw new BankingException(
+                $"Payment '{pendingPaymentId}' must be approved before bank confirmation, return, or reversal evidence is recorded."),
+            PaymentBankEvidenceWriteStatus.PaymentCurrencyUnresolved => throw new BankingException(
+                $"Payment '{pendingPaymentId}' has no retained currency. Remediate this legacy intent before recording bank evidence."),
+            PaymentBankEvidenceWriteStatus.PaymentBindingConflict => throw new BankingConflictException(
+                $"Payment '{pendingPaymentId}' changed while bank evidence was being recorded; retry against the retained payment intent."),
+            PaymentBankEvidenceWriteStatus.IdempotencyConflict => throw new BankingConflictException(
+                $"EvidenceId '{bankTx.EvidenceId}' is already retained for payment '{pendingPaymentId}' with different input."),
+            _ => throw new InvalidOperationException($"Unsupported payment evidence write status '{write.Status}'.")
+        };
     }
 
     public async Task<IReadOnlyList<PendingPaymentDto>> GetPendingPaymentsAsync(
@@ -231,60 +295,33 @@ public sealed class PostgresBankingService : IBankingService
             ProcessedEntityIds: processedIds);
     }
 
-    private static BankTransactionDto BuildPaymentBankEvidenceTransaction(
-        PendingPaymentDto pending,
-        RecordPaymentBankEvidenceRequest request)
+    private async Task<PendingPaymentDto?> ResolveFailedTransitionAsync(
+        Guid pendingPaymentId,
+        PaymentApprovalStatus targetStatus,
+        CancellationToken ct)
     {
-        var evidenceType = NormalizeEvidenceType(request.EvidenceType);
-        var amount = request.Amount ?? pending.Amount;
-        if (amount <= 0m)
+        var current = await _store.GetPendingPaymentAsync(pendingPaymentId, ct).ConfigureAwait(false);
+        if (current is null)
+            return null;
+
+        if (targetStatus == PaymentApprovalStatus.Approved
+            && current.Status == PaymentApprovalStatus.Pending
+            && string.IsNullOrWhiteSpace(current.Currency))
         {
-            throw new BankingException("Bank evidence amount must be positive.");
+            throw new BankingException(
+                $"Payment '{pendingPaymentId}' has no retained currency. "
+                + "Remediate this legacy intent before approval.");
         }
 
-        var currency = string.IsNullOrWhiteSpace(request.Currency)
-            ? "USD"
-            : request.Currency.Trim().ToUpperInvariant();
-        if (currency.Length != 3)
+        if (targetStatus == PaymentApprovalStatus.Approved
+            && current.Status == PaymentApprovalStatus.Pending)
         {
-            throw new BankingException("Bank evidence currency must be a three-letter ISO currency code.");
+            _ = PaymentBankEvidenceFactory.NormalizeRequiredCurrency(
+                current.Currency,
+                "Payment intent");
         }
 
-        var transactionDate = request.TransactionDate ?? pending.EffectiveDate;
-        var settlementDate = request.SettlementDate ?? transactionDate;
-        if (settlementDate < transactionDate)
-        {
-            throw new BankingException("Bank evidence settlement date cannot be before transaction date.");
-        }
-
-        return new BankTransactionDto(
-            BankTransactionId: Guid.NewGuid(),
-            EntityId: pending.EntityId,
-            TransactionType: evidenceType,
-            EffectiveDate: pending.EffectiveDate,
-            TransactionDate: transactionDate,
-            SettlementDate: settlementDate,
-            Amount: amount,
-            Currency: currency,
-            ExternalRef: FirstNonBlank(request.ExternalRef, pending.ExternalRef, pending.PendingPaymentId.ToString("D")),
-            RecordedAt: DateTimeOffset.UtcNow,
-            IsVoided: IsReturnOrReversalEvidence(evidenceType),
-            RecordedBy: FirstNonBlank(request.RecordedBy));
+        throw new BankingConflictException(
+            $"Payment '{pendingPaymentId}' is not in Pending status (current: {current.Status}).");
     }
-
-    private static string NormalizeEvidenceType(string? evidenceType)
-        => (evidenceType ?? string.Empty).Trim().ToLowerInvariant() switch
-        {
-            "" or "confirmation" or "confirmed" or "bankconfirmation" or "bank-confirmation" => "BankConfirmation",
-            "return" or "returned" or "bankreturn" or "bank-return" => "BankReturn",
-            "reversal" or "reversed" or "bankreversal" or "bank-reversal" => "BankReversal",
-            "failure" or "failed" or "reject" or "rejected" or "bankfailure" or "bank-failure" => "BankFailure",
-            _ => throw new BankingException("Bank evidence type must be BankConfirmation, BankReturn, BankReversal, or BankFailure.")
-        };
-
-    private static bool IsReturnOrReversalEvidence(string evidenceType)
-        => evidenceType is "BankReturn" or "BankReversal" or "BankFailure";
-
-    private static string? FirstNonBlank(params string?[] values)
-        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 }

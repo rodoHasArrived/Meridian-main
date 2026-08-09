@@ -3,7 +3,7 @@ name: meridian-roadmap-strategist
 description: >
   Roadmap strategy specialist for Meridian. Builds and refreshes phased delivery
   plans, opportunity maps, and target-state summaries tied to implementation flow.
-tools: ["read", "search", "edit", "mcp"]
+tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
 # Meridian — Roadmap Strategist

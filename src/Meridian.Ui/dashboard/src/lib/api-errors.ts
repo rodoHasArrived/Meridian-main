@@ -73,6 +73,24 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
 
+/**
+ * True when a rejected request was aborted rather than genuinely failing.
+ *
+ * Callers use this to stay silent on teardown/navigation instead of showing the
+ * operator an error banner. Both arms are required: `AbortController.abort()`
+ * rejects with a `DOMException` in browsers, but the same abort surfaces as a
+ * plain `Error` named "AbortError" under jsdom and some fetch polyfills, so a
+ * `DOMException`-only check misreports those as real failures.
+ *
+ * Matches on `name` only — never on message text, which would swallow genuine
+ * errors that merely mention aborting.
+ */
+export function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException
+    ? error.name === "AbortError"
+    : error instanceof Error && error.name === "AbortError";
+}
+
 export function describeApiError(error: unknown, fallback: string): ApiErrorDisplay {
   if (!isApiError(error)) {
     if (error instanceof Error && error.message.trim()) {

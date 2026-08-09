@@ -25,7 +25,7 @@ from dashboard_rendering import (
 )
 
 
-EXCLUDE_DIRS = {".git", ".vs", "bin", "obj", "node_modules", "__pycache__", "TestResults"}
+EXCLUDE_DIRS = {".git", ".vs", "bin", "obj", "node_modules", "__pycache__", ".pytest_cache", "TestResults"}
 HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "PATCH"}
 
 ROUTE_CONST_RE = re.compile(r'public\s+const\s+string\s+(\w+)\s*=\s*"([^"]+)"')
@@ -190,18 +190,67 @@ def _load_docs_text(root: Path) -> str:
     return ROUTE_CONSTRAINT_RE.sub(r"{\1}", normalized).casefold()
 
 
+_IDENTIFIER_TOKEN_RE = re.compile(r"[0-9a-z_]+")
+_PATH_TOKEN_RE = re.compile(r"/[0-9a-z_{}:./-]*")
+
+
+def _index_docs(docs_text: str) -> tuple[frozenset[str], frozenset[str]]:
+    """Tokenize the corpus **once** into the names and paths it mentions.
+
+    A name counts as documented only when a doc names *it*. The check used to be a plain substring
+    test, which credited a name for appearing inside a longer one. Observed on this repository's
+    own docs: `ApprovalDecision` counted because a blueprint named a `RecordApprovalDecisionAsync`
+    method; `SettlementInstruction` and `WorkflowLibraryDto` counted because a **file path** —
+    `SettlementInstructionCommands.fs`, `WorkflowLibraryDtos.cs` — appeared in a doc; and
+    `StartWorkflow` and `RecommendedActionDto` counted because a *different* contract,
+    `OperationsStartWorkflowRequestDto` and `SecurityMasterRecommendedActionDto`, was documented
+    and separately gets its own credit. This is the same failure `GENERATED_DOC_ROOTS` already
+    guards against — coverage rising without a document being written — and it is worse than a
+    wrong number, because the metric moves in the reassuring direction and nothing in the output
+    shows why.
+
+    Splitting on non-identifier characters *is* that boundary rule, expressed as membership rather
+    than as a scan: `recordapprovaldecisionasync` is a single token, so `approvaldecision` is
+    absent, while `Workstation/ApprovalDecision` and `ApprovalDecision.` both yield it. Paths are
+    tokenized separately because `/` and `{}` are part of a route; `/api/backfill/run` is absent
+    from a corpus that only mentions `/api/backfill/run/{id}`, a different endpoint scanned on its
+    own.
+
+    Deciding it by membership rather than per item is also what keeps this affordable. An earlier
+    revision ran one `re.search` per item over the whole concatenated corpus — 906 contracts plus
+    617 routes against roughly ten megabytes — and turned a 6.8s generator into a 106s one, which
+    is a regression in routine docs automation however correct the answer is. Indexing is one pass
+    and the lookups are O(1).
+    """
+    identifiers = set(_IDENTIFIER_TOKEN_RE.findall(docs_text))
+    paths: set[str] = set()
+    for token in _PATH_TOKEN_RE.findall(docs_text):
+        paths.add(token)
+        # Only characters that end a *sentence* are trimmed. `/` and `-` are part of a path, and
+        # stripping them re-creates the bug this module exists to fix: the corpus mentions
+        # `/api/security-master/*` — the route family — and trimming the `/` would credit the
+        # specific `/api/security-master` endpoint for it, exactly as `/api/backfill/run/{id}`
+        # must not credit `/api/backfill/run`.
+        trimmed = token.rstrip(".:")
+        if trimmed:
+            paths.add(trimmed)
+    return frozenset(identifiers), frozenset(paths)
+
+
 def build_dashboard(root: Path) -> dict:
     root = root.resolve()
     docs_text = _load_docs_text(root)
     endpoints = _scan_endpoints(root)
     contracts = _scan_workstation_contracts(root)
 
+    documented_names, documented_paths = _index_docs(docs_text)
+
     for endpoint in endpoints:
         route = _normalize_route(str(endpoint["path"]))
-        endpoint["documented"] = route in docs_text
+        endpoint["documented"] = route in documented_paths
 
     for contract in contracts:
-        contract["documented"] = str(contract["name"]).casefold() in docs_text
+        contract["documented"] = str(contract["name"]).casefold() in documented_names
 
     endpoint_total = len(endpoints)
     endpoint_documented = sum(1 for endpoint in endpoints if endpoint["documented"])

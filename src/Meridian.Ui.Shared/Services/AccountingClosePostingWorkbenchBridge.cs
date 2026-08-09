@@ -7,6 +7,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
 
@@ -16,7 +17,9 @@ namespace Meridian.Ui.Shared.Services;
 /// Projects the Financial Operations close gate onto the shared manual-journal workbench.
 /// It may create drafts or governed reversal drafts, but approval and posting stay human actions.
 /// </summary>
-public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePostingWorkbench
+public sealed class AccountingClosePostingWorkbenchBridge :
+    IAccountingClosePostingWorkbench,
+    IAccountingCloseMutationGate
 {
     private const string GateLabel = "Post closing entries";
     private readonly AutomatedJournalIntakeRunner _runner;
@@ -29,6 +32,8 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
     private readonly ReportingReconciliationEvidenceRetentionService? _reportingEvidenceRetention;
     private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
     private readonly IReconciliationBreakQueueRepository? _breakQueue;
+    private readonly IOperationsContinuityWorkflowService? _operationsWorkflowService;
+    private readonly IReportingReleaseConsistencyGate? _releaseConsistencyGate;
 
     public AccountingClosePostingWorkbenchBridge(
         AutomatedJournalIntakeRunner runner,
@@ -37,7 +42,31 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         ILedgerBookService? ledgerBookService,
         ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention = null,
         IFundProfileTenancyRegistry? tenancyRegistry = null,
-        IReconciliationBreakQueueRepository? breakQueue = null)
+        IReconciliationBreakQueueRepository? breakQueue = null,
+        IReportingReleaseConsistencyGate? releaseConsistencyGate = null)
+        : this(
+            runner,
+            workbench,
+            lifecycle,
+            ledgerBookService,
+            reportingEvidenceRetention,
+            tenancyRegistry,
+            breakQueue,
+            operationsWorkflowService: null,
+            releaseConsistencyGate: releaseConsistencyGate)
+    {
+    }
+
+    public AccountingClosePostingWorkbenchBridge(
+        AutomatedJournalIntakeRunner runner,
+        IManualJournalEntryWorkbenchService workbench,
+        IManualJournalEntryLifecycleService lifecycle,
+        ILedgerBookService? ledgerBookService,
+        ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention,
+        IFundProfileTenancyRegistry? tenancyRegistry,
+        IReconciliationBreakQueueRepository? breakQueue,
+        IOperationsContinuityWorkflowService? operationsWorkflowService,
+        IReportingReleaseConsistencyGate? releaseConsistencyGate = null)
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _workbench = workbench ?? throw new ArgumentNullException(nameof(workbench));
@@ -46,13 +75,31 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         _reportingEvidenceRetention = reportingEvidenceRetention;
         _tenancyRegistry = tenancyRegistry;
         _breakQueue = breakQueue;
+        _operationsWorkflowService = operationsWorkflowService;
+        _releaseConsistencyGate = releaseConsistencyGate;
     }
+
+    internal IReconciliationBreakQueueRepository? BreakQueueAuthority => _breakQueue;
 
     private const string LedgerUnavailableDetail =
         "The durable ledger book service is not configured; period-close posting requires a persistence-backed ledger.";
 
     private ILedgerBookService RequireLedgerBookService()
         => _ledgerBookService ?? throw new InvalidOperationException(LedgerUnavailableDetail);
+
+    public async ValueTask<IAsyncDisposable> AcquireAsync(
+        AccountingClosePostingContext context,
+        CancellationToken ct = default)
+    {
+        ValidateContext(context);
+        var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
+        var releaseConsistencyGate = _releaseConsistencyGate
+            ?? throw new InvalidOperationException(
+                "The durable reporting release/close consistency authority is unavailable, so the governed ledger-period mutation is blocked.");
+        return await releaseConsistencyGate
+            .AcquireAsync(scope.Period.PeriodId.ToString("D"), ct)
+            .ConfigureAwait(false);
+    }
 
     public async Task<ClosePostingGateDto> EvaluateAsync(
         AccountingClosePostingContext context,
@@ -128,17 +175,32 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         CancellationToken ct = default)
     {
         ValidateContext(context);
-        ValidateHumanCommand(command, requireController: false);
+        ValidateHumanCommand(command, requireController: true);
+        await using var consistencyLease = await AcquireConsistencyLeaseIfRequiredAsync(
+                context,
+                command,
+                ct)
+            .ConfigureAwait(false);
         var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
         var period = scope.Period;
         if (period.Status == LedgerPeriodStatusDto.HardClosed)
         {
             EnsureHardCloseEvidenceServices();
+            var recoveredCheckpoint = await _breakQueue!
+                .RecoverHardClosedScopeCheckpointAsync(
+                    new ReconciliationCloseScope(
+                        scope.FundProfileId,
+                        context.LedgerBookId,
+                        period.PeriodId,
+                        period.EndDate),
+                    ct)
+                .ConfigureAwait(false);
             await CompleteHardCloseHandoffAsync(
                     context,
                     scope.FundProfileId,
                     period,
                     command,
+                    recoveredCheckpoint,
                     ct)
                 .ConfigureAwait(false);
             return period;
@@ -161,40 +223,168 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         }
 
         EnsureHardCloseEvidenceServices();
-        var preCloseSummary = await RequireLedgerBookService()
-            .GetPeriodSummaryAsync(period.PeriodId, ct)
-            .ConfigureAwait(false)
+        var breakQueue = _breakQueue
             ?? throw new InvalidOperationException(
-                $"Ledger period '{period.PeriodId:D}' has no retained close summary.");
-        var preCloseBreakEvidence = await ResolveReportingBreakEvidenceAsync(
-                scope.FundProfileId,
-                context.LedgerBookId,
-                period.PeriodId,
-                period.EndDate,
-                preCloseSummary.OpenBreakCount,
-                ct)
-            .ConfigureAwait(false);
-        EnsureNoOpenReportingBreaks(preCloseBreakEvidence, period);
+                "The canonical reconciliation queue is unavailable, so the hard-close scope cannot be frozen.");
+        LedgerPeriodDto closedPeriod;
+        LedgerPeriodSummaryDto? closedSummary = null;
+        ReconciliationCloseScopeCheckpoint closeCheckpoint;
+        await using (var closeScopeLease = await breakQueue
+                         .AcquireCloseScopeLeaseAsync(
+                             new ReconciliationCloseScope(
+                                 scope.FundProfileId,
+                                 context.LedgerBookId,
+                                 period.PeriodId,
+                                 period.EndDate),
+                             ct)
+                         .ConfigureAwait(false))
+        {
+            closeCheckpoint = new ReconciliationCloseScopeCheckpoint(
+                closeScopeLease.Scope,
+                closeScopeLease.Items.ToArray(),
+                closeScopeLease.CheckpointHashSha256,
+                closeScopeLease.Generation);
 
-        var closed = await RequireLedgerBookService().ClosePeriodAsync(
-                period.PeriodId,
-                new CloseLedgerPeriodRequest(
-                    LedgerPeriodCloseKindDto.HardClose,
-                    command.Actor,
-                    command.Reason,
-                    RequiredSignoffRole: command.Role ?? "Fund Controller",
-                    ActionOrigin: command.ActionOrigin),
-                ct)
-            .ConfigureAwait(false);
+            // The durable queue lease fences reconciliation mutations, but the ledger remains the
+            // authority for whether a prior owner committed before it died. Re-read that state
+            // after acquiring (or reclaiming) the lease so a stale pre-lock SoftClosed read cannot
+            // erase a checkpoint for a close that actually committed.
+            ResolvedPostingScope boundaryScope;
+            try
+            {
+                boundaryScope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidOperationException(
+                    $"The reconciliation close checkpoint is retained because ledger period '{period.Label}' could not be re-read at the hard-close boundary. Retry after ledger authority is available.",
+                    exception);
+            }
+
+            if (boundaryScope.Period.Status == LedgerPeriodStatusDto.HardClosed)
+            {
+                closedPeriod = boundaryScope.Period;
+            }
+            else
+            {
+                if (boundaryScope.Period.Status != LedgerPeriodStatusDto.SoftClosed)
+                {
+                    await closeScopeLease
+                        .AbandonBeforeLedgerCommitAsync(CancellationToken.None)
+                        .ConfigureAwait(false);
+                    throw new InvalidOperationException(
+                        $"Ledger period '{boundaryScope.Period.Label}' changed to {boundaryScope.Period.Status} before hard close. The uncommitted reconciliation freeze was released; re-evaluate close readiness.");
+                }
+
+                try
+                {
+                    var boundaryGate = await EvaluateAsync(context, ct).ConfigureAwait(false);
+                    if (!boundaryGate.IsReadyForLock)
+                    {
+                        throw new InvalidOperationException(
+                            $"Ledger period '{boundaryScope.Period.Label}' cannot be hard-closed while the closing-entry gate is {boundaryGate.State}: {boundaryGate.Detail}");
+                    }
+
+                    var preCloseSummary = await RequireLedgerBookService()
+                        .GetPeriodSummaryAsync(boundaryScope.Period.PeriodId, ct)
+                        .ConfigureAwait(false)
+                        ?? throw new InvalidOperationException(
+                            $"Ledger period '{boundaryScope.Period.PeriodId:D}' has no retained close summary.");
+                    var preCloseBreakEvidence = BuildExactReportingBreakEvidence(
+                        closeCheckpoint.Items,
+                        scope.FundProfileId,
+                        context.LedgerBookId,
+                        boundaryScope.Period.PeriodId,
+                        boundaryScope.Period.EndDate,
+                        preCloseSummary.OpenBreakCount);
+                    EnsureNoOpenReportingBreaks(preCloseBreakEvidence, boundaryScope.Period);
+                }
+                catch
+                {
+                    await closeScopeLease
+                        .AbandonBeforeLedgerCommitAsync(CancellationToken.None)
+                        .ConfigureAwait(false);
+                    throw;
+                }
+
+                try
+                {
+                    var closed = await RequireLedgerBookService().ClosePeriodAsync(
+                            boundaryScope.Period.PeriodId,
+                            new CloseLedgerPeriodRequest(
+                                LedgerPeriodCloseKindDto.HardClose,
+                                command.Actor,
+                                command.Reason,
+                                RequiredSignoffRole: command.Role ?? "Fund Controller",
+                                ActionOrigin: command.ActionOrigin),
+                            ct)
+                        .ConfigureAwait(false);
+                    closedPeriod = closed.Period;
+                    closedSummary = closed.Summary;
+                }
+                catch (Exception closeException)
+                {
+                    ResolvedPostingScope observedScope;
+                    try
+                    {
+                        observedScope = await ResolveScopeAsync(context, CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+                    catch (Exception verificationException)
+                    {
+                        throw new ReportingCloseEvidenceHandoffException(
+                            boundaryScope.Period,
+                            $"hard-close-{boundaryScope.Period.PeriodId:N}-v{boundaryScope.Period.Version.ToString(CultureInfo.InvariantCulture)}",
+                            $"The ledger hard-close call failed and its durable outcome could not be verified. The exact reconciliation checkpoint remains frozen for recovery: {verificationException.Message}",
+                            new AggregateException(closeException, verificationException));
+                    }
+
+                    if (observedScope.Period.Status != LedgerPeriodStatusDto.HardClosed)
+                    {
+                        await closeScopeLease
+                            .AbandonBeforeLedgerCommitAsync(CancellationToken.None)
+                            .ConfigureAwait(false);
+                        throw;
+                    }
+
+                    // The command reported failure after the ledger postcondition committed.
+                    // Preserve that verified result and converge the exact frozen checkpoint.
+                    closedPeriod = observedScope.Period;
+                }
+            }
+
+            try
+            {
+                // Once the authoritative ledger is hard-closed, checkpoint sealing is a required
+                // recovery action and is intentionally cancellation-insensitive.
+                await closeScopeLease.CommitHardCloseAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                var completionId =
+                    $"hard-close-{closedPeriod.PeriodId:N}-v{closedPeriod.Version.ToString(CultureInfo.InvariantCulture)}";
+                throw new ReportingCloseEvidenceHandoffException(
+                    closedPeriod,
+                    completionId,
+                    $"Ledger hard close is committed, but the reconciliation close-scope checkpoint could not be sealed. The durable in-progress freeze remains blocking and must be recovered idempotently: {exception.Message}",
+                    exception);
+            }
+        }
+
         await CompleteHardCloseHandoffAsync(
                 context,
                 scope.FundProfileId,
-                closed.Period,
+                closedPeriod,
                 command,
+                closeCheckpoint,
                 ct,
-                closed.Summary)
+                closedSummary)
             .ConfigureAwait(false);
-        return closed.Period;
+        return closedPeriod;
     }
 
     private async Task CompleteHardCloseHandoffAsync(
@@ -202,6 +392,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         string fundProfileId,
         LedgerPeriodDto period,
         AccountingClosePostingCommand command,
+        ReconciliationCloseScopeCheckpoint closeCheckpoint,
         CancellationToken ct,
         LedgerPeriodSummaryDto? summary = null)
     {
@@ -215,12 +406,26 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                     command,
                     ct)
                 .ConfigureAwait(false);
+            var workflowCompletion = await ResolveCommittedCloseWorkflowEvidenceAsync(
+                    context,
+                    period,
+                    ct)
+                .ConfigureAwait(false);
+            if (_operationsWorkflowService is not null && workflowCompletion is null)
+            {
+                // The ledger hard close is durable, but the Operations Continuity close transition
+                // has not committed yet. Do not mint certifiable reporting evidence. The close
+                // management service will commit the workflow and retry this idempotent handoff.
+                return;
+            }
             await RetainHardCloseReportingEvidenceAsync(
                     context,
                     fundProfileId,
                     period,
+                    closeCheckpoint,
                     ct,
-                    summary)
+                    summary,
+                    workflowCompletion)
                 .ConfigureAwait(false);
         }
         catch (ReportingCloseEvidenceHandoffException)
@@ -250,14 +455,21 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         AccountingClosePostingContext context,
         string fundProfileId,
         LedgerPeriodDto period,
+        ReconciliationCloseScopeCheckpoint closeCheckpoint,
         CancellationToken ct,
-        LedgerPeriodSummaryDto? summary = null)
+        LedgerPeriodSummaryDto? summary = null,
+        ReportingCloseWorkflowCompletionEvidence? workflowCompletion = null)
     {
         if (period.Status != LedgerPeriodStatusDto.HardClosed)
         {
             throw new InvalidOperationException(
                 $"Ledger period '{period.Label}' is not hard-closed and cannot produce final-reporting reconciliation evidence.");
         }
+        ValidateCloseCheckpoint(
+            closeCheckpoint,
+            fundProfileId,
+            context.LedgerBookId,
+            period);
 
         var completionId = $"hard-close-{period.PeriodId:N}-v{period.Version.ToString(CultureInfo.InvariantCulture)}";
         try
@@ -288,15 +500,16 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                 $"ledger-period:{period.PeriodId:D}:version:{period.Version.ToString(CultureInfo.InvariantCulture)}:hard-closed",
                 $"trial-balance:{summary.TotalDebits.ToString("G29", CultureInfo.InvariantCulture)}:{summary.TotalCredits.ToString("G29", CultureInfo.InvariantCulture)}",
                 $"reconciliation-breaks:{summary.OpenBreakCount.ToString(CultureInfo.InvariantCulture)}",
-                $"close-signoff:{summary.SignoffStatus}");
-            var breakEvidence = await ResolveReportingBreakEvidenceAsync(
-                    fundProfileId,
-                    context.LedgerBookId,
-                    period.PeriodId,
-                    period.EndDate,
-                    summary.OpenBreakCount,
-                    ct)
-                .ConfigureAwait(false);
+                $"close-signoff:{summary.SignoffStatus}",
+                $"reconciliation-close-checkpoint:{closeCheckpoint.CheckpointHashSha256}",
+                $"reconciliation-close-checkpoint-generation:{closeCheckpoint.Generation.ToString(CultureInfo.InvariantCulture)}");
+            var breakEvidence = BuildExactReportingBreakEvidence(
+                closeCheckpoint.Items,
+                fundProfileId,
+                context.LedgerBookId,
+                period.PeriodId,
+                period.EndDate,
+                summary.OpenBreakCount);
             EnsureNoOpenReportingBreaks(breakEvidence, period);
             var completionHash = ComputeHardCloseCompletionHash(
                 context,
@@ -305,7 +518,8 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                 summary,
                 completedAtUtc,
                 evidenceIds,
-                breakEvidence);
+                breakEvidence,
+                workflowCompletion);
             var parameters = new ReportingRunParametersDto(
                 new ReportingRunScopeDto(fundProfileId),
                 period.PeriodId.ToString("D"),
@@ -334,7 +548,8 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                         completedAtUtc,
                         HasOpenBreaks: false,
                         evidenceIds,
-                        breakEvidence),
+                        breakEvidence,
+                        workflowCompletion),
                     ct)
                 .ConfigureAwait(false);
         }
@@ -346,6 +561,189 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                 $"Ledger hard close is committed, but final-reporting evidence retention is pending and must be retried idempotently: {exception.Message}",
                 exception);
         }
+    }
+
+    private async Task<ReportingCloseWorkflowCompletionEvidence?> ResolveCommittedCloseWorkflowEvidenceAsync(
+        AccountingClosePostingContext context,
+        LedgerPeriodDto period,
+        CancellationToken ct)
+    {
+        if (_operationsWorkflowService is null)
+        {
+            // Compatibility hosts can still retain a non-certifiable hard-close receipt. Production
+            // composition supplies the workflow authority, and final certification rejects receipts
+            // without the committed workflow envelope.
+            return null;
+        }
+
+        var workflow = await _operationsWorkflowService
+            .GetAsync(context.WorkflowId, ct)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Accounting-close workflow '{context.WorkflowId:D}' was not found while retaining final close evidence.");
+        if (workflow.FundAccountId != context.FundAccountId
+            || workflow.LedgerBookId != context.LedgerBookId
+            || !string.Equals(workflow.PeriodId, context.PeriodId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Accounting-close workflow '{context.WorkflowId:D}' does not match the exact fund-account, ledger-book, and period close scope.");
+        }
+
+        if (workflow.Status != OperationsWorkflowStatusDto.Closed)
+        {
+            return null;
+        }
+        if (workflow.ApprovalState != OperationsApprovalStateDto.Approved)
+        {
+            throw new InvalidOperationException(
+                $"Closed accounting workflow '{workflow.WorkflowId:D}' has no committed Approved workflow state.");
+        }
+
+        var approval = workflow.Approvals
+            .Where(static item => item.Status == OperationsApprovalStateDto.Approved)
+            .OrderBy(static item => item.DecidedAtUtc)
+            .ThenBy(static item => item.ApprovalId, StringComparer.Ordinal)
+            .LastOrDefault()
+            ?? throw new InvalidOperationException(
+                $"Closed accounting workflow '{workflow.WorkflowId:D}' has no retained approval decision.");
+        if (approval.EvidenceLinks.Count == 0 || approval.DecidedAtUtc is null)
+        {
+            throw new InvalidOperationException(
+                $"Closed accounting workflow '{workflow.WorkflowId:D}' has incomplete retained approval evidence.");
+        }
+
+        var closePackage = workflow.ClosePackage
+            ?? throw new InvalidOperationException(
+                $"Closed accounting workflow '{workflow.WorkflowId:D}' has no retained close-support package.");
+        if (closePackage.ChecklistControlApprovals.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"Closed accounting workflow '{workflow.WorkflowId:D}' has no retained checklist control approvals.");
+        }
+        if (!ReportingReconciliationEvidenceValidation.IsLowercaseSha256(closePackage.EvidenceHash))
+        {
+            throw new InvalidOperationException(
+                $"Closed accounting workflow '{workflow.WorkflowId:D}' has an invalid close-support package evidence hash.");
+        }
+
+        var timeline = await _operationsWorkflowService
+            .GetTimelineAsync(workflow.WorkflowId, ct)
+            .ConfigureAwait(false);
+        var closeAudit = timeline
+            .Where(static item =>
+                string.Equals(item.EventType, "workflow-closed", StringComparison.Ordinal)
+                && item.ToState == OperationsWorkflowStatusDto.Closed)
+            .OrderBy(static item => item.OccurredAtUtc)
+            .ThenBy(static item => item.AuditId)
+            .LastOrDefault()
+            ?? throw new InvalidOperationException(
+                $"Closed accounting workflow '{workflow.WorkflowId:D}' has no retained workflow-closed audit event.");
+        if (closeAudit.WorkflowId != workflow.WorkflowId
+            || closeAudit.FundAccountId != workflow.FundAccountId
+            || !string.Equals(closeAudit.PeriodId, workflow.PeriodId, StringComparison.OrdinalIgnoreCase)
+            || !ReportingReconciliationEvidenceValidation.IsLowercaseSha256(closeAudit.CurrentHash))
+        {
+            throw new InvalidOperationException(
+                $"Closed accounting workflow '{workflow.WorkflowId:D}' has invalid or cross-scope close audit evidence.");
+        }
+
+        return new ReportingCloseWorkflowCompletionEvidence(
+            workflow.WorkflowId.ToString("D"),
+            workflow.Version,
+            workflow.FundAccountId.ToString("D"),
+            context.LedgerBookId.ToString("D"),
+            period.PeriodId.ToString("D"),
+            approval.ApprovalId.Trim(),
+            ComputeApprovalEvidenceHash(approval),
+            ComputeChecklistEvidenceHash(workflow.CloseChecklist, closePackage.ChecklistControlApprovals),
+            closePackage.ClosePackageId.Trim(),
+            closePackage.EvidenceHash,
+            closeAudit.AuditId.ToString("D"),
+            closeAudit.CurrentHash);
+    }
+
+    private static string ComputeApprovalEvidenceHash(OperationsApprovalDto approval)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("approvalId", approval.ApprovalId.Trim());
+            writer.WriteString("status", approval.Status.ToString());
+            writer.WriteString("operator", approval.Operator?.Trim());
+            writer.WriteString("reviewer", approval.Reviewer?.Trim());
+            writer.WriteString("rationale", approval.Rationale?.Trim());
+            writer.WriteString("submittedAtUtc", approval.SubmittedAtUtc?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+            writer.WriteString("decidedAtUtc", approval.DecidedAtUtc?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+            WriteEvidenceLinks(writer, "evidenceLinks", approval.EvidenceLinks);
+            writer.WriteEndObject();
+        }
+
+        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+    }
+
+    private static string ComputeChecklistEvidenceHash(
+        IReadOnlyList<OperationsCloseChecklistTaskDto> checklist,
+        IReadOnlyList<OperationsChecklistControlApprovalDto> approvals)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            writer.WriteStartArray("tasks");
+            foreach (var task in checklist.OrderBy(static item => item.TaskId, StringComparer.Ordinal))
+            {
+                writer.WriteStartObject();
+                writer.WriteString("taskId", task.TaskId.Trim());
+                writer.WriteString("gate", task.Gate.ToString());
+                writer.WriteNumber("requiredApprovalCount", task.RequiredApprovalCount);
+                writer.WriteString("status", task.Status.Trim());
+                writer.WriteString("blockingReason", task.BlockingReason?.Trim());
+                writer.WriteString("evidencePointer", task.EvidencePointer?.Trim());
+                writer.WriteString("acknowledgedBy", task.AcknowledgedBy?.Trim());
+                writer.WriteString("acknowledgedAtUtc", task.AcknowledgedAtUtc?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
+            writer.WriteStartArray("controlApprovals");
+            foreach (var approval in approvals
+                         .OrderBy(static item => item.TaskId, StringComparer.Ordinal)
+                         .ThenBy(static item => item.ApprovedBy, StringComparer.Ordinal)
+                         .ThenBy(static item => item.ApprovedAtUtc))
+            {
+                writer.WriteStartObject();
+                writer.WriteString("taskId", approval.TaskId.Trim());
+                writer.WriteString("approvedBy", approval.ApprovedBy.Trim());
+                writer.WriteString("approvedAtUtc", approval.ApprovedAtUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+
+        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+    }
+
+    private static void WriteEvidenceLinks(
+        Utf8JsonWriter writer,
+        string propertyName,
+        IReadOnlyList<OperationsEvidenceLinkDto> links)
+    {
+        writer.WriteStartArray(propertyName);
+        foreach (var link in links
+                     .OrderBy(static item => item.EvidenceId, StringComparer.Ordinal)
+                     .ThenBy(static item => item.Label, StringComparer.Ordinal)
+                     .ThenBy(static item => item.Route, StringComparer.Ordinal))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("evidenceId", link.EvidenceId.Trim());
+            writer.WriteString("label", link.Label.Trim());
+            writer.WriteString("route", link.Route?.Trim());
+            writer.WriteString("source", link.Source?.Trim());
+            writer.WriteString("capturedAtUtc", link.CapturedAtUtc?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+            writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
     }
 
     private static string ComputeHardCloseCompletionHash(
@@ -362,7 +760,8 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             summary,
             completedAtUtc,
             evidenceIds,
-            ImmutableArray<ReportingReconciliationBreakEvidence>.Empty);
+            ImmutableArray<ReportingReconciliationBreakEvidence>.Empty,
+            workflowCompletion: null);
 
     private static string ComputeHardCloseCompletionHash(
         AccountingClosePostingContext context,
@@ -371,7 +770,8 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         LedgerPeriodSummaryDto summary,
         DateTimeOffset completedAtUtc,
         ImmutableArray<string> evidenceIds,
-        ImmutableArray<ReportingReconciliationBreakEvidence> breakEvidence)
+        ImmutableArray<ReportingReconciliationBreakEvidence> breakEvidence,
+        ReportingCloseWorkflowCompletionEvidence? workflowCompletion)
     {
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
@@ -405,34 +805,55 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();
+            if (workflowCompletion is not null)
+            {
+                writer.WriteStartObject("closeWorkflowCompletion");
+                writer.WriteString("workflowId", workflowCompletion.WorkflowId);
+                writer.WriteNumber("workflowVersion", workflowCompletion.WorkflowVersion);
+                writer.WriteString("fundAccountId", workflowCompletion.FundAccountId);
+                writer.WriteString("ledgerBookId", workflowCompletion.LedgerBookId);
+                writer.WriteString("accountingPeriodId", workflowCompletion.AccountingPeriodId);
+                writer.WriteString("approvalId", workflowCompletion.ApprovalId);
+                writer.WriteString("approvalEvidenceHash", workflowCompletion.ApprovalEvidenceHash);
+                writer.WriteString("checklistEvidenceHash", workflowCompletion.ChecklistEvidenceHash);
+                writer.WriteString("closePackageId", workflowCompletion.ClosePackageId);
+                writer.WriteString("closePackageEvidenceHash", workflowCompletion.ClosePackageEvidenceHash);
+                writer.WriteString("closeAuditEventId", workflowCompletion.CloseAuditEventId);
+                writer.WriteString("closeAuditHash", workflowCompletion.CloseAuditHash);
+                writer.WriteEndObject();
+            }
             writer.WriteEndObject();
         }
 
         return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
     }
 
-    private async Task<ImmutableArray<ReportingReconciliationBreakEvidence>> ResolveReportingBreakEvidenceAsync(
+    private static void ValidateCloseCheckpoint(
+        ReconciliationCloseScopeCheckpoint checkpoint,
         string fundProfileId,
         Guid ledgerBookId,
-        Guid accountingPeriodId,
-        DateOnly asOfDate,
-        int expectedOpenBreakCount,
-        CancellationToken ct)
+        LedgerPeriodDto period)
     {
-        if (_breakQueue is null)
+        ArgumentNullException.ThrowIfNull(checkpoint);
+        if (!string.Equals(
+                checkpoint.Scope.FundProfileId,
+                fundProfileId,
+                StringComparison.OrdinalIgnoreCase)
+            || checkpoint.Scope.LedgerBookId != ledgerBookId
+            || checkpoint.Scope.AccountingPeriodId != period.PeriodId
+            || checkpoint.Scope.AsOfDate != period.EndDate)
         {
             throw new InvalidOperationException(
-                "The canonical break queue is unavailable, so the close summary cannot be verified against exact reporting evidence.");
+                $"The retained reconciliation checkpoint does not match hard-close scope '{fundProfileId}/{ledgerBookId:D}/{period.PeriodId:D}/{period.EndDate:yyyy-MM-dd}'.");
         }
 
-        var items = await _breakQueue.GetAllAsync(ct: ct).ConfigureAwait(false);
-        return BuildExactReportingBreakEvidence(
-            items,
-            fundProfileId,
-            ledgerBookId,
-            accountingPeriodId,
-            asOfDate,
-            expectedOpenBreakCount);
+        if (checkpoint.Generation <= 0
+            || checkpoint.CheckpointHashSha256.Length != 64
+            || !checkpoint.CheckpointHashSha256.All(Uri.IsHexDigit))
+        {
+            throw new InvalidOperationException(
+                "The retained reconciliation close checkpoint has no positive generation or valid SHA-256 evidence hash.");
+        }
     }
 
     internal static ImmutableArray<ReportingReconciliationBreakEvidence> BuildExactReportingBreakEvidence(
@@ -450,15 +871,39 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             throw new ArgumentException("Exact accounting period and as-of scope are required for close evidence.");
         }
 
+        var unscopedPending = items
+            .Where(static item =>
+                string.Equals(item.SourceType, "statement", StringComparison.OrdinalIgnoreCase))
+            .Where(static item =>
+                string.IsNullOrWhiteSpace(item.FundProfileId)
+                || !item.LedgerBookId.HasValue
+                || item.LedgerBookId.Value == Guid.Empty
+                || !Guid.TryParse(item.AccountingPeriodId, out var retainedPeriodId)
+                || retainedPeriodId == Guid.Empty
+                || !item.AsOfDate.HasValue
+                || item.AsOfDate.Value == default)
+            .OrderBy(static item => item.BreakId, StringComparer.Ordinal)
+            .ToArray();
+        if (unscopedPending.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"{unscopedPending.Length} statement casework evidence handoff obligation(s) have incomplete close scope and therefore block PeriodClose and FinalReport for every candidate scope until exact replay completes: {string.Join(", ", unscopedPending.Select(static item => item.BreakId))}.");
+        }
+
         var scoped = items
             .Where(item => item.LedgerBookId == ledgerBookId
-                && string.Equals(item.FundAccountId, fundProfileId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(item.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(item.AccountingPeriodId, accountingPeriodId.ToString("D"), StringComparison.OrdinalIgnoreCase)
                 && item.AsOfDate == asOfDate)
             .OrderBy(static item => item.BreakId, StringComparer.Ordinal)
             .ToArray();
         foreach (var item in scoped)
         {
+            if (StatementCaseworkHandoffObligation.HasPending(item))
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation break '{item.BreakId}' still has a pending statement-source/Operations evidence handoff; PeriodClose and FinalReport remain blocked even though the case disposition may already be terminal. Replay the exact casework command to complete the retained handoff.");
+            }
             if (!HasCanonicalCaseState(item))
             {
                 throw new InvalidOperationException(
@@ -641,10 +1086,19 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         CancellationToken ct = default)
     {
         ValidateContext(context);
-        ValidateHumanCommand(command, requireController: true);
+        ValidateHumanCommand(command, requireController: true, requireReopenApproval: true);
+        await using var consistencyLease = await AcquireConsistencyLeaseIfRequiredAsync(
+                context,
+                command,
+                ct)
+            .ConfigureAwait(false);
         var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
         var ledgerBookService = _ledgerBookService!;
+        var breakQueue = _breakQueue
+            ?? throw new InvalidOperationException(
+                "The canonical reconciliation queue is unavailable, so the governed reopen cannot version and unseal its hard-close checkpoint.");
         var period = scope.Period;
+        var reopenedPeriod = period;
         if (period.Status is not LedgerPeriodStatusDto.HardClosed and not LedgerPeriodStatusDto.SoftClosed)
         {
             throw new InvalidOperationException(
@@ -731,7 +1185,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         {
             try
             {
-                await RequireLedgerBookService().ReopenPeriodAsync(
+                var reopenResult = await RequireLedgerBookService().ReopenPeriodAsync(
                         period.PeriodId,
                         new ReopenLedgerPeriodRequest(
                             command.Actor,
@@ -742,6 +1196,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                             command.ActionOrigin),
                         ct)
                     .ConfigureAwait(false);
+                reopenedPeriod = reopenResult.Period;
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -819,6 +1274,26 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             throw new InvalidOperationException(
                 "Retained reversal drafts do not match this reopen actor, correlation, reason, and evidence; retry is rejected.");
         }
+
+        var reopenCommandHash = BuildReopenCommandHash(context, period.PeriodId, command);
+        await breakQueue
+            .ReopenCloseScopeAsync(
+                new ReconciliationCloseScope(
+                    scope.FundProfileId,
+                    context.LedgerBookId,
+                    period.PeriodId,
+                    period.EndDate),
+                new ReconciliationCloseScopeReopenCommand(
+                    command.Actor,
+                    command.Role!,
+                    command.Reason,
+                    command.ApprovalReference!,
+                    command.CorrelationId!,
+                    command.EvidenceLinks,
+                    reopenedPeriod.Version,
+                    reopenCommandHash),
+                ct)
+            .ConfigureAwait(false);
 
         var evaluated = await EvaluateAsync(context, ct).ConfigureAwait(false);
         var pendingCount = activeReversals.Count(static draft =>
@@ -1090,6 +1565,26 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                 $"Close workflow '{context.WorkflowId:D}' fund account '{context.FundAccountId:D}' does not own ledger book '{context.LedgerBookId:D}'.");
         }
 
+        if (!string.IsNullOrWhiteSpace(context.TenantId))
+        {
+            var tenancy = _tenancyRegistry
+                ?? throw new InvalidOperationException(
+                    "The authoritative fund tenancy registry is unavailable, so the scoped close mutation is blocked.");
+            var ownership = await tenancy.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException(
+                    $"Fund profile '{book.FundProfileId}' has no authoritative tenant/company binding.");
+            if (!ownership.IsHeldBy(context.TenantId) ||
+                string.IsNullOrWhiteSpace(ownership.CompanyId) ||
+                !string.Equals(
+                    ownership.CompanyId.Trim(),
+                    context.CompanyId!.Trim(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Close workflow '{context.WorkflowId:D}' is not owned by tenant '{context.TenantId}' and company '{context.CompanyId}'.");
+            }
+        }
+
         if (!string.Equals(book.BaseCurrency, context.Currency, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
@@ -1120,16 +1615,28 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             throw new ArgumentException("Period-close posting context requires workflow, fund account, ledger book, and period ids.", nameof(context));
         }
 
-        if (string.IsNullOrWhiteSpace(context.TenantId) &&
-            !string.IsNullOrWhiteSpace(context.CompanyId))
+        var hasTenant = !string.IsNullOrWhiteSpace(context.TenantId);
+        var hasCompany = !string.IsNullOrWhiteSpace(context.CompanyId);
+        if (hasTenant != hasCompany)
         {
-            throw new ArgumentException("Period-close posting context cannot carry company scope without tenant scope.", nameof(context));
+            throw new ArgumentException(
+                "Period-close posting context requires both tenant and company scope, or neither for explicit local compatibility.",
+                nameof(context));
         }
     }
 
+    private async ValueTask<IAsyncDisposable?> AcquireConsistencyLeaseIfRequiredAsync(
+        AccountingClosePostingContext context,
+        AccountingClosePostingCommand command,
+        CancellationToken ct)
+        => command.ConsistencyLeaseHeld
+            ? null
+            : await AcquireAsync(context, ct).ConfigureAwait(false);
+
     private static void ValidateHumanCommand(
         AccountingClosePostingCommand command,
-        bool requireController)
+        bool requireController,
+        bool requireReopenApproval = false)
     {
         ArgumentNullException.ThrowIfNull(command);
         if (command.ActionOrigin != OperationsActionOriginDto.HumanOperator)
@@ -1150,9 +1657,13 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             if (!string.Equals(command.Role, "Controller", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(command.Role, "Fund Controller", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("Closing-entry reversal requires Controller or Fund Controller authority.");
+                throw new InvalidOperationException(
+                    "Governed period close requires Controller or Fund Controller authority.");
             }
+        }
 
+        if (requireReopenApproval)
+        {
             ArgumentException.ThrowIfNullOrWhiteSpace(command.ApprovalReference);
             ArgumentException.ThrowIfNullOrWhiteSpace(command.CorrelationId);
             if (!command.EvidenceLinks.Any(link =>

@@ -109,7 +109,15 @@ const schedule: StatementFetchSchedule = {
   lastRunAtUtc: "2026-07-17T06:00:00Z",
   lastRunStatus: "Imported run stmt-run-88: 2 record(s), 1 case(s).",
   nextDueAtUtc: "2026-07-18T06:00:00Z",
-  sourceKind: "broker"
+  sourceKind: "broker",
+  periodStart: "2026-07-01",
+  periodEnd: "2026-07-31",
+  accountingScope: {
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "11111111-1111-1111-1111-111111111111",
+    accountingPeriodId: "22222222-2222-2222-2222-222222222222",
+    asOfDate: "2026-07-31"
+  }
 };
 
 const runResult: StatementImportCommitResult = {
@@ -149,6 +157,7 @@ const validDraft: StatementFetchDraft = {
   externalAccountId: "PA3ALPACA01",
   fundAccountId: "FUND-ALPHA-BROKERAGE",
   mappingProfileId: "alpaca-activity-v1",
+  periodEnd: "2026-07-31",
   scheduleId: "alpaca-daily",
   sinceDate: "2026-07-17",
   sourceInstitution: "Alpaca",
@@ -157,7 +166,8 @@ const validDraft: StatementFetchDraft = {
 };
 
 describe("validateStatementFetchDraft", () => {
-  it("requires a remote connector and reconciliation scope before scheduling", () => {
+  it("requires a remote connector and exact account scope before previewing or scheduling", () => {
+    expect(validateStatementFetchDraft(validDraft, connectors, "preview")).toEqual({});
     expect(validateStatementFetchDraft(validDraft, connectors, "schedule")).toEqual({});
     expect(validateStatementFetchDraft({
       ...validDraft,
@@ -170,6 +180,14 @@ describe("validateStatementFetchDraft", () => {
       cadenceHours: expect.any(String),
       connectorId: expect.any(String),
       externalAccountId: expect.any(String),
+      fundAccountId: expect.any(String),
+      sourceInstitution: expect.any(String)
+    });
+    expect(validateStatementFetchDraft({
+      ...validDraft,
+      fundAccountId: "",
+      sourceInstitution: ""
+    }, connectors, "preview")).toMatchObject({
       fundAccountId: expect.any(String),
       sourceInstitution: expect.any(String)
     });
@@ -187,6 +205,7 @@ describe("StatementFetchPanel", () => {
 
     await waitFor(() => expect(screen.getByRole("table", { name: "Statement fetch schedules" })).toBeInTheDocument());
     await user.type(screen.getByLabelText("External account"), "PA3ALPACA01");
+    await user.type(screen.getByLabelText("Fund account"), "FUND-ALPHA-BROKERAGE");
     await user.click(screen.getByRole("button", { name: "Preview remote statement" }));
 
     await waitFor(() => expect(screen.getByRole("heading", { name: `Preview: ${preview.fileName}` })).toBeInTheDocument());
@@ -194,6 +213,9 @@ describe("StatementFetchPanel", () => {
     expect(services.fetchPreview).toHaveBeenCalledWith(expect.objectContaining({
       connectorId: "alpaca-activity",
       externalAccountId: "PA3ALPACA01",
+      fundAccountId: "FUND-ALPHA-BROKERAGE",
+      sourceInstitution: "Alpaca account activity",
+      sourceKind: "broker",
       datasets: "all"
     }));
 
@@ -220,6 +242,8 @@ describe("StatementFetchPanel", () => {
       connectorId: "alpaca-activity",
       cadenceHours: 24,
       enabled: true,
+      periodStart: "2026-07-01",
+      periodEnd: "2026-07-31",
       sourceKind: "custodian"
     }));
 

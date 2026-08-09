@@ -235,7 +235,10 @@ function Unprotect-RecoveryFile([string]$InputPath, [string]$OutputPath, [byte[]
 
 function Get-ConnectionParts([string]$Value) {
     $builder = [Data.Common.DbConnectionStringBuilder]::new()
-    $builder.ConnectionString = $Value
+    # PowerShell adapts DbConnectionStringBuilder as a dictionary, so a property-style assignment
+    # would store one literal "ConnectionString" entry instead of parsing Host/Database/Username.
+    # Invoking the CLR setter keeps the parsed key/value semantics.
+    $builder.set_ConnectionString($Value)
     function Value-For([string[]]$Names, [string]$Default = "") {
         foreach ($name in $Names) {
             if ($builder.ContainsKey($name)) { return [string]$builder[$name] }
@@ -354,7 +357,9 @@ function Invoke-Restore([string]$SelectedBackup, [string]$TargetConnection, [str
         }
         $targetRoot = Resolve-FullPath $TargetDataRoot
         if (Test-Path -LiteralPath $targetRoot) {
-            $existing = Get-ChildItem -LiteralPath $targetRoot -Force
+            # Under Set-StrictMode Latest, .Count throws on the $null an empty directory
+            # yields; the array subexpression always exposes a real Count.
+            $existing = @(Get-ChildItem -LiteralPath $targetRoot -Force)
             if ($existing.Count -gt 0) {
                 if (-not $AllowDataOverwrite) { throw "Restore data root is not empty: $targetRoot" }
                 $quarantine = "$targetRoot.pre-restore-$([DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssZ'))"

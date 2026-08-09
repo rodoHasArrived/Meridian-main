@@ -27,7 +27,11 @@ public interface IWorkstationReconciliationApiClient
 {
     Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default);
 
-    Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default);
+    /// <summary>
+    /// Returns the break queue, or <see langword="null"/> when the workstation API call failed —
+    /// callers that surface queue state must not render an outage as an empty queue.
+    /// </summary>
+    Task<IReadOnlyList<ReconciliationBreakQueueItem>?> GetBreakQueueAsync(CancellationToken ct = default);
 
     Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default);
 
@@ -68,9 +72,8 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
     public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
         => _apiClient.UiApi.GetReconciliationCalibrationSummaryAsync(ct);
 
-    public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
-        => await _apiClient.UiApi.GetReconciliationBreakQueueAsync(ct).ConfigureAwait(false)
-        ?? [];
+    public async Task<IReadOnlyList<ReconciliationBreakQueueItem>?> GetBreakQueueAsync(CancellationToken ct = default)
+        => await _apiClient.UiApi.GetReconciliationBreakQueueAsync(ct).ConfigureAwait(false);
 
     public async Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default)
         => (await _apiClient.GetWithResponseAsync<List<StatementRunSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementRuns, ct).ConfigureAwait(false)).DataOrLoggedNull("Get statement runs") ?? [];

@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Application
@@ -33,7 +33,9 @@ and UI presentation concerns in their owning layers.
   `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
   store contracts. Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
-  discovery in Application services.
+  discovery in Application services. Default provider setup handlers are registered through one
+  idempotent composition helper so layered workstation composition retains every catalog entry and
+  alias exactly once, including entries that share a generic handler implementation type.
 - ETL commands, composition, and orchestration services consume
   `Meridian.DataIntegration.Etl` contracts, normalization services, and job service/orchestrator.
   Application composes Data Integration-owned ETL behavior through `IEtlIngestionJobCoordinator`
@@ -260,7 +262,11 @@ and UI presentation concerns in their owning layers.
   and does not seed a market-data `DataSourceConfig` or provider-routing binding. QuickBooks Online
   is cataloged by the Data Integration credential catalog as a credential-backed accounting-system
   provider; token exchange and GL evidence reads stay in the Data Integration provider seam and
-  shared UI projection seam.
+  shared UI projection seam. Credential-test status and backfill schedule replacements use
+  `AtomicFileWriter`, preserving cancellation and preventing torn JSON from becoming the next
+  restart authority. Backfill schedule mutations publish cloned in-memory state only after the
+  durable write succeeds; deletion commits through an ignored, directory-synced tombstone, and
+  canceled lock acquisition cannot release a semaphore the caller never acquired.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
@@ -273,12 +279,19 @@ and UI presentation concerns in their owning layers.
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
   validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
   validation rules still enforce approved profile-version pinning, typed no-code field values,
-  profile approval metadata, and identifier coverage. Security Master create/amend orchestration preserves pinned
+  profile approval metadata, and identifier coverage. The C# to F# identifier seam preserves
+  optional provider/source metadata without changing standard-identifier identity; a
+  `ProviderSymbol` kind remains the authoritative namespace and contradictory metadata fails
+  validation. Security Master create/amend orchestration preserves pinned
   profile-backed `CustomAsset` and `OtherSecurity` payloads in projection and event evidence while
   reusing the existing generic-security domain backing model. The query service keeps ordinary text
   search delegated to the storage index and uses the projected Security Master universe only when
-  custom profile id, version, field-key, or field-value filters are supplied. Profile definitions
-  are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
+  custom profile id, version, field-key, or field-value filters are supplied. Identifier fallback
+  applies the same provider authority as the durable store: provider-bound
+  identifiers and aliases require the exact normalized provider, while providerless legacy primary
+  fields remain eligible only when no matching authoritative identifier row exists. Profile
+  definitions are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter
+  definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
   Security Master validation messages use operator-review wording for override audit remediation so
   application-layer guidance does not expose legacy Governance workspace language. Corporate-action
@@ -348,6 +361,9 @@ and UI presentation concerns in their owning layers.
   governance cash-flow projection path as the local JSON/in-memory service, using stored
   structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
   optional Security Master economic rules for realized/projected cash-flow evidence.
+  In-memory and PostgreSQL ownership-graph diagnostics share one iterative validator for
+  self-links, dangling nodes, and exact cycle participants, avoiding recursion limits and
+  implementation drift between persistence lanes.
   Ownership-link policy validation is owned by `Meridian.Entities.FundStructure` and prevents
   invalid setup graphs by blocking self-parenting, active cycles, incompatible relationship types,
   overlapping primary links, invalid percentage ownership, sibling percentage over-allocation, and
@@ -517,6 +533,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

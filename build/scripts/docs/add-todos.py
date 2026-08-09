@@ -138,7 +138,7 @@ def find_files_in_repo(root: Path, pattern: str = '*.cs') -> list[Path]:
     files = []
     for file in root.rglob(pattern):
         # Skip build artifacts
-        if any(part in {'.git', 'bin', 'obj', 'node_modules', '__pycache__'} for part in file.parts):
+        if any(part in {'.git', 'bin', 'obj', 'node_modules', '__pycache__', '.pytest_cache'} for part in file.parts):
             continue
         files.append(file)
     return sorted(files)

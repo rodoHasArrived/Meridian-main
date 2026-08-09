@@ -70,6 +70,7 @@ import {
   buildReconciliationQueuePanelViewState,
   buildReconciliationResolveDialogState,
   buildReconciliationStatementRunsViewState,
+  sortStatementRunsNewestFirst,
   resolveSelectedReconciliation,
 } from "./accounting-screen.reconciliation.view-model";
 export {
@@ -159,6 +160,7 @@ import type {
   JournalEntryLifecycleActionRequest,
   JournalEntryLifecycleActionResult,
   LockClosePeriodRequest,
+  LedgerDimensionSet,
   ManualJournalEntryDraft,
   ManualJournalEntryLine,
   ManualJournalEntryWorkbench,
@@ -346,6 +348,7 @@ export interface AccountingConfigurationIssueViewModel {
   message: string;
   detail: string;
   tone: "default" | "warning" | "danger";
+  targetId?: string | null; severity?: "Critical" | "Warning" | "Info";
 }
 
 export interface AccountingConfigurationAuditViewModel {
@@ -1895,9 +1898,7 @@ export type CapitalAccountWorkbenchFundEventCommandRowViewModel =
 export interface CapitalAccountWorkbenchViewModel {
   title: string;
   description: string;
-  available: boolean;
-  loading: boolean;
-  errorText: string | null;
+  available: boolean; loading: boolean; errorText: string | null;
   statusLabel: string;
   statusTone: AccountingToolingTone;
   statusReason: string;
@@ -1927,13 +1928,10 @@ export interface ManualJournalEntryWorkbenchViewModel {
   drafts: ManualJournalEntryDraft[];
   accountOptions: { value: string; label: string }[];
   selectedLineId: string;
-  securitySearchQuery: string;
-  securitySearchResults: SecurityMasterEntry[];
-  securitySearchBusy: boolean;
-  securitySearchErrorText: string | null;
+  securitySearchQuery: string; securitySearchResults: SecurityMasterEntry[];
+  securitySearchBusy: boolean; securitySearchErrorText: string | null;
   securitySearchStatusText: string;
-  attachmentDraft: ManualJournalEvidenceAttachmentDraft;
-  totalsLabel: string;
+  attachmentDraft: ManualJournalEvidenceAttachmentDraft; totalsLabel: string;
   totalDebitsLabel: string;
   totalCreditsLabel: string;
   imbalanceLabel: string;
@@ -1943,15 +1941,16 @@ export interface ManualJournalEntryWorkbenchViewModel {
   treasuryContextLabel: string;
   privateCapitalActivity: ManualJournalPrivateCapitalActivityViewModel;
   validationIssues: AccountingConfigurationIssueViewModel[];
+  blockingIssueCount: number; warningIssueCount: number;
+  saveState: "saved" | "unsaved" | "saving" | "error" | "recovered"; saveStatusLabel: string;
+  validationStatusLabel: string; recoveryStatusText: string | null;
   lifecycleCommands: ManualJournalLifecycleCommandViewModel[];
   lifecycleChecklist: ManualJournalLifecycleChecklistItemViewModel[];
   lifecycleTransitions: ManualJournalLifecycleTransitionViewModel[];
   lifecycleCorrectionRows: ManualJournalLifecycleCorrectionViewModel[];
   lifecycleStatusText: string | null;
   lifecycleBusyAction: JournalEntryLifecycleAction | null;
-  saveBusy: boolean;
-  validateBusy: boolean;
-  submitBusy: boolean;
+  saveBusy: boolean; validateBusy: boolean; submitBusy: boolean;
   attachEvidenceBusy: boolean;
   attachEvidenceStatusText: string | null;
   validationIsCurrent: boolean;
@@ -1961,14 +1960,16 @@ export interface ManualJournalEntryWorkbenchViewModel {
   updateHeader: (field: keyof Pick<ManualJournalEntryDraft, "memo" | "currency" | "fundProfileId" | "entityId" | "fundNodeId" | "periodId" | "accountingDate">, value: string) => void;
   selectDraft: (journalEntryId: string) => void;
   selectLine: (lineId: string) => void;
-  updateLine: (lineId: string, patch: Partial<ManualJournalEntryLine>) => void;
+  updateLine: (lineId: string, patch: Partial<ManualJournalEntryLine>) => void; updateDraftDimensions: (patch: Partial<LedgerDimensionSet>) => void;
   getLineBadges: (lineId: string) => ManualJournalLineValidationBadge[];
   updateSecuritySearchQuery: (query: string) => void;
   searchSecurityMaster: () => Promise<void>;
   selectSecurity: (lineId: string, security: SecurityMasterEntry) => void;
   clearSecurity: (lineId: string) => void;
   addLine: (side: AccountingTemplateLineSide) => void;
+  insertLineAfter: (lineId: string, side?: AccountingTemplateLineSide) => string; duplicateLine: (lineId: string) => string | null;
   removeLine: (lineId: string) => void;
+  discardRecoveredDraft: () => void;
   updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
   addAttachment: () => Promise<void>;
   removeAttachment: (attachmentId: string) => void;
@@ -3867,6 +3868,7 @@ export function useAccountingReconciliationViewModel(
   const [transactionLabPreview, setTransactionLabPreview] = useState<InvestmentAccountingTransactionLabPreview | null>(null);
   const [transactionLabError, setTransactionLabError] = useState<ApiErrorDisplay | null>(null);
   const calibrationRequestRevisionRef = useRef(0);
+  const statementRunsRequestRevisionRef = useRef(0);
 
   const reconciliationQueue = data?.reconciliationQueue ?? [];
   const selectedReconciliation = useMemo(
@@ -3964,54 +3966,41 @@ export function useAccountingReconciliationViewModel(
     };
   }, [refreshCalibrationSummary, workstream]);
 
-  const refreshStatementRuns = useCallback(() => {
+  const refreshStatementRuns = useCallback(async () => {
+    const revision = statementRunsRequestRevisionRef.current + 1;
+    statementRunsRequestRevisionRef.current = revision;
     setStatementRunsLoading(true);
     setStatementRunsError(null);
 
-    services.getStatementRuns()
-      .then((runs) => {
-        setStatementRuns(runs);
-      })
-      .catch((err) => {
-        setStatementRuns([]);
+    try {
+      const runs = await services.getStatementRuns();
+      if (statementRunsRequestRevisionRef.current === revision) {
+        setStatementRuns(sortStatementRunsNewestFirst(runs));
+      }
+    } catch (err) {
+      if (statementRunsRequestRevisionRef.current === revision) {
         setStatementRunsError(describeApiError(err, "Statement runs failed to load."));
-      })
-      .finally(() => {
+      }
+    } finally {
+      if (statementRunsRequestRevisionRef.current === revision) {
         setStatementRunsLoading(false);
-      });
+      }
+    }
   }, [services]);
 
   useEffect(() => {
     if (workstream !== "reconciliation" && workstream !== "exceptions") {
+      statementRunsRequestRevisionRef.current += 1;
+      setStatementRunsLoading(false);
       return;
     }
 
-    let cancelled = false;
-    setStatementRunsLoading(true);
-    setStatementRunsError(null);
-
-    services.getStatementRuns()
-      .then((runs) => {
-        if (!cancelled) {
-          setStatementRuns(runs);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setStatementRuns([]);
-          setStatementRunsError(describeApiError(err, "Statement runs failed to load."));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setStatementRunsLoading(false);
-        }
-      });
+    void refreshStatementRuns();
 
     return () => {
-      cancelled = true;
+      statementRunsRequestRevisionRef.current += 1;
     };
-  }, [services, workstream]);
+  }, [refreshStatementRuns, workstream]);
 
   useEffect(() => {
     if (!selectedReconciliation || workstream !== "ledger") {

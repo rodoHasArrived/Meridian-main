@@ -63,7 +63,9 @@ public sealed class MainPageUiWorkflowTests
             facade.CommandPaletteTextBox.Text.Should().BeEmpty();
             facade.TryHandleCommandPaletteDirectionalKey(Key.Down).Should().BeTrue();
 
-            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("Backtest");
+            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be(
+                "OperatorReadinessConsole",
+                "the readiness console leads the Launchpad group ahead of the strategy pages");
             facade.CommandPaletteResults.SelectedItem.Should().BeSameAs(facade.ViewModel.SelectedCommandPalettePage);
             facade.CommandPaletteTextBox.Text.Should().BeEmpty();
             facade.TryHandleCommandPaletteDirectionalKey(Key.Up).Should().BeTrue();

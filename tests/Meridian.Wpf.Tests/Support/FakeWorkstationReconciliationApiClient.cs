@@ -37,8 +37,8 @@ internal sealed class FakeWorkstationReconciliationApiClient : IWorkstationRecon
         => Task.FromResult<ReconciliationCalibrationSummaryDto?>(
             _calibrationSummaryOverride ?? BuildCalibrationSummary(_breakQueueById.Values));
 
-    public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(
+    public Task<IReadOnlyList<ReconciliationBreakQueueItem>?> GetBreakQueueAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>?>(
             _breakQueueById.Values
                 .OrderByDescending(item => item.DetectedAt)
                 .ToArray());

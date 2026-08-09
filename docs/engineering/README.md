@@ -16,6 +16,8 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
+- **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
+- **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
 - **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
@@ -40,7 +42,11 @@ Canonical ownership rule:
 ## Blueprints
 
 Code-ready technical designs for prioritized features live under
-[`blueprints/`](blueprints/README.md).
+[`blueprints/`](blueprints/README.md). That README is the **canonical register for every active
+blueprint in the repository**, wherever it is filed — engineering, `docs/development/accounting-blueprints/`,
+`docs/product/`, and `docs/plans/` — and it records the shared conventions (ledger migration
+ordinals, DDL precision, API route prefixes, enum extension, terminology) plus the cross-blueprint
+contracts that stop two independently-written designs from colliding.
 
 ## Build/Test/Run
 

@@ -241,7 +241,7 @@ All endpoints return errors in a consistent format:
 | Historical Data | 2 | Stored historical data query and date-range lookup |
 | Ingestion Jobs | 2 | Resumable ingestion job listing and summary |
 | Packaging | 6 | Portable data package creation, import, validation, listing |
-| Maintenance | 18 | Archive maintenance schedules, executions, status, presets |
+| Maintenance | 19 | Archive maintenance schedules, executions, status, presets |
 | Providers | 8 | Provider status, metrics, catalog, comparison, latency |
 | Options | 7 | Options chains, expirations, strikes, quotes, refresh, provider status |
 | Execution | 21 | Execution blotter, keyed position actions, session continuity, orders, health, audit, controls |
@@ -450,6 +450,40 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 
 `/api/execution/sessions/{sessionId}/replay` is the Wave 2 operator continuity check for paper trading: it replays the durable fill log, compares the replayed portfolio to the current session snapshot, and records the verification step in the execution audit trail.
 
+`/api/execution/orders/submit` and the two position actions answer `202 Accepted` with a
+`PendingApproval` outcome when a risk rule parks the order for governed approval. That is not a
+failure: nothing routed, but a durable queue entry can still execute the order once an approver
+releases it. Clients must not resubmit — each attempt mints a new client order id, and several
+parked orders for one intent can all release.
+
+### Risk (`/api/risk/*`)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/risk/rules` | Live status for every registered risk rule; requires `ViewTrades` |
+| GET | `/api/risk/rules/{ruleName}/status` | Live status for one rule; requires `ViewTrades` |
+| GET | `/api/risk/rules/{ruleName}/config` | Operator-managed thresholds for one rule |
+| PUT | `/api/risk/rules/{ruleName}/config` | Update thresholds; requires risk-configuration permission |
+| GET | `/api/risk/escalations` | Governed-approval queue: orders parked by an `Escalate`-severity rule |
+| POST | `/api/risk/escalations/{escalationId}/approve` | Approve a parked order, optionally releasing it |
+| POST | `/api/risk/escalations/{escalationId}/deny` | Deny a parked order and withdraw its escalation |
+
+Rule status is a trade read, not a configuration read: it carries aggregate gross exposure across
+every registered portfolio and violation reasons that can name traded symbols, so both status
+routes require `ViewTrades`.
+
+The escalation queue is the governed-approval surface for orders a risk rule parked rather than
+rejected. `GET /api/risk/escalations` returns only entries the caller is authorized to see —
+fund-scoped entries require scoped `ManageOrders` authority over the owning account, and
+administrators see all. Approve and deny each require a written rationale, which is retained with
+the decision and surfaced in the audit trail; a request without one is rejected. Segregation of
+duties is enforced against the retained submitter: the operator who submitted an order cannot
+approve it. Approving with release re-checks the approver's scoped authority, because the release
+bypasses `/api/execution/orders/submit` and its gates. Approvals are one-shot tokens matched
+against a full fingerprint of the retained request including its client order id; a release the
+gateway refuses re-arms the approval so a transient failure never retires an operator's decision,
+and denying or withdrawing an entry also retires any approvals linked through its token chain.
+
 ### Failover (`/api/failover/*`)
 
 | Method | Route | Description |
@@ -530,11 +564,12 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 | GET | `/api/maintenance/schedules` | List all maintenance schedules |
 | POST | `/api/maintenance/schedules` | Create a maintenance schedule |
 | GET | `/api/maintenance/schedules/{scheduleId}` | Get a specific schedule |
-| PUT | `/api/maintenance/schedules/{scheduleId}` | Update a schedule |
+| PUT | `/api/maintenance/schedules/{scheduleId}` | Update a schedule; returns `409 Conflict` for a stale retained revision |
 | DELETE | `/api/maintenance/schedules/{scheduleId}` | Delete a schedule |
 | POST | `/api/maintenance/schedules/{scheduleId}/enable` | Enable a schedule |
 | POST | `/api/maintenance/schedules/{scheduleId}/disable` | Disable a schedule |
-| POST | `/api/maintenance/schedules/{scheduleId}/trigger` | Trigger a schedule immediately |
+| POST | `/api/maintenance/schedules/{scheduleId}/trigger` | Trigger a schedule immediately; returns `409 Conflict` while that schedule already has queued or running work |
+| POST | `/api/maintenance/schedules/{scheduleId}/run` | Compatibility alias for immediate schedule execution with the same `409 Conflict` behavior |
 | GET | `/api/maintenance/schedules/{scheduleId}/executions` | Execution history for a schedule |
 | GET | `/api/maintenance/schedules/{scheduleId}/summary` | Summary for a specific schedule |
 | GET | `/api/maintenance/schedules/summary` | Summary across all schedules |
@@ -550,12 +585,21 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 | GET | `/api/maintenance/presets` | List available maintenance task presets |
 | GET | `/api/maintenance/task-types` | List available task type identifiers |
 
+Maintenance cron validation accepts five-field expressions plus Meridian's ordinal-weekday
+extension `d#n` in the day-of-week field (for example, `0#1` means the first Sunday). When both
+day-of-month and day-of-week are restricted, standard day-field OR semantics apply.
+
 ### Quality Drops (`/api/quality/drops/*`)
 
 | Method | Route | Description |
 |--------|-------|-------------|
 | GET | `/api/quality/drops` | Dropped event statistics |
 | GET | `/api/quality/drops/{symbol}` | Drops for specific symbol |
+
+`GET /api/quality/errors/statistics` retains the existing `totalErrors` and `errorRate` meanings:
+both describe the bounded records currently retained. The additive `retainedTotalErrors` and
+`retainedErrorRate` fields make that scope explicit, while `lifetimeTotalErrors` and
+`lifetimeErrorRate` report detections over the current tracker generation.
 
 ### Environment Designer (`/api/environment-designer/*`)
 

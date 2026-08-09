@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  DATA_WORKSTATION_SCREEN_ROUTES,
+  SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS,
+  SETTINGS_WORKSTATION_SCREEN_ROUTES,
   appendRouteQuery,
   evidenceWorkbenchPath,
   legacyWorkspaceRedirect,
@@ -42,6 +45,16 @@ describe("workspace metadata", () => {
       "/strategy",
       "/data",
       "/settings"
+    ]);
+  });
+
+  it("keeps Data and Settings screen ownership explicit", () => {
+    expect(DATA_WORKSTATION_SCREEN_ROUTES).toContain("/data/providers");
+    expect(DATA_WORKSTATION_SCREEN_ROUTES).not.toContain("/data/quotes");
+    expect(SETTINGS_WORKSTATION_SCREEN_ROUTES).toContain("/settings/diagnostics/advanced");
+    expect(SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS).toEqual([
+      "/settings/providers/:providerId/setup",
+      "/settings/providers/:providerId/advanced"
     ]);
   });
 

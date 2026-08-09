@@ -5,6 +5,7 @@ using Meridian.Core.Serialization;
 using Meridian.Contracts.Store;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Policies;
 using Meridian.Storage.Replay;
 using Serilog;
 
@@ -63,11 +64,22 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
         if (!query.Symbol.HasValue)
             return allFiles;
 
-        var symbolStr = query.Symbol.Value.Value;
-        return allFiles.Where(f =>
-            Path.GetFileName(f).Contains(symbolStr, StringComparison.OrdinalIgnoreCase) ||
-            f.Contains(Path.DirectorySeparatorChar + symbolStr + Path.DirectorySeparatorChar,
-                StringComparison.OrdinalIgnoreCase));
+        var symbol = query.Symbol.Value.Value;
+        var encodedSymbol = StoragePathSegmentCodec.EncodeSymbol(symbol);
+        var legacySymbol = StoragePathSegmentCodec.EncodeLegacyForLookup(symbol);
+
+        return allFiles.Where(file =>
+            ContainsPathIdentity(file, encodedSymbol) ||
+            (!string.Equals(encodedSymbol, legacySymbol, StringComparison.OrdinalIgnoreCase) &&
+             ContainsPathIdentity(file, legacySymbol)));
+    }
+
+    private static bool ContainsPathIdentity(string file, string pathIdentity)
+    {
+        return Path.GetFileName(file).Contains(pathIdentity, StringComparison.OrdinalIgnoreCase) ||
+               file.Contains(
+                   Path.DirectorySeparatorChar + pathIdentity + Path.DirectorySeparatorChar,
+                   StringComparison.OrdinalIgnoreCase);
     }
 
     private static async IAsyncEnumerable<MarketEvent> ReadFileAsync(

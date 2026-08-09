@@ -488,6 +488,18 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
         maxValue: null,
         isProjected: true,
         isSearchable: false
+      },
+      {
+        key: "vintageYear",
+        label: "Vintage year",
+        fieldType: "Integer",
+        isRequired: false,
+        allowedValues: [],
+        description: null,
+        minValue: null,
+        maxValue: null,
+        isProjected: false,
+        isSearchable: false
       }
     ],
     identifierPreferences: [
@@ -923,6 +935,33 @@ describe("SettingsScreen", () => {
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
     expect(await within(form).findByText("Security created for Meridian Private Fund I.")).toBeInTheDocument();
+  });
+
+  it("blocks profile-backed security creation when a numeric profile field does not parse", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        securityAssetProfiles={securityAssetProfiles}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Create profile-backed security" });
+    await user.type(within(form).getByLabelText("Profile-backed security display name"), "Meridian Private Fund I");
+    await user.type(within(form).getByLabelText("Profile-backed security internal code"), "PF-I");
+    await user.type(within(form).getByLabelText("Profile field Sponsor"), "Meridian GP");
+    await user.type(within(form).getByLabelText("Profile field NAV date"), "2026-04-30");
+    // "3.7" survives the number input's value sanitization but is not a whole number - previously
+    // Number.parseInt silently truncated it to 3 and posted that to the Security Master API. A
+    // single change event avoids per-keystroke sanitization of intermediate states.
+    fireEvent.change(within(form).getByLabelText("Profile field Vintage year"), { target: { value: "3.7" } });
+    await user.click(within(form).getByRole("button", { name: /Create security/i }));
+
+    expect(apiMocks.createSecurityMasterEntry).not.toHaveBeenCalled();
+    expect(await within(form).findByText("Correct the profile field values before creating the security.")).toBeInTheDocument();
+    expect(within(form).getByText("Vintage year: enter a whole number.")).toBeInTheDocument();
   });
 
   it("submits ledger mapping assignments with audit rationale", async () => {

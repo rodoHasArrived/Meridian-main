@@ -1221,6 +1221,68 @@ describe("accounting-screen view model", () => {
     expect(result.current.calibrationView.selectedProfile?.title).toContain("retry-profile");
   });
 
+  it("retains ordered statement runs when a manual refresh fails", async () => {
+    const retainedRuns = [
+      {
+        runId: "older-run",
+        importId: "older-import",
+        startedAtUtc: "2026-05-01T00:00:00Z",
+        completedAtUtc: "2026-05-01T00:03:00Z",
+        importedAtUtc: "2026-05-01T00:04:00Z",
+        positionMatches: 1,
+        cashMatches: 0,
+        transactionMatches: 0,
+        openExceptionCount: 0
+      },
+      {
+        runId: "newer-run",
+        importId: "newer-import",
+        startedAtUtc: "2026-05-02T00:00:00Z",
+        completedAtUtc: "2026-05-02T00:03:00Z",
+        importedAtUtc: "2026-05-02T00:04:00Z",
+        positionMatches: 1,
+        cashMatches: 0,
+        transactionMatches: 0,
+        openExceptionCount: 0
+      }
+    ];
+    const getStatementRuns = vi.fn()
+      .mockResolvedValueOnce(retainedRuns)
+      .mockRejectedValueOnce(new Error("statement store unavailable"));
+    const services: AccountingReconciliationServices = {
+      getBreakQueue: vi.fn().mockResolvedValue([]),
+      reviewBreak: vi.fn(),
+      resolveBreak: vi.fn(),
+      getTrialBalance: vi.fn().mockResolvedValue([]),
+      getCalibrationSummary: vi.fn().mockResolvedValue(null),
+      getStatementRuns,
+      getStatementRun: vi.fn(),
+      previewTransactionLab: vi.fn()
+    };
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue: [],
+      breakQueue: [],
+      cashFlow: null,
+      reporting: null
+    } as unknown as AccountingWorkspaceResponse;
+    const { result } = renderHook(() => useAccountingReconciliationViewModel(
+      bootstrapData,
+      "reconciliation",
+      services
+    ));
+
+    await waitFor(() => expect(result.current.statementRunsView.rows).toHaveLength(2));
+    expect(result.current.statementRunsView.rows.map((row) => row.runId)).toEqual(["newer-run", "older-run"]);
+
+    await act(async () => {
+      await result.current.refreshStatementRuns();
+    });
+
+    expect(result.current.statementRunsView.rows.map((row) => row.runId)).toEqual(["newer-run", "older-run"]);
+    expect(result.current.statementRunsView.errorText).toContain("statement store unavailable");
+  });
+
   it("wires Transaction Lab preview requests and renders shared response values", async () => {
     const preview: InvestmentAccountingTransactionLabPreview = {
       previewId: "txn-lab:run-42",

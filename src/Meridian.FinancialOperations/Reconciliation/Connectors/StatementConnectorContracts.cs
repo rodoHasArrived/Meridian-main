@@ -1,3 +1,5 @@
+using Meridian.Execution.Sdk;
+
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
 /// <summary>
@@ -94,7 +96,13 @@ public sealed record StatementCanonicalRecord(
     DateOnly? SettlementDate = null,
     string? Currency = null,
     decimal? FeesCommission = null,
-    string? ExternalTransactionId = null);
+    string? ExternalTransactionId = null,
+    string? ActivityCategory = null,
+    string? ActivitySubtype = null,
+    string? ProviderActivityCode = null,
+    string? RelatedTransactionId = null,
+    string? OrderId = null,
+    string? Description = null);
 
 /// <summary>
 /// Structural fingerprint of a parsed source used for format-drift detection: when a
@@ -113,11 +121,33 @@ public sealed record StatementParseResult(
     IReadOnlyList<StatementColumnMapping> ColumnMappings,
     IReadOnlyList<StatementCanonicalRecord> Records,
     IReadOnlyList<StatementParseIssue> Issues,
-    StatementFormatFingerprint Fingerprint)
+    StatementFormatFingerprint Fingerprint,
+    IReadOnlyList<BrokerageAccountSnapshotDto>? AccountSnapshots = null,
+    IReadOnlyList<BrokerageActivityEventDto>? ActivityEvents = null,
+    IReadOnlyList<BrokerageActivityCursorDto>? ActivityCursors = null,
+    IReadOnlyList<BrokerageTaxLotSnapshotDto>? TaxLots = null,
+    IReadOnlyList<BrokerageBorrowPositionSnapshotDto>? BorrowPositions = null)
 {
     public bool HasErrors => Issues.Any(static issue =>
         string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase));
 }
+
+/// <summary>
+/// Additive canonical evidence retained beside the reconciliation CSV. The CSV remains the
+/// stable row-ingestion contract; this sidecar preserves account, cursor, options, borrow,
+/// and tax-lot detail without flattening missing values into zeroes.
+/// </summary>
+public sealed record StatementCanonicalEvidenceArtifact(
+    string ConnectorId,
+    string? ProfileId,
+    DateTimeOffset RetainedAtUtc,
+    StatementFormatFingerprint Fingerprint,
+    IReadOnlyList<StatementCanonicalRecord> Records,
+    IReadOnlyList<BrokerageAccountSnapshotDto> AccountSnapshots,
+    IReadOnlyList<BrokerageActivityEventDto> ActivityEvents,
+    IReadOnlyList<BrokerageActivityCursorDto> ActivityCursors,
+    IReadOnlyList<BrokerageTaxLotSnapshotDto> TaxLots,
+    IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions);
 
 public interface IStatementConnector
 {
@@ -138,17 +168,23 @@ public enum StatementFetchDatasets
     All = Activity | Positions
 }
 
+/// <summary>
+/// Requests remote statement data. When <see cref="UntilExclusive"/> is set, the connector must
+/// enforce the exact half-open window or fail closed.
+/// </summary>
 public sealed record StatementFetchRequest(
     string ConnectorId,
     string ExternalAccountId,
     DateTimeOffset? Since = null,
     string? MappingProfileId = null,
-    StatementFetchDatasets Datasets = StatementFetchDatasets.All);
+    StatementFetchDatasets Datasets = StatementFetchDatasets.All,
+    DateTimeOffset? UntilExclusive = null);
 
 /// <summary>
 /// A connector that can pull statements from a remote source. Fetch yields a retained
 /// document that <see cref="IStatementConnector.ParseAsync"/> then consumes, keeping a
 /// single parse path and raw evidence for every import regardless of origin.
+/// A connector must not silently ignore <see cref="StatementFetchRequest.UntilExclusive"/>.
 /// </summary>
 public interface IFetchingStatementConnector : IStatementConnector
 {

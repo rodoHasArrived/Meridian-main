@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
+using Meridian.QuantScript.Runtime;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -17,9 +18,25 @@ public sealed class ScriptRunnerTests
         IQuantDataContext? dataContext = null,
         PlotQueue? plotQueue = null,
         int runTimeoutSeconds = 10,
-        long maxMemoryDeltaBytes = 0,
+        long maxMemoryDeltaBytes = 384L * 1024 * 1024,
+        long maxWorkerMemoryBytes = 512L * 1024 * 1024,
+        int maxWorkerCpuTimeSeconds = 60,
+        int maxWorkerProcessCount = 1,
+        int maxConcurrentWorkers = 2,
+        int maxQueuedWorkerRequests = 8,
+        int workerQueueWaitTimeoutMilliseconds = 30_000,
+        int maxHostRpcCallsPerRun = 128,
+        int maxHostRpcRecordsPerRun = 100_000,
+        int maxHostRpcResponseBytesPerRun = 8 * 1024 * 1024,
+        int maxHostRpcSymbolsPerRun = 32,
+        int maxHostRpcDateRangeDays = 3_660,
         int maxRunElapsedMilliseconds = 0,
-        int maxOutputItemsPerRun = 0)
+        int maxOutputItemsPerRun = 0,
+        bool enableUnsafeScripts = false,
+        int maxWorkerStandardOutputBytes = 64 * 1024,
+        int maxWorkerStandardErrorBytes = 64 * 1024,
+        string? workerExecutablePath = null,
+        IQuantScriptWorkerClient? workerClient = null)
     {
         compiler ??= new RoslynScriptCompiler(
             Options.Create(new QuantScriptOptions()),
@@ -36,20 +53,31 @@ public sealed class ScriptRunnerTests
             {
                 RunTimeoutSeconds = runTimeoutSeconds,
                 MaxMemoryDeltaBytes = maxMemoryDeltaBytes,
+                MaxWorkerMemoryBytes = maxWorkerMemoryBytes,
+                MaxWorkerCpuTimeSeconds = maxWorkerCpuTimeSeconds,
+                MaxWorkerProcessCount = maxWorkerProcessCount,
+                MaxConcurrentWorkers = maxConcurrentWorkers,
+                MaxQueuedWorkerRequests = maxQueuedWorkerRequests,
+                WorkerQueueWaitTimeoutMilliseconds = workerQueueWaitTimeoutMilliseconds,
+                MaxHostRpcCallsPerRun = maxHostRpcCallsPerRun,
+                MaxHostRpcRecordsPerRun = maxHostRpcRecordsPerRun,
+                MaxHostRpcResponseBytesPerRun = maxHostRpcResponseBytesPerRun,
+                MaxHostRpcSymbolsPerRun = maxHostRpcSymbolsPerRun,
+                MaxHostRpcDateRangeDays = maxHostRpcDateRangeDays,
                 MaxRunElapsedMilliseconds = maxRunElapsedMilliseconds,
-                MaxOutputItemsPerRun = maxOutputItemsPerRun
+                MaxOutputItemsPerRun = maxOutputItemsPerRun,
+                EnableUnsafeScripts = enableUnsafeScripts,
+                MaxWorkerStandardOutputBytes = maxWorkerStandardOutputBytes,
+                MaxWorkerStandardErrorBytes = maxWorkerStandardErrorBytes,
+                WorkerExecutablePath = workerExecutablePath
             }),
             NullLogger<ScriptRunner>.Instance,
-            null);
+            null,
+            workerClient ?? new QuantScriptWorkerClient(NullLogger<ScriptRunner>.Instance));
     }
 
     private static IReadOnlyDictionary<string, object?> NoParams =>
         new Dictionary<string, object?>();
-
-    private static TimeSpan RuntimeElapsed(ScriptRunResult result)
-        => result.Elapsed >= result.CompileTime
-            ? result.Elapsed - result.CompileTime
-            : TimeSpan.Zero;
 
     // ── Argument validation ───────────────────────────────────────────────────
 
@@ -179,40 +207,28 @@ public sealed class ScriptRunnerTests
     {
         var runner = BuildRunner(runTimeoutSeconds: 10);
         using var cts = new CancellationTokenSource();
+        var run = runner.RunAsync("while (true) { }", NoParams, cts.Token);
+        await Task.Delay(200);
+        cts.Cancel();
 
-        cts.CancelAfter(TimeSpan.FromMilliseconds(200));
-        var elapsed = Stopwatch.StartNew();
-
-        var result = await runner.RunAsync(
-            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
-            NoParams,
-            cts.Token);
-
-        elapsed.Stop();
+        var result = await run.WaitAsync(TimeSpan.FromSeconds(5));
 
         result.Success.Should().BeFalse();
         result.RuntimeError.Should().Be("Script cancelled by user.");
         result.Checkpoint.Should().BeNull();
-        RuntimeElapsed(result).Should().BeLessThan(TimeSpan.FromSeconds(3));
-        elapsed.Elapsed.Should().BeLessThan(result.CompileTime + TimeSpan.FromSeconds(3));
     }
 
     [Fact]
     public async Task RunAsync_TimeoutDuringRun_ReturnsTimeoutRuntimeError_AndNoCheckpoint()
     {
         var runner = BuildRunner(runTimeoutSeconds: 1);
-        var elapsed = Stopwatch.StartNew();
-
         var result = await runner.RunAsync(
-            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
+            "while (true) { }",
             NoParams);
-        elapsed.Stop();
 
         result.Success.Should().BeFalse();
         result.RuntimeError.Should().Be("Script timed out.");
         result.Checkpoint.Should().BeNull();
-        RuntimeElapsed(result).Should().BeLessThan(TimeSpan.FromSeconds(3));
-        elapsed.Elapsed.Should().BeLessThan(result.CompileTime + TimeSpan.FromSeconds(3));
     }
 
     [Fact]
@@ -222,7 +238,7 @@ public sealed class ScriptRunnerTests
         var first = await runner.RunAsync("var x = 41;", NoParams);
 
         var result = await runner.ContinueWithAsync(
-            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
+            "while (true) { }",
             first.Checkpoint!,
             NoParams);
 
@@ -253,6 +269,324 @@ public sealed class ScriptRunnerTests
         result.Success.Should().BeFalse();
         result.RuntimeError.Should().Be("Script exceeded configured output-item limit.");
         result.RuntimeDiagnostics.Should().Contain(x => x.Message.Contains("Output item limit exceeded"));
+    }
+
+    [Fact]
+    public async Task RunAsync_MemoryLimitExceeded_KillsWorkerAndReturnsChildPeakDelta()
+    {
+        const long memoryLimit = 32L * 1024 * 1024;
+        var runner = BuildRunner(
+            runTimeoutSeconds: 15,
+            maxMemoryDeltaBytes: memoryLimit);
+
+        var result = await runner.RunAsync(
+            "var bytes = new byte[96 * 1024 * 1024]; System.Array.Fill(bytes, (byte)1); while (true) { }",
+            NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured worker-tree memory limit.");
+        result.PeakMemoryBytes.Should().BeGreaterThan(memoryLimit);
+        result.RuntimeDiagnostics.Should().ContainSingle(x =>
+            x.Severity == "RuntimeLimit" && x.Message.Contains("Worker-tree memory limit exceeded"));
+    }
+
+    [Fact]
+    public async Task RunAsync_CpuTimeLimitExceeded_KillsWorkerTree()
+    {
+        var runner = BuildRunner(
+            runTimeoutSeconds: 15,
+            maxWorkerCpuTimeSeconds: 1);
+
+        var result = await runner.RunAsync("while (true) { }", NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured worker-tree CPU limit.");
+        result.RuntimeDiagnostics.Should().ContainSingle(item =>
+            item.Severity == "RuntimeLimit" && item.Message.Contains("CPU-time limit exceeded"));
+    }
+
+    [Fact]
+    public async Task RunAsync_StdoutLimitExceeded_KillsWorker()
+    {
+        var runner = BuildRunner(maxWorkerStandardOutputBytes: 512);
+
+        var result = await runner.RunAsync(
+            "System.Console.Write(new string('x', 4096)); while (true) { }",
+            NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script worker exceeded configured standard-output limit.");
+    }
+
+    [Fact]
+    public async Task RunAsync_StderrLimitExceeded_KillsWorker()
+    {
+        var runner = BuildRunner(maxWorkerStandardErrorBytes: 512);
+
+        var result = await runner.RunAsync(
+            "System.Console.Error.Write(new string('x', 4096)); while (true) { }",
+            NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script worker exceeded configured standard-error limit.");
+    }
+
+    [Fact]
+    public async Task RunAsync_UnavailableWorker_FailsClosedWithoutInProcessFallback()
+    {
+        var missingWorker = Path.Combine(
+            Path.GetTempPath(),
+            $"missing-quant-worker-{Guid.NewGuid():N}",
+            "Meridian.QuantScript.Worker.exe");
+        var runner = BuildRunner(workerExecutablePath: missingWorker);
+
+        var result = await runner.RunAsync("Print(42);", NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script worker containment is unavailable.");
+        result.RuntimeDiagnostics.Should().ContainSingle(x => x.Severity == "RuntimeIsolation");
+    }
+
+    [Fact]
+    public async Task RunAsync_CancellationTerminatesWorkerProcess()
+    {
+        var markerPath = Path.Combine(Path.GetTempPath(), $"quant-worker-{Guid.NewGuid():N}.pid");
+        var sourcePath = markerPath.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
+        var runner = BuildRunner(runTimeoutSeconds: 15, enableUnsafeScripts: true);
+        using var cts = new CancellationTokenSource();
+
+        try
+        {
+            var run = runner.RunAsync(
+                $"System.IO.File.WriteAllText(\"{sourcePath}\", System.Environment.ProcessId.ToString()); while (true) {{ }}",
+                NoParams,
+                cts.Token);
+            await WaitForFileAsync(markerPath, TimeSpan.FromSeconds(10));
+            var workerProcessId = int.Parse(await File.ReadAllTextAsync(markerPath));
+
+            cts.Cancel();
+            var result = await run.WaitAsync(TimeSpan.FromSeconds(5));
+
+            result.RuntimeError.Should().Be("Script cancelled by user.");
+            await WaitForProcessExitAsync(workerProcessId, TimeSpan.FromSeconds(3));
+        }
+        finally
+        {
+            if (File.Exists(markerPath))
+                File.Delete(markerPath);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_AdmissionQueueIsFull_RejectsWithoutStartingAnotherWorker()
+    {
+        var worker = new BlockingWorkerClient();
+        var runner = BuildRunner(
+            maxConcurrentWorkers: 1,
+            maxQueuedWorkerRequests: 0,
+            workerClient: worker);
+
+        var first = runner.RunAsync("Print(1);", NoParams);
+        await worker.Entered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        var rejected = await runner.RunAsync("Print(2);", NoParams);
+
+        rejected.Success.Should().BeFalse();
+        rejected.RuntimeError.Should().Be("Script worker capacity is currently exhausted.");
+        rejected.RuntimeDiagnostics.Should().ContainSingle(item =>
+            item.Severity == "RuntimeLimit" && item.Message.Contains("admission queue"));
+        worker.CallCount.Should().Be(1);
+
+        worker.Release.TrySetResult();
+        (await first).Success.Should().BeTrue();
+        worker.MaximumActive.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RunAsync_HostRpcDateRangeQuotaRejectsBeforeProviderMaterialization()
+    {
+        var dataContext = new Mock<IQuantDataContext>(MockBehavior.Strict);
+        var runner = BuildRunner(dataContext: dataContext.Object, maxHostRpcDateRangeDays: 5);
+
+        var result = await runner.RunAsync(
+            "Data.Prices(\"SPY\", new System.DateTime(2024,1,1), new System.DateTime(2024,2,1));",
+            NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured host-data RPC limits.");
+        result.RuntimeDiagnostics.Should().ContainSingle(item => item.Message.Contains("date-range quota"));
+        dataContext.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RunAsync_HostRpcCallQuotaIsAggregateAndStopsFurtherProviderCalls()
+    {
+        var dataContext = new Mock<IQuantDataContext>(MockBehavior.Strict);
+        dataContext
+            .Setup(context => context.PricesAsync(
+                "SPY",
+                new DateOnly(2024, 1, 2),
+                new DateOnly(2024, 1, 2),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PriceSeries(
+                "SPY",
+                [new PriceBar(new DateOnly(2024, 1, 2), 100, 101, 99, 100, 1_000)]));
+        var runner = BuildRunner(
+            dataContext: dataContext.Object,
+            runTimeoutSeconds: 30,
+            maxHostRpcCallsPerRun: 1);
+        const string source = """
+            Data.Prices("SPY", new System.DateOnly(2024,1,2), new System.DateOnly(2024,1,2));
+            Data.Prices("SPY", new System.DateOnly(2024,1,2), new System.DateOnly(2024,1,2));
+            """;
+
+        var result = await runner.RunAsync(source, NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured host-data RPC limits.");
+        result.RuntimeDiagnostics.Should().ContainSingle(item => item.Message.Contains("call quota"));
+        dataContext.Verify(context => context.PricesAsync(
+            "SPY",
+            new DateOnly(2024, 1, 2),
+            new DateOnly(2024, 1, 2),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RunAsync_HostRpcDistinctSymbolQuotaStopsUnadmittedSymbolBeforeProviderCall()
+    {
+        var dataContext = new Mock<IQuantDataContext>(MockBehavior.Strict);
+        dataContext
+            .Setup(context => context.PricesAsync(
+                "SPY",
+                new DateOnly(2024, 1, 2),
+                new DateOnly(2024, 1, 2),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PriceSeries(
+                "SPY",
+                [new PriceBar(new DateOnly(2024, 1, 2), 100, 101, 99, 100, 1_000)]));
+        var runner = BuildRunner(
+            dataContext: dataContext.Object,
+            runTimeoutSeconds: 30,
+            maxHostRpcSymbolsPerRun: 1);
+        const string source = """
+            Data.Prices("SPY", new System.DateOnly(2024,1,2), new System.DateOnly(2024,1,2));
+            Data.Prices("QQQ", new System.DateOnly(2024,1,2), new System.DateOnly(2024,1,2));
+            """;
+
+        var result = await runner.RunAsync(source, NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured host-data RPC limits.");
+        result.RuntimeDiagnostics.Should().ContainSingle(item => item.Message.Contains("distinct-symbol quota"));
+        dataContext.Verify(context => context.PricesAsync(
+            "SPY",
+            new DateOnly(2024, 1, 2),
+            new DateOnly(2024, 1, 2),
+            It.IsAny<CancellationToken>()), Times.Once);
+        dataContext.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RunAsync_HostRpcRecordQuotaRejectsBeforeEnumeratingOversizedResponse()
+    {
+        var oversized = new NonEnumeratingTradeList(2);
+        var dataContext = new Mock<IQuantDataContext>(MockBehavior.Strict);
+        dataContext
+            .Setup(context => context.TradesAsync("SPY", new DateOnly(2024, 1, 2), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(oversized);
+        var runner = BuildRunner(
+            dataContext: dataContext.Object,
+            runTimeoutSeconds: 30,
+            maxHostRpcRecordsPerRun: 1);
+
+        var result = await runner.RunAsync(
+            "Data.Trades(\"SPY\", new System.DateOnly(2024,1,2));",
+            NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured host-data RPC limits.");
+        result.RuntimeDiagnostics.Should().ContainSingle(item => item.Message.Contains("record quota"));
+        oversized.EnumerationAttempts.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RunAsync_HostRpcAggregateByteQuotaStopsBoundedSerialization()
+    {
+        var bars = Enumerable.Range(0, 128)
+            .Select(index => new PriceBar(
+                new DateOnly(2024, 1, 1).AddDays(index),
+                100 + index,
+                101 + index,
+                99 + index,
+                100.5m + index,
+                1_000_000))
+            .ToArray();
+        var dataContext = new Mock<IQuantDataContext>(MockBehavior.Strict);
+        dataContext
+            .Setup(context => context.PricesAsync(
+                "SPY",
+                new DateOnly(2024, 1, 1),
+                new DateOnly(2024, 5, 7),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PriceSeries("SPY", bars));
+        var runner = BuildRunner(
+            dataContext: dataContext.Object,
+            runTimeoutSeconds: 30,
+            maxHostRpcResponseBytesPerRun: 1_024);
+
+        var result = await runner.RunAsync(
+            "Data.Prices(\"SPY\", new System.DateTime(2024,1,1), new System.DateTime(2024,5,7));",
+            NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured host-data RPC limits.");
+        result.RuntimeDiagnostics.Should().ContainSingle(item => item.Message.Contains("response-byte quota"));
+    }
+
+    [Fact]
+    public async Task RunAsync_WindowsJobCloseTerminatesAllowedDescendant()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        var markerPath = Path.Combine(Path.GetTempPath(), $"quant-descendant-{Guid.NewGuid():N}.txt");
+        var escapedMarker = markerPath.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
+        var runner = BuildRunner(
+            runTimeoutSeconds: 30,
+            enableUnsafeScripts: true,
+            maxWorkerProcessCount: 2);
+        var source = $$"""
+            var command = System.IO.Path.Combine(
+                System.Environment.GetFolderPath(System.Environment.SpecialFolder.System),
+                "cmd.exe");
+            var start = new System.Diagnostics.ProcessStartInfo(command)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            start.ArgumentList.Add("/d");
+            start.ArgumentList.Add("/c");
+            start.ArgumentList.Add("ping -n 3 127.0.0.1 > nul & echo escaped>\"{{escapedMarker}}\"");
+            _ = System.Diagnostics.Process.Start(start);
+            """;
+
+        try
+        {
+            var result = await runner.RunAsync(source, NoParams);
+            result.Success.Should().BeTrue(
+                "the descendant must start before job-close containment is exercised; runtime={0}; compilation={1}",
+                result.RuntimeError,
+                string.Join(" | ", result.CompilationErrors.Select(item => item.Message)));
+
+            await Task.Delay(TimeSpan.FromSeconds(3));
+            File.Exists(markerPath).Should().BeFalse("closing the worker Job Object must terminate descendants");
+        }
+        finally
+        {
+            if (File.Exists(markerPath))
+                File.Delete(markerPath);
+        }
     }
 
     // ── Data access ───────────────────────────────────────────────────────────
@@ -434,5 +768,108 @@ public sealed class ScriptRunnerTests
         first.Plots.Should().ContainSingle(p => p.Title == "run1");
         second.Success.Should().BeTrue();
         second.Plots.Should().BeEmpty();
+    }
+
+    private static async Task WaitForFileAsync(string path, TimeSpan timeout)
+    {
+        var deadline = Stopwatch.StartNew();
+        while (!File.Exists(path) && deadline.Elapsed < timeout)
+            await Task.Delay(25);
+
+        File.Exists(path).Should().BeTrue($"worker marker should appear within {timeout}");
+    }
+
+    private static async Task WaitForProcessExitAsync(int processId, TimeSpan timeout)
+    {
+        var deadline = Stopwatch.StartNew();
+        while (deadline.Elapsed < timeout)
+        {
+            try
+            {
+                using var process = Process.GetProcessById(processId);
+                if (process.HasExited)
+                    return;
+            }
+            catch (ArgumentException)
+            {
+                return;
+            }
+
+            await Task.Delay(25);
+        }
+
+        Action lookup = () => Process.GetProcessById(processId);
+        lookup.Should().Throw<ArgumentException>("the isolated worker must not survive cancellation");
+    }
+
+    private sealed class BlockingWorkerClient : IQuantScriptWorkerClient
+    {
+        private int _active;
+        private int _callCount;
+        private int _maximumActive;
+
+        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int CallCount => Volatile.Read(ref _callCount);
+        public int MaximumActive => Volatile.Read(ref _maximumActive);
+
+        public async Task<WorkerExecutionOutcome> ExecuteAsync(
+            WorkerExecutionRequest request,
+            IQuantDataContext dataContext,
+            QuantScriptOptions options,
+            CancellationToken ct)
+        {
+            Interlocked.Increment(ref _callCount);
+            var active = Interlocked.Increment(ref _active);
+            var observed = Volatile.Read(ref _maximumActive);
+            while (active > observed)
+            {
+                var previous = Interlocked.CompareExchange(ref _maximumActive, active, observed);
+                if (previous == observed)
+                    break;
+                observed = previous;
+            }
+            Entered.TrySetResult();
+            try
+            {
+                await Release.Task.WaitAsync(ct);
+                return new WorkerExecutionOutcome(
+                    WorkerCompletionKind.Completed,
+                    new WorkerScriptRunResult(
+                        true,
+                        0,
+                        0,
+                        [],
+                        [],
+                        null,
+                        string.Empty,
+                        [],
+                        [],
+                        [],
+                        [],
+                        []),
+                    0);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _active);
+            }
+        }
+    }
+
+    private sealed class NonEnumeratingTradeList(int count) : IReadOnlyList<ScriptTrade>
+    {
+        private int _enumerationAttempts;
+        public int EnumerationAttempts => Volatile.Read(ref _enumerationAttempts);
+        public int Count { get; } = count;
+        public ScriptTrade this[int index] => throw new InvalidOperationException("The oversized response must not be indexed.");
+
+        public IEnumerator<ScriptTrade> GetEnumerator()
+        {
+            Interlocked.Increment(ref _enumerationAttempts);
+            throw new InvalidOperationException("The oversized response must be rejected before enumeration.");
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -755,17 +755,10 @@ public static class SecurityMasterEndpoints
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
-            HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
-            if (context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
-            {
-                var actor = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
-                await casework.SeedOpenConflictCasesAsync(conflicts, actor, ct).ConfigureAwait(false);
-            }
-
             return Results.Json(conflicts, jsonOptions);
         })
         .WithName("GetSecurityMasterConflicts")
@@ -799,12 +792,6 @@ public static class SecurityMasterEndpoints
             var serverRequest = request with { ResolvedBy = resolvedBy };
 
             var updated = await conflictService.ResolveAsync(serverRequest, ct).ConfigureAwait(false);
-            if (updated is not null &&
-                context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
-            {
-                await casework.ApplyResolvedConflictAsync(updated, serverRequest, ct).ConfigureAwait(false);
-            }
-
             return updated is null
                 ? Results.NotFound()
                 : Results.Json(updated, jsonOptions);
@@ -906,11 +893,6 @@ public static class SecurityMasterEndpoints
         {
             var actor = ResolveActor(context);
             var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
-            if (context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
-            {
-                await casework.SeedOperatorOverrideCaseAsync(updated, actor, ct).ConfigureAwait(false);
-            }
-
             return Results.Json(updated, jsonOptions);
         })
         .WithName("PatchSecurityMasterOperatorOverrides")
@@ -1385,15 +1367,12 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterQualityReportRun, async (
             HttpContext context,
             [FromServices] ISecurityMasterDataQualityService qualityService,
-            [FromServices] SecurityMasterExceptionCaseworkService caseworkService,
             CancellationToken ct) =>
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
                 return EndpointHelpers.Forbidden();
 
             var report = await qualityService.RunQualityChecksAsync(ct).ConfigureAwait(false);
-            var actor = EndpointAuthorization.TryResolveActor(context, out var username) ? username : null;
-            await caseworkService.SyncQualityViolationCasesAsync(report, actor, ct).ConfigureAwait(false);
             return Results.Json(report, jsonOptions);
         })
         .WithName("RunSecurityMasterQualityReport")
@@ -1417,13 +1396,39 @@ public static class SecurityMasterEndpoints
     private static void MapExceptionAgingEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
         group.MapGet(UiApiRoutes.SecurityMasterExceptionsAging, async (
+            HttpContext context,
             [FromServices] SecurityMasterExceptionCaseworkService caseworkService,
             CancellationToken ct) =>
         {
-            var aging = await caseworkService.GetAgingExceptionsAsync(ct).ConfigureAwait(false);
+            if (!TryResolveCaseworkScope(context, out var caseworkScope))
+            {
+                return ApiProblemDetails.Forbidden(
+                    context,
+                    "A tenant- and company-scoped workstation request context is required.");
+            }
+
+            var aging = await caseworkService.GetAgingExceptionsAsync(caseworkScope, ct).ConfigureAwait(false);
             return Results.Json(aging, jsonOptions);
         })
         .WithName("GetSecurityMasterAgingExceptions")
-        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireWorkstationTenantCompanyScope();
+    }
+
+    private static bool TryResolveCaseworkScope(
+        HttpContext context,
+        out ReconciliationBreakQueueScope scope)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        if (string.IsNullOrWhiteSpace(tenantContext.TenantId)
+            || string.IsNullOrWhiteSpace(tenantContext.CompanyId))
+        {
+            scope = null!;
+            return false;
+        }
+
+        scope = new ReconciliationBreakQueueScope(tenantContext.TenantId, tenantContext.CompanyId);
+        return true;
     }
 }

@@ -101,6 +101,67 @@ public sealed class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
+    public async Task GetProjectionAsync_MonthEndIssueDate_ShouldAnchorScheduleWithoutStubPeriod()
+    {
+        // Regression: payment dates used to compound AddMonths from the previous payment date.
+        // AddMonths clamps a month-end anchor into shorter months (31 Jan plus three months is
+        // 30 Apr), and compounding that clamp walked the schedule earlier every period until the
+        // final coupon landed one day before maturity and emitted a spurious one-day stub, so a
+        // one-year quarterly bond produced five payments instead of four.
+        //
+        // The issue date is pinned to the end of the current month so this exercises the clamping
+        // path on every calendar day rather than only when the suite happens to run on a month end.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueDate = new DateOnly(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
+        var maturityDate = issueDate.AddMonths(12);
+        var securityId = Guid.Parse("44444444-dddd-dddd-dddd-444444444444");
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate,
+                    maturityDate,
+                    par = 100m,
+                    couponRate = 4m,
+                    paymentFrequency = "Quarterly",
+                    dayCountConvention = "30/360"
+                })));
+        var service = BuildService(store, query);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().HaveCount(4);
+        projection.Schedule
+            .Select(static row => DateOnly.FromDateTime(row.PeriodDate.UtcDateTime.Date))
+            .Should().Equal(
+                issueDate.AddMonths(3),
+                issueDate.AddMonths(6),
+                issueDate.AddMonths(9),
+                maturityDate);
+        // Principal is repaid once, at maturity, with no trailing stub period.
+        projection.Schedule.Should().ContainSingle(static row => row.PrincipalAmount > 0m);
+        projection.Schedule.Last().PrincipalAmount.Should().Be(100m);
+        projection.Schedule.Last().Factor.Should().Be(0m);
+        // Every accrual period is a whole quarter, so no coupon collapses to a stub. A quarter of a
+        // 4% coupon on par 100 is ~1.00 (day-count fractions vary slightly with month length, so
+        // this is a floor rather than an equality); the one-day stub the old schedule produced
+        // accrued about 0.01.
+        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount > 0.9m);
+    }
+
+    [Fact]
     public async Task GetProjectionAsync_StaleSource_ShouldFlagStalenessButStillReturnForDisplay()
     {
         var securityId = Guid.Parse("33333333-cccc-cccc-cccc-333333333333");

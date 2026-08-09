@@ -16,6 +16,7 @@ public sealed class CronExpressionParserTests
     [InlineData("0 0 1 * *")]      // Monthly
     [InlineData("30 6 * * 1-5")]   // Weekdays at 6:30
     [InlineData("0 3 * * 0")]      // Sunday at 3 AM
+    [InlineData("0 1 * * 0#1")]    // First Sunday of the month
     [InlineData("0,30 * * * *")]   // Every 30 min
     [InlineData("0 0 * * *")]      // Midnight daily
     public void IsValid_ValidExpressions_ReturnsTrue(string cron)
@@ -36,6 +37,18 @@ public sealed class CronExpressionParserTests
     [InlineData("* * * 13 *")]        // Month 13 out of range
     [InlineData("* * * * 7")]         // Day-of-week 7 out of range
     [InlineData("abc * * * *")]       // Non-numeric
+    [InlineData("*/0 * * * *")]       // Zero step would never advance
+    [InlineData("*/-1 * * * *")]      // Negative step moves away from the range end
+    [InlineData("*/5/2 * * * *")]     // Too many step delimiters
+    [InlineData("10-5 * * * *")]      // Descending range
+    [InlineData("10-5/2 * * * *")]    // Descending stepped range
+    [InlineData("1-2-3 * * * *")]     // Too many range delimiters
+    [InlineData("1-2-3/2 * * * *")]   // Malformed stepped range
+    [InlineData("0 1 * * 0#0")]       // Ordinals are one-based
+    [InlineData("0 1 * * 0#6")]       // At most five occurrences in a month
+    [InlineData("0 1 * * 7#1")]       // Day-of-week out of range
+    [InlineData("0 1 * * 0#1#2")]     // Too many ordinal delimiters
+    [InlineData("0 1 * * 0,1#1")]     // Ordinal applies to one explicit weekday
     public void IsValid_InvalidExpressions_ReturnsFalse(string cron)
     {
         CronExpressionParser.IsValid(cron).Should().BeFalse();
@@ -114,6 +127,26 @@ public sealed class CronExpressionParserTests
         // 5/10 in minute field means 5, 15, 25, 35, 45, 55
         CronExpressionParser.TryParse("5/10 * * * *", out var schedule);
         schedule.Minutes.Should().BeEquivalentTo(new[] { 5, 15, 25, 35, 45, 55 });
+    }
+
+    [Fact]
+    public void TryParse_MaximumStep_DoesNotOverflow()
+    {
+        var parsed = CronExpressionParser.TryParse("1/2147483647 * * * *", out var schedule);
+
+        parsed.Should().BeTrue();
+        schedule.Minutes.Should().ContainSingle().Which.Should().Be(1);
+    }
+
+    [Fact]
+    public void TryParse_OrdinalDayOfWeek_PreservesExplicitOccurrence()
+    {
+        var parsed = CronExpressionParser.TryParse("0 1 * * 0#1", out var schedule);
+
+        parsed.Should().BeTrue();
+        schedule.DaysOfWeek.Should().ContainSingle().Which.Should().Be(0);
+        schedule.DayOfWeekOrdinal.Should().Be(1);
+        schedule.DayOfWeekIsWildcard.Should().BeFalse();
     }
 
     #endregion
@@ -207,6 +240,59 @@ public sealed class CronExpressionParserTests
     }
 
     [Fact]
+    public void GetNextOccurrence_ImpossibleSchedule_ReturnsNull()
+    {
+        var from = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var result = CronExpressionParser.GetNextOccurrence("0 0 30 2 *", Utc, from);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetNextOccurrenceOrNull_ImpossibleSchedule_PreservesLegacyNonNullContract()
+    {
+        var from = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        CronExpressionParser.TryParse("0 0 30 2 *", out var schedule).Should().BeTrue();
+
+        schedule.GetNextOccurrenceOrNull(from, Utc).Should().BeNull();
+        Action act = () => schedule.GetNextOccurrence(from, Utc);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void GetNextOccurrence_LeapDayBeyondPriorIterationLimit_ReturnsNextLeapDay()
+    {
+        var from = new DateTimeOffset(2024, 2, 29, 0, 0, 0, TimeSpan.Zero);
+
+        var next = CronExpressionParser.GetNextOccurrence("0 0 29 2 *", Utc, from);
+
+        next.Should().Be(new DateTimeOffset(2028, 2, 29, 0, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void GetNextOccurrence_LeapDayAcrossNonLeapCentury_UsesCalendarHorizon()
+    {
+        var from = new DateTimeOffset(2096, 2, 29, 0, 0, 0, TimeSpan.Zero);
+
+        var next = CronExpressionParser.GetNextOccurrence("0 0 29 2 *", Utc, from);
+
+        next.Should().Be(new DateTimeOffset(2104, 2, 29, 0, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void GetNextOccurrence_FromMaximumDate_ReturnsNullWithoutOverflow()
+    {
+        DateTimeOffset? result = null;
+        Action act = () => result = CronExpressionParser.GetNextOccurrence(
+            "* * * * *", Utc, DateTimeOffset.MaxValue);
+
+        act.Should().NotThrow();
+        result.Should().BeNull();
+    }
+
+    [Fact]
     public void GetNextOccurrence_WithTimezone_RespectsOffset()
     {
         // Test with Eastern Time
@@ -224,6 +310,66 @@ public sealed class CronExpressionParserTests
         var nextEt = TimeZoneInfo.ConvertTime(next!.Value, et);
         nextEt.Hour.Should().Be(9);
         nextEt.Minute.Should().Be(0);
+    }
+
+    [Fact]
+    public void GetNextOccurrence_DstFold_ReturnsSecondAmbiguousOccurrenceWhenItIsStillFuture()
+    {
+        var timeZone = CreateEasternTestTimeZone();
+        var from = new DateTimeOffset(2025, 11, 2, 1, 45, 0, TimeSpan.FromHours(-4));
+
+        var next = CronExpressionParser.GetNextOccurrence("30 1 * * *", timeZone, from);
+
+        next.Should().Be(new DateTimeOffset(
+            2025, 11, 2, 1, 30, 0, TimeSpan.FromHours(-5)));
+    }
+
+    [Fact]
+    public void GetNextOccurrence_DstFold_SelectsEarliestAbsoluteCandidateAcrossBothOffsets()
+    {
+        var timeZone = CreateEasternTestTimeZone();
+        var from = new DateTimeOffset(2025, 11, 2, 1, 45, 0, TimeSpan.FromHours(-4));
+
+        var next = CronExpressionParser.GetNextOccurrence("* * * * *", timeZone, from);
+
+        next.Should().Be(new DateTimeOffset(
+            2025, 11, 2, 1, 46, 0, TimeSpan.FromHours(-4)));
+    }
+
+    [Fact]
+    public void GetNextOccurrence_DstFold_AfterFirstIntervalWrapsToSecondOffset()
+    {
+        var timeZone = CreateEasternTestTimeZone();
+        var from = new DateTimeOffset(2025, 11, 2, 1, 59, 0, TimeSpan.FromHours(-4));
+
+        var next = CronExpressionParser.GetNextOccurrence("* * * * *", timeZone, from);
+
+        next.Should().Be(new DateTimeOffset(
+            2025, 11, 2, 1, 0, 0, TimeSpan.FromHours(-5)));
+    }
+
+    [Fact]
+    public void GetNextOccurrence_DstFold_AfterSecondOccurrenceAdvancesToNextDay()
+    {
+        var timeZone = CreateEasternTestTimeZone();
+        var from = new DateTimeOffset(2025, 11, 2, 1, 45, 0, TimeSpan.FromHours(-5));
+
+        var next = CronExpressionParser.GetNextOccurrence("30 1 * * *", timeZone, from);
+
+        next.Should().Be(new DateTimeOffset(
+            2025, 11, 3, 1, 30, 0, TimeSpan.FromHours(-5)));
+    }
+
+    [Fact]
+    public void GetNextOccurrence_DstSpringGap_SkipsInvalidWallClockTime()
+    {
+        var timeZone = CreateEasternTestTimeZone();
+        var from = new DateTimeOffset(2025, 3, 8, 3, 0, 0, TimeSpan.FromHours(-5));
+
+        var next = CronExpressionParser.GetNextOccurrence("30 2 * * *", timeZone, from);
+
+        next.Should().Be(new DateTimeOffset(
+            2025, 3, 10, 2, 30, 0, TimeSpan.FromHours(-4)));
     }
 
     [Fact]
@@ -291,6 +437,18 @@ public sealed class CronExpressionParserTests
     }
 
     [Fact]
+    public void GetNextOccurrence_OrdinalDayOfWeek_MatchesOnlyFirstSunday()
+    {
+        var from = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var january = CronExpressionParser.GetNextOccurrence("0 1 * * 0#1", Utc, from);
+        var february = CronExpressionParser.GetNextOccurrence("0 1 * * 0#1", Utc, january!.Value);
+
+        january.Should().Be(new DateTimeOffset(2025, 1, 5, 1, 0, 0, TimeSpan.Zero));
+        february.Should().Be(new DateTimeOffset(2025, 2, 2, 1, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact]
     public void TryParse_WildcardFlags_TrackDayFieldRestriction()
     {
         CronExpressionParser.TryParse("0 0 1 * 1", out var restricted);
@@ -348,6 +506,24 @@ public sealed class CronExpressionParserTests
     {
         var desc = CronExpressionParser.GetDescription("0 0 1 1,6 *");
         desc.Should().Contain("months");
+    }
+
+    [Fact]
+    public void GetDescription_OrdinalDayOfWeek_DescribesMonthlyOccurrence()
+    {
+        var desc = CronExpressionParser.GetDescription("0 1 * * 0#1");
+
+        desc.Should().Contain("first Sunday of the month");
+    }
+
+    [Fact]
+    public void GetDescription_BothRestrictedDayFields_ExplainsPosixOrSemantics()
+    {
+        var desc = CronExpressionParser.GetDescription("0 0 1 * 1");
+
+        desc.Should().Contain("Mon");
+        desc.Should().Contain("days 1");
+        desc.Should().Contain(" or ");
     }
 
     #endregion
@@ -452,6 +628,34 @@ public sealed class CronExpressionParserTests
         result.Should().BeTrue();
         schedule.Minutes.Should().ContainSingle().Which.Should().Be(0);
         schedule.Hours.Should().ContainSingle().Which.Should().Be(2);
+    }
+
+    private static TimeZoneInfo CreateEasternTestTimeZone()
+    {
+        var daylightTransitionStart = TimeZoneInfo.TransitionTime.CreateFloatingDateRule(
+            new DateTime(1, 1, 1, 2, 0, 0),
+            month: 3,
+            week: 2,
+            dayOfWeek: DayOfWeek.Sunday);
+        var daylightTransitionEnd = TimeZoneInfo.TransitionTime.CreateFloatingDateRule(
+            new DateTime(1, 1, 1, 2, 0, 0),
+            month: 11,
+            week: 1,
+            dayOfWeek: DayOfWeek.Sunday);
+        var adjustmentRule = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+            new DateTime(2025, 1, 1),
+            new DateTime(2025, 12, 31),
+            TimeSpan.FromHours(1),
+            daylightTransitionStart,
+            daylightTransitionEnd);
+
+        return TimeZoneInfo.CreateCustomTimeZone(
+            "Meridian.Tests/Eastern",
+            TimeSpan.FromHours(-5),
+            "Meridian Eastern Test Time",
+            "Meridian Eastern Test Standard Time",
+            "Meridian Eastern Test Daylight Time",
+            [adjustmentRule]);
     }
 
     #endregion

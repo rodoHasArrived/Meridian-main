@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   useManualJournalEntryWorkbenchViewModel,
 } from "@/screens/accounting-screen.view-model";
@@ -767,6 +767,39 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
   }
 };
 
+function createJournalServices(
+  overrides: Partial<ManualJournalEntryWorkbenchServices> = {}
+): ManualJournalEntryWorkbenchServices {
+  return {
+    getWorkbench: vi.fn().mockResolvedValue(manualJournalWorkbench),
+    searchSecurities: vi.fn().mockResolvedValue([]),
+    saveDraft: vi.fn((request) => Promise.resolve({
+      ...request.draft,
+      version: request.draft.version + 1,
+      updatedAtUtc: "2026-06-30T00:01:00Z"
+    })),
+    validateDraft: vi.fn((request) => Promise.resolve(request.draft)),
+    submitApproval: vi.fn((request) => Promise.resolve({
+      ...manualJournalDraft,
+      journalEntryId: request.journalEntryId,
+      status: "Submitted" as const,
+      version: request.version + 1
+    })),
+    attachEvidence: vi.fn().mockResolvedValue(manualJournalDraft),
+    applyLifecycleAction: vi.fn(),
+    ...overrides
+  };
+}
+
+beforeEach(() => {
+  window.localStorage.clear();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  window.localStorage.clear();
+});
+
 describe("accounting-screen journal-entry view model", () => {
   it("keeps editing unavailable when the governed workbench cannot load", async () => {
     const services = {
@@ -1433,6 +1466,97 @@ describe("accounting-screen journal-entry view model", () => {
       ledgerBookId: "book-route",
       action: "Approve"
     }));
+  });
+
+  it("autosaves editable changes and reports saved health after the debounce", async () => {
+    const services = createJournalServices();
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+
+    vi.useFakeTimers();
+    act(() => result.current.updateHeader("memo", "Autosaved close adjustment"));
+    expect(result.current.saveState).toBe("unsaved");
+    expect(result.current.saveStatusLabel).toBe("Unsaved changes");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_200);
+    });
+
+    expect(services.saveDraft).toHaveBeenCalledWith(expect.objectContaining({
+      correlationId: "manual-je-autosave",
+      draft: expect.objectContaining({ memo: "Autosaved close adjustment" })
+    }));
+    expect(result.current.saveState).toBe("saved");
+    expect(result.current.draft.version).toBe(2);
+  });
+
+  it("recovers an unsaved local snapshot and can discard it for the server draft", async () => {
+    vi.useFakeTimers();
+    const services = createJournalServices();
+    const first = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await vi.waitFor(() => expect(first.result.current.available).toBe(true));
+
+    act(() => first.result.current.updateHeader("memo", "Recovered operator memo"));
+    expect(first.result.current.saveState).toBe("unsaved");
+    first.unmount();
+
+    const second = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await vi.waitFor(() => expect(second.result.current.saveState).toBe("recovered"));
+    expect(second.result.current.draft.memo).toBe("Recovered operator memo");
+    expect(second.result.current.recoveryStatusText).toContain("Recovered unsaved changes");
+
+    act(() => second.result.current.discardRecoveredDraft());
+    expect(second.result.current.saveState).toBe("saved");
+    expect(second.result.current.draft.memo).toBe("Manual close adjustment");
+  });
+
+  it("duplicates and inserts lines while keeping selected dimensions editable", async () => {
+    const services = createJournalServices();
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+
+    let duplicateId: string | null = null;
+    act(() => {
+      duplicateId = result.current.duplicateLine("line-debit");
+    });
+    expect(duplicateId).toBeTruthy();
+    expect(result.current.draft.lines).toHaveLength(3);
+    expect(result.current.draft.lines[1]).toMatchObject({
+      lineId: duplicateId,
+      side: "Debit",
+      amount: 100,
+      accountPath: "Assets:Cash",
+      description: "Cash debit (copy)"
+    });
+
+    let insertedId = "";
+    act(() => {
+      insertedId = result.current.insertLineAfter(duplicateId!, "Credit");
+      result.current.updateLine(duplicateId!, {
+        entityId: "entity-line",
+        fundAllocationId: "allocation-1",
+        taxLotId: "lot-1"
+      });
+      result.current.updateDraftDimensions({
+        strategyId: "strategy-1",
+        portfolioId: "portfolio-1",
+        costCenterId: "cost-center-1"
+      });
+    });
+
+    expect(result.current.selectedLineId).toBe(insertedId);
+    expect(result.current.draft.lines).toHaveLength(4);
+    expect(result.current.draft.lines.find((line) => line.lineId === duplicateId)).toMatchObject({
+      entityId: "entity-line",
+      fundAllocationId: "allocation-1",
+      taxLotId: "lot-1"
+    });
+    expect(result.current.draft.dimensions).toMatchObject({
+      strategyId: "strategy-1",
+      portfolioId: "portfolio-1",
+      costCenterId: "cost-center-1"
+    });
+    expect(result.current.validationIsCurrent).toBe(false);
   });
 
 

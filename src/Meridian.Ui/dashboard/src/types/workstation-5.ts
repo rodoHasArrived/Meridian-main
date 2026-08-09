@@ -38,6 +38,8 @@ export interface ReconciliationBreakQueueItem {
   toleranceBand?: number | null;
   requiredSignoffRole?: string | null;
   signoffStatus?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
   fundAccountId?: string | null;
   explainabilitySummary?: string | null;
   routingTarget?: string | null;
@@ -856,6 +858,23 @@ export interface AccountingTenantAdministrationProfileUpsertRequest {
   evidenceLinks?: string[] | null;
 }
 
+export interface RetainedEvidenceIdentity {
+  evidenceId: string;
+  evidenceUri: string;
+  contentHashSha256: string;
+  sourceSystem: string;
+  sourceReference: string;
+  reviewStatus: string;
+  reviewedBy: string;
+  reviewedAtUtc: string;
+  effectiveDate: string;
+  evidenceVersion: number;
+  retainedAtUtc: string;
+  retainedBy: string;
+  subjectType: string;
+  subjectId: string;
+}
+
 export interface AccountingProductionCertificationProfile {
   fundProfileId: string;
   ledgerBookId?: string | null;
@@ -883,6 +902,7 @@ export interface AccountingProductionCertificationProfile {
   workflowCertificationArtifacts?: AccountingWorkflowCertificationArtifact[];
   dimensionalCertificationArtifacts?: AccountingDimensionalCertificationArtifact[];
   tenantAdminCertificationArtifacts?: AccountingTenantAdminCertificationArtifact[];
+  retainedEvidence?: RetainedEvidenceIdentity[];
 }
 
 export interface AccountingProductionCertificationProfileUpsertRequest {

@@ -18,16 +18,24 @@ public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         _server = await PostgresTestServer.CreateAsync(EnvVar).ConfigureAwait(false);
-
-        Options = new SecurityMasterOptions
+        try
         {
-            ConnectionString = _server.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("sm"),
-            PreloadProjectionCache = false
-        };
+            Options = new SecurityMasterOptions
+            {
+                ConnectionString = _server.ConnectionString,
+                Schema = _server.CreateSchemaName("sm"),
+                PreloadProjectionCache = false
+            };
 
-        var runner = new SecurityMasterMigrationRunner(Options);
-        await runner.EnsureMigratedAsync().ConfigureAwait(false);
+            var runner = new SecurityMasterMigrationRunner(Options);
+            await runner.EnsureMigratedAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            await _server.DisposeAsync().ConfigureAwait(false);
+            _server = null;
+            throw;
+        }
     }
 
     public async Task DisposeAsync()
@@ -37,19 +45,6 @@ public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
             return;
         }
 
-        // External databases persist across runs, so the run-scoped schema is reset;
-        // containers are discarded whole by the shared server.
-        if (_server.UsesExternalConnection)
-        {
-            var runner = new SecurityMasterMigrationRunner(Options);
-            await runner.ResetSchemaAsync().ConfigureAwait(false);
-        }
-
         await _server.DisposeAsync().ConfigureAwait(false);
     }
-}
-
-[CollectionDefinition(nameof(SecurityMasterDatabaseCollection), DisableParallelization = true)]
-public sealed class SecurityMasterDatabaseCollection : ICollectionFixture<SecurityMasterDatabaseFixture>
-{
 }

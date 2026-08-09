@@ -20,6 +20,7 @@ using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,6 +28,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -6710,6 +6712,19 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<AccountingMigrationRunExecutionService>();
         builder.Services.AddSingleton<IAccountingTenantAdministrationProfileStore, InMemoryAccountingTenantAdministrationProfileStore>();
         builder.Services.AddSingleton<IAccountingProductionCertificationProfileStore, InMemoryAccountingProductionCertificationProfileStore>();
+        // The certification upsert endpoint takes this command service as a handler parameter.
+        // Minimal APIs infer a complex parameter as a service only when the container knows the
+        // type; without it the parameter is unresolvable, endpoint-graph construction throws, and
+        // every route in this app answers 500 — not just the certification route.
+        builder.Services.AddSingleton<IEvidenceArtifactStore>(_ => new FileEvidenceArtifactStore(
+            Path.Combine(
+                Path.GetTempPath(),
+                "meridian-accounting-endpoint-tests",
+                Guid.NewGuid().ToString("N")),
+            NullLogger<FileEvidenceArtifactStore>.Instance));
+        builder.Services.AddSingleton<IAccountingProductionCertificationEvidenceAuthority,
+            EvidenceVaultAccountingProductionCertificationEvidenceAuthority>();
+        builder.Services.AddSingleton<AccountingProductionCertificationCommandService>();
         builder.Services.AddSingleton<AccountingProductionReadinessService>();
         builder.Services.AddRateLimiter(options =>
         {

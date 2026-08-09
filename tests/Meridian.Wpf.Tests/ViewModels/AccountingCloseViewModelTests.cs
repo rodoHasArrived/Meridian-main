@@ -1045,7 +1045,7 @@ public sealed class AccountingCloseViewModelTests
     [Fact]
     public async Task LoadThenLock_UsesWorkflowVersionReturnedWithPlan()
     {
-        using var authentication = CreateAdminAuthentication();
+        using var authentication = CreateControllerAuthentication();
         var workflowId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
         var closePlan = WithClosingEntriesGate(
             BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
@@ -1069,6 +1069,9 @@ public sealed class AccountingCloseViewModelTests
         service.LockRequest.Should().NotBeNull();
         service.LockRequest!.ExpectedWorkflowVersion.Should().Be(12);
         service.LockRequest.PrepareClosingEntriesOnly.Should().BeFalse();
+        service.LockRequest.ControllerRole.Should().Be("Controller");
+        service.LockTenantId.Should().Be("company-alpha");
+        service.LockCompanyId.Should().Be("company-alpha");
     }
 
     [Theory]
@@ -1084,7 +1087,7 @@ public sealed class AccountingCloseViewModelTests
         bool queueEnabled,
         bool hardLockEnabled)
     {
-        using var authentication = CreateAdminAuthentication();
+        using var authentication = CreateControllerAuthentication();
         var workflowId = Guid.NewGuid();
         var closePlan = WithClosingEntriesGate(
             BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
@@ -1104,7 +1107,7 @@ public sealed class AccountingCloseViewModelTests
     [Fact]
     public void ApplyClosePlan_WhenClosingGateChanges_NotifiesQueueAndHardLockCommands()
     {
-        using var authentication = CreateAdminAuthentication();
+        using var authentication = CreateControllerAuthentication();
         var workflowId = Guid.NewGuid();
         var requiredPlan = WithClosingEntriesGate(
             BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
@@ -1130,6 +1133,59 @@ public sealed class AccountingCloseViewModelTests
         lockNotifications.Should().BeGreaterThan(0);
         viewModel.QueueClosingEntriesCommand.CanExecute(null).Should().BeFalse();
         viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ClosingEntryGate_WhenDesktopAdminIsNotController_DisablesHardLockWithAuthorityReason()
+    {
+        using var authentication = CreateAdminAuthentication();
+        var workflowId = Guid.NewGuid();
+        var closePlan = WithClosingEntriesGate(
+            BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
+            ClosePostingGateStateDto.Posted,
+            isReadyForLock: true);
+        var viewModel = new AccountingCloseViewModel(
+            Substitute.For<IAccountingProjectionQueryService>(),
+            new CapturingCloseManagementService(closePlan),
+            authentication.Session);
+
+        viewModel.ApplyClosePlan(workflowId, 7, closePlan);
+
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ClosePeriodLockStatusText.Should()
+            .Be("Locking the close period requires an authenticated Controller or Fund Controller session.");
+        viewModel.CloseWorkflowSteps.Should().ContainSingle(step =>
+            step.StepId == "period-lock"
+            && step.DisabledReason ==
+            "Locking the close period requires an authenticated Controller or Fund Controller session.");
+    }
+
+    [Fact]
+    public async Task ClosingEntryGate_WhenControllerLacksCompanyScope_DisablesHardLockAndDoesNotCallService()
+    {
+        using var authentication = CreateUnscopedControllerAuthentication();
+        var workflowId = Guid.NewGuid();
+        var closePlan = WithClosingEntriesGate(
+            BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
+            ClosePostingGateStateDto.Posted,
+            isReadyForLock: true);
+        var service = new CapturingCloseManagementService(closePlan);
+        var viewModel = new AccountingCloseViewModel(
+            Substitute.For<IAccountingProjectionQueryService>(),
+            service,
+            authentication.Session);
+
+        viewModel.ApplyClosePlan(workflowId, 7, closePlan);
+
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ClosePeriodLockStatusText.Should()
+            .Be("Locking the close period requires authenticated tenant and company scope.");
+
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+
+        service.LockRequest.Should().BeNull();
+        viewModel.ClosePeriodLockStatusText.Should()
+            .Be("Locking the close period requires authenticated tenant and company scope.");
     }
 
     [Fact]
@@ -1169,6 +1225,8 @@ public sealed class AccountingCloseViewModelTests
         service.LockRequest.Actor.Should().Be("desktop-admin");
         service.LockRequest.PrepareClosingEntriesOnly.Should().BeTrue();
         service.LockRequest.CorrelationId.Should().Be($"wpf-close-period-prepare-closing-entries-{workflowId:D}");
+        service.LockTenantId.Should().Be("company-alpha");
+        service.LockCompanyId.Should().Be("company-alpha");
         viewModel.QueueClosingEntriesCommand.CanExecute(null).Should().BeFalse();
         viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
     }
@@ -1176,7 +1234,7 @@ public sealed class AccountingCloseViewModelTests
     [Fact]
     public async Task LockClosePeriodCommand_BuildsGovernedRequestAndRendersSharedBlockers()
     {
-        using var authentication = CreateAdminAuthentication();
+        using var authentication = CreateControllerAuthentication();
         var workflowId = Guid.Parse("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
         var closePlan = WithClosingEntriesGate(
@@ -1209,13 +1267,16 @@ public sealed class AccountingCloseViewModelTests
 
         await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
 
-        service.LockActor.Should().Be("desktop-admin");
+        service.LockActor.Should().Be("desktop-controller");
         service.LockRequest.Should().NotBeNull();
         service.LockRequest!.WorkflowId.Should().Be(workflowId);
         service.LockRequest.ExpectedWorkflowVersion.Should().Be(7);
-        service.LockRequest.Actor.Should().Be("desktop-admin");
+        service.LockRequest.Actor.Should().Be("desktop-controller");
         service.LockRequest.ActionOrigin.Should().Be(OperationsActionOriginDto.HumanOperator);
         service.LockRequest.PrepareClosingEntriesOnly.Should().BeFalse();
+        service.LockRequest.ControllerRole.Should().Be("Controller");
+        service.LockTenantId.Should().Be("company-alpha");
+        service.LockCompanyId.Should().Be("company-alpha");
         service.LockRequest.ReportPackId.Should().Be("report-pack-fund-alpha-2026-05");
         service.LockRequest.CorrelationId.Should().Be($"wpf-close-period-lock-{workflowId:D}");
         service.LockRequest.ClosePackageId.Should().Be("close-package-fund-alpha-2026-05");
@@ -1239,7 +1300,7 @@ public sealed class AccountingCloseViewModelTests
     [Fact]
     public async Task LockClosePeriodCommand_UpdatesLoadedPlanWhenSharedServiceLocksPeriod()
     {
-        using var authentication = CreateAdminAuthentication();
+        using var authentication = CreateControllerAuthentication();
         var workflowId = Guid.Parse("cccccccc-dddd-eeee-ffff-aaaaaaaaaaaa");
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
         var closePlan = WithClosingEntriesGate(
@@ -1267,7 +1328,8 @@ public sealed class AccountingCloseViewModelTests
         await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
 
         service.LockRequest.Should().NotBeNull();
-        service.LockRequest!.ChecklistControlApprovals.Should().ContainSingle(approval =>
+        service.LockRequest!.ControllerRole.Should().Be("Controller");
+        service.LockRequest.ChecklistControlApprovals.Should().ContainSingle(approval =>
             approval.TaskId == "task-nav" &&
             approval.ApprovedBy == "controller" &&
             approval.ApprovedAtUtc == DateTimeOffset.Parse("2026-06-04T15:00:00Z"));
@@ -1296,7 +1358,7 @@ public sealed class AccountingCloseViewModelTests
         "Your desktop session does not have permission to queue closing entries.")]
     [InlineData(
         AccountingCloseMutation.LockClosePeriod,
-        "Your desktop session does not have permission to lock the close period.")]
+        "Locking the close period requires an authenticated Controller or Fund Controller session.")]
     public async Task AccountingCloseMutationCommands_WhenDesktopUserIsReadOnly_AreDisabledAndDoNotCallService(
         AccountingCloseMutation mutation,
         string expectedStatus)
@@ -1603,6 +1665,16 @@ public sealed class AccountingCloseViewModelTests
     private static AuthenticatedDesktopSession CreateAdminAuthentication()
         => new(DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson(), "desktop-admin");
 
+    private static AuthenticatedDesktopSession CreateControllerAuthentication()
+        => new(
+            $$"""[{"username":"desktop-controller","passwordHash":"{{Meridian.Identity.PasswordHashing.HashPassword("pw")}}","role":"Controller","companyId":"company-alpha"}]""",
+            "desktop-controller");
+
+    private static AuthenticatedDesktopSession CreateUnscopedControllerAuthentication()
+        => new(
+            $$"""[{"username":"desktop-controller","passwordHash":"{{Meridian.Identity.PasswordHashing.HashPassword("pw")}}","role":"Controller"}]""",
+            "desktop-controller");
+
     private static AuthenticatedDesktopSession CreateReadOnlyAuthentication()
         => new(DesktopAuthenticationSessionTests.HashedDesktopReadOnlyUsersJson(), "desktop-viewer");
 
@@ -1651,6 +1723,8 @@ public sealed class AccountingCloseViewModelTests
         public string? ReviewActor { get; private set; }
         public string? EvidenceReviewActor { get; private set; }
         public string? LockActor { get; private set; }
+        public string? LockTenantId { get; private set; }
+        public string? LockCompanyId { get; private set; }
         public ClosePeriodPlanDto? SignOffResult { get; init; }
         public ClosePeriodPlanDto? LateAdjustmentResult { get; init; }
         public ClosePeriodPlanDto? ReviewResult { get; init; }
@@ -1710,14 +1784,24 @@ public sealed class AccountingCloseViewModelTests
             return Task.FromResult<ClosePeriodPlanDto?>(closePlan);
         }
 
-        public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+        public Task<ClosePeriodLockResultDto?> LockClosePeriodScopedAsync(
             LockClosePeriodRequestDto request,
             string actor,
+            string? tenantId,
+            string? companyId,
             CancellationToken ct = default)
         {
             LockRequest = request;
             LockActor = actor;
+            LockTenantId = tenantId;
+            LockCompanyId = companyId;
             return Task.FromResult<ClosePeriodLockResultDto?>(LockResult ?? new ClosePeriodLockResultDto(false, closePlan, null));
         }
+
+        public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+            LockClosePeriodRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => LockClosePeriodScopedAsync(request, actor, tenantId: null, companyId: null, ct);
     }
 }

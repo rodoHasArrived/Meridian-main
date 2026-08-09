@@ -522,6 +522,7 @@ function entityDisplayName(entityStructure: FamilyOfficeEntityStructure, entityI
   return entityStructure.entities.find((entity) => entity.entityId === entityId)?.displayName ?? "Unmapped entity";
 }
 
+/** Input is already in percent units (42.5 -> "42.5%"). For fractions use `formatRatioAsPercent`. */
 function formatPercent(value: number): string {
   return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
 }

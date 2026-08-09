@@ -157,8 +157,13 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
 
         result.Breaks.Should().HaveCount(2);
         result.Breaks.Should().OnlyContain(breakRecord => breakRecord.BreakCode == "CASH_CANDIDATE");
+        result.Breaks.Should().OnlyContain(breakRecord => breakRecord.ToleranceBreached);
         result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":2", StringComparison.Ordinal));
         result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":3", StringComparison.Ordinal));
+        result.Cases.Should().OnlyContain(reconciliationCase => reconciliationCase.Priority == "High");
+        result.Cases.Should().OnlyContain(reconciliationCase =>
+            reconciliationCase.BreakExplanation != null
+            && reconciliationCase.BreakExplanation.RequiredSignoffRole == "Fund accounting");
     }
 
     [Fact]
@@ -325,7 +330,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         IStatementToleranceProfileProvider? toleranceProfileProvider = null)
     {
         var importStore = new JsonCanonicalStatementStore(_root);
-        return new StatementRunWorkflowService(
+        return StatementRunWorkflowService.CreateEphemeralForTesting(
             importStore,
             new JsonReconciliationCaseStore(_root),
             new JsonReconciliationBreakStore(_root),

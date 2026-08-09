@@ -6,6 +6,7 @@ import {
   formatNumber,
   formatPercent,
   formatPrefixedCurrency,
+  formatRatioAsPercent,
   formatSignedCurrency,
   pluralizeCount
 } from "@/lib/format";
@@ -36,6 +37,25 @@ describe("formatPercent", () => {
 
   it("renders the fallback for non-finite values", () => {
     expect(formatPercent(null, { fallback: "Not measured" })).toBe("Not measured");
+  });
+});
+
+describe("formatRatioAsPercent", () => {
+  it("scales fraction-unit values into percent display", () => {
+    expect(formatRatioAsPercent(0.425)).toBe("42.5%");
+    expect(formatRatioAsPercent(1)).toBe("100%");
+    expect(formatRatioAsPercent(0)).toBe("0%");
+  });
+
+  it("differs from formatPercent by exactly 100x for the same input", () => {
+    expect(formatPercent(0.425)).toBe("0.43%");
+    expect(formatRatioAsPercent(0.425)).toBe("42.5%");
+  });
+
+  it("honours fraction digit bounds and the fallback", () => {
+    expect(formatRatioAsPercent(0.12345, { maximumFractionDigits: 1 })).toBe("12.3%");
+    expect(formatRatioAsPercent(null, { fallback: "Unavailable" })).toBe("Unavailable");
+    expect(formatRatioAsPercent(Number.NaN, { fallback: "Unavailable" })).toBe("Unavailable");
   });
 });
 

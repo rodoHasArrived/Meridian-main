@@ -42,8 +42,9 @@ public sealed record CertifiedPartnersCapitalProjection(
 /// Sources the certified partners-capital roll-forward for a governed reporting run from the same
 /// authoritative ledger scope the run certifies. Returns <c>null</c> when the run scope cannot
 /// produce a roll-forward (e.g. no ledger book selected, unresolved period, or no partners' capital),
-/// in which case the Capital Account Statement falls back to the generic certified-dataset
-/// presentation. Implementations must be deterministic for a given scope + as-of.
+/// in which case a report may use a generic certified-dataset presentation only when its certified
+/// template/output contract does not require the signed canonical ledger presentation.
+/// Implementations must be deterministic for a given scope + as-of.
 /// </summary>
 public interface IReportingPartnersCapitalSource
 {

@@ -729,8 +729,12 @@ public sealed class PromotionServiceLiveGovernanceTests
             durableStore);
 
         var history = await restarted.GetPromotionHistoryAsync();
+        var scopedHistoryWithoutRetainedSource = await restarted.GetPromotionHistoryAsync(
+            new StrategyRunReadScope("tenant-a", "company-a"));
 
         history.Should().ContainSingle();
+        scopedHistoryWithoutRetainedSource.Should().BeEmpty(
+            "scoped history must fail closed when the restarted run store cannot prove source ownership");
         history[0].SourceRunId.Should().Be(run.RunId);
         history[0].TargetRunId.Should().NotBeNullOrWhiteSpace();
         history[0].AuditReference.Should().NotBeNullOrWhiteSpace();
@@ -787,7 +791,8 @@ public sealed class PromotionServiceLiveGovernanceTests
             $"{PromotionApprovalChecklist.ExceptionHandlingReviewed}:exceptions/live-readiness",
             $"{PromotionApprovalChecklist.RollbackKillSwitchReviewed}:controls/kill-switch/live-readiness",
             $"{PromotionApprovalChecklist.AuditRetentionReviewed}:audit-retention/live-readiness",
-            $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/{manualOverrideId}"
+            $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/{manualOverrideId}",
+            $"{PromotionApprovalChecklist.PaperExecutionModelReviewed}:paper-match/1+paper-cost/1"
         ];
 
     private static string CreateTempRoot()

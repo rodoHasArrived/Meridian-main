@@ -7,7 +7,7 @@ description: >
   is outdated", "AI instructions need updating", or whenever code changes affect public APIs,
   configuration, provider interfaces, storage design, or architecture. Also trigger for
   ai-known-errors.md updates, CLAUDE.md refreshes, and docs/ai/ resource maintenance.
-tools: ["read", "search", "edit", "mcp"]
+tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
 # Meridian — Documentation Specialist

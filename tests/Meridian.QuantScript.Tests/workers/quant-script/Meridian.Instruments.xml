@@ -1,0 +1,461 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.Instruments</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.Instruments.AssetOperations.PortfolioCashLadderInputs">
+            <summary>
+            Inputs for one portfolio cash ladder computation. Positions carry the
+            instrument-level asset-operations projections produced by
+            <see cref="T:Meridian.Instruments.AssetOperations.AssetObligationProjectionService"/> (or published projections);
+            cash balances and capital activity are joined from Ledger-side providers.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.AssetOperations.PortfolioCashLadderInputs.#ctor(System.DateOnly,System.Int32,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.AssetOperations.PortfolioCashLadderPositionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.AssetOperations.PortfolioCashBalanceDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.AssetOperations.PortfolioCapitalActivityDto},System.Decimal,System.Int32)">
+            <summary>
+            Inputs for one portfolio cash ladder computation. Positions carry the
+            instrument-level asset-operations projections produced by
+            <see cref="T:Meridian.Instruments.AssetOperations.AssetObligationProjectionService"/> (or published projections);
+            cash balances and capital activity are joined from Ledger-side providers.
+            </summary>
+        </member>
+        <member name="P:Meridian.Instruments.AssetOperations.PortfolioCashLadderInputs.PositionSourceNotices">
+            <summary>
+            Provenance notices about how <see cref="P:Meridian.Instruments.AssetOperations.PortfolioCashLadderInputs.Positions"/> were sourced (e.g. a
+            warning that they are unit-quantity placeholders because no holdings source
+            was wired). Surfaced in the ladder's warnings so overstated liquidity is
+            visible rather than silent.
+            </summary>
+        </member>
+        <member name="P:Meridian.Instruments.AssetOperations.PortfolioCashLadderInputs.DecisionBlockers">
+            <summary>
+            Missing authoritative inputs that make a liquidity conclusion unsafe. When populated the
+            engine returns a blocked result with no buckets or breach flags.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.AssetOperations.PortfolioCashLadderEngine">
+            <summary>
+            Aggregates per-instrument projected cash flows across every held position,
+            joins opening cash and dated capital activity, and produces the
+            portfolio-wide dated cash ladder with an optional stress scenario applied.
+            Every instrument contribution stays traceable to the projection run and
+            Security Master terms version that produced it, and every scenario states
+            what it models versus what it assumes.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.AssetOperations.PortfolioCashLadderEngine.SelectProjectionRun(Meridian.Contracts.AssetOperations.AssetOperationsDetailDto)">
+            <summary>
+            Chooses the projection run whose flows drive the ladder: the latest completed run, so a
+            failed, cancelled, or still-running run recorded after a good one cannot erase a security's
+            prior completed schedule. Falls back to the latest run of any status only when no completed
+            run exists (e.g. sources that do not stamp a status).
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.AssetOperations.PortfolioCashLadderEngine.SelectTermsForRun(Meridian.Contracts.AssetOperations.AssetOperationsDetailDto,Meridian.Contracts.AssetOperations.AssetCashFlowProjectionRunDto)">
+            <summary>
+            Selects the terms version that produced the chosen run's cash flows: the latest terms
+            effective on/before the run's as-of and recorded on/before it ran. This keeps the early-call
+            and rate scenarios reading the same terms the selected flows came from — important when
+            <see cref="M:Meridian.Instruments.AssetOperations.PortfolioCashLadderEngine.SelectProjectionRun(Meridian.Contracts.AssetOperations.AssetOperationsDetailDto)"/> falls back to an earlier completed run because a newer run
+            (with newer terms) failed — and keeps the reported projection/terms lineage consistent.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Derivatives.ISwapReferenceService.GetReferenceAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Gets one swap reference and hydrates leg terms from the canonical security projection.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Derivatives.ISwapReferenceService.GetBySwapTypeAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Gets active swap references for a swap type, including available leg terms for each row.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Derivatives.ISwapReferenceService.GetMaturingBeforeAsync(System.DateOnly,System.Threading.CancellationToken)">
+            <summary>
+            Gets swap references maturing before the supplied date, including available leg terms for each row.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.DesignModule">
+            <summary>Physical module marker for the Instruments bounded context.</summary>
+        </member>
+        <member name="T:Meridian.Instruments.Indicators.TechnicalIndicatorService">
+             <summary>
+             Real-time technical indicator calculation service using Skender.Stock.Indicators.
+             Provides 200+ technical indicators with streaming support for live market data.
+            
+             Based on: https://github.com/DaveSkender/Stock.Indicators (Apache 2.0)
+             Reference: docs/open-source-references.md #25
+             </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Indicators.TechnicalIndicatorService.ProcessTrade(Meridian.Domain.Models.MarketTradeUpdate)">
+            <summary>
+            Process a trade event and update all streaming indicators for the symbol.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Indicators.TechnicalIndicatorService.ProcessQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)">
+            <summary>
+            Process a quote event and update quote-based indicators.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Indicators.TechnicalIndicatorService.GetSnapshot(System.String)">
+            <summary>
+            Get the current indicator snapshot for a symbol.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Indicators.TechnicalIndicatorService.GetAllSnapshots">
+            <summary>
+            Get all symbol snapshots.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Indicators.TechnicalIndicatorService.CalculateHistorical(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Domain.Models.HistoricalBar})">
+            <summary>
+            Calculate historical indicators from OHLCV bars.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.Indicators.SymbolIndicatorState">
+            <summary>
+            Maintains streaming indicator state for a single symbol.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.Indicators.IndicatorConfiguration">
+            <summary>
+            Configuration for which indicators to calculate and their parameters.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.Indicators.IndicatorType">
+            <summary>
+            Types of technical indicators supported.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.Indicators.IndicatorSnapshot">
+            <summary>
+            A snapshot of all indicator values for a symbol at a point in time.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Indicators.IndicatorSnapshot.#ctor(System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})">
+            <summary>
+            A snapshot of all indicator values for a symbol at a point in time.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.Indicators.IndicatorDataPoint">
+            <summary>
+            A single indicator data point for historical analysis.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Indicators.IndicatorDataPoint.#ctor(System.DateTime,System.String,System.Decimal)">
+            <summary>
+            A single indicator data point for historical analysis.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.Indicators.HistoricalIndicatorResult">
+            <summary>
+            Result of historical indicator calculation.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Indicators.HistoricalIndicatorResult.#ctor(System.String,System.Collections.Generic.IReadOnlyList{Meridian.Instruments.Indicators.IndicatorDataPoint})">
+            <summary>
+            Result of historical indicator calculation.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.InstrumentProjectionServiceBase`2">
+            <summary>
+            Shared shape for instrument reference projection services: verify the Security Master
+            asset class, fetch the instrument projection row, and map it to the contract DTO.
+            Derived services keep their instrument-specific query methods and delegate the common
+            gate/fetch/map flow to this base.
+            </summary>
+            <typeparam name="TRow">The projection-store row type for the instrument.</typeparam>
+            <typeparam name="TDto">The reference DTO exposed by the instrument's contract.</typeparam>
+        </member>
+        <member name="P:Meridian.Instruments.InstrumentProjectionServiceBase`2.SecurityMasterStore">
+            <summary>Security Master store used for asset-class verification.</summary>
+        </member>
+        <member name="P:Meridian.Instruments.InstrumentProjectionServiceBase`2.AssetClass">
+            <summary>Security Master asset class this service projects (e.g. "Equity").</summary>
+        </member>
+        <member name="M:Meridian.Instruments.InstrumentProjectionServiceBase`2.FetchRowAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>Fetches the instrument projection row for the security.</summary>
+        </member>
+        <member name="M:Meridian.Instruments.InstrumentProjectionServiceBase`2.MapRow(`0)">
+            <summary>Maps a projection row to the instrument's reference DTO.</summary>
+        </member>
+        <member name="M:Meridian.Instruments.InstrumentProjectionServiceBase`2.GetReferenceAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Fetches the reference DTO for <paramref name="securityId"/>, returning null when the
+            security is unknown, carries a different asset class, or has no projection row.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.InstrumentProjectionServiceBase`2.GetVerifiedSecurityAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Loads the Security Master projection and returns it only when it exists and matches
+            <see cref="P:Meridian.Instruments.InstrumentProjectionServiceBase`2.AssetClass"/> (case-insensitive); otherwise null.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.InstrumentProjectionServiceBase`2.MapRows(System.Collections.Generic.IReadOnlyList{`0})">
+            <summary>Maps a batch of projection rows to DTOs.</summary>
+        </member>
+        <member name="M:Meridian.Instruments.InstrumentProjectionServiceBase`2.QueryByTermAsync(System.String,System.Func{System.String,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{`0}}},System.Threading.CancellationToken,System.Boolean)">
+            <summary>
+            Runs a text-keyed projection query with the shared guard-and-normalize convention:
+            blank keys return an empty list, otherwise the key is trimmed (and optionally
+            upper-cased) before querying, and the rows are mapped to DTOs.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.MoneyMarketFunds.IMmfLiquidityService">
+            <summary>
+            Liquidity-focused query surface for money market funds.
+            Provides WAM-based liquidity state, fund-family projections,
+            and portfolio-wide liquid-fund views for treasury and governance consumers.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Returns the current liquidity state for the given MMF,
+            or <c>null</c> if the security does not exist.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Returns the fund-family projection for the given normalised family name,
+            or <c>null</c> if no MMFs are registered under that family.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Returns all MMFs belonging to the given fund family.
+            Returns an empty list when no members are found.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all active MMFs currently in the <see cref="F:Meridian.Contracts.Treasury.MmfLiquidityState.Liquid"/> state.
+            Used by treasury and cash-management dashboards for portfolio-level liquidity views.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService">
+            <summary>
+            Canonical reference service for money market funds.
+            Provides read access to MMF identity, liquidity projections, sweep profiles,
+            fund-family groupings, and rebuild orchestration.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Returns the full MMF reference record for the given security ID,
+            or <c>null</c> if the security does not exist or is not an MMF.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)">
+            <summary>
+            Searches for MMFs matching the given criteria.
+            Returns an empty list when no matches are found.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Returns the current liquidity projection (state and WAM) for the given MMF,
+            or <c>null</c> if the security does not exist.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Returns the sweep-eligibility and fee profile for the given MMF,
+            or <c>null</c> if the security does not exist.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Returns the fund-family grouping for the given normalised family name,
+            or <c>null</c> if no MMFs are registered under that family.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all projection rebuild checkpoints across registered MMFs.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Triggers a deterministic rebuild of all projections for the given MMF
+            and records a rebuild checkpoint.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService">
+            <summary>
+            In-memory implementation of <see cref="T:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService"/> and
+            <see cref="T:Meridian.Instruments.MoneyMarketFunds.IMmfLiquidityService"/> for unit testing and development scenarios.
+            Fund records are registered directly via <see cref="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)"/>.
+            Liquidity state is computed from WAM bands unless overridden per-fund.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)">
+            <summary>
+            Seeds the in-memory store with an MMF record.
+            Calling this with the same <paramref name="securityId"/> twice overwrites the earlier entry.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Instruments.MoneyMarketFunds.InMemoryMoneyMarketFundService.NormalizeFamily(System.String)">
+            <summary>
+            Normalises a fund-family name to upper-case trimmed form for consistent grouping.
+            Returns <c>null</c> for blank or whitespace-only input.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.MoneyMarketFunds.PostgresMoneyMarketFundService">
+            <summary>
+            PostgreSQL-backed implementation of <see cref="T:Meridian.Instruments.MoneyMarketFunds.IMoneyMarketFundService"/>
+            and <see cref="T:Meridian.Instruments.MoneyMarketFunds.IMmfLiquidityService"/>.
+            Fund records, liquidity overrides, and rebuild checkpoints are persisted
+            in the <see cref="T:Meridian.Storage.MoneyMarket.IMoneyMarketFundAuxStore"/>.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.IOptionChainImportService.ImportSnapshotAsync(Meridian.Contracts.Domain.Models.OptionChainSnapshot,System.Threading.CancellationToken)">
+            <summary>
+            Persists a chain snapshot and returns the normalized chain identifier, underlying symbol, and projected contracts.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.IOptionReferenceService.GetContractAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Looks up one option contract by its normalized OCC or provider contract symbol.
+            Implementations trim and uppercase input before querying exact-match projection stores.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.IOptionReferenceService.GetSeriesAsync(System.String,System.DateOnly,System.Threading.CancellationToken)">
+            <summary>
+            Gets the contracts for a normalized option chain and expiry date.
+            Implementations trim and uppercase the chain identifier before querying storage.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.IOptionReferenceService.GetChainSnapshotAsync(System.String,System.DateOnly,System.Threading.CancellationToken)">
+            <summary>
+            Gets a point-in-time chain snapshot for a normalized underlying symbol and expiry date.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.IOptionReferenceService.GetUnderlyingLinkageAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Gets an option contract together with the stored underlying linkage, returning null when linkage is absent.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.IOptionReferenceService.GetExpiryLadderAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Gets the available expiry dates for a normalized underlying symbol.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.Options.OptionsChainService">
+            <summary>
+            Instruments service that orchestrates option chain discovery, filtering,
+            and periodic snapshot collection based on <see cref="T:Meridian.Core.Config.DerivativesConfig"/>.
+            </summary>
+        </member>
+        <member name="F:Meridian.Instruments.Options.OptionsChainService.MaxStrikeRange">
+            <summary>
+            Maximum allowed strike range for options chain queries.
+            </summary>
+        </member>
+        <member name="P:Meridian.Instruments.Options.OptionsChainService.IsProviderAvailable">
+            <summary>
+            Returns whether an options chain provider is available.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.GetProviderStatus">
+            <summary>
+            Returns a UI-friendly status summary for the active options provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.GetExpirationsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Gets available expiration dates for an underlying symbol.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.GetStrikesAsync(System.String,System.DateOnly,System.Threading.CancellationToken)">
+            <summary>
+            Gets available strikes for an underlying symbol and expiration.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.FetchChainSnapshotAsync(System.String,System.DateOnly,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Fetches a chain snapshot from the provider, routes it through the collector,
+            and returns the snapshot.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.FetchOptionQuoteAsync(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Threading.CancellationToken)">
+            <summary>
+            Fetches a quote for a specific option contract from the provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.FetchConfiguredChainsAsync(Meridian.Core.Config.DerivativesConfig,System.Threading.CancellationToken)">
+            <summary>
+            Fetches chain snapshots for all underlyings configured in the derivatives config,
+            filtering expirations according to the configuration settings.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.GetCachedChain(System.String,System.DateOnly)">
+            <summary>
+            Returns the latest cached chain snapshot for an underlying and expiration.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.GetCachedChainsForUnderlying(System.String)">
+            <summary>
+            Returns all cached chain snapshots for an underlying symbol.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.GetQuotesForUnderlying(System.String)">
+            <summary>
+            Returns all option quotes for an underlying symbol.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.GetSummary">
+            <summary>
+            Returns a summary of collected option data.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsChainService.GetTrackedUnderlyings">
+            <summary>
+            Returns all underlyings that have active option data.
+            </summary>
+        </member>
+        <member name="T:Meridian.Instruments.Options.OptionsProviderStatus">
+            <summary>
+            Summary of the currently active options provider for UI status surfaces.
+            </summary>
+        </member>
+        <member name="M:Meridian.Instruments.Options.OptionsProviderStatus.#ctor(System.String,System.String,System.String,System.Boolean,System.String)">
+            <summary>
+            Summary of the currently active options provider for UI status surfaces.
+            </summary>
+        </member>
+    </members>
+</doc>

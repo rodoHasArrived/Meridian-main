@@ -228,6 +228,38 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         validation.Credentials.Should().Contain("ApiKey", "setup-twelve-key");
     }
 
+    [Fact]
+    public void DefaultProviderSetupHandlers_IncludesIbFlexCredentialHandler()
+    {
+        var handler = DefaultProviderSetupHandlers.Create().Single(h => h.CanHandle("ib-flex-web-service"));
+
+        handler.Descriptor.ProviderId.Should().Be("ib-flex");
+        handler.Descriptor.DefaultRoutingMode.Should().Be(ProviderConnectionMode.ReadOnly);
+        handler.Descriptor.AcceptedCredentialFields.Should().SatisfyRespectively(
+            field =>
+            {
+                field.Name.Should().Be("Token");
+                field.Placeholder.Should().Be("IB_FLEX_TOKEN");
+            },
+            field =>
+            {
+                field.Name.Should().Be("QueryId");
+                field.Placeholder.Should().Be("IB_FLEX_QUERY_ID");
+            });
+
+        var validation = handler.Validate(new ProviderSetupContext(
+            ProviderIdOrAlias: "ibflex",
+            DisplayName: "IB Flex",
+            Capabilities: ["brokerage statements"],
+            Environment: null,
+            ApiKey: "flex-token",
+            ApiSecret: "123456"));
+
+        validation.Success.Should().BeTrue();
+        validation.Credentials.Should().Contain("Token", "flex-token");
+        validation.Credentials.Should().Contain("QueryId", "123456");
+    }
+
     [Theory]
     [InlineData("finnhub", "finnhub", "FINNHUB_API_KEY")]
     [InlineData("tiingo", "tiingo", "TIINGO_API_TOKEN")]

@@ -1,6 +1,7 @@
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -10,6 +11,12 @@ public interface IOperationsContinuityReconciliationBridge
         Guid workflowId,
         OperationsReconciliationRunRequestDto request,
         CancellationToken ct = default);
+
+    Task<OperationsTransitionResultDto> RunReconciliationAsync(
+        Guid workflowId,
+        OperationsReconciliationRunRequestDto request,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default);
 }
 
 public sealed class OperationsContinuityReconciliationBridge : IOperationsContinuityReconciliationBridge
@@ -17,6 +24,9 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
     private readonly IOperationsContinuityWorkflowService _workflowService;
     private readonly IReconciliationRunService? _reconciliationRunService;
     private readonly IReconciliationBreakQueueRepository? _breakQueueRepository;
+    private readonly IReconciliationApiService? _statementReconciliation;
+
+    internal IReconciliationBreakQueueRepository? BreakQueueAuthority => _breakQueueRepository;
 
     private static readonly ReconciliationLaneDefinition[] ReconciliationLaneDefinitions =
     [
@@ -60,19 +70,70 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
     public OperationsContinuityReconciliationBridge(
         IOperationsContinuityWorkflowService workflowService,
         IReconciliationRunService? reconciliationRunService = null,
-        IReconciliationBreakQueueRepository? breakQueueRepository = null)
+        IReconciliationBreakQueueRepository? breakQueueRepository = null,
+        IReconciliationApiService? statementReconciliation = null)
     {
         _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
         _reconciliationRunService = reconciliationRunService;
         _breakQueueRepository = breakQueueRepository;
+        _statementReconciliation = statementReconciliation;
     }
 
     public async Task<OperationsTransitionResultDto> RunReconciliationAsync(
         Guid workflowId,
         OperationsReconciliationRunRequestDto request,
+        CancellationToken ct = default) =>
+        await RunReconciliationCoreAsync(workflowId, request, accessScope: null, ct)
+            .ConfigureAwait(false);
+
+    public async Task<OperationsTransitionResultDto> RunReconciliationAsync(
+        Guid workflowId,
+        OperationsReconciliationRunRequestDto request,
+        ReconciliationBreakQueueScope accessScope,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        return await RunReconciliationCoreAsync(workflowId, request, accessScope, ct).ConfigureAwait(false);
+    }
+
+    private async Task<OperationsTransitionResultDto> RunReconciliationCoreAsync(
+        Guid workflowId,
+        OperationsReconciliationRunRequestDto request,
+        ReconciliationBreakQueueScope? accessScope,
+        CancellationToken ct)
+    {
         ArgumentNullException.ThrowIfNull(request);
+
+        if (accessScope is null)
+        {
+            return MissingReconciliationScope(
+                "A tenant- and company-scoped reconciliation request context is required to mutate an Operations workflow.");
+        }
+
+        if (_statementReconciliation is null)
+        {
+            return UnauthorizedReconciliationWorkflow(
+                "Statement reconciliation fund-account authority is not registered.");
+        }
+
+        var targetWorkflow = await _workflowService.GetAsync(workflowId, ct).ConfigureAwait(false);
+        if (targetWorkflow is null
+            || targetWorkflow.WorkflowId != workflowId)
+        {
+            return UnauthorizedReconciliationWorkflow(
+                "The requested Operations workflow was not found in the authorized workflow store.");
+        }
+
+        var targetFund = await _statementReconciliation
+            .GetAuthorizedFundAccountAsync(targetWorkflow.FundAccountId, accessScope, ct)
+            .ConfigureAwait(false);
+        if (targetFund is null
+            || targetFund.FundAccountId != targetWorkflow.FundAccountId
+            || string.IsNullOrWhiteSpace(targetFund.FundProfileId))
+        {
+            return UnauthorizedReconciliationWorkflow(
+                "The requested Operations workflow is not owned by the authenticated tenant, company, and fund account.");
+        }
 
         if (ShouldUseDirectRequest(request))
         {
@@ -87,22 +148,84 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
                 "Reconciliation run service is not registered; submit explicit break cases and posture counts or register IReconciliationRunService.");
         }
 
-        var detail = await ResolveReconciliationDetailAsync(request, ct).ConfigureAwait(false);
+        var sourceRunId = request.SourceRunId?.Trim();
+        if (string.IsNullOrWhiteSpace(sourceRunId))
+        {
+            return UnauthorizedReconciliationSource(
+                "A tenant-owned statement source run id is required before retained reconciliation evidence can be loaded.");
+        }
+
+        var sourceAuthority = await _statementReconciliation
+            .GetStatementRunAuthorizationAsync(sourceRunId, accessScope, ct)
+            .ConfigureAwait(false);
+        if (!IsExactSourceBinding(targetWorkflow, targetFund, sourceRunId, sourceAuthority))
+        {
+            return UnauthorizedReconciliationSource(
+                "The requested statement run is not bound to the exact Operations fund, ledger book, accounting period, and as-of scope.");
+        }
+
+        var timeline = await _workflowService.GetTimelineAsync(workflowId, ct).ConfigureAwait(false);
+        if (!HasStatementIntakeBinding(timeline, sourceRunId))
+        {
+            return UnauthorizedReconciliationSource(
+                "The requested statement run was not retained as intake evidence on the target Operations workflow.");
+        }
+
+        var detail = await ResolveReconciliationDetailAsync(request, sourceRunId, ct).ConfigureAwait(false);
         if (detail is null)
         {
             return MissingReconciliationSource(
                 "No reconciliation run detail was found for the requested source run or reconciliation run id.");
         }
 
-        var breakQueueItems = await LoadBreakQueueLookupAsync(detail, ct).ConfigureAwait(false);
+        var breakQueueItems = await LoadBreakQueueLookupAsync(detail, accessScope, ct).ConfigureAwait(false);
         var bridgedRequest = BuildWorkflowRequest(request, detail, breakQueueItems);
         return await _workflowService
             .RunReconciliationAsync(workflowId, bridgedRequest, ct)
             .ConfigureAwait(false);
     }
 
+    private static bool IsExactSourceBinding(
+        OperationsContinuityWorkflowDto targetWorkflow,
+        ReconciliationFundAccountAuthorization targetFund,
+        string expectedSourceRunId,
+        StatementReconciliationRunAuthorization? source)
+        => source is not null
+           && string.Equals(
+               source.RunId,
+               expectedSourceRunId,
+               StringComparison.OrdinalIgnoreCase)
+           && source.FundAccountId == targetWorkflow.FundAccountId
+           && source.FundAccountId == targetFund.FundAccountId
+           && string.Equals(
+               source.FundProfileId,
+               targetFund.FundProfileId,
+               StringComparison.OrdinalIgnoreCase)
+           && targetWorkflow.LedgerBookId.HasValue
+           && targetWorkflow.LedgerBookId.Value != Guid.Empty
+           && source.LedgerBookId == targetWorkflow.LedgerBookId.Value
+           && Guid.TryParse(targetWorkflow.PeriodId, out var accountingPeriodId)
+           && accountingPeriodId != Guid.Empty
+           && source.AccountingPeriodId == accountingPeriodId
+           && source.AsOfDate == source.PeriodEnd
+           && source.PeriodStart <= source.PeriodEnd;
+
+    private static bool HasStatementIntakeBinding(
+        IReadOnlyList<OperationsTimelineEntryDto> timeline,
+        string sourceRunId)
+    {
+        var expectedEvidenceId = $"statement-intake:{sourceRunId}";
+        return timeline
+            .SelectMany(static entry => entry.References)
+            .Any(reference => string.Equals(
+                reference.EvidenceId,
+                expectedEvidenceId,
+                StringComparison.OrdinalIgnoreCase));
+    }
+
     private async Task<IReadOnlyDictionary<string, ReconciliationBreakQueueItem>> LoadBreakQueueLookupAsync(
         ReconciliationRunDetail detail,
+        ReconciliationBreakQueueScope accessScope,
         CancellationToken ct)
     {
         if (_breakQueueRepository is null)
@@ -110,7 +233,9 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
             return new Dictionary<string, ReconciliationBreakQueueItem>(StringComparer.OrdinalIgnoreCase);
         }
 
-        var items = await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false);
+        var items = await _breakQueueRepository
+            .GetAllAsync(accessScope, status: null, ct)
+            .ConfigureAwait(false);
         var lookup = new Dictionary<string, ReconciliationBreakQueueItem>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in items.Where(item => IsRelatedBreakQueueItem(detail, item)))
         {
@@ -128,29 +253,32 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
 
     private async Task<ReconciliationRunDetail?> ResolveReconciliationDetailAsync(
         OperationsReconciliationRunRequestDto request,
+        string authorizedSourceRunId,
         CancellationToken ct)
     {
-        if (!string.IsNullOrWhiteSpace(request.ReconciliationRunId))
+        var detail = await _reconciliationRunService!
+            .GetLatestForRunAsync(authorizedSourceRunId, ct)
+            .ConfigureAwait(false);
+        if (detail is null)
         {
-            return await _reconciliationRunService!
-                .GetByIdAsync(request.ReconciliationRunId.Trim(), ct)
-                .ConfigureAwait(false);
+            return null;
         }
 
-        if (!string.IsNullOrWhiteSpace(request.SourceRunId))
+        if (!string.Equals(
+                detail.Summary.RunId,
+                authorizedSourceRunId,
+                StringComparison.OrdinalIgnoreCase))
         {
-            return await _reconciliationRunService!
-                .RunAsync(
-                    new ReconciliationRunRequest(
-                        request.SourceRunId.Trim(),
-                        request.AmountTolerance.GetValueOrDefault(0.01m),
-                        request.MaxAsOfDriftMinutes.GetValueOrDefault(5),
-                        request.BankEntityId),
-                    ct)
-                .ConfigureAwait(false);
+            return null;
         }
 
-        return null;
+        return string.IsNullOrWhiteSpace(request.ReconciliationRunId)
+            || string.Equals(
+                detail.Summary.ReconciliationRunId,
+                request.ReconciliationRunId.Trim(),
+                StringComparison.OrdinalIgnoreCase)
+            ? detail
+            : null;
     }
 
     private static OperationsReconciliationRunRequestDto BuildWorkflowRequest(
@@ -823,6 +951,57 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
             [
                 new OperationsWorkflowBlockerDto(
                     "RECONCILIATION_RUN_NOT_FOUND",
+                    message,
+                    OperationsGateKeyDto.Reconciliation,
+                    "Error",
+                    [])
+            ],
+            NextActions: []);
+
+    private static OperationsTransitionResultDto MissingReconciliationScope(string message) =>
+        new(
+            Success: false,
+            ErrorCode: "RECONCILIATION_SCOPE_REQUIRED",
+            ErrorMessage: message,
+            Workflow: null,
+            Blockers:
+            [
+                new OperationsWorkflowBlockerDto(
+                    "RECONCILIATION_SCOPE_REQUIRED",
+                    message,
+                    OperationsGateKeyDto.Reconciliation,
+                    "Error",
+                    [])
+            ],
+            NextActions: []);
+
+    private static OperationsTransitionResultDto UnauthorizedReconciliationSource(string message) =>
+        new(
+            Success: false,
+            ErrorCode: "RECONCILIATION_SOURCE_NOT_AUTHORIZED",
+            ErrorMessage: message,
+            Workflow: null,
+            Blockers:
+            [
+                new OperationsWorkflowBlockerDto(
+                    "RECONCILIATION_SOURCE_NOT_AUTHORIZED",
+                    message,
+                    OperationsGateKeyDto.Reconciliation,
+                    "Error",
+                    [])
+            ],
+            NextActions: []);
+
+    private static OperationsTransitionResultDto UnauthorizedReconciliationWorkflow(string message) =>
+        new(
+            Success: false,
+            ErrorCode: "RECONCILIATION_WORKFLOW_NOT_AUTHORIZED",
+            ErrorMessage: message,
+            Workflow: null,
+            Blockers:
+            [
+                new OperationsWorkflowBlockerDto(
+                    "RECONCILIATION_WORKFLOW_NOT_AUTHORIZED",
                     message,
                     OperationsGateKeyDto.Reconciliation,
                     "Error",

@@ -908,6 +908,13 @@ public static partial class LedgerEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            string? controllerRole = null;
+            if (!request.PrepareClosingEntriesOnly &&
+                !TryResolveControllerRole(context, out controllerRole))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = ResolveAccountingCloseManagementService(context);
             if (service is null)
             {
@@ -932,7 +939,8 @@ public static partial class LedgerEndpoints
                         request with
                         {
                             Actor = actor,
-                            ActionOrigin = OperationsActionOriginDto.HumanOperator
+                            ActionOrigin = OperationsActionOriginDto.HumanOperator,
+                            ControllerRole = controllerRole
                         },
                         actor,
                         scope.TenantContext.TenantId,
@@ -1902,7 +1910,10 @@ public static partial class LedgerEndpoints
     }
 
     private static IResult ServiceUnavailable()
-        => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+        => ServiceUnavailable("Ledger book service is not registered.");
+
+    private static IResult ServiceUnavailable(string detail)
+        => Results.Problem(detail, statusCode: StatusCodes.Status501NotImplemented);
 
 
     private static bool HasAccountingPackageTenantScope(WorkstationTenantContext tenantContext)

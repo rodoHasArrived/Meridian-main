@@ -357,6 +357,10 @@ public sealed class ReportingGovernanceService
                 }
 
                 ReportingGovernanceCanonicalValidation.ValidateFinalReleaseSnapshot(run.Snapshot);
+                ReportingGovernanceCanonicalValidation.ValidateCompleteClientPackageRelease(
+                    run.RunId,
+                    run.Snapshot,
+                    evidence.Artifacts);
 
                 if (StringComparer.OrdinalIgnoreCase.Equals(run.Approval.Authority.ActorId, authority.ActorId))
                 {

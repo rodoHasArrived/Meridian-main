@@ -120,11 +120,12 @@ public static class ProductionServiceRegistrationPolicy
            || IsProductionEnvironment();
 
     /// <summary>
-    /// Rejects the current in-process Quant Lab compiler in every supported production or
-    /// customer-distribution posture. Quant Lab compiles arbitrary C# and must remain unavailable
-    /// until execution is moved behind a separately isolated worker boundary.
+    /// Rejects Quant Lab in every supported production or customer-distribution posture until the
+    /// isolated worker's OS controls and deployment profile have production certification. The
+    /// worker now provides killable process/resource containment, but it deliberately retains the
+    /// launching identity's file and network permissions and is not a hostile-code sandbox.
     /// </summary>
-    public static void EnsureInProcessQuantLabIsAllowed(IServiceCollection services, bool enabled)
+    public static void EnsureIsolatedQuantLabIsAllowed(IServiceCollection services, bool enabled)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -139,8 +140,8 @@ public static class ProductionServiceRegistrationPolicy
         {
             throw new InvalidOperationException(
                 "QuantLab:Enabled cannot be used in a production, packaged, or customer build. " +
-                "In-process arbitrary-code execution is outside the ADR-019 supported envelope " +
-                "until Quant Lab runs in an isolated worker.");
+                "The isolated worker's current OS controls do not remove the launching identity's " +
+                "file/network permissions and are not certified as a hostile-code sandbox under ADR-019.");
         }
     }
 

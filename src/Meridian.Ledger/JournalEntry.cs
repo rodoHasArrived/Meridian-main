@@ -46,11 +46,13 @@ public sealed record JournalEntry
 
         ArgumentNullException.ThrowIfNull(lines);
 
-        if (lines.Count == 0)
+        var frozenLines = ReadOnlyCollectionHelpers.FreezeList(lines);
+
+        if (frozenLines.Count == 0)
             throw new LedgerValidationException("A journal entry must have at least one line.");
 
         var seenEntryIds = new HashSet<Guid>();
-        foreach (var line in lines)
+        foreach (var line in frozenLines)
         {
             ArgumentNullException.ThrowIfNull(line);
 
@@ -79,7 +81,7 @@ public sealed record JournalEntry
         JournalEntryId = journalEntryId;
         Timestamp = timestamp;
         Description = description;
-        Lines = lines;
+        Lines = frozenLines;
         Metadata = metadata?.Normalize() ?? new JournalEntryMetadata();
     }
 

@@ -20,6 +20,7 @@ EXCLUDE_DIRS = {
     ".vs",
     ".vscode",
     "__pycache__",
+    ".pytest_cache",
     "artifacts",
     "bin",
     "dist",
@@ -231,6 +232,64 @@ def front_matter(markdown: str) -> dict[str, str]:
     return result
 
 
+# Roadmap identifiers are `W<wave><suffix>-<AREA>-<NNN>`, e.g. W1-DATA-001, W5X-CONNECT-001,
+# W5X-STMT-ONBOARD-001 (two-token area), W9-ASSET-010, W10-MARK-001.
+_WAVE_PATTERN = re.compile(r"^W(\d+)([A-Z]*)$")
+
+# Sorts unparsable tokens deterministically last instead of letting them collide with wave 1.
+_UNPARSABLE_SEQUENCE = 1_000_000
+
+
+def roadmap_item_sort_key(item: dict) -> tuple[int, str, int, str, str]:
+    """Order roadmap items by wave, then by rank within the wave.
+
+    Every generated roadmap view shares this ordering so the diagram, the summary, and the register
+    cannot disagree about delivery sequence.
+
+    Sorting on the raw identifier string is lexicographic, which places `W10-` between `W1-` and
+    `W2-` and orders items within a wave alphabetically by area. Both are wrong: the first renders a
+    planned wave in the middle of delivered work, and the second discards the rank that the numeric
+    suffix encodes (see `DEC-PRIORITY-SLATE-001`, which states rank is carried in each W9 item's
+    numeric suffix).
+
+    Waves sort numerically with their alphabetic suffix as a tiebreak, so `W5` precedes `W5X` and
+    `W9` precedes `W10`.
+
+    Within a wave, an explicit `sequence` wins when the item declares a usable one. Otherwise rank
+    falls back to the identifier's trailing number, which is only meaningful for waves that encode
+    rank there. A wave that numbers per area instead - every row `-001` - has no recoverable rank
+    without the explicit field. Area and identifier remain as stability tiebreaks.
+    """
+    identifier = item.get("id", "") or ""
+    parts = identifier.split("-")
+    wave_token = parts[0] if parts else ""
+    wave_match = _WAVE_PATTERN.match(wave_token)
+    wave_number = int(wave_match.group(1)) if wave_match else _UNPARSABLE_SEQUENCE
+    wave_suffix = wave_match.group(2) if wave_match else wave_token
+
+    declared = item.get("sequence")
+    if is_usable_sequence(declared):
+        sequence = declared
+    else:
+        try:
+            sequence = int(parts[-1])
+        except (IndexError, ValueError):
+            sequence = _UNPARSABLE_SEQUENCE
+
+    area = "-".join(parts[1:-1])
+    return (wave_number, wave_suffix, sequence, area, identifier)
+
+
+def is_usable_sequence(value: Any) -> bool:
+    """Whether a declared `sequence` is a rank the renderers may sort on.
+
+    `bool` is an `int` subclass in Python, so `sequence: true` would otherwise sort as rank 1. The
+    schema also bounds the field at 1; a nonpositive value is rejected here rather than silently
+    ordering ahead of every legitimate rank. Validation reports these; the renderers fall back.
+    """
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 1
+
+
 def markdown_table(headers: Sequence[str], rows: Iterable[Sequence[Any]]) -> str:
     output = [
         "| " + " | ".join(headers) + " |",
@@ -241,14 +300,25 @@ def markdown_table(headers: Sequence[str], rows: Iterable[Sequence[Any]]) -> str
     return "\n".join(output)
 
 
-def generated_header(generator: str, schema_versions: Sequence[str], inputs: Sequence[str]) -> str:
+def generated_header(
+    generator: str,
+    schema_versions: Sequence[str],
+    inputs: Sequence[str],
+    generator_version: str = "1.0.0",
+) -> str:
+    """Emit the standard generated-doc header.
+
+    `generator_version` is per-generator: a generator that changes its output semantics bumps its
+    own version so an audit can tell which ordering or shape contract produced a committed artifact,
+    without disturbing every other generated doc.
+    """
     schema_lines = "\n".join(f"  - {item}" for item in schema_versions)
     input_lines = "\n".join(f"  - {normalize_path(item)}" for item in inputs)
     return (
         "<!--\n"
         "generated: true\n"
         f"generator: {normalize_path(generator)}\n"
-        "generator_version: 1.0.0\n"
+        f"generator_version: {generator_version}\n"
         f"render_contract: {GENERATOR_CONTRACT}\n"
         "schema_versions:\n"
         f"{schema_lines}\n"
@@ -259,13 +329,20 @@ def generated_header(generator: str, schema_versions: Sequence[str], inputs: Seq
     )
 
 
-def write_manifest(path: Path, generator: str, inputs: Sequence[Path], outputs: Sequence[Path], root: Path) -> bool:
+def write_manifest(
+    path: Path,
+    generator: str,
+    inputs: Sequence[Path],
+    outputs: Sequence[Path],
+    root: Path,
+    generator_version: str = "1.0.0",
+) -> bool:
     def sort_key(item: Path) -> str:
         return repo_path(item, root)
 
     payload = {
         "schema": {"id": "meridian.generated-manifest", "version": "1.0.0"},
-        "generator": {"name": normalize_path(generator), "version": "1.0.0"},
+        "generator": {"name": normalize_path(generator), "version": generator_version},
         "inputs": [{"path": repo_path(item, root), "sha256": sha256_manifest_file(item)} for item in sorted(inputs, key=sort_key)],
         "outputs": [{"path": repo_path(item, root), "sha256": sha256_manifest_file(item)} for item in sorted(outputs, key=sort_key) if item.exists()],
     }

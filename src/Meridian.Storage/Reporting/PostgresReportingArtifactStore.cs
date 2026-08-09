@@ -28,23 +28,70 @@ public sealed class PostgresReportingArtifactStore : IReportingArtifactStore
         ReportingArtifactWriteRequest request,
         CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        var tenantId = NormalizeTenantId(request.TenantId);
-        if (request.Content.IsEmpty)
-        {
-            throw new ArgumentException("Reporting artifact content cannot be empty.", nameof(request));
-        }
-
-        // Clone caller-owned memory before hashing or awaiting so mutations cannot change the bytes
-        // between identity calculation and persistence.
-        var content = request.Content.ToArray();
-        var contentHash = ComputeSha256(content);
-        var identity = new ReportingArtifactIdentity(tenantId, contentHash);
+        var preparedWrite = PrepareWrite(request);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
             .ConfigureAwait(false);
+        var result = await StorePreparedWithinTransactionAsync(
+                preparedWrite,
+                connection,
+                transaction,
+                ct)
+            .ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>
+    /// Retains artifact bytes on a caller-owned PostgreSQL transaction. This is intentionally
+    /// internal: only Storage-owned authorities that atomically bind an artifact to durable
+    /// metadata may compose the blob insert with their own transaction.
+    /// </summary>
+    internal Task<ReportingArtifactWriteResult> StoreWithinTransactionAsync(
+        ReportingArtifactWriteRequest request,
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(transaction);
+        if (!ReferenceEquals(transaction.Connection, connection)
+            || connection.State != ConnectionState.Open)
+        {
+            throw new InvalidOperationException(
+                "The reporting artifact transaction must be active on the supplied open PostgreSQL connection.");
+        }
+
+        return StorePreparedWithinTransactionAsync(
+            PrepareWrite(request),
+            connection,
+            transaction,
+            ct);
+    }
+
+    internal bool SupportsTransactionalComposition(ReportingArtifactStoreOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        if (!string.Equals(_options.Schema, options.Schema, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var retainedTarget = new NpgsqlConnectionStringBuilder(_options.ConnectionString);
+        var authorityTarget = new NpgsqlConnectionStringBuilder(options.ConnectionString);
+        return HaveEquivalentConnectionSettings(retainedTarget, authorityTarget);
+    }
+
+    private async Task<ReportingArtifactWriteResult> StorePreparedWithinTransactionAsync(
+        PreparedArtifactWrite preparedWrite,
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        var identity = preparedWrite.Identity;
+        var content = preparedWrite.Content;
 
         await using var insert = connection.CreateCommand();
         insert.Transaction = transaction;
@@ -63,8 +110,11 @@ public sealed class PostgresReportingArtifactStore : IReportingArtifactStore
             on conflict (tenant_id, content_hash_sha256) do nothing
             returning stored_at_utc;
             """;
-        insert.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, tenantId);
-        insert.Parameters.AddWithValue("content_hash_sha256", NpgsqlDbType.Text, contentHash);
+        insert.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, identity.TenantId);
+        insert.Parameters.AddWithValue(
+            "content_hash_sha256",
+            NpgsqlDbType.Text,
+            identity.ContentHashSha256);
         insert.Parameters.AddWithValue("byte_size", NpgsqlDbType.Bigint, content.LongLength);
         insert.Parameters.AddWithValue("content", NpgsqlDbType.Bytea, content);
 
@@ -79,7 +129,6 @@ public sealed class PostgresReportingArtifactStore : IReportingArtifactStore
 
         if (insertedAtUtc is not null)
         {
-            await transaction.CommitAsync(ct).ConfigureAwait(false);
             return new ReportingArtifactWriteResult(
                 identity,
                 content.LongLength,
@@ -99,12 +148,50 @@ public sealed class PostgresReportingArtifactStore : IReportingArtifactStore
                 "different bytes were retained under the same content address");
         }
 
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
         return new ReportingArtifactWriteResult(
             identity,
             existing.DeclaredByteSize,
             existing.StoredAtUtc,
             AlreadyExisted: true);
+    }
+
+    private static PreparedArtifactWrite PrepareWrite(ReportingArtifactWriteRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var tenantId = NormalizeTenantId(request.TenantId);
+        if (request.Content.IsEmpty)
+        {
+            throw new ArgumentException("Reporting artifact content cannot be empty.", nameof(request));
+        }
+
+        // Clone caller-owned memory before hashing or awaiting so mutations cannot change the bytes
+        // between identity calculation and persistence.
+        var content = request.Content.ToArray();
+        var contentHash = ComputeSha256(content);
+        return new PreparedArtifactWrite(
+            new ReportingArtifactIdentity(tenantId, contentHash),
+            content);
+    }
+
+    private static bool HaveEquivalentConnectionSettings(
+        NpgsqlConnectionStringBuilder retainedTarget,
+        NpgsqlConnectionStringBuilder authorityTarget)
+    {
+        if (retainedTarget.Keys.Count != authorityTarget.Keys.Count)
+        {
+            return false;
+        }
+
+        foreach (var key in retainedTarget.Keys.Cast<string>())
+        {
+            if (!authorityTarget.ContainsKey(key)
+                || !Equals(retainedTarget[key], authorityTarget[key]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public async Task<ReportingArtifactReadResult> ReadAsync(
@@ -240,4 +327,8 @@ public sealed class PostgresReportingArtifactStore : IReportingArtifactStore
         long PhysicalByteSize,
         byte[] Content,
         DateTimeOffset StoredAtUtc);
+
+    private sealed record PreparedArtifactWrite(
+        ReportingArtifactIdentity Identity,
+        byte[] Content);
 }

@@ -589,6 +589,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     {
         if (!Enum.IsDefined(request.EventKind))
             throw new ArgumentOutOfRangeException(nameof(request.EventKind), "A supported asset accounting event kind is required.");
+        if (request.EventAmount <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(request.EventAmount), "A positive asset accounting event amount is required.");
         if (request.EconomicEvent.EventId == Guid.Empty || request.EconomicEvent.EventVersion <= 0)
             throw new ArgumentException("A positive source economic-event identity and version are required.", nameof(request.EconomicEvent));
         if (request.Scope.ExpectedBookPositionVersion <= 0)
@@ -699,6 +701,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     {
         if (!Enum.IsDefined(request.EventKind))
             throw new ArgumentOutOfRangeException(nameof(request.EventKind), "A supported asset accounting event kind is required.");
+        if (request.EventAmount <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(request.EventAmount), "A positive asset accounting event amount is required.");
         if (request.ExpectedSpineVersion <= 0)
             throw new ArgumentOutOfRangeException(nameof(request.ExpectedSpineVersion), "Expected spine version must be positive.");
         if (request.ExpectedPeriodVersion <= 0)
@@ -1239,7 +1243,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     private static bool IsSha256(string? value)
         => !string.IsNullOrWhiteSpace(value) &&
            value.Length == 64 &&
-           value.All(static character => Uri.IsHexDigit(character));
+           value.All(static character => Uri.IsHexDigit(character)) &&
+           value.Any(static character => character != '0');
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

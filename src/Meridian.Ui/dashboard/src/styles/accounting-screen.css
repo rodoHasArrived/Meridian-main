@@ -146,7 +146,7 @@
 
 .reconcile-pane-title {
   color: var(--ws-text-muted, #59636f);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -180,7 +180,7 @@
   background: var(--ws-surface, #ffffff);
   padding: 0.375rem 0.75rem;
   color: var(--ws-text-muted, #59636f);
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-align: left;
@@ -487,6 +487,104 @@
   padding: 0.75rem 1rem;
 }
 
+.accounting-journal-health-bar {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem 1rem;
+  border: 1px solid var(--ws-border-strong, #99a5b2);
+  border-radius: var(--radius-card, 2px);
+  background: color-mix(in srgb, var(--ws-surface, #ffffff) 94%, transparent);
+  box-shadow: 0 8px 24px rgba(31, 42, 55, 0.12);
+  padding: 0.75rem;
+  backdrop-filter: blur(10px);
+}
+
+.accounting-journal-health-summary,
+.accounting-journal-health-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.accounting-journal-health-actions {
+  justify-content: flex-end;
+}
+
+.accounting-journal-health-item {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: 999px;
+  background: var(--ws-surface-subtle, #ebeff4);
+  padding: 0.25rem 0.65rem;
+  color: var(--ws-text, #22272e);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.accounting-journal-health-item > span[aria-hidden="true"] {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--ws-text-muted, #59636f);
+}
+
+.accounting-journal-health-item.is-saved > span,
+.accounting-journal-health-item.is-recovered > span {
+  background: var(--state-positive, #18794e);
+}
+
+.accounting-journal-health-item.is-unsaved > span,
+.accounting-journal-health-item.is-saving > span,
+.accounting-journal-health-item.is-warning > span {
+  background: var(--state-warning, #9a6700);
+}
+
+.accounting-journal-health-item.is-error > span {
+  background: var(--state-danger, #b42318);
+}
+
+.accounting-journal-recovery-status {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-top: 1px solid var(--ws-border, #cbd3dc);
+  padding-top: 0.65rem;
+  color: var(--ws-text-muted, #59636f);
+  font-size: 0.8125rem;
+}
+
+.accounting-journal-keyboard-hint {
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-bottom: 0;
+  border-radius: var(--radius-card, 2px) var(--radius-card, 2px) 0 0;
+  background: var(--ws-surface-subtle, #ebeff4);
+  padding: 0.5rem 0.75rem;
+  color: var(--ws-text-muted, #59636f);
+  font-size: 0.75rem;
+}
+
+.accounting-journal-keyboard-hint + .accounting-journal-table-wrap {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+#manual-je-validation-heading:focus,
+.accounting-journal-table tr:focus {
+  outline: 2px solid var(--ws-accent, #2f6f8f);
+  outline-offset: 2px;
+}
+
 @media (max-width: 900px) {
   .accounting-reference-heading,
   .accounting-journal-footer {
@@ -502,6 +600,15 @@
   .accounting-balance-strip,
   .accounting-journal-header-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .accounting-journal-health-bar {
+    position: static;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .accounting-journal-health-actions {
+    justify-content: flex-start;
   }
 
   .reconcile-pane + .reconcile-pane {

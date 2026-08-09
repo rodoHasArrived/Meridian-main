@@ -214,11 +214,21 @@ public sealed class DirectLendingServicerStatementService : IDirectLendingServic
         var selected = request.RowIds.Count == 0
             ? batch.Rows.Where(static row => row.Status == ServicerStatementRowStatus.ReadyToApply).ToArray()
             : batch.Rows.Where(row => request.RowIds.Contains(row.RowId, StringComparer.Ordinal)).ToArray();
+        var orderedSelected = selected
+            .Select((row, index) => (
+                Row: row,
+                Index: index,
+                Mode: request.DefaultMode ?? row.SuggestedApplyMode ?? InferApplyMode(row)))
+            .OrderBy(static item => item.Mode == ServicerStatementApplyMode.ChargePenalty ? 0 : 1)
+            .ThenBy(static item => item.Index)
+            .ToArray();
         var issues = new List<ServicerStatementValidationIssueDto>();
         var applied = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach (var row in selected)
+        foreach (var selectedRow in orderedSelected)
         {
+            var row = selectedRow.Row;
+            var mode = selectedRow.Mode;
             ct.ThrowIfCancellationRequested();
             if (row.LoanId is not Guid loanId)
             {
@@ -232,7 +242,6 @@ public sealed class DirectLendingServicerStatementService : IDirectLendingServic
                 continue;
             }
 
-            var mode = request.DefaultMode ?? row.SuggestedApplyMode ?? InferApplyMode(row);
             try
             {
                 var result = mode switch
@@ -256,9 +265,10 @@ public sealed class DirectLendingServicerStatementService : IDirectLendingServic
                         new AssessFeeRequest("Servicer fee", row.FeeAmount ?? row.GrossAmount ?? 0m, row.EffectiveDate ?? row.StatementDate ?? batch.StatementDate, row.ExternalRef),
                         metadata,
                         ct).ConfigureAwait(false),
-                    ServicerStatementApplyMode.ChargePenalty => await _directLendingService.ChargePrepaymentPenaltyAsync(
+                    ServicerStatementApplyMode.ChargePenalty => await ChargeContractualPrepaymentPenaltyAsync(
                         loanId,
-                        new ChargePrepaymentPenaltyRequest(row.PenaltyAmount ?? row.GrossAmount ?? 0m, row.EffectiveDate ?? row.StatementDate ?? batch.StatementDate, row.ExternalRef),
+                        row.EffectiveDate ?? row.StatementDate ?? batch.StatementDate,
+                        row.ExternalRef,
                         metadata,
                         ct).ConfigureAwait(false),
                     _ => null
@@ -293,6 +303,29 @@ public sealed class DirectLendingServicerStatementService : IDirectLendingServic
         }
 
         return new ServicerStatementApplyResultDto(batchId, selected.Length, applied.Count, selected.Length - applied.Count, rows, issues, updated.Status);
+    }
+
+    private async Task<LoanServicingStateDto?> ChargeContractualPrepaymentPenaltyAsync(
+        Guid loanId,
+        DateOnly effectiveDate,
+        string? externalRef,
+        DirectLendingCommandMetadataDto? metadata,
+        CancellationToken ct)
+    {
+        var servicing = await _directLendingService.GetServicingStateAsync(loanId, ct).ConfigureAwait(false);
+        if (servicing is null)
+        {
+            return null;
+        }
+
+        return await _directLendingService.ChargePrepaymentPenaltyAsync(
+            loanId,
+            new ChargePrepaymentPenaltyRequest(
+                servicing.Balances.PrincipalOutstanding,
+                effectiveDate,
+                externalRef),
+            metadata,
+            ct).ConfigureAwait(false);
     }
 
     private async Task<List<ServicerStatementRowDto>> NormalizeRowsAsync(ServicerStatementImportRequestDto request, CancellationToken ct)

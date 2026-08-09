@@ -12,4 +12,7 @@
   <ItemGroup Condition="'$(MeridianPayloadDir)' != ''">
     <EmbeddedResource Include="$(MeridianPayloadDir)\**\*" LogicalName="payload/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Meridian.Setup.Tests" />
+  </ItemGroup>
 </Project>

@@ -72,6 +72,7 @@ modules:
       - W2-PROMO-001
       - W3-CONT-001
       - W5-ACCT-001
+      - W10-MARK-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -82,7 +83,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-08-04
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -102,13 +103,25 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W6-BTSTUDIO-001
       - W9-ASSET-010
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - DataConfidence
       - PaperSession
       - PortfolioLedgerReview
       - GovernedReportPack
       - AccountingRecords
+      - BacktestingEvidence
     validation:
       - dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~AutoGapRemediationServiceTests|FullyQualifiedName~BackfillCoordinatorPreviewTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -165,6 +178,7 @@ modules:
       - W1-DATA-001
       - W2-TRD-001
       - W4-RECON-001
+      - W10-RECON-004
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -257,7 +271,7 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-08-04
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -337,6 +351,9 @@ modules:
       - W3-CONT-001
       - W6-BTSTUDIO-001
       - W7-LIVE-001
+      - W10-RECON-001
+      - W10-RECON-002
+      - W10-RECON-004
     stage_gates:
       - PromotionReview
       - ResearchContinuity
@@ -361,6 +378,7 @@ modules:
       - W3-CONT-001
       - W5-MASSET-001
       - W6-BTSTUDIO-001
+      - W10-PERF-001
     stage_gates:
       - ResearchContinuity
       - BacktestingEvidence
@@ -406,6 +424,11 @@ modules:
       - W4-RPT-001
       - W5-ACCT-001
       - W9-ASSET-010
+      - W10-MARK-001
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -428,6 +451,7 @@ modules:
     roadmap_items:
       - W3-CONT-001
       - W6-BTSTUDIO-001
+      - W10-PERF-001
     stage_gates:
       - ResearchContinuity
       - BacktestingEvidence
@@ -438,7 +462,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-08-04
 
   - id: SRC-FSHARP-DIRECTLENDING
     path: src/Meridian.FSharp.DirectLending.Aggregates
@@ -652,12 +676,12 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests|FullyQualifiedName~ProviderLatencyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ClockSkewEstimatorTests|FullyQualifiedName~SpreadMonitorTests|FullyQualifiedName~DataLossAccountingTests|FullyQualifiedName~SchemaValidationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderDegradationScorerTests|FullyQualifiedName~ProviderDegradationCalibrationTests|FullyQualifiedName~StreamingFailoverServiceTests|FullyQualifiedName~FailoverAwareMarketDataClientTests|FullyQualifiedName~StreamingFailoverServiceResilienceTests|FullyQualifiedName~FailoverEndpointTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DataFreshnessSlaMonitorTests|FullyQualifiedName~DataFreshnessSlaMonitorMarketHoursTests|FullyQualifiedName~SlaStatusSnapshotTests|FullyQualifiedName~LiquidityProfileTests|FullyQualifiedName~PriceContinuityCheckerTests|FullyQualifiedName~GapAnalyzerTests|FullyQualifiedName~SequenceErrorTrackerTests|FullyQualifiedName~CompletenessScoreCalculatorTests|FullyQualifiedName~AnomalyDetectorTests|FullyQualifiedName~DataQualityMonitoringServiceTests|FullyQualifiedName~LatencyHistogramTests|FullyQualifiedName~CrossProviderComparisonServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DataFreshnessSlaMonitorTests|FullyQualifiedName~DataFreshnessSlaMonitorMarketHoursTests|FullyQualifiedName~SlaStatusSnapshotTests|FullyQualifiedName~LiquidityProfileTests|FullyQualifiedName~PriceContinuityCheckerTests|FullyQualifiedName~GapAnalyzerTests|FullyQualifiedName~SequenceErrorTrackerTests|FullyQualifiedName~TimestampMonotonicityCheckerTests|FullyQualifiedName~CompletenessScoreCalculatorTests|FullyQualifiedName~AnomalyDetectorTests|FullyQualifiedName~DataQualityMonitoringServiceTests|FullyQualifiedName~LatencyHistogramTests|FullyQualifiedName~CrossProviderComparisonServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~GovernanceSharedDataAccessServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-08-05
 
   - id: SRC-DESIGN-REFERENCE-DATA
     path: src/Meridian.ReferenceData
@@ -745,6 +769,14 @@ modules:
       - W5X-CONNECT-001
       - W5X-STMT-ONBOARD-001
       - W9-ASSET-010
+      - W10-RECON-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -805,7 +837,7 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Audit/Meridian.Audit.csproj /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CompliancePolicyEngineTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CompliancePolicyEngineTests|FullyQualifiedName~AccessReviewServiceTests" /p:EnableWindowsTargeting=true
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -831,7 +863,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-08-04
 
   - id: SRC-DESIGN-DOCUMENTS
     path: src/Meridian.Documents
@@ -939,12 +971,25 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W6-BTSTUDIO-001
       - W9-ASSET-010
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
       - GovernedReportPack
       - AccountingRecords
+      - BacktestingEvidence
     validation:
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
@@ -952,7 +997,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-07-18
+    last_reviewed: 2026-08-04
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -972,6 +1017,7 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W6-BTSTUDIO-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -979,6 +1025,7 @@ modules:
       - PortfolioLedgerReview
       - GovernedReportPack
       - AccountingRecords
+      - BacktestingEvidence
     validation:
       - npm --prefix src/Meridian.Ui/dashboard run test
       - npm --prefix src/Meridian.Ui/dashboard run build
@@ -988,7 +1035,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-07-18
+    last_reviewed: 2026-08-04
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
@@ -1004,6 +1051,17 @@ modules:
       - W5-ACCT-001
       - W5-MASSET-001
       - W8-WPF-PARITY-001
+      - W10-MARK-001
+      - W10-RECON-001
+      - W10-PROV-001
+      - W10-RECON-002
+      - W10-JRNL-001
+      - W10-TAX-001
+      - W10-SEAM-001
+      - W10-RECON-003
+      - W10-RECON-004
+      - W10-PERF-001
+      - W10-CONSOL-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack

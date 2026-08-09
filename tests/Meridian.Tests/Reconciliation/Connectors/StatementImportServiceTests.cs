@@ -24,23 +24,25 @@ public sealed class StatementImportServiceTests : IDisposable
     private readonly string _root = StatementConnectorTestData.CreateTempRoot("mdc_stmt_import_svc");
     private readonly StatementMappingProfileCatalog _catalog;
     private readonly StatementConnectorRegistry _registry;
+    private readonly FakeFetchingConnector _fetchingConnector;
     private readonly StatementImportService _service;
     private readonly IStatementRunWorkflowService _workflow;
 
     public StatementImportServiceTests()
     {
         _catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        _fetchingConnector = new FakeFetchingConnector();
         _registry = new StatementConnectorRegistry(
         [
             new CsvStatementConnector(_catalog),
             new OfxStatementConnector(_catalog),
             new IbFlexStatementConnector(_catalog),
             new AlpacaActivityStatementConnector(_catalog, [], []),
-            new FakeFetchingConnector()
+            _fetchingConnector
         ]);
 
         var statementStore = new JsonCanonicalStatementStore(_root);
-        _workflow = new StatementRunWorkflowService(
+        _workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
             new JsonReconciliationCaseStore(_root),
             new JsonReconciliationBreakStore(_root),
@@ -173,6 +175,68 @@ public sealed class StatementImportServiceTests : IDisposable
 
         File.Exists(Path.Combine(_root, result.RetainedSourcePath)).Should().BeTrue();
         File.Exists(Path.Combine(_root, result.RetainedCanonicalPath)).Should().BeTrue();
+        result.RetainedCanonicalEvidencePath.Should().NotBeNull();
+        File.Exists(Path.Combine(_root, result.RetainedCanonicalEvidencePath!)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Commit_MixedParsedAccounts_FailsBeforeEvidenceRetentionOrMatching()
+    {
+        const string source =
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02\n" +
+            "FUND-B,MSFT,1,200,-200,trade,2026-06-03\n";
+        var document = new StatementSourceDocument(
+            "mixed-accounts.csv",
+            Encoding.UTF8.GetBytes(source),
+            ExternalAccountId: "FUND-A");
+
+        var commit = () => _service.CommitAsync(CommitRequest(document));
+
+        await commit.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*parsed account identity*authorized external account*");
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports"))
+            .Should()
+            .BeFalse("conflicting account rows must fail before raw or canonical evidence is retained");
+        (await _workflow.ListImportsAsync()).Should().BeEmpty(
+            "conflicting account rows must fail before matching or casework begins");
+    }
+
+    [Fact]
+    public async Task Commit_ConnectorOmitsParsedAccount_FailsBeforeEvidenceRetentionOrMatching()
+    {
+        var connector = new FixedRecordConnector(
+            new StatementCanonicalRecord(
+                StatementRecordKind.Transaction,
+                Account: string.Empty,
+                Symbol: "AAPL",
+                Quantity: 1m,
+                Price: 100m,
+                CashAmount: -100m,
+                ActivityType: "trade",
+                TradeDate: new DateOnly(2026, 6, 2)));
+        var service = new StatementImportService(
+            new StatementConnectorRegistry([connector]),
+            _catalog,
+            _workflow,
+            _root);
+        var document = new StatementSourceDocument(
+            "missing-account.fixed",
+            "fixed"u8.ToArray(),
+            ExternalAccountId: "FUND-A");
+
+        var commit = () => service.CommitAsync(
+            CommitRequest(document, connectorId: connector.Descriptor.ConnectorId));
+
+        await commit.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*missing or conflicting parsed account identity*");
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports"))
+            .Should()
+            .BeFalse("missing account identity must fail before raw or canonical evidence is retained");
+        (await _workflow.ListImportsAsync()).Should().BeEmpty(
+            "missing account identity must fail before matching or casework begins");
     }
 
     [Fact]
@@ -201,13 +265,13 @@ public sealed class StatementImportServiceTests : IDisposable
 
         var artifact = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
         artifact.Should().Be(
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
-            "FUND-A,AAPL,100,187.25,-18726.05,trade,2026-06-02,2026-06-04,USD,1.05,T-1001\n" +
-            "FUND-A,MSFT,-50,412.10,20603.98,trade,2026-06-15,2026-06-17,USD,1.02,T-1002\n" +
-            "FUND-A,AAPL,100,190.10,19010.00,position,2026-06-30,,USD,,\n" +
-            "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,\n" +
-            "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001\n" +
-            "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001\n");
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId,activityCategory,activitySubtype,providerActivityCode,relatedTransactionId,orderId,description\n" +
+            "FUND-A,AAPL,100,187.25,-18726.05,trade,2026-06-02,2026-06-04,USD,1.05,T-1001,,,,,,\n" +
+            "FUND-A,MSFT,-50,412.10,20603.98,trade,2026-06-15,2026-06-17,USD,1.02,T-1002,,,,,,\n" +
+            "FUND-A,AAPL,100,190.10,19010.00,position,2026-06-30,,USD,,,,,,,,\n" +
+            "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,,,,,,,\n" +
+            "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001,,,,,,\n" +
+            "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001,,,,,,\n");
     }
 
     [Fact]
@@ -379,6 +443,45 @@ public sealed class StatementImportServiceTests : IDisposable
         second.Duplicate.Should().BeTrue();
         second.RunId.Should().Be(first.RunId, "the duplicate key is the import id");
         second.Status.Should().Be("Duplicate");
+        second.BreakCount.Should().Be(first.BreakCount);
+        second.CaseCount.Should().Be(first.CaseCount);
+        second.BreakIds.Should().Equal(first.BreakIds);
+        second.CaseIds.Should().Equal(first.CaseIds);
+        second.ReconciliationCaseRoutes.Should().Equal(first.ReconciliationCaseRoutes);
+        second.ReconciliationCaseLinks.Should().BeEquivalentTo(first.ReconciliationCaseLinks);
+    }
+
+    [Fact]
+    public async Task Commit_SameStatementForDifferentLedgerBooks_RetainsDistinctScopedImports()
+    {
+        var document = FixtureDocument("csv-mixed-kinds.csv");
+        var periodId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var firstScope = new StatementAccountingScope(
+            "fund-profile-alpha",
+            Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            periodId,
+            new DateOnly(2026, 6, 30));
+        var secondScope = firstScope with
+        {
+            LedgerBookId = Guid.Parse("33333333-3333-3333-3333-333333333333")
+        };
+        var firstRequest = CommitRequest(document) with { AccountingScope = firstScope };
+        var secondRequest = CommitRequest(document) with { AccountingScope = secondScope };
+
+        var first = await _service.CommitAsync(firstRequest);
+        var second = await _service.CommitAsync(secondRequest);
+
+        first.Duplicate.Should().BeFalse();
+        second.Duplicate.Should().BeFalse(
+            "identical source bytes bound to different ledger books are different accounting evidence");
+        second.RunId.Should().NotBe(first.RunId);
+        var imports = await _workflow.ListImportsAsync();
+        imports.Should().Contain(import =>
+            import.ImportId == first.RunId &&
+            import.AccountingScope == firstScope);
+        imports.Should().Contain(import =>
+            import.ImportId == second.RunId &&
+            import.AccountingScope == secondScope);
     }
 
     [Fact]
@@ -387,9 +490,11 @@ public sealed class StatementImportServiceTests : IDisposable
         const string source =
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
             "FUND-A,AAPL,1,100,-100,trade,2026-06-02\n";
+        // The pre-upgrade run is keyed by the hash of the canonical rendering, so this constant has
+        // to be the exact artifact the writer produces today — including every trailing column.
         const string canonical =
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
-            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,,,\n";
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId,activityCategory,activitySubtype,providerActivityCode,relatedTransactionId,orderId,description\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,,,,,,,,,\n";
         var document = new StatementSourceDocument("legacy-import.csv", Encoding.UTF8.GetBytes(source));
         var canonicalHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
         var rawHash = Convert.ToHexString(SHA256.HashData(document.Content.Span));
@@ -518,13 +623,128 @@ public sealed class StatementImportServiceTests : IDisposable
         var schedule = (await new FileStatementFetchScheduleStore(_root).ListAsync()).Single();
 
         schedule.SourceKind.Should().Be("broker");
+        var ingestion = new RecordingStatementFetchIngestionAuthority(_service);
+        var runner = new StatementFetchScheduleRunner(
+            new FileStatementFetchScheduleStore(_root),
+            _service,
+            ingestion);
+
+        var result = await runner.RunScheduleAsync(
+            schedule,
+            new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero));
+
+        result.Should().BeNull();
+        _fetchingConnector.LastRequest.Should().BeNull(
+            "a legacy unscoped schedule must fail before any remote request");
+        ingestion.LastCommand.Should().BeNull(
+            "a legacy schedule without tenant/company/book/period authority must fail before ingestion");
+        (await new FileStatementFetchScheduleStore(_root).ListAsync())
+            .Single()
+            .LastRunStatus
+            .Should()
+            .Be("Failed: InvalidOperationException");
+    }
+
+    [Fact]
+    public async Task ScheduleStore_AuthorityChanges_ClearUnrelatedRunHistory()
+    {
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var periodStart = new DateOnly(2026, 6, 1);
+        var periodEnd = new DateOnly(2026, 6, 30);
+        var original = CreateScopedSchedule("authority-template", periodStart, periodEnd);
+        var nextPeriodStart = new DateOnly(2026, 7, 1);
+        var nextPeriodEnd = new DateOnly(2026, 7, 31);
+        var authorityChanges = new (string Name, StatementFetchSchedule Schedule)[]
+        {
+            (
+                "account",
+                original with
+                {
+                    ExternalAccountId = "EXT-002",
+                    FundAccountId = "FUND-SCHED-002"
+                }),
+            (
+                "period",
+                original with
+                {
+                    PeriodStart = nextPeriodStart,
+                    PeriodEnd = nextPeriodEnd,
+                    AccountingScope = new StatementAccountingScope(
+                        "fund-profile-scheduled",
+                        Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                        Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                        nextPeriodEnd)
+                }),
+            (
+                "source",
+                original with
+                {
+                    ConnectorId = "replacement-fetch",
+                    SourceInstitution = "Replacement Broker",
+                    SourceKind = "broker",
+                    MappingProfileId = "replacement-profile"
+                })
+        };
+        var ranAt = new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero);
+
+        for (var index = 0; index < authorityChanges.Length; index++)
+        {
+            var scheduleId = $"authority-change-{index}";
+            await scheduleStore.UpsertAsync(original with { ScheduleId = scheduleId });
+            await scheduleStore.RecordRunAsync(scheduleId, ranAt, "Imported prior authority");
+            await scheduleStore.RecordFailureAsync(
+                scheduleId,
+                ranAt.AddHours(1),
+                "Failed: prior authority");
+
+            var updated = await scheduleStore.UpsertAsync(
+                authorityChanges[index].Schedule with { ScheduleId = scheduleId });
+
+            updated.LastRunAtUtc.Should().BeNull(
+                $"{authorityChanges[index].Name} changes cannot inherit a successful-run cursor");
+            updated.LastAttemptAtUtc.Should().BeNull(
+                $"{authorityChanges[index].Name} changes cannot inherit an attempt cadence watermark");
+            updated.LastRunStatus.Should().BeNull(
+                $"{authorityChanges[index].Name} changes cannot inherit an unrelated outcome");
+        }
+    }
+
+    [Fact]
+    public async Task ScheduleStore_CadenceOnlyEdit_PreservesRunHistory()
+    {
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = CreateScopedSchedule(
+            "cadence-only",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30));
+        var ranAt = new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero);
+        await scheduleStore.UpsertAsync(schedule);
+        await scheduleStore.RecordRunAsync(schedule.ScheduleId, ranAt, "Imported");
+
+        var updated = await scheduleStore.UpsertAsync(schedule with
+        {
+            CadenceHours = 48,
+            Enabled = false
+        });
+
+        updated.LastRunAtUtc.Should().Be(ranAt);
+        updated.LastAttemptAtUtc.Should().Be(ranAt);
+        updated.LastRunStatus.Should().Be("Imported");
     }
 
     [Fact]
     public async Task ScheduleRunner_RunsDueSchedules_AndRecordsOutcome()
     {
         var scheduleStore = new FileStatementFetchScheduleStore(_root);
-        var runner = new StatementFetchScheduleRunner(scheduleStore, _service);
+        var ingestion = new RecordingStatementFetchIngestionAuthority(_service);
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion);
+        var periodStart = new DateOnly(2026, 6, 1);
+        var periodEnd = new DateOnly(2026, 6, 30);
+        var accountingScope = new StatementAccountingScope(
+            "fund-profile-scheduled",
+            Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            periodEnd);
         var schedule = await scheduleStore.UpsertAsync(new StatementFetchSchedule(
             ScheduleId: string.Empty,
             ConnectorId: FakeFetchingConnector.FakeConnectorId,
@@ -535,7 +755,12 @@ public sealed class StatementImportServiceTests : IDisposable
             ToleranceProfileId: "statement-default",
             CadenceHours: 24,
             Enabled: true,
-            SourceKind: "custodian"));
+            SourceKind: "custodian",
+            TenantId: "tenant-scheduled",
+            CompanyId: "company-scheduled",
+            PeriodStart: periodStart,
+            PeriodEnd: periodEnd,
+            AccountingScope: accountingScope));
 
         var now = new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero);
         var ran = await runner.RunDueSchedulesAsync(now);
@@ -545,6 +770,29 @@ public sealed class StatementImportServiceTests : IDisposable
         updated.LastRunAtUtc.Should().Be(now);
         updated.LastRunStatus.Should().StartWith("Imported");
         (await _workflow.ListImportsAsync()).Single().Broker.Should().Be("custodian");
+        ingestion.LastCommand.Should().NotBeNull();
+        ingestion.LastCommand!.TenantId.Should().Be("tenant-scheduled");
+        ingestion.LastCommand.CompanyId.Should().Be("company-scheduled");
+        ingestion.LastCommand.PeriodStart.Should().Be(periodStart);
+        ingestion.LastCommand.PeriodEnd.Should().Be(periodEnd);
+        ingestion.LastCommand.AccountingScope.Should().Be(accountingScope);
+        ingestion.LastAuthorizationCommand.Should().NotBeNull();
+        ingestion.LastAuthorizationCommand!.TenantId.Should().Be("tenant-scheduled");
+        ingestion.LastAuthorizationCommand.CompanyId.Should().Be("company-scheduled");
+        ingestion.LastAuthorizationCommand.FundAccountId.Should().Be("FUND-SCHED");
+        ingestion.LastAuthorizationCommand.ExternalAccountId.Should().Be("EXT-001");
+        ingestion.LastAuthorizationCommand.SourceInstitution.Should().Be("Fake Custodian");
+        ingestion.LastAuthorizationCommand.AccountingScope.Should().Be(accountingScope);
+        _fetchingConnector.LastRequest.Should().NotBeNull();
+        _fetchingConnector.LastRequest!.Since.Should().Be(
+            new DateTimeOffset(periodStart, TimeOnly.MinValue, TimeSpan.Zero),
+            "the remote lower bound comes from the immutable retained period, not cadence or run history");
+        _fetchingConnector.LastRequest.UntilExclusive.Should().Be(
+            new DateTimeOffset(periodEnd.AddDays(1), TimeOnly.MinValue, TimeSpan.Zero),
+            "the exclusive remote upper bound is the day after the immutable inclusive period end");
+        _fetchingConnector.LastRequest.Datasets.Should().Be(
+            StatementFetchDatasets.Activity,
+            "a current portfolio snapshot cannot truthfully represent a retained historical period end");
 
         // Just ran: not due again until the cadence elapses.
         (await runner.RunDueSchedulesAsync(now.AddHours(1))).Should().Be(0);
@@ -552,10 +800,48 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ScheduleRunner_ReauthorizationFailure_BlocksProviderAccessAndIngestion()
+    {
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = await scheduleStore.UpsertAsync(
+            CreateScopedSchedule(
+                "ownership-revoked",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30)));
+        var ingestion = new RecordingStatementFetchIngestionAuthority(
+            _service,
+            authorizationFailure: new InvalidOperationException("Statement account ownership was revoked."));
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion);
+        var now = new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero);
+
+        var result = await runner.RunScheduleAsync(schedule, now);
+
+        result.Should().BeNull();
+        ingestion.LastAuthorizationCommand.Should().NotBeNull();
+        ingestion.LastAuthorizationCommand!.TenantId.Should().Be("tenant-scheduled");
+        ingestion.LastAuthorizationCommand.CompanyId.Should().Be("company-scheduled");
+        ingestion.LastAuthorizationCommand.FundAccountId.Should().Be("FUND-SCHED");
+        ingestion.LastAuthorizationCommand.ExternalAccountId.Should().Be("EXT-001");
+        ingestion.LastCommand.Should().BeNull(
+            "a revoked account must never enter the statement ingestion workflow");
+        _fetchingConnector.LastRequest.Should().BeNull(
+            "tenant, company, fund-account, and external-account ownership must be reauthorized before provider access");
+        (await scheduleStore.ListAsync())
+            .Single()
+            .LastRunStatus
+            .Should()
+            .Be("Failed: InvalidOperationException");
+    }
+
+    [Fact]
     public async Task ScheduleRunner_FetchFailure_IsRecordedNotThrown()
     {
         var scheduleStore = new FileStatementFetchScheduleStore(_root);
-        var runner = new StatementFetchScheduleRunner(scheduleStore, _service);
+        var runner = new StatementFetchScheduleRunner(
+            scheduleStore,
+            _service,
+            new RecordingStatementFetchIngestionAuthority(_service));
+        var periodEnd = new DateOnly(2026, 7, 31);
         await scheduleStore.UpsertAsync(new StatementFetchSchedule(
             ScheduleId: "sched-bad",
             ConnectorId: CsvStatementConnector.ConnectorId,
@@ -565,7 +851,16 @@ public sealed class StatementImportServiceTests : IDisposable
             MappingProfileId: null,
             ToleranceProfileId: "statement-default",
             CadenceHours: 24,
-            Enabled: true));
+            Enabled: true,
+            TenantId: "tenant-scheduled",
+            CompanyId: "company-scheduled",
+            PeriodStart: new DateOnly(2026, 7, 1),
+            PeriodEnd: periodEnd,
+            AccountingScope: new StatementAccountingScope(
+                "fund-profile-scheduled",
+                Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                periodEnd)));
         var lastSuccessfulRun = new DateTimeOffset(2026, 7, 17, 6, 0, 0, TimeSpan.Zero);
         await scheduleStore.RecordRunAsync("sched-bad", lastSuccessfulRun, "Imported prior run");
 
@@ -585,10 +880,120 @@ public sealed class StatementImportServiceTests : IDisposable
         (await runner.RunDueSchedulesAsync(failedAt.AddHours(24))).Should().Be(1);
     }
 
+    private static StatementFetchSchedule CreateScopedSchedule(
+        string scheduleId,
+        DateOnly periodStart,
+        DateOnly periodEnd)
+        => new(
+            ScheduleId: scheduleId,
+            ConnectorId: FakeFetchingConnector.FakeConnectorId,
+            ExternalAccountId: "EXT-001",
+            FundAccountId: "FUND-SCHED",
+            SourceInstitution: "Fake Custodian",
+            MappingProfileId: null,
+            ToleranceProfileId: "statement-default",
+            CadenceHours: 24,
+            Enabled: true,
+            SourceKind: "custodian",
+            TenantId: "tenant-scheduled",
+            CompanyId: "company-scheduled",
+            PeriodStart: periodStart,
+            PeriodEnd: periodEnd,
+            AccountingScope: new StatementAccountingScope(
+                "fund-profile-scheduled",
+                Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                periodEnd));
+
+    private sealed class RecordingStatementFetchIngestionAuthority(
+        StatementImportService imports,
+        Exception? authorizationFailure = null)
+        : IStatementFetchIngestionAuthority
+    {
+        public StatementFetchAuthorizationCommand? LastAuthorizationCommand { get; private set; }
+        public StatementFetchIngestionCommand? LastCommand { get; private set; }
+
+        public Task<StatementAccountingScope> AuthorizeAsync(
+            StatementFetchAuthorizationCommand command,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            LastAuthorizationCommand = command;
+            return authorizationFailure is null
+                ? Task.FromResult(command.AccountingScope)
+                : Task.FromException<StatementAccountingScope>(authorizationFailure);
+        }
+
+        public async Task<StatementImportCommitResultDto> IngestAsync(
+            StatementFetchIngestionCommand command,
+            CancellationToken ct = default)
+        {
+            LastCommand = command;
+            return await imports.CommitAsync(
+                    new StatementImportCommitRequest(
+                        command.Document,
+                        command.ConnectorId,
+                        command.SourceKind,
+                        command.SourceInstitution,
+                        command.FundAccountId,
+                        command.ExternalAccountId,
+                        command.PeriodStart,
+                        command.PeriodEnd,
+                        command.ToleranceProfileId,
+                        command.ImportedBy)
+                    {
+                        AccountingScope = command.AccountingScope
+                    },
+                    ct)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private sealed class FixedRecordConnector : IStatementConnector
+    {
+        private readonly IReadOnlyList<StatementCanonicalRecord> _records;
+
+        public FixedRecordConnector(params StatementCanonicalRecord[] records)
+        {
+            _records = records;
+        }
+
+        public StatementConnectorDescriptor Descriptor { get; } = new(
+            "fixed-record",
+            "Fixed record connector",
+            [".fixed"],
+            SupportsFileImport: true,
+            SupportsRemoteFetch: false,
+            RequiresMappingProfile: false,
+            DefaultProfileId: null);
+
+        public bool CanHandle(StatementSourceDocument document) => true;
+
+        public Task<StatementParseResult> ParseAsync(
+            StatementSourceDocument document,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new StatementParseResult(
+                Descriptor.ConnectorId,
+                ProfileId: null,
+                DetectedColumns: [],
+                ColumnMappings: [],
+                Records: _records,
+                Issues: [],
+                Fingerprint: new StatementFormatFingerprint(
+                    new string('A', 64),
+                    NormalizedColumns: [],
+                    Delimiter: string.Empty)));
+        }
+    }
+
     /// <summary>A fetch-capable connector returning a canonical CSV document, for scheduler tests.</summary>
     private sealed class FakeFetchingConnector : IFetchingStatementConnector
     {
         public const string FakeConnectorId = "fake-fetch";
+
+        public StatementFetchRequest? LastRequest { get; private set; }
 
         public StatementConnectorDescriptor Descriptor { get; } = new(
             FakeConnectorId,
@@ -604,6 +1009,7 @@ public sealed class StatementImportServiceTests : IDisposable
 
         public Task<StatementSourceDocument> FetchAsync(StatementFetchRequest request, CancellationToken ct = default)
         {
+            LastRequest = request;
             const string content =
                 "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
                 "EXT-001,AAPL,5,100,-500,trade,2026-06-20\n";

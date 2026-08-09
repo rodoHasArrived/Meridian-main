@@ -17,13 +17,21 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
 {
     internal static IServiceCollection AddHostedBrokerageGateways(this IServiceCollection services)
     {
+        services.TryAddSingleton<AlpacaTradeUpdatesClient>(sp =>
+        {
+            var options = sp.GetService<Meridian.Core.Config.AlpacaOptions>()
+                ?? new Meridian.Core.Config.AlpacaOptions();
+            var logger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
+            return new AlpacaTradeUpdatesClient(options, logger);
+        });
         services.TryAddSingleton<AlpacaBrokerageGateway>(sp =>
         {
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             var options = sp.GetService<Meridian.Core.Config.AlpacaOptions>()
                 ?? new Meridian.Core.Config.AlpacaOptions();
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
-            return new AlpacaBrokerageGateway(httpClientFactory, options, logger);
+            var tradeUpdates = sp.GetRequiredService<AlpacaTradeUpdatesClient>();
+            return new AlpacaBrokerageGateway(httpClientFactory, options, logger, tradeUpdates);
         });
         services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, AlpacaBrokerageSyncAdapter>());
@@ -124,6 +132,13 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             DateTimeOffset? since,
             CancellationToken ct)
             => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
+
+        Task<BrokerageActivitySnapshotDto> IBrokerageActivitySync.GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since,
+            DateTimeOffset? untilExclusive,
+            CancellationToken ct)
+            => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, untilExclusive, ct);
     }
 
     private sealed class IBBrokerageSyncAdapter(IBBrokerageGateway gateway) :

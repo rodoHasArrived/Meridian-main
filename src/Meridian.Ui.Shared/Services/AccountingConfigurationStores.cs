@@ -13,7 +13,9 @@ using Meridian.Storage.Store;
 
 namespace Meridian.Ui.Shared.Services;
 
-public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurationStore
+public sealed class InMemoryAccountingConfigurationStore :
+    IAccountingConfigurationStore,
+    Meridian.Application.Composition.INonProductionOnlyService
 {
     private readonly Dictionary<string, AccountingConfigurationWorkspaceDto> _workspaces = new(StringComparer.OrdinalIgnoreCase);
 
@@ -47,7 +49,9 @@ public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurat
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
-public sealed class InMemoryAccountingActionAuditStore : IAccountingActionAuditStore
+public sealed class InMemoryAccountingActionAuditStore :
+    IAccountingActionAuditStore,
+    Meridian.Application.Composition.INonProductionOnlyService
 {
     private readonly List<AccountingActionAuditEventDto> _events = [];
 

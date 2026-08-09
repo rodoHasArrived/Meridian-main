@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatReportingFamilyLabel } from "@/lib/reporting-hub";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { workstationRouteWithQuery } from "@/lib/workspace";
 import {
   buildRunStatusRows,
@@ -13,10 +17,9 @@ import {
   type ReportingRunStatusRow,
   type ReportingTemplateRow
 } from "@/screens/reporting-screen.view-model";
-import type { AccountingWorkspaceResponse } from "@/types";
 
 interface ReportLibraryScreenProps {
-  data: AccountingWorkspaceResponse | null;
+  data: ReportingWorkspacePayload | null;
 }
 
 const standardReportCategories = [
@@ -122,13 +125,13 @@ const standardReportCatalog = [
 ];
 
 export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
-  const reporting = data?.reporting ?? null;
+  const reporting = normalizeReportingWorkspace(data);
   const templateRows = useMemo(() => buildTemplateRows(reporting?.templates ?? []), [reporting?.templates]);
   const runStatusRows = useMemo(
     () => buildRunStatusRows(reporting?.recentRuns ?? [], reporting?.templates ?? []),
     [reporting?.recentRuns, reporting?.templates]
   );
-  if (!data) {
+  if (!reporting) {
     return (
       <Card
         className="panel-surface"

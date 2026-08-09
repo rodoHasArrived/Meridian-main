@@ -30,15 +30,25 @@ public sealed record StatementRunRequest(
     /// </summary>
     public string CanonicalArtifactHash { get; init; } = string.Empty;
 
+    public StatementAccountingScope? AccountingScope { get; init; }
+
     public string EffectiveParsePath =>
         string.IsNullOrWhiteSpace(CanonicalSourcePath) ? SourcePath : CanonicalSourcePath;
 
-    public string DuplicateKey => StatementDuplicateKey.Create(
-        FundAccountId,
-        StatementPeriodStart,
-        StatementPeriodEnd,
-        SourceFileHash,
-        CanonicalArtifactHash);
+    public string DuplicateKey => AccountingScope is null
+        ? StatementDuplicateKey.Create(
+            FundAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourceFileHash,
+            CanonicalArtifactHash)
+        : StatementDuplicateKey.Create(
+            FundAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourceFileHash,
+            CanonicalArtifactHash,
+            AccountingScope);
 }
 
 public sealed record BrokerStatementImportRequest(
@@ -74,12 +84,20 @@ public sealed record BrokerStatementImportRequest(
 
     public DateOnly StatementDate => StatementPeriodEnd;
 
-    public string DuplicateKey => StatementDuplicateKey.Create(
-        FundAccountId,
-        StatementPeriodStart,
-        StatementPeriodEnd,
-        SourceFileHash,
-        CanonicalArtifactHash);
+    public string DuplicateKey => AccountingScope is null
+        ? StatementDuplicateKey.Create(
+            FundAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourceFileHash,
+            CanonicalArtifactHash)
+        : StatementDuplicateKey.Create(
+            FundAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourceFileHash,
+            CanonicalArtifactHash,
+            AccountingScope);
 
     /// <summary>
     /// Optional normalized artifact consumed by the format-specific parser. The retained raw
@@ -92,6 +110,8 @@ public sealed record BrokerStatementImportRequest(
     /// recomputing the hash from the same immutable bytes that are parsed.
     /// </summary>
     public string CanonicalArtifactHash { get; init; } = string.Empty;
+
+    public StatementAccountingScope? AccountingScope { get; init; }
 
     public string EffectiveParsePath =>
         string.IsNullOrWhiteSpace(CanonicalSourcePath) ? SourcePath : CanonicalSourcePath;
@@ -118,7 +138,8 @@ public sealed record BrokerStatementImportRequest(
             SourceFileHash)
         {
             CanonicalSourcePath = CanonicalSourcePath,
-            CanonicalArtifactHash = CanonicalArtifactHash
+            CanonicalArtifactHash = CanonicalArtifactHash,
+            AccountingScope = AccountingScope
         };
 }
 
@@ -149,6 +170,32 @@ public static class StatementDuplicateKey
 
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(material));
         return Convert.ToHexString(bytes);
+    }
+
+    /// <summary>
+    /// Creates the authority-scoped identity used by new statement-to-close imports. The legacy
+    /// overload above remains unchanged so compiled unscoped callers preserve their old identity.
+    /// </summary>
+    public static string Create(
+        string fundAccountId,
+        DateOnly statementPeriodStart,
+        DateOnly statementPeriodEnd,
+        string sourceFileHash,
+        string? canonicalArtifactHash,
+        StatementAccountingScope accountingScope)
+    {
+        ArgumentNullException.ThrowIfNull(accountingScope);
+        var baseIdentity = CreateMaterialParts(
+            fundAccountId,
+            statementPeriodStart,
+            statementPeriodEnd,
+            sourceFileHash,
+            canonicalArtifactHash);
+        baseIdentity.Add(Normalize(accountingScope.FundProfileId));
+        baseIdentity.Add(accountingScope.LedgerBookId.ToString("D"));
+        baseIdentity.Add(accountingScope.AccountingPeriodId.ToString("D"));
+        baseIdentity.Add(accountingScope.AsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        return Hash(baseIdentity);
     }
 
     /// <summary>
@@ -184,6 +231,77 @@ public static class StatementDuplicateKey
         return string.Equals(current, canonicalOnly, StringComparison.Ordinal)
             ? [current]
             : [current, canonicalOnly];
+    }
+
+    /// <summary>
+    /// Returns raw-plus-canonical and canonical-only identities within one exact accounting scope.
+    /// It intentionally does not fall back to an unscoped identity because that could conflate two
+    /// ledger books that consumed identical source bytes.
+    /// </summary>
+    public static IReadOnlyList<string> CreateCompatibleKeys(
+        string fundAccountId,
+        DateOnly statementPeriodStart,
+        DateOnly statementPeriodEnd,
+        string sourceFileHash,
+        string? canonicalArtifactHash,
+        StatementAccountingScope accountingScope)
+    {
+        ArgumentNullException.ThrowIfNull(accountingScope);
+        var current = Create(
+            fundAccountId,
+            statementPeriodStart,
+            statementPeriodEnd,
+            sourceFileHash,
+            canonicalArtifactHash,
+            accountingScope);
+        var canonicalHash = Normalize(canonicalArtifactHash ?? string.Empty);
+        if (canonicalHash.Length == 0 ||
+            string.Equals(canonicalHash, Normalize(sourceFileHash), StringComparison.Ordinal))
+        {
+            return [current];
+        }
+
+        var canonicalOnly = Create(
+            fundAccountId,
+            statementPeriodStart,
+            statementPeriodEnd,
+            canonicalHash,
+            canonicalArtifactHash: null,
+            accountingScope);
+        return string.Equals(current, canonicalOnly, StringComparison.Ordinal)
+            ? [current]
+            : [current, canonicalOnly];
+    }
+
+    private static List<string> CreateMaterialParts(
+        string fundAccountId,
+        DateOnly statementPeriodStart,
+        DateOnly statementPeriodEnd,
+        string sourceFileHash,
+        string? canonicalArtifactHash)
+    {
+        var sourceHash = Normalize(sourceFileHash);
+        var canonicalHash = Normalize(canonicalArtifactHash ?? string.Empty);
+        var materialParts = new List<string>
+        {
+            Normalize(fundAccountId),
+            statementPeriodStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            statementPeriodEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            sourceHash
+        };
+        if (canonicalHash.Length > 0 && !string.Equals(sourceHash, canonicalHash, StringComparison.Ordinal))
+        {
+            materialParts.Add(canonicalHash);
+        }
+
+        return materialParts;
+    }
+
+    private static string Hash(IReadOnlyList<string> materialParts)
+    {
+        var material = string.Join('|', materialParts);
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(material));
+        return Convert.ToHexString(bytes);
     }
 
     private static string Normalize(string value)

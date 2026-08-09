@@ -234,4 +234,151 @@ public sealed class MetadataTagServiceTests : IDisposable
         var exception = act.Should().Throw<Exception>().Which;
         (exception is IOException || exception is UnauthorizedAccessException).Should().BeTrue();
     }
+
+    [Fact]
+    public void SetTag_WhenAtomicWriteFails_DoesNotPublishOrSmuggleFailedCandidateAfterRestart()
+    {
+        using var writer = new AtomicSnapshotTestWriter();
+        var service = new MetadataTagService(_metadataPath, writer.Write, writer.WriteAsync);
+        service.SetTag("/data/baseline.jsonl", "source", "stooq");
+        writer.FailNextWrite();
+
+        var act = () => service.SetTag("/data/failed.jsonl", "source", "alpaca");
+
+        act.Should().Throw<IOException>();
+        service.GetTag("/data/baseline.jsonl", "source").Should().Be("stooq");
+        service.GetTag("/data/failed.jsonl", "source").Should().BeNull();
+
+        service.SetTag("/data/committed.jsonl", "source", "polygon");
+
+        var restarted = new MetadataTagService(_metadataPath);
+        restarted.GetTag("/data/baseline.jsonl", "source").Should().Be("stooq");
+        restarted.GetTag("/data/failed.jsonl", "source").Should().BeNull();
+        restarted.GetTag("/data/committed.jsonl", "source").Should().Be("polygon");
+    }
+
+    [Fact]
+    public async Task SetQualityAssessmentsAsync_WhileAtomicWriteIsBlocked_PublishesWholeBatchAfterCommit()
+    {
+        using var writer = new AtomicSnapshotTestWriter();
+        var service = new MetadataTagService(_metadataPath, writer.Write, writer.WriteAsync);
+        var block = writer.BlockNextWrite();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var computedAtUtc = new DateTime(2026, 8, 5, 12, 0, 0, DateTimeKind.Utc);
+        var assessments = new[]
+        {
+            new QualityAssessmentMetadataUpdate(
+                "/data/AAPL.jsonl",
+                0.98,
+                new DataInsight("quality", "Complete", 0.98, "score", computedAtUtc)),
+            new QualityAssessmentMetadataUpdate(
+                "/data/MSFT.jsonl",
+                0.94,
+                new DataInsight("quality", "Complete", 0.94, "score", computedAtUtc))
+        };
+
+        var persistence = service.SetQualityAssessmentsAsync(assessments, timeout.Token);
+
+        try
+        {
+            await block.WaitUntilEnteredAsync(timeout.Token);
+            service.GetQualityScore("/data/AAPL.jsonl").Should().BeNull();
+            service.GetQualityScore("/data/MSFT.jsonl").Should().BeNull();
+        }
+        finally
+        {
+            block.Release();
+        }
+
+        await persistence.WaitAsync(timeout.Token);
+        service.GetQualityScore("/data/AAPL.jsonl").Should().Be(0.98);
+        service.GetQualityScore("/data/MSFT.jsonl").Should().Be(0.94);
+    }
+
+    [Fact]
+    public async Task SetQualityAssessmentAsync_WhenAtomicWriteIsCancelled_DoesNotPublishOrSmuggleCandidate()
+    {
+        using var writer = new AtomicSnapshotTestWriter();
+        var service = new MetadataTagService(_metadataPath, writer.Write, writer.WriteAsync);
+        service.SetTag("/data/baseline-before-cancel.jsonl", "source", "stooq");
+        var block = writer.BlockNextWrite();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var operationCancellation = new CancellationTokenSource();
+        var insight = new DataInsight(
+            "quality",
+            "Cancelled assessment",
+            0.75,
+            "score",
+            new DateTime(2026, 8, 5, 12, 30, 0, DateTimeKind.Utc));
+        var persistence = service.SetQualityAssessmentAsync(
+            "/data/cancelled.jsonl",
+            0.75,
+            insight,
+            "quality-engine",
+            operationCancellation.Token);
+
+        try
+        {
+            await block.WaitUntilEnteredAsync(timeout.Token);
+            operationCancellation.Cancel();
+            var act = async () => await persistence;
+            await act.Should().ThrowAsync<OperationCanceledException>();
+        }
+        finally
+        {
+            operationCancellation.Cancel();
+            block.Release();
+        }
+
+        service.GetTag("/data/baseline-before-cancel.jsonl", "source").Should().Be("stooq");
+        service.GetQualityScore("/data/cancelled.jsonl").Should().BeNull();
+        service.SetTag("/data/committed-after-cancel.jsonl", "source", "alpaca");
+
+        var restarted = new MetadataTagService(_metadataPath);
+        restarted.GetTag("/data/baseline-before-cancel.jsonl", "source").Should().Be("stooq");
+        restarted.GetQualityScore("/data/cancelled.jsonl").Should().BeNull();
+        restarted.GetTag("/data/committed-after-cancel.jsonl", "source").Should().Be("alpaca");
+    }
+
+    [Fact]
+    public void SetTagsAndLineage_CallerAndGetterMutation_DoesNotChangePublishedOrPersistedSnapshot()
+    {
+        const string filePath = "/data/defensive.jsonl";
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["source"] = "alpaca"
+        };
+        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["channel"] = "sip"
+        };
+        _service.SetTags(filePath, tags);
+        _service.RecordLineage(filePath, new LineageEntry(
+            TimestampUtc: new DateTime(2026, 8, 5, 13, 0, 0, DateTimeKind.Utc),
+            Operation: "ingest",
+            SourcePath: null,
+            SourceProvider: "alpaca",
+            TransformationType: null,
+            Description: "Session-open ingest",
+            Parameters: parameters));
+
+        tags["source"] = "mutated";
+        parameters["channel"] = "mutated";
+        var returnedTags = (IDictionary<string, string>)_service.GetAllTags(filePath);
+        returnedTags["source"] = "leaked";
+        var returnedRecord = _service.GetFullMetadata(filePath)!;
+        returnedRecord.Tags["source"] = "record-leaked";
+        returnedRecord.Lineage[0] = returnedRecord.Lineage[0] with { Description = "leaked" };
+        var returnedParameters = (IDictionary<string, string>)returnedRecord.Lineage[0].Parameters!;
+        returnedParameters["channel"] = "leaked";
+
+        _service.GetTag(filePath, "source").Should().Be("alpaca");
+        var retainedLineage = _service.GetLineage(filePath).Should().ContainSingle().Which;
+        retainedLineage.Description.Should().Be("Session-open ingest");
+        retainedLineage.Parameters.Should().Contain("channel", "sip");
+
+        var restarted = new MetadataTagService(_metadataPath);
+        restarted.GetTag(filePath, "source").Should().Be("alpaca");
+        restarted.GetLineage(filePath).Single().Parameters.Should().Contain("channel", "sip");
+    }
 }

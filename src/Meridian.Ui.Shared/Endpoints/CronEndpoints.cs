@@ -65,7 +65,9 @@ public static class CronEndpoints
                 if (next is null)
                     break;
                 nextRuns.Add(next.Value);
-                from = next.Value.AddMinutes(1);
+                // GetNextOccurrence is already strictly after its cursor. Reusing the occurrence
+                // preserves adjacent minute-level runs instead of skipping every other match.
+                from = next.Value;
             }
 
             return Results.Json(new

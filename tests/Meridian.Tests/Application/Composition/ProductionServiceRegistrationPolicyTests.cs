@@ -195,21 +195,21 @@ public sealed class ProductionServiceRegistrationPolicyTests
     }
 
     [Fact]
-    public void EnsureInProcessQuantLabIsAllowed_WhenProductionPostureAndEnabled_RejectsStartup()
+    public void EnsureIsolatedQuantLabIsAllowed_WhenProductionPostureAndEnabled_RejectsStartup()
     {
         using var quietEnvironment = new ProductionEnvironmentQuietScope();
         var services = new ServiceCollection();
         services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
 
         Action act = () => ProductionServiceRegistrationPolicy
-            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+            .EnsureIsolatedQuantLabIsAllowed(services, enabled: true);
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*isolated worker*");
+            .WithMessage("*not certified as a hostile-code sandbox*");
     }
 
     [Fact]
-    public void EnsureInProcessQuantLabIsAllowed_WhenPackagedBuildAndEnabled_RejectsStartup()
+    public void EnsureIsolatedQuantLabIsAllowed_WhenPackagedBuildAndEnabled_RejectsStartup()
     {
         using var quietEnvironment = new ProductionEnvironmentQuietScope();
         using var packagedBuild = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", "true");
@@ -217,14 +217,14 @@ public sealed class ProductionServiceRegistrationPolicyTests
         services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
 
         Action act = () => ProductionServiceRegistrationPolicy
-            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+            .EnsureIsolatedQuantLabIsAllowed(services, enabled: true);
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*packaged*");
     }
 
     [Fact]
-    public void EnsureInProcessQuantLabIsAllowed_WhenDevelopmentPosture_AllowsExplicitOptIn()
+    public void EnsureIsolatedQuantLabIsAllowed_WhenDevelopmentPosture_AllowsExplicitOptIn()
     {
         using var quietEnvironment = new ProductionEnvironmentQuietScope();
         using var packagedBuild = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", null);
@@ -233,7 +233,7 @@ public sealed class ProductionServiceRegistrationPolicyTests
         services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
 
         Action act = () => ProductionServiceRegistrationPolicy
-            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+            .EnsureIsolatedQuantLabIsAllowed(services, enabled: true);
 
         act.Should().NotThrow();
     }

@@ -19,6 +19,7 @@ import {
   readViewStateFromSearch,
   stripViewStateFromSearch
 } from "@/lib/view-state-envelope";
+import { normalizeReportingWorkspace } from "@/lib/reporting-workspace";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { useOperationsContinuityScreenViewModel } from "@/screens/operations-continuity-screen.view-model";
 import {
@@ -38,11 +39,11 @@ import {
   type OperationsRecordReleaseStep,
   type OperationsRecordReleaseViewModel
 } from "@/screens/operations-record-release-screen.view-model";
-import type { AccountingWorkspaceResponse, DataWorkspaceResponse } from "@/types";
+import type { DataWorkspaceResponse, ReportingWorkspaceResponse } from "@/types";
 
 interface OperationsRecordReleaseScreenProps {
   data: DataWorkspaceResponse | null;
-  reporting: AccountingWorkspaceResponse | null;
+  reporting: ReportingWorkspaceResponse | null;
 }
 
 export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRecordReleaseScreenProps) {
@@ -50,7 +51,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
   const navigate = useNavigate();
   const continuity = useOperationsContinuityScreenViewModel();
   const reportingVm = useReportingScreenViewModel(
-    reporting?.reporting ?? null,
+    normalizeReportingWorkspace(reporting),
     undefined,
     WORKSTATION_ROUTE_CATALOG.reportingReportPacks
   );

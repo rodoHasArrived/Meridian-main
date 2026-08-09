@@ -1,3 +1,4 @@
+using Meridian.Execution.Logging;
 using System.Collections.Concurrent;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -19,7 +20,7 @@ namespace Meridian.Execution.Services;
 /// Without a store the service falls back to in-memory operation and
 /// sessions are lost on process restart.
 /// </remarks>
-public sealed class PaperSessionPersistenceService
+public sealed class PaperSessionPersistenceService : IAsyncDisposable
 {
     private const int MaxRetainedSessions = 1_000;
     private const int MaxSymbolsPerSession = 128;
@@ -27,11 +28,20 @@ public sealed class PaperSessionPersistenceService
     private const int MaxStrategyNameLength = 256;
     private const int MaxSymbolLength = 32;
 
-    private readonly ConcurrentDictionary<string, PaperSession> _sessions = new(StringComparer.Ordinal);
+    private ConcurrentDictionary<string, PaperSession> _sessions = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _sessionGates = new(StringComparer.Ordinal);
+    private readonly SemaphoreSlim _catalogGate = new(1, 1);
+    private readonly object _initialisationSync = new();
+    private readonly object _operationSync = new();
+    private readonly CancellationTokenSource _lifetimeCts = new();
     private readonly IPaperSessionStore? _store;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<PaperSessionPersistenceService> _logger;
-    private int _initialised; // 0 = not yet, 1 = done
+    private Task? _initialisationTask;
+    private TaskCompletionSource? _operationsDrained;
+    private int _activeOperations;
+    private int _initialised; // 0 = not yet, 1 = successfully published
+    private int _disposed;
 
     public PaperSessionPersistenceService(
         ILogger<PaperSessionPersistenceService> logger,
@@ -48,36 +58,95 @@ public sealed class PaperSessionPersistenceService
     // ------------------------------------------------------------------
 
     /// <summary>
-    /// Loads all sessions from the durable store and reconstructs portfolio
-    /// state by replaying the persisted fill log.  Safe to call multiple times;
-    /// only executes once.  No-op when no <see cref="IPaperSessionStore"/> was
-    /// provided.
+    /// Loads all sessions from the durable store and reconstructs portfolio state by replaying
+    /// the persisted fill log. Concurrent callers share one attempt. A failed or cancelled attempt
+    /// publishes no partial state and the next call starts a fresh attempt.
     /// </summary>
     public async Task InitialiseAsync(CancellationToken ct = default)
     {
-        if (_store is null || Interlocked.Exchange(ref _initialised, 1) != 0)
+        ThrowIfDisposed();
+        if (Volatile.Read(ref _initialised) != 0)
             return;
 
+        Task initialisationTask;
+        lock (_initialisationSync)
+        {
+            if (_initialised != 0)
+                return;
+
+            if (_initialisationTask is null
+                || _initialisationTask.IsFaulted
+                || _initialisationTask.IsCanceled)
+            {
+                _initialisationTask = InitialiseCoreAsync(ct);
+            }
+
+            initialisationTask = _initialisationTask;
+        }
+
+        await initialisationTask.WaitAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task InitialiseCoreAsync(CancellationToken callerToken)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+            callerToken,
+            _lifetimeCts.Token);
+        var ct = linkedCts.Token;
+
+        if (_store is null)
+        {
+            Volatile.Write(ref _initialised, 1);
+            return;
+        }
+
         var records = await _store.LoadAllSessionsAsync(ct).ConfigureAwait(false);
+        if (records.Count > MaxRetainedSessions)
+        {
+            throw new InvalidDataException(
+                $"Paper-session store contains {records.Count} sessions; limit is {MaxRetainedSessions}.");
+        }
+
+        var candidate = new ConcurrentDictionary<string, PaperSession>(StringComparer.Ordinal);
+        var unapplied = new List<(string SessionId, PaperSessionFillRecord Record)>();
         foreach (var record in records)
         {
             ct.ThrowIfCancellationRequested();
+            ValidatePersistedRecord(record);
+            if (candidate.ContainsKey(record.SessionId))
+            {
+                throw new InvalidDataException(
+                    $"Paper-session store returned duplicate metadata for '{record.SessionId}'.");
+            }
 
-            // Reconstruct portfolio by replaying the persisted fill log.
-            var fills = await _store.LoadFillsAsync(record.SessionId, ct).ConfigureAwait(false);
-            var portfolio = new PaperTradingPortfolio(record.InitialCash);
-            foreach (var fill in fills)
-                portfolio.ApplyFill(fill);
+            var fillRecords = await _store.LoadFillRecordsAsync(record.SessionId, ct).ConfigureAwait(false);
+            var replayLedger = new Meridian.Ledger.Ledger();
+            var portfolio = new PaperTradingPortfolio(record.InitialCash, replayLedger);
+            var appliedFillHashes = new Dictionary<Guid, string>();
+            var fillHistory = new List<ExecutionReport>(fillRecords.Count);
+            var hasUnappliedFill = false;
+            foreach (var fillRecord in fillRecords)
+            {
+                fillRecord.Validate();
+                if (!appliedFillHashes.TryAdd(fillRecord.FillId, fillRecord.CanonicalHash))
+                {
+                    throw new InvalidDataException(
+                        $"Paper session '{record.SessionId}' contains duplicate FillId '{fillRecord.FillId:D}'.");
+                }
 
-            // Reconstruct the ledger from its persisted journal entries so past runs
-            // remain queryable by LedgerReadService without a live portfolio.
+                var fillSnapshot = CloneExecutionReport(fillRecord.Fill);
+                portfolio.ApplyFill(fillSnapshot);
+                fillHistory.Add(fillSnapshot);
+                if (!fillRecord.IsApplied)
+                {
+                    hasUnappliedFill = true;
+                    unapplied.Add((record.SessionId, fillRecord));
+                }
+            }
+
             var ledgerEntries = await _store.LoadLedgerJournalAsync(record.SessionId, ct).ConfigureAwait(false);
             var reconstruction = ReconstructLedger(ledgerEntries);
-            var reconstructedLedger = reconstruction.Ledger;
-
-            // Load persisted order history.
             var orders = await _store.LoadOrderHistoryAsync(record.SessionId, ct).ConfigureAwait(false);
-
             var session = new PaperSession
             {
                 SessionId = record.SessionId,
@@ -89,19 +158,56 @@ public sealed class PaperSessionPersistenceService
                 IsActive = record.IsActive,
                 Symbols = record.Symbols.ToList(),
                 Portfolio = portfolio,
-                ReconstructedLedger = reconstructedLedger,
+                ReconstructedLedger = record.IsActive || hasUnappliedFill ? null : reconstruction.Ledger,
                 Reconstruction = reconstruction,
+                MatchingModelVersion = record.MatchingModelVersion,
+                CostModelVersion = record.CostModelVersion,
             };
-            foreach (var fill in fills)
-                session.FillHistory.Add(fill);
-            foreach (var order in orders)
-                session.OrderHistory.Add(order);
-
-            _sessions[record.SessionId] = session;
+            foreach (var appliedFill in appliedFillHashes)
+                session.AppliedFillHashes.Add(appliedFill.Key, appliedFill.Value);
+            session.FillHistory.AddRange(fillHistory);
+            session.OrderHistory.AddRange(orders.Select(CloneOrderState));
+            if (!candidate.TryAdd(record.SessionId, session))
+            {
+                throw new InvalidDataException(
+                    $"Paper-session store returned duplicate metadata for '{record.SessionId}'.");
+            }
         }
 
+        // Every fallible load/validation step completed off-side. Refresh the ledger projection
+        // for sessions whose fill claim survived without an apply acknowledgement, then ack. If
+        // either step fails, no candidate is published and a later attempt safely retries recovery.
+        foreach (var sessionId in unapplied.Select(static item => item.SessionId).Distinct(StringComparer.Ordinal))
+        {
+            var session = candidate[sessionId];
+            var ledger = session.Portfolio?.Ledger;
+            if (ledger is not null && ledger.JournalEntryCount > 0)
+            {
+                await _store.SaveLedgerJournalAsync(
+                    sessionId,
+                    SerializeLedgerJournal(ledger, sessionId),
+                    ct).ConfigureAwait(false);
+            }
+        }
+
+        foreach (var pending in unapplied)
+        {
+            await _store.MarkFillAppliedAsync(
+                pending.SessionId,
+                pending.Record.FillId,
+                pending.Record.CanonicalHash,
+                ct).ConfigureAwait(false);
+        }
+
+        foreach (var sessionId in candidate.Keys)
+            _sessionGates.TryAdd(sessionId, new SemaphoreSlim(1, 1));
+
+        Volatile.Write(ref _sessions, candidate);
+        Volatile.Write(ref _initialised, 1);
         _logger.LogInformation(
-            "Initialised paper session store: loaded {Count} session(s)", records.Count);
+            "Initialised paper session store: loaded {Count} session(s), recovered {RecoveredFillCount} unapplied fill(s)",
+            records.Count,
+            unapplied.Count);
     }
 
     // ------------------------------------------------------------------
@@ -112,45 +218,73 @@ public sealed class PaperSessionPersistenceService
     public async Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        using var operation = EnterOperation(ct);
+        ct = operation.Token;
+        await InitialiseAsync(ct).ConfigureAwait(false);
+        ThrowIfDisposed();
         ValidateCreateRequest(request);
-        TrimClosedSessionsIfNeeded();
-        if (_sessions.Count >= MaxRetainedSessions)
+        await _catalogGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            throw new InvalidOperationException($"Paper session limit reached ({MaxRetainedSessions}). Close existing sessions and retry.");
+            var sessions = CurrentSessions;
+            TrimClosedSessionsIfNeeded(sessions);
+            if (sessions.Count >= MaxRetainedSessions)
+            {
+                throw new InvalidOperationException($"Paper session limit reached ({MaxRetainedSessions}). Close existing sessions and retry.");
+            }
+
+            var sessionId = $"PAPER-{DateTimeOffset.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
+            var ledger = new Meridian.Ledger.Ledger();
+            var session = new PaperSession
+            {
+                SessionId = sessionId,
+                StrategyId = request.StrategyId,
+                StrategyName = request.StrategyName,
+                InitialCash = request.InitialCash,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Symbols = request.Symbols?.ToList() ?? [],
+                Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger),
+                // New sessions record the matching and cost policies in effect so promotion
+                // evidence can cite exactly which paper execution model produced them.
+                MatchingModelVersion = PaperMatching.PaperOrderMatchingPolicy.MatchingModelVersion,
+                CostModelVersion = PaperMatching.PaperTradingCostModel.CostModelVersion,
+            };
+
+            if (_store is not null)
+            {
+                await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
+                // Metadata is the final durable create candidate. It must succeed before the
+                // session becomes observable; no fallible persistence follows this write.
+                await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
+            }
+
+            ct.ThrowIfCancellationRequested();
+            if (!sessions.TryAdd(sessionId, session))
+                throw new InvalidOperationException($"Paper session '{sessionId}' already exists.");
+            _sessionGates.TryAdd(sessionId, new SemaphoreSlim(1, 1));
+
+            _logger.LogInformation(
+                "Created paper session {SessionId} for strategy {StrategyId} with {InitialCash:C} initial capital",
+                sessionId, LogSanitizer.Sanitize(request.StrategyId), request.InitialCash);
+
+            return ToSummarySnapshot(session);
         }
-
-        var sessionId = $"PAPER-{DateTimeOffset.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
-
-        // Create a ledger for double-entry accounting of fills and commissions.
-        var ledger = new Meridian.Ledger.Ledger();
-        var session = new PaperSession
+        finally
         {
-            SessionId = sessionId,
-            StrategyId = request.StrategyId,
-            StrategyName = request.StrategyName,
-            InitialCash = request.InitialCash,
-            CreatedAt = DateTimeOffset.UtcNow,
-            Symbols = request.Symbols?.ToList() ?? [],
-            Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger),
-        };
-
-        _sessions[sessionId] = session;
-
-        if (_store is not null)
-        {
-            await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
-            await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
+            _catalogGate.Release();
         }
-
-        _logger.LogInformation(
-            "Created paper session {SessionId} for strategy {StrategyId} with {InitialCash:C} initial capital",
-            sessionId, request.StrategyId, request.InitialCash);
-
-        return ToSummary(session);
     }
 
     private void ValidateCreateRequest(CreatePaperSessionDto request)
     {
+        if (request.InitialCash < 0m)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(request),
+                request.InitialCash,
+                "InitialCash must be non-negative.");
+        }
+
         if (string.IsNullOrWhiteSpace(request.StrategyId))
         {
             throw new ArgumentException("StrategyId is required.", nameof(request));
@@ -190,72 +324,109 @@ public sealed class PaperSessionPersistenceService
         }
     }
 
-    private void TrimClosedSessionsIfNeeded()
+    private void TrimClosedSessionsIfNeeded(ConcurrentDictionary<string, PaperSession> sessions)
     {
-        if (_sessions.Count < MaxRetainedSessions)
+        if (sessions.Count < MaxRetainedSessions)
         {
             return;
         }
 
-        var sessionsToTrim = _sessions.Values
+        var sessionsToTrim = sessions.Values
+            .Select(CreateRetentionSnapshot)
             .Where(static session => !session.IsActive)
             .OrderBy(static session => session.ClosedAt ?? session.CreatedAt)
-            .Take(Math.Max(1, _sessions.Count - MaxRetainedSessions + 1))
+            .Take(Math.Max(1, sessions.Count - MaxRetainedSessions + 1))
             .Select(static session => session.SessionId)
             .ToArray();
 
         foreach (var sessionId in sessionsToTrim)
         {
-            _sessions.TryRemove(sessionId, out _);
+            sessions.TryRemove(sessionId, out _);
+            _sessionGates.TryRemove(sessionId, out _);
         }
     }
 
     /// <summary>Closes a paper trading session and snapshots its final state.</summary>
     public async Task<bool> CloseSessionAsync(string sessionId, CancellationToken ct = default)
     {
-        if (!_sessions.TryGetValue(sessionId, out var session))
+        using var operation = EnterOperation(ct);
+        ct = operation.Token;
+        await InitialiseAsync(ct).ConfigureAwait(false);
+        ThrowIfDisposed();
+        var sessions = CurrentSessions;
+        if (!sessions.TryGetValue(sessionId, out var session))
         {
             return false;
         }
 
-        session.ClosedAt = DateTimeOffset.UtcNow;
-        session.IsActive = false;
-
-        if (_store is not null)
+        var gate = GetSessionGate(sessionId);
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
+            if (!sessions.TryGetValue(sessionId, out session))
+                return false;
 
-            // Persist the double-entry ledger journal so it can be queried from the workstation
-            // UI's LedgerReadService even after the process restarts.
-            var ledger = session.Portfolio?.Ledger;
-            if (ledger is not null && ledger.JournalEntryCount > 0)
+            DateTimeOffset closedAt;
+            PersistedSessionRecord closeCandidate;
+            lock (session.SyncRoot)
             {
-                try
+                if (!session.IsActive)
+                    return true;
+
+                closedAt = DateTimeOffset.UtcNow;
+                closeCandidate = ToPersistedRecord(session, isActive: false, closedAt);
+            }
+
+            if (_store is not null)
+            {
+                var ledger = session.Portfolio?.Ledger;
+                if (ledger is not null && ledger.JournalEntryCount > 0)
                 {
-                    await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
+                    // A closed session prefers its persisted journal after restart. Publishing
+                    // closed metadata without the final journal would therefore make a stale
+                    // snapshot authoritative over the complete fill log. The final snapshot is a
+                    // close precondition, even though ordinary post-fill snapshots remain best effort.
+                    await PersistSessionLedgerAsync(
+                        session,
+                        ct,
+                        requireDurableSuccess: true).ConfigureAwait(false);
                     _logger.LogInformation(
                         "Persisted {Count} ledger entries for paper session {SessionId}",
                         ledger.JournalEntryCount, sessionId);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to persist ledger journal for session {SessionId}", sessionId);
-                }
+
+                // The close record is the final fallible persistence step while the session gate
+                // excludes fills. Only after it succeeds does closed state become visible.
+                await _store.SaveSessionMetadataAsync(closeCandidate, ct).ConfigureAwait(false);
             }
+
+            ct.ThrowIfCancellationRequested();
+            decimal finalEquity;
+            lock (session.SyncRoot)
+            {
+                session.ClosedAt = closedAt;
+                session.IsActive = false;
+                finalEquity = session.Portfolio?.PortfolioValue ?? 0m;
+            }
+
+            _logger.LogInformation(
+                "Closed paper session {SessionId} — final equity: {Equity:C}",
+                sessionId, finalEquity);
+
+            return true;
         }
-
-        _logger.LogInformation(
-            "Closed paper session {SessionId} — final equity: {Equity:C}",
-            sessionId, session.Portfolio?.PortfolioValue ?? 0m);
-
-        return true;
+        finally
+        {
+            gate.Release();
+        }
     }
 
     /// <summary>Returns summaries of all tracked sessions.</summary>
     public IReadOnlyList<PaperSessionSummaryDto> GetSessions()
     {
-        return _sessions.Values
-            .Select(ToSummary)
+        ThrowIfDisposed();
+        return CurrentSessions.Values
+            .Select(ToSummarySnapshot)
             .OrderByDescending(static s => s.CreatedAt)
             .ToArray();
     }
@@ -263,48 +434,68 @@ public sealed class PaperSessionPersistenceService
     /// <summary>Returns detailed session state or <c>null</c> if not found.</summary>
     public PaperSessionDetailDto? GetSession(string sessionId)
     {
-        if (!_sessions.TryGetValue(sessionId, out var session))
+        ThrowIfDisposed();
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
         {
             return null;
         }
-        return BuildSessionDetailDto(sessionId, session);
+        return BuildSessionDetailDto(session);
     }
 
-    /// <summary>Returns the portfolio state for a live session, or null.</summary>
+    /// <summary>Returns a defensive portfolio snapshot for an active session, or null.</summary>
     public PaperTradingPortfolio? GetActivePortfolio(string sessionId)
     {
-        return _sessions.TryGetValue(sessionId, out var session) && session.IsActive
-            ? session.Portfolio
-            : null;
+        ThrowIfDisposed();
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
+            return null;
+
+        lock (session.SyncRoot)
+        {
+            if (!session.IsActive || session.Portfolio is null)
+                return null;
+        }
+
+        return BuildPortfolioProjection(session);
     }
 
     /// <summary>
-    /// Returns the double-entry ledger for a session — either the live ledger (active sessions)
-    /// or the ledger reconstructed from the persisted journal (closed sessions).
+    /// Returns a detached snapshot of the double-entry ledger for a session — either the live
+    /// ledger (active sessions) or the ledger reconstructed from the persisted journal (closed
+    /// sessions). The snapshot can be queried or even downcast and mutated without changing the
+    /// authoritative session ledger.
     /// Returns <see langword="null"/> when no ledger data is available for the session.
     /// </summary>
     public IReadOnlyLedger? GetLedger(string sessionId)
     {
-        if (!_sessions.TryGetValue(sessionId, out var session))
+        ThrowIfDisposed();
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
             return null;
 
-        // For active sessions return the live ledger; for closed sessions the reconstructed one.
-        return session.Portfolio?.Ledger ?? session.ReconstructedLedger;
+        JournalEntry[]? journalSnapshot;
+        lock (session.SyncRoot)
+        {
+            // For active sessions return the replay-built live ledger. Closed sessions prefer the
+            // exact persisted journal but fall back to the fill-rebuilt ledger after crash recovery.
+            var ledger = session.IsActive
+                ? session.Portfolio?.Ledger ?? session.ReconstructedLedger
+                : session.ReconstructedLedger ?? session.Portfolio?.Ledger;
+            journalSnapshot = ledger?.Journal.ToArray();
+        }
+
+        // Copying the authoritative journal is the only work performed under the session lock.
+        // Rebuilding detached ledger indexes may be comparatively expensive for long sessions and
+        // must not block an arriving fill from entering the durable session gate.
+        return journalSnapshot is null ? null : CreateLedgerSnapshot(journalSnapshot);
     }
 
     /// <summary>
-    /// Returns the live mutable <see cref="PaperTradingPortfolio"/> for <paramref name="sessionId"/>.
-    /// Intended for test-harness use-cases that need to inject fills directly.
-    /// Prefer <see cref="RecordPaperFillAsync"/> for production fill recording.
-    /// Returns <see langword="null"/> when the session does not exist or is closed.
+    /// Compatibility alias for <see cref="GetActivePortfolio"/>. The returned portfolio is a
+    /// defensive projection; callers cannot mutate authoritative state outside the session's
+    /// durable fill gate. Returns <see langword="null"/> when the session is absent or closed.
     /// </summary>
+    [Obsolete("Use GetActivePortfolio; mutable session portfolios are no longer exposed.")]
     public PaperTradingPortfolio? GetLivePortfolio(string sessionId)
-    {
-        if (!_sessions.TryGetValue(sessionId, out var session) || !session.IsActive)
-            return null;
-
-        return session.Portfolio;
-    }
+        => GetActivePortfolio(sessionId);
 
     /// <summary>
     /// Converts a lightweight <see cref="ExecutionFill"/> into an <see cref="ExecutionReport"/>
@@ -319,7 +510,7 @@ public sealed class PaperSessionPersistenceService
 
         var report = new ExecutionReport
         {
-            OrderId = $"paper-{Guid.NewGuid():N}",
+            OrderId = "paper-fill",
             ReportType = ExecutionReportType.Fill,
             Symbol = fill.Symbol,
             Side = fill.Quantity >= 0m ? OrderSide.Buy : OrderSide.Sell,
@@ -328,6 +519,14 @@ public sealed class PaperSessionPersistenceService
             FilledQuantity = Math.Abs(fill.Quantity),
             FillPrice = fill.FillPrice,
             Timestamp = fill.FilledAt
+        };
+
+        // ExecutionFill carries no venue or client execution id. Derive a stable synthetic order
+        // id from the exact report content it does carry so retrying this convenience path cannot
+        // mint a second paper-session FillId.
+        report = report with
+        {
+            OrderId = $"paper-{PaperSessionFillRecord.ComputeCanonicalFillId(report):N}"
         };
 
         await RecordFillAsync(sessionId, report, ct).ConfigureAwait(false);
@@ -394,14 +593,47 @@ public sealed class PaperSessionPersistenceService
         OrderState orderState,
         CancellationToken ct = default)
     {
-        if (_sessions.TryGetValue(sessionId, out var session))
+        ArgumentNullException.ThrowIfNull(orderState);
+        using var operation = EnterOperation(ct);
+        ct = operation.Token;
+        await InitialiseAsync(ct).ConfigureAwait(false);
+        ThrowIfDisposed();
+        var sessions = CurrentSessions;
+        var gate = GetSessionGate(sessionId);
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            session.OrderHistory.Add(orderState);
-        }
+            var orderSnapshot = CloneOrderState(orderState);
+            if (!sessions.TryGetValue(sessionId, out var session))
+            {
+                // Compatibility: the OMS can begin writing history before a separately composed
+                // session catalog is present. Retain that durable evidence, but publish no
+                // synthetic in-memory session.
+                if (_store is not null)
+                    await _store.AppendOrderUpdateAsync(sessionId, orderSnapshot, ct).ConfigureAwait(false);
+                return;
+            }
 
-        if (_store is not null)
+            lock (session.SyncRoot)
+            {
+                if (!session.IsActive)
+                    return;
+            }
+
+            if (_store is not null)
+            {
+                // The durable history entry is the order-update candidate. A failed append must
+                // remain invisible to readers so callers can retry it safely.
+                await _store.AppendOrderUpdateAsync(sessionId, orderSnapshot, ct).ConfigureAwait(false);
+            }
+
+            ct.ThrowIfCancellationRequested();
+            lock (session.SyncRoot)
+                session.OrderHistory.Add(orderSnapshot);
+        }
+        finally
         {
-            await _store.AppendOrderUpdateAsync(sessionId, orderState, ct).ConfigureAwait(false);
+            gate.Release();
         }
     }
 
@@ -410,33 +642,119 @@ public sealed class PaperSessionPersistenceService
     /// the fill event to the durable store for future replay.
     /// No-op for non-fill reports (accepted, cancelled, rejected).
     /// </summary>
-    public async Task RecordFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+    public Task RecordFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(fill);
+        if (fill.ReportType is not (ExecutionReportType.Fill or ExecutionReportType.PartialFill))
+            return Task.CompletedTask;
 
-        PaperSession? activeSession = null;
-        if (_sessions.TryGetValue(sessionId, out var session) && session.IsActive)
+        var fillId = PaperSessionFillRecord.ComputeCanonicalFillId(fill);
+        return RecordFillAsync(sessionId, fillId, fill, ct);
+    }
+
+    /// <summary>
+    /// Durably claims and applies a fill using the caller-provided canonical OMS FillId.
+    /// Reusing the FillId with identical content is idempotent; reusing it with different
+    /// content fails closed.
+    /// </summary>
+    public async Task RecordFillAsync(
+        string sessionId,
+        Guid fillId,
+        ExecutionReport fill,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(fill);
+        if (fillId == Guid.Empty)
+            throw new ArgumentException("A paper-session fill requires a non-empty FillId.", nameof(fillId));
+        if (fill.ReportType is not (ExecutionReportType.Fill or ExecutionReportType.PartialFill))
+            return;
+
+        var expectedFillId = PaperSessionFillRecord.ComputeCanonicalFillId(fill);
+        if (fillId != expectedFillId)
         {
-            activeSession = session;
-            activeSession.Portfolio?.ApplyFill(fill);
-            activeSession.FillHistory.Add(fill);
+            throw new InvalidDataException(
+                $"Paper-session FillId '{fillId:D}' does not match the account-independent "
+                + $"canonical FillId '{expectedFillId:D}' for this fill.");
         }
 
-        if (_store is not null)
+        using var operation = EnterOperation(ct);
+        ct = operation.Token;
+        await InitialiseAsync(ct).ConfigureAwait(false);
+        ThrowIfDisposed();
+        var sessions = CurrentSessions;
+        var gate = GetSessionGate(sessionId);
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            await _store.AppendFillAsync(sessionId, fill, ct).ConfigureAwait(false);
-
-            if (session?.Portfolio?.Ledger is { JournalEntryCount: > 0 })
+            var fillSnapshot = CloneExecutionReport(fill);
+            var record = PaperSessionFillRecord.Create(fillId, fillSnapshot, DateTimeOffset.UtcNow);
+            if (!sessions.TryGetValue(sessionId, out var session))
             {
-                try
+                throw new InvalidOperationException(
+                    $"Cannot record paper-session fill '{fillId:D}' because session '{sessionId}' is not loaded.");
+            }
+
+            lock (session.SyncRoot)
+            {
+                // The session gate defines close-vs-fill ordering. A fill that claims the gate
+                // before close is committed first; a fill that arrives after close is ignored.
+                if (!session.IsActive)
+                    return;
+            }
+
+            var appendResult = _store is null
+                ? new PaperSessionFillAppendResult(PaperSessionFillAppendStatus.Added)
+                : await _store.TryAppendFillAsync(sessionId, record, ct).ConfigureAwait(false);
+
+            if (appendResult.Status == PaperSessionFillAppendStatus.Conflict)
+            {
+                throw new InvalidDataException(
+                    $"Paper-session FillId '{fillId:D}' is already claimed by different content "
+                    + $"(existing hash {appendResult.ExistingCanonicalHash ?? "unknown"}, candidate {record.CanonicalHash}).");
+            }
+
+            bool alreadyApplied;
+            lock (session.SyncRoot)
+            {
+                alreadyApplied = session.AppliedFillHashes.TryGetValue(fillId, out var appliedHash);
+                if (alreadyApplied
+                    && !string.Equals(appliedHash, record.CanonicalHash, StringComparison.Ordinal))
                 {
-                    await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to persist ledger journal for session {SessionId} after fill append", sessionId);
+                    throw new InvalidDataException(
+                        $"Paper-session FillId '{fillId:D}' is already applied with different content.");
                 }
             }
+
+            if (!alreadyApplied)
+            {
+                // Build the projection off-side. If applying the candidate throws, its durable
+                // claim remains unacknowledged and no partial portfolio/history state is visible.
+                var replacementPortfolio = BuildPortfolioProjection(session, fillSnapshot);
+                ct.ThrowIfCancellationRequested();
+                lock (session.SyncRoot)
+                {
+                    session.Portfolio = replacementPortfolio;
+                    session.FillHistory.Add(fillSnapshot);
+                    session.AppliedFillHashes.Add(fillId, record.CanonicalHash);
+                }
+            }
+
+            if (_store is not null)
+            {
+                // Ack after projection publication. If the ack fails, a retry observes the applied
+                // FillId, skips projection, and retries only this idempotent acknowledgement.
+                await _store.MarkFillAppliedAsync(
+                    sessionId,
+                    fillId,
+                    record.CanonicalHash,
+                    ct).ConfigureAwait(false);
+
+                await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            gate.Release();
         }
     }
 
@@ -454,38 +772,38 @@ public sealed class PaperSessionPersistenceService
         string sessionId,
         CancellationToken ct = default)
     {
+        using var operation = EnterOperation(ct);
+        ct = operation.Token;
+        await InitialiseAsync(ct).ConfigureAwait(false);
+        ThrowIfDisposed();
         if (_store is null)
         {
             // Fall back to current in-memory state.
             return GetSession(sessionId)?.Portfolio;
         }
 
-        // Load session metadata to get initial cash.
-        var allRecords = await _store.LoadAllSessionsAsync(ct).ConfigureAwait(false);
-        var meta = allRecords.FirstOrDefault(r => r.SessionId == sessionId);
-        var initialCash = meta?.InitialCash;
-        if (!initialCash.HasValue)
+        var sessions = CurrentSessions;
+        if (!sessions.TryGetValue(sessionId, out var session))
+            return null;
+
+        var gate = GetSessionGate(sessionId);
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            if (!_sessions.TryGetValue(sessionId, out var activeSession))
+            if (!sessions.TryGetValue(sessionId, out session))
                 return null;
 
-            initialCash = activeSession.InitialCash;
+            var fills = await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false);
+            var portfolio = new PaperTradingPortfolio(session.InitialCash);
+            foreach (var fill in fills)
+                portfolio.ApplyFill(CloneExecutionReport(fill.Fill));
+
+            return CreatePortfolioSnapshot(portfolio);
         }
-
-        // Replay fills through a fresh portfolio.
-        var fills = await _store.LoadFillsAsync(sessionId, ct).ConfigureAwait(false);
-        var portfolio = new PaperTradingPortfolio(initialCash.Value);
-        foreach (var fill in fills)
-            portfolio.ApplyFill(fill);
-
-        var positions = portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
-        return new ExecutionPortfolioSnapshotDto(
-            Cash: portfolio.Cash,
-            PortfolioValue: portfolio.PortfolioValue,
-            UnrealisedPnl: portfolio.UnrealisedPnl,
-            RealisedPnl: portfolio.RealisedPnl,
-            Positions: positions,
-            AsOf: DateTimeOffset.UtcNow);
+        finally
+        {
+            gate.Release();
+        }
     }
 
     /// <summary>
@@ -502,11 +820,14 @@ public sealed class PaperSessionPersistenceService
         string sessionId,
         CancellationToken ct = default)
     {
-        if (!_sessions.TryGetValue(sessionId, out var session))
+        using var operation = EnterOperation(ct);
+        ct = operation.Token;
+        await InitialiseAsync(ct).ConfigureAwait(false);
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
         {
             return null;
         }
-        var detail = BuildSessionDetailDto(sessionId, session);
+        var detail = BuildSessionDetailDto(session);
 
         var replayPortfolio = await ReplaySessionAsync(sessionId, ct).ConfigureAwait(false);
         if (replayPortfolio is null)
@@ -686,14 +1007,19 @@ public sealed class PaperSessionPersistenceService
         return dtos;
     }
 
-    private async Task PersistSessionLedgerAsync(PaperSession session, CancellationToken ct)
+    private async Task PersistSessionLedgerAsync(
+        PaperSession session,
+        CancellationToken ct,
+        bool requireDurableSuccess = false)
     {
         if (_store is null)
         {
             return;
         }
 
-        var ledger = session.Portfolio?.Ledger;
+        IReadOnlyLedger? ledger;
+        lock (session.SyncRoot)
+            ledger = session.Portfolio?.Ledger;
         if (ledger is null || ledger.JournalEntryCount == 0)
         {
             return;
@@ -710,6 +1036,15 @@ public sealed class PaperSessionPersistenceService
         }
         catch (Exception ex)
         {
+            if (requireDurableSuccess)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to persist final ledger journal for paper session {SessionId}; session close was not published",
+                    session.SessionId);
+                throw;
+            }
+
             _logger.LogWarning(
                 ex,
                 "Failed to persist ledger journal snapshot for paper session {SessionId}; continuing with in-memory ledger state",
@@ -768,24 +1103,233 @@ public sealed class PaperSessionPersistenceService
     // Private helpers
     // ------------------------------------------------------------------
 
-    private static PaperSessionSummaryDto ToSummary(PaperSession session) => new(
-        SessionId: session.SessionId,
-        StrategyId: session.StrategyId,
-        StrategyName: session.StrategyName,
-        InitialCash: session.InitialCash,
-        CreatedAt: session.CreatedAt,
-        ClosedAt: session.ClosedAt,
-        IsActive: session.IsActive);
+    private ConcurrentDictionary<string, PaperSession> CurrentSessions =>
+        Volatile.Read(ref _sessions);
 
-    private static PersistedSessionRecord ToPersistedRecord(PaperSession session) => new(
-        SessionId: session.SessionId,
-        StrategyId: session.StrategyId,
-        StrategyName: session.StrategyName,
-        InitialCash: session.InitialCash,
-        CreatedAt: session.CreatedAt,
-        ClosedAt: session.ClosedAt,
-        IsActive: session.IsActive,
-        Symbols: session.Symbols);
+    private SemaphoreSlim GetSessionGate(string sessionId) =>
+        _sessionGates.GetOrAdd(sessionId, static _ => new SemaphoreSlim(1, 1));
+
+    private static PaperSessionSummaryDto CreateRetentionSnapshot(PaperSession session) =>
+        ToSummarySnapshot(session);
+
+    private static PaperSessionSummaryDto ToSummarySnapshot(PaperSession session)
+    {
+        lock (session.SyncRoot)
+        {
+            return new PaperSessionSummaryDto(
+                SessionId: session.SessionId,
+                StrategyId: session.StrategyId,
+                StrategyName: session.StrategyName,
+                InitialCash: session.InitialCash,
+                CreatedAt: session.CreatedAt,
+                ClosedAt: session.ClosedAt,
+                IsActive: session.IsActive,
+                MatchingModelVersion: session.MatchingModelVersion,
+                CostModelVersion: session.CostModelVersion);
+        }
+    }
+
+    private static PersistedSessionRecord ToPersistedRecord(
+        PaperSession session,
+        bool? isActive = null,
+        DateTimeOffset? closedAt = null)
+    {
+        lock (session.SyncRoot)
+        {
+            return new PersistedSessionRecord(
+                SessionId: session.SessionId,
+                StrategyId: session.StrategyId,
+                StrategyName: session.StrategyName,
+                InitialCash: session.InitialCash,
+                CreatedAt: session.CreatedAt,
+                ClosedAt: closedAt ?? session.ClosedAt,
+                IsActive: isActive ?? session.IsActive,
+                Symbols: session.Symbols.ToList(),
+                MatchingModelVersion: session.MatchingModelVersion,
+                CostModelVersion: session.CostModelVersion);
+        }
+    }
+
+    private static PaperTradingPortfolio BuildPortfolioProjection(
+        PaperSession session,
+        ExecutionReport? candidate = null)
+    {
+        ExecutionReport[] fills;
+        lock (session.SyncRoot)
+        {
+            var snapshots = session.FillHistory.Select(CloneExecutionReport);
+            if (candidate is not null)
+                snapshots = snapshots.Append(CloneExecutionReport(candidate));
+            fills = snapshots.ToArray();
+        }
+
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger);
+        foreach (var fill in fills)
+            portfolio.ApplyFill(fill);
+        return portfolio;
+    }
+
+    private static IReadOnlyLedger CreateLedgerSnapshot(IReadOnlyList<JournalEntry> journal)
+    {
+        var snapshot = new Meridian.Ledger.Ledger();
+        foreach (var entry in journal)
+            snapshot.Post(entry);
+        return snapshot;
+    }
+
+    private static ExecutionPortfolioSnapshotDto CreatePortfolioSnapshot(PaperTradingPortfolio portfolio)
+    {
+        var positions = portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
+        return new ExecutionPortfolioSnapshotDto(
+            Cash: portfolio.Cash,
+            PortfolioValue: portfolio.PortfolioValue,
+            UnrealisedPnl: portfolio.UnrealisedPnl,
+            RealisedPnl: portfolio.RealisedPnl,
+            Positions: positions,
+            AsOf: DateTimeOffset.UtcNow);
+    }
+
+    private static ExecutionReport CloneExecutionReport(ExecutionReport fill) => fill with
+    {
+        OptionContract = fill.OptionContract is null ? null : fill.OptionContract with { },
+        Legs = fill.Legs?.Select(static leg => leg with
+        {
+            OptionContract = leg.OptionContract is null ? null : leg.OptionContract with { }
+        }).ToArray(),
+        Diagnostics = fill.Diagnostics is null ? null : fill.Diagnostics with { }
+    };
+
+    private static OrderState CloneOrderState(OrderState order) => order with
+    {
+        OptionContract = order.OptionContract is null ? null : order.OptionContract with { },
+        Legs = order.Legs?.Select(static leg => leg with
+        {
+            OptionContract = leg.OptionContract is null ? null : leg.OptionContract with { }
+        }).ToArray()
+    };
+
+    private void ValidatePersistedRecord(PersistedSessionRecord record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        if (string.IsNullOrWhiteSpace(record.SessionId))
+            throw new InvalidDataException("Paper-session metadata has no SessionId.");
+        if (record.Symbols is null)
+            throw new InvalidDataException($"Paper-session metadata for '{record.SessionId}' has no symbol list.");
+
+        try
+        {
+            ValidateCreateRequest(new CreatePaperSessionDto(
+                record.StrategyId,
+                record.StrategyName,
+                record.InitialCash,
+                record.Symbols));
+            _ = new PaperTradingPortfolio(record.InitialCash);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new InvalidDataException(
+                $"Paper-session metadata for '{record.SessionId}' is invalid.",
+                ex);
+        }
+    }
+
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+    }
+
+    private OperationLease EnterOperation(CancellationToken callerToken)
+    {
+        lock (_operationSync)
+        {
+            ThrowIfDisposed();
+            _activeOperations++;
+            try
+            {
+                return new OperationLease(
+                    this,
+                    CancellationTokenSource.CreateLinkedTokenSource(callerToken, _lifetimeCts.Token));
+            }
+            catch
+            {
+                _activeOperations--;
+                throw;
+            }
+        }
+    }
+
+    private void ExitOperation()
+    {
+        TaskCompletionSource? drained = null;
+        lock (_operationSync)
+        {
+            _activeOperations--;
+            if (_activeOperations == 0 && _operationsDrained is not null)
+            {
+                drained = _operationsDrained;
+                _operationsDrained = null;
+            }
+        }
+
+        drained?.TrySetResult();
+    }
+
+    /// <summary>Cancels an in-flight initialisation attempt and closes this service to new work.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
+        Task operationsDrained;
+        lock (_operationSync)
+        {
+            operationsDrained = _activeOperations == 0
+                ? Task.CompletedTask
+                : (_operationsDrained ??= new TaskCompletionSource(
+                    TaskCreationOptions.RunContinuationsAsynchronously)).Task;
+        }
+
+        await _lifetimeCts.CancelAsync().ConfigureAwait(false);
+        Task? initialisationTask;
+        lock (_initialisationSync)
+            initialisationTask = _initialisationTask;
+
+        if (initialisationTask is not null)
+        {
+            try
+            {
+                await initialisationTask.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (_lifetimeCts.IsCancellationRequested)
+            {
+                // Expected when disposal interrupts store hydration.
+            }
+            catch
+            {
+                // Initialisation failures were already observed by their caller; disposal only
+                // guarantees the attempt is no longer running.
+            }
+        }
+
+        await operationsDrained.ConfigureAwait(false);
+        _lifetimeCts.Dispose();
+    }
+
+    private sealed class OperationLease(
+        PaperSessionPersistenceService owner,
+        CancellationTokenSource cancellation) : IDisposable
+    {
+        private PaperSessionPersistenceService? _owner = owner;
+
+        public CancellationToken Token => cancellation.Token;
+
+        public void Dispose()
+        {
+            cancellation.Dispose();
+            Interlocked.Exchange(ref _owner, null)?.ExitOperation();
+        }
+    }
 
     private static List<string> ComparePortfolios(
         ExecutionPortfolioSnapshotDto? current,
@@ -1011,37 +1555,48 @@ public sealed class PaperSessionPersistenceService
             .Max();
     }
 
-    private PaperSessionDetailDto BuildSessionDetailDto(string sessionId, PaperSession session)
+    private static PaperSessionDetailDto BuildSessionDetailDto(PaperSession session)
     {
-        ExecutionPortfolioSnapshotDto? portfolioSnapshot = null;
-        if (session.Portfolio is not null)
+        lock (session.SyncRoot)
         {
-            var positions = session.Portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
-            portfolioSnapshot = new ExecutionPortfolioSnapshotDto(
-                Cash: session.Portfolio.Cash,
-                PortfolioValue: session.Portfolio.PortfolioValue,
-                UnrealisedPnl: session.Portfolio.UnrealisedPnl,
-                RealisedPnl: session.Portfolio.RealisedPnl,
-                Positions: positions,
-                AsOf: DateTimeOffset.UtcNow);
-        }
+            var portfolioSnapshot = session.Portfolio is null
+                ? null
+                : CreatePortfolioSnapshot(session.Portfolio);
+            var orderHistory = session.OrderHistory.Select(CloneOrderState).ToArray();
+            var fillHistory = session.FillHistory.Select(CloneExecutionReport).ToArray();
+            var ledger = session.IsActive
+                ? session.Portfolio?.Ledger ?? session.ReconstructedLedger
+                : session.ReconstructedLedger ?? session.Portfolio?.Ledger;
 
-        return new PaperSessionDetailDto(
-            Summary: ToSummary(session),
-            Symbols: session.Symbols.ToArray(),
-            Portfolio: portfolioSnapshot,
-            OrderHistory: session.OrderHistory.ToArray(),
-            FillCount: session.FillHistory.Count,
-            LedgerEntryCount: GetLedger(sessionId)?.JournalEntryCount ?? 0,
-            LastFillAt: session.FillHistory.Count > 0
-                ? session.FillHistory.Max(static fill => fill.Timestamp)
-                : null,
-            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory),
-            FillHistory: session.FillHistory.ToArray());
+            return new PaperSessionDetailDto(
+                Summary: new PaperSessionSummaryDto(
+                    session.SessionId,
+                    session.StrategyId,
+                    session.StrategyName,
+                    session.InitialCash,
+                    session.CreatedAt,
+                    session.ClosedAt,
+                    session.IsActive,
+                    session.MatchingModelVersion,
+                    session.CostModelVersion),
+                Symbols: session.Symbols.ToArray(),
+                Portfolio: portfolioSnapshot,
+                OrderHistory: orderHistory,
+                FillCount: fillHistory.Length,
+                LedgerEntryCount: ledger?.JournalEntryCount ?? 0,
+                LastFillAt: fillHistory.Length > 0
+                    ? fillHistory.Max(static fill => fill.Timestamp)
+                    : null,
+                LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(orderHistory),
+                FillHistory: fillHistory,
+                TradingCosts: fillHistory.Sum(static fill =>
+                    (fill.Commission ?? 0m) + (fill.Fees ?? 0m) + (fill.SlippageCost ?? 0m)));
+        }
     }
 
     private sealed class PaperSession
     {
+        public object SyncRoot { get; } = new();
         public required string SessionId { get; init; }
         public required string StrategyId { get; init; }
         public string? StrategyName { get; init; }
@@ -1050,9 +1605,12 @@ public sealed class PaperSessionPersistenceService
         public DateTimeOffset? ClosedAt { get; set; }
         public bool IsActive { get; set; } = true;
         public List<string> Symbols { get; init; } = [];
-        public PaperTradingPortfolio? Portfolio { get; init; }
+        public string? MatchingModelVersion { get; init; }
+        public string? CostModelVersion { get; init; }
+        public PaperTradingPortfolio? Portfolio { get; set; }
         public List<OrderState> OrderHistory { get; } = [];
         public List<ExecutionReport> FillHistory { get; } = [];
+        public Dictionary<Guid, string> AppliedFillHashes { get; } = [];
 
         /// <summary>
         /// Ledger reconstructed from persisted JSONL entries on load (closed sessions only).
@@ -1081,9 +1639,14 @@ public sealed record PaperSessionSummaryDto(
     decimal InitialCash,
     DateTimeOffset CreatedAt,
     DateTimeOffset? ClosedAt,
-    bool IsActive);
+    bool IsActive,
+    string? MatchingModelVersion = null,
+    string? CostModelVersion = null);
 
-/// <summary>Detailed session DTO.</summary>
+/// <summary>
+/// Detailed session DTO. <see cref="TradingCosts"/> is the session's total explicit
+/// transaction cost (commission + fees + modeled slippage) across all fills.
+/// </summary>
 public sealed record PaperSessionDetailDto(
     PaperSessionSummaryDto Summary,
     IReadOnlyList<string> Symbols,
@@ -1093,7 +1656,8 @@ public sealed record PaperSessionDetailDto(
     int LedgerEntryCount,
     DateTimeOffset? LastFillAt,
     DateTimeOffset? LastOrderUpdatedAt,
-    IReadOnlyList<ExecutionReport>? FillHistory = null);
+    IReadOnlyList<ExecutionReport>? FillHistory = null,
+    decimal TradingCosts = 0m);
 
 /// <summary>Portfolio snapshot DTO for session detail.</summary>
 public sealed record ExecutionPortfolioSnapshotDto(

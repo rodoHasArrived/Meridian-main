@@ -34,6 +34,7 @@ public sealed class AccountingFeatureModuleTests
             "AccountingShell",
             "FundStructureSetup",
             "FundLedger",
+            "OperationsContinuity",
             "RunLedger",
             "RunCashFlow",
             "FundBanking",
@@ -198,11 +199,10 @@ public sealed class AccountingFeatureModuleTests
     [InlineData("AccountingShell", "AccountingShell", "accounting")]
     [InlineData("GovernanceShell", "AccountingShell", "accounting")]
     [InlineData("AccountingWorkspace", "AccountingShell", "accounting")]
-    [InlineData("OperationsContinuity", "FundLedger", "accounting")]
+    [InlineData("OperationsContinuity", "OperationsContinuity", "accounting")]
     [InlineData("OperationsClose", "FundLedger", "accounting")]
     [InlineData("AccountingClose", "FundAccountingClose", "accounting")]
     [InlineData("CloseManagement", "FundAccountingClose", "accounting")]
-    [InlineData("EvidenceWorkbench", "FundAuditTrail", "accounting")]
     [InlineData("AccountingApprovals", "FundAuditTrail", "accounting")]
     [InlineData("LedgerInspector", "RunLedger", "accounting")]
     public void ShellRegistry_ResolvesAccountingAliasesAndRootNavigationTags(string requestedTag, string canonicalTag, string workspaceId)

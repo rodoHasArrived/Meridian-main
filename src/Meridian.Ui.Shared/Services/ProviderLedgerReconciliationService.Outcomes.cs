@@ -405,6 +405,77 @@ public sealed partial class ProviderLedgerReconciliationService
             "OPERATION_ID_REQUEST_CONFLICT",
             "The supplied operation id is already bound to a different reconciliation request. Use a new operation id for changed request input.");
 
+    private static ProviderLedgerReconciliationDetailDto BuildAuthorityFailureDetail(
+        Guid accountId,
+        string operationId,
+        string requestHash,
+        string issueCode,
+        string message)
+    {
+        var completedAt = DateTimeOffset.UtcNow;
+        var evidenceId = "authoritative-access-scope";
+        var outcome = VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            OperationId: operationId,
+            OperationKind: OperationKind,
+            State: OperationTerminalState.Blocked,
+            StartedAtUtc: completedAt,
+            CompletedAtUtc: completedAt,
+            AttemptNumber: 1,
+            CorrelationId: accountId.ToString("D"),
+            InputHashSha256: requestHash,
+            Postconditions:
+            [
+                new OperationPostcondition(
+                    "authoritative-scope-verified",
+                    "The account, primary ledger book, fund profile, tenant, and company resolve to one existing authority.",
+                    OperationPostconditionState.NotSatisfied,
+                    Required: true,
+                    EvidenceIds: [evidenceId])
+            ],
+            Evidence:
+            [
+                new OperationEvidenceReference(
+                    evidenceId,
+                    "authorization-preflight",
+                    "Server-resolved provider-ledger reconciliation authority preflight.",
+                    Uri: $"urn:sha256:{requestHash}",
+                    ContentHashSha256: requestHash,
+                    CapturedAtUtc: completedAt)
+            ],
+            Artifacts: [],
+            Issues:
+            [
+                new OperationIssue(
+                    issueCode,
+                    message,
+                    OperationIssueSeverity.Error,
+                    EvidenceId: evidenceId)
+                {
+                    IsBlocking = true
+                }
+            ],
+            Recovery:
+            [
+                new OperationRecoveryAction(
+                    "resolve-authority-and-retry",
+                    "Resolve authority and retry",
+                    "Bind the account to its canonical fund, primary ledger book, and existing tenant/company owner before retrying.",
+                    Retryable: true,
+                    RequiresHumanAction: true)
+                {
+                    EvidenceIds = [evidenceId]
+                }
+            ]));
+
+        return new ProviderLedgerReconciliationDetailDto(
+            BuildFailureSummary(accountId, Guid.NewGuid(), completedAt),
+            Checks: [],
+            Breaks: [],
+            Warnings: [message],
+            EvidenceLinks: [$"urn:sha256:{requestHash}"],
+            Outcome: outcome);
+    }
+
     private ProviderLedgerReconciliationDetailDto BuildInputConflictDetail(
         Guid accountId,
         ProviderLedgerReconciliationRunIntent intent,
@@ -535,11 +606,16 @@ public sealed partial class ProviderLedgerReconciliationService
         return normalized;
     }
 
-    private static string ComputeRequestHash(Guid accountId, ProviderLedgerReconciliationRequestDto request)
+    private static string ComputeRequestHash(
+        Guid accountId,
+        ReconciliationBreakQueueScope? accessScope,
+        ProviderLedgerReconciliationRequestDto request)
     {
         var builder = new StringBuilder();
         AppendCanonical(builder, "schema", "provider-ledger-request.v1");
         AppendCanonical(builder, "accountId", accountId);
+        AppendCanonical(builder, "tenantId", accessScope?.TenantId);
+        AppendCanonical(builder, "companyId", accessScope?.CompanyId);
         AppendCanonical(builder, "amountTolerance", Math.Abs(request.AmountTolerance));
         AppendCanonical(builder, "providerStaleAfterMinutes", Math.Max(1, request.ProviderStaleAfterMinutes));
         AppendCanonical(builder, "requestedBy", NormalizeOwner(request.RequestedBy) ?? DefaultActor);
@@ -551,6 +627,7 @@ public sealed partial class ProviderLedgerReconciliationService
 
     private static string ComputeOperationInputHash(
         Guid accountId,
+        ReconciliationBreakQueueScope? accessScope,
         ProviderLedgerReconciliationRequestDto request,
         FundAccountBrokerageSyncActivityDto? provider,
         AccountBalanceSnapshotDto? ledger,
@@ -563,7 +640,7 @@ public sealed partial class ProviderLedgerReconciliationService
     {
         var builder = new StringBuilder();
         AppendCanonical(builder, "schema", "provider-ledger-input.v1");
-        AppendCanonical(builder, "requestHash", ComputeRequestHash(accountId, request));
+        AppendCanonical(builder, "requestHash", ComputeRequestHash(accountId, accessScope, request));
         AppendCanonical(builder, "provider.present", provider is not null);
         if (provider is not null)
         {

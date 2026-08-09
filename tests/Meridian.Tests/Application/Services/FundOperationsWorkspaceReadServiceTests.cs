@@ -816,6 +816,94 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task GetWorkspaceAsync_WithScopedCasework_ShouldExposeOnlyExactScopeWithoutReadTimeMutation()
+    {
+        var fundProfileId = $"fund-casework-{Guid.NewGuid():N}";
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-casework-001",
+            strategyId: "casework-1",
+            strategyName: "Casework Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Casework Fund"));
+        var alphaScope = new ReconciliationBreakQueueScope("tenant-alpha", "company-alpha");
+        var betaScope = new ReconciliationBreakQueueScope("tenant-beta", "company-beta");
+        var queueRepository = new TrackingReconciliationBreakQueueRepository(
+        [
+            BuildScopedQueueItem("break-alpha", "run-casework-001", fundProfileId, alphaScope),
+            BuildScopedQueueItem("break-beta", "run-casework-001", fundProfileId, betaScope)
+        ]);
+        var reconciliationService = new ReadOnlyReconciliationRunService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            strategyRepository,
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            strategyReconciliationService: reconciliationService,
+            breakQueueRepository: queueRepository);
+        var query = new FundOperationsWorkspaceQuery(fundProfileId);
+
+        var alphaWorkspace = await service.GetWorkspaceAsync(
+            query,
+            new ReportAccessQueryContext(
+                CompanyId: alphaScope.CompanyId,
+                TenantId: alphaScope.TenantId,
+                RequireBoundScope: true));
+        var betaWorkspace = await service.GetWorkspaceAsync(
+            query,
+            new ReportAccessQueryContext(
+                CompanyId: betaScope.CompanyId,
+                TenantId: betaScope.TenantId,
+                RequireBoundScope: true));
+
+        alphaWorkspace.Reconciliation.BreakQueue.Should().NotBeNull();
+        alphaWorkspace.Reconciliation.BreakQueue!.Items.Should()
+            .ContainSingle(item => item.BreakId == "break-alpha");
+        betaWorkspace.Reconciliation.BreakQueue.Should().NotBeNull();
+        betaWorkspace.Reconciliation.BreakQueue!.Items.Should()
+            .ContainSingle(item => item.BreakId == "break-beta");
+        queueRepository.ScopedReadCount.Should().Be(2);
+        queueRepository.UnscopedReadCount.Should().Be(0);
+        queueRepository.MutationCount.Should().Be(0);
+        reconciliationService.LatestReadCount.Should().Be(2);
+        reconciliationService.RunCount.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(null, "company-alpha")]
+    [InlineData("tenant-alpha", null)]
+    public async Task GetWorkspaceAsync_WithIncompleteCaseworkScope_ShouldFailClosed(
+        string? tenantId,
+        string? companyId)
+    {
+        var queueRepository = new TrackingReconciliationBreakQueueRepository([]);
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            breakQueueRepository: queueRepository);
+
+        var act = () => service.GetWorkspaceAsync(
+            new FundOperationsWorkspaceQuery("fund-scope-required"),
+            new ReportAccessQueryContext(
+                CompanyId: companyId,
+                TenantId: tenantId,
+                RequireBoundScope: true));
+
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*tenant- and company-scoped*");
+        queueRepository.ScopedReadCount.Should().Be(0);
+        queueRepository.UnscopedReadCount.Should().Be(0);
+        queueRepository.MutationCount.Should().Be(0);
+    }
+
+    [Fact]
     public void ProjectReconciliationSnapshot_MapsConsolidatedAndPerDimensionSnapshots()
     {
         var asOf = new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero);
@@ -2019,8 +2107,150 @@ public sealed class FundOperationsWorkspaceReadServiceTests
 
     private static bool IsGuidString(string value) => Guid.TryParse(value, out _);
 
+    private static ReconciliationBreakQueueItem BuildScopedQueueItem(
+        string breakId,
+        string runId,
+        string fundProfileId,
+        ReconciliationBreakQueueScope scope)
+    {
+        var now = new DateTimeOffset(2026, 5, 20, 15, 0, 0, TimeSpan.Zero);
+        return new ReconciliationBreakQueueItem(
+            BreakId: breakId,
+            RunId: runId,
+            StrategyName: "Casework Strategy",
+            Category: ReconciliationBreakCategory.AmountMismatch,
+            Status: ReconciliationBreakQueueStatus.Open,
+            Variance: 25m,
+            Reason: "Retained casework",
+            AssignedTo: "fund-controller",
+            DetectedAt: now,
+            LastUpdatedAt: now,
+            Severity: ReconciliationBreakSeverity.Critical)
+        {
+            TenantId = scope.TenantId,
+            CompanyId = scope.CompanyId,
+            FundProfileId = fundProfileId
+        };
+    }
+
     private static Guid TranslateFundProfileId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId)));
+
+    private sealed class ReadOnlyReconciliationRunService : IReconciliationRunService
+    {
+        public int RunCount { get; private set; }
+
+        public int LatestReadCount { get; private set; }
+
+        public Task<ReconciliationRunDetail?> RunAsync(
+            ReconciliationRunRequest request,
+            CancellationToken ct = default)
+        {
+            RunCount++;
+            throw new InvalidOperationException("A workspace read must not execute reconciliation.");
+        }
+
+        public Task<ReconciliationRunDetail?> GetByIdAsync(
+            string reconciliationRunId,
+            CancellationToken ct = default) =>
+            Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(
+            string runId,
+            CancellationToken ct = default)
+        {
+            LatestReadCount++;
+            return Task.FromResult<ReconciliationRunDetail?>(null);
+        }
+
+        public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(
+            string runId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<ReconciliationRunSummary>>([]);
+    }
+
+    private sealed class TrackingReconciliationBreakQueueRepository(
+        IReadOnlyList<ReconciliationBreakQueueItem> items) : IReconciliationBreakQueueRepository
+    {
+        public int ScopedReadCount { get; private set; }
+
+        public int UnscopedReadCount { get; private set; }
+
+        public int MutationCount { get; private set; }
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
+            ReconciliationBreakQueueStatus? status = null,
+            CancellationToken ct = default)
+        {
+            UnscopedReadCount++;
+            return Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(
+                items.Where(item => !status.HasValue || item.Status == status.Value).ToArray());
+        }
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
+            ReconciliationBreakQueueScope scope,
+            ReconciliationBreakQueueStatus? status = null,
+            CancellationToken ct = default)
+        {
+            ScopedReadCount++;
+            return Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(
+                items
+                    .Where(scope.Owns)
+                    .Where(item => !status.HasValue || item.Status == status.Value)
+                    .ToArray());
+        }
+
+        public Task<ReconciliationBreakQueueItem?> GetByIdAsync(
+            string breakId,
+            CancellationToken ct = default) =>
+            Task.FromResult(items.FirstOrDefault(item =>
+                string.Equals(item.BreakId, breakId, StringComparison.OrdinalIgnoreCase)));
+
+        public Task<bool> CreateIfMissingAsync(
+            ReconciliationBreakQueueItem item,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task SaveAsync(
+            ReconciliationBreakQueueItem item,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task<bool> DeleteAsync(
+            string breakId,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(
+            ReviewReconciliationBreakRequest request,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(
+            ResolveReconciliationBreakRequest request,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(
+            string breakId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<ReconciliationBreakQueueAuditEvent>>([]);
+    }
 
     private static async Task<LegacyDeliveryFallbackFixture> CreateLegacyDeliveryFallbackFixtureAsync(
         string recordTenantId,

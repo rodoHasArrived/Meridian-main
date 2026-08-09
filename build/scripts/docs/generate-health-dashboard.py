@@ -50,7 +50,7 @@ from dashboard_rendering import (
 # ---------------------------------------------------------------------------
 
 EXCLUDE_DIRS: frozenset[str] = frozenset(
-    {".git", ".github", ".claude", ".codex", "archive", "artifacts", "node_modules", "bin", "obj", "__pycache__", ".vs"}
+    {".git", ".github", ".claude", ".codex", ".artifacts", ".tmp", "archive", "artifacts", "node_modules", "bin", "obj", "__pycache__", ".pytest_cache", ".vs"}
 )
 EXCLUDE_REL_PREFIXES: tuple[str, ...] = (
     "docs/status/",

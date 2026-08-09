@@ -154,7 +154,15 @@ const fetchSchedule: StatementFetchSchedule = {
   lastRunAtUtc: null,
   lastRunStatus: null,
   nextDueAtUtc: null,
-  sourceKind: "broker"
+  sourceKind: "broker",
+  periodStart: "2026-07-01",
+  periodEnd: "2026-07-31",
+  accountingScope: {
+    fundProfileId: "fund-a",
+    ledgerBookId: "11111111-1111-1111-1111-111111111111",
+    accountingPeriodId: "22222222-2222-2222-2222-222222222222",
+    asOfDate: "2026-07-31"
+  }
 };
 
 function makeServices(): StatementImportPanelServices {
@@ -178,6 +186,38 @@ function makeFetchServices(): StatementFetchPanelServices {
 }
 
 describe("StatementImportPanel", () => {
+  it("does not dispatch an unscoped preview and retries after the account scope is complete", async () => {
+    const user = userEvent.setup();
+    const services = makeServices();
+    renderWithRouter(<StatementImportPanel services={services} />, {
+      initialEntries: ["/accounting/statement-import"]
+    });
+
+    await waitFor(() => expect(screen.getByLabelText("Connector")).toBeEnabled());
+    const fileInput = screen.getByLabelText<HTMLInputElement>("Statement file", { selector: "input" });
+    await user.upload(fileInput, new File(["Symbol\nAAPL"], "statement.csv", { type: "text/csv" }));
+
+    expect(services.previewImport).not.toHaveBeenCalled();
+
+    await user.type(screen.getByLabelText("Source institution"), "Interactive Brokers");
+    await user.type(screen.getByLabelText("Fund account"), "FUND-A");
+    await user.type(screen.getByLabelText("External account"), "U-100");
+    await user.type(screen.getByLabelText("Period start"), "2026-06-01");
+    expect(services.previewImport).not.toHaveBeenCalled();
+
+    await user.type(screen.getByLabelText("Period end"), "2026-06-30");
+
+    await waitFor(() => expect(services.previewImport).toHaveBeenCalledTimes(1));
+    expect(services.previewImport).toHaveBeenCalledWith(expect.objectContaining({
+      externalAccountId: "U-100",
+      sourceKind: "broker",
+      sourceInstitution: "Interactive Brokers",
+      fundAccountId: "FUND-A",
+      periodStart: "2026-06-01",
+      periodEnd: "2026-06-30"
+    }));
+  });
+
   it("renders the source controls, previews an uploaded file, and stays accessible", async () => {
     const user = userEvent.setup();
     const services = makeServices();
@@ -190,6 +230,11 @@ describe("StatementImportPanel", () => {
     expect(screen.getByRole("option", { name: "Auto-detect connector" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Built-in generic (built-in)" })).toBeInTheDocument();
 
+    await user.type(screen.getByLabelText("Source institution"), "Interactive Brokers");
+    await user.type(screen.getByLabelText("Fund account"), "FUND-A");
+    await user.type(screen.getByLabelText("External account"), "U-100");
+    await user.type(screen.getByLabelText("Period start"), "2026-06-01");
+    await user.type(screen.getByLabelText("Period end"), "2026-06-30");
     const fileInput = screen.getByLabelText<HTMLInputElement>("Statement file", { selector: "input" });
     await user.upload(fileInput, new File(["Symbol\nAAPL"], "statement.csv", { type: "text/csv" }));
 
@@ -199,6 +244,14 @@ describe("StatementImportPanel", () => {
     expect(screen.getByRole("table", { name: "Sample Transaction records" })).toBeInTheDocument();
     expect(screen.getByLabelText("Statement import issues")).toHaveTextContent("FORMAT_DRIFT");
     expect(screen.getByLabelText("Suggested mapping profiles")).toHaveTextContent("Built-in generic");
+    expect(services.previewImport).toHaveBeenCalledWith(expect.objectContaining({
+      externalAccountId: "U-100",
+      sourceKind: "broker",
+      sourceInstitution: "Interactive Brokers",
+      fundAccountId: "FUND-A",
+      periodStart: "2026-06-01",
+      periodEnd: "2026-06-30"
+    }));
 
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
@@ -212,15 +265,15 @@ describe("StatementImportPanel", () => {
     });
 
     await waitFor(() => expect(screen.getByLabelText("Connector")).toBeEnabled());
-    const fileInput = screen.getByLabelText<HTMLInputElement>("Statement file", { selector: "input" });
-    await user.upload(fileInput, new File(["Symbol\nAAPL"], "statement.csv", { type: "text/csv" }));
-    await waitFor(() => expect(screen.getByRole("heading", { name: "Preview: statement.csv" })).toBeInTheDocument());
-
     await user.type(screen.getByLabelText("Source institution"), "Interactive Brokers");
     await user.type(screen.getByLabelText("Fund account"), "FUND-A");
     await user.type(screen.getByLabelText("External account"), "U-100");
     await user.type(screen.getByLabelText("Period start"), "2026-06-01");
     await user.type(screen.getByLabelText("Period end"), "2026-06-30");
+    const fileInput = screen.getByLabelText<HTMLInputElement>("Statement file", { selector: "input" });
+    await user.upload(fileInput, new File(["Symbol\nAAPL"], "statement.csv", { type: "text/csv" }));
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Preview: statement.csv" })).toBeInTheDocument());
+
     await user.click(screen.getByRole("button", { name: "Commit statement import" }));
 
     await waitFor(() => expect(screen.getByText("Statement import committed")).toBeInTheDocument());

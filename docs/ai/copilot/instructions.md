@@ -113,6 +113,7 @@ python build/scripts/docs/check-ai-handoff.py --strict
 
 - Keep this file Copilot-specific; update shared rules in
   [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
+- Use [`ai-systems-inventory.md`](../ai-systems-inventory.md) when a task changes multiple Copilot, Codex, or Claude-facing AI surfaces.
 - Keep `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`,
   `.github/prompts/`, and this file aligned when Copilot behavior changes.
 - Keep [`../tooling/README.md`](../tooling/README.md) aligned when Copilot-facing validation or
@@ -141,6 +142,7 @@ When the repo layout changes, update the generated navigation or structure sourc
   and host mechanics in [`../../../.github/copilot-instructions.md`](../../../.github/copilot-instructions.md)
 - Generated-file handling: never hand-edit `docs/ai/generated/*` or `docs/generated/*`; rerun local navigation/regeneration lanes when routing truth changes
 - Agent orchestration: initialize handoff discipline with `../agent-handoff-checklist.md` and `../parallel-task-manifest-template.md` when multiple agents are involved
+- AI system scoping: start at `../ai-systems-inventory.md` for tasks with shared cross-host impact
 - Parallel development workflows: keep surfaces disjoint and record lane scope in the manifest
 - Token/context management: choose `../work-modes.md` first, keep context scoped to the lane, and escalate only when cross-provider or approval-gated decisions arise
 - Validation procedures: `python build/scripts/docs/check-ai-inventory.py --summary`, `python -m unittest build/scripts/docs/tests/test_check_ai_inventory.py`, plus task-appropriate command set

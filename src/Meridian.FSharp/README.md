@@ -6,7 +6,7 @@ module_id: SRC-FSHARP
 path: src/Meridian.FSharp
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-05-20
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.FSharp
@@ -35,6 +35,9 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 ## API contract notes
 
 - C# callers should enter through C#-friendly interop wrappers and should not depend on internal F# domain types.
+- Security Master identifier interop retains optional provider/source metadata for standard
+  identifiers. For `ProviderSymbol`, the provider namespace carried by the identifier kind remains
+  authoritative and contradictory provider metadata is rejected as structured validation.
 - Operations kernels should remain pure and deterministic: inputs in, decisions/issues/statuses out.
 - Stream-oriented helpers should receive ordered, bounded inputs. Page large storage/backfill batches before crossing into F#, and keep `mergeStreams` / `bufferByTime` on timestamp-ordered streams so they can avoid whole-batch sorting and grouping.
 - Sensitive-action policy evaluates explicit guardrails such as MFA, dual approval, privileged roles, and segregation-of-duties before C# services write audit or workflow state.
@@ -50,6 +53,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | --- | --- |
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W10-PERF-001` | Portfolio and investor return measurement |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

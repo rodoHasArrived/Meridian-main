@@ -11,15 +11,17 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class SymbolEndpointTests
+public sealed class SymbolEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public SymbolEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _client = fixture.CreateNoRedirectClient();
     }
+
+    public void Dispose() => _client.Dispose();
 
     #region GET Endpoints
 
@@ -104,7 +106,7 @@ public sealed class SymbolEndpointTests
     [Fact]
     public async Task AddSymbol_WithValidData_ReturnsOk()
     {
-        var payload = new { symbols = new[] { "MSFT" } };
+        var payload = new { symbol = "MSFT" };
         var content = new StringContent(
             JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 

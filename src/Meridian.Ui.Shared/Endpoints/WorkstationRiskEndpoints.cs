@@ -1,3 +1,4 @@
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,15 +31,26 @@ public static partial class WorkstationEndpoints
             .Select(static status =>
                 $"{status.RuleName}: {status.CurrentValue} (threshold {status.Threshold}, state {status.State}).")
             .ToArray();
+        var guardrails = statuses
+            .Select(static status => new WorkstationRiskGuardrail(
+                RuleName: status.RuleName,
+                State: status.State,
+                CurrentValue: status.CurrentValue,
+                Threshold: status.Threshold,
+                UtilizationPercent: status.UtilizationPercent,
+                Severity: status.Severity ?? "Error"))
+            .ToArray();
 
         return new WorkstationRiskDescriptor(
             State: selected.State,
             Summary: selected.Summary,
-            ActiveGuardrails: activeGuardrails);
+            ActiveGuardrails: activeGuardrails,
+            Guardrails: guardrails);
     }
 
     private sealed record WorkstationRiskDescriptor(
         string State,
         string Summary,
-        IReadOnlyList<string> ActiveGuardrails);
+        IReadOnlyList<string> ActiveGuardrails,
+        IReadOnlyList<WorkstationRiskGuardrail> Guardrails);
 }

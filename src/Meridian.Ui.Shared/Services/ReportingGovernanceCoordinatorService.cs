@@ -424,6 +424,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
     private readonly IReportingArtifactRetentionAuthorityProvider _retentionAuthorityProvider;
     private readonly IReportingRestatementChangedLineResolver _restatementChangedLineResolver;
     private readonly IReportingRestatementCertificationInputProvider _restatementCertificationProvider;
+    private readonly IReportingReleaseConsistencyGate _releaseConsistencyGate;
 
     public ReportingGovernanceCoordinatorService(
         ReportingGovernanceService governance,
@@ -434,7 +435,8 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         IReportingCertifiedArtifactProducer artifactProducer,
         IReportingArtifactRetentionAuthorityProvider retentionAuthorityProvider,
         IReportingRestatementChangedLineResolver restatementChangedLineResolver,
-        IReportingRestatementCertificationInputProvider restatementCertificationProvider)
+        IReportingRestatementCertificationInputProvider restatementCertificationProvider,
+        IReportingReleaseConsistencyGate releaseConsistencyGate)
     {
         _governance = governance ?? throw new ArgumentNullException(nameof(governance));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -448,6 +450,8 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
             ?? throw new ArgumentNullException(nameof(restatementChangedLineResolver));
         _restatementCertificationProvider = restatementCertificationProvider
             ?? throw new ArgumentNullException(nameof(restatementCertificationProvider));
+        _releaseConsistencyGate = releaseConsistencyGate
+            ?? throw new ArgumentNullException(nameof(releaseConsistencyGate));
     }
 
     public async Task<GovernedReportingRun> GetAsync(
@@ -881,14 +885,26 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
             retained.Artifacts,
             evidenceIds);
 
-        // This is deliberately the last awaited external read before the governance commit. Read
-        // and hash the retained package first, then recheck ledger + canonical queue state so a
-        // long artifact download cannot widen the stale-certification window.
+        // Read and hash the retained package before taking the period-scoped release/reopen fence,
+        // so a long artifact download does not block governed restatement. Once acquired, the
+        // authoritative ledger + canonical queue recheck and governance commit are one serialized
+        // decision relative to every governed reopen of this accounting period.
         var manifest = GetRequiredManifestForRun(run);
+        if (ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest)
+            && !run.Snapshot.RequiresCertifiedLedgerPresentation)
+        {
+            throw new ReportingGovernanceException(
+                "Final release is blocked because this retained capital-account primary document predates exact checkpoint-bound ledger-presentation certification. Regenerate and reapprove it from a fresh certified snapshot.");
+        }
+
+        await using var releaseConsistencyLease = await _releaseConsistencyGate
+            .AcquireAsync(run.Snapshot.PeriodId, cancellationToken)
+            .ConfigureAwait(false);
         await _certification.RevalidateForReleaseAsync(
                 manifest.ResolvedParameters
                     ?? throw new ReportingGovernanceException(
                         $"Reporting run '{run.RunId}' has no retained parameter snapshot for final release revalidation."),
+                manifest.TemplateId,
                 manifest.AuthoritativeSource
                     ?? throw new ReportingGovernanceException(
                         $"Reporting run '{run.RunId}' has no retained authoritative source for final release revalidation."),
@@ -1456,23 +1472,42 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         && left.StoredAtUtc == right.StoredAtUtc;
 
     private static string ComputeRetainedSnapshotHash(ReportingRetainedManifestDocument document) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-        {
-            template = new
+        document.Snapshot.RequiresCertifiedLedgerPresentation
+            ? ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
             {
-                document.ResolvedTemplate.Name,
-                document.ResolvedTemplate.Version
-            },
-            scope = document.Scope,
-            access = document.Access,
-            parametersHash = document.ParametersHash,
-            sourceCheckpointId = document.AuthoritativeSource.CheckpointId,
-            sourceCheckpointHash = document.AuthoritativeSource.CheckpointHash,
-            reconciliationId = document.Snapshot.ReconciliationCheckpointId,
-            reconciliationHash = document.Snapshot.ReconciliationCheckpointHash,
-            readinessHash = document.Readiness.EvidenceHash,
-            certifiedDatasetHash = document.CertifiedDatasetHashSha256
-        })));
+                template = new
+                {
+                    document.ResolvedTemplate.Name,
+                    document.ResolvedTemplate.Version
+                },
+                scope = document.Scope,
+                access = document.Access,
+                parametersHash = document.ParametersHash,
+                sourceCheckpointId = document.AuthoritativeSource.CheckpointId,
+                sourceCheckpointHash = document.AuthoritativeSource.CheckpointHash,
+                reconciliationId = document.Snapshot.ReconciliationCheckpointId,
+                reconciliationHash = document.Snapshot.ReconciliationCheckpointHash,
+                readinessHash = document.Readiness.EvidenceHash,
+                certifiedDatasetHash = document.CertifiedDatasetHashSha256,
+                requiresCertifiedLedgerPresentation = true
+            })))
+            : ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+            {
+                template = new
+                {
+                    document.ResolvedTemplate.Name,
+                    document.ResolvedTemplate.Version
+                },
+                scope = document.Scope,
+                access = document.Access,
+                parametersHash = document.ParametersHash,
+                sourceCheckpointId = document.AuthoritativeSource.CheckpointId,
+                sourceCheckpointHash = document.AuthoritativeSource.CheckpointHash,
+                reconciliationId = document.Snapshot.ReconciliationCheckpointId,
+                reconciliationHash = document.Snapshot.ReconciliationCheckpointHash,
+                readinessHash = document.Readiness.EvidenceHash,
+                certifiedDatasetHash = document.CertifiedDatasetHashSha256
+            })));
 
     private static void VerifyRetention(
         GovernedReportingRun run,

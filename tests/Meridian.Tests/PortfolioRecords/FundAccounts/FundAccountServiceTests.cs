@@ -183,6 +183,47 @@ public sealed class FundAccountServiceTests
         Assert.Equal(2_250m, latest.RealizedPnl);
     }
 
+    [Theory]
+    [InlineData("balance snapshot")]
+    [InlineData("custodian statement")]
+    [InlineData("bank statement")]
+    [InlineData("reconciliation")]
+    [InlineData("sync history")]
+    [InlineData("margin snapshot")]
+    public async Task AccountScopedChildMutation_UnknownAccount_ThrowsConsistentInvalidOperation(
+        string operation)
+    {
+        var svc = CreateService();
+        var accountId = Guid.NewGuid();
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        Func<Task> mutation = operation switch
+        {
+            "balance snapshot" => () => svc.RecordBalanceSnapshotAsync(
+                new RecordAccountBalanceSnapshotRequest(
+                    accountId, today, "USD", 100m, "Manual", "test")),
+            "custodian statement" => () => svc.IngestCustodianStatementAsync(
+                new IngestCustodianStatementRequest(
+                    Guid.NewGuid(), accountId, today, "Custodian", "JSON", null, [], "test")),
+            "bank statement" => () => svc.IngestBankStatementAsync(
+                new IngestBankStatementRequest(
+                    Guid.NewGuid(), accountId, today, "Bank", null, [], "test")),
+            "reconciliation" => () => svc.ReconcileAccountAsync(
+                new ReconcileAccountRequest(accountId, today, "test")),
+            "sync history" => () => svc.RecordSyncHistoryAsync(
+                new RecordAccountSyncHistoryRequest(
+                    accountId, "bank-balances", AccountSyncStatusDto.Succeeded)),
+            "margin snapshot" => () => svc.RecordMarginSnapshotAsync(
+                new RecordMarginSnapshotRequest(
+                    accountId, DateTimeOffset.UtcNow, "USD", MarginModelTypeDto.RegT)),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null)
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(mutation);
+
+        Assert.Equal($"Account {accountId} not found.", exception.Message);
+    }
+
     [Fact]
     public async Task GetBalanceHistory_FiltersByDateRange()
     {

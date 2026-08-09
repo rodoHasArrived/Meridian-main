@@ -415,7 +415,7 @@ public static class AccountingPostingCommandValidator
             LedgerBook = FirstText(metadata.LedgerBook, command.LedgerBookId?.ToString("D")),
             IdempotencyKey = FirstText(metadata.IdempotencyKey, treasury?.IdempotencyKey, command.IdempotencyKey),
             FundEventId = FirstText(metadata.FundEventId, treasury?.FundEventId),
-            FundEventType = FirstText(metadata.FundEventType, treasury?.FundEventType, command.SourceEventType),
+            FundEventType = FirstText(metadata.FundEventType, treasury?.FundEventType),
             CapitalAccountId = FirstText(metadata.CapitalAccountId, treasury?.CapitalAccountId),
             InvestorId = FirstText(metadata.InvestorId, treasury?.InvestorId),
             PaymentIntentId = FirstText(metadata.PaymentIntentId, treasury?.PaymentIntentId),

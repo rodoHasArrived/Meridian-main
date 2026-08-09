@@ -394,7 +394,13 @@ public static class FundAccountEndpoints
                 SignedOffBreakKeys = [],
                 SignedOffBy = null
             };
-            var detail = await reconciliation.RunAsync(accountId, serverBoundRequest, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var detail = await reconciliation
+                .RunAsync(accountId, accessScope, serverBoundRequest, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
         .WithName("RunProviderLedgerReconciliation")
@@ -402,7 +408,8 @@ public static class FundAccountEndpoints
         .Produces<ProviderLedgerReconciliationDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/brokerage-sync/reconciliation/latest", async (Guid accountId, HttpContext context) =>
         {
@@ -413,7 +420,13 @@ public static class FundAccountEndpoints
             if (reconciliation is null)
                 return ProviderLedgerReconciliationUnavailable();
 
-            var detail = await reconciliation.GetLatestAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var detail = await reconciliation
+                .GetLatestAsync(accountId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -422,7 +435,8 @@ public static class FundAccountEndpoints
         .Produces<ProviderLedgerReconciliationDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/close-readiness", async (Guid accountId, HttpContext context) =>
         {
@@ -436,15 +450,23 @@ public static class FundAccountEndpoints
             if (closeReadiness is null)
                 return FundAccountCloseReadinessUnavailable();
 
-            var result = await closeReadiness.GetAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var result = await closeReadiness
+                .GetAsync(accountId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return result is null
                 ? Results.NotFound()
                 : Results.Json(result, jsonOptions);
         })
         .WithName("GetFundAccountCloseReadiness")
         .Produces<FundAccountCloseReadinessDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
         {

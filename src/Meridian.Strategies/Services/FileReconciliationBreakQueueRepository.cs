@@ -10,10 +10,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Strategies.Services;
 
-public sealed partial class FileReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
+public sealed partial class FileReconciliationBreakQueueRepository :
+    IReconciliationBreakQueueRepository,
+    IReconciliationBreakQueueAuthorityProbe
 {
     private const int MaximumBulkCaseCount = 100;
-    private const int CurrentSnapshotSchemaVersion = 2;
+    private const int CurrentSnapshotSchemaVersion = 6;
     private readonly string _snapshotPath;
     private readonly string _auditPath;
     private readonly string _mutationLockPath;
@@ -30,6 +32,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
     private readonly Dictionary<string, string> _bulkResultIdsByIdempotencyKey = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, BulkCaseworkReceipt> _bulkReceipts = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, CaseworkCommandReceipt> _commandReceipts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, CloseScopeLockRecord> _closeScopeLocks = new(StringComparer.Ordinal);
     private readonly List<ReconciliationBreakQueueAuditEvent> _auditEvents = [];
     private readonly IReconciliationCaseWorkflowService _workflowService = new ReconciliationCaseWorkflowService();
 
@@ -60,6 +63,35 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         return options;
     }
 
+    private static void EnsureTenantCompanyScopeShape(ReconciliationBreakQueueItem item)
+    {
+        var hasTenant = !string.IsNullOrWhiteSpace(item.TenantId);
+        var hasCompany = !string.IsNullOrWhiteSpace(item.CompanyId);
+        if (hasTenant != hasCompany)
+        {
+            throw new InvalidOperationException(
+                $"Reconciliation case '{item.BreakId}' must retain both tenant and company or remain explicitly legacy-unscoped.");
+        }
+    }
+
+    private static bool IsInScope(
+        ReconciliationBreakQueueItem? item,
+        ReconciliationBreakQueueScope scope)
+        => scope.Owns(item);
+
+    private static bool AccessScopeEquals(
+        ReconciliationBreakQueueScope? retained,
+        ReconciliationBreakQueueScope requested)
+        => retained is not null
+           && string.Equals(retained.TenantId, requested.TenantId, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(retained.CompanyId, requested.CompanyId, StringComparison.OrdinalIgnoreCase);
+
+    private static ReconciliationBreakQueueTransitionResult ScopeNotFoundResult()
+        => new(
+            ReconciliationBreakQueueTransitionStatus.NotFound,
+            Item: null,
+            Error: "Reconciliation case was not found.");
+
     public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -67,6 +99,33 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         {
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
             IEnumerable<ReconciliationBreakQueueItem> items = _items!.Values;
+            if (status.HasValue)
+            {
+                items = items.Where(item => item.Status == status.Value);
+            }
+
+            return items
+                .OrderByDescending(static item => item.LastUpdatedAt)
+                .ToArray();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
+        ReconciliationBreakQueueScope scope,
+        ReconciliationBreakQueueStatus? status = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            IEnumerable<ReconciliationBreakQueueItem> items = _items!.Values
+                .Where(item => IsInScope(item, scope));
             if (status.HasValue)
             {
                 items = items.Where(item => item.Status == status.Value);
@@ -121,9 +180,47 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         }
     }
 
+    public async Task<ReconciliationBreakQueueItem?> GetByIdAsync(
+        ReconciliationBreakQueueScope scope,
+        string breakId,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            var item = _items!.GetValueOrDefault(breakId);
+            return IsInScope(item, scope) ? item : null;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public Task<bool> CreateIfMissingAsync(
+        ReconciliationBreakQueueScope scope,
+        ReconciliationBreakQueueItem item,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentNullException.ThrowIfNull(item);
+        if (!scope.Owns(item))
+        {
+            throw new InvalidOperationException(
+                "The reconciliation queue item does not match its authoritative tenant and company scope.");
+        }
+
+        return CreateIfMissingAsync(item, ct);
+    }
+
     public async Task<bool> CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(item);
+        EnsureTenantCompanyScopeShape(item);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -131,8 +228,15 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
             ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            var state = CaptureState();
+            EnsureCloseScopeMutationAllowed(item, "be created or replayed");
             if (_items!.TryGetValue(item.BreakId, out var existing))
+            {
+                EnsureCloseScopeMutationAllowed(existing, "be created or replayed");
+                EnsureCompatibleRetainedScope(existing, item);
+            }
+
+            var state = CaptureState();
+            if (existing is not null)
             {
                 // Casework mutates fields such as BlockedOutputs after creation. Compare a replay
                 // with the retained creation/migration payload, not the current projection, so a
@@ -229,6 +333,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
     public async Task<bool> CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(item);
+        EnsureTenantCompanyScopeShape(item);
 
         if (!string.IsNullOrWhiteSpace(previousBreakId)
             && !string.Equals(previousBreakId, item.BreakId, StringComparison.OrdinalIgnoreCase))
@@ -239,7 +344,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
                 ResetCachedState();
                 await EnsureLoadedAsync(ct).ConfigureAwait(false);
-                var state = CaptureState();
+                EnsureCloseScopeMutationAllowed(item, "be created or migrated");
 
                 // Re-key an existing case only when it still lives under the superseded id, no case
                 // has already been created under the current id (which would win by dedupe), and the
@@ -250,10 +355,23 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                     && _items.TryGetValue(previousBreakId!, out var existing)
                     && LegacyCaseMatchesSource(existing, item))
                 {
+                    EnsureCloseScopeMutationAllowed(existing, "be migrated");
+                    EnsureCompatibleRetainedScope(existing, item);
+                    var state = CaptureState();
                     var migrated = existing with
                     {
                         BreakId = item.BreakId,
-                        SourceFingerprint = item.SourceFingerprint
+                        SourceFingerprint = item.SourceFingerprint,
+                        LedgerBookId = item.LedgerBookId ?? existing.LedgerBookId,
+                        AccountingPeriodId = string.IsNullOrWhiteSpace(item.AccountingPeriodId)
+                            ? existing.AccountingPeriodId
+                            : item.AccountingPeriodId,
+                        AsOfDate = item.AsOfDate ?? existing.AsOfDate,
+                        BlockedOutputs = item.BlockedOutputs?.ToArray()
+                            ?? existing.BlockedOutputs?.ToArray(),
+                        FundProfileId = string.IsNullOrWhiteSpace(item.FundProfileId)
+                            ? existing.FundProfileId
+                            : item.FundProfileId.Trim()
                     };
                     _items.Remove(previousBreakId!);
                     _items[item.BreakId] = migrated;
@@ -323,9 +441,48 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         return false;
     }
 
+    private static void EnsureCompatibleRetainedScope(
+        ReconciliationBreakQueueItem existing,
+        ReconciliationBreakQueueItem incoming)
+    {
+        EnsureTenantCompanyScopeShape(existing);
+        EnsureTenantCompanyScopeShape(incoming);
+        var tenantConflict = !ScopeEquals(existing.TenantId, incoming.TenantId);
+        var companyConflict = !ScopeEquals(existing.CompanyId, incoming.CompanyId);
+        var fundConflict =
+            !string.IsNullOrWhiteSpace(existing.FundProfileId)
+            && !string.IsNullOrWhiteSpace(incoming.FundProfileId)
+            && !string.Equals(
+                existing.FundProfileId.Trim(),
+                incoming.FundProfileId.Trim(),
+                StringComparison.OrdinalIgnoreCase);
+        var ledgerConflict =
+            existing.LedgerBookId.HasValue
+            && incoming.LedgerBookId.HasValue
+            && existing.LedgerBookId.Value != incoming.LedgerBookId.Value;
+        var periodConflict =
+            !string.IsNullOrWhiteSpace(existing.AccountingPeriodId)
+            && !string.IsNullOrWhiteSpace(incoming.AccountingPeriodId)
+            && !string.Equals(
+                existing.AccountingPeriodId.Trim(),
+                incoming.AccountingPeriodId.Trim(),
+                StringComparison.OrdinalIgnoreCase);
+        var asOfConflict =
+            existing.AsOfDate.HasValue
+            && incoming.AsOfDate.HasValue
+            && existing.AsOfDate.Value != incoming.AsOfDate.Value;
+
+        if (tenantConflict || companyConflict || fundConflict || ledgerConflict || periodConflict || asOfConflict)
+        {
+            throw new InvalidOperationException(
+                $"Reconciliation case '{existing.BreakId}' is already bound to a different tenant, company, or accounting close scope and cannot be migrated to '{incoming.BreakId}'.");
+        }
+    }
+
     public async Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(item);
+        EnsureTenantCompanyScopeShape(item);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -335,6 +492,12 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
             var state = CaptureState();
             _items!.TryGetValue(item.BreakId, out var existing);
+            EnsureCloseScopeMutationAllowed(item, "be saved");
+            if (existing is not null)
+            {
+                EnsureCloseScopeMutationAllowed(existing, "be saved");
+                EnsureCompatibleRetainedScope(existing, item);
+            }
             var normalized = NormalizeLegacyCaseState(item);
             _items[item.BreakId] = normalized;
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
@@ -388,6 +551,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 return false;
             }
 
+            EnsureCloseScopeMutationAllowed(existing, "be deleted");
             var state = CaptureState();
             _items.Remove(breakId);
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
@@ -427,7 +591,24 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         }
     }
 
-    public async Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(ReviewReconciliationBreakRequest request, CancellationToken ct = default)
+    public Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct = default)
+        => StartReviewCoreAsync(null, request, ct);
+
+    public Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(
+        ReconciliationBreakQueueScope scope,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return StartReviewCoreAsync(scope, request, ct);
+    }
+
+    private async Task<ReconciliationBreakQueueTransitionResult> StartReviewCoreAsync(
+        ReconciliationBreakQueueScope? scope,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         var startedAt = DateTimeOffset.UtcNow;
@@ -440,7 +621,19 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
             _items!.TryGetValue(request.BreakId, out var item);
+            if (scope is not null && !IsInScope(item, scope))
+            {
+                return ScopeNotFoundResult();
+            }
             var command = CreateLegacyStartReviewCommand(request, inputHash);
+            if (item is not null)
+            {
+                var closeScopeValidation = ValidateCloseScopeMutation(item, command);
+                if (closeScopeValidation is not null)
+                {
+                    return closeScopeValidation;
+                }
+            }
             var replay = await TryReplayRetainedLegacyCommandAsync(command, inputHash, startedAt, ct).ConfigureAwait(false);
             if (replay is not null)
             {
@@ -559,7 +752,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 command.Action,
                 inputHash,
                 updated,
-                successOutcome);
+                successOutcome,
+                AccessScope: scope);
             try
             {
                 await PersistSnapshotAsync(ct).ConfigureAwait(false);
@@ -587,7 +781,24 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         }
     }
 
-    public async Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default)
+    public Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct = default)
+        => ResolveCoreAsync(null, request, ct);
+
+    public Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(
+        ReconciliationBreakQueueScope scope,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return ResolveCoreAsync(scope, request, ct);
+    }
+
+    private async Task<ReconciliationBreakQueueTransitionResult> ResolveCoreAsync(
+        ReconciliationBreakQueueScope? scope,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         var startedAt = DateTimeOffset.UtcNow;
@@ -614,7 +825,19 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
             _items!.TryGetValue(request.BreakId, out var item);
+            if (scope is not null && !IsInScope(item, scope))
+            {
+                return ScopeNotFoundResult();
+            }
             var command = CreateLegacyResolveCommand(request, inputHash);
+            if (item is not null)
+            {
+                var closeScopeValidation = ValidateCloseScopeMutation(item, command);
+                if (closeScopeValidation is not null)
+                {
+                    return closeScopeValidation;
+                }
+            }
             var replay = await TryReplayRetainedLegacyCommandAsync(command, inputHash, startedAt, ct).ConfigureAwait(false);
             if (replay is not null)
             {
@@ -749,7 +972,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 command.Action,
                 inputHash,
                 updated,
-                successOutcome);
+                successOutcome,
+                AccessScope: scope);
             try
             {
                 await PersistSnapshotAsync(ct).ConfigureAwait(false);
@@ -777,7 +1001,24 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         }
     }
 
-    public async Task<ReconciliationBreakQueueTransitionResult> ApplyCaseworkCommandAsync(ReconciliationCaseworkCommand command, CancellationToken ct = default)
+    public Task<ReconciliationBreakQueueTransitionResult> ApplyCaseworkCommandAsync(
+        ReconciliationCaseworkCommand command,
+        CancellationToken ct = default)
+        => ApplyCaseworkCommandCoreAsync(null, command, ct);
+
+    public Task<ReconciliationBreakQueueTransitionResult> ApplyCaseworkCommandAsync(
+        ReconciliationBreakQueueScope scope,
+        ReconciliationCaseworkCommand command,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return ApplyCaseworkCommandCoreAsync(scope, command, ct);
+    }
+
+    private async Task<ReconciliationBreakQueueTransitionResult> ApplyCaseworkCommandCoreAsync(
+        ReconciliationBreakQueueScope? scope,
+        ReconciliationCaseworkCommand command,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         var startedAt = DateTimeOffset.UtcNow;
@@ -805,8 +1046,27 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
             ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            if (!_items!.TryGetValue(command.BreakId, out var item) ||
+                (scope is not null && !scope.Owns(item)))
+            {
+                return BindTransitionOutcome(
+                    ScopeNotFoundResult(),
+                    command,
+                    inputHash,
+                    startedAt);
+            }
+
             if (_commandReceipts.TryGetValue(command.CommandId, out var receipt))
             {
+                if (scope is not null && !AccessScopeEquals(receipt.AccessScope, scope))
+                {
+                    return BindTransitionOutcome(
+                        ScopeNotFoundResult(),
+                        command,
+                        inputHash,
+                        startedAt);
+                }
+
                 if (!receipt.LegacyUnverified &&
                     string.Equals(receipt.BreakId, command.BreakId, StringComparison.OrdinalIgnoreCase) &&
                     receipt.Action == command.Action &&
@@ -815,7 +1075,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                     var replayAuditCount = _auditEvents.Count;
                     await AppendCaseworkReplayAuditAsync(
                         command,
-                        _items!.GetValueOrDefault(command.BreakId),
+                        item,
                         "CaseworkReplayAccepted",
                         "Exact command replay returned the retained terminal receipt without reapplying the transition.",
                         ct).ConfigureAwait(false);
@@ -847,8 +1107,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 var conflictAuditCount = _auditEvents.Count;
                 const string conflictReason = "Command id was already used for a different reconciliation casework input.";
                 await AppendCaseworkReplayAuditAsync(
-                    command,
-                    _items!.GetValueOrDefault(command.BreakId),
+                        command,
+                        item,
                     "CaseworkReplayConflict",
                     conflictReason,
                     ct).ConfigureAwait(false);
@@ -859,26 +1119,14 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     _auditEvents.RemoveRange(conflictAuditCount, _auditEvents.Count - conflictAuditCount);
-                    return CreatePersistenceFailure(command, inputHash, startedAt, _items!.GetValueOrDefault(command.BreakId), ex);
+                    return CreatePersistenceFailure(command, inputHash, startedAt, item, ex);
                 }
 
                 return BindTransitionOutcome(new ReconciliationBreakQueueTransitionResult(
                     ReconciliationBreakQueueTransitionStatus.Conflict,
-                    _items!.GetValueOrDefault(command.BreakId),
+                    item,
                     conflictReason,
                     ReconciliationBreakQueueTransitionErrorCode.CommandIdConflict),
-                    command,
-                    inputHash,
-                    startedAt);
-            }
-
-            if (!_items!.TryGetValue(command.BreakId, out var item))
-            {
-                return BindTransitionOutcome(
-                    new ReconciliationBreakQueueTransitionResult(
-                        ReconciliationBreakQueueTransitionStatus.NotFound,
-                        null,
-                        "Break was not found."),
                     command,
                     inputHash,
                     startedAt);
@@ -894,7 +1142,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                     startedAt);
             }
 
-            var validation = ValidateCaseworkCommand(item, command);
+            var validation = ValidateCloseScopeMutation(item, command)
+                ?? ValidateCaseworkCommand(item, command);
             if (validation is not null)
             {
                 try
@@ -911,6 +1160,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
 
             var now = DateTimeOffset.UtcNow;
             var next = ApplyCaseworkMutation(item, command, now);
+            next = StatementCaseworkHandoffObligation.MarkPending(item, command, next);
             next = StampComputedFields(next, now);
             var auditCount = _auditEvents.Count;
             _items[command.BreakId] = next;
@@ -935,7 +1185,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 command.Action,
                 inputHash,
                 next,
-                successOutcome);
+                successOutcome,
+                AccessScope: scope);
 
             try
             {
@@ -961,7 +1212,24 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         }
     }
 
-    public async Task<ReconciliationBulkCaseworkResult> ApplyBulkCaseworkAsync(ReconciliationBulkCaseworkRequest request, CancellationToken ct = default)
+    public Task<ReconciliationBulkCaseworkResult> ApplyBulkCaseworkAsync(
+        ReconciliationBulkCaseworkRequest request,
+        CancellationToken ct = default)
+        => ApplyBulkCaseworkCoreAsync(null, request, ct);
+
+    public Task<ReconciliationBulkCaseworkResult> ApplyBulkCaseworkAsync(
+        ReconciliationBreakQueueScope scope,
+        ReconciliationBulkCaseworkRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return ApplyBulkCaseworkCoreAsync(scope, request, ct);
+    }
+
+    private async Task<ReconciliationBulkCaseworkResult> ApplyBulkCaseworkCoreAsync(
+        ReconciliationBreakQueueScope? scope,
+        ReconciliationBulkCaseworkRequest request,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         var startedAt = DateTimeOffset.UtcNow;
@@ -985,6 +1253,23 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             var hasIdempotencyResult =
                 _bulkResultIdsByIdempotencyKey.TryGetValue(request.IdempotencyKey, out var idempotentBulkActionId) &&
                 _bulkResults.ContainsKey(idempotentBulkActionId);
+            if ((hasCommandResult || hasIdempotencyResult) && scope is not null)
+            {
+                var retainedBulkActionId = hasCommandResult
+                    ? request.CommandId
+                    : idempotentBulkActionId!;
+                if (!_bulkReceipts.TryGetValue(retainedBulkActionId, out var scopedReceipt) ||
+                    !AccessScopeEquals(scopedReceipt.AccessScope, scope))
+                {
+                    return CreateRejectedBulkResult(
+                        request,
+                        inputHash,
+                        startedAt,
+                        "One or more reconciliation cases were not found.",
+                        ReconciliationBreakQueueTransitionErrorCode.InvalidRequest);
+                }
+            }
+
             if (hasCommandResult || hasIdempotencyResult)
             {
                 var retainedBulkActionId = hasCommandResult
@@ -998,6 +1283,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                         inputHash,
                         startedAt,
                         "The command id and idempotency key are already bound to different bulk actions.",
+                        scope,
                         ct).ConfigureAwait(false);
                 }
 
@@ -1012,6 +1298,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                         request,
                         "BulkActionReplayAccepted",
                         "Exact bulk replay returned the retained terminal receipt without reapplying case mutations.",
+                        scope,
                         ct).ConfigureAwait(false);
                     try
                     {
@@ -1030,6 +1317,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                     inputHash,
                     startedAt,
                     "The command id or idempotency key was already used for a different reconciliation bulk request.",
+                    scope,
                     ct).ConfigureAwait(false);
             }
 
@@ -1054,13 +1342,18 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 CorrelationId: request.CorrelationId,
                 CommandId: bulkActionId,
                 Source: request.Source,
-                Reason: request.Reason), ct).ConfigureAwait(false);
+                Reason: request.Reason)
+            {
+                TenantId = scope?.TenantId,
+                CompanyId = scope?.CompanyId
+            }, ct).ConfigureAwait(false);
 
             var prepared = new List<PreparedBulkCasework>(breakIds.Length);
             var pendingSupersessionEdges = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var breakId in breakIds)
             {
-                if (!_items!.TryGetValue(breakId, out var item))
+                if (!_items!.TryGetValue(breakId, out var item) ||
+                    (scope is not null && !scope.Owns(item)))
                 {
                     prepared.Add(new PreparedBulkCasework(
                         breakId,
@@ -1093,7 +1386,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                     ApprovalActor: request.ApprovalActor,
                     ApprovalReference: request.ApprovalReference,
                     SupersedingBreakId: request.SupersedingBreakId);
-                var validation = ValidateSupersessionSuccessor(
+                var validation = ValidateCloseScopeMutation(item, command)
+                    ?? ValidateSupersessionSuccessor(
                         item,
                         command,
                         _items,
@@ -1115,7 +1409,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             {
                 if (entry.Validation is not null)
                 {
-                    await AppendBulkFailureAuditAsync(request, entry, bulkActionId, ct).ConfigureAwait(false);
+                    await AppendBulkFailureAuditAsync(request, entry, bulkActionId, scope, ct).ConfigureAwait(false);
                     results.Add(new ReconciliationBulkCaseworkCaseResult(
                         entry.BreakId,
                         Succeeded: false,
@@ -1159,7 +1453,9 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 }
 
                 var now = DateTimeOffset.UtcNow;
-                var next = StampComputedFields(ApplyCaseworkMutation(entry.Item!, entry.Command!, now), now);
+                var next = ApplyCaseworkMutation(entry.Item!, entry.Command!, now);
+                next = StatementCaseworkHandoffObligation.MarkPending(entry.Item!, entry.Command!, next);
+                next = StampComputedFields(next, now);
                 _items![entry.BreakId] = next;
                 await AppendAuditAsync(CreateAudit(entry.Command!, entry.Item!, next, now) with { EventType = "BulkActionCaseSucceeded" }, ct).ConfigureAwait(false);
                 if (HasSlaChanged(entry.Item!, next))
@@ -1200,7 +1496,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 request.CommandId,
                 request.IdempotencyKey,
                 inputHash,
-                result);
+                result,
+                AccessScope: scope);
             try
             {
                 await PersistSnapshotAsync(ct).ConfigureAwait(false);
@@ -1247,6 +1544,36 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         }
     }
 
+    public async Task<ReconciliationBulkCaseworkResult?> GetBulkCaseworkResultAsync(
+        ReconciliationBreakQueueScope scope,
+        string bulkActionIdOrIdempotencyKey,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentException.ThrowIfNullOrWhiteSpace(bulkActionIdOrIdempotencyKey);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            var bulkActionId = _bulkResults.ContainsKey(bulkActionIdOrIdempotencyKey)
+                ? bulkActionIdOrIdempotencyKey
+                : _bulkResultIdsByIdempotencyKey.GetValueOrDefault(bulkActionIdOrIdempotencyKey);
+            if (bulkActionId is null ||
+                !_bulkReceipts.TryGetValue(bulkActionId, out var receipt) ||
+                !AccessScopeEquals(receipt.AccessScope, scope))
+            {
+                return null;
+            }
+
+            return _bulkResults.GetValueOrDefault(bulkActionId);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
@@ -1262,6 +1589,39 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             _gate.Release();
         }
 
+        return BuildAuditHistory(all, breakId);
+    }
+
+    public async Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(
+        ReconciliationBreakQueueScope scope,
+        string breakId,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
+        ReconciliationBreakQueueAuditEvent[] scoped;
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            scoped = _auditEvents
+                .Where(entry =>
+                    string.Equals(entry.TenantId, scope.TenantId, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(entry.CompanyId, scope.CompanyId, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+
+        return BuildAuditHistory(scoped, breakId);
+    }
+
+    private static IReadOnlyList<ReconciliationBreakQueueAuditEvent> BuildAuditHistory(
+        IReadOnlyList<ReconciliationBreakQueueAuditEvent> all,
+        string breakId)
+    {
         // Follow "BreakIdMigrated" links so a re-keyed case surfaces its full pre-migration trail,
         // which remains stored immutably under the superseded break id (the migration event carries
         // the prior item — and thus the prior break id — in its BeforePayload).
@@ -1330,6 +1690,41 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             rebuilt = JsonSerializer.Deserialize<ReconciliationBreakQueueItem>(auditEvent.AfterPayload, _jsonOptions)
                 ?? throw new InvalidDataException(
                     $"Reconciliation audit event '{auditEvent.EventId}' retained a null case snapshot.");
+        }
+
+        return rebuilt;
+    }
+
+    public async Task<ReconciliationBreakQueueItem?> RebuildSnapshotFromAuditAsync(
+        ReconciliationBreakQueueScope scope,
+        string breakId,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        var history = await GetAuditHistoryAsync(scope, breakId, ct).ConfigureAwait(false);
+        ReconciliationBreakQueueItem? rebuilt = null;
+        foreach (var auditEvent in history.OrderBy(static entry => entry.Sequence).ThenBy(static entry => entry.OccurredAt))
+        {
+            if (string.Equals(auditEvent.EventType, "CaseDeleted", StringComparison.Ordinal))
+            {
+                rebuilt = null;
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(auditEvent.AfterPayload))
+            {
+                continue;
+            }
+
+            var candidate = JsonSerializer.Deserialize<ReconciliationBreakQueueItem>(auditEvent.AfterPayload, _jsonOptions)
+                ?? throw new InvalidDataException(
+                    $"Reconciliation audit event '{auditEvent.EventId}' retained a null case snapshot.");
+            if (!scope.Owns(candidate))
+            {
+                return null;
+            }
+
+            rebuilt = candidate;
         }
 
         return rebuilt;

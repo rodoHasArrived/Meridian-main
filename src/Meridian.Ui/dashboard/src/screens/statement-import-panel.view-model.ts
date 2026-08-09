@@ -61,6 +61,7 @@ export const DEFAULT_STATEMENT_IMPORT_COMMIT_FORM: StatementImportCommitFormStat
 export type StatementImportCommitFormErrors = Partial<Record<StatementImportCommitFormField | "file", string>>;
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const STATEMENT_IMPORT_PREVIEW_DEBOUNCE_MS = 200;
 
 export function validateStatementImportCommitForm(
   form: StatementImportCommitFormState,
@@ -367,8 +368,8 @@ export function useStatementImportPanelViewModel(
     };
   }, [services]);
 
-  const runPreview = useCallback(async (args: { file: File | null; connectorId: string; profileId: string }) => {
-    if (!args.file) {
+  const runPreview = useCallback(async (args: { file: File; connectorId: string; profileId: string }) => {
+    if (Object.keys(validateStatementImportCommitForm(commitFormRef.current, args.file)).length > 0) {
       previewRevisionRef.current += 1;
       setPreview(null);
       setPreviewError(null);
@@ -387,7 +388,12 @@ export function useStatementImportPanelViewModel(
         file: args.file,
         connectorId: args.connectorId || undefined,
         mappingProfileId: args.profileId || undefined,
-        externalAccountId: commitFormRef.current.externalAccountId.trim() || undefined
+        externalAccountId: commitFormRef.current.externalAccountId.trim(),
+        sourceKind: commitFormRef.current.sourceKind,
+        sourceInstitution: commitFormRef.current.sourceInstitution.trim(),
+        fundAccountId: commitFormRef.current.fundAccountId.trim(),
+        periodStart: commitFormRef.current.periodStart.trim(),
+        periodEnd: commitFormRef.current.periodEnd.trim()
       });
       if (previewRevisionRef.current !== revision || !mountedRef.current) {
         return;
@@ -415,12 +421,44 @@ export function useStatementImportPanelViewModel(
     }
   }, [services]);
 
+  useEffect(() => {
+    const pendingRevision = previewRevisionRef.current + 1;
+    previewRevisionRef.current = pendingRevision;
+    setPreview(null);
+    setPreviewError(null);
+    setPreviewBusy(false);
+    setSelectedKind(null);
+
+    if (!selectedFile || Object.keys(validateStatementImportCommitForm(commitForm, selectedFile)).length > 0) {
+      return;
+    }
+
+    const previewFile = selectedFile;
+    const timer = window.setTimeout(() => {
+      if (previewRevisionRef.current !== pendingRevision) {
+        return;
+      }
+
+      void runPreview({
+        file: previewFile,
+        connectorId: selectedConnectorId,
+        profileId: selectedProfileId
+      });
+    }, STATEMENT_IMPORT_PREVIEW_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      if (previewRevisionRef.current === pendingRevision) {
+        previewRevisionRef.current += 1;
+      }
+    };
+  }, [commitForm, runPreview, selectedConnectorId, selectedFile, selectedProfileId]);
+
   const selectFile = useCallback((file: File | null) => {
     setSelectedFile(file);
     setCommitResult(null);
     setCommitError(null);
-    void runPreview({ file, connectorId: selectedConnectorId, profileId: selectedProfileId });
-  }, [runPreview, selectedConnectorId, selectedProfileId]);
+  }, []);
 
   const selectConnector = useCallback((connectorId: string) => {
     setSelectedConnectorId(connectorId);
@@ -430,14 +468,11 @@ export function useStatementImportPanelViewModel(
       nextProfileId = connector.defaultProfileId;
       setSelectedProfileId(nextProfileId);
     }
-
-    void runPreview({ file: selectedFile, connectorId, profileId: nextProfileId });
-  }, [connectors, runPreview, selectedFile, selectedProfileId]);
+  }, [connectors, selectedProfileId]);
 
   const selectProfile = useCallback((profileId: string) => {
     setSelectedProfileId(profileId);
-    void runPreview({ file: selectedFile, connectorId: selectedConnectorId, profileId });
-  }, [runPreview, selectedConnectorId, selectedFile]);
+  }, []);
 
   const applyProfileSuggestion = selectProfile;
 
@@ -565,7 +600,6 @@ export function useStatementImportPanelViewModel(
       setProfileDraft(buildStatementMappingProfileDraft(saved));
       setProfileSaveMessage(`Saved mapping profile ${saved.displayName}.`);
       setSelectedProfileId(saved.profileId);
-      void runPreview({ file: selectedFile, connectorId: selectedConnectorId, profileId: saved.profileId });
     } catch (error) {
       if (!mountedRef.current) {
         return;
@@ -577,7 +611,7 @@ export function useStatementImportPanelViewModel(
         setProfileSaveBusy(false);
       }
     }
-  }, [profileDraft, profileSaveBusy, runPreview, selectedConnectorId, selectedFile, services]);
+  }, [profileDraft, profileSaveBusy, services]);
 
   const updateCommitForm = useCallback((field: StatementImportCommitFormField, value: string) => {
     setCommitForm((current) => ({ ...current, [field]: value }));

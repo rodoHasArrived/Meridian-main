@@ -198,8 +198,14 @@ public static partial class WorkstationEndpoints
     {
         try
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return;
+            }
+
             var reconciliationBreaks = await GetBreakQueueItemsAsync(
                 context.RequestServices,
+                queueScope,
                 status: null,
                 fundAccountId: null,
                 ledgerBookId: null,

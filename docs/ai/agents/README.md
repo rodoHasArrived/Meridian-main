@@ -193,13 +193,13 @@ the former `meridian-navigation` and `meridian-user-panel` aliases were pruned h
 | [`meridian-brainstorm.md`](../../../.claude/agents/meridian-brainstorm.md) | Generate Meridian-native product and architecture ideas |
 | [`meridian-browser-workstation.md`](../../../.claude/agents/meridian-browser-workstation.md) | Route and implement browser workstation TypeScript/React tasks |
 | [`meridian-cleanup.md`](../../../.claude/agents/meridian-cleanup.md) | Cleanup specialist |
-| [`meridian-code-review.md`](../../../.claude/agents/meridian-code-review.md) | Review changes for bugs, regressions, and architecture drift |
+| [`meridian-code-review.md`](../../../.claude/agents/meridian-code-review.md) | Review changes for bugs, regressions, and architecture drift. **Findings only, and holds no command tool** — scope it to named files or supply the diff; it cannot derive one from a commit hash, branch, or worktree |
 | [`meridian-docs.md`](../../../.claude/agents/meridian-docs.md) | Documentation specialist |
 | [`meridian-implementation-assurance.md`](../../../.claude/agents/meridian-implementation-assurance.md) | Verify implementation completeness, evidence, docs sync, and guardrails |
 | [`meridian-provider-builder.md`](../../../.claude/agents/meridian-provider-builder.md) | Build or extend ProviderSdk-compliant data providers |
-| [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist |
+| [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist. Declares a **deny-list**, so it uses the session's navigation MCP tools when present rather than being confined to filesystem search |
 | [`meridian-roadmap-strategist.md`](../../../.claude/agents/meridian-roadmap-strategist.md) | Roadmap, delivery-plan, and target-state specialist |
-| [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Evidence-led Persona Matrix specialist for design-partner, usability-lab, and fail-closed release-gate reviews |
+| [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Evidence-led Persona Matrix specialist for design-partner, usability-lab, and fail-closed release-gate reviews. Independent persona voices need the **parent session** to launch the workers — a subagent may not be able to nest, and the panel must say so rather than collapse to one voice |
 | [`meridian-test-writer.md`](../../../.claude/agents/meridian-test-writer.md) | Write scenario-first Meridian tests |
 
 ---
@@ -223,14 +223,16 @@ The intended routing flow is:
 
 ```text
 Repo Navigation -> [Single-domain task]    -> Specialist Agent/Skill -> Implementation -> Review -> Testing/Assurance
-                -> [Multi-domain / gated]  -> CoS Runtime (ADK)      -> Specialist Agent/Skill -> Approval Gate -> Trace/Evidence
+                -> [Multi-domain / gated]  -> Coordinator Escalation -> Specialist Agent/Skill -> Approval Gate -> Trace/Evidence
 ```
 
 Use repo navigation first whenever the main problem is "where should I start?" rather than "how do I implement this detail?"
 
-Choose the CoS runtime path when the task crosses multiple subsystems, requires an approval gate
-or operator sign-off, or needs a structured briefing with trace/evidence retention. See
-`tools/chief-of-staff-runtime/runtime.py` and the operator runbook guidance in `docs/operators/README.md`.
+Choose coordinator escalation for multi-domain work, explicit approval-gated changes, or operator-facing
+briefings that need trace/evidence retention. Use the shared handoff packet workflow plus the route and
+validation evidence required by [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md);
+record required/context boundaries and
+rerun triggers before lane transition.
 
 Coordinator agents should assign one narrow concern, a compact file set, and a validation owner to
 each specialist lane. Specialist agents should load only the required context for that lane, return
@@ -267,7 +269,7 @@ retrying broad local scripts.
 | --- | --- | --- |
 | **Parallel** | Subtasks are independent — no output dependency between them | Code review + security scan simultaneously; investigating separate subsystems concurrently |
 | **Sequential** | Each step's output feeds the next | Repo Navigation → Specialist Implementation → Code Review → Assurance (default single-domain lane) |
-| **Hierarchical** | A coordinator delegates to specialist agents, aggregates evidence, and enforces approval gates | DK1 readiness: provider validation + replay verification + brokerage sync → approval gate → promotion via CoS runtime |
+| **Hierarchical** | A coordinator delegates to specialist agents, aggregates evidence, and enforces approval gates | DK1 readiness: provider validation + replay verification + brokerage sync → approval gate → evidence packet handoff |
 
 ---
 

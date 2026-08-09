@@ -235,6 +235,10 @@ module SecurityMaster =
            | IdentifierKind.ProviderSymbol provider ->
                requireNotBlank "identifier_provider_required" "Identifier.Provider" provider
            | _ -> [])
+        @ require (SecurityIdentifier.providerMetadataMatchesKind identifier)
+            (error
+                "identifier_provider_mismatch"
+                "ProviderSymbol metadata must match the authoritative provider namespace carried by Identifier.Kind.")
         @ require (identifier.ValidTo |> Option.forall (fun validTo -> validTo > identifier.ValidFrom))
             (error "identifier_date_range_invalid" "Identifier ValidTo must be later than ValidFrom when present.")
 

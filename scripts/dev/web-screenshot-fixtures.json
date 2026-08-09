@@ -3208,6 +3208,154 @@
       "activeWorkflows": 1,
       "reviewRequired": 1
     },
+    "/api/workstation/reconciliation/margin-control": {
+      "generatedAtUtc": "2026-06-30T21:10:00Z",
+      "providerCount": 2,
+      "accountCount": 2,
+      "provisionalAccountCount": 1,
+      "endOfDayCertificationCandidateCount": 1,
+      "authorityNote": "Broker-reported margin remains authoritative. Shadow estimates are diagnostic only and never drive liquidation or order changes.",
+      "nextAction": "Certify the end-of-day snapshot for alpaca-live/PA-4471 once the retained evidence has been reviewed.",
+      "primeSummaries": [
+        {
+          "providerId": "ibkr-prime",
+          "accountCount": 1,
+          "totalEquity": 2450000,
+          "providerMaintenanceMargin": 812500,
+          "providerExcessLiquidity": 118400,
+          "criticalAccountCount": 1
+        },
+        {
+          "providerId": "alpaca-live",
+          "accountCount": 1,
+          "totalEquity": 486200,
+          "providerMaintenanceMargin": 96900,
+          "providerExcessLiquidity": 214300,
+          "criticalAccountCount": 0
+        }
+      ],
+      "alerts": [
+        {
+          "severity": "Critical",
+          "providerId": "ibkr-prime",
+          "accountId": "DU1009034",
+          "code": "PROVIDER_MARGIN_RESTRICTION",
+          "message": "Prime reports a closing-transactions-only restriction on the account.",
+          "suggestedAction": "Review the restriction with the prime desk before placing opening orders."
+        },
+        {
+          "severity": "Warning",
+          "providerId": "ibkr-prime",
+          "accountId": "DU1009034",
+          "code": "MARGIN_SHADOW_VARIANCE",
+          "message": "Shadow maintenance margin is 41,300 USD below the provider figure.",
+          "suggestedAction": "Reconcile the shadow model inputs; the provider figure stays authoritative."
+        }
+      ],
+      "accounts": [
+        {
+          "providerId": "ibkr-prime",
+          "accountId": "DU1009034",
+          "asOf": "2026-06-30T20:55:00Z",
+          "snapshotPhase": "IntradayProvisional",
+          "certificationState": "NotRequired",
+          "currency": "USD",
+          "marginRegime": "RegT",
+          "cash": 184500,
+          "equity": 2450000,
+          "buyingPower": 236800,
+          "providerInitialMargin": 1020000,
+          "providerMaintenanceMargin": 812500,
+          "providerExcessLiquidity": 118400,
+          "providerMarginLoan": 640000,
+          "shadowModelName": "Meridian shadow (RegT)",
+          "shadowInitialMargin": 968400,
+          "shadowMaintenanceMargin": 771200,
+          "shadowExcessLiquidity": 159700,
+          "maintenanceVariance": -41300,
+          "riskLevel": "Critical",
+          "activityComplete": false,
+          "restrictions": [
+            "Closing transactions only until the prime desk clears the margin review."
+          ],
+          "optionLifecycleEventCount": 3,
+          "borrowPositionCount": 1,
+          "taxLotCount": 12,
+          "evidencePath": "fixture://margin-control/ibkr-prime/DU1009034/2026-06-30.json",
+          "positionContributions": [
+            {
+              "symbol": "AAPL",
+              "securityId": "sec-dev-001",
+              "securityMasterSource": "SecurityMasterResolved",
+              "quantity": 4800,
+              "marketValue": 912480,
+              "shadowInitialMargin": 456240,
+              "shadowMaintenanceMargin": 273744,
+              "borrowStatus": null,
+              "borrowRate": null,
+              "taxLotCount": 7,
+              "optionLifecycleEventCount": 1
+            },
+            {
+              "symbol": "TSLA",
+              "securityId": null,
+              "securityMasterSource": null,
+              "quantity": -1200,
+              "marketValue": -284400,
+              "shadowInitialMargin": 170640,
+              "shadowMaintenanceMargin": 113760,
+              "borrowStatus": "HardToBorrow",
+              "borrowRate": 8.75,
+              "taxLotCount": 5,
+              "optionLifecycleEventCount": 2
+            }
+          ]
+        },
+        {
+          "providerId": "alpaca-live",
+          "accountId": "PA-4471",
+          "asOf": "2026-06-30T21:00:00Z",
+          "snapshotPhase": "EndOfDay",
+          "certificationState": "AwaitingOperatorCertification",
+          "currency": "USD",
+          "marginRegime": "RegT",
+          "cash": 96400,
+          "equity": 486200,
+          "buyingPower": 428600,
+          "providerInitialMargin": 121600,
+          "providerMaintenanceMargin": 96900,
+          "providerExcessLiquidity": 214300,
+          "providerMarginLoan": 0,
+          "shadowModelName": "Meridian shadow (RegT)",
+          "shadowInitialMargin": 120800,
+          "shadowMaintenanceMargin": 96400,
+          "shadowExcessLiquidity": 214900,
+          "maintenanceVariance": -500,
+          "riskLevel": "Normal",
+          "activityComplete": true,
+          "restrictions": [],
+          "optionLifecycleEventCount": 0,
+          "borrowPositionCount": 0,
+          "taxLotCount": 4,
+          "evidencePath": "fixture://margin-control/alpaca-live/PA-4471/2026-06-30.json",
+          "positionContributions": [
+            {
+              "symbol": "MSFT",
+              "securityId": "sec-dev-002",
+              "securityMasterSource": "SecurityMasterResolved",
+              "quantity": 900,
+              "marketValue": 370890,
+              "shadowInitialMargin": 185445,
+              "shadowMaintenanceMargin": 111267,
+              "borrowStatus": null,
+              "borrowRate": null,
+              "taxLotCount": 4,
+              "optionLifecycleEventCount": 0
+            }
+          ]
+        }
+      ]
+    },
     "/api/workstation/reconciliation/statement-connectors": [
       {
         "connectorId": "csv-mapped",

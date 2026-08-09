@@ -222,6 +222,7 @@ public sealed class UiServer : IAsyncDisposable
             builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
             builder.Services.AddSingleton(new LoginSessionStoreOptions(Path.Combine(resolvedDataRoot, "identity", "sessions.json")));
             builder.Services.AddWorkstationSharedServices();
+            builder.Services.AddStatementFetchSchedulerHostedService();
             builder.Services.AddOmsIntegrationApiHandlers();
 
             if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
@@ -277,6 +278,10 @@ public sealed class UiServer : IAsyncDisposable
                 FailClosedOnMissingOrCorruptSnapshot:
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)));
             builder.Services.AddSingleton<ExecutionOperatorControlService>();
+            // Governed-approval queue snapshots belong under the writable data root; the
+            // queue's AppContext.BaseDirectory default is read-only in installed deployments.
+            builder.Services.AddSingleton(new RiskEscalationQueueOptions(
+                Path.Combine(resolvedDataRoot, "execution", "risk-escalations", "escalations.json")));
             // Durable paper-session storage root is operator-tunable via
             // "PaperTrading:Sessions:BaseDirectory"; unset keeps the data-root default.
             var paperSessionBaseDirectory = builder.Configuration.GetValue<string?>(
@@ -315,6 +320,10 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                     .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
                 ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
+            builder.Services.AddSingleton(
+                builder.Configuration.GetSection(Meridian.Execution.PaperMatching.PaperTradingCostOptions.SectionKey)
+                    .Get<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()
+                ?? new Meridian.Execution.PaperMatching.PaperTradingCostOptions());
             var configuredOrderManagement = builder.Configuration
                 .GetSection(OrderManagementSystemOptions.SectionKey)
                 .Get<OrderManagementSystemOptions>() ?? new OrderManagementSystemOptions();
@@ -336,7 +345,12 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
                         securityMaster: null,
                         options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                        liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+                        liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
+                        costOptions: sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                // Resting limit/stop orders re-evaluate when the market event tap records
+                // fresh data for their symbol (W9-PAPER-003 matching loop).
+                builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
+                    (Meridian.Execution.Adapters.PaperTradingGateway)sp.GetRequiredService<IOrderGateway>());
             }
             builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
             builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
@@ -366,7 +380,8 @@ public sealed class UiServer : IAsyncDisposable
                     liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
                     options: sp.GetRequiredService<OrderManagementSystemOptions>(),
                     tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
+                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
+                    escalationQueue: sp.GetService<RiskEscalationQueueService>());
             });
             if (usesPaperGateway)
             {
@@ -375,7 +390,10 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
                         sp.GetService<ISecurityMasterQueryService>(),
                         sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
+                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
+                    (Meridian.Execution.PaperTradingGateway)sp.GetRequiredService<IExecutionGateway>());
             }
 
             // Registers BrokerageConfiguration plus the live-mode IExecutionGateway/IOrderGateway
@@ -387,16 +405,16 @@ public sealed class UiServer : IAsyncDisposable
             // strategies against the live market data feed through the OMS.
             builder.Services.AddLiveTradingEngine(builder.Configuration);
 
-            // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
-            // engine compiles and executes arbitrary C# in-process. Production/customer distributions
-            // fail closed until execution is moved behind a separately isolated worker boundary.
+            // Quant Lab — opt-in via "QuantLab:Enabled". Each run uses the dedicated contained worker,
+            // but that worker retains the launching identity's file/network permissions. Production and
+            // customer distributions therefore remain fail-closed pending OS-profile certification.
             var quantLabEnabled = builder.Configuration.GetValue<bool>("QuantLab:Enabled");
-            ProductionServiceRegistrationPolicy.EnsureInProcessQuantLabIsAllowed(
+            ProductionServiceRegistrationPolicy.EnsureIsolatedQuantLabIsAllowed(
                 builder.Services,
                 quantLabEnabled);
             if (quantLabEnabled)
             {
-                builder.Services.AddMeridianQuantScript();
+                builder.Services.AddMeridianQuantScript(builder.Configuration);
             }
 
             // Register OpenAPI/Swagger services
@@ -941,6 +959,41 @@ public sealed class UiServer : IAsyncDisposable
             }));
 
         services.AddSingleton<IRuntimeReadinessCheck>(sp => new DelegateRuntimeReadinessCheck(
+            "reporting-durability",
+            "Reporting durability",
+            productionPosture
+                ? LifecycleCheckRequirement.Required
+                : LifecycleCheckRequirement.Degradable,
+            _ =>
+            {
+                var capability = sp.GetService<IReportingDeploymentReadinessService>()?.Evaluate();
+                if (capability is null)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        productionPosture
+                            ? LifecycleCheckStatus.Failing
+                            : LifecycleCheckStatus.Degraded,
+                        "Reporting deployment capability is unavailable."));
+                }
+
+                if (capability.IsReady)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Passing,
+                        "Governance, release consistency, casework evidence, certified runs, scheduling, client documents, delivery workers, and receipts use the durable reporting authority."));
+                }
+
+                var missing = capability.Components
+                    .Where(static component => !component.IsReady)
+                    .Select(static component => component.ComponentId);
+                return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                    productionPosture
+                        ? LifecycleCheckStatus.Failing
+                        : LifecycleCheckStatus.Degraded,
+                    $"REPORTING: INCOMPLETE — unavailable durable components: {string.Join(", ", missing)}."));
+            }));
+
+        services.AddSingleton<IRuntimeReadinessCheck>(sp => new DelegateRuntimeReadinessCheck(
             "event-pipeline",
             "Event pipeline",
             LifecycleCheckRequirement.Required,
@@ -1188,6 +1241,13 @@ public sealed class UiServer : IAsyncDisposable
                 .ConfigureAwait(false);
             await MoneyMarketStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
                 .ConfigureAwait(false);
+            var reportingStartup = _app.Services.GetService<IReportingMigrationStartup>();
+            if (reportingStartup is not null)
+            {
+                await reportingStartup
+                    .EnsureReadyAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
 
             _databaseReadinessCompleted = true;
             readinessStopwatch.Stop();
