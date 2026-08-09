@@ -5,6 +5,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -75,16 +76,22 @@ public static class DemoModeEndpoints
         var group = app.MapGroup("").WithTags("Demo Mode");
 
         // Get demo mode status
-        group.MapGet(UiApiRoutes.DemoMode, (ConfigStore store) =>
+        group.MapGet(UiApiRoutes.DemoMode, (ConfigStore store, IServiceProvider serviceProvider) =>
         {
             var cfg = store.Load();
             var isDemo = cfg.DataSources?.Sources?.Length == 0 ||
                         (cfg.DataSources?.Sources?.All(s => string.IsNullOrEmpty(s.Alpaca?.KeyId) &&
                                                            string.IsNullOrEmpty(s.Polygon?.ApiKey)) ?? true);
+            // W9-TRUTH-001: report the provenance pinned into the composed graph (seeded demo,
+            // forced simulated label for in-memory local durables) so connected workstations keep
+            // labeling this host's records; without a pinned declaration fall back to the demo
+            // heuristic so legacy behavior is unchanged.
+            var pinned = serviceProvider.GetService<Meridian.Application.Composition.MeridianDataProvenanceDeclaration>();
             return Results.Json(new DemoModeConfig(
                 Enabled: isDemo,
                 DemoSymbols: DemoMarketData.Keys.ToArray(),
-                LastUpdated: DateTime.UtcNow
+                LastUpdated: DateTime.UtcNow,
+                Provenance: pinned?.Provenance ?? (isDemo ? DataProvenance.Seeded : DataProvenance.Real)
             ), jsonOptions);
         })
         .WithName("GetDemoMode")

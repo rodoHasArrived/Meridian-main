@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.1,
-  "endpoint_coverage_percent": 40.0,
+  "score_percent": 29.2,
+  "endpoint_coverage_percent": 40.2,
   "contract_coverage_percent": 12.7,
   "summary": {
     "endpoint_count": 620,
-    "documented_endpoint_count": 248,
-    "undocumented_endpoint_count": 372,
+    "documented_endpoint_count": 249,
+    "undocumented_endpoint_count": 371,
     "workstation_contract_count": 916,
     "documented_workstation_contract_count": 116,
     "undocumented_workstation_contract_count": 800
@@ -17,25 +17,25 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:615",
+      "source": "src/Meridian/UiServer.cs:640",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:649",
+      "source": "src/Meridian/UiServer.cs:674",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:699",
+      "source": "src/Meridian/UiServer.cs:724",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:720",
+      "source": "src/Meridian/UiServer.cs:745",
       "documented": true
     },
     {
@@ -1277,25 +1277,25 @@
     {
       "method": "GET",
       "path": "/api/demo/mode",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:78",
-      "documented": false
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:79",
+      "documented": true
     },
     {
       "method": "GET",
       "path": "/api/demo/symbols",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:95",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:102",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/market-data/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:111",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:118",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/historical/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:132",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:139",
       "documented": false
     },
     {

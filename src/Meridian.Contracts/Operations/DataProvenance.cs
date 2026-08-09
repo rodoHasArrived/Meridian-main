@@ -79,6 +79,44 @@ public static class DataProvenanceExtensions
         null or "" => DataProvenance.Simulated,
         _ => DataProvenance.Simulated
     };
+
+    /// <summary>
+    /// Unambiguous, structured simulated-origin markers, matched by exact (trimmed,
+    /// case-insensitive) equality — never by substring — so legitimate values like
+    /// "Sample Custodian" or "fixture-bank" are not mistaken for a simulated origin. An explicit
+    /// provenance mark is always the primary gate; this token table is the shared safety net for a
+    /// source that is labeled simulated while the record forgot to carry the mark. The ledger
+    /// append boundary (`AccountingPostingCommandValidator`) enforces the same table.
+    /// </summary>
+    private static readonly string[] SimulatedOriginTokens =
+    [
+        "simulated", "simulation", "synthetic", "backtest",
+        "seeded", "seed", "demo", "fixture",
+        "sample", "placeholder"
+    ];
+
+    /// <summary>
+    /// True when a source-system or source-type value is, exactly, one of the structured
+    /// simulated-origin tokens.
+    /// </summary>
+    public static bool IsSimulatedOriginToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var trimmed = value.Trim();
+        foreach (var token in SimulatedOriginTokens)
+        {
+            if (string.Equals(trimmed, token, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 /// <summary>

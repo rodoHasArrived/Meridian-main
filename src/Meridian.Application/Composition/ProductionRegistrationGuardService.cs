@@ -1,3 +1,4 @@
+using Meridian.Contracts.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -26,6 +27,21 @@ public sealed class ProductionRegistrationGuardService : IHostedService
     {
         if (!ProductionServiceRegistrationPolicy.IsProductionComposition(_services))
         {
+            // W9-TRUTH-001: the supported local posture asserts durable money-path stores at
+            // startup unless the composition deliberately runs labeled — a pinned non-real
+            // provenance declaration is the only sanctioned way to keep fabricated in-memory
+            // stores, because the label then rides every workspace surface. An unlabeled local
+            // graph with in-memory durable bindings refuses startup naming the bindings.
+            if (ProductionServiceRegistrationPolicy.IsSupportedLocalComposition(_services))
+            {
+                var runsLabeled =
+                    ProductionServiceRegistrationPolicy.TryResolveForcedProvenance(_services, out var forced)
+                    && forced.IsNonReal();
+                ProductionServiceRegistrationPolicy.ValidateSupportedLocal(
+                    _services,
+                    requireDurableStores: !runsLabeled);
+            }
+
             return Task.CompletedTask;
         }
 

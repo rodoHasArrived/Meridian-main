@@ -599,6 +599,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             report,
             auditActor,
             ct).ConfigureAwait(false);
+        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(runs);
         var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
             ReportId: report.ReportId,
             AsOf: asOf,
@@ -611,7 +612,8 @@ public sealed partial class FundOperationsWorkspaceReadService
             StaleReplayCount: 0,
             UnresolvedSecurityMasterConflictCount: securityValidationResults.Count(result =>
                 result.Report.Issues.Any(issue => issue.Severity is SecurityValidationSeverityDto.Critical or SecurityValidationSeverityDto.Error)),
-            SecurityValidationResults: securityValidationResults));
+            SecurityValidationResults: securityValidationResults,
+            DataProvenanceToken: derivedProvenanceToken));
         var status = _reportPackValidationService.ResolveStatus(validationIssues);
         var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
             auditActor,
@@ -637,7 +639,8 @@ public sealed partial class FundOperationsWorkspaceReadService
                 reconciliation,
                 nav,
                 runs),
-            SchemaVersion: schemaVersion);
+            SchemaVersion: schemaVersion,
+            DataProvenanceToken: derivedProvenanceToken);
         var artifactContents = BuildReportPackArtifacts(report, formats, brandingTheme, ct);
         generationStopwatch.Stop();
         var warnings = BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount);
