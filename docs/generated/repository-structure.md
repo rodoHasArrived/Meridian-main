@@ -6852,6 +6852,7 @@ Meridian-main
 │   │   │   ├── MessagingEndpoints.cs
 │   │   │   ├── MoneyMarketFundEndpoints.cs
 │   │   │   ├── MoneyMarketFundReferenceEndpoints.cs
+│   │   │   ├── MonitoringEndpointExemptions.cs
 │   │   │   ├── OmsIntegrationEndpoints.cs
 │   │   │   ├── OptionChainEndpoints.cs
 │   │   │   ├── OptionReferenceEndpoints.cs
