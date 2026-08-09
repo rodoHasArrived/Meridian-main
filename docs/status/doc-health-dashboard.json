@@ -1,6 +1,6 @@
 {
   "total_files": 643,
-  "total_lines": 124796,
+  "total_lines": 124815,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2290,7 +2290,7 @@
     },
     {
       "path": "docs/generated/database/contracts/banking-contracts.md",
-      "line_count": 82,
+      "line_count": 91,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2354,7 +2354,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-01.md",
-      "line_count": 788,
+      "line_count": 790,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2458,7 +2458,7 @@
     },
     {
       "path": "docs/generated/database/modules/banking.md",
-      "line_count": 52,
+      "line_count": 60,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
