@@ -9,7 +9,6 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
-using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
@@ -600,7 +599,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             report,
             auditActor,
             ct).ConfigureAwait(false);
-        var derivedProvenanceToken = ResolveDerivedReportPackProvenanceToken(runs);
+        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(runs);
         var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
             ReportId: report.ReportId,
             AsOf: asOf,
@@ -2302,42 +2301,6 @@ public sealed partial class FundOperationsWorkspaceReadService
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-
-    /// <summary>
-    /// W9-TRUTH-001: a report pack that cites any simulated, seeded, or sample strategy run
-    /// inherits the strongest non-real provenance of its inputs, so the derived figure can never
-    /// enter report-pack evidence without the blocking mark. Unknown tokens degrade to
-    /// "simulated", never to real.
-    /// </summary>
-    private static string? ResolveDerivedReportPackProvenanceToken(IReadOnlyList<StrategyRunEntry> runs)
-    {
-        DataProvenance? strongest = null;
-        foreach (var run in runs)
-        {
-            if (string.IsNullOrWhiteSpace(run.DataProvenanceToken))
-            {
-                continue;
-            }
-
-            var declared = DataProvenanceExtensions.ParseTokenOrSimulated(run.DataProvenanceToken);
-            if (!declared.IsNonReal())
-            {
-                continue;
-            }
-
-            if (declared == DataProvenance.Simulated)
-            {
-                return declared.Token();
-            }
-
-            if (strongest is null || declared < strongest)
-            {
-                strongest = declared;
-            }
-        }
-
-        return strongest?.Token();
-    }
 
     private static string ComputeSourceSnapshotHash(
         string fundProfileId,

@@ -4464,8 +4464,7 @@ public static partial class WorkstationEndpoints
             : Results.NotFound(new
             {
                 error = "Workstation bundle not found.",
-                message = "Build the canonical tree (src/Meridian.Ui/wwwroot/workstation) with " +
-                          "'npm --prefix src/Meridian.Ui/dashboard run build' before opening /workstation."
+                message = "Build the canonical tree (src/Meridian.Ui/wwwroot/workstation) with 'npm --prefix src/Meridian.Ui/dashboard run build' before opening /workstation."
             });
     }
 

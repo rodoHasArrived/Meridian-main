@@ -3258,7 +3258,8 @@ Meridian-main
 │   │   ├── Program.cs
 │   │   ├── README.md
 │   │   ├── runtimeconfig.template.json
-│   │   └── UiServer.cs
+│   │   ├── UiServer.cs
+│   │   └── WorkstationAssetTree.cs
 │   ├── Meridian.Application
 │   │   ├── Accounting
 │   │   │   ├── DailyMarkToMarketService.cs
@@ -7109,6 +7110,7 @@ Meridian-main
 │   │   │   ├── ReportPackDeliveryService.cs
 │   │   │   ├── ReportPackDeliveryService.Evidence.cs
 │   │   │   ├── ReportPackDeliveryService.Guards.cs
+│   │   │   ├── ReportPackProvenanceResolver.cs
 │   │   │   ├── ReportPackRestatementCandidateResolver.cs
 │   │   │   ├── ReportPackRunReadService.Access.cs
 │   │   │   ├── ReportPackRunReadService.CanonicalDeliveries.cs
@@ -8974,7 +8976,8 @@ Meridian-main
 │   │   ├── Demo
 │   │   │   ├── DemoWorkspaceGuardTests.cs
 │   │   │   ├── DemoWorkspaceSeederTests.cs
-│   │   │   └── DemoWorkspaceSmokeTests.cs
+│   │   │   ├── DemoWorkspaceSmokeTests.cs
+│   │   │   └── DemoWorkstationAssetTreeTests.cs
 │   │   ├── Deposits
 │   │   │   └── DepositProjectionServiceTests.cs
 │   │   ├── Derivatives
@@ -10120,7 +10123,8 @@ Meridian-main
 │   │   │   ├── WorkflowLibraryViewModelTests.cs
 │   │   │   ├── WorkspaceAttentionRibbonViewModelTests.cs
 │   │   │   ├── WorkspaceCockpitShellViewModelTests.cs
-│   │   │   └── WorkspacePageViewModelTests.cs
+│   │   │   ├── WorkspacePageViewModelTests.cs
+│   │   │   └── WorkspaceShellProvenanceBadgeTests.cs
 │   │   ├── Views
 │   │   │   ├── AccountingWorkspaceShellPageTests.cs
 │   │   │   ├── AccountingWorkspaceShellSmokeTests.cs

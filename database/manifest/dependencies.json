@@ -2224,6 +2224,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition"
     },
     {
@@ -11068,6 +11074,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginCertificationRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginCertificationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.MarginRequirementDto"
     },
     {
@@ -12131,6 +12179,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationJobControl"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity"
     },
     {
       "kind": "contract-set-member",
@@ -13283,6 +13337,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StarterWorkspaceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
     },
     {
       "kind": "contract-set-member",
@@ -15359,6 +15431,12 @@
       "label": "",
       "source": "contract-set:banking-contracts",
       "target": "contract:Meridian.Contracts.Banking.RejectPaymentRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:banking-contracts",
+      "target": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest"
     },
     {
       "kind": "contract-set-member",
@@ -20547,8 +20625,26 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdminCertificationArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileUpsertRequestDto",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileUpsertRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -22066,6 +22162,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Banking.RejectPaymentRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
@@ -31815,6 +31917,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.MeridianAssuranceScoreDto",
       "target": "contract:Meridian.Contracts.Workstation.EvidenceAssuranceComponentDto"
     },
@@ -33573,6 +33699,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationMatchDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsContinuityCorrelationKeysDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationPayloadEnvelope",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationCorrelationContext"
     },
@@ -35321,6 +35453,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementImportCommitResultDto",
       "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
     },
     {
       "kind": "contract-reference",
@@ -37676,6 +37826,79 @@
       "label": "position_id, security_id, ledger_book_id, owner_scope_id, owner_scope_kind",
       "source": "database:asset_operations.position_economic_state_projections",
       "target": "database:asset_operations.book_position_projections"
+    },
+    {
+      "constraint": "fk_bank_transactions_pending_payment",
+      "kind": "foreign-key",
+      "label": "pending_payment_id",
+      "source": "database:banking.bank_transactions",
+      "target": "database:banking.pending_payments"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_bank_transactions_currency on banking.bank_transactions",
+      "target": "database:banking.bank_transactions.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "target": "database:banking.bank_transactions.canonical_input_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "target": "database:banking.bank_transactions.evidence_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "target": "database:banking.bank_transactions.pending_payment_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency_remediated_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency_remediated_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "target": "database:banking.pending_payments.currency_remediation_reason"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+      "target": "database:banking.pending_payments.pending_payment_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+      "target": "database:banking.pending_payments_pkey"
     },
     {
       "constraint": "account_balance_snapshot_account_id_fkey",
@@ -42279,7 +42502,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0d46bf5c31ba93b15e662fc89e30914d957dafbb4fa5842c80c2d6e5a0bf3c3e",
+  "fingerprint": "1955b66190ebf554550bb4ae204f3c17581288bb2c471e0ecb589ac1b2dc8586",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -44551,6 +44774,12 @@
       "id": "contract:Meridian.Contracts.Banking.RejectPaymentRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Banking.RejectPaymentRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest"
     },
     {
       "classification": "record",
@@ -53398,6 +53627,48 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginCertificationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginCertificationRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginCertificationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginCertificationResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlCenterDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginPositionContributionDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.MarginRequirementDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.MarginRequirementDto"
@@ -54463,6 +54734,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationJobControl",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationJobControl"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity"
     },
     {
       "classification": "dto",
@@ -55615,6 +55892,24 @@
       "id": "contract:Meridian.Contracts.Workstation.StarterWorkspaceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StarterWorkspaceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
     },
     {
       "classification": "dto",
@@ -57821,10 +58116,85 @@
       "schema": "banking"
     },
     {
+      "id": "database:banking.bank_transactions.canonical_input_hash",
+      "kind": "database-object",
+      "label": "banking.bank_transactions.canonical_input_hash"
+    },
+    {
+      "id": "database:banking.bank_transactions.currency",
+      "kind": "database-object",
+      "label": "banking.bank_transactions.currency"
+    },
+    {
+      "id": "database:banking.bank_transactions.evidence_id",
+      "kind": "database-object",
+      "label": "banking.bank_transactions.evidence_id"
+    },
+    {
+      "id": "database:banking.bank_transactions.pending_payment_id",
+      "kind": "database-object",
+      "label": "banking.bank_transactions.pending_payment_id"
+    },
+    {
+      "id": "database:banking.ck_bank_transactions_currency on banking.bank_transactions",
+      "kind": "database-object",
+      "label": "banking.ck_bank_transactions_currency on banking.bank_transactions"
+    },
+    {
+      "id": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
+      "kind": "database-object",
+      "label": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions"
+    },
+    {
+      "id": "database:banking.ck_pending_payments_currency on banking.pending_payments",
+      "kind": "database-object",
+      "label": "banking.ck_pending_payments_currency on banking.pending_payments"
+    },
+    {
+      "id": "database:banking.ck_pending_payments_currency_remediation on banking.pending_payments",
+      "kind": "database-object",
+      "label": "banking.ck_pending_payments_currency_remediation on banking.pending_payments"
+    },
+    {
+      "id": "database:banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
+      "kind": "database-object",
+      "label": "banking.fk_bank_transactions_pending_payment on banking.bank_transactions"
+    },
+    {
       "id": "database:banking.pending_payments",
       "kind": "database-table",
       "label": "banking.pending_payments",
       "schema": "banking"
+    },
+    {
+      "id": "database:banking.pending_payments.currency",
+      "kind": "database-object",
+      "label": "banking.pending_payments.currency"
+    },
+    {
+      "id": "database:banking.pending_payments.currency_remediated_at",
+      "kind": "database-object",
+      "label": "banking.pending_payments.currency_remediated_at"
+    },
+    {
+      "id": "database:banking.pending_payments.currency_remediated_by",
+      "kind": "database-object",
+      "label": "banking.pending_payments.currency_remediated_by"
+    },
+    {
+      "id": "database:banking.pending_payments.currency_remediation_reason",
+      "kind": "database-object",
+      "label": "banking.pending_payments.currency_remediation_reason"
+    },
+    {
+      "id": "database:banking.pending_payments.pending_payment_id",
+      "kind": "database-object",
+      "label": "banking.pending_payments.pending_payment_id"
+    },
+    {
+      "id": "database:banking.pending_payments_pkey",
+      "kind": "database-object",
+      "label": "banking.pending_payments_pkey"
     },
     {
       "id": "database:banking.schema_migrations",
@@ -61602,11 +61972,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2919,
-    "contract_set_memberships": 3329,
-    "edges": 7028,
-    "foreign_keys": 94,
+    "contract_references": 2931,
+    "contract_set_memberships": 3342,
+    "edges": 7065,
+    "foreign_keys": 95,
     "logical_references": 6,
-    "nodes": 3325
+    "nodes": 3352
   }
 }

@@ -19,7 +19,7 @@
     "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs": 2387,
     "src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs": 3356,
     "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs": 3678,
-    "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs": 4642,
+    "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs": 4645,
     "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs": 2615,
     "src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs": 3313,
     "src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs": 3294,
