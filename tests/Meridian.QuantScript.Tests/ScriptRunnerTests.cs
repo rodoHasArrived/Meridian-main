@@ -234,8 +234,27 @@ public sealed class ScriptRunnerTests
     [Fact]
     public async Task ContinueWithAsync_TimeoutDuringRun_PreservesPreviousCheckpoint_AndReturnsTimeoutRuntimeError()
     {
-        var runner = BuildRunner(runTimeoutSeconds: 1);
+        var worker = new ScriptedWorkerClient(
+            new WorkerExecutionOutcome(
+                WorkerCompletionKind.Completed,
+                new WorkerScriptRunResult(
+                    true,
+                    0,
+                    0,
+                    [],
+                    [],
+                    null,
+                    string.Empty,
+                    [],
+                    [],
+                    [],
+                    [],
+                    []),
+                0),
+            new WorkerExecutionOutcome(WorkerCompletionKind.TimedOut, null, 0));
+        var runner = BuildRunner(workerClient: worker);
         var first = await runner.RunAsync("var x = 41;", NoParams);
+        first.Checkpoint.Should().NotBeNull();
 
         var result = await runner.ContinueWithAsync(
             "while (true) { }",
@@ -245,6 +264,7 @@ public sealed class ScriptRunnerTests
         result.Success.Should().BeFalse();
         result.RuntimeError.Should().Be("Script timed out.");
         result.Checkpoint.Should().BeSameAs(first.Checkpoint);
+        worker.CallCount.Should().Be(2);
     }
 
     [Fact]
@@ -854,6 +874,28 @@ public sealed class ScriptRunnerTests
             {
                 Interlocked.Decrement(ref _active);
             }
+        }
+    }
+
+    private sealed class ScriptedWorkerClient(params WorkerExecutionOutcome[] outcomes)
+        : IQuantScriptWorkerClient
+    {
+        private int _callCount;
+
+        public int CallCount => Volatile.Read(ref _callCount);
+
+        public Task<WorkerExecutionOutcome> ExecuteAsync(
+            WorkerExecutionRequest request,
+            IQuantDataContext dataContext,
+            QuantScriptOptions options,
+            CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            var index = Interlocked.Increment(ref _callCount) - 1;
+            if ((uint)index >= (uint)outcomes.Length)
+                throw new InvalidOperationException("No scripted worker outcome remains for this invocation.");
+
+            return Task.FromResult(outcomes[index]);
         }
     }
 

@@ -1329,7 +1329,8 @@ public sealed class ReconciliationRunServiceTests
                 SettlementDate: new DateOnly(2026, 3, 21),
                 Amount: 750m,
                 Currency: "USD",
-                ExternalRef: "RECON-TEST"));
+                ExternalRef: "RECON-TEST",
+                EvidenceId: "recon-test-bank-confirmation"));
 
         var service = CreateService(store, new InMemoryReconciliationRunRepository(),
             securityReferenceLookup: null, bankTransactionSource: bankingService);

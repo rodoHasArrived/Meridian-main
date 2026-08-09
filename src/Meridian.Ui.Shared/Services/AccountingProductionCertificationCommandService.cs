@@ -619,7 +619,7 @@ public sealed class AccountingProductionCertificationCommandService(
         {
             destination.Add(source.Evidence with
             {
-                EvidenceId = $"{source.Evidence.EvidenceId}:{certificationId[..16]}",
+                EvidenceId = $"{source.Evidence.EvidenceId}:{certificationId}",
                 SubjectType = subjectType,
                 SubjectId = certificationId
             });
