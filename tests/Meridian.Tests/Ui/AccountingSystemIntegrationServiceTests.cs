@@ -6776,19 +6776,19 @@ public sealed class AccountingSystemIntegrationServiceTests
             var allDimensionalLanes = Enum.GetValues<AccountingDimensionalCertificationLaneKindDto>();
             (AccountingWorkflowCertificationLaneKindDto[] WorkflowLanes,
                 AccountingDimensionalCertificationLaneKindDto[] DimensionalLanes) laneCoverage = vaultId switch
-            {
-                "accounting-certification-full" or "accounting-certification-corroborating" =>
-                    (allWorkflowLanes, allDimensionalLanes),
-                "accounting-certification-workflow" =>
-                    (allWorkflowLanes, []),
-                "accounting-certification-posting-only" =>
-                    ([AccountingWorkflowCertificationLaneKindDto.PostingRules], []),
-                "accounting-certification-rollout" =>
-                    ([AccountingWorkflowCertificationLaneKindDto.ExternalGl], []),
-                "accounting-certification-mismatched-scope" or "accounting-certification-other-ledger-book" =>
-                    (allWorkflowLanes, allDimensionalLanes),
-                _ => ([], [])
-            };
+                {
+                    "accounting-certification-full" or "accounting-certification-corroborating" =>
+                        (allWorkflowLanes, allDimensionalLanes),
+                    "accounting-certification-workflow" =>
+                        (allWorkflowLanes, []),
+                    "accounting-certification-posting-only" =>
+                        ([AccountingWorkflowCertificationLaneKindDto.PostingRules], []),
+                    "accounting-certification-rollout" =>
+                        ([AccountingWorkflowCertificationLaneKindDto.ExternalGl], []),
+                    "accounting-certification-mismatched-scope" or "accounting-certification-other-ledger-book" =>
+                        (allWorkflowLanes, allDimensionalLanes),
+                    _ => ([], [])
+                };
             var workflowLanes = laneCoverage.WorkflowLanes;
             var dimensionalLanes = laneCoverage.DimensionalLanes;
             if (workflowLanes.Length == 0 && dimensionalLanes.Length == 0)

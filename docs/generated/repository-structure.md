@@ -9843,7 +9843,8 @@ Meridian-main
 │   │   │   ├── WorkstationTenantContextTests.cs
 │   │   │   └── WorkstationWorkflowSummaryFinancialOperationsTests.cs
 │   │   ├── UiServices
-│   │   │   └── ApiClientSessionTests.cs
+│   │   │   ├── ApiClientSessionTests.cs
+│   │   │   └── HttpClientConfigurationTests.cs
 │   │   ├── Workflow
 │   │   │   ├── FundWorkflowCommandHandlerTests.cs
 │   │   │   └── RunbookServicesTests.cs
