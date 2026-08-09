@@ -102,6 +102,71 @@ public sealed class SupportedPostureStartupIntegrationTests
         }
     }
 
+    /// <summary>
+    /// PRD-019 probe/scrape evidence against the real host pipeline: with a governed account
+    /// configured (authenticated posture), the compose healthcheck's unauthenticated
+    /// <c>GET /health</c> and a Prometheus scrape's unauthenticated <c>GET /metrics</c> are
+    /// served by <see cref="Meridian.Ui.Shared.Endpoints.MonitoringEndpointExemptions"/>,
+    /// while the rest of the workstation still enforces session authentication.
+    /// </summary>
+    [Fact]
+    public async Task UiServer_AuthenticatedPosture_ServesProbesAndScrapeWithoutASession()
+    {
+        using var environment = UiServerDevelopmentEnvironmentScope.Enable();
+        var root = CreateTempRoot();
+        var configPath = WriteMinimalConfig(root);
+        SeedGovernedUserAccount(root);
+
+        try
+        {
+            await using var server = new UiServer(configPath, port: 0);
+            using var startTimeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            await server.StartAsync(startTimeout.Token);
+
+            var app = GetServerApp(server);
+            var address = app.Services.GetRequiredService<IServer>()
+                .Features.Get<IServerAddressesFeature>()!
+                .Addresses.First();
+            using var handler = new HttpClientHandler { AllowAutoRedirect = false };
+            using var client = new HttpClient(handler) { BaseAddress = new Uri(address) };
+
+            // Controls: the seeded account puts the host in an authenticated posture, so a
+            // served probe below proves the monitoring exemption rather than a disabled gate.
+            using var apiControl = await client.GetAsync("/api/status", startTimeout.Token);
+            apiControl.StatusCode.Should().Be(
+                HttpStatusCode.Unauthorized,
+                "an unauthenticated API request must be rejected while auth is configured");
+            using var browserControl = await client.GetAsync("/", startTimeout.Token);
+            browserControl.StatusCode.Should().Be(
+                HttpStatusCode.Redirect,
+                "an unauthenticated browser request must be sent to the login page while auth is configured");
+            browserControl.Headers.Location!.ToString().Should().StartWith("/login");
+
+            // The compose healthcheck path: unauthenticated GET /health sees health truth
+            // (200 healthy / 503 unhealthy) instead of a login redirect masking either.
+            using var health = await client.GetAsync("/health", startTimeout.Token);
+            health.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+            health.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+
+            // The Prometheus scrape path: unauthenticated GET /metrics returns exposition
+            // text containing registry series, not login page HTML.
+            using var metrics = await client.GetAsync("/metrics", startTimeout.Token);
+            metrics.StatusCode.Should().Be(HttpStatusCode.OK);
+            metrics.Content.Headers.ContentType?.MediaType.Should().Be("text/plain");
+            var exposition = await metrics.Content.ReadAsStringAsync(startTimeout.Token);
+            exposition.Should().Contain("mdc_published");
+
+            using var liveness = await client.GetAsync("/healthz", startTimeout.Token);
+            liveness.IsSuccessStatusCode.Should().BeTrue();
+
+            await server.StopAsync(startTimeout.Token);
+        }
+        finally
+        {
+            CleanupTempRoot(root);
+        }
+    }
+
     [Fact]
     public async Task UiServer_StartAsync_CompletesReportingMigrationBeforeHostedServiceConstruction()
     {
@@ -367,6 +432,30 @@ public sealed class SupportedPostureStartupIntegrationTests
         problem.GetProperty("timestamp").GetDateTimeOffset().Should().BeCloseTo(
             DateTimeOffset.UtcNow,
             TimeSpan.FromMinutes(1));
+    }
+
+    /// <summary>
+    /// Seeds the governed account store the host resolves from its data root. Stored accounts
+    /// take priority over the MDC_* environment variables, so this keeps the authenticated
+    /// posture immune to auth env-var mutation by concurrently running test collections.
+    /// </summary>
+    private static void SeedGovernedUserAccount(string root)
+    {
+        var governanceDir = Path.Combine(root, "data", "governance");
+        Directory.CreateDirectory(governanceDir);
+        File.WriteAllText(
+            Path.Combine(governanceDir, "user-accounts.json"),
+            """
+            {
+              "accounts": [
+                {
+                  "username": "posture-admin",
+                  "passwordHash": "pbkdf2-sha256$210000$oOQU8zfLm/Pzwrl8VZlatQ==$ePPcBmch9qAIfhbablmoBT/tKPGb/TKmFBHlFWKV1uU=",
+                  "role": "Admin"
+                }
+              ]
+            }
+            """);
     }
 
     private static string CreateTempRoot()

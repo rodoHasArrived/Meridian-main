@@ -120,7 +120,12 @@ The application exposes a REST API when running with `--mode desktop`. All `/api
 Set the `MDC_API_KEY` environment variable to enable API-key authentication for out-of-band clients (scripts, service-to-service calls). Pass the key via:
 - `X-Api-Key` header (the only accepted transport — query-string keys are rejected to avoid leakage via URLs, logs, and browser history)
 
-Health probes (`/healthz`, `/readyz`, `/livez`) are always exempt.
+Monitoring endpoints are always exempt from both session and API-key authentication so container
+healthchecks, load balancers, and Prometheus can reach them without credentials: `/health`,
+`/healthz`, `/ready`, `/readyz`, `/live`, `/livez`, `/startup`, `/startupz`, and `/metrics` (the
+canonical set lives in `MonitoringEndpointExemptions`). The exemption is exact-path only — the
+richer `/health/detailed` and the `/api/health*` aliases stay authenticated like any other API
+surface.
 
 **Example:**
 

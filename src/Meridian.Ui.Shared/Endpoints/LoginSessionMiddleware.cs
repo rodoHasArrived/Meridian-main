@@ -11,7 +11,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Middleware that enforces session-based authentication.
 /// <list type="bullet">
-///   <item>Health probes (/healthz, /readyz, /livez) are always exempt.</item>
+///   <item>Monitoring endpoints (health/readiness/liveness/startup probes and the /metrics
+///   scrape — see <see cref="MonitoringEndpointExemptions"/>) are always exempt.</item>
 ///   <item>The login page (/login) and auth API endpoints (/api/auth/*) are exempt when authentication is configured.</item>
 ///   <item>Unauthenticated API requests receive a 401 JSON response.</item>
 ///   <item>Unauthenticated browser (non-/api) requests are redirected to /login.</item>
@@ -62,17 +63,6 @@ public sealed class LoginSessionMiddleware
     /// </summary>
     public const string CurrentUserPermissionsKey = "CurrentUserPermissions";
 
-    private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "/healthz",
-        "/ready",
-        "/readyz",
-        "/live",
-        "/livez",
-        "/startup",
-        "/startupz"
-    };
-
     private readonly RequestDelegate _next;
 
     public LoginSessionMiddleware(RequestDelegate next) => _next = next;
@@ -82,8 +72,8 @@ public sealed class LoginSessionMiddleware
         var path = context.Request.Path.Value ?? "";
         var trimmedPath = path.TrimEnd('/');
 
-        // Exempt health probes
-        if (ExemptPaths.Contains(trimmedPath))
+        // Exempt monitoring probes and the metrics scrape
+        if (MonitoringEndpointExemptions.IsExempt(path))
         {
             await _next(context);
             return;

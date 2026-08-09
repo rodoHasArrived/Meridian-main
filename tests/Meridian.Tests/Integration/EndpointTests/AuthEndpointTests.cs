@@ -415,6 +415,128 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
     }
 
+    // ================================================================
+    // Monitoring exemptions: probes and the metrics scrape stay reachable
+    // in authenticated postures (PRD-019)
+    // ================================================================
+
+    [Theory]
+    [InlineData("/health", true)]
+    [InlineData("/health/", true)]
+    [InlineData("/HEALTH", true)]
+    [InlineData("/healthz", true)]
+    [InlineData("/ready", true)]
+    [InlineData("/readyz", true)]
+    [InlineData("/live", true)]
+    [InlineData("/livez", true)]
+    [InlineData("/startup", true)]
+    [InlineData("/startupz", true)]
+    [InlineData("/metrics", true)]
+    [InlineData("/api/health", false)]
+    [InlineData("/api/health/detailed", false)]
+    [InlineData("/health/detailed", false)]
+    [InlineData("/metricsz", false)]
+    public void MonitoringEndpointExemptions_CoverProbesAndScrapeOnly(string path, bool expected)
+        => MonitoringEndpointExemptions.IsExempt(path).Should().Be(expected);
+
+    [Theory]
+    [InlineData("/health")]
+    [InlineData("/healthz")]
+    [InlineData("/ready")]
+    [InlineData("/readyz")]
+    [InlineData("/live")]
+    [InlineData("/livez")]
+    [InlineData("/startup")]
+    [InlineData("/startupz")]
+    [InlineData("/metrics")]
+    public async Task MonitoringEndpoint_WhenSessionAuthConfigured_ServesWithoutASession(string path)
+    {
+        var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
+        var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
+        Environment.SetEnvironmentVariable("MDC_USERNAME", "test-admin");
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", TestPasswordHash);
+        try
+        {
+            using var client = Fixture.CreateNoRedirectClient();
+
+            // Control: session authentication is genuinely enforced while this case runs,
+            // so a passing probe below proves the exemption rather than a disabled gate.
+            using var control = await client.GetAsync("/api/status");
+            control.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+            using var response = await client.GetAsync(path);
+
+            ((int)response.StatusCode).Should().NotBeInRange(300, 399,
+                "external monitors reach {0} without a session, so it must serve rather than redirect to /login", path);
+            response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERNAME", originalUsername);
+            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", originalPasswordHash);
+        }
+    }
+
+    [Fact]
+    public async Task HealthAndMetrics_WhenSessionAuthConfigured_ReturnMonitoringPayloads()
+    {
+        var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
+        var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
+        Environment.SetEnvironmentVariable("MDC_USERNAME", "test-admin");
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", TestPasswordHash);
+        try
+        {
+            using var client = Fixture.CreateNoRedirectClient();
+
+            // The compose healthcheck path: an unauthenticated GET /health must see health
+            // truth (200 healthy or 503 unhealthy), never a login redirect masking a 503.
+            using var health = await client.GetAsync("/health");
+            health.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+            health.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+
+            // The Prometheus scrape path: an unauthenticated GET /metrics must return the
+            // exposition body, not the login page HTML a redirect-following scraper would see.
+            using var metrics = await client.GetAsync("/metrics");
+            metrics.StatusCode.Should().Be(HttpStatusCode.OK);
+            metrics.Content.Headers.ContentType?.MediaType.Should().Be("text/plain");
+            var exposition = await metrics.Content.ReadAsStringAsync();
+            exposition.Should().Contain("mdc_published");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERNAME", originalUsername);
+            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", originalPasswordHash);
+        }
+    }
+
+    [Fact]
+    public async Task HealthAndMetrics_WhenAuthModeRequiredAndCredentialsMissing_StillServe()
+    {
+        var originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
+        Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "required");
+        try
+        {
+            using var client = Fixture.CreateNoRedirectClient();
+
+            // Control: the fail-closed configuration error still guards non-exempt routes.
+            using var control = await client.GetAsync("/api/status");
+            control.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+
+            using var health = await client.GetAsync("/health");
+            health.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+            var healthBody = await health.Content.ReadAsStringAsync();
+            healthBody.Should().NotContain("Authentication is required");
+
+            using var metrics = await client.GetAsync("/metrics");
+            metrics.StatusCode.Should().Be(HttpStatusCode.OK);
+            metrics.Content.Headers.ContentType?.MediaType.Should().Be("text/plain");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", originalAuthMode);
+        }
+    }
+
     [Fact]
     public async Task ApiKeyMiddleware_SessionAuthenticatedRequest_PassesWithoutApiKey()
     {

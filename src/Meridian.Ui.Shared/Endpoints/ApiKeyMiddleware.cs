@@ -14,19 +14,13 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// Requests already authenticated by a login session (the browser workstation) are exempt —
 /// the API key protects out-of-band API clients, so this middleware must run after
 /// <see cref="LoginSessionMiddleware"/>.
-/// Health check endpoints (/healthz, /readyz, /livez) are always exempt.
+/// Monitoring endpoints (health/readiness/liveness/startup probes and the /metrics scrape —
+/// see <see cref="MonitoringEndpointExemptions"/>) are always exempt.
 /// </summary>
 public sealed class ApiKeyMiddleware
 {
     private const string ApiKeyHeaderName = "X-Api-Key";
     private const string ApiKeyEnvVar = "MDC_API_KEY";
-
-    private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "/healthz",
-        "/readyz",
-        "/livez"
-    };
 
     private readonly RequestDelegate _next;
 
@@ -49,8 +43,8 @@ public sealed class ApiKeyMiddleware
 
         var path = context.Request.Path.Value ?? "";
 
-        // Health check endpoints are always exempt from authentication
-        if (ExemptPaths.Contains(path.TrimEnd('/')))
+        // Monitoring probes and the metrics scrape are always exempt from authentication
+        if (MonitoringEndpointExemptions.IsExempt(path))
         {
             await _next(context);
             return;
@@ -250,7 +244,8 @@ public static class ApiKeyMiddlewareExtensions
     /// Adds API key authentication middleware for /api/* endpoints.
     /// The key is read from the MDC_API_KEY environment variable.
     /// When no key is set, requests pass through so other authentication layers can decide access.
-    /// Health check endpoints (/healthz, /readyz, /livez) are always exempt.
+    /// Monitoring endpoints (health/readiness/liveness/startup probes and the /metrics scrape —
+    /// see <see cref="MonitoringEndpointExemptions"/>) are always exempt.
     /// </summary>
     public static IApplicationBuilder UseApiKeyAuthentication(this IApplicationBuilder app)
     {
