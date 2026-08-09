@@ -161,10 +161,13 @@ public sealed class FileComplianceApprovalStore : IComplianceApprovalStore
                 DecidedAtUtc: now);
             var updated = request with
             {
+                // OrderBy is a stable sort and the prior array is already canonical, so
+                // same-instant decisions keep arrival order. ApprovalId is a random GUID —
+                // using it as a tie-breaker shuffled same-instant decisions instead of
+                // stabilizing them.
                 Decisions = request.Decisions
                     .Append(decision)
                     .OrderBy(item => item.DecidedAtUtc)
-                    .ThenBy(item => item.ApprovalId, StringComparer.Ordinal)
                     .ToArray()
             };
             var next = new Dictionary<string, ComplianceApprovalRequestRecord>(
