@@ -727,7 +727,7 @@ public sealed class PaymentApprovalTests
 
         var act = () => service.ApprovePaymentAsync(pending.PendingPaymentId, new ApprovePaymentRequest(null, null));
 
-        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        var ex = await Assert.ThrowsAsync<BankingConflictException>(act);
         ex.Message.Should().Contain("not in Pending status");
     }
 
@@ -872,7 +872,7 @@ public sealed class PaymentApprovalTests
         var act = () => service.RejectPaymentAsync(
             pending.PendingPaymentId, new RejectPaymentRequest("Too late", null));
 
-        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        var ex = await Assert.ThrowsAsync<BankingConflictException>(act);
         ex.Message.Should().Contain("not in Pending status");
     }
 }

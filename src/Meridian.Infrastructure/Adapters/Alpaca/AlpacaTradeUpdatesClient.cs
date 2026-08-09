@@ -410,8 +410,8 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             {
                 var persisted = CursorStoreLocked.UpdateState(current =>
                 {
-                    current = AlpacaTradeUpdateStateCodec.ValidateAndSnapshot(current);
-                    var pending = current.PendingEnvelopes.FirstOrDefault(item =>
+                    var validated = AlpacaTradeUpdateStateCodec.ValidateAndSnapshot(current);
+                    var pending = validated.PendingEnvelopes.FirstOrDefault(item =>
                         string.Equals(item.EventId, candidate.EventId, StringComparison.Ordinal));
                     if (pending is not null)
                     {
@@ -419,19 +419,19 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
                         return current;
                     }
 
-                    if (current.EventIds.Contains(candidate.EventId, StringComparer.Ordinal))
+                    if (validated.EventIds.Contains(candidate.EventId, StringComparer.Ordinal))
                     {
-                        if (current.EventHashes.TryGetValue(candidate.EventId, out var committedHash))
+                        if (validated.EventHashes.TryGetValue(candidate.EventId, out var committedHash))
                             EnsureSameContent(candidate.EventId, committedHash, candidate.ContentHash);
                         return current;
                     }
 
                     return new AlpacaTradeUpdateCursorState(
                         AlpacaTradeUpdateCursorState.CurrentVersion,
-                        current.Watermark,
-                        current.EventIds,
-                        current.EventHashes,
-                        current.PendingEnvelopes.Append(candidate).ToArray());
+                        validated.Watermark,
+                        validated.EventIds,
+                        validated.EventHashes,
+                        validated.PendingEnvelopes.Append(candidate).ToArray());
                 });
                 ApplyStateLocked(persisted, preserveQueuedDeliveries: true);
             }
@@ -476,13 +476,13 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             {
                 var persisted = CursorStoreLocked.UpdateState(current =>
                 {
-                    current = AlpacaTradeUpdateStateCodec.ValidateAndSnapshot(current);
-                    var persistedPending = current.PendingEnvelopes.FirstOrDefault(item =>
+                    var validated = AlpacaTradeUpdateStateCodec.ValidateAndSnapshot(current);
+                    var persistedPending = validated.PendingEnvelopes.FirstOrDefault(item =>
                         string.Equals(item.EventId, eventId, StringComparison.Ordinal));
                     if (persistedPending is null)
                     {
-                        if (current.EventIds.Contains(eventId, StringComparer.Ordinal) &&
-                            current.EventHashes.TryGetValue(eventId, out var committedHash))
+                        if (validated.EventIds.Contains(eventId, StringComparer.Ordinal) &&
+                            validated.EventHashes.TryGetValue(eventId, out var committedHash))
                         {
                             EnsureSameContent(eventId, pending.ContentHash, committedHash);
                         }
@@ -490,10 +490,10 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
                     }
 
                     EnsureSameContent(eventId, pending.ContentHash, persistedPending.ContentHash);
-                    var watermark = current.Watermark is null || persistedPending.Timestamp > current.Watermark.Value
+                    var watermark = validated.Watermark is null || persistedPending.Timestamp > validated.Watermark.Value
                         ? persistedPending.Timestamp
-                        : current.Watermark.Value;
-                    var recentEventIds = current.EventIds
+                        : validated.Watermark.Value;
+                    var recentEventIds = validated.EventIds
                         .Where(id => !string.Equals(id, eventId, StringComparison.Ordinal))
                         .Append(eventId)
                         .TakeLast(AlpacaTradeUpdateStateCodec.MaxRecentEventIds)
@@ -503,7 +503,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
                     {
                         if (string.Equals(recentEventId, eventId, StringComparison.Ordinal))
                             recentHashes[recentEventId] = persistedPending.ContentHash;
-                        else if (current.EventHashes.TryGetValue(recentEventId, out var hash))
+                        else if (validated.EventHashes.TryGetValue(recentEventId, out var hash))
                             recentHashes[recentEventId] = hash;
                     }
 
@@ -512,7 +512,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
                         watermark,
                         recentEventIds,
                         recentHashes,
-                        current.PendingEnvelopes
+                        validated.PendingEnvelopes
                             .Where(item => !string.Equals(item.EventId, eventId, StringComparison.Ordinal))
                             .ToArray());
                 });
@@ -565,8 +565,6 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         lock (_cursorGate)
         {
             EnsureStateInitializedLocked();
-            var refreshed = AlpacaTradeUpdateStateCodec.ValidateAndSnapshot(CursorStoreLocked.LoadState());
-            ApplyStateLocked(refreshed, preserveQueuedDeliveries: true);
         }
 
         while (true)

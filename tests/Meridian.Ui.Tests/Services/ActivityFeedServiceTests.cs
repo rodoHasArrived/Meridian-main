@@ -544,6 +544,7 @@ public sealed class ActivityFeedServiceTests
     public async Task PersistenceWorker_ConcurrentLogs_ShouldSerializeWritesAndCommitLatestSnapshot()
     {
         using var fixture = new PathFixture("mdc-activity-ordered-writes");
+        SeedEmptyPrimaryActivityLog(fixture);
         var payloads = new ConcurrentQueue<string>();
         var activeWriters = 0;
         var maximumActiveWriters = 0;
@@ -587,6 +588,7 @@ public sealed class ActivityFeedServiceTests
     public async Task LogActivityAsync_PersistenceFailure_ShouldReachCallerAndFailureEvent()
     {
         using var fixture = new PathFixture("mdc-activity-write-failure");
+        SeedEmptyPrimaryActivityLog(fixture);
         var writeAttempt = 0;
         ActivityFeedPersistenceFailedEventArgs? failure = null;
 
@@ -620,6 +622,7 @@ public sealed class ActivityFeedServiceTests
     public async Task DisposeAsync_ShouldDrainQueuedSynchronousActivity()
     {
         using var fixture = new PathFixture("mdc-activity-dispose-drain");
+        SeedEmptyPrimaryActivityLog(fixture);
         var writeEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var releaseWrite = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var payloads = new ConcurrentQueue<string>();
@@ -648,6 +651,15 @@ public sealed class ActivityFeedServiceTests
             payloads.Last(),
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         latest.Should().ContainSingle(activity => activity.Title == title);
+    }
+
+    private static void SeedEmptyPrimaryActivityLog(PathFixture fixture)
+    {
+        var activityLogDirectory = Path.Combine(fixture.RootPath, "data", "_logs");
+        Directory.CreateDirectory(activityLogDirectory);
+        // Presence prevents process-wide legacy fallback; JSON null avoids an initialization
+        // persistence request so each custom writer's first invocation remains test-owned.
+        File.WriteAllText(Path.Combine(activityLogDirectory, "activity_log.json"), "null");
     }
 
     private static async Task WaitForActivityAsync(ActivityFeedService service, string id)
