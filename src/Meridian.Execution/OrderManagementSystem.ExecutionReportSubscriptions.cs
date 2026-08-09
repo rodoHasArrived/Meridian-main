@@ -47,6 +47,18 @@ public sealed partial class OrderManagementSystem
             undeliverableHandler: null);
 
     /// <summary>
+    /// Creates an accounted subscription with the OMS-wide validated capacity and a
+    /// consumer-owned durable recovery or fail-closed handler.
+    /// </summary>
+    public ExecutionReportSubscription SubscribeLosslessExecutionReports(
+        string? subscriberName,
+        UndeliverableExecutionReportHandler? undeliverableHandler)
+        => SubscribeLosslessExecutionReports(
+            _options.ValidatedExecutionChannelCapacity,
+            subscriberName,
+            undeliverableHandler);
+
+    /// <summary>
     /// Creates an independent accounted subscription with a consumer-owned durable recovery or
     /// fail-closed handler for reports that cannot enter its bounded inbox.
     /// </summary>

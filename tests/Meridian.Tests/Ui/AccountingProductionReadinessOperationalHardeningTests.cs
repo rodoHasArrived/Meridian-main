@@ -299,7 +299,8 @@ public sealed class AccountingProductionReadinessOperationalHardeningTests
             Lanes: Enum.GetValues<AccountingTenantAdminCertificationLaneKindDto>()
                 .Select(kind => new AccountingTenantAdminCertificationLaneDto(
                     kind,
-                    AccountingCertificationArtifactLaneStatusDto.Passed))
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    ["evidence://accounting-certification/tenant-admin/v3"]))
                 .ToArray());
 
     private static RetainedEvidenceIdentityDto CompleteEvidence(

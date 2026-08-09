@@ -566,7 +566,6 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         CancellationToken ct)
     {
         var subscription = oms.SubscribeLosslessExecutionReports(
-            Math.Max(1, _options.FillReportQueueCapacity),
             subscriberName: "live-trading-engine",
             undeliverableHandler: AccountUndeliverableExecutionReportAsync);
         var subscriptionFailed = false;
