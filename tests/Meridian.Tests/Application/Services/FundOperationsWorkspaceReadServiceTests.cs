@@ -1573,6 +1573,54 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task GenerateReportPack_WhenSourceRunCarriesSeededProvenance_InheritsBlockingMarkAndStaysReviewRequired()
+    {
+        var fundProfileId = $"fund-report-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-report-seeded",
+            strategyId: "report-seeded",
+            strategyName: "Seeded Report Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Seeded Report Fund") with
+        {
+            DataProvenanceToken = "seeded"
+        });
+
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var repository = CreateReportPackRepository(tempRoot);
+            var service = CreateReportPackService(accountService, strategyRepository, repository);
+
+            var snapshot = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion));
+
+            snapshot.Provenance.DataProvenanceToken.Should().Be("seeded");
+            snapshot.Status.Should().Be(GovernanceReportPackStatusDto.ReviewRequired);
+            snapshot.ValidationIssues.Should().ContainSingle(issue =>
+                issue.Code == "report-pack.provenance.simulated-source"
+                && issue.Severity == GovernanceReportValidationSeverityDto.Critical);
+
+            // The durable boundary refuses to persist the marked pack in any deliverable state.
+            var act = () => repository.SaveAsync(
+                snapshot with { Status = GovernanceReportPackStatusDto.Validated },
+                []);
+
+            var exception = await act.Should().ThrowAsync<ArgumentException>();
+            exception.Which.Message.Should().Contain("'seeded' data-provenance");
+            exception.Which.Message.Should().Contain("cannot persist in the 'Validated' state");
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
     public async Task ReportPackHistory_ListsNewestFirstAndRetrievesById()
     {
         var fundProfileId = $"fund-history-{Guid.NewGuid():N}";

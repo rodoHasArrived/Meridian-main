@@ -2556,6 +2556,78 @@ public sealed class ReconciliationBreakQueueRepositoryTests
             ExpectedVersion: item.Version,
             Reason: "unit test");
 
+    [Fact]
+    public async Task CreateIfMissingAsync_WhenUnmarkedItemDeclaresSimulatedSource_RefusesEntry()
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(status: ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "seeded",
+            DataProvenanceToken = null
+        };
+
+        var act = () => repo.CreateIfMissingAsync(item);
+
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*carries no data-provenance mark*");
+        (await repo.GetByIdAsync(item.BreakId)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateOrMigrateAsync_WhenUnmarkedItemDeclaresFixtureSourceType_RefusesEntry()
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(status: ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceType = "fixture",
+            DataProvenanceToken = null
+        };
+
+        var act = () => repo.CreateOrMigrateAsync(item, previousBreakId: null);
+
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*Refusing to enqueue an unmarked simulated figure*");
+    }
+
+    [Theory]
+    [InlineData("demo", "seeded")]
+    [InlineData("SEEDED", "seeded")]
+    [InlineData("mystery-token", "simulated")]
+    public async Task CreateIfMissingAsync_WhenItemCarriesNonRealMark_AcceptsAndNormalizesToken(
+        string declaredToken,
+        string expectedStoredToken)
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(status: ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "seeded",
+            DataProvenanceToken = declaredToken
+        };
+
+        (await repo.CreateIfMissingAsync(item)).Should().BeTrue();
+
+        var retained = await repo.GetByIdAsync(item.BreakId);
+        retained.Should().NotBeNull();
+        retained!.DataProvenanceToken.Should().Be(expectedStoredToken);
+    }
+
+    [Fact]
+    public async Task CreateIfMissingAsync_WhenSourceNameMerelyContainsAToken_DoesNotFalsePositive()
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(status: ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "Sample Custodian",
+            SourceType = "fixture-bank",
+            DataProvenanceToken = null
+        };
+
+        (await repo.CreateIfMissingAsync(item)).Should().BeTrue();
+
+        var retained = await repo.GetByIdAsync(item.BreakId);
+        retained!.DataProvenanceToken.Should().BeNull();
+    }
+
     private static FileReconciliationBreakQueueRepository CreateRepository(out string root)
     {
         root = Path.Combine(Path.GetTempPath(), $"recon-break-repo-{Guid.NewGuid():N}");
