@@ -110,46 +110,80 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
     }
 
     [Fact]
-    public async Task CaptureAsync_DeadlineElapsedBeforeTheAdapterFinishes_StillEntersTheAdapter()
+    public async Task CaptureAsync_QueuedLongerThanTimeout_StartsDeadlineOnlyAfterDispatch()
     {
-        // Regression. Each attempt used to be dispatched as `Task.Run(..., attemptCts.Token)`, and
-        // that overload's token gates *scheduling* — per the API contract it "can be used to cancel
-        // the work if it has not yet started", and it is never handed to the delegate. So when the
-        // per-source deadline fired while the work item was still queued behind a saturated pool,
-        // the adapter was never invoked, yet the attempt was consumed and reported as a cooperative
-        // timeout. A source got blamed for missing a deadline it was never asked to meet, and every
-        // attempt could burn that way without the adapter running once.
-        //
-        // A 1ms deadline puts every attempt past its deadline while the adapter is still hanging.
-        // The adapter must be entered on each of them: cancellation is the token argument's job,
-        // not the scheduler's excuse to skip the call.
-        var adapter = new HangingAdapter(ReconciliationSourceType.Prime);
+        var dispatcher = new GatedCaptureDispatcher();
+        var adapter = new EntryProbeAdapter(ReconciliationSourceType.Prime);
+        using var runCts = new CancellationTokenSource();
         var scheduler = CreateScheduler(new ReconciliationIngestionOptions
         {
-            MaxAttemptsPerSource = 3,
+            MaxAttemptsPerSource = 1,
             RetryBaseDelay = TimeSpan.Zero,
-            PerSourceTimeout = TimeSpan.FromMilliseconds(1),
-            // Wide enough that the hard fence cannot fire first and turn this terminal: the
-            // adapter honours its token, so each attempt ends cooperatively and retries.
-            CancellationGracePeriod = TimeSpan.FromSeconds(5)
-        });
+            PerSourceTimeout = TimeSpan.FromMilliseconds(250),
+            CancellationGracePeriod = TimeSpan.FromMilliseconds(100)
+        }, dispatcher.DispatchAsync);
 
-        var act = async () => await scheduler.CaptureAsync([adapter], Request, CancellationToken.None);
+        var capture = scheduler.CaptureAsync([adapter], Request, runCts.Token);
+        await dispatcher.Queued.WaitAsync(TimeSpan.FromSeconds(5));
 
-        await act.Should().ThrowAsync<TimeoutException>();
-        adapter.Attempts.Should().Be(3,
-            "every attempt must reach the adapter — a capture the scheduler never dispatched is not a source timeout");
+        // Hold the callback well past timeout + grace. A source deadline armed before dispatch
+        // would cancel the scheduling token or reach the adapter already cancelled.
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        var remainedQueued = !capture.IsCompleted;
+        var usedCallerToken = dispatcher.SchedulingToken == runCts.Token;
+        var schedulingTokenWasCancelled = dispatcher.SchedulingToken.IsCancellationRequested;
+        var attemptsBeforeRelease = adapter.Attempts;
+
+        dispatcher.Release();
+        var snapshots = await capture.WaitAsync(TimeSpan.FromSeconds(5));
+
+        remainedQueued.Should().BeTrue("queue time is outside the per-source deadline");
+        usedCallerToken.Should().BeTrue("only run cancellation may abandon queued dispatch");
+        schedulingTokenWasCancelled.Should().BeFalse();
+        attemptsBeforeRelease.Should().Be(0);
+        snapshots.Should().ContainSingle();
+        adapter.Attempts.Should().Be(1);
+        adapter.CancellationRequestedOnEntry.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CaptureAsync_UserCancellationWhileQueued_DoesNotInvokeAbandonedCapture()
+    {
+        var dispatcher = new GatedCaptureDispatcher();
+        var adapter = new EntryProbeAdapter(ReconciliationSourceType.Prime);
+        var scheduler = CreateScheduler(new ReconciliationIngestionOptions
+        {
+            MaxAttemptsPerSource = 1,
+            PerSourceTimeout = null
+        }, dispatcher.DispatchAsync);
+        using var cts = new CancellationTokenSource();
+
+        var capture = scheduler.CaptureAsync([adapter], Request, cts.Token);
+        await dispatcher.Queued.WaitAsync(TimeSpan.FromSeconds(5));
+        cts.Cancel();
+
+        var exception = await Record.ExceptionAsync(
+            async () => await capture.WaitAsync(TimeSpan.FromSeconds(5)));
+        var usedCallerToken = dispatcher.SchedulingToken == cts.Token;
+        var schedulingTokenWasCancelled = dispatcher.SchedulingToken.IsCancellationRequested;
+
+        dispatcher.Release();
+        await dispatcher.Finished.WaitAsync(TimeSpan.FromSeconds(5));
+
+        exception.Should().BeAssignableTo<OperationCanceledException>();
+        usedCallerToken.Should().BeTrue();
+        schedulingTokenWasCancelled.Should().BeTrue(
+            "caller cancellation must make queued dispatch ineligible to start later");
+        adapter.Attempts.Should().Be(0);
     }
 
     [Fact]
     public async Task CaptureAsync_AdapterIgnoringCancellation_IsTerminalWithoutRetry()
     {
         var adapter = new StubbornAdapter(ReconciliationSourceType.Prime);
-        // The budget is widened for pool-dispatch latency. The attempt is dispatched through
-        // Task.Run, and on a loaded runner the work item can sit queued: with a 40ms deadline the
-        // hard fence (deadline + grace) could elapse before the delegate is dequeued, leaving
-        // Attempts at 0 and the non-cooperative adapter this test is about never entered. The
-        // deadline still fires well inside the test.
+        // The deadline starts after dispatch, so queue latency cannot consume this budget. It stays
+        // deliberately wide enough to isolate the non-cooperative behavior under test from ordinary
+        // runner load while still finishing promptly.
         var scheduler = CreateScheduler(new ReconciliationIngestionOptions
         {
             MaxAttemptsPerSource = 5,
@@ -178,12 +212,24 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
             CancellationGracePeriod = TimeSpan.FromMilliseconds(25)
         });
 
-        var act = async () => await scheduler.CaptureAsync([adapter], Request, CancellationToken.None);
+        var capture = scheduler.CaptureAsync([adapter], Request, CancellationToken.None);
+        await adapter.Entered.WaitAsync(TimeSpan.FromSeconds(5));
 
-        // A vendor SDK that blocks before returning its task must not stall the run inline: the
-        // pool dispatch keeps the deadline fence in control, and the blocked capture is terminal.
-        await act.Should().ThrowAsync<TimeoutException>();
-        adapter.Attempts.Should().Be(1);
+        try
+        {
+            // A vendor SDK that blocks before returning its task must not stall the run inline: the
+            // pool dispatch keeps the deadline fence in control while the adapter remains blocked.
+            var act = async () => await capture.WaitAsync(TimeSpan.FromSeconds(1));
+            await act.Should().ThrowAsync<TimeoutException>()
+                .WithMessage("Reconciliation source*did not honor cancellation*");
+            adapter.Finished.IsCompleted.Should().BeFalse();
+            adapter.Attempts.Should().Be(1);
+        }
+        finally
+        {
+            adapter.Release();
+            await adapter.Finished.WaitAsync(TimeSpan.FromSeconds(5));
+        }
     }
 
     [Fact]
@@ -200,11 +246,8 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
         var act = async () => await scheduler.CaptureAsync([adapter], Request, cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
-        // Still an upper bound rather than an exact count, but for a different reason now that the
-        // attempt is dispatched without a scheduling token: the adapter is guaranteed to be entered
-        // eventually, yet the abandoned capture may not have reached its counter by the time run
-        // cancellation propagates here. Zero is a timing artefact of reading it early; what run
-        // cancellation must never do is retry.
+        // Zero means cancellation won before dispatch and permanently discarded the queued callback;
+        // one means dispatch won first. Either way, run cancellation must never be retried.
         adapter.Attempts.Should().BeLessThanOrEqualTo(1, "run cancellation must never be retried");
     }
 
@@ -216,8 +259,12 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
-    private static DefaultReconciliationIngestionScheduler CreateScheduler(ReconciliationIngestionOptions options) =>
-        new(options);
+    private static DefaultReconciliationIngestionScheduler CreateScheduler(
+        ReconciliationIngestionOptions options,
+        Func<Func<Task<DataSourceSnapshot>>, CancellationToken, Task<DataSourceSnapshot>>? dispatchCapture = null) =>
+        dispatchCapture is null
+            ? new(options)
+            : new(options, null, dispatchCapture);
 
     private static DataSourceSnapshot CreateSnapshot(ReconciliationSourceType sourceType) =>
         new($"snap-{sourceType}-{Guid.NewGuid():N}", sourceType, DateTimeOffset.UtcNow, "v1", [], []);
@@ -272,6 +319,57 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
         }
     }
 
+    private sealed class EntryProbeAdapter(ReconciliationSourceType sourceType) : IReconciliationSourceAdapter
+    {
+        public ReconciliationSourceType SourceType { get; } = sourceType;
+
+        public int Attempts { get; private set; }
+
+        public bool CancellationRequestedOnEntry { get; private set; }
+
+        public Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
+        {
+            Attempts++;
+            CancellationRequestedOnEntry = ct.IsCancellationRequested;
+            return Task.FromResult(CreateSnapshot(SourceType));
+        }
+    }
+
+    private sealed class GatedCaptureDispatcher
+    {
+        private readonly TaskCompletionSource _queued = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _finished = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task Queued => _queued.Task;
+
+        public Task Finished => _finished.Task;
+
+        public CancellationToken SchedulingToken { get; private set; }
+
+        public void Release() => _release.TrySetResult();
+
+        public async Task<DataSourceSnapshot> DispatchAsync(
+            Func<Task<DataSourceSnapshot>> capture,
+            CancellationToken schedulingToken)
+        {
+            SchedulingToken = schedulingToken;
+            _queued.TrySetResult();
+            try
+            {
+                // Deliberately keep the callback queued after cancellation. The production
+                // dispatcher cancels it, while this stronger test double proves the callback's
+                // dispatch-boundary check also prevents a late adapter invocation.
+                await _release.Task;
+                return await capture();
+            }
+            finally
+            {
+                _finished.TrySetResult();
+            }
+        }
+    }
+
     // Simulates an adapter stuck in non-cancellable I/O: it never observes its token, so only the
     // scheduler's hard deadline can end the attempt.
     private sealed class StubbornAdapter(ReconciliationSourceType sourceType) : IReconciliationSourceAdapter
@@ -296,15 +394,33 @@ public sealed class DefaultReconciliationIngestionSchedulerTests
     // case for a deadline: without a pool dispatch, the call would stall the capture loop inline.
     private sealed class BlockingSynchronousAdapter(ReconciliationSourceType sourceType) : IReconciliationSourceAdapter
     {
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _finished = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public ReconciliationSourceType SourceType { get; } = sourceType;
 
         public int Attempts { get; private set; }
 
+        public Task Entered => _entered.Task;
+
+        public Task Finished => _finished.Task;
+
+        public void Release() => _release.TrySetResult();
+
         public Task<DataSourceSnapshot> CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct)
         {
             Attempts++;
-            Thread.Sleep(TimeSpan.FromSeconds(2));
-            return Task.FromResult(CreateSnapshot(SourceType));
+            _entered.TrySetResult();
+            try
+            {
+                _release.Task.GetAwaiter().GetResult();
+                return Task.FromResult(CreateSnapshot(SourceType));
+            }
+            finally
+            {
+                _finished.TrySetResult();
+            }
         }
     }
 

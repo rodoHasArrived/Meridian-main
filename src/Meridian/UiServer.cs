@@ -320,6 +320,10 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                     .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
                 ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
+            builder.Services.AddSingleton(
+                builder.Configuration.GetSection(Meridian.Execution.PaperMatching.PaperTradingCostOptions.SectionKey)
+                    .Get<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()
+                ?? new Meridian.Execution.PaperMatching.PaperTradingCostOptions());
             var configuredOrderManagement = builder.Configuration
                 .GetSection(OrderManagementSystemOptions.SectionKey)
                 .Get<OrderManagementSystemOptions>() ?? new OrderManagementSystemOptions();
@@ -341,7 +345,12 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
                         securityMaster: null,
                         options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                        liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+                        liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
+                        costOptions: sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                // Resting limit/stop orders re-evaluate when the market event tap records
+                // fresh data for their symbol (W9-PAPER-003 matching loop).
+                builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
+                    (Meridian.Execution.Adapters.PaperTradingGateway)sp.GetRequiredService<IOrderGateway>());
             }
             builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
             builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
@@ -381,7 +390,10 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
                         sp.GetService<ISecurityMasterQueryService>(),
                         sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
+                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
+                    (Meridian.Execution.PaperTradingGateway)sp.GetRequiredService<IExecutionGateway>());
             }
 
             // Registers BrokerageConfiguration plus the live-mode IExecutionGateway/IOrderGateway

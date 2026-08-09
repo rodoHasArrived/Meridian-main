@@ -90,6 +90,10 @@ COMMANDS:
 WHAT IS SEEDED:
     - Reconciliation casework (open breaks) into the reconciliation control tower
     - A completed paper strategy run into the Strategy desk
+    - Durable market history (90 sessions x 3 symbols) into the Data desk
+    - A sample fund account and portfolio position snapshot
+    - Balanced draft journal entries into the accounting drafts queue (never posted)
+    - A review-required sample report pack into the Reporting desk
     Every record carries ""Seeded"" provenance (source system ""Meridian Seeded Demo"")
     and survives restart because it is written to durable, file-backed desk stores.
 

@@ -255,6 +255,33 @@ public sealed class StatementImportService(
         var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
         var relativeCanonicalEvidence = ToRelativeRetainedPath(uploadId, "canonical-evidence.json");
 
+        // Statement run creation is idempotent: it resumes an import that is already retained rather
+        // than reporting one, so a re-import of the same statement would otherwise be indisting-
+        // uishable from a first import. Ask before creating, using the importer's own compatibility
+        // rule — the current raw-plus-canonical identity, then the canonical-only identity that runs
+        // imported before raw source hashes were retained separately still carry.
+        var compatibleDuplicateKeys = request.AccountingScope is null
+            ? StatementDuplicateKey.CreateCompatibleKeys(
+                runRequest.FundAccountId,
+                runRequest.StatementPeriodStart,
+                runRequest.StatementPeriodEnd,
+                rawHash,
+                canonicalHash)
+            : StatementDuplicateKey.CreateCompatibleKeys(
+                runRequest.FundAccountId,
+                runRequest.StatementPeriodStart,
+                runRequest.StatementPeriodEnd,
+                rawHash,
+                canonicalHash,
+                request.AccountingScope);
+        var retainedImportIds = (await workflow.ListImportsAsync(ct).ConfigureAwait(false))
+            .Select(static import => import.ImportId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (compatibleDuplicateKeys.FirstOrDefault(retainedImportIds.Contains) is { } retainedRunId)
+        {
+            return await DuplicateResultAsync(retainedRunId).ConfigureAwait(false);
+        }
+
         StatementRunWorkflowResult result;
         try
         {
@@ -617,13 +644,13 @@ public sealed class StatementImportService(
                 .Append(record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(EncodeArtifactValue(record.Currency)).Append(',')
                 .Append(EncodeArtifactValue(record.FeesCommission?.ToString(CultureInfo.InvariantCulture))).Append(',')
-                .Append(SanitizeArtifactValue(record.ExternalTransactionId)).Append(',')
-                .Append(SanitizeArtifactValue(record.ActivityCategory)).Append(',')
-                .Append(SanitizeArtifactValue(record.ActivitySubtype)).Append(',')
-                .Append(SanitizeArtifactValue(record.ProviderActivityCode)).Append(',')
-                .Append(SanitizeArtifactValue(record.RelatedTransactionId)).Append(',')
-                .Append(SanitizeArtifactValue(record.OrderId)).Append(',')
-                .Append(SanitizeArtifactValue(record.Description)).Append('\n');
+                .Append(EncodeArtifactValue(record.ExternalTransactionId)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivityCategory)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivitySubtype)).Append(',')
+                .Append(EncodeArtifactValue(record.ProviderActivityCode)).Append(',')
+                .Append(EncodeArtifactValue(record.RelatedTransactionId)).Append(',')
+                .Append(EncodeArtifactValue(record.OrderId)).Append(',')
+                .Append(EncodeArtifactValue(record.Description)).Append('\n');
         }
 
         return builder.ToString();

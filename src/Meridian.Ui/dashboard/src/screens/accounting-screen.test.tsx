@@ -1620,6 +1620,9 @@ describe("AccountingScreen", () => {
   });
 
   it("presents control-center scope as aggregate metadata instead of inert filters", async () => {
+    // The control center lives in the Posture section, which `showPosture` gates off unless the
+    // route names it — see `accountingSectionHashVisibility` in the task-mode view model. Without
+    // the hash the section never renders, so the assertions below cannot find it.
     await renderAccountingScreen({
       ...data,
       controlCenter: {
@@ -1634,7 +1637,7 @@ describe("AccountingScreen", () => {
         drillLinks: [],
         alerts: []
       }
-    });
+    }, "/accounting#accounting-posture");
 
     const controlCenter = screen.getByRole("region", { name: "Operations control center" });
     expect(within(controlCenter).getByText("Portfolio coverage")).toBeInTheDocument();

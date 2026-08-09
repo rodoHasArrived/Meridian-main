@@ -571,6 +571,20 @@
       ]
     },
     {
+      "id": "W03N",
+      "docLabel": "Accounting — Margin Control Center",
+      "name": "web-accounting-margin-control",
+      "path": "/accounting/margin-control",
+      "requiredApiRoutes": [
+        "/api/workstation/reconciliation/margin-control"
+      ],
+      "waitForText": "Margin Control Center",
+      "waitForTexts": [
+        "Multi-prime rollup",
+        "MARGIN_SHADOW_VARIANCE"
+      ]
+    },
+    {
       "id": "W04",
       "name": "web-reporting-workspace",
       "path": "/reporting",

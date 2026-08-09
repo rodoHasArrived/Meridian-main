@@ -133,7 +133,10 @@ public sealed class MainPageOperatingContextSelectionTests
     private static async Task DrainDispatcherAsync()
     {
         await Task.Yield();
-        await Application.Current.Dispatcher.InvokeAsync(
+        // Fully qualified: this file's enclosing namespace chain reaches `Meridian`, where the
+        // `Meridian.Application` namespace shadows the `System.Windows.Application` type that the
+        // using directive imports.
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(
             static () => { },
             DispatcherPriority.ApplicationIdle);
     }

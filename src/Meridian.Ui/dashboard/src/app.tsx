@@ -68,6 +68,7 @@ import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
+import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
 import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
 import { DesignSystemMasthead } from "@/design-system/primitives";
@@ -681,6 +682,10 @@ function AppShell({
         )}
       />
 
+      {/* Persistent, non-dismissable simulation label (W9-TRUTH-001): whenever the
+          workstation is showing simulated, seeded, or sample data the operator keeps
+          seeing it. Renders nothing for real data. */}
+      <DataProvenanceBanner provenance={dataProvenance} />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
       <div className="workstation-shell">

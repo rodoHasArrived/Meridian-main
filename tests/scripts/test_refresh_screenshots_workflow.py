@@ -339,7 +339,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             for capture in self.web_screenshot_routes.get("captures", [])
         }
 
-        self.assertEqual(77, len(captures))
+        self.assertEqual(78, len(captures))
         self.assertEqual("/data/import", captures["W06I"].get("path"))
         self.assertEqual("/data/operations", captures["W06J"].get("path"))
         self.assertEqual("/data/assurance", captures["W06K"].get("path"))

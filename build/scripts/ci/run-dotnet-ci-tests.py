@@ -28,6 +28,9 @@ CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
 WINDOWS_ONLY_TEST_PROJECTS = [
     "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
     "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+    # Targets net10.0-windows, like the supervisor tests above, so it cannot run on the ubuntu
+    # lane. Added with the installer work but never wired to a lane, which failed this gate.
+    "tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj",
 ]
 
 # Projects that are shared support libraries, not runnable test projects.

@@ -143,6 +143,13 @@ public sealed record ExecutionReport
     public decimal FilledQuantity { get; init; }
     public decimal? FillPrice { get; init; }
     public decimal? Commission { get; init; }
+
+    /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
+    public decimal? Fees { get; init; }
+
+    /// <summary>Explicit slippage cash cost for this fill, when the gateway models it.</summary>
+    public decimal? SlippageCost { get; init; }
+
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;
     public string? RejectReason { get; init; }
     /// <summary>Broker-assigned order ID (may differ from the client-provided <see cref="OrderId"/>).</summary>

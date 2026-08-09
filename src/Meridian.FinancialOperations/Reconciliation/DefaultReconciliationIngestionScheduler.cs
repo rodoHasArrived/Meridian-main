@@ -16,22 +16,32 @@ namespace Meridian.FinancialOperations.Reconciliation;
 /// wrapper exception types. Adapters are invoked behind the deadline fence (their synchronous
 /// prefixes cannot stall the run), cooperative timeouts retry, and a source that ignores
 /// cancellation past the grace period fails terminally rather than stacking further live captures
-/// outside the concurrency accounting. Every attempt that is counted is an attempt the adapter was
-/// actually asked to serve: the dispatch carries no scheduling token, so a deadline that elapses
-/// while the work item is queued cannot consume an attempt without the adapter running.
+/// outside the concurrency accounting. Queueing is governed only by run cancellation; the
+/// per-source deadline starts after dispatch, so a queued callback can neither consume a source
+/// attempt before the adapter runs nor start later after its run has already been cancelled.
 /// </summary>
 public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIngestionScheduler
 {
     private readonly ReconciliationIngestionOptions _options;
     private readonly ILogger<DefaultReconciliationIngestionScheduler> _log;
+    private readonly Func<Func<Task<DataSourceSnapshot>>, CancellationToken, Task<DataSourceSnapshot>> _dispatchCapture;
 
     public DefaultReconciliationIngestionScheduler(
         ReconciliationIngestionOptions? options = null,
         ILogger<DefaultReconciliationIngestionScheduler>? log = null)
+        : this(options, log, static (capture, ct) => Task.Run(capture, ct))
+    {
+    }
+
+    internal DefaultReconciliationIngestionScheduler(
+        ReconciliationIngestionOptions? options,
+        ILogger<DefaultReconciliationIngestionScheduler>? log,
+        Func<Func<Task<DataSourceSnapshot>>, CancellationToken, Task<DataSourceSnapshot>> dispatchCapture)
     {
         _options = options ?? ReconciliationIngestionOptions.Default;
         _options.Validate();
         _log = log ?? NullLogger<DefaultReconciliationIngestionScheduler>.Instance;
+        _dispatchCapture = dispatchCapture ?? throw new ArgumentNullException(nameof(dispatchCapture));
     }
 
     public async Task<IReadOnlyList<DataSourceSnapshot>> CaptureAsync(
@@ -103,10 +113,7 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
             }
 
             using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            if (_options.PerSourceTimeout is { } timeout)
-            {
-                attemptCts.CancelAfter(timeout);
-            }
+            var attemptToken = attemptCts.Token;
 
             var stopwatch = Stopwatch.StartNew();
             Task<DataSourceSnapshot>? captureTask = null;
@@ -115,23 +122,43 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
                 // Task.Run puts even a fully synchronous adapter prefix (a blocking vendor-SDK call
                 // before its first await) behind the deadline fence instead of letting it run
                 // inline where neither timeout nor cancellation could reach it. The linked token
-                // asks the adapter to stop cooperatively at PerSourceTimeout; WaitAsync enforces a
-                // hard deadline of timeout + grace for adapters that never observe their token.
-                //
-                // The token is deliberately NOT passed to Task.Run itself. That overload's token
-                // "can be used to cancel the work if it has not yet started" — it gates scheduling,
-                // not the delegate, and is never handed to the delegate either. So when the
-                // deadline fired while the work item was still queued behind a saturated pool, the
-                // adapter was never invoked at all, yet the attempt was consumed and reported here
-                // as a cooperative timeout: a source blamed for exceeding a deadline it was never
-                // asked to meet, with every attempt burnable that way. Cancellation reaches the
-                // adapter through the token argument below, which is the one that does the work;
-                // dropping the scheduling token costs only the microseconds a doomed attempt
-                // spends observing an already-cancelled token.
-                captureTask = Task.Run(() => adapter.CaptureSnapshotAsync(request, attemptCts.Token));
-                var snapshot = _options.PerSourceTimeout is { } deadline
-                    ? await captureTask.WaitAsync(deadline + _options.CancellationGracePeriod, ct).ConfigureAwait(false)
-                    : await captureTask.WaitAsync(ct).ConfigureAwait(false);
+                // asks the adapter to stop cooperatively at PerSourceTimeout; the helper below also
+                // enforces timeout + grace around a blocking synchronous prefix. The run token is
+                // deliberately the dispatch token, so caller cancellation discards queued work.
+                // The attempt deadline is armed inside the callback, immediately before adapter
+                // invocation, so queue delay is never charged to the source.
+                var dispatchStarted = new TaskCompletionSource<long>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                captureTask = _dispatchCapture(
+                    () =>
+                    {
+                        // The default dispatcher uses this same token to cancel queued work. Keep
+                        // the boundary check as a second line of defense for any alternate internal
+                        // dispatcher that invokes a callback after its run was cancelled.
+                        ct.ThrowIfCancellationRequested();
+                        var startedAt = Stopwatch.GetTimestamp();
+                        if (_options.PerSourceTimeout is { } deadline)
+                        {
+                            attemptCts.CancelAfter(deadline);
+                        }
+
+                        dispatchStarted.TrySetResult(startedAt);
+                        return adapter.CaptureSnapshotAsync(request, attemptToken);
+                    },
+                    ct);
+
+                // A dispatcher can cancel or fault before invoking the callback. Race its task
+                // against the start signal so that path propagates instead of waiting forever for
+                // a signal that correctly never arrives.
+                var dispatchOrCompletion = await Task.WhenAny(dispatchStarted.Task, captureTask)
+                    .WaitAsync(ct)
+                    .ConfigureAwait(false);
+                var snapshot = ReferenceEquals(dispatchOrCompletion, captureTask)
+                    ? await captureTask.WaitAsync(ct).ConfigureAwait(false)
+                    : await AwaitDispatchedCaptureAsync(
+                        captureTask,
+                        await dispatchStarted.Task.ConfigureAwait(false),
+                        ct).ConfigureAwait(false);
                 _log.LogInformation(
                     "Captured reconciliation snapshot from {SourceType} in {ElapsedMs}ms on attempt {Attempt}",
                     adapter.SourceType,
@@ -187,11 +214,27 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
         throw new UnreachableException();
     }
 
+    private Task<DataSourceSnapshot> AwaitDispatchedCaptureAsync(
+        Task<DataSourceSnapshot> captureTask,
+        long dispatchedAt,
+        CancellationToken ct) =>
+        _options.PerSourceTimeout is { } sourceDeadline
+            ? captureTask.WaitAsync(RemainingHardDeadline(dispatchedAt, sourceDeadline), ct)
+            : captureTask.WaitAsync(ct);
+
+    private TimeSpan RemainingHardDeadline(long dispatchedAt, TimeSpan sourceDeadline)
+    {
+        var remaining = sourceDeadline
+            + _options.CancellationGracePeriod
+            - Stopwatch.GetElapsedTime(dispatchedAt);
+        return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
+    }
+
     // An abandoned capture task (hard timeout / run cancellation) may still fault later; observe
     // its exception so it never surfaces as an unobserved-task failure.
     private static void ObserveAbandonedCapture(Task? captureTask)
     {
-        if (captureTask is { IsCompleted: false })
+        if (captureTask is not null)
         {
             _ = captureTask.ContinueWith(
                 static task => _ = task.Exception,

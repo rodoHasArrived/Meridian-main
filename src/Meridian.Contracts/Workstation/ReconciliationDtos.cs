@@ -558,7 +558,8 @@ public sealed record ReconciliationBreakQueueItem(
     DateTimeOffset? DisposedAt = null,
     IReadOnlyList<string>? BlockedOutputs = null,
     string? AccountingPeriodId = null,
-    DateOnly? AsOfDate = null)
+    DateOnly? AsOfDate = null,
+    string? DataProvenanceToken = null)
 {
     /// <summary>
     /// Immutable tenant identity retained by the queue persistence boundary. Legacy records may
