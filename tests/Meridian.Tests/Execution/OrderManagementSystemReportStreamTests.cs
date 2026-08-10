@@ -154,6 +154,65 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task OutOfOrderCumulativeFill_DoesNotRegressStateOrRepublishToAccounting()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var publisher = new RecordingTradeEventPublisher();
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio,
+            tradeEventPublisher: publisher);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        // Broker reconnect replay can deliver a stale lower cumulative quantity after a newer
+        // one already landed: 7 filled, then a late replay of 3 filled, then the completion.
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 7m, fillPrice: 150m));
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 3m, fillPrice: 149m));
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 150m));
+        await gateway.PublishAsync(
+            BuildReport("external-3", OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1m, fillPrice: 10m, symbol: "ZZZ"));
+
+        var increments = new List<ExecutionReport>();
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (true)
+        {
+            var report = await oms.ExecutionReports.ReadAsync(readCts.Token);
+            if (report.OrderId == "external-3")
+                break;
+            increments.Add(report);
+        }
+
+        increments.Select(static report => report.FilledQuantity).Should().Equal(new[] { 7m, 3m },
+            "the stale lower cumulative report publishes no increment, and the completion publishes only the remainder");
+        publisher.AcceptedEvents.Select(static tradeEvent => tradeEvent.FilledQuantity).Should().Equal(new[] { 7m, 3m },
+            "the accounting handoff must receive exactly one event per genuine increment, never a duplicate or negative one");
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.FilledQuantity.Should().Be(10m,
+            because: "tracked fill quantity is monotonic under out-of-order delivery");
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L);
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
+    }
+
+    [Fact]
     public async Task OversizedStreamedFill_IsCappedToRemainingOrderQuantity()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
