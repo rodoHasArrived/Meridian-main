@@ -347,13 +347,13 @@
       "Wave": "W9",
       "Title": "Kill-switch cancel-all and fat-finger, notional, and collar rules",
       "Workspaces": "Trading; Settings",
-      "Status": "planned",
+      "Status": "in_progress",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Execution and Fund Accounts",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-07-21"
+      "Evidence Posture": "in_progress",
+      "Evidence": "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs",
+      "Last Reviewed": "2026-08-10"
     },
     {
       "ID": "W9-GOV-008",

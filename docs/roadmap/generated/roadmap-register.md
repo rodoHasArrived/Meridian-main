@@ -736,16 +736,16 @@ Implementation verified complete 2026-08-10; the calculation surface the 2026-07
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 7 of the 2026-07 first-order improvement slate. Safety surfaces must never overpromise; the kill switch must actually cancel all open orders and halt routing, pre-trade rules must cover fat-finger, max-notional, and price-collar checks, and WPF safety buttons must be wired to the real shared controls or visibly demoted.
+Source-verified 2026-08-10 and substantially further along than the 2026-07-21 premise, with the remaining gaps now named precisely. Already implemented - the durable execution circuit breaker (versioned atomic snapshot, pending-trip file, operator endpoint) blocks order submission through the operator-controls gate the OMS consults, manual overrides are supported kinds with durable state, breaker activation and override events append to the execution audit trail, the OMS exposes a concurrent CancelAllAsync sweep behind the governed cancel-all endpoint, and the mandatory CompositeRiskValidator enforces drawdown-guardrail, order-rate, position-limit, gross-exposure, symbol-concentration, and max-order-notional rules (with escalation banding and fail-closed handling of unmeasurable orders) fed live from RiskRuleRuntimeService. The 2026-08-10 change closes the criterion-one coupling gap - opening the breaker now issues the kill-switch cancel-all sweep after the durable breaker flip, with completed and failed sweep outcomes audited separately from the activation, proven at the endpoint seam. Remaining before acceptance - fat-finger quantity and price-deviation rules and a price-collar rule do not yet exist in the mandatory validator (the reference-price seam already exists as IPortfolioExposureProvider.TryGetExecutablePrice, and new rules follow the OrderNotionalRule pattern with thresholds surfaced through RiskRuleRuntimeService state and config endpoints); and the WPF and browser safety-control sweep (every button wired to the shared execution-control service or explicitly demoted) has not been audited.
 
 ### Exit Criteria
 

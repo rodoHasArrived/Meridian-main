@@ -1,13 +1,13 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Identity;
-using Meridian.Identity.Auth;
-using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -428,6 +428,57 @@ public static class ExecutionEndpoints
             var snapshot = await controls
                 .SetCircuitBreakerAsync(request.IsOpen, request.Reason, actor, request.CorrelationId, context.RequestAborted)
                 .ConfigureAwait(false);
+
+            // Opening the breaker is the kill switch: beyond blocking new submissions it must
+            // sweep the open book, or resting orders keep filling while routing is "halted".
+            // The cancel sweep runs after the durable breaker flip so a crash between the two
+            // restarts into the halted state, and its outcome is audited separately from the
+            // activation so a failed sweep is visible rather than silently absorbed.
+            if (request.IsOpen && context.RequestServices.GetService<IOrderManager>() is { } oms)
+            {
+                var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+                var openCount = oms.GetOpenOrders().Count;
+                try
+                {
+                    await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
+                    GetLogger(context.RequestServices).LogInformation(
+                        "Circuit breaker opened by {Actor}; cancel-all issued for {Count} open order(s)",
+                        actor, openCount);
+                    if (auditTrail is not null)
+                    {
+                        await auditTrail.RecordAsync(
+                                "controls",
+                                "CircuitBreakerCancelAll",
+                                "Completed",
+                                actor: actor,
+                                correlationId: request.CorrelationId,
+                                message: $"Kill-switch cancel-all issued for {openCount} open order(s).",
+                                ct: CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    GetLogger(context.RequestServices).LogError(
+                        ex,
+                        "Circuit breaker opened by {Actor} but the cancel-all sweep failed; open orders may remain working",
+                        actor);
+                    if (auditTrail is not null)
+                    {
+                        await auditTrail.RecordAsync(
+                                "controls",
+                                "CircuitBreakerCancelAll",
+                                "Failed",
+                                actor: actor,
+                                correlationId: request.CorrelationId,
+                                message: $"Kill-switch cancel-all failed with {openCount} open order(s); manual cancellation is required.",
+                                reason: ex.Message,
+                                ct: CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+                }
+            }
+
             return Results.Json(snapshot, jsonOptions);
         })
         .WithName("UpdateExecutionCircuitBreaker")
