@@ -712,6 +712,15 @@
       "sha256": "e8225f2acd5bb0e47c1ecf41dfacaefe8b608928db825c442bdfda26be976af4"
     },
     {
+      "filename": "003_payment_intent_integrity.sql",
+      "immutable": true,
+      "migration_set_id": "banking",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Banking/Migrations/003_payment_intent_integrity.sql",
+      "schema": "banking",
+      "sha256": "b6be816522f0070d1b7da2ddb59f573d4bfa6c3ab431f33eb709d1c61ef964f0"
+    },
+    {
       "filename": "001_money_market.sql",
       "immutable": true,
       "migration_set_id": "money-market",
@@ -848,7 +857,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "3e3e5a160e8d2305c5c4bbe4513ddc07f7292ae10c4c2fb5a43971778c95882d",
+  "fingerprint": "f9bc4016e234b244795039074c1ca1ec855bed38d9873b4ae67b4534f9e480de",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1086,7 +1095,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 94,
+    "files": 95,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

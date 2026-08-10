@@ -36,16 +36,16 @@ Total items: **236**
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 947 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 977 | `NOTE` | ❌ | Note: command.Note, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 1627 | `NOTE` | ❌ | Note: command.Note, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 259 | `NOTE` | ❌ | Note: exactReplay |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 302 | `NOTE` | ❌ | Note: created.ResolutionNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 390 | `NOTE` | ❌ | Note: $"Re-keyed reconciliation case from superseded break id '{previousBreakId}' to '{migrated.BreakId}' after a statement fingerprint-input change.", |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 515 | `NOTE` | ❌ | Note: normalized.ResolutionNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 569 | `NOTE` | ❌ | Note: "Reconciliation case deleted from the active queue; audit evidence remains retained.", |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 696 | `NOTE` | ❌ | Note: request.ReviewNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 725 | `NOTE` | ❌ | Note: request.ReviewNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 945 | `NOTE` | ❌ | Note: request.ResolutionNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1339 | `NOTE` | ❌ | Note: request.Note, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1381 | `NOTE` | ❌ | Note: request.Note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 260 | `NOTE` | ❌ | Note: exactReplay |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 303 | `NOTE` | ❌ | Note: created.ResolutionNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 427 | `NOTE` | ❌ | Note: $"Re-keyed reconciliation case from superseded break id '{previousBreakId}' to '{migrated.BreakId}' after a statement fingerprint-input change.", |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 552 | `NOTE` | ❌ | Note: normalized.ResolutionNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 606 | `NOTE` | ❌ | Note: "Reconciliation case deleted from the active queue; audit evidence remains retained.", |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 733 | `NOTE` | ❌ | Note: request.ReviewNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 762 | `NOTE` | ❌ | Note: request.ReviewNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 982 | `NOTE` | ❌ | Note: request.ResolutionNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1376 | `NOTE` | ❌ | Note: request.Note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1418 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1221 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
 | `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1232 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
 | `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1243 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |

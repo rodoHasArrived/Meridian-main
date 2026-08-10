@@ -63,6 +63,7 @@ public partial class App : System.Windows.Application
     private static bool _isFixtureMode;
     private static string[] _launchArgs = [];
     private IHost? _host;
+    private ApiClientService? _apiClientService;
 
     /// <summary>
     /// Gets the service provider for dependency injection.
@@ -198,11 +199,12 @@ public partial class App : System.Windows.Application
         WpfServices.LoggingService.Instance.LogInfo("WPF application host built");
 
         Services = _host.Services;
+        var apiClientService = Services.InitializeDesktopApiClient();
+        _apiClientService = apiClientService;
         Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
 
         // Desktop sign-out must also end the shared workstation API session so no request
         // can ride the old server cookies (mirrors LifecycleControlClient's subscription).
-        var apiClientService = Services.GetRequiredService<ApiClientService>();
         Services.GetRequiredService<WpfServices.DesktopAuthenticationSession>().SignedOut +=
             (_, _) => _ = apiClientService.SignOutAsync();
 
@@ -742,6 +744,8 @@ public partial class App : System.Windows.Application
         WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown requested");
         SafeOnExitAsync().GetAwaiter().GetResult();
         StopHostSafely();
+        _apiClientService?.Dispose();
+        _apiClientService = null;
         WpfServices.SingleInstanceService.Instance.Dispose();
         WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown complete");
     }

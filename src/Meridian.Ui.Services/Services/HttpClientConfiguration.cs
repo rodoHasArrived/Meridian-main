@@ -192,20 +192,28 @@ public static class HttpClientConfiguration
     }
 
     /// <summary>
-    /// Registers the compatibility API singleton against the host-owned client factory. This
-    /// preserves <see cref="ApiClientService.Instance"/> identity for legacy consumers while
-    /// ensuring its transport handlers and terminal disposal belong to the desktop host.
+    /// Registers the process-wide compatibility API singleton without transferring its lifetime
+    /// to the service provider. The desktop application initializes its host client factory and
+    /// performs terminal disposal explicitly at process shutdown.
     /// </summary>
     public static IServiceCollection AddDesktopApiClient(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton(serviceProvider =>
-        {
-            var apiClient = ApiClientService.Instance;
-            apiClient.AttachHttpClientFactory(serviceProvider.GetRequiredService<IHttpClientFactory>());
-            return apiClient;
-        });
+        services.AddSingleton(ApiClientService.Instance);
         return services;
+    }
+
+    /// <summary>
+    /// Attaches the desktop host's client factory to the process-wide compatibility API singleton.
+    /// Registration is intentionally separate so short-lived test providers cannot dispose or
+    /// otherwise assume ownership of <see cref="ApiClientService.Instance"/>.
+    /// </summary>
+    public static ApiClientService InitializeDesktopApiClient(this IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        var apiClient = services.GetRequiredService<ApiClientService>();
+        apiClient.AttachHttpClientFactory(services.GetRequiredService<IHttpClientFactory>());
+        return apiClient;
     }
 
     /// <summary>

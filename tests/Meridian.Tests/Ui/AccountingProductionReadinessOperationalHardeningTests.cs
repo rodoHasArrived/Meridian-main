@@ -1,8 +1,10 @@
 using FluentAssertions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Ledger;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -68,6 +70,24 @@ public sealed class AccountingProductionReadinessOperationalHardeningTests
             CompleteEvidence(AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact, tenantAdministration.CertificationId, "tenant-admin")
         };
         var services = new ServiceCollection();
+        var ledgerBookService = Substitute.For<ILedgerBookService>();
+        ledgerBookService
+            .AssessRolloutAsync(
+                Arg.Any<LedgerBookRolloutAssessmentRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var request = callInfo.Arg<LedgerBookRolloutAssessmentRequest>();
+                return new LedgerBookRolloutAssessmentDto(
+                    DateTimeOffset.Parse("2026-07-21T18:00:00Z"),
+                    request.FundProfileId,
+                    request.FundStructureNodeId,
+                    request.FundStructureNodeKind,
+                    request.AccountingBasis,
+                    Books: [],
+                    Issues: []);
+            });
+        services.AddSingleton(ledgerBookService);
         services.AddSingleton<AccountingProductionReadinessService>();
         await using var provider = services.BuildServiceProvider();
 
@@ -279,7 +299,8 @@ public sealed class AccountingProductionReadinessOperationalHardeningTests
             Lanes: Enum.GetValues<AccountingTenantAdminCertificationLaneKindDto>()
                 .Select(kind => new AccountingTenantAdminCertificationLaneDto(
                     kind,
-                    AccountingCertificationArtifactLaneStatusDto.Passed))
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    ["evidence://accounting-certification/tenant-admin/v3"]))
                 .ToArray());
 
     private static RetainedEvidenceIdentityDto CompleteEvidence(

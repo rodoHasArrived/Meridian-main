@@ -178,6 +178,18 @@ verify_browser() {
 
   run_step "Build dashboard bundle" \
     bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee artifacts/build-logs/dashboard-build.log'
+
+  # PRD-018 freshness gate: the tracked canonical bundle must match what the current dashboard
+  # source builds, so the repo-launch demo can never serve stale assets.
+  run_step "Workstation bundle freshness gate" \
+    bash -c 'set -euo pipefail; \
+      if [ -n "$(git status --porcelain -- src/Meridian.Ui/wwwroot/workstation)" ]; then \
+        echo "The tracked workstation bundle lags src/Meridian.Ui/dashboard." >&2; \
+        echo "Run: npm --prefix src/Meridian.Ui/dashboard run build" >&2; \
+        echo "then commit the regenerated src/Meridian.Ui/wwwroot/workstation tree." >&2; \
+        git status --porcelain -- src/Meridian.Ui/wwwroot/workstation >&2; \
+        exit 1; \
+      fi'
 }
 
 verify_docs() {

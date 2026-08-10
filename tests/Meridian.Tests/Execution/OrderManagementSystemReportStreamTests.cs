@@ -439,6 +439,70 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task HandlerSubscription_UsesConfiguredOmsCapacity()
+    {
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport(
+                "pending",
+                OrderStatus.Accepted,
+                ExecutionReportType.New,
+                filledQty: 0m,
+                fillPrice: null)
+        };
+        await using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            options: new OrderManagementSystemOptions { ExecutionChannelCapacity = 2 });
+        var accounted = new ConcurrentQueue<ExecutionReport>();
+        var overflowObserved = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var subscriber = oms.SubscribeLosslessExecutionReports(
+            subscriberName: "configured-capacity-test",
+            undeliverableHandler: (report, _, _) =>
+            {
+                accounted.Enqueue(report);
+                if (report.OrderId == "configured-capacity-overflow")
+                {
+                    overflowObserved.TrySetResult();
+                }
+
+                return ValueTask.CompletedTask;
+            });
+        var first = BuildReport(
+            "configured-capacity-1",
+            OrderStatus.Filled,
+            ExecutionReportType.Fill,
+            filledQty: 1m,
+            fillPrice: 100m);
+        var second = BuildReport(
+            "configured-capacity-2",
+            OrderStatus.Filled,
+            ExecutionReportType.Fill,
+            filledQty: 1m,
+            fillPrice: 101m);
+        var overflow = BuildReport(
+            "configured-capacity-overflow",
+            OrderStatus.Filled,
+            ExecutionReportType.Fill,
+            filledQty: 1m,
+            fillPrice: 102m);
+
+        await gateway.PublishAsync(first);
+        await gateway.PublishAsync(second);
+        await gateway.PublishAsync(overflow);
+        await overflowObserved.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var admitted = await ReadReportsAsync(subscriber.Reports, count: 2, timeout.Token);
+        admitted.Select(static report => report.OrderId).Should().Equal(
+            new[] { first.OrderId, second.OrderId },
+            "the handler overload must use the OMS-wide configured capacity");
+        accounted.Should().ContainSingle().Which.OrderId.Should().Be(overflow.OrderId,
+            "only the report beyond the configured capacity should require recovery");
+    }
+
+    [Fact]
     public async Task Scenario_UnrecoverableSubscriberDelivery_StopsPumpAndClosesOrderAdmission()
     {
         var gateway = new StreamingGateway

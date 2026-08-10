@@ -105,6 +105,13 @@ internal static class DemoWorkspaceCli
     /// </summary>
     private static void PrepareDemoRuntimeEnvironment()
     {
+        // Mark this process as the demo serving host so composition (W9-TRUTH-001) pins the
+        // seeded provenance label without re-parsing CLI verbs.
+        if (IsUnset(DemoWorkspaceLayout.DemoModeEnvironmentVariable))
+        {
+            Environment.SetEnvironmentVariable(DemoWorkspaceLayout.DemoModeEnvironmentVariable, "true");
+        }
+
         if (IsUnset("MERIDIAN_DATABASE_URL") && IsUnset("MERIDIAN_USE_INMEMORY_GOVERNANCE"))
         {
             Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");

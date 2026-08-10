@@ -563,16 +563,16 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | in_progress |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-08-08 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-09 |
 
 ### Current Summary
 
-Core slice implemented 2026-08-08. The browser shell now mounts the persistent non-dismissable data-provenance banner above every workspace, and the WPF shell banner extends beyond fixture/offline to label a connected backend that reports seeded/simulated data (status poll feeds FixtureModeDetector; the dashboard badge parses the server token fail-closed). Startup rejection is proven per real prohibited binding - 62 focused tests pin every in-memory/no-op durable-role implementation against the production guard, the supported-local durability assertion, and the forced-simulated provenance resolution - and Ui.Shared in-memory durable stores now carry the explicit INonProductionOnlyService marker (lower layers stay on the enforced ADR-019 name-prefix mechanism). Evidence gating extends beyond the existing ledger validator - strategy runs, reconciliation break-queue items, and report-pack provenance now carry a data-provenance token, the seeded demo stamps it everywhere, and PromotionService fail-closes approval of any run marked simulated/seeded/sample with an audited PromotionSimulatedProvenanceBlocked decision. Remaining before done - per-screen WPF badges beyond the shell banner and Dashboard, hard entry-time blocks (not just carried marks plus review-required posture) at the reconciliation-intake and report-pack-validation seams, and wiring the supported-local durability assertion into host startup composition.
+Implementation completed 2026-08-09; the three items that remained after the 2026-08-08 core slice are closed. Per-screen WPF labeling - the shared workspace context strip's Environment badge now resolves the server-reported provenance token fail-closed (a connected seeded backend can never read "Live"; unknown tokens degrade to SIMULATED), and the Portfolio and Reporting shells, which previously rendered an empty strip, now compose the shared context service so all seven workspaces carry the badge. Hard entry-time blocks - reconciliation-break intake refuses an unmarked item whose source declares a simulated/seeded/sample origin at the single durable chokepoint (FileReconciliationBreakQueueRepository, mirroring the ledger append boundary; carried marks are normalized to the canonical vocabulary), and report packs that cite simulated/seeded runs inherit the strongest non-real mark, always fail validation with a Critical provenance issue (ResolveStatus can never return Validated), and the durable report-pack boundary refuses to persist a marked pack in any approvable/exported/retained state. Startup wiring - the ADR-019 startup guard now runs the supported-local durability assertion (an unlabeled local composition with in-memory durable-role bindings refuses startup naming the bindings; a pinned non-real provenance declaration is the sanctioned labeled alternative), UiServer pins the composed provenance into the graph (seeded for demo hosts, forced-simulated for in-memory local durables), and /api/demo/mode plus the status-poll parser surface the pinned label to both workstation shells even when demo heuristics say disabled.
 
 ### Exit Criteria
 

@@ -88,6 +88,98 @@ public sealed class WorkspaceShellContextServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_WhenBackendReportsSeededProvenance_EnvironmentBadgeNeverReadsLive()
+    {
+        var detector = CreateDetector();
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        detector.ReportServerDataProvenance("seeded");
+        var notificationService = CreateNotificationService();
+
+        var statusService = Substitute.For<IStatusService>();
+        statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(new StatusResponse { IsConnected = true });
+
+        var fundContext = await CreateFundContextAsync();
+        var service = new WorkspaceShellContextService(
+            fundContext,
+            detector,
+            notificationService,
+            statusService);
+
+        var context = await service.CreateAsync(new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = "Portfolio",
+            WorkspaceSubtitle = "Shell",
+            PrimaryScopeLabel = "Fund"
+        });
+
+        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "SEEDED data" && b.Tone == WorkspaceTone.Warning);
+        context.Badges.Should().NotContain(b => b.Label == "Environment" && b.Value == "Live");
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenBackendReportsUnknownProvenanceToken_FailsClosedToSimulated()
+    {
+        var detector = CreateDetector();
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        detector.ReportServerDataProvenance("mystery-token");
+        var notificationService = CreateNotificationService();
+
+        var statusService = Substitute.For<IStatusService>();
+        statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(new StatusResponse { IsConnected = true });
+
+        var fundContext = await CreateFundContextAsync();
+        var service = new WorkspaceShellContextService(
+            fundContext,
+            detector,
+            notificationService,
+            statusService);
+
+        var context = await service.CreateAsync(new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = "Trading",
+            WorkspaceSubtitle = "Shell",
+            PrimaryScopeLabel = "Fund"
+        });
+
+        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "SIMULATED data" && b.Tone == WorkspaceTone.Warning);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenServerProvenanceClears_EnvironmentReturnsToLive()
+    {
+        var detector = CreateDetector();
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        detector.ReportServerDataProvenance("seeded");
+        detector.ReportServerDataProvenance("real");
+        var notificationService = CreateNotificationService();
+
+        var statusService = Substitute.For<IStatusService>();
+        statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(new StatusResponse { IsConnected = true });
+
+        var fundContext = await CreateFundContextAsync();
+        var service = new WorkspaceShellContextService(
+            fundContext,
+            detector,
+            notificationService,
+            statusService);
+
+        var context = await service.CreateAsync(new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = "Accounting",
+            WorkspaceSubtitle = "Shell",
+            PrimaryScopeLabel = "Fund"
+        });
+
+        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Live" && b.Tone == WorkspaceTone.Success);
+    }
+
+    [Fact]
     public async Task CreateAsync_WhenOperatingContextSelected_AddsScopeAndCurrencyBadges()
     {
         var detector = CreateDetector();

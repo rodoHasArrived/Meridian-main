@@ -86,9 +86,11 @@
 
   <Import Project="..\Meridian.QuantScript.Worker\QuantScriptWorker.Sidecar.targets" />
 
-  <!-- Host static assets -->
+  <!-- Host static assets: the canonical tracked workstation bundle (PRD-018). Copying it beside
+       the executable makes `dotnet run`, `dotnet publish`, and installed layouts serve the same
+       tree the dashboard build writes, independent of launch directory. -->
   <ItemGroup>
-    <Content Include="wwwroot\**\*">
+    <Content Include="..\Meridian.Ui\wwwroot\**\*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

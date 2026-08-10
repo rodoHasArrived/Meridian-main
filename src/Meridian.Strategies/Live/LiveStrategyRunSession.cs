@@ -199,20 +199,24 @@ internal sealed class LiveStrategyRunSession
 
     private async Task RunEventLoopAsync(CancellationToken ct)
     {
-        await using var events = _feed.SubscribeAsync(_context.Universe, ct).GetAsyncEnumerator(ct);
+        using var loopStop = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var loopToken = loopStop.Token;
+        await using var events = _feed
+            .SubscribeAsync(_context.Universe, loopToken)
+            .GetAsyncEnumerator(loopToken);
         Task<bool>? moveNext = null;
         Task<bool>? fillReady = null;
         var fillChannelCompleted = false;
         try
         {
-            while (!ct.IsCancellationRequested && _strategy.Status != StrategyStatus.Stopped)
+            while (!loopToken.IsCancellationRequested && _strategy.Status != StrategyStatus.Stopped)
             {
                 moveNext ??= events.MoveNextAsync().AsTask();
                 // Track the pending wait across iterations: the fill channel is
                 // SingleReader, so only one WaitToReadAsync may ever be in flight.
                 if (!fillChannelCompleted)
                 {
-                    fillReady ??= _fillReports.Reader.WaitToReadAsync(ct).AsTask();
+                    fillReady ??= _fillReports.Reader.WaitToReadAsync(loopToken).AsTask();
                 }
 
                 if (fillReady is null)
@@ -245,7 +249,7 @@ internal sealed class LiveStrategyRunSession
                     break;
                 }
 
-                await ProcessMarketEventAsync(events.Current, ct).ConfigureAwait(false);
+                await ProcessMarketEventAsync(events.Current, loopToken).ConfigureAwait(false);
             }
         }
         finally
@@ -254,6 +258,18 @@ internal sealed class LiveStrategyRunSession
             // private inbox before awaiting its outstanding read so that teardown cannot
             // wait indefinitely for a writer that no longer exists.
             _fillReports.Writer.TryComplete();
+
+            // A fill callback can fail while the market-feed advance is still pending. Cancel
+            // this loop's owned token before awaiting that advance so the original fill failure
+            // reaches ExecuteAsync and is retained instead of hanging behind an idle feed.
+            try
+            {
+                await loopStop.CancelAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Live session {RunId} event-loop cancellation callback failed.", _run.RunId);
+            }
 
             // The enumerator cannot be disposed while a MoveNextAsync is still pending;
             // cancellation flows into the feed subscription, so the pending advance

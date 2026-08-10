@@ -503,11 +503,11 @@ classDiagram
         +bool AuditReviewToolingConfigured
         +bool BrowserAccountingAdminSurfaceConfigured
         +bool BulkImportExportSafeguardsConfigured
+        +IReadOnlyList~AccountingTenantAdminCertificationArtifactDto~ CertificationArtifacts
         +bool ChartAdministrationStudioConfigured
         +bool CloseSetupStudioConfigured
         +string CompanyId
         +string? CorrelationId
-        +IReadOnlyList~AccountingDimensionMappingConfigurationDto~ DimensionMappingConfigurations
     }
     class Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileUpsertRequestDto["AccountingTenantAdministrationProfileUpsertRequestDto"] {
         +OperationsActionOriginDto ActionOrigin
@@ -515,6 +515,7 @@ classDiagram
         +string? CorrelationId
         +IReadOnlyList~string~ EvidenceLinks
         +AccountingTenantAdministrationProfileDto Profile
+        +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
     }
     class Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationReadinessDto["AccountingTenantAdministrationReadinessDto"] {
         +bool AccountingAdminSurfaceConfigured
@@ -764,6 +765,7 @@ classDiagram
     Meridian_Contracts_AccountingSystem_AccountingTenantAdminCertificationLaneDto --> Meridian_Contracts_AccountingSystem_AccountingTenantAdminCertificationLaneKindDto
     Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileDto --> Meridian_Contracts_AccountingSystem_AccountingApprovalQueueConfigurationDto
     Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileDto --> Meridian_Contracts_AccountingSystem_AccountingDimensionMappingConfigurationDto
+    Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileDto --> Meridian_Contracts_AccountingSystem_AccountingTenantAdminCertificationArtifactDto
     Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileUpsertRequestDto --> Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileDto
     Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationReadinessDto --> Meridian_Contracts_AccountingSystem_AccountingTenantAdminCertificationArtifactDto
     Meridian_Contracts_AccountingSystem_AccountingWorkflowCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactIssueDto
