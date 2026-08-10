@@ -257,6 +257,11 @@ public static class ProductionServiceRegistrationPolicy
         }
 
         var bindings = CollectNonDurableStoreBindings(services);
+        ThrowIfNonDurableStoreBindings(bindings);
+    }
+
+    internal static void ThrowIfNonDurableStoreBindings(IReadOnlyCollection<string> bindings)
+    {
         if (bindings.Count == 0)
         {
             return;

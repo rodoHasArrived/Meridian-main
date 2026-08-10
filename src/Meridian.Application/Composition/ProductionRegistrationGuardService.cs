@@ -8,9 +8,9 @@ namespace Meridian.Application.Composition;
 /// Final-graph production guard (ADR-019). The composition root inserts this as the first
 /// <see cref="IHostedService"/> so it runs before any other hosted service and re-validates the
 /// complete service collection — including registrations added after <c>AddMarketDataServices</c>
-/// — once the host starts. In production postures it additionally resolves non-keyed singleton
-/// factory descriptors so factory-hidden implementations are checked by their actual runtime
-/// type; any violation aborts startup with the full list of prohibited bindings.
+/// — once the host starts. It additionally resolves relevant non-keyed singleton factory
+/// descriptors so factory-hidden implementations are checked by their actual runtime type;
+/// any violation aborts startup with the full list of prohibited bindings.
 /// </summary>
 public sealed class ProductionRegistrationGuardService : IHostedService
 {
@@ -40,6 +40,11 @@ public sealed class ProductionRegistrationGuardService : IHostedService
                 ProductionServiceRegistrationPolicy.ValidateSupportedLocal(
                     _services,
                     requireDurableStores: !runsLabeled);
+                if (!runsLabeled)
+                {
+                    ProductionServiceRegistrationPolicy.ThrowIfNonDurableStoreBindings(
+                        CollectFactoryNonDurableStoreBindings(cancellationToken));
+                }
             }
 
             return Task.CompletedTask;
@@ -59,7 +64,7 @@ public sealed class ProductionRegistrationGuardService : IHostedService
     {
         // Keyed factory descriptors are excluded: their instances cannot be enumerated without
         // knowing every key, and the static descriptor pass still covers keyed implementation
-        // types. Eager resolution is intentional fail-fast for production postures only.
+        // types. Eager resolution is intentional fail-fast for production postures.
         var factorySingletonServiceTypes = _services
             .Where(descriptor => descriptor.Lifetime == ServiceLifetime.Singleton
                                  && !descriptor.IsKeyedService
@@ -96,6 +101,34 @@ public sealed class ProductionRegistrationGuardService : IHostedService
                 }
             }
         }
+    }
+
+    private string[] CollectFactoryNonDurableStoreBindings(CancellationToken cancellationToken)
+    {
+        var bindings = new SortedSet<string>(StringComparer.Ordinal);
+        var factoryDescriptors = _services
+            .Where(descriptor => descriptor.Lifetime == ServiceLifetime.Singleton
+                                 && !descriptor.IsKeyedService
+                                 && descriptor.ImplementationFactory is not null
+                                 && !descriptor.ServiceType.IsGenericTypeDefinition
+                                 && ProductionServiceRegistrationPolicy.IsDurableStoreServiceType(descriptor.ServiceType))
+            .ToArray();
+
+        foreach (var descriptor in factoryDescriptors)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            foreach (var instance in _provider.GetServices(descriptor.ServiceType))
+            {
+                var implementationType = instance?.GetType();
+                if (implementationType is not null
+                    && ProductionServiceRegistrationPolicy.IsNonProductionOnlyImplementation(implementationType))
+                {
+                    bindings.Add($"{descriptor.ServiceType.FullName} -> {implementationType.FullName}");
+                }
+            }
+        }
+
+        return bindings.ToArray();
     }
 }
 
