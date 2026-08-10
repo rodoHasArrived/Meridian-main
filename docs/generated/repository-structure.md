@@ -5036,6 +5036,7 @@ Meridian-main
 │   │   ├── MultiCurrencyJournalProjector.cs
 │   │   ├── MultiCurrencyLedgerTranslator.cs
 │   │   ├── NavPerUnitCalculator.cs
+│   │   ├── PartnersCapitalStatementLayout.cs
 │   │   ├── PartnershipInvestor.cs
 │   │   ├── PartnershipInvestorAccountingProjector.cs
 │   │   ├── PartnershipInvestorAllocation.cs
@@ -9317,6 +9318,8 @@ Meridian-main
 │   │   │   ├── LotConsumptionTests.cs
 │   │   │   ├── NavPerUnitAndEqualizationTests.cs
 │   │   │   ├── PartnersCapitalAllocationBreakoutTests.cs
+│   │   │   ├── PartnersCapitalBespokeRenderTests.cs
+│   │   │   ├── PartnersCapitalStatementLayoutTests.cs
 │   │   │   ├── PeriodCloseProjectorTests.cs
 │   │   │   ├── PeriodReopenTests.cs
 │   │   │   ├── PortfolioPricingRuleTests.cs
