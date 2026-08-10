@@ -770,11 +770,11 @@ Source-verified 2026-08-10 and substantially further along than the 2026-07-21 p
 | Priority | high |
 | Owner lane | Platform Security and Governance |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 8 of the 2026-07 first-order improvement slate. Governance is the brand and these are the gaps in it; every mapped route needs explicit authorization coverage, tenancy must fail closed instead of defaulting, and accounting audit history needs tamper-evident hash chaining, aligned with PRD-001, PRD-007, and PRD-009.
+Rank 8 of the 2026-07 first-order improvement slate. Source-verification snapshot 2026-08-10 - substantial implementation already exists and the row needs criterion-level verification rather than greenfield build. RoleAuthorizationTests and the per-workspace tenant-scope endpoint suites (for example WorkstationEndpointsTests.StrategyTenantScope) cover authorization and tenancy behavior, and Meridian.Storage AuditChainService provides the hash-chained audit seam; what remains unverified is whether authorization coverage mechanically enumerates every mapped route and fails on an undeclared one, whether tenancy rejection (rather than defaulting) is proven for requests without resolvable scope across all write surfaces, and whether the audit chain has cross-process serialization, verification tooling, and tamper-detection tests aligned with the PRD-007 evidence-chain notes.
 
 ### Exit Criteria
 
@@ -799,11 +799,11 @@ Rank 8 of the 2026-07 first-order improvement slate. Governance is the brand and
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 9 of the 2026-07 first-order improvement slate. Reconciliation value is capped by what can be ingested and trusted; ISO 20022 camt.053 and BAI2 bank statements must normalize through the delivered W5X-CONNECT-001 connector seam, and the reconciliation matcher must become explicitly sided between statement and ledger populations with deterministic match and break semantics.
+Rank 9 of the 2026-07 first-order improvement slate. Source-verification snapshot 2026-08-10 - the core surface already exists: Camt053StatementConnector and Bai2StatementConnector normalize through the W5X-CONNECT-001 connector seam alongside the statement-import command path, and the reconciliation lane carries a dedicated match kernel with sided statement-versus-ledger populations (ReconciliationMatchKernel, StatementRunMatcher, StatementRunMatchingService, ReconciliationMatchingEngine). Criterion-level verification remains before acceptance - golden-file regression coverage for both formats was not found in the FinancialOperations test tree, PRD-010 bounded-ingress enforcement for both parsers needs proof, and the deterministic one-to-one/one-to-many/unmatched-break semantics with stable tie-breakers and idempotent re-runs need focused evidence against the named kernels.
 
 ### Exit Criteria
 
