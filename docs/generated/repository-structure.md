@@ -7979,6 +7979,9 @@ Meridian-main
 │   │   │       ├── mbs-factor-paydown.json
 │   │   │       ├── special-dividend-25pct-synthetic.json
 │   │   │       └── t-wbd-spinoff-2022.json
+│   │   ├── fund-economics
+│   │   │   └── golden
+│   │   │       └── fund-economics-worked-examples.json
 │   │   ├── portfolio
 │   │   │   ├── source-payloads
 │   │   │   │   ├── bank-statement-2026-06-04.csv
@@ -9297,6 +9300,7 @@ Meridian-main
 │   │   │   ├── FixedAssetDepreciationDraftBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationProjectorTests.cs
 │   │   │   ├── FundAdministrationEventLogTests.cs
+│   │   │   ├── FundEconomicsGoldenWorkedExampleTests.cs
 │   │   │   ├── FundEconomicsJournalFactoryTests.cs
 │   │   │   ├── JournalTemplateTests.cs
 │   │   │   ├── LedgerAccountIdentityTests.cs

@@ -334,13 +334,13 @@
       "Wave": "W9",
       "Title": "Unitized NAV and real fee, waterfall, and capital-call economics",
       "Workspaces": "Accounting; Portfolio",
-      "Status": "planned",
+      "Status": "ready_for_acceptance",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-07-21"
+      "Evidence Posture": "implementation_complete",
+      "Evidence": "src/Meridian.FSharp.Ledger/FundEconomics.fs; src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs; src/Meridian.Ledger/NavPerUnitCalculator.cs; src/Meridian.Ledger/EqualizationCalculator.cs; src/Meridian.Ledger/EuropeanDistributionWaterfall.cs; src/Meridian.Ledger/FundEconomicsJournalFactory.cs; src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs; tests/Meridian.Tests/Ledger/FundEconomicsGoldenWorkedExampleTests.cs; tests/fixtures/fund-economics/golden/fund-economics-worked-examples.json; tests/Meridian.FSharp.Tests/FundEconomicsTests.fs; tests/Meridian.Tests/Ledger/FundEconomicsJournalFactoryTests.cs; tests/Meridian.Tests/Ledger/LedgerPartnersCapitalReconciliationTests.cs; tests/Meridian.Tests/FinancialOperations/PrivateCapital/CommitmentRollForwardCalculatorTests.cs",
+      "Last Reviewed": "2026-08-10"
     },
     {
       "ID": "W9-SAFETY-007",

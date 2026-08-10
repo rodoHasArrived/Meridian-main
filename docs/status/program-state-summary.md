@@ -29,7 +29,7 @@ Snapshot date: 2026-08-10
 | W9-PAPER-003 | W9 | Paper-trading realism with limit/stop matching and costs | Trading; Strategy | ready_for_acceptance | green | critical | Execution and Fund Accounts | implementation_complete | 2026-08-08 |
 | W9-ALPACA-004 | W9 | Alpaca fill streaming into order and ledger state | Trading | ready_for_acceptance | green | high | Execution and Fund Accounts | implementation_complete | 2026-08-10 |
 | W9-REPORT-005 | W9 | Client-grade PDF/XLSX exports and partners-capital statement | Reporting; Accounting | ready_for_acceptance | green | high | Accounting and Ledger | implementation_complete | 2026-08-10 |
-| W9-NAV-006 | W9 | Unitized NAV and real fee, waterfall, and capital-call economics | Accounting; Portfolio | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-21 |
+| W9-NAV-006 | W9 | Unitized NAV and real fee, waterfall, and capital-call economics | Accounting; Portfolio | ready_for_acceptance | green | high | Accounting and Ledger | implementation_complete | 2026-08-10 |
 | W9-SAFETY-007 | W9 | Kill-switch cancel-all and fat-finger, notional, and collar rules | Trading; Settings | planned | green | high | Execution and Fund Accounts | planned_evidence | 2026-07-21 |
 | W9-GOV-008 | W9 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | Settings; Accounting | planned | green | high | Platform Security and Governance | planned_evidence | 2026-07-21 |
 | W9-INGEST-009 | W9 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | Accounting; Data | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-21 |
