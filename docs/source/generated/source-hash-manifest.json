@@ -240,8 +240,8 @@
       "id": "SRC-RISK",
       "path": "src/Meridian.Risk",
       "readme": "src/Meridian.Risk/README.md",
-      "readme_hash": "3b4d163b144dd88765b0b4e9d434d949811f0c57adeb18047cfa00a8e217a6a2",
-      "source_hash": "ef0b1cf435de0944258bf29fe7d0908f2b14aa89a139d4774882afd8f3b9254c"
+      "readme_hash": "332bd286efaedd2090cd75a03a417f57e7a2a9510fda98eb40c93db9db7f779b",
+      "source_hash": "7b5251dc885d9b6f33d8ed7344bd45544103bc22bc78af8dff0dee2dc60ce745"
     },
     {
       "id": "SRC-STORAGE",

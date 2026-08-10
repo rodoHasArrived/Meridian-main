@@ -351,6 +351,23 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
+    public async Task OrderNotional_BuyStopWithNoCurrentMarket_RejectsAsUnmeasurable()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 50_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var order = CreateOrder(quantity: 1_000m, type: OrderType.StopMarket) with { StopPrice = 1m };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse("a stop trigger does not cap the execution price");
+        result.RejectReason.Should().Contain("No current price");
+    }
+
+    [Fact]
     public async Task OrderNotional_RestingBuyLimit_KeepsItsOwnCap()
     {
         var rule = new OrderNotionalRule(
@@ -655,6 +672,22 @@ public sealed class PortfolioRiskRulesTests
             CreateOrder(quantity: 10_000m, limitPrice: 1m, side: OrderSide.Sell));
 
         result.IsApproved.Should().BeFalse("the executable value is 10,000 x the 100 market, not the 1 limit");
+    }
+
+    [Fact]
+    public async Task OrderNotional_SellLimitWithNoCurrentMarket_RejectsAsUnmeasurable()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 500_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            CreateOrder(quantity: 10_000m, limitPrice: 1m, side: OrderSide.Sell));
+
+        result.IsApproved.Should().BeFalse("a sell limit is a floor, not a cap on execution value");
+        result.RejectReason.Should().Contain("No current price");
     }
 
     [Fact]
