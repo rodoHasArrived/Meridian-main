@@ -85,8 +85,11 @@ and failover state and health require live runtime snapshots, degradation scorin
 governance evidence; missing dependencies return `503`. Forced failover waits for a committed
 handoff before reporting success, and raw exception details are logged but not returned.
 
-The lifecycle control plane publishes unauthenticated, sanitized `/livez`, `/readyz`, `/startupz`,
-and `/startup` surfaces for local process supervision and pre-login progress. Authenticated browser
+The unauthenticated monitoring surface is the canonical `MonitoringEndpointExemptions` set —
+`/health`, `/healthz`, `/ready`, `/readyz`, `/live`, `/livez`, `/startup`, `/startupz`, and
+`/metrics` — consulted by both the login-session and API-key gates so container healthchecks,
+load balancers, and Prometheus scrapes work without credentials (PRD-019). Matching is exact-path:
+`/health/detailed` and the `/api/health*` aliases stay authenticated. Authenticated browser
 and WPF operator controls use the loopback-only `/api/system/lifecycle`,
 `/api/system/shutdown`, shutdown-operation, and latest-receipt routes. Clients consume the shared
 `Meridian.Contracts.Lifecycle` payloads and never infer readiness or terminate processes locally.
