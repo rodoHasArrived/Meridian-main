@@ -188,7 +188,12 @@ internal static class OrderNotionalResolver
         // else, scaled by the contract multiplier — no Greeks, no VaR, just the notional
         // the contracts actually represent. A multi-leg order's top-level price is the net
         // debit/credit of the combination, so each leg is valued on its own instead.
-        if (request.Legs is { Count: > 0 } || request.OptionContract is not null)
+        // Broker adapters may infer an option from its compact OCC symbol even when a
+        // caller omitted OptionContract. Risk must classify that same route as a
+        // derivative or it will measure premium-only notional without the 100x multiplier.
+        if (request.Legs is { Count: > 0 } ||
+            request.OptionContract is not null ||
+            IsOccOptionSymbol(request.Symbol))
         {
             return ResolveDerivative(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
         }
@@ -235,6 +240,12 @@ internal static class OrderNotionalResolver
 
         return referencePrice is { } price and > 0m ? Math.Abs(request.Quantity) * price : null;
     }
+
+    private static bool IsOccOptionSymbol(string symbol) =>
+        Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.TryValidateFormat(
+            Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.OccOptionSymbol,
+            symbol,
+            out _);
 
     /// <summary>
     /// Signed order notional: positive for buys, negative for sells, so direction-aware

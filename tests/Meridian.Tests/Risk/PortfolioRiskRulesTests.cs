@@ -451,6 +451,23 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
+    public async Task OrderNotional_OccOptionOrderWithoutContractIdentity_AssumesTheStandardContractSize()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(symbols: [new SymbolExposure("AAPL261218C00250000", 50_000m, 100m, 5m)]),
+            () => 20_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // Broker adapters can classify a compact OCC symbol as an option even when the
+        // request omitted OptionContract. Risk must make the same classification and
+        // measure 100 contracts x $5 premium x 100, not treat them as $500 of shares.
+        var order = CreateOrder(symbol: "AAPL261218C00250000", quantity: 100m);
+
+        (await rule.EvaluateAsync(order)).IsApproved.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task OrderNotional_MultiLegOrder_SumsEveryLegRatherThanNetting()
     {
         var rule = new OrderNotionalRule(
