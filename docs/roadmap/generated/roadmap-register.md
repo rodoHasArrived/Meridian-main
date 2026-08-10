@@ -679,16 +679,16 @@ Implementation verified complete 2026-08-10; the 2026-07-21 premise that the ord
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 5 of the 2026-07 first-order improvement slate. Ops teams currently re-type every deliverable into Excel; governed report packs must export client-presentable PDF and XLSX artifacts, including a partners-capital statement, so the governed output is the deliverable rather than an input to manual reformatting.
+Implementation completed 2026-08-10. The phase-1 client-grade rendering lane had already merged - Meridian.Documents renders governed ledger report packs to deterministic client-presentable PDF (QuestPDF) and XLSX (ClosedXML) with fixed metadata and canonical zip ordering so re-rendering reproduces the bytes, the certified reporting path binds every primary document to an exact checkpoint-bound canonical ledger presentation and fails closed without one, and certified packages retain report-pack signatures and provenance manifests alongside the artifacts. This acceptance candidate completes the deferred presentation half by absorbing and validating the stalled bespoke partners-capital layout (supersedes PR 2525) against current main - PartnersCapitalStatementLayout classifies each capital account by partner role from stable ledger account names, computes ownership shares that foot to 100 percent while excluding non-partner equity, anchors the statement to the fund's ledger-backed net asset value with an explicit reconciliation flag, and never alters a ledger figure; the renderer emits a purpose-built PDF section (NAV context strip, role-labelled per-partner roll-forward, ownership column, reconciliation footnote) and a dedicated typed-numeric XLSX sheet with accounting/percent formats plus a NAV anchor block so operators can sum and pivot without retyping. Certification tests were updated to the bespoke sheet shape while keeping their governance intent - primary bytes must equal the canonical Documents renderer output and display-row rebuild fingerprints remain forbidden.
 
 ### Exit Criteria
 

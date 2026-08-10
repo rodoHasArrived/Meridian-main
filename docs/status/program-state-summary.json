@@ -321,13 +321,13 @@
       "Wave": "W9",
       "Title": "Client-grade PDF/XLSX exports and partners-capital statement",
       "Workspaces": "Reporting; Accounting",
-      "Status": "planned",
+      "Status": "ready_for_acceptance",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-07-21"
+      "Evidence Posture": "implementation_complete",
+      "Evidence": "src/Meridian.Ledger/PartnersCapitalStatementLayout.cs; src/Meridian.Documents/FinancialReportDocumentRenderer.cs; src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs; src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs; tests/Meridian.Tests/Ledger/PartnersCapitalStatementLayoutTests.cs; tests/Meridian.Tests/Ledger/PartnersCapitalBespokeRenderTests.cs; tests/Meridian.Tests/Ui/ReportingRunCertificationServiceTests.cs",
+      "Last Reviewed": "2026-08-10"
     },
     {
       "ID": "W9-NAV-006",
