@@ -161,10 +161,12 @@ public sealed class FileComplianceApprovalStore : IComplianceApprovalStore
                 DecidedAtUtc: now);
             var updated = request with
             {
-                // OrderBy is a stable sort and the prior array is already canonical, so
-                // same-instant decisions keep arrival order. ApprovalId is a random GUID —
-                // using it as a tie-breaker shuffled same-instant decisions instead of
-                // stabilizing them.
+                // Chronological, with ties broken by the order the decisions were actually
+                // recorded. OrderBy is a stable sort, so equal timestamps keep their append
+                // order. The previous tie-break was ApprovalId, which is a fresh GUID per
+                // decision: two approvals landing on the same instant — the same clock tick in
+                // production, every time under a fixed test clock — were retained in random
+                // order, so an approval trail could reorder itself between reads.
                 Decisions = request.Decisions
                     .Append(decision)
                     .OrderBy(item => item.DecidedAtUtc)
