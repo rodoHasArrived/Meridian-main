@@ -54,7 +54,9 @@ the concrete improvement.
 
 This is the program's most severe end-user problem, and its own P0 tracker agrees: **0 of 21 P0
 rows are production-certified** and nothing has ever shipped (`docs/product/implementation-todo-list.md:37`;
-no git tag exists, so the installer pipeline `desktop-installer-packaging.yml` has never run).
+no git tag exists, so `desktop-installer-packaging.yml`'s tag-triggered release path has never run,
+and its Actions history shows seven manual `workflow_dispatch` attempts between 2026-06-15 and
+2026-07-16 — every one of them failed, so the pipeline has never produced a successful artifact).
 
 - **The README's flagship launch command fails closed with no escape.** A fresh clone running
   `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation` defaults to
@@ -93,11 +95,15 @@ no git tag exists, so the installer pipeline `desktop-installer-packaging.yml` h
   `src/Meridian.Core/Config/DataSourceKindConverter.cs:27-28`) and ships `Rithmic.Password` /
   `CQG.Password` JSON fields, contradicting its own "never store secrets here" banner.
   *Improvement:* delete the block; CI-check sample config values against the enum.
-- **No operator backup/restore exists for the installed product.** The consumer installer embeds a
-  private PostgreSQL runtime but not `pg_dump`, and the canonical recovery script is not in the
-  payload (`build/scripts/install/build-consumer-setup.ps1:31-53`); the recovery runbook requires a
-  verified backup the user cannot produce (`docs/operators/failover-and-recovery.md:96-101`).
-  *Improvement:* ship `pg_dump` and add `backup`/`restore` verbs to the lifecycle supervisor.
+- **No operator backup/restore exists for the installed product.** The consumer installer copies
+  the supplied PostgreSQL runtime wholesale but validates only `postgres.exe`, `pg_ctl.exe`, and
+  `initdb.exe` — `pg_dump` is neither required by the payload check nor exposed by any product
+  workflow — and the canonical recovery script is not in the payload
+  (`build/scripts/install/build-consumer-setup.ps1:37-43`); the recovery runbook requires a
+  verified backup the user has no supported way to produce
+  (`docs/operators/failover-and-recovery.md:96-101`).
+  *Improvement:* require `pg_dump` in the payload check and add `backup`/`restore` verbs to the
+  lifecycle supervisor.
 - **On non-Windows, the credential vault stores its AES key next to the vault, world-readable.**
   `FileProviderCredentialStore` writes the raw 32-byte key to the data root with only a Windows
   `Hidden`-attribute attempt (`src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:639-724`);
@@ -125,19 +131,20 @@ code." Independent measurement says the gap is wider than the slate:
   path — while "Casework" is a top-level Accounting nav item. Clearing 500 breaks is 500 clicks;
   the fully-built bulk endpoint (dry-run, idempotency key, partial success —
   `ApplyBulkCaseworkAsync`) is called by no screen, and the server caps bulk at 100
-  (`src/Meridian.FinancialOperations/Reconciliation/FileReconciliationBreakQueueRepository.cs:17`).
+  (`src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:17`).
 - **The fund-economics spine is dark** (headline corollary above): capital calls, European
   waterfall, preferred return, clawback, equalization, NAV-per-unit, shadow-NAV validation,
   depreciation projectors — 30+ types in `Meridian.Ledger` with no production consumer. Multi-
   currency translation and FX revaluation likewise have consumers only in
   `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs:2206-2453`; the DB columns exist
-  (`database/.../V_ledger_026__journal_leg_currency.sql:6-7`) and nothing writes them.
+  (`src/Meridian.Storage/Ledger/Migrations/V_ledger_026__journal_leg_currency.sql:6-7`) and
+  nothing writes them.
 - **~3,600 lines of data-quality monitors are dead code.** `TimestampMonotonicityChecker`,
   `BadTickFilter`, `PriceContinuityChecker`, `SpreadMonitor`, `TickSizeValidator`,
   `DataLossAccounting`, `ClockSkewEstimator` (`src/Meridian.DataIntegration/Monitoring/`) are
   referenced by nothing but their own unit tests. The freshness-SLA monitor is registered and
   exposed via five endpoints, but its two ingress methods are never called
-  (`src/Meridian.Application/Monitoring/DataFreshnessSlaMonitor.cs:184,213`), so `/api/sla/*`
+  (`src/Meridian.DataIntegration/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs:184,213`), so `/api/sla/*`
   reports "healthy, zero symbols" forever, and the corresponding Prometheus gauges are declared
   but never written (`src/Meridian.Application/Monitoring/PrometheusMetrics.cs:591,669`) — the
   "is my data stale?" alert can never fire.
@@ -146,7 +153,7 @@ code." Independent measurement says the gap is wider than the slate:
   (`src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:484`,
   `src/Meridian.Application/Backfill/BackfillCoordinator.cs:401`), and the comparison service
   requires two concurrent providers while failover holds exactly one active client
-  (`src/Meridian.Infrastructure/Failover/FailoverAwareMarketDataClient.cs:47`).
+  (`src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:47`).
 - **The walk-forward harness is not registered in the browser host at all** — its only DI
   registration is in the WPF app (`src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs:82`),
   so a browser-only operator cannot generate legitimate out-of-sample evidence (see §4 for what
@@ -256,7 +263,8 @@ evidence:
   a display, not behavior — false assurance for an auditor.
 - **"Immutable journal" is an application convention, not a database guarantee.**
   `journal_entries`/`journal_legs` have no immutability trigger and legs carry
-  `on delete cascade` (`database/.../V_ledger_001__journal_entries.sql:31`); the team knows the
+  `on delete cascade` (`src/Meridian.Storage/Ledger/Migrations/V_ledger_001__journal_entries.sql:31`);
+  the team knows the
   pattern — it protects the tax-lot tables (`V_ledger_027__atomic_tax_lot_posting.sql:170-183`) —
   it just is not applied to the journal. No DB-level debits=credits constraint exists either
   (balance is enforced in `src/Meridian.FSharp.Ledger/JournalValidation.fs:25`). `W9-GOV-008`
@@ -273,7 +281,7 @@ evidence:
   *Improvement:* a global endpoint filter denying routes without authorization metadata plus the
   ~30-line coverage test the comment already promises.
 - **Tenancy fails open on both read and write.** The write gate defaults to
-  `Enforce: false` (`src/Meridian.Ui.Shared/Services/WorkstationTenantContext.cs:198-200`); the
+  `Enforce: false` (`src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:198-200`); the
   ownership guard allows on registry exception by design
   (`RegistryFundProfileTenantGuard.cs:63-71`); only 167 routes carry any tenant filter.
 
@@ -326,7 +334,7 @@ evidence:
   failures into empty values (`asset-detail-screen.tsx:247-252`): when the corporate-actions
   service is down, the screen shows the security has *no corporate actions* — indistinguishable
   from clean. In a fund-accounting product this is the most dangerous failure class. 22 catch
-  sites in `src/screens/` discard the error object; 14 of 21 error-handling screens offer no
+  sites in the dashboard's `src/screens/` tree discard the error object; 14 of 21 error-handling screens offer no
   retry; the design system's own `AsyncRegion` primitive (skeletons, contained errors, retry,
   per-region boundary) is adopted by 1 of 68 screens, so a render error blanks the route and
   ejects the operator to the home screen.
@@ -348,7 +356,7 @@ evidence:
   except partners' capital (`src/Meridian.Documents/FinancialReportDocumentRenderer.cs:295`) — a
   controller cannot sum a column without retyping, which defeats an XLSX deliverable. Evidence
   Vault has no document extraction (no OCR/PDF text layer anywhere; `ExtractedFields` is
-  caller-supplied, `src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowDtos.cs:565`), so the
+  caller-supplied, `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:565`), so the
   six-state extraction lifecycle is ceremony around hand-keyed data.
 - **Statement intake robustness.** All five connectors decode as hard-coded UTF-8 — including OFX,
   whose discarded SGML header is where the charset is declared
@@ -387,7 +395,10 @@ The 14,000-test headline materially overstates delivered assurance:
 - **The repo violates its own test-quality rules at scale**: 117 tautological assertions, 59 bare
   catches in test bodies, 24 base-`Exception` assertions — all patterns `ai-known-errors.md`
   marks "fixed" — plus tests asserting that scripts and READMEs contain literal strings.
-- **The dashboard suite cannot see the defect class users actually hit.** No e2e; nothing mounts
+- **The dashboard suite cannot see the defect class users actually hit.** No backend-integrated or
+  route-complete e2e exists — the only browser automation is the mocked-API Playwright smoke
+  (`src/Meridian.Ui/dashboard/scripts/smoke-workstation.mjs`), which mounts the shell and asserts
+  the seven nav roots render; nothing mounts
   every route; nothing asserts buttons have handlers or API exports have consumers — which is
   precisely why §2's findings shipped repeatedly. Two cheap structural tests (mount-every-route
   smoke, orphan-export gate) would have caught most of them.
@@ -456,7 +467,7 @@ StockSharp sample-config block.
 - **The backtester's bias-disclosure report** (`src/Meridian.Backtesting/Engine/BacktestEngine.cs:606-710`)
   attaches a severity-ordered honesty report to every result and defaults conservative. Most
   backtesters flatter; this one argues against itself.
-- **The reconciliation matching engine** (`src/Meridian.FinancialOperations/.../ReconciliationMatchingEngine.cs`)
+- **The reconciliation matching engine** (`src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs`)
   — versioned tolerance profiles, weighted scoring, N-to-1 splits, evidence-carrying decisions —
   institutional-grade work; it needs the live path, not a rewrite.
 - **OMS pre-trade enforcement** — `CompositeRiskValidator`'s fail-closed breaker latch and
