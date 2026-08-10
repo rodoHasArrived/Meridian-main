@@ -27,6 +27,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
     live status stays in the roadmap registry
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md) — independent
+    whole-program adverse review of end-user functionality with `file:line` evidence; re-tests the
+    2026-07 review's headline, documents acceptance-vs-wired drift, and ranks improvement areas by
+    end-user value uplift
+  - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
+    independent review pass that motivated the activation-over-expansion and truth-discipline
+    doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
   - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
