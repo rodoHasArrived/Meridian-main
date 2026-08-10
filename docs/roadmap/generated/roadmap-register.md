@@ -652,16 +652,16 @@ Implementation completed 2026-08-08. Both paper gateways now match through the s
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 4 of the 2026-07 first-order improvement slate. Alpaca is the only turnkey live venue and its order feedback loop is broken; trade-update and fill events must stream back into order lifecycle state, positions, and the durable trade-fill posting path instead of relying on polling or manual refresh.
+Implementation verified complete 2026-08-10; the 2026-07-21 premise that the order feedback loop was broken no longer matches source. The authenticated trade_updates stream (AlpacaTradeUpdatesClient) normalizes every broker event into an ExecutionReport and admits it to a durable content-hashed inbox that deduplicates broker event ids, survives restart, and replays unacknowledged envelopes; AlpacaBrokerageGateway exposes that stream as the execution-gateway report stream, blocks live submission while the stream is unhealthy, and after every authenticated reconnect reconciles the REST order snapshot plus exact FILL activities from the acknowledged watermark so fills missed during a disconnect backfill without polling. The OrderManagementSystem consumes the gateway stream from construction, applies partial fills, cancels, and rejects to tracked order state with monotonic cumulative-fill handling and terminal-state latching, converts cumulative broker quantities into deduplicated increments, and routes each genuine increment through the existing durable trade-fill posting and ledger handoff path with retained-failure replay; host composition wires the trade-updates client into the gateway and the trade-fill ledger posting scope. The 2026-08-10 acceptance candidate closes the exit-criterion evidence gap by adding out-of-order delivery tests at the stream client (admission without loss, backfill watermark never regresses, duplicate and out-of-order REST fill replay admits each exact fill once) and at the OMS (a stale lower cumulative publishes no increment and never regresses portfolio or accounting), plus an end-to-end loop suite driving raw Alpaca trade_updates JSON through the client into a real OMS asserting lifecycle transitions and exactly-once accounting handoff under duplicate, out-of-order, cancel, reject, and reconnect REST-replay delivery.
 
 ### Exit Criteria
 

@@ -324,6 +324,83 @@ public sealed class AlpacaTradeUpdatesClientTests
     }
 
     [Fact]
+    public async Task ProcessMessageAsync_OutOfOrderDelivery_AdmitsEveryEventAndNeverRegressesTheWatermark()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+        var newerTimestamp = DateTimeOffset.Parse("2026-08-05T14:30:00.123456789Z");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        // A reconnect interleaves replayed history with live events, so an older event can arrive
+        // after a newer one was already admitted. Order of arrival must not drop either event.
+        await sut.ProcessMessageAsync(CreateTradeUpdate("ooo-newer"));
+        await sut.ProcessMessageAsync(CreateTradeUpdate(
+            "ooo-older",
+            status: "partially_filled",
+            timestamp: "2026-08-05T14:29:00.000000000Z"));
+        await sut.ProcessMessageAsync(CreateTradeUpdate(
+            "ooo-trailing",
+            timestamp: "2026-08-05T14:31:00.000000000Z"));
+
+        store.PendingEventIds.Should().Equal("ooo-newer", "ooo-older", "ooo-trailing");
+
+        await using var reports = sut.Reports.GetAsyncEnumerator(timeout.Token);
+        (await reports.MoveNextAsync()).Should().BeTrue();
+        (await reports.MoveNextAsync()).Should().BeTrue();
+        store.Watermark.Should().Be(newerTimestamp,
+            "acknowledging the newest delivered event advances the reconnect backfill watermark");
+
+        (await reports.MoveNextAsync()).Should().BeTrue();
+        store.EventIds.Should().Equal("ooo-newer", "ooo-older");
+        store.Watermark.Should().Be(newerTimestamp,
+            "acknowledging an older out-of-order event must never move the reconnect backfill watermark backwards");
+        store.PendingEventIds.Should().Equal(new[] { "ooo-trailing" },
+            "an event the consumer has not finished processing stays durably pending");
+    }
+
+    [Fact]
+    public async Task ReconcileAfterConnectAsync_OutOfOrderAndDuplicateFillReplay_AdmitsEachExactFillOnce()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+        sut.ConfigureDurableStateScope("paper-account-42", AlpacaCredentialEnvironment.PaperEnvironment);
+        var completion = BuildReconciledFill(
+            cumulativeQuantity: 10m, "2026-08-05T14:03:00Z", OrderStatus.Filled);
+        var earlierPartial = BuildReconciledFill(
+            cumulativeQuantity: 4m, "2026-08-05T14:01:00Z", OrderStatus.PartiallyFilled);
+
+        // REST backfill after a disconnect can replay the same FILL activity twice and deliver
+        // activities out of chronological order relative to each other.
+        sut.ConfigureReconciliation((_, _) => Task.FromResult<IReadOnlyList<AlpacaReconciliationReport>>(
+        [
+            new AlpacaReconciliationReport("rest-fill-activity", "activity-completion", completion),
+            new AlpacaReconciliationReport("rest-fill-activity", "activity-earlier-partial", earlierPartial),
+            new AlpacaReconciliationReport("rest-fill-activity", "activity-completion", completion)
+        ]));
+
+        await sut.ReconcileAfterConnectAsync();
+
+        store.PendingEventIds.Should().HaveCount(2,
+            "the duplicated FILL activity has one stable durable identity");
+        store.PendingEventIds.Should().OnlyContain(eventId => eventId.Contains(":rest-fill-activity:"));
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await using var reports = sut.Reports.GetAsyncEnumerator(timeout.Token);
+        (await reports.MoveNextAsync()).Should().BeTrue();
+        reports.Current.Should().BeEquivalentTo(completion);
+        (await reports.MoveNextAsync()).Should().BeTrue();
+        reports.Current.Should().BeEquivalentTo(earlierPartial);
+        store.Watermark.Should().Be(completion.Timestamp);
+
+        await sut.ProcessMessageAsync(CreateTradeUpdate("post-reconcile-live-event"));
+        (await reports.MoveNextAsync()).Should().BeTrue();
+        store.EventIds.Should().HaveCount(2,
+            "both replayed fills are acknowledged exactly once");
+        store.Watermark.Should().Be(completion.Timestamp,
+            "acknowledging the older replayed fill must not regress the watermark below the completion");
+    }
+
+    [Fact]
     public async Task ReconcileAfterConnectAsync_InboxWriteFailure_DoesNotAdmitTransientReport()
     {
         var store = new TestCursorStore { FailOnSaveAttempt = 1 };
@@ -603,7 +680,8 @@ public sealed class AlpacaTradeUpdatesClientTests
         bool includeOrderId = true,
         string price = "213.45",
         string status = "filled",
-        bool includeBrokerEventIdentity = true)
+        bool includeBrokerEventIdentity = true,
+        string timestamp = "2026-08-05T14:30:00.123456789Z")
     {
         var order = new Dictionary<string, object?>
         {
@@ -631,7 +709,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         {
             ["at"] = "2026-08-05T14:30:00.124000000Z",
             ["event"] = status,
-            ["timestamp"] = "2026-08-05T14:30:00.123456789Z",
+            ["timestamp"] = timestamp,
             ["order"] = order,
             ["position_qty"] = "100",
             ["price"] = price,
@@ -649,6 +727,31 @@ public sealed class AlpacaTradeUpdatesClientTests
             ["data"] = data
         });
     }
+
+    private static ExecutionReport BuildReconciledFill(
+        decimal cumulativeQuantity,
+        string transactionTime,
+        OrderStatus status) => new()
+    {
+        OrderId = "order-ooo",
+        GatewayOrderId = "order-ooo",
+        ClientOrderId = "client-order-ooo",
+        Symbol = "AAPL",
+        Side = OrderSide.Buy,
+        OrderQuantity = 10m,
+        FilledQuantity = cumulativeQuantity,
+        FillPrice = 101.25m,
+        OrderStatus = status,
+        ReportType = status == OrderStatus.Filled
+            ? ExecutionReportType.Fill
+            : ExecutionReportType.PartialFill,
+        Timestamp = DateTimeOffset.Parse(transactionTime),
+        Diagnostics = new ExecutionDiagnostics
+        {
+            BrokerStatus = status == OrderStatus.Filled ? "fill" : "partial_fill",
+            Category = "alpaca-rest-fill-reconciliation"
+        }
+    };
 
     private static ExecutionReport CreateReconciledReport() => new()
     {

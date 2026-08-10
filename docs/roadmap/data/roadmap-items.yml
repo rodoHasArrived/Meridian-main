@@ -964,11 +964,11 @@ items:
     workspace:
       - Trading
     owner_lane: Execution and Fund Accounts
-    status: planned
+    status: ready_for_acceptance
     health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Rank 4 of the 2026-07 first-order improvement slate. Alpaca is the only turnkey live venue and its order feedback loop is broken; trade-update and fill events must stream back into order lifecycle state, positions, and the durable trade-fill posting path instead of relying on polling or manual refresh.
+    evidence_posture: implementation_complete
+    current_summary: Implementation verified complete 2026-08-10; the 2026-07-21 premise that the order feedback loop was broken no longer matches source. The authenticated trade_updates stream (AlpacaTradeUpdatesClient) normalizes every broker event into an ExecutionReport and admits it to a durable content-hashed inbox that deduplicates broker event ids, survives restart, and replays unacknowledged envelopes; AlpacaBrokerageGateway exposes that stream as the execution-gateway report stream, blocks live submission while the stream is unhealthy, and after every authenticated reconnect reconciles the REST order snapshot plus exact FILL activities from the acknowledged watermark so fills missed during a disconnect backfill without polling. The OrderManagementSystem consumes the gateway stream from construction, applies partial fills, cancels, and rejects to tracked order state with monotonic cumulative-fill handling and terminal-state latching, converts cumulative broker quantities into deduplicated increments, and routes each genuine increment through the existing durable trade-fill posting and ledger handoff path with retained-failure replay; host composition wires the trade-updates client into the gateway and the trade-fill ledger posting scope. The 2026-08-10 acceptance candidate closes the exit-criterion evidence gap by adding out-of-order delivery tests at the stream client (admission without loss, backfill watermark never regresses, duplicate and out-of-order REST fill replay admits each exact fill once) and at the OMS (a stale lower cumulative publishes no increment and never regresses portfolio or accounting), plus an end-to-end loop suite driving raw Alpaca trade_updates JSON through the client into a real OMS asserting lifecycle transitions and exactly-once accounting handoff under duplicate, out-of-order, cancel, reject, and reconnect REST-replay delivery.
     exit_criteria:
       - Alpaca trade-update and fill events stream into the execution gateway and drive order lifecycle state, including partial fills, cancels, and rejects, without polling.
       - Streamed fills flow into the existing durable trade-fill posting and ledger handoff path.
@@ -977,7 +977,26 @@ items:
       - SRC-EXECUTION
       - SRC-INFRASTRUCTURE
       - SRC-APP
-    last_reviewed: 2026-07-21
+    evidence:
+      - type: source
+        path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaTradeUpdatesClient.cs
+      - type: source
+        path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
+      - type: source
+        path: src/Meridian.Execution/OrderManagementSystem.cs
+      - type: source
+        path: src/Meridian.Execution/Events/LedgerPostingConsumer.cs
+      - type: source
+        path: src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs
+      - type: test
+        path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaTradeUpdatesClientTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Execution/OrderManagementSystemReportStreamTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Execution/AlpacaStreamedFillLoopTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Execution/OrderManagementSystemDurableHandoffOrderingTests.cs
+    last_reviewed: 2026-08-10
 
   - id: W9-REPORT-005
     title: Client-grade PDF/XLSX exports and partners-capital statement
