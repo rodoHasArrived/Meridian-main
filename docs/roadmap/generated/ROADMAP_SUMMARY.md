@@ -45,7 +45,7 @@ Snapshot date: 2026-08-10
 | W9-PAPER-003 | Paper-trading realism with limit/stop matching and costs | ready_for_acceptance | green | critical | Execution and Fund Accounts |
 | W9-ALPACA-004 | Alpaca fill streaming into order and ledger state | ready_for_acceptance | green | high | Execution and Fund Accounts |
 | W9-REPORT-005 | Client-grade PDF/XLSX exports and partners-capital statement | ready_for_acceptance | green | high | Accounting and Ledger |
-| W9-NAV-006 | Unitized NAV and real fee, waterfall, and capital-call economics | planned | green | high | Accounting and Ledger |
+| W9-NAV-006 | Unitized NAV and real fee, waterfall, and capital-call economics | ready_for_acceptance | green | high | Accounting and Ledger |
 | W9-SAFETY-007 | Kill-switch cancel-all and fat-finger, notional, and collar rules | planned | green | high | Execution and Fund Accounts |
 | W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | planned | green | high | Platform Security and Governance |
 | W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | planned | green | high | Accounting and Ledger |

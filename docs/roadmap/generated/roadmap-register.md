@@ -707,16 +707,16 @@ Implementation completed 2026-08-10. The phase-1 client-grade rendering lane had
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 6 of the 2026-07 first-order improvement slate. The hard math a fund accountant needs still lives in Excel; unitized NAV series, fee accruals with hurdles and crystallization, distribution waterfalls, and capital-call and commitment tracking must become ledger-backed first-class calculations.
+Implementation verified complete 2026-08-10; the calculation surface the 2026-07-21 summary said "still lives in Excel" has been ledger-backed source for some time and the missing piece was the exit-criterion golden-file evidence. Unitization - ShareClassUnitRegisterProjector folds dated subscriptions/redemptions into a pure, deterministic per-class unit register (units outstanding, per-investor holdings, NAV per unit via NavPerUnitCalculator, running high-water mark, and single-NAV equalisation credits/contingent redemptions via EqualizationCalculator for equalising classes), with the movement-level register as the auditable calculation trail and restatement handled by re-projection plus the report-pack restatement lifecycle. Fee economics - the Meridian.FSharp.Ledger FundEconomics kernels compute day-weighted management fees, straight-line expense accruals, and performance fees with hurdle, high-water mark, and crystallization treatment, and FundEconomicsJournalFactory converts fee, NAV, and waterfall outcomes into governed journal drafts. Waterfall and commitments - EuropeanDistributionWaterfall runs return-of-capital, preferred-return, solved GP catch-up (including sub-100 percent catch-up rates), and carried-interest tiers with cumulative threading across distributions; CapitalCallScheduleDraftBuilder, CapitalCallPlanBuilder, and CommitmentRollForwardCalculator maintain the net-called plus uncalled plus expired equals total invariant with recallable-distribution handling; and the ledger partners-capital reconciliation suite ties these to the W9-REPORT-005 statement. The 2026-08-10 acceptance candidate closes criterion four by adding a golden-file worked-example pack (tests/fixtures/fund-economics/golden) with hand-computed figures independent of the implementation - day-count fee and expense examples, a four-period threaded performance-fee cycle proving the high-water mark moves only on crystallization and only to post-fee NAV, a three-distribution threaded waterfall whose cumulative GP take is exactly its carry share of profit, a sub-100 percent catch-up example pinning the documented pool-rounding drift, equalisation credit/contingent cases, and a full-year unit-register scenario whose aggregate holding value ties to class NAV - all asserted step by step against the real kernels.
 
 ### Exit Criteria
 
