@@ -65,7 +65,8 @@ let grossExposureLimit (ctx: RiskContext) : RiskDecision =
 /// percentage of portfolio value. Direction-aware: reducing orders lower the projected
 /// concentration, and an order that strictly reduces the symbol's exposure is always
 /// permitted so an oversized position can be unwound incrementally while still above the
-/// cap. Requires a positive portfolio value to be meaningful.
+/// cap. A measured nonpositive portfolio value fails closed for orders that do
+/// not strictly reduce exposure: an exhausted book has no NAV left to allocate.
 let symbolConcentration (ctx: RiskContext) : RiskDecision =
     match ctx.PortfolioValue, ctx.MaxSymbolConcentrationPercent with
     | Some portfolioValue, Some maxPercent when portfolioValue > 0m && maxPercent > 0m ->
@@ -74,6 +75,13 @@ let symbolConcentration (ctx: RiskContext) : RiskDecision =
         let projectedPercent = (projected / portfolioValue) * 100m
         if projectedPercent > maxPercent && projected >= currentSymbolAbs then
             Reject (sprintf "Concentration limit: %s at %.2f%% of portfolio value exceeds %.2f%% cap" ctx.Request.Symbol (float projectedPercent) (float maxPercent))
+        else
+            Approve
+    | Some portfolioValue, Some maxPercent when portfolioValue <= 0m && maxPercent > 0m ->
+        let currentSymbolAbs = ctx.SymbolExposure |> Option.defaultValue 0m
+        let projected = projectedSymbolAbsoluteExposure ctx
+        if projected >= currentSymbolAbs then
+            Reject (sprintf "Concentration limit: %s cannot increase exposure while portfolio value is exhausted" ctx.Request.Symbol)
         else
             Approve
     | _ -> Approve
