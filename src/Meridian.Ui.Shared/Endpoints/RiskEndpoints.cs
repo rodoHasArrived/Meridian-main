@@ -327,19 +327,29 @@ public static class RiskEndpoints
 
                 carriedTokens.Add(approved.EscalationId);
 
-                var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    [RiskEscalationQueueService.ApprovalMetadataKey] = RiskEscalationQueueService.JoinTokens(carriedTokens),
-                    ["actor"] = actor,
-                    ["correlationId"] = $"risk-escalation-{approved.EscalationId}"
-                };
+                var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 if (approved.Request.Metadata is not null)
                 {
                     foreach (var (key, value) in approved.Request.Metadata)
                     {
-                        metadata.TryAdd(key, value);
+                        metadata[key] = value;
                     }
                 }
+
+                // The retained actor is the original submitter, not the approver releasing
+                // this particular escalation. Preserve it so any later rule in the same
+                // validation chain enforces segregation of duties against that submitter.
+                metadata[RiskEscalationQueueService.ApprovalMetadataKey] =
+                    RiskEscalationQueueService.JoinTokens(carriedTokens);
+                if (!string.IsNullOrWhiteSpace(approved.Actor))
+                {
+                    metadata["actor"] = approved.Actor;
+                }
+                else
+                {
+                    metadata.Remove("actor");
+                }
+                metadata["correlationId"] = $"risk-escalation-{approved.EscalationId}";
 
                 var releaseRequest = approved.Request with { Metadata = metadata };
                 try
