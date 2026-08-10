@@ -1,11 +1,11 @@
 {
-  "total_files": 643,
-  "total_lines": 124837,
-  "orphaned_count": 255,
+  "total_files": 644,
+  "total_lines": 125329,
+  "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 221,
-  "average_lines": 194.1,
+  "todo_count": 223,
+  "average_lines": 194.6,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -222,7 +222,6 @@
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
     "docs/integrations/tastytrade-endpoint-coverage.md",
-    "docs/product/adversarial-program-review-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -2594,7 +2593,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10384,
+      "line_count": 10385,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2905,6 +2904,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/adversarial-program-review-2026-08.md",
+      "line_count": 484,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/data-provider-accounting-brainstorm-2026-07.md",
       "line_count": 640,
       "has_heading": true,
@@ -2970,7 +2977,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 270,
+      "line_count": 277,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
