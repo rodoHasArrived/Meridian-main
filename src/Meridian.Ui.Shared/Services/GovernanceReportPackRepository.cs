@@ -404,6 +404,7 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
 
         if (snapshot.Status is GovernanceReportPackStatusDto.Validated
             or GovernanceReportPackStatusDto.Approved
+            or GovernanceReportPackStatusDto.Published
             or GovernanceReportPackStatusDto.Exported
             or GovernanceReportPackStatusDto.Retained
             or GovernanceReportPackStatusDto.Restated)

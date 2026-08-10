@@ -1613,6 +1613,13 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             var exception = await act.Should().ThrowAsync<ArgumentException>();
             exception.Which.Message.Should().Contain("'seeded' data-provenance");
             exception.Which.Message.Should().Contain("cannot persist in the 'Validated' state");
+
+            var publishAct = () => repository.SaveAsync(
+                snapshot with { Status = GovernanceReportPackStatusDto.Published },
+                []);
+
+            var publishException = await publishAct.Should().ThrowAsync<ArgumentException>();
+            publishException.Which.Message.Should().Contain("cannot persist in the 'Published' state");
         }
         finally
         {

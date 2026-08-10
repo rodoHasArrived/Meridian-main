@@ -96,6 +96,23 @@ public sealed class ProductionRegistrationGuardServiceTests
     }
 
     [Fact]
+    public async Task StartAsync_LocalWorkstationPosture_RejectsFactoryHiddenInMemoryDurableBinding()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<ITestStore>(_ => new InMemoryTestStore());
+        });
+
+        Func<Task> act = () => host.StartAsync();
+
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*requires durable money-path stores*ITestStore*InMemoryTestStore*");
+    }
+
+    [Fact]
     public async Task StartAsync_LocalWorkstationPosture_LabeledComposition_AcceptsInMemoryDurableBindings()
     {
         // The pinned non-real label is the sanctioned way to run fabricated local stores: the
