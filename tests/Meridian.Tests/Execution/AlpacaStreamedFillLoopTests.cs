@@ -244,26 +244,26 @@ public sealed class AlpacaStreamedFillLoopTests
         decimal fillPrice,
         OrderStatus status,
         string timestamp) => new()
-    {
-        OrderId = "alpaca-r",
-        GatewayOrderId = "alpaca-r",
-        ClientOrderId = clientOrderId,
-        Symbol = "AAPL",
-        Side = OrderSide.Buy,
-        OrderQuantity = 10m,
-        FilledQuantity = cumulativeQuantity,
-        FillPrice = fillPrice,
-        OrderStatus = status,
-        ReportType = status == OrderStatus.Filled
+        {
+            OrderId = "alpaca-r",
+            GatewayOrderId = "alpaca-r",
+            ClientOrderId = clientOrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderQuantity = 10m,
+            FilledQuantity = cumulativeQuantity,
+            FillPrice = fillPrice,
+            OrderStatus = status,
+            ReportType = status == OrderStatus.Filled
             ? ExecutionReportType.Fill
             : ExecutionReportType.PartialFill,
-        Timestamp = DateTimeOffset.Parse(timestamp),
-        Diagnostics = new ExecutionDiagnostics
-        {
-            BrokerStatus = status == OrderStatus.Filled ? "fill" : "partial_fill",
-            Category = "alpaca-rest-fill-reconciliation"
-        }
-    };
+            Timestamp = DateTimeOffset.Parse(timestamp),
+            Diagnostics = new ExecutionDiagnostics
+            {
+                BrokerStatus = status == OrderStatus.Filled ? "fill" : "partial_fill",
+                Category = "alpaca-rest-fill-reconciliation"
+            }
+        };
 
     /// <summary>
     /// Minimal gateway seam mirroring <see cref="AlpacaBrokerageGateway"/> report streaming: submit

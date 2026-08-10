@@ -732,26 +732,26 @@ public sealed class AlpacaTradeUpdatesClientTests
         decimal cumulativeQuantity,
         string transactionTime,
         OrderStatus status) => new()
-    {
-        OrderId = "order-ooo",
-        GatewayOrderId = "order-ooo",
-        ClientOrderId = "client-order-ooo",
-        Symbol = "AAPL",
-        Side = OrderSide.Buy,
-        OrderQuantity = 10m,
-        FilledQuantity = cumulativeQuantity,
-        FillPrice = 101.25m,
-        OrderStatus = status,
-        ReportType = status == OrderStatus.Filled
+        {
+            OrderId = "order-ooo",
+            GatewayOrderId = "order-ooo",
+            ClientOrderId = "client-order-ooo",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderQuantity = 10m,
+            FilledQuantity = cumulativeQuantity,
+            FillPrice = 101.25m,
+            OrderStatus = status,
+            ReportType = status == OrderStatus.Filled
             ? ExecutionReportType.Fill
             : ExecutionReportType.PartialFill,
-        Timestamp = DateTimeOffset.Parse(transactionTime),
-        Diagnostics = new ExecutionDiagnostics
-        {
-            BrokerStatus = status == OrderStatus.Filled ? "fill" : "partial_fill",
-            Category = "alpaca-rest-fill-reconciliation"
-        }
-    };
+            Timestamp = DateTimeOffset.Parse(transactionTime),
+            Diagnostics = new ExecutionDiagnostics
+            {
+                BrokerStatus = status == OrderStatus.Filled ? "fill" : "partial_fill",
+                Category = "alpaca-rest-fill-reconciliation"
+            }
+        };
 
     private static ExecutionReport CreateReconciledReport() => new()
     {
