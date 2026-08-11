@@ -763,6 +763,24 @@ still `in_progress`.
 
 ## W10 — Make CI verify what users run
 
+- [ ] **AR8-52 — Wire Polygon streaming credentials, or keep it unadvertised.**
+  **Evidence:** `ProviderFeatureRegistration.Registry.cs:77-82` constructs `PolygonMarketDataClient`
+  with `reconnectionMetrics:` only, never passing `PolygonOptions`, and the constructor
+  (`PolygonMarketDataClient.cs:60-76`) defaults to `new PolygonOptions()` — an empty `ApiKey` — and
+  reads no environment variable of its own. The documented `POLYGON_API_KEY` maps under
+  `Backfill:Providers:Polygon`, which `ConfigEnvironmentOverride.ApplyBackfillOverride:338-343`
+  returns unchanged for nested provider paths ("we'll skip nested provider config in this
+  implementation"). So no configuration route reaches the streaming client. The Docker template
+  advertised `Polygon` as a selectable `MDC_DATASOURCE` anyway; this PR removed it from the
+  advertised list rather than shipping a container path that cannot connect.
+  **Change:** pass the configured `PolygonOptions` into the streaming factory and either implement
+  the nested `Backfill:Providers:*` override path or map a top-level Polygon credential variable —
+  then restore `Polygon` to the template list and cover it with the existing
+  `ConfigTemplateGeneratorTests` probe, which pins the advertised set to variables proven to apply.
+  **Verify:** a test that a configured Polygon API key reaches `HasValidCredentials` through the
+  registry factory, not just through a directly constructed client.
+  **Effort:** S · **Sequence:** before Polygon is advertised anywhere as a real-time source
+
 - [ ] **AR8-36 — Fix the CI topology.**
   **Evidence:** `.github/workflows/ci.yml:31,190,249` carry `if: github.event_name != 'pull_request'`
   on the dotnet, browser, and docs jobs, so only secret-scan runs on a PR while the workflow still

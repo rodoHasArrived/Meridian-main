@@ -357,7 +357,14 @@ public sealed class ConfigTemplateGenerator
                 // that wins where two spellings exist, or the template advertises a setting the
                 // operator cannot reliably change. See the Alpaca block above for why the two
                 // credentials use the bare names while the feed uses the MDC_ prefix.
-                ["MDC_DATASOURCE"] = "Real-time data source provider (IB, Alpaca, Polygon, NYSE, Synthetic; default Synthetic)",
+                // Polygon is deliberately absent. The override parses it and a streaming factory
+                // exists, but that factory builds PolygonMarketDataClient without passing
+                // PolygonOptions, so the client always holds an empty ApiKey; and the documented
+                // POLYGON_API_KEY maps under Backfill:Providers:Polygon, which
+                // ApplyBackfillOverride returns unchanged for nested provider paths. There is no
+                // credential that reaches the streaming client, so advertising it here would sell
+                // a container path that cannot connect.
+                ["MDC_DATASOURCE"] = "Real-time data source provider (IB, Alpaca, NYSE, Synthetic; default Synthetic)",
                 ["MDC_SYMBOLS"] = "Comma-separated list of symbols",
                 ["ALPACA_KEY_ID"] = "Alpaca API Key ID (takes precedence over MDC_ALPACA_KEY_ID)",
                 ["ALPACA_SECRET_KEY"] = "Alpaca Secret Key (takes precedence over MDC_ALPACA_SECRET_KEY)",

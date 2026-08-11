@@ -62,7 +62,7 @@ public sealed class ConfigTemplateGeneratorTests
         // to apply below, rather than silently joining the list unwired.
         var probes = new Dictionary<string, string>
         {
-            ["MDC_DATASOURCE"] = "Polygon",
+            ["MDC_DATASOURCE"] = "NYSE",
             ["MDC_SYMBOLS"] = "AAPL,MSFT",
             ["ALPACA_KEY_ID"] = "probe-key-id",
             ["ALPACA_SECRET_KEY"] = "probe-secret-key",
@@ -84,7 +84,7 @@ public sealed class ConfigTemplateGeneratorTests
 
             var overridden = new ConfigEnvironmentOverride().ApplyOverrides(config!);
 
-            overridden.DataSource.Should().Be(DataSourceKind.Polygon);
+            overridden.DataSource.Should().Be(DataSourceKind.NYSE);
             overridden.Symbols!.Select(s => s.Symbol).Should().Equal("AAPL", "MSFT");
             overridden.Alpaca.Should().NotBeNull();
             overridden.Alpaca!.KeyId.Should().Be("probe-key-id");

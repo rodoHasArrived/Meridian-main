@@ -532,7 +532,19 @@ def main() -> int:
             (value for key, value in backfill_providers.items() if key.casefold() == name.casefold()),
             None,
         )
-        if isinstance(gate, dict) and gate.get("Enabled") is not True:
+        # An absent block is not a pass. `EnabledWhenOptedIn(cfg?.Enabled)` sees a null config and
+        # returns no provider, exactly as it does for Enabled: false — so omitting the block fails
+        # at runtime identically while a permissive isinstance check would let it through. That is
+        # the same blind spot this guard's own docstring records three earlier instances of.
+        if not isinstance(gate, dict):
+            errors.append(
+                f"DataSources.{field} = {default_id!r} resolves to {name}, but the sample has no "
+                f"Backfill.Providers.{name} block. ProviderFactory opts in on "
+                f"`EnabledWhenOptedIn(cfg?.Enabled)`, which returns no provider for a missing "
+                f"config just as it does for a disabled one, so the synthesized historical "
+                f"binding would have no registered provider behind it."
+            )
+        elif gate.get("Enabled") is not True:
             errors.append(
                 f"DataSources.{field} = {default_id!r} resolves to {name}, but "
                 f"Backfill.Providers.{name}.Enabled is {gate.get('Enabled')!r}. "
