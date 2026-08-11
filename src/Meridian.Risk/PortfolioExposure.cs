@@ -146,18 +146,34 @@ public interface IPortfolioExposureProvider
     decimal? TryGetLastTradePrice(string symbol) => null;
 
     /// <summary>
+    /// The most recent completed bar's close for <paramref name="symbol"/>, or
+    /// <see langword="null"/> when none is current. Sits between the print and the quote in
+    /// <see cref="TryGetTriggerReferencePrice"/> because that is where the matcher puts it: on a
+    /// bar-driven session there is no print to prefer, and the close is what fires a stop.
+    /// Implementations without a bar feed return <see langword="null"/>, which degrades the
+    /// precedence exactly as the matcher's own does when no bar is present.
+    /// </summary>
+    decimal? TryGetBarClosePrice(string symbol) => null;
+
+    /// <summary>
     /// The reference a <b>stop trigger</b> is measured against, resolved in the same order the
-    /// matcher resolves it: the last trade first, then the crossing side.
+    /// matcher resolves it: last trade, then bar close, then the crossing side.
     /// <para>
     /// The <i>precedence</i> is the point, not just the sources.
-    /// <see cref="Meridian.Execution.PaperMatching.PaperOrderMatchingPolicy"/> fires a stop off the
-    /// traded price and reaches for the touch only when no print exists. Anything that checks the
-    /// quote first disagrees with it whenever the two differ: with a 100/120 quote and the last
-    /// trade at 100, a buy stop at 105 is resting, but against the 110 midpoint it looks 4.5%
-    /// crossed and against the 120 ask worse still — and in the other direction, a buy stop above
-    /// the ask but below the last trade looks correctly placed while the matcher fires it
-    /// immediately. A control that disagrees with the engine about whether an order has triggered
-    /// is not measuring the same market the engine is, in either direction.
+    /// <see cref="Meridian.Execution.PaperMatching.PaperOrderMatchingPolicy"/> fires a stop off
+    /// <c>LastTradePrice ?? BarClose</c> and reaches for the touch only when neither exists.
+    /// Anything that checks the quote earlier disagrees with it whenever the two differ, and it
+    /// does so in both directions: with a 100/120 quote and the last trade at 100, a buy stop at
+    /// 105 is resting but reads 4.5% crossed against the 110 midpoint and worse against the 120
+    /// ask — a false rejection; while a buy stop above the ask but below the last trade looks
+    /// correctly placed as the matcher fires it — a false approval, and an unbounded market order.
+    /// </para>
+    /// <para>
+    /// The bar close earns its place for the same reason: on a bar-driven session there is no
+    /// print, and skipping to the quote reproduces the false approval in different clothing — no
+    /// print, a 130 close, a 100 ask, and a buy stop at 125 reads as resting while the matcher
+    /// triggers it. All three legs, in this order, or the control and the engine disagree
+    /// somewhere.
     /// </para>
     /// <para>
     /// This deliberately differs from <see cref="TryGetTouchPrice"/>, which is what a <i>limit</i>
@@ -166,5 +182,7 @@ public interface IPortfolioExposureProvider
     /// </para>
     /// </summary>
     decimal? TryGetTriggerReferencePrice(string symbol, OrderSide side) =>
-        TryGetLastTradePrice(symbol) ?? TryGetTouchPrice(symbol, side);
+        TryGetLastTradePrice(symbol)
+        ?? TryGetBarClosePrice(symbol)
+        ?? TryGetTouchPrice(symbol, side);
 }

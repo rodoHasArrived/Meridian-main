@@ -329,10 +329,45 @@ public sealed class FatFingerRuleTests
     }
 
     [Fact]
-    public async Task StopTrigger_WithNoPrint_FallsBackToTheCrossingSide_AsTheMatcherDoes()
+    public async Task StopTrigger_OnABarDrivenSession_UsesTheBarClose_NotTheQuote()
     {
-        // No print to prefer, so the matcher would compare against the ask for a buy — and so
-        // does this. A buy stop at 1 against a 110 ask is plainly crossed.
+        // No print at all, which is the ordinary case on a bar-driven session. The matcher falls
+        // to the bar close, so a buy stop at 125 against a 130 close is already triggered — and
+        // routes unbounded. Skipping to the 100 ask reads it as 25% below the market, comfortably
+        // resting, and approves exactly the order this limb exists to catch.
+        var rule = new FatFingerRule(
+            new TwoSidedBookProvider(bid: 90m, ask: 100m, lastTrade: null, barClose: 130m),
+            () => new FatFingerThresholds(null, 3m),
+            NullLogger<FatFingerRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 125m, side: OrderSide.Buy, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.StopTriggerCode);
+    }
+
+    [Fact]
+    public async Task StopTrigger_PrefersThePrintOverTheBarClose()
+    {
+        // Both present: the print wins, exactly as it does in the matcher. A 100 print leaves a
+        // buy stop at 105 resting even though a stale 130 close would have triggered it.
+        var rule = new FatFingerRule(
+            new TwoSidedBookProvider(bid: 90m, ask: 100m, lastTrade: 100m, barClose: 130m),
+            () => new FatFingerThresholds(null, 3m),
+            NullLogger<FatFingerRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 105m, side: OrderSide.Buy, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task StopTrigger_WithNoPrintOrBar_FallsBackToTheCrossingSide_AsTheMatcherDoes()
+    {
+        // Neither a print nor a bar to prefer, so the matcher would compare against the ask for
+        // a buy — and so does this. A buy stop at 1 against a 110 ask is plainly crossed.
         var rule = new FatFingerRule(
             new TwoSidedBookProvider(bid: 90m, ask: 110m),
             () => new FatFingerThresholds(null, 10m),
@@ -658,8 +693,11 @@ public sealed class FatFingerRuleTests
     /// midpoint. Mirrors the production provider: the valuation price takes the larger of mark
     /// and touch, while the touch price is the raw crossing side.
     /// </summary>
-    private sealed class TwoSidedBookProvider(decimal bid, decimal ask, decimal? lastTrade = null)
-        : IPortfolioExposureProvider
+    private sealed class TwoSidedBookProvider(
+        decimal bid,
+        decimal ask,
+        decimal? lastTrade = null,
+        decimal? barClose = null) : IPortfolioExposureProvider
     {
         public PortfolioExposureSnapshot GetSnapshot() => PortfolioExposureSnapshot.Empty;
 
@@ -674,5 +712,7 @@ public sealed class FatFingerRuleTests
             side is OrderSide.Buy ? ask : bid;
 
         public decimal? TryGetLastTradePrice(string symbol) => lastTrade;
+
+        public decimal? TryGetBarClosePrice(string symbol) => barClose;
     }
 }

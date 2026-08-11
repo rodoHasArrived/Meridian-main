@@ -58,13 +58,21 @@ questions:
   of mid and touch; a price control must compare against what the order can actually trade at.
   Measuring a sell against that mark would make an ordinary marketable sell at the bid look priced
   through the market by half the spread.
-- **A trigger** is measured against `TryGetTriggerReferencePrice` — the last trade, falling back to
-  the crossing side — which is the same *precedence* `PaperOrderMatchingPolicy` uses. Checking a
-  quote first disagrees with the matcher whenever the two differ, in both directions: with a 100/120
-  quote and a 100 print, a buy stop at 105 is resting but looks crossed against the ask or the
-  midpoint; with a 130 print, a buy stop at 125 sits above the ask and looks correctly placed while
-  the matcher fires it immediately. A control that disagrees with the engine about whether an order
+- **A trigger** is measured against `TryGetTriggerReferencePrice` — last trade, then bar close,
+  then the crossing side — the same *precedence* `PaperOrderMatchingPolicy` uses
+  (`LastTradePrice ?? BarClose`, quote only as a last resort). Consulting a quote earlier disagrees
+  with the matcher whenever the two differ, in both directions: with a 100/120 quote and a 100
+  print, a buy stop at 105 is resting but looks crossed against the ask or midpoint; with a 130
+  print, a buy stop at 125 sits above the ask and looks correctly placed while the matcher fires it
+  immediately. Dropping the bar-close leg reproduces the second failure on a bar-driven session,
+  where there is no print at all. A control that disagrees with the engine about whether an order
   has already triggered is not measuring the same market the engine is.
+
+Note that these limbs gate **submission**. `OrderManagementSystem.IsRiskIncreasing` revalidates only
+quantity increases and numerically *higher* limit or stop prices, so an amendment that moves a price
+the dangerous way — a sell limit downward, or a buy stop down onto the wrong side of the market —
+does not currently re-enter the validator. Closing that is an OMS-wide change tracked on
+`W9-SAFETY-007`, not a property of this rule.
 - **A stop-limit's limit** is measured against *its own trigger*, which is what it is priced off.
 
 Both thresholds are read as a single `FatFingerThresholds` value rather than two accessors, so an

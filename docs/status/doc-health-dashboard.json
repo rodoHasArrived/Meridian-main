@@ -1,11 +1,11 @@
 {
   "total_files": 643,
-  "total_lines": 124893,
+  "total_lines": 124903,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 221,
-  "average_lines": 194.2,
+  "average_lines": 194.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -3546,7 +3546,7 @@
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 199,
+      "line_count": 200,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5274,7 +5274,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 160,
+      "line_count": 169,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
