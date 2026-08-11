@@ -16,10 +16,9 @@ namespace Meridian.Risk.Rules;
 /// band would reject the entire resting book.
 /// </para>
 /// <para>
-/// The price limb applies only to <b>immediately marketable limit orders</b> —
-/// <see cref="OrderType.Limit"/>, <see cref="OrderType.LimitOnOpen"/>, and
-/// <see cref="OrderType.LimitOnClose"/> — because those are the only types whose limit price is
-/// meaningful against the current market. Everything else is excluded for a specific reason:
+/// The price limb applies only to a plain <see cref="OrderType.Limit"/> order, because that is the
+/// only type whose limit price is meaningful against the <i>current continuous</i> market — which
+/// is the only market this rule can see. Everything else is excluded for a specific reason:
 /// </para>
 /// <list type="bullet">
 ///   <item><see cref="OrderRequest.StopPrice"/> is never measured at all: a stop sits away from
@@ -31,10 +30,22 @@ namespace Meridian.Risk.Rules;
 ///     <see cref="OrderRequest.LimitPrice"/>. The paper gateway lets a caller supply one as its
 ///     simulated market observation, so on a market order that value is not an operator's typed
 ///     limit and must not be compared against the live book.</item>
+///   <item><see cref="OrderType.LimitOnOpen"/> and <see cref="OrderType.LimitOnClose"/> are
+///     excluded: their limit applies to a future auction, not the continuous touch. Measuring one
+///     against the present BBO rejects routine auction orders, and pre-open there may be no fresh
+///     BBO at all, which would make every auction order unmeasurable.</item>
 ///   <item>A multi-leg order is excluded: its limit is the net debit or credit for the
 ///     <i>package</i>, which is not comparable to a quote for the top-level symbol. A $1 credit
 ///     spread on a $200 underlying would otherwise look 99.5% through the market.</item>
 /// </list>
+/// <para>
+/// The quantity limb is likewise skipped for a <b>broker-notional</b> order. Alpaca-style gateways
+/// route a metadata dollar amount and discard <see cref="OrderRequest.Quantity"/>, so on those
+/// orders the quantity field carries dollars — comparing it to a share ceiling would reject a valid
+/// $5,000 order against a 1,000-share limit. Their economic size is gated by
+/// <see cref="OrderNotionalRule"/>, which reads the routed notional from the same place the gateway
+/// does.
+/// </para>
 /// <para>
 /// Every excluded order still passes through the quantity limb, and its economic size is still
 /// gated by <see cref="OrderNotionalRule"/>.
@@ -104,8 +115,13 @@ public sealed class FatFingerRule : IRiskRule
         // oversized order is a definitive breach; reporting it as a pricing-data gap because its
         // quote happened to be missing would lose the stable code and the observed-vs-limit
         // evidence for a mistake that is not in doubt.
+        // A dollar-sized order's Quantity is not a share count, so the ceiling does not apply to
+        // it. BrokerNotionalMetadata is the same seam the gateway reads, so the two cannot
+        // disagree about whether this order routes dollars.
+        var routesDollars = BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null;
+
         var quantityMagnitude = Math.Abs(request.Quantity);
-        if (maxQuantity is > 0m && quantityMagnitude > maxQuantity.Value)
+        if (!routesDollars && maxQuantity is > 0m && quantityMagnitude > maxQuantity.Value)
         {
             var quantityDecision = Interop.RiskInterop.EvaluateFatFinger(
                 Interop.RiskInterop.CreateFatFingerContext(
@@ -187,7 +203,7 @@ public sealed class FatFingerRule : IRiskRule
     /// </summary>
     private static bool IsPriceLimbApplicable(OrderRequest request) =>
         request.Legs is null or { Count: 0 }
-        && request.Type is OrderType.Limit or OrderType.LimitOnOpen or OrderType.LimitOnClose;
+        && request.Type is OrderType.Limit;
 
     /// <summary>
     /// Signed deviation of the order's price from the reference, oriented so that a positive

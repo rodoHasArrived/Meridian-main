@@ -5,6 +5,7 @@ using Meridian.Execution;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;
+using Meridian.Risk.Rules;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
@@ -459,6 +460,18 @@ public sealed class RiskRuleRuntimeService
                         maxPriceDeviationPercent = request.MaxPriceDeviationPercent.HasValue
                             ? NormalizeThreshold(request.MaxPriceDeviationPercent, nameof(request.MaxPriceDeviationPercent), required: false)
                             : current.MaxPriceDeviationPercent;
+
+                        // A sell can never breach a band of 100 or more: its aggressive deviation
+                        // is (reference - price) / reference, which for any positive price is
+                        // strictly under 100%. Such a band silently disables the sell side while
+                        // the dashboard still reports the rule configured, so a $0.01 sell against
+                        // a $100 bid would pass. Refuse it rather than accept a half-dead control.
+                        if (maxPriceDeviationPercent is >= 100m)
+                        {
+                            throw new ArgumentOutOfRangeException(
+                                nameof(request.MaxPriceDeviationPercent),
+                                "MaxPriceDeviationPercent must be below 100; a band at or above 100 can never reject a sell, silently disabling the sell side.");
+                        }
 
                         return current with
                         {
@@ -928,18 +941,36 @@ public sealed class RiskRuleRuntimeService
         var maxQuantity = MaxOrderQuantity;
         var maxDeviationPercent = MaxPriceDeviationPercent;
 
-        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "fat-finger");
+        var matchedEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "fat-finger");
+
+        // An unmeasurable refusal is not a breach: the rule refused an order it could not price
+        // rather than measuring one past a band. Both rejections carry "fat-finger" text, so
+        // without this split the dashboard would report a measured band violation for an hour
+        // whenever a quote went missing - the exact claim the unmeasurable outcome exists to avoid.
+        var unmeasurableEntries = matchedEntries
+            .Where(entry => MatchesViolationMetadata(entry, FatFingerRule.UnmeasurableCode)
+                || (entry.Reason?.Contains(FatFingerRule.UnmeasurableCode, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (entry.Message?.Contains("has no reference price", StringComparison.OrdinalIgnoreCase) ?? false)
+                || (entry.Reason?.Contains("has no reference price", StringComparison.OrdinalIgnoreCase) ?? false))
+            .ToList();
+        var violationEntries = matchedEntries.Except(unmeasurableEntries).ToList();
+
         var violations = DescribeViolations(violationEntries, "fat-finger");
         var configured = maxQuantity.HasValue || maxDeviationPercent.HasValue;
         var breached = HasLiveViolation(violationEntries, asOf);
+        var pricingGap = !breached && HasLiveViolation(unmeasurableEntries, asOf);
         var state = breached
             ? "Constrained"
-            : configured ? "Healthy" : "Observe";
+            : pricingGap
+                ? "Observe"
+                : configured ? "Healthy" : "Observe";
         var summary = breached
             ? "Recent orders were rejected by the fat-finger quantity or price-deviation band."
-            : configured
-                ? "Fat-finger bands are configured and no recent breaches were detected."
-                : "No fat-finger bands are configured; the rule approves all orders.";
+            : pricingGap
+                ? "Recent priced orders were refused because no reference price was available to measure them; no band was breached."
+                : configured
+                    ? "Fat-finger bands are configured and no recent breaches were detected."
+                    : "No fat-finger bands are configured; the rule approves all orders.";
 
         var threshold = (maxQuantity, maxDeviationPercent) switch
         {
@@ -961,7 +992,11 @@ public sealed class RiskRuleRuntimeService
             // between orders. Saying so beats printing a zero that reads like measured headroom.
             CurrentValue: configured ? "per-order" : "not enforced",
             AsOf: asOf,
-            RecentViolations: violations,
+            RecentViolations: violations.Count > 0
+                ? violations
+                : pricingGap
+                    ? DescribeViolations(unmeasurableEntries, "fat-finger")
+                    : violations,
             UtilizationPercent: null,
             Severity: "Error");
     }

@@ -211,6 +211,39 @@ public sealed class FatFingerRuleTests
         result.IsApproved.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(OrderType.LimitOnOpen)]
+    [InlineData(OrderType.LimitOnClose)]
+    public async Task Price_AuctionOnlyLimits_AreNotMeasuredAgainstTheContinuousTouch(OrderType type)
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // An auction limit is priced for the opening or closing cross, not the current
+        // continuous market. Measuring it against the present BBO rejects routine auction
+        // orders, and pre-open there may be no fresh BBO at all.
+        var result = await rule.EvaluateAsync(Order(limitPrice: 1_000m, type: type));
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Quantity_BrokerNotionalOrder_IsNotComparedWithTheShareCeiling()
+    {
+        var rule = Rule(maxQuantity: 1_000m);
+
+        // Alpaca-style notional sizing routes the metadata dollar amount and discards
+        // Quantity, so this order's "5000" is dollars, not shares. Its economic size is
+        // OrderNotionalRule's job.
+        var order = Order(quantity: 5_000m, type: OrderType.Market) with
+        {
+            Metadata = new Dictionary<string, string> { ["notional"] = "5000" }
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeTrue();
+    }
+
     [Fact]
     public async Task Price_MultiLegPackage_IsNotMeasuredAgainstTheTopLevelSymbol()
     {
