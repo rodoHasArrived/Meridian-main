@@ -438,6 +438,32 @@ public sealed class FatFingerRuleTests
         result.ObservedValue.Should().Be(decimal.MaxValue);
     }
 
+    [Theory]
+    [InlineData(0.1)]
+    [InlineData(1.0)]
+    [InlineData(100.0)]
+    [InlineData(1000.0)]
+    public async Task Price_ExtremeLimitAgainstAnySmallReference_NeverThrows(double reference)
+    {
+        // A reference below 1 makes the DIVISION overflow, not just the scaling: MaxValue over
+        // 0.1 is ten times what a decimal can hold. Guarding only the scaling left the earlier
+        // branch throwing, which the composite validator turns into RISK_RULE_EVALUATION_FAILED.
+        // The boundaries either side of 100 are covered because that is where the guard switches
+        // strategy.
+        var rule = Rule(maxDeviationPercent: 10m, referencePrice: (decimal)reference);
+
+        var buy = await rule.EvaluateAsync(
+            Order(limitPrice: decimal.MaxValue, side: OrderSide.Buy, type: OrderType.Limit));
+        buy.IsApproved.Should().BeFalse();
+        buy.Code.Should().Be(FatFingerRule.PriceDeviationCode);
+
+        // The passive side of the same arithmetic still approves — a sell priced absurdly high
+        // is a resting order nobody will hit, and saturation must not turn it into a breach.
+        var sell = await rule.EvaluateAsync(
+            Order(limitPrice: decimal.MaxValue, side: OrderSide.Sell, type: OrderType.Limit));
+        sell.IsApproved.Should().BeTrue();
+    }
+
     [Fact]
     public async Task Price_ExtremePassiveSell_StillApproves_DespiteSaturation()
     {

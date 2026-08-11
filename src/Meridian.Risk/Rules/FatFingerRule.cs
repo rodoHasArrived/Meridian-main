@@ -384,13 +384,30 @@ public sealed class FatFingerRule : IRiskRule
             return null;
         }
 
-        var ratio = (orderPrice.Value - referencePrice.Value) / referencePrice.Value;
-        var signedDeviation = ratio switch
+        // Mirrors the F# helper exactly, including why the quotient is never formed when it
+        // could overflow: MaxValue over a 0.1 reference overflows the division itself, before
+        // any scaling. The comparison uses cap x reference, which is representable precisely
+        // when the reference is at most 100 (cap x 100 = MaxValue); above that the ratio cannot
+        // reach the cap, because the numerator is bounded by MaxValue.
+        const decimal hundred = 100m;
+        var cap = decimal.MaxValue / hundred;
+        var difference = orderPrice.Value - referencePrice.Value;
+
+        decimal signedDeviation;
+        if (referencePrice.Value > hundred)
         {
-            _ when ratio > decimal.MaxValue / 100m => decimal.MaxValue,
-            _ when ratio < decimal.MinValue / 100m => decimal.MinValue,
-            _ => ratio * 100m
-        };
+            signedDeviation = difference / referencePrice.Value * hundred;
+        }
+        else
+        {
+            var limit = cap * referencePrice.Value;
+            signedDeviation = difference switch
+            {
+                _ when difference > limit => decimal.MaxValue,
+                _ when difference < -limit => decimal.MinValue,
+                _ => difference / referencePrice.Value * hundred
+            };
+        }
 
         return side is OrderSide.Buy ? signedDeviation : -signedDeviation;
     }

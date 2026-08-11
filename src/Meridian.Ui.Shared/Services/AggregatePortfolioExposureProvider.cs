@@ -119,20 +119,23 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         }
 
         // One-sided or absent book: there is no crossing price, so the last print is the closest
-        // thing to one. The valuation accessor must not be reached for first here — with a bid
-        // missing it answers with the ask, the side this order would NOT cross, so a sell would be
-        // measured against the offer. On a book showing only a 100 ask after a 50 print, that turns
-        // an ordinary sell at 46 from 8% through into 54% through and refuses it.
+        // thing to one.
         var lastTrade = TryGetLastTradePrice(symbol);
         if (lastTrade is > 0m)
         {
             return lastTrade;
         }
 
-        // Nothing traded and nothing crossable: fall back to the valuation price rather than
-        // reporting no reference at all, since a missing reference makes a priced order
-        // unmeasurable.
-        return TryGetExecutablePrice(symbol, side);
+        // Nothing traded and nothing crossable, so this order genuinely cannot be measured, and
+        // saying so is the correct answer rather than a shortcoming. The valuation accessor must
+        // NOT be reached for here: with a bid missing it answers with the ask — the side this
+        // order would never cross — so a sell on an ask-only 100 book reads a limit of 90 as 10%
+        // through the market. That is not merely wrong, it is wrong in the expensive direction:
+        // the rule would record a measured FAT_FINGER breach rather than FAT_FINGER_UNMEASURABLE,
+        // holding the rule Constrained and the readiness gate closed for an hour over a book that
+        // never had a bid. Null routes to the unmeasurable outcome, which is exactly the
+        // fail-closed-but-not-a-breach verdict that distinction exists for.
+        return null;
     }
 
     /// <summary>

@@ -758,6 +758,16 @@ public sealed class AggregatePortfolioExposureProviderTests
         provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Sell)
             .Should().Be(50m, "the 100 ask is the side a sell never crosses");
 
+        // And with no print either, the honest answer is "no reference", not the opposite quote.
+        // A null here routes the order to FAT_FINGER_UNMEASURABLE rather than recording a
+        // measured breach that would hold the rule Constrained for an hour.
+        var quotesOnly = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            trades: null);
+        quotesOnly.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Sell)
+            .Should().BeNull();
+
         // The buy side still crosses at the ask, which the book does supply.
         provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
             .Should().Be(100m);

@@ -87,16 +87,27 @@ let symbolConcentration (ctx: RiskContext) : RiskDecision =
     | _ -> Approve
 
 /// Signed distance of a price from its reference, as a percentage, saturating instead of
-/// overflowing. Two individually valid decimals can produce a ratio whose scaling by 100
-/// exceeds decimal.MaxValue — a limit of decimal.MaxValue against a reference of 1 is the
-/// simplest case. Throwing there would surface as a generic evaluation failure instead of
-/// the structured breach it plainly is, so the magnitude is capped: anything that would
-/// overflow is astronomically past any band, and the cap yields the same verdict.
+/// overflowing. Two individually valid decimals can produce a result decimal cannot hold —
+/// decimal.MaxValue against a reference of 1 overflows the scaling, and against 0.1 the
+/// *division itself* overflows before any scaling happens. Throwing there would surface as a
+/// generic evaluation failure instead of the structured breach it plainly is, so the magnitude
+/// is capped: anything that would overflow is astronomically past any band, and the cap yields
+/// the same verdict.
+///
+/// The comparison is therefore made against `cap * reference` and never forms the quotient.
+/// That product is representable exactly when the reference is at most 100, because
+/// `cap * 100 = decimal.MaxValue`; above that the ratio cannot reach the cap at all, since the
+/// numerator is itself bounded by MaxValue.
 let private signedDeviationPercent (price: decimal) (reference: decimal) : decimal =
-    let ratio = (price - reference) / reference
-    if ratio > System.Decimal.MaxValue / 100m then System.Decimal.MaxValue
-    elif ratio < System.Decimal.MinValue / 100m then System.Decimal.MinValue
-    else ratio * 100m
+    let cap = System.Decimal.MaxValue / 100m
+    let difference = price - reference
+    if reference > 100m then
+        (difference / reference) * 100m
+    else
+        let limit = cap * reference
+        if difference > limit then System.Decimal.MaxValue
+        elif difference < -limit then System.Decimal.MinValue
+        else (difference / reference) * 100m
 
 /// Blocks the two classic order-entry mistakes: a quantity far larger than the desk ever
 /// intends to send in one order, and a price typed far through the market.
