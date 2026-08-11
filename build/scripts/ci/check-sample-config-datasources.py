@@ -27,6 +27,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SAMPLE = REPO_ROOT / "config" / "appsettings.sample.json"
 KIND_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "DataSourceKind.cs"
+TYPE_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "DataSourceConfig.cs"
 MASKER_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "SensitiveValueMasker.cs"
 REGISTRY_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "SensitiveKeyRegistry.cs"
 STREAMING_SOURCE = (
@@ -141,6 +142,19 @@ def declared_kinds() -> dict[str, int]:
     return {name: int(value) for name, value in pairs}
 
 
+def declared_source_types() -> dict[str, int]:
+    """Return ``DataSourceType`` member names mapped to their numeric values.
+
+    ``DataSourceConfig.Type`` carries ``[JsonConverter(JsonStringEnumConverter<DataSourceType>)]``,
+    so an unreadable value is not a milder problem than a bad provider — it fails deserialization
+    and takes the whole sample down with it.
+    """
+    text = TYPE_SOURCE.read_text(encoding="utf-8")
+    body = text[text.index("enum DataSourceType") :]
+    pairs = re.findall(r"^\s{4}([A-Za-z][A-Za-z0-9]*)\s*=\s*(\d+)\s*,?\s*$", body, re.MULTILINE)
+    return {name: int(value) for name, value in pairs}
+
+
 SECRET_KEYS_FOLDED = frozenset(name.casefold() for name in secret_key_names())
 SECRET_FRAGMENTS = secret_key_fragments()
 
@@ -222,6 +236,33 @@ def main() -> int:
             if isinstance(candidate, str) and candidate.strip():
                 realtime_ids.add(candidate.casefold())
 
+    source_types = declared_source_types()
+    if not source_types:
+        errors.append(f"no DataSourceType members parsed from {TYPE_SOURCE.relative_to(REPO_ROOT)}")
+    types_folded = {name.casefold(): name for name in source_types}
+    types_by_number = {value: name for name, value in source_types.items()}
+    streaming_types = {"realtime", "both"}
+
+    def resolve_source_type(value: object) -> tuple[str | None, str | None]:
+        """Resolve ``Type`` the way ``JsonStringEnumConverter<DataSourceType>`` would.
+
+        Coercing an unreadable value to a non-streaming default is the failure this must not
+        repeat: ``"Type": "Streaming"`` would silently exempt the source from the streaming-factory
+        check while the application refuses to deserialize the file at all.
+        """
+        if isinstance(value, bool) or not isinstance(value, (str, int)):
+            return None, "is neither a name nor a number"
+        if isinstance(value, int):
+            name = types_by_number.get(value)
+            return (name, None) if name else (None, "is not a defined DataSourceType value")
+        text = value.strip()
+        # Enum.TryParse accepts numeric strings, so "2" reads as Both exactly as a JSON 2 would.
+        if text.lstrip("+-").isdigit():
+            name = types_by_number.get(int(text))
+            return (name, None) if name else (None, "is not a defined DataSourceType value")
+        name = types_folded.get(text.casefold())
+        return (name, None) if name else (None, "is not a defined DataSourceType name")
+
     named: list[tuple[str, object, bool]] = []
     if "DataSource" in document:
         named.append(("DataSource", document["DataSource"], True))
@@ -229,13 +270,24 @@ def main() -> int:
         if "Provider" not in source:
             continue
         source_id = source.get("Id")
+        referenced_for_realtime = isinstance(source_id, str) and source_id.casefold() in realtime_ids
+
         # DataSourceConfig.Type defaults to RealTime when the JSON field is omitted
         # (src/Meridian.Core/Config/DataSourceConfig.cs:34), so a bare {"Provider": "Yahoo"} is
         # modelled as a real-time source and must be checked, not skipped.
-        declared_type = str(source.get("Type", "RealTime")).casefold()
-        needs_streaming = declared_type in {"realtime", "both"} or (
-            isinstance(source_id, str) and source_id.casefold() in realtime_ids
-        )
+        if "Type" in source:
+            resolved_type, type_error = resolve_source_type(source["Type"])
+            if type_error:
+                errors.append(
+                    f"DataSources.Sources[{index}].Type {source['Type']!r} {type_error} "
+                    f"(valid: {', '.join(sorted(source_types))})"
+                )
+                # Unreadable: assume the strictest reading rather than exempting the source.
+                resolved_type = "RealTime"
+        else:
+            resolved_type = "RealTime"
+
+        needs_streaming = resolved_type.casefold() in streaming_types or referenced_for_realtime
         named.append((f"DataSources.Sources[{index}].Provider", source["Provider"], needs_streaming))
 
     valid = (

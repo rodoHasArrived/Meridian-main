@@ -292,11 +292,28 @@ still `in_progress`.
   the target is Paper, so for paper→live 13 of 15 checklist items pass on any non-empty string after
   the colon (`:943-953`). Only the override id (`:955-966`) and a substring test on the execution
   model (`:971-976`) are real.
-  **Change:** run `GetInvalidSourceRunEvidenceReferences` for `RunType.Live` as well; resolve
-  `PAPER_EXECUTION_MODEL_REVIEWED` against the cited paper session's recorded
+  **Change:** resolve every live checklist item against the store that actually owns its evidence,
+  which is **not** uniformly the source run. Running `GetInvalidSourceRunEvidenceReferences`
+  unchanged for `RunType.Live` would compare all 15 `LiveRequiredItems` against
+  `sourceRun.RetainedEvidenceReferences` and reject legitimate promotions, because most of that
+  evidence is produced during the promotion review rather than by the paper run. Split the items:
+  - **Run-produced** (`DK1_TRUST_PACKET_REVIEWED`, `RUN_LINEAGE_REVIEWED`,
+    `PORTFOLIO_LEDGER_CONTINUITY_REVIEWED`, `RISK_CONTROLS_REVIEWED`, `PAPER_VALIDATION_REVIEWED`)
+    cross-check against the source run's retained references, as the paper path already does.
+  - **Promotion-time** (`GOVERNANCE_SIGNOFF_REVIEWED`, `RECONCILIATION_EVIDENCE_REVIEWED`,
+    `BROKER_EXECUTION_RECONCILIATION_REVIEWED`, `ACCOUNTING_RECORDS_REVIEWED`,
+    `GOVERNED_REPORTING_REVIEWED`, `AUDIT_RETENTION_REVIEWED`, `ROLLBACK_KILL_SWITCH_REVIEWED`,
+    `EXCEPTION_HANDLING_REVIEWED`) resolve against the governance, reconciliation, accounting,
+    report, and audit stores that own them. `LIVE_OVERRIDE_REVIEWED` already demonstrates this
+    shape at `:955-966`.
+
+  Also resolve `PAPER_EXECUTION_MODEL_REVIEWED` against the cited paper session's recorded
   `MatchingModelVersion`/`CostModelVersion` instead of substring-matching.
-  **Verify:** test that `RECONCILIATION_EVIDENCE_REVIEWED:x` no longer clears a live promotion.
-  **Effort:** S
+  **Verify:** two tests, because one alone hides the failure mode. (a) `RECONCILIATION_EVIDENCE_REVIEWED:x`
+  naming no record in the reconciliation store no longer clears a live promotion; (b) a promotion
+  whose promotion-time evidence resolves in its owning store **succeeds** — the regression that a
+  naive source-run cross-check would cause.
+  **Effort:** M
 
 ---
 
@@ -586,7 +603,18 @@ still `in_progress`.
   snapshot hash is already computable — returning `409` on mismatch, and surface a conflict-resolution
   prompt in the client. Generalize the existing `ExpectedVersion` pattern rather than inventing a
   second mechanism. Replace the in-process lock with a cross-process file lock.
-  **Verify:** concurrent-write test from two host instances asserting one `409` and no lost update.
+
+  **The filter alone cannot deliver the guarantee.** An endpoint filter checks `If-Match` *before*
+  the mutation runs, so two processes holding the same snapshot both pass the check, then take the
+  file lock in turn and the second silently overwrites the first — a lost update with no `409`
+  anywhere. The cross-process lock serializes the writes; it does not make check-then-write atomic.
+  Pass the expected version down into the snapshot-store mutation and re-verify it **while holding
+  the lock**, so the store performs an atomic compare-and-write and raises the conflict itself. Treat
+  the filter as a fast rejection path, not as the concurrency control.
+  **Verify:** concurrent-write test from two host instances asserting one `409` and no lost update —
+  and make it exercise the interleaving that matters, with both requests passing the filter before
+  either write begins. A test that serializes the two requests end-to-end passes against the broken
+  design and proves nothing.
   **Effort:** L
 
 - [ ] **AR8-29 — Give the break queue a durable, concurrent store.**
@@ -695,8 +723,24 @@ still `in_progress`.
   is hardcoded in two places (`OperationsContinuityWorkflow.cs:889,901`,
   `FileReconciliationBreakQueueRepository.Casework.cs:1113,1125`).
   **Change:** have both transition validators read the matrix; the rule shape already carries every
-  field needed. Remove the hardcoded constants so there is one policy implementation, not two.
-  **Verify:** test that raising `requiredDistinctApprovals` to 2 blocks a single-approver transition.
+  field needed.
+
+  **Do not simply delete the hardcoded constants — convert them into floors.** Today they are the
+  only thing preventing self-approved closes, and the matrix cannot safely replace them as written:
+  `MergeCustomRows` replaces a default row wholesale (`merged[customRow.PolicyKey] = customRow`),
+  and `Validate` checks only `RequiredDistinctApprovals >= 1` while accepting
+  `RequiresIndependentReviewer` unchecked. An `AdminMaintenance` user could therefore upsert
+  `operations-continuity.approve`/`.close` with one approver and no independent reviewer, and a
+  validator that trusted the matrix would permit a single actor to submit and approve their own
+  period close. Keep a non-reducible floor per critical transition: a custom row may raise
+  `requiredDistinctApprovals` or set `requiresIndependentReviewer`, never lower or clear it. If
+  weakening a floor must ever be possible, route it through a separately approved, retained
+  governance change rather than an ordinary matrix upsert.
+  **Verify:** three tests. (a) raising `requiredDistinctApprovals` to 2 blocks a single-approver
+  transition; (b) a custom row attempting to lower `operations-continuity.close` to one approver, or
+  to clear `requiresIndependentReviewer`, is rejected or clamped — never applied; (c) after the
+  constants move behind the matrix, a submitter still cannot approve their own close, which is the
+  property the hardcoded checks were protecting.
   **Effort:** M
 
 ---
