@@ -22,11 +22,48 @@ This layer owns risk decision logic and reusable rules. It should stay independe
 ## Key folders and files
 
 - `Rules/` - individual risk rules: position limit, drawdown circuit breaker, order-rate
-  throttle, and the portfolio-aware gross-exposure, symbol-concentration, and order-notional
-  gates.
+  throttle, the order-entry fat-finger gate, and the portfolio-aware gross-exposure,
+  symbol-concentration, and order-notional gates.
 - `PortfolioExposure.cs` - `IPortfolioExposureProvider` and the exposure snapshot the
   portfolio-aware rules consume (fed from `IAggregatePortfolioService` by the host).
 - Risk interfaces and shared validation primitives.
+
+## Order-entry fat-finger gate
+
+`Rules/FatFingerRule.cs` catches mistyped orders before any portfolio rule sees them
+(`Priority = -10`, severity `Error`), so an inflated order is attributed to the slip rather than
+to whichever exposure ceiling its size happened to breach. Both thresholds are operator-tuned
+through the runtime service and null-disables the limb; an entirely unconfigured rule approves
+without measuring.
+
+- **Quantity ceiling** - the largest quantity any single leg actually routes, which for a package
+  is `Quantity x RatioQuantity` rather than the top-level count. Skipped for a broker-notional
+  order, whose `Quantity` field carries dollars rather than a share count; those are gated by
+  `OrderNotionalRule` instead.
+- **Price-deviation band** - directional, not symmetric. Only the aggressive side is measured
+  (a buy paying above the reference, a sell hitting below it), because a symmetric band would
+  reject the entire resting book.
+- **Wrong-side stop trigger** - the mirror of the band above. A correctly placed buy stop sits
+  *above* the market and a sell stop *below* it, so a buy stop typed beneath the market is already
+  crossed and a stop-market order that triggers on acceptance routes with no price protection at
+  all. Trigger deviation is measured on the wrong side only, so a protective stop placed correctly
+  never breaches however far away it sits.
+
+The price limbs depend on `IPortfolioExposureProvider.TryGetTouchPrice`, which is the raw crossing
+side of the book rather than the conservative `TryGetExecutablePrice` valuation mark the sizing
+rules use. The two references are deliberately different: sizing must never *under*-measure the
+exposure an order creates, while a price control must compare against what the order can actually
+trade at. Measuring a sell against the mark would make an ordinary marketable sell at the bid look
+priced through the market by half the spread.
+
+Each price is measured against the reference it is meaningful to, and each order type contributes
+only the prices it genuinely puts at risk: a plain limit against the touch, a stop trigger against
+the touch, and a stop-limit's limit against *its own trigger* rather than today's market. Market,
+auction (`LimitOnOpen`/`LimitOnClose`), trailing-stop, and multi-leg orders contribute no price at
+all; `FatFingerRule`'s type remarks carry the reason for each exclusion. With the band configured, a
+measurable order whose symbol has no reference price is refused as `FAT_FINGER_UNMEASURABLE` rather
+than approved — a band an unpriceable order sails past is not a band — and that refusal is
+deliberately unmeasurable rather than a breach, so a pricing gap does not trip the circuit breaker.
 
 ## Important workflows
 

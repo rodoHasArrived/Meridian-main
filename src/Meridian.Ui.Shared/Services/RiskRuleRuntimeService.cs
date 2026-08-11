@@ -981,7 +981,7 @@ public sealed class RiskRuleRuntimeService
                 ? "Observe"
                 : configured ? "Healthy" : "Observe";
         var summary = breached
-            ? "Recent orders were rejected by the fat-finger quantity or price-deviation band."
+            ? "Recent orders were rejected by the fat-finger quantity ceiling, price-deviation band, or wrong-side stop trigger."
             : pricingGap
                 ? "Recent priced orders were refused because no reference price was available to measure them; no band was breached."
                 : configured
@@ -1093,7 +1093,32 @@ public sealed class RiskRuleRuntimeService
             pair.Key.StartsWith(ViolationMetadataPrefix, StringComparison.Ordinal) &&
             (pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
              pair.Key.EndsWith(".code", StringComparison.Ordinal)) &&
-            pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase));
+            ContainsTokenIgnoringSeparators(pair.Value, textHint));
+
+    /// <summary>
+    /// Substring match that ignores word separators on both sides, because the same rule is named
+    /// three ways across the system and a literal search finds only one of them. The status query
+    /// asks for <c>fat-finger</c>, matching the prose in the rejection message, but the structured
+    /// metadata stores the rule as <c>FatFinger</c> and its codes as <c>FAT_FINGER_*</c> — so a
+    /// literal search read the headline and missed the metadata entirely. That mattered exactly
+    /// when the metadata is the only evidence: a rule whose breach is recorded behind a more
+    /// severe rule's headline is discoverable through <c>violation.*</c> and nowhere else, so a
+    /// FatFinger breach alongside a Critical exposure breach vanished from its own status.
+    /// </summary>
+    private static bool ContainsTokenIgnoringSeparators(string value, string textHint)
+    {
+        if (value.Contains(textHint, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return StripSeparators(value).Contains(StripSeparators(textHint), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string StripSeparators(string value) =>
+        value.Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .Replace(" ", string.Empty, StringComparison.Ordinal);
 
     /// <summary>
     /// Reports the message belonging to the matched breach rather than the entry's headline, so a
@@ -1113,7 +1138,7 @@ public sealed class RiskRuleRuntimeService
                     pair.Key.StartsWith(ViolationMetadataPrefix, StringComparison.Ordinal) &&
                     (pair.Key.EndsWith(".rule", StringComparison.Ordinal) ||
                      pair.Key.EndsWith(".code", StringComparison.Ordinal)) &&
-                    pair.Value.Contains(textHint, StringComparison.OrdinalIgnoreCase))
+                    ContainsTokenIgnoringSeparators(pair.Value, textHint))
                 .Select(pair => pair.Key[..pair.Key.LastIndexOf('.')])
                 .FirstOrDefault();
 
@@ -1131,8 +1156,28 @@ public sealed class RiskRuleRuntimeService
     /// <summary>Prefix for the per-violation audit metadata keys, e.g. <c>violation.0.rule</c>.</summary>
     private const string ViolationMetadataPrefix = "violation.";
 
+    /// <summary>
+    /// How far ahead of <c>asOf</c> an audit entry may sit and still be treated as live. Clock
+    /// skew between a host and its audit sink is real and small; anything beyond this is a
+    /// misdated entry, not a recent one.
+    /// </summary>
+    private static readonly TimeSpan ViolationClockSkewAllowance = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Whether any of these breaches is recent enough to still describe the rule's live state.
+    /// <para>
+    /// The window is bounded at <em>both</em> ends. An unbounded upper end let a future-dated
+    /// entry — a backward clock step after an append, or a misdated retained entry — produce a
+    /// negative age, which trivially satisfies a one-hour ceiling and would hold the rule (and the
+    /// operator readiness gate reading it) Constrained until an hour past that timestamp. A badly
+    /// skewed entry could pin trading readiness for years. A bounded skew allowance keeps ordinary
+    /// host/sink drift live while refusing to treat a misdated entry as evidence of anything.
+    /// </para>
+    /// </summary>
     private static bool HasLiveViolation(IReadOnlyList<ExecutionAuditEntry> entries, DateTimeOffset asOf) =>
-        entries.Any(entry => asOf - entry.OccurredAt <= ViolationLivenessWindow);
+        entries.Any(entry =>
+            asOf - entry.OccurredAt <= ViolationLivenessWindow &&
+            entry.OccurredAt - asOf <= ViolationClockSkewAllowance);
 
     private static List<string> FindViolations(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
@@ -1333,20 +1378,32 @@ public sealed class RiskRuleRuntimeService
                 _maxSymbolConcentrationPercent = snapshot.MaxSymbolConcentrationPercent is > 0m ? snapshot.MaxSymbolConcentrationPercent : null;
                 _maxOrderNotional = snapshot.MaxOrderNotional is > 0m ? snapshot.MaxOrderNotional : null;
                 _escalateOrderNotional = snapshot.EscalateOrderNotional is > 0m ? snapshot.EscalateOrderNotional : null;
-                _maxOrderQuantity = snapshot.MaxOrderQuantity is > 0m ? snapshot.MaxOrderQuantity : null;
-                // A deviation band of 100 or more can never reject a sell, so the update endpoint
-                // refuses it. A restored, hand-edited, or corrupted snapshot must not be able to
-                // start the host on a configuration the API would not accept: hydrating it would
-                // leave the sell side silently unprotected while the dashboard reported the rule
-                // configured. Reject rather than clamp - a value this far out means the file is not
-                // a configuration this service wrote, and the catch below fails closed on it.
-                if (snapshot.MaxPriceDeviationPercent is >= 100m)
+                // The two fat-finger rails are validated on the way in, not merely normalized. An
+                // optional rail is legitimately absent when an operator has not set one, so null
+                // hydrates as "unconfigured" — but a value the update endpoint would refuse is a
+                // different thing entirely, and quietly turning it into null would disable that
+                // limb while the dashboard still reported the rule configured. Reject rather than
+                // clamp: a value this far out means the file is not a configuration this service
+                // wrote, and the catch below fails closed on it.
+                //
+                // A negative ceiling is the same class of corruption as a band of 100.
+                if (snapshot.MaxOrderQuantity is < 0m)
                 {
                     throw new InvalidOperationException(
-                        "The risk rule snapshot carries a fat-finger price-deviation band of 100 or more, which can never reject a sell. "
-                        + "Refusing to start with a silently one-sided price control.");
+                        "The risk rule snapshot carries a negative fat-finger quantity ceiling. "
+                        + "Refusing to start with a silently disabled quantity limb.");
                 }
 
+                // A deviation band of 100 or more can never reject a sell, so the update endpoint
+                // refuses it; hydrating one would leave the sell side unprotected.
+                if (snapshot.MaxPriceDeviationPercent is < 0m or >= 100m)
+                {
+                    throw new InvalidOperationException(
+                        "The risk rule snapshot carries a fat-finger price-deviation band that is negative, or 100 or more and so unable to "
+                        + "reject any sell. Refusing to start with a silently one-sided or disabled price control.");
+                }
+
+                _maxOrderQuantity = snapshot.MaxOrderQuantity is > 0m ? snapshot.MaxOrderQuantity : null;
                 _maxPriceDeviationPercent = snapshot.MaxPriceDeviationPercent is > 0m ? snapshot.MaxPriceDeviationPercent : null;
             }
         }

@@ -9802,6 +9802,7 @@ Meridian-main
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
+│   │   │   ├── RiskRuleRuntimeFatFingerStatusTests.cs
 │   │   │   ├── RiskRuleRuntimeOrderRateStatusTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs

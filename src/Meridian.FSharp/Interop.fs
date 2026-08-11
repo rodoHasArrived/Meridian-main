@@ -392,6 +392,9 @@ type RiskInterop private () =
     static member EvaluateFatFinger(ctx: RiskContext) : RiskDecisionDto =
         RiskRules.fatFinger ctx |> RiskInterop.ToDto
 
+    static member EvaluateFatFingerStopTrigger(ctx: RiskContext) : RiskDecisionDto =
+        RiskRules.fatFingerStopTrigger ctx |> RiskInterop.ToDto
+
     static member Aggregate(decisions: seq<RiskDecisionDto>) : RiskDecisionDto =
         let unionDecisions =
             decisions

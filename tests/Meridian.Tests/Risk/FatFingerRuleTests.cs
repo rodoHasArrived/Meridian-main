@@ -171,12 +171,13 @@ public sealed class FatFingerRuleTests
     // --- order types the price limb must not touch ---
 
     [Fact]
-    public async Task Price_StopPriceIsNeverMeasured_SoStopLossesSurvive()
+    public async Task Price_CorrectlyPlacedStop_IsNotMeasuredForDistance_SoStopLossesSurvive()
     {
         var rule = Rule(maxDeviationPercent: 10m);
 
-        // A protective stop sits away from the market by design. Measuring it would reject
-        // every stop-loss on the book.
+        // A protective stop sits far from the market by design — that is what makes it a stop.
+        // 40 against a 100 market is 60% away, six times the band, and must still route: only
+        // the wrong side is measured, and for a sell the wrong side is above the market.
         var result = await rule.EvaluateAsync(
             Order(limitPrice: null, stopPrice: 40m, side: OrderSide.Sell, type: OrderType.StopMarket));
 
@@ -184,15 +185,169 @@ public sealed class FatFingerRuleTests
     }
 
     [Fact]
-    public async Task Price_StopLimitIsExcluded_BecauseItsLimitIsPricedOffTheTrigger()
+    public async Task Price_StopLimitLimb_IsMeasuredAgainstItsOwnTrigger_NotTheMarket()
     {
         var rule = Rule(maxDeviationPercent: 5m);
 
         // Market at 100: a sell stop at 90 with an 89 limit is an ordinary protective order.
-        // The 89 only becomes relevant once the market reaches 90, so measuring it against
-        // today's 100 would reject exactly the orders the stop exclusion exists to protect.
+        // The 89 only becomes relevant once the market reaches 90, so it is measured against
+        // that trigger — 1.1% away, inside the band — rather than against today's 100, which
+        // would read 11% and reject exactly the order this is meant to preserve.
         var result = await rule.EvaluateAsync(
             Order(limitPrice: 89m, stopPrice: 90m, side: OrderSide.Sell, type: OrderType.StopLimit));
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    // --- wrong-side stop triggers ---
+
+    [Fact]
+    public async Task StopTrigger_BuyStopBeneathTheMarket_IsRejected_BecauseItFiresImmediately()
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // A buy stop belongs ABOVE the market: PaperOrderMatchingPolicy fires a buy once the
+        // price reaches or passes the stop. At 1 against a 100 market the trigger is already
+        // crossed, so this stop-market order becomes an unbounded market order the moment it
+        // is accepted — the single most expensive shape a mistyped order can take.
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 1m, side: OrderSide.Buy, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.StopTriggerCode);
+        result.ObservedValue.Should().Be(99m);
+        result.LimitValue.Should().Be(10m);
+    }
+
+    [Fact]
+    public async Task StopTrigger_SellStopAboveTheMarket_IsRejected_BecauseItFiresImmediately()
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // The mirror case: a sell stop belongs BELOW the market, so 1,000 against a 100 market
+        // is already crossed and fires on acceptance.
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 1_000m, side: OrderSide.Sell, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.StopTriggerCode);
+        result.ObservedValue.Should().Be(900m);
+    }
+
+    [Theory]
+    [InlineData(OrderSide.Buy, 105d)]
+    [InlineData(OrderSide.Sell, 95d)]
+    public async Task StopTrigger_PlacedOnTheProtectiveSide_Approves(OrderSide side, double stopPrice)
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // Buy above, sell below: both wait for the market to come to them, which is the whole
+        // point of a stop. Neither is on the wrong side, so neither is measured for distance.
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: (decimal)stopPrice, side: side, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task StopTrigger_MarginallyCrossed_Approves_BecauseTheBandIsTheTolerance()
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // 95 is on the wrong side for a buy, but only 5% wrong — inside the operator's stated
+        // tolerance. A desk that deliberately sends a marketable stop is not fat-fingering;
+        // the band is what separates the two, exactly as it does for a limit.
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 95m, side: OrderSide.Buy, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task StopTrigger_OnAStopLimit_IsMeasuredBeforeItsLimit()
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // Both limbs breach: the trigger is 99% the wrong way, and the limit is far from that
+        // trigger too. The trigger is reported, because a stop-limit whose trigger is already
+        // crossed is the more dangerous mistake of the two.
+        var result = await rule.EvaluateAsync(
+            Order(limitPrice: 0.5m, stopPrice: 1m, side: OrderSide.Buy, type: OrderType.StopLimit));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.StopTriggerCode);
+    }
+
+    [Fact]
+    public async Task StopTrigger_TrailingStop_IsNotMeasured_BecauseItsTriggerMovesWithTheMarket()
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // A trailing stop's trigger is derived by the broker from TrailPrice/TrailPercent and
+        // moves as the market does, so a snapshot of it compared against the current touch
+        // measures nothing that stays true.
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 1m, side: OrderSide.Buy, type: OrderType.TrailingStop));
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task StopTrigger_WithNoReferencePrice_IsUnmeasurableRatherThanApproved()
+    {
+        var rule = Rule(maxDeviationPercent: 10m, referencePrice: null);
+
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 1m, side: OrderSide.Buy, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.UnmeasurableCode);
+    }
+
+    [Fact]
+    public async Task StopTrigger_MeasuresTheCrossingSide_NotTheValuationMark()
+    {
+        // Wide 90/110 book. A buy stop at 95 is beneath the 110 ask by 13.6% — the price a buy
+        // actually crosses at — so it is already triggered against the side that matters. The
+        // 100 midpoint would read only 5% and let it through.
+        var rule = new FatFingerRule(
+            new TwoSidedBookProvider(bid: 90m, ask: 110m),
+            () => null,
+            () => 10m,
+            NullLogger<FatFingerRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 95m, side: OrderSide.Buy, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.StopTriggerCode);
+    }
+
+    [Fact]
+    public async Task Price_ExtremeLimitAgainstATinyReference_BreachesRatherThanOverflowing()
+    {
+        var rule = Rule(maxDeviationPercent: 10m, referencePrice: 1m);
+
+        // The ratio here scaled by 100 exceeds decimal.MaxValue. Throwing would surface as a
+        // generic RISK_RULE_EVALUATION_FAILED refusal instead of the structured breach this
+        // plainly is, so both the F# band and the reported evidence saturate.
+        var result = await rule.EvaluateAsync(
+            Order(limitPrice: decimal.MaxValue, side: OrderSide.Buy, type: OrderType.Limit));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.PriceDeviationCode);
+        result.ObservedValue.Should().Be(decimal.MaxValue);
+    }
+
+    [Fact]
+    public async Task Price_ExtremePassiveSell_StillApproves_DespiteSaturation()
+    {
+        var rule = Rule(maxDeviationPercent: 10m, referencePrice: 1m);
+
+        // The same arithmetic on the passive side. A sell priced absurdly high is a resting
+        // order nobody will hit, not a fat finger, and saturation must not turn it into one.
+        var result = await rule.EvaluateAsync(
+            Order(limitPrice: decimal.MaxValue, side: OrderSide.Sell, type: OrderType.Limit));
 
         result.IsApproved.Should().BeTrue();
     }
