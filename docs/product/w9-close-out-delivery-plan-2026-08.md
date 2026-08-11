@@ -172,9 +172,10 @@ above** — several of these are why a change is scoped the way it is.
   paragraph rejects.
 - Each price is measured against the reference it is meaningful to, and each order type contributes
   only the prices it genuinely puts at risk. A plain `Limit`'s limit is measured against the crossing
-  touch; a `StopMarket` or `StopLimit` *trigger* against the side-neutral valuation reference,
-  because the matcher fires a stop off the traded price and reaches for the touch only as a fallback;
-  and a `StopLimit`'s limit against **its own trigger**, which is what it is priced off. Auction
+  touch; a `StopMarket` or `StopLimit` *trigger* against a new `TryGetTriggerReferencePrice` seam
+  that resolves **last trade first, crossing side second** — the same precedence
+  `PaperOrderMatchingPolicy.IsStopTriggered` uses; and a `StopLimit`'s limit against **its own
+  trigger**, which is what it is priced off. Auction
   limits (`LimitOnOpen`/`LimitOnClose`) price against a future cross rather than the continuous
   touch, market orders may carry a simulated observation in `LimitPrice` through the paper gateway,
   trailing stops have a broker-derived trigger that moves with the market, and a multi-leg limit is a
@@ -182,8 +183,16 @@ above** — several of these are why a change is scoped the way it is.
 - A trigger's wrong side is the **mirror** of a limit's: `PaperOrderMatchingPolicy` fires a buy stop
   once the market reaches or passes above it, so a buy stop typed *beneath* the market is already
   crossed and a stop-market order that triggers on acceptance routes unbounded. Change 1 measures
-  that mirrored direction under the same band. The collar inherits every one of these distinctions;
-  reusing the limit orientation for a trigger would leave the same hole change 1 closed.
+  that mirrored direction under the same band.
+- **The trigger's reference precedence is load-bearing, not a detail.** Any accessor that consults a
+  quote before a print disagrees with the matcher whenever the two differ, and it does so in *both*
+  directions. With a 100/120 quote and a 100 print, a buy stop at 105 is resting yet reads as crossed
+  against the ask or the midpoint — a false rejection. With a 130 print, a buy stop at 125 sits above
+  the ask and looks correctly placed against every quote-derived reference while the matcher fires it
+  immediately — a false *approval*, and an unbounded market order. Neither `TryGetReferencePrice`
+  (quote midpoint first) nor `TryGetTouchPrice` (bid/ask) is safe here on its own. The collar
+  inherits every one of these distinctions; reusing the limit's reference or orientation for a
+  trigger would reopen the hole change 1 closed.
 - **The stop exclusion has a hole that changes 1–2 must close.** "A stop sits away from the market
   by design" is true only for a correctly-sided stop. `PaperOrderMatchingPolicy.IsStopTriggered`
   fires a buy when the market is at or above the stop and a sell when it is at or below it, after
@@ -258,6 +267,20 @@ above** — several of these are why a change is scoped the way it is.
   allowlist it with a stated reason per family and record why role-level read access satisfies the
   criterion — and give whichever path its own baseline. The mutation tranches below do not budget
   for it.
+- **Guarding a route can also lock out callers that are authorized today, and two of them are
+  systemic.** `EndpointAuthorization` resolves a caller's rights from
+  `LoginSessionMiddleware.CurrentUserPermissionsKey` or its role key, and nothing else reaches it.
+  So: (a) `ApiKeyMiddleware` validates an `MDC_API_KEY` request and records only
+  `Items["ApiKey"]`, which means every script and service-to-service client documented in
+  `docs/reference/api-reference.md` starts receiving 401 the moment its route is guarded — the
+  tranches need a permission- and tenant-bearing machine principal, or an explicit migration or
+  retirement of those clients with the disposition under test. And (b) `LoginSessionMiddleware`
+  returns early for every `/api/auth` path, so a signed-in browser administrator has no permissions
+  in context there at all; those handlers work today only because `AuthEndpoints.ResolveCurrentProfile`
+  reads the session cookie itself. Change 5 must narrow that exemption to the bootstrap endpoints
+  while hydrating management requests — or back the declaration with a filter that can resolve the
+  session — and cover the browser-admin path in its tranche tests. Both are pre-existing conditions
+  the burn-down *surfaces*; neither is caused by it, and neither can be discovered after the fact.
 - **The unresolved *writes* need a metadata baseline too, and the behavioural one is not it.** The
   112-entry ratchet records observed status codes and fixture failures, not declarations, so a route
   can sit in that baseline while its mapping carries no `EndpointAuthorizationMetadata` at all —
@@ -309,6 +332,12 @@ above** — several of these are why a change is scoped the way it is.
   unstamped rows, plus a quarantine or upgrade-validation path for whatever it still cannot
   attribute, and only then flip the predicate. Regression tests prove the tightened predicate; they
   do not prove the data was ready for it.
+- **The same applies to accounts, and not only the legacy ones.** `RequireFundScopedWriteTenant`
+  needs a resolvable company on the session, but `InitialAccountBootstrapService` creates the ordinary
+  first-run administrator with a null company, and `UserAccountConfig.CompanyId` is optional for both
+  stored accounts and `MDC_USERS`. Flipping enforcement therefore returns 403 to the *normal*
+  administrator of an existing local installation, not just to the legacy `MDC_USERNAME` fallback.
+  Change 9 needs a migration or an explicit company requirement covering every account source.
 - Slice 4c's remaining defense-in-depth items (fund-account sub-tables, fund-structure store) are
   not a currently reachable cross-tenant residual and stay out of this wave.
 
@@ -466,3 +495,13 @@ migration, the Postgres-backed accounting/ledger audit store, and cross-process 
 can all go unexecuted while the gate is green. Change 9 requires a named `Production Certification`
 run — or a targeted PostgreSQL-backed run — on the candidate commit, linked as evidence, exactly as
 change 3 requires named Windows proof.
+
+**And that run must actually select the new tests, which today it would not.**
+`production-certification.yml` invokes `dotnet test` with
+`--filter "Category=Integration&Category!=LiveProvider"`, but `LedgerDatabaseFactAttribute` is a
+plain `FactAttribute` carrying no trait, and `AccountingConfigurationPostgresStoreTests` declares no
+integration category — so naming that workflow as evidence would link a green run that never
+executed a single database test. Change 9 must either give its new audit and migration tests the
+integration trait, or widen the certification filter, and then assert the resulting TRX actually
+contains them. A run that silently selected nothing is worse than no run at all: it looks like
+proof.
