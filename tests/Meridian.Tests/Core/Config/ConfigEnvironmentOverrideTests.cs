@@ -4,6 +4,9 @@ using Xunit;
 
 namespace Meridian.Tests.Core.Config;
 
+// MDC_* variables are process-global, so these must not run beside ConfigTemplateGeneratorTests,
+// which sets the same MDC_DATASOURCE and MDC_SYMBOLS values.
+[Collection("Sequential")]
 public sealed class ConfigEnvironmentOverrideTests
 {
     [Fact]
@@ -55,6 +58,34 @@ public sealed class ConfigEnvironmentOverrideTests
         act.Should().Throw<Meridian.Core.Exceptions.ConfigurationException>()
             .WithMessage("*alpacca*")
             .WithMessage("*MDC_DATASOURCE*");
+    }
+
+    [Fact]
+    public void ApplyOverrides_Symbols_AreSplitAndUppercased()
+    {
+        // MDC_SYMBOLS was advertised by the Docker template but had no mapping, so setting it
+        // did nothing. Uppercasing matters because SymbolConfigValidator matches ^[A-Z0-9\-\.\/]+$.
+        using var symbolsVar = new EnvironmentVariableScope("MDC_SYMBOLS", "spy, qqq ,BRK.B");
+
+        var sut = new ConfigEnvironmentOverride();
+        var result = sut.ApplyOverrides(new AppConfig());
+
+        result.Symbols.Should().NotBeNull();
+        result.Symbols!.Select(s => s.Symbol).Should().Equal("SPY", "QQQ", "BRK.B");
+    }
+
+    [Fact]
+    public void ApplyOverrides_SymbolListWithNoSymbols_FailsClosed()
+    {
+        // Same contract as MDC_DATASOURCE: a variable the operator deliberately set must not
+        // resolve to "subscribe to nothing" in silence.
+        using var symbolsVar = new EnvironmentVariableScope("MDC_SYMBOLS", " , , ");
+
+        var sut = new ConfigEnvironmentOverride();
+        var act = () => sut.ApplyOverrides(new AppConfig());
+
+        act.Should().Throw<Meridian.Core.Exceptions.ConfigurationException>()
+            .WithMessage("*MDC_SYMBOLS*");
     }
 
     private sealed class EnvironmentVariableScope : IDisposable

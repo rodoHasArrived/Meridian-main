@@ -27,6 +27,7 @@ public sealed class ConfigEnvironmentOverride
         ["MDC_DATA_ROOT"] = "DataRoot",
         ["MDC_COMPRESS"] = "Compress",
         ["MDC_DATASOURCE"] = "DataSource",
+        ["MDC_SYMBOLS"] = "Symbols",
         ["MDC_SYNTHETIC_MODE"] = "Synthetic:Enabled",
 
         // Alpaca settings
@@ -211,6 +212,7 @@ public sealed class ConfigEnvironmentOverride
             "DataRoot" => config with { DataRoot = value },
             "Compress" => config with { Compress = ParseBool(value) },
             "DataSource" => config with { DataSource = ParseDataSource(value) },
+            "Symbols" => config with { Symbols = ParseSymbols(value) },
             "Synthetic" => ApplySyntheticOverride(config, parts.Skip(1).ToArray(), value),
             "Alpaca" => ApplyAlpacaOverride(config, parts.Skip(1).ToArray(), value),
             "IB" => ApplyIbOverride(config, parts.Skip(1).ToArray(), value),
@@ -394,6 +396,30 @@ public sealed class ConfigEnvironmentOverride
             $"Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.",
             configPath: null,
             fieldName: "DataSource");
+    }
+
+    private static SymbolConfig[] ParseSymbols(string value)
+    {
+        // SymbolConfigValidator matches ^[A-Z0-9\-\.\/]+$, so a lowercase ticker typed into the
+        // environment would otherwise fail validation rather than subscribe. Character validity
+        // is deliberately left to that validator instead of being restated here.
+        var symbols = value
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(symbol => new SymbolConfig(symbol.ToUpperInvariant()))
+            .ToArray();
+
+        // Same fail-closed contract as MDC_DATASOURCE: a variable the operator deliberately set
+        // must not resolve to "subscribe to nothing" in silence.
+        if (symbols.Length == 0)
+        {
+            throw new Meridian.Core.Exceptions.ConfigurationException(
+                $"MDC_SYMBOLS was set to '{value}' but contains no symbols. " +
+                "Expected a comma-separated list such as 'SPY,QQQ'.",
+                configPath: null,
+                fieldName: "Symbols");
+        }
+
+        return symbols;
     }
 
     private static bool IsSensitiveVariable(string envVar)

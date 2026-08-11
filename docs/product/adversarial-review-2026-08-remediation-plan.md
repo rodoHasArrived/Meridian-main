@@ -803,9 +803,15 @@ still `in_progress`.
   permanent unavailable/placeholder state, and cross-check mounted routes against
   `UNWIRED_WORKSTATION_ROUTES` so a dead end is either registered as unwired or fails the test; (b) a static reachability assertion over `api.ts` exports and
   `components/meridian/*.tsx`, failing on new orphans with a frozen baseline; (c) a DI-resolution
-  test asserting every registered interface with a concrete implementation resolves from the
-  production container — that one test would have caught the unregistered recurring-journal service
-  and AR8-12's unregistered walk-forward harness.
+  test over the production container. **Enumerating the registrations cannot catch this class** —
+  a service missing from DI entirely is absent from that enumeration, so the test passes, and
+  neither the unregistered recurring-journal service nor AR8-12's walk-forward harness would be
+  detected by it. Drive the check from the *expected* side instead: scan the implementation
+  assemblies for concrete types implementing a Meridian service interface, compare that set
+  against the container's service descriptors, and fail on any contract with an implementation
+  but no registration. Back it with an explicit inventory of required production contracts —
+  including `IWalkForwardService` and the recurring-journal service by name — so a contract that
+  is neither scanned nor registered still fails.
   **Verify:** each new test fails against the pre-fix tree and passes after W11's fixes.
   **Effort:** M · **Highest leverage in this workstream**
 

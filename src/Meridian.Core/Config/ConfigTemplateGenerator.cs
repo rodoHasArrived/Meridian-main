@@ -314,9 +314,14 @@ public sealed class ConfigTemplateGenerator
                 NamingConvention = "BySymbol",
                 DatePartition = "Daily"
             },
+            // Parseable for the same reason DataSource is: SymbolConfigValidator matches
+            // ^[A-Z0-9\-\.\/]+$ and RuleForEach runs on every generated template, so the
+            // "${MDC_SYMBOLS:-SPY}" placeholder failed validation unconditionally — the $, {, },
+            // and : are all outside the character class. MDC_SYMBOLS now overrides this through
+            // ConfigEnvironmentOverride rather than through shell expansion that never ran.
             Symbols = new[]
             {
-                new { Symbol = "${MDC_SYMBOLS:-SPY}", SubscribeTrades = true, SubscribeDepth = true }
+                new { Symbol = "SPY", SubscribeTrades = true, SubscribeDepth = true }
             }
         };
 

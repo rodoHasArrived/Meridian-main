@@ -8920,6 +8920,7 @@ Meridian-main
 │   │   │   │   ├── AppConfigJsonOptionsTests.cs
 │   │   │   │   ├── ConfigEnvironmentOverrideTests.cs
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
+│   │   │   │   ├── ConfigTemplateGeneratorTests.cs
 │   │   │   │   ├── ConfigValidationPipelineTests.cs
 │   │   │   │   ├── ConfigValidatorTests.cs
 │   │   │   │   ├── ConfigWatcherTests.cs

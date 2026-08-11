@@ -46,6 +46,7 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 | `MDC_DATA_ROOT` | `DataRoot` | Root directory for data storage | No | `data` |
 | `MDC_COMPRESS` | `Compress` | Enable gzip compression (`true`/`false`) | No | `false` |
 | `MDC_DATASOURCE` | `DataSource` | Real-time streaming provider: `IB`, `Alpaca`, `Polygon`, `NYSE`, `Synthetic`. `Yahoo` is a `DataSourceKind` member but has no streaming factory, so it is backfill-only and rejected here. | No | `Synthetic` |
+| `MDC_SYMBOLS` | `Symbols` | Comma-separated symbols to subscribe, replacing the configured list (`SPY,QQQ`). Values are uppercased because `SymbolConfigValidator` matches `^[A-Z0-9\-\.\/]+$`, and each symbol takes the `SymbolConfig` defaults. Symbols needing per-symbol contract fields (options, preferreds with a `LocalSymbol`) must be configured in JSON instead. A value that yields no symbols fails startup rather than silently subscribing to nothing. | No | config file |
 
 Installed releases do not require users to set `MDC_DATA_ROOT`: the lifecycle supervisor injects the
 resolved manifest data root, defaulting to `%LOCALAPPDATA%\Meridian\Data`.
