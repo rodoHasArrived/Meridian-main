@@ -31,6 +31,10 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     whole-program adverse review of end-user functionality with `file:line` evidence; re-tests the
     2026-07 review's headline, documents acceptance-vs-wired drift, and ranks improvement areas by
     end-user value uplift
+  - [Adversarial Review 2026-08 Remediation Plan](adversarial-review-2026-08-remediation-plan.md) —
+    every finding from that review as a tracked todo with a code-ready implementation plan
+    (evidence, change, verification, effort, dependencies) across thirteen sequenced workstreams;
+    a working plan, not a status source
   - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
     independent review pass that motivated the activation-over-expansion and truth-discipline
     doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`

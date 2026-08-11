@@ -410,11 +410,18 @@ The 14,000-test headline materially overstates delivered assurance:
   `Meridian.Setup.Tests` runs in no lane at all — the comment admits it was added to the
   exemption list after failing the coverage gate. The code that can destroy a customer's install
   (`InstallationTransaction.Promote/Recover`) is covered by tests that never execute.
-- **Quarantine instead of repair.** Six accounting-readiness tests were `[Fact(Skip)]`-ed against
-  the same commit that shipped "complete, critical" `W9-ASSET-010`
-  (`tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs:770,1075,1474,1647,5461`);
-  one documents that a readiness control count silently regressed from 23 to 2 because a helper
-  became a no-op stub.
+- **A `done`, `critical` row shipped with six of its own readiness tests quarantined.** Six
+  accounting-readiness tests were skipped against the same commit that shipped `W9-ASSET-010`
+  (`tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs:770,1075,1474,1647,5461`,
+  `tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs:470`); one records a
+  readiness control count regressing from 23 to 2 because a helper became a no-op stub. Credit where
+  due: the quarantine was **not** silent — `build/scripts/ci/check-test-skip-register.py` requires
+  every skip to carry an owner, category, tracking reference, and review-by date, and all six are
+  registered against `W9-ASSET-010` with `review_by: 2026-11-01`, failing the gate if that date
+  passes. The register is a genuinely strong control and is working; what it exposes is an
+  acceptance decision — a row was marked complete while the tests that would contradict it were
+  parked. The register's own documented gap is scope: Python suites under `tests/scripts` are not
+  covered (tracked as `PRD-112`).
 - **The repo violates its own test-quality rules at scale**: 117 tautological assertions, 59 bare
   catches in test bodies, 24 base-`Exception` assertions — all patterns `ai-known-errors.md`
   marks "fixed" — plus tests asserting that scripts and READMEs contain literal strings.
@@ -452,6 +459,9 @@ The 14,000-test headline materially overstates delivered assurance:
   stakeholder who never reaches the disclaimer. Pick one generator and let it own every number.
 
 ## Prioritized improvement list (by end-user value uplift)
+
+> Every finding below is broken into tracked todos with code-ready implementation plans in
+> [Adversarial Review 2026-08 — Remediation Todos and Implementation Plans](adversarial-review-2026-08-remediation-plan.md).
 
 1. **Ship the first mile.** Close PRD-013/014/016 (publish → sign → install evidence, required-check
    activation), add `--create-user`/`--hash-password`, fix or archive `deploy/`, one-line
