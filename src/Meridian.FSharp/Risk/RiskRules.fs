@@ -86,6 +86,62 @@ let symbolConcentration (ctx: RiskContext) : RiskDecision =
             Approve
     | _ -> Approve
 
+/// Blocks the two classic order-entry mistakes: a quantity far larger than the desk ever
+/// intends to send in one order, and a price typed far through the market.
+///
+/// The price limb is deliberately *directional*. A resting buy far below the market and a
+/// resting sell far above it are ordinary working orders, so only the aggressive side is
+/// measured — paying above the reference on a buy, or selling below it on a sell. A
+/// symmetric band would reject the entire resting book, which is why the deviation is
+/// signed against the order's side rather than taken as an absolute.
+///
+/// Only the order's own limit price is measured. A stop price sits away from the market by
+/// design — that is what makes it a stop — so measuring it would reject every stop-loss.
+/// The caller decides which price to supply; this rule never sees a stop price.
+///
+/// Quantity is checked before price so the rejection names the mistake an operator is most
+/// likely to have made, and both limbs approve when their threshold is unconfigured.
+let fatFinger (ctx: RiskContext) : RiskDecision =
+    let quantityBreach =
+        match ctx.MaxOrderQuantity with
+        | Some maxQuantity when maxQuantity > 0m && abs ctx.Request.Quantity > maxQuantity ->
+            Some (
+                sprintf
+                    "Fat-finger quantity: %.2f on %s exceeds the %.2f per-order ceiling"
+                    (float (abs ctx.Request.Quantity))
+                    ctx.Request.Symbol
+                    (float maxQuantity))
+        | _ -> None
+
+    match quantityBreach with
+    | Some reason -> Reject reason
+    | None ->
+        match ctx.OrderPrice, ctx.ReferencePrice, ctx.MaxPriceDeviationPercent with
+        | Some orderPrice, Some reference, Some maxDeviation when
+            orderPrice > 0m && reference > 0m && maxDeviation > 0m ->
+            let signedDeviation = ((orderPrice - reference) / reference) * 100m
+            // Positive means the order is priced aggressively against the operator: a buy
+            // paying above the reference, or a sell hitting below it. A negative value is a
+            // passive resting order and never breaches.
+            let aggressiveDeviation =
+                match ctx.Request.Side with
+                | OrderSide.Buy -> signedDeviation
+                | OrderSide.Sell -> -signedDeviation
+                | _ -> 0m
+
+            if aggressiveDeviation > maxDeviation then
+                Reject (
+                    sprintf
+                        "Fat-finger price: %s at %.4f is %.2f%% through the %.4f reference, beyond the %.2f%% band"
+                        ctx.Request.Symbol
+                        (float orderPrice)
+                        (float aggressiveDeviation)
+                        (float reference)
+                        (float maxDeviation))
+            else
+                Approve
+        | _ -> Approve
+
 /// Gates per-order notional: above the hard ceiling rejects outright; inside the
 /// escalation band the order is parked for governed approval instead of routed.
 let orderNotional (ctx: RiskContext) : RiskDecision =

@@ -46,7 +46,9 @@ public sealed record RiskRuleConfigDto(
     decimal? MaxGrossExposure = null,
     decimal? MaxSymbolConcentrationPercent = null,
     decimal? MaxOrderNotional = null,
-    decimal? EscalateOrderNotional = null);
+    decimal? EscalateOrderNotional = null,
+    decimal? MaxOrderQuantity = null,
+    decimal? MaxPriceDeviationPercent = null);
 
 public sealed record RiskRuleConfigUpdateRequest(
     decimal? DefaultMaxPositionSize = null,
@@ -57,7 +59,9 @@ public sealed record RiskRuleConfigUpdateRequest(
     decimal? MaxGrossExposure = null,
     decimal? MaxSymbolConcentrationPercent = null,
     decimal? MaxOrderNotional = null,
-    decimal? EscalateOrderNotional = null);
+    decimal? EscalateOrderNotional = null,
+    decimal? MaxOrderQuantity = null,
+    decimal? MaxPriceDeviationPercent = null);
 
 /// <summary>
 /// Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only
@@ -88,6 +92,10 @@ public sealed class RiskRuleRuntimeService
     private decimal? _maxSymbolConcentrationPercent;
     private decimal? _maxOrderNotional;
     private decimal? _escalateOrderNotional;
+
+    // Fat-finger bands. Null = unconfigured: the corresponding limb approves without measuring.
+    private decimal? _maxOrderQuantity;
+    private decimal? _maxPriceDeviationPercent;
 
     public RiskRuleRuntimeService(
         IServiceProvider services,
@@ -141,6 +149,19 @@ public sealed class RiskRuleRuntimeService
     /// read per evaluation by the enforced order-notional rule. Null when unconfigured.
     /// </summary>
     public decimal? EscalateOrderNotional { get { lock (_gate) { return _escalateOrderNotional; } } }
+
+    /// <summary>
+    /// Operator-tuned absolute per-order quantity ceiling, read per evaluation by the enforced
+    /// fat-finger rule. Null when unconfigured (the quantity limb approves).
+    /// </summary>
+    public decimal? MaxOrderQuantity { get { lock (_gate) { return _maxOrderQuantity; } } }
+
+    /// <summary>
+    /// Operator-tuned maximum aggressive price deviation from the market reference, in percent,
+    /// read per evaluation by the enforced fat-finger rule. Null when unconfigured (the price
+    /// limb approves, and a priced order with no reference price is no longer refused).
+    /// </summary>
+    public decimal? MaxPriceDeviationPercent { get { lock (_gate) { return _maxPriceDeviationPercent; } } }
 
     /// <summary>
     /// Evaluates the drawdown circuit breaker against the same live portfolio state and
@@ -200,7 +221,8 @@ public sealed class RiskRuleRuntimeService
             BuildOrderRateStatus(auditEntries, asOf),
             BuildGrossExposureStatus(auditEntries, asOf),
             BuildSymbolConcentrationStatus(auditEntries, asOf),
-            BuildOrderNotionalStatus(auditEntries, asOf)
+            BuildOrderNotionalStatus(auditEntries, asOf),
+            BuildFatFingerStatus(auditEntries, asOf)
         ];
     }
 
@@ -272,6 +294,14 @@ public sealed class RiskRuleRuntimeService
                     MaxOrdersPerMinute: null,
                     MaxOrderNotional: _maxOrderNotional,
                     EscalateOrderNotional: _escalateOrderNotional),
+                "FatFinger" => new RiskRuleConfigDto(
+                    RuleName: "FatFinger",
+                    DefaultMaxPositionSize: null,
+                    SymbolPositionLimits: null,
+                    MaxDrawdownPercent: null,
+                    MaxOrdersPerMinute: null,
+                    MaxOrderQuantity: _maxOrderQuantity,
+                    MaxPriceDeviationPercent: _maxPriceDeviationPercent),
                 _ => null
             };
         }
@@ -409,6 +439,42 @@ public sealed class RiskRuleRuntimeService
                     LogSanitizer.Sanitize(actor),
                     maxOrderNotional?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured",
                     escalateOrderNotional?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
+                break;
+            case "FatFinger":
+                if (!request.MaxOrderQuantity.HasValue && !request.MaxPriceDeviationPercent.HasValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(request.MaxOrderQuantity), "Provide MaxOrderQuantity and/or MaxPriceDeviationPercent.");
+                }
+
+                // Each limb merges independently against whatever is current at commit time, so
+                // setting one band never silently clears the other.
+                decimal? maxOrderQuantity = null;
+                decimal? maxPriceDeviationPercent = null;
+                await CommitThresholdsAsync(
+                    current =>
+                    {
+                        maxOrderQuantity = request.MaxOrderQuantity.HasValue
+                            ? NormalizeThreshold(request.MaxOrderQuantity, nameof(request.MaxOrderQuantity), required: false)
+                            : current.MaxOrderQuantity;
+                        maxPriceDeviationPercent = request.MaxPriceDeviationPercent.HasValue
+                            ? NormalizeThreshold(request.MaxPriceDeviationPercent, nameof(request.MaxPriceDeviationPercent), required: false)
+                            : current.MaxPriceDeviationPercent;
+
+                        return current with
+                        {
+                            MaxOrderQuantity = maxOrderQuantity,
+                            MaxPriceDeviationPercent = maxPriceDeviationPercent
+                        };
+                    },
+                    actor,
+                    request.Reason,
+                    ct).ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Risk rule config updated for {RuleName} by {Actor}: quantity ceiling {MaxOrderQuantity}, price-deviation band {MaxPriceDeviationPercent}%",
+                    normalizedRule,
+                    LogSanitizer.Sanitize(actor),
+                    maxOrderQuantity?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured",
+                    maxPriceDeviationPercent?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
                 break;
             default:
                 return null;
@@ -855,6 +921,51 @@ public sealed class RiskRuleRuntimeService
             Severity: escalateAt.HasValue ? "Escalate" : "Error");
     }
 
+    private RiskRuleStatusDto BuildFatFingerStatus(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        DateTimeOffset asOf)
+    {
+        var maxQuantity = MaxOrderQuantity;
+        var maxDeviationPercent = MaxPriceDeviationPercent;
+
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "fat-finger");
+        var violations = DescribeViolations(violationEntries, "fat-finger");
+        var configured = maxQuantity.HasValue || maxDeviationPercent.HasValue;
+        var breached = HasLiveViolation(violationEntries, asOf);
+        var state = breached
+            ? "Constrained"
+            : configured ? "Healthy" : "Observe";
+        var summary = breached
+            ? "Recent orders were rejected by the fat-finger quantity or price-deviation band."
+            : configured
+                ? "Fat-finger bands are configured and no recent breaches were detected."
+                : "No fat-finger bands are configured; the rule approves all orders.";
+
+        var threshold = (maxQuantity, maxDeviationPercent) switch
+        {
+            (not null, not null) =>
+                $"reject > {maxQuantity.Value.ToString("G29", CultureInfo.InvariantCulture)} qty, "
+                + $"reject > {maxDeviationPercent.Value.ToString("G29", CultureInfo.InvariantCulture)}% through market",
+            (not null, null) => $"reject > {maxQuantity.Value.ToString("G29", CultureInfo.InvariantCulture)} qty",
+            (null, not null) => $"reject > {maxDeviationPercent.Value.ToString("G29", CultureInfo.InvariantCulture)}% through market",
+            _ => "unconfigured"
+        };
+
+        return new RiskRuleStatusDto(
+            RuleName: "FatFinger",
+            State: state,
+            Summary: summary,
+            IsBreached: breached,
+            Threshold: threshold,
+            // The gate measures each order on its own, so there is no standing value to report
+            // between orders. Saying so beats printing a zero that reads like measured headroom.
+            CurrentValue: configured ? "per-order" : "not enforced",
+            AsOf: asOf,
+            RecentViolations: violations,
+            UtilizationPercent: null,
+            Severity: "Error");
+    }
+
     /// <summary>
     /// Percentage of the threshold consumed by the current value, clamped to [0, 999.99].
     /// Null when no threshold is configured.
@@ -1006,6 +1117,7 @@ public sealed class RiskRuleRuntimeService
             "grossexposure" => "GrossExposure",
             "symbolconcentration" => "SymbolConcentration",
             "ordernotional" => "OrderNotional",
+            "fatfinger" => "FatFinger",
             _ => null
         };
     }
@@ -1045,7 +1157,9 @@ public sealed class RiskRuleRuntimeService
         decimal? MaxGrossExposure,
         decimal? MaxSymbolConcentrationPercent,
         decimal? MaxOrderNotional,
-        decimal? EscalateOrderNotional);
+        decimal? EscalateOrderNotional,
+        decimal? MaxOrderQuantity,
+        decimal? MaxPriceDeviationPercent);
 
     /// <summary>
     /// Applies a threshold change with persist-then-publish ordering: the proposed state is
@@ -1073,7 +1187,9 @@ public sealed class RiskRuleRuntimeService
                     _maxGrossExposure,
                     _maxSymbolConcentrationPercent,
                     _maxOrderNotional,
-                    _escalateOrderNotional));
+                    _escalateOrderNotional,
+                    _maxOrderQuantity,
+                    _maxPriceDeviationPercent));
             }
 
             var snapshot = new RiskRuleRuntimeSnapshot(
@@ -1085,7 +1201,9 @@ public sealed class RiskRuleRuntimeService
                 MaxGrossExposure: proposed.MaxGrossExposure,
                 MaxSymbolConcentrationPercent: proposed.MaxSymbolConcentrationPercent,
                 MaxOrderNotional: proposed.MaxOrderNotional,
-                EscalateOrderNotional: proposed.EscalateOrderNotional);
+                EscalateOrderNotional: proposed.EscalateOrderNotional,
+                MaxOrderQuantity: proposed.MaxOrderQuantity,
+                MaxPriceDeviationPercent: proposed.MaxPriceDeviationPercent);
             var payload = JsonSerializer.Serialize(snapshot, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
             await AtomicFileWriter.WriteAsync(_options.SnapshotPath, payload, ct).ConfigureAwait(false);
 
@@ -1097,6 +1215,8 @@ public sealed class RiskRuleRuntimeService
                 _maxSymbolConcentrationPercent = proposed.MaxSymbolConcentrationPercent;
                 _maxOrderNotional = proposed.MaxOrderNotional;
                 _escalateOrderNotional = proposed.EscalateOrderNotional;
+                _maxOrderQuantity = proposed.MaxOrderQuantity;
+                _maxPriceDeviationPercent = proposed.MaxPriceDeviationPercent;
             }
         }
         finally
@@ -1141,6 +1261,8 @@ public sealed class RiskRuleRuntimeService
                 _maxSymbolConcentrationPercent = snapshot.MaxSymbolConcentrationPercent is > 0m ? snapshot.MaxSymbolConcentrationPercent : null;
                 _maxOrderNotional = snapshot.MaxOrderNotional is > 0m ? snapshot.MaxOrderNotional : null;
                 _escalateOrderNotional = snapshot.EscalateOrderNotional is > 0m ? snapshot.EscalateOrderNotional : null;
+                _maxOrderQuantity = snapshot.MaxOrderQuantity is > 0m ? snapshot.MaxOrderQuantity : null;
+                _maxPriceDeviationPercent = snapshot.MaxPriceDeviationPercent is > 0m ? snapshot.MaxPriceDeviationPercent : null;
             }
         }
         catch (Exception exception)
@@ -1170,7 +1292,9 @@ public sealed record RiskRuleRuntimeSnapshot(
     decimal? MaxGrossExposure = null,
     decimal? MaxSymbolConcentrationPercent = null,
     decimal? MaxOrderNotional = null,
-    decimal? EscalateOrderNotional = null);
+    decimal? EscalateOrderNotional = null,
+    decimal? MaxOrderQuantity = null,
+    decimal? MaxPriceDeviationPercent = null);
 
 [JsonSerializable(typeof(RiskRuleRuntimeSnapshot))]
 internal sealed partial class RiskRuleRuntimeSnapshotJsonContext : JsonSerializerContext

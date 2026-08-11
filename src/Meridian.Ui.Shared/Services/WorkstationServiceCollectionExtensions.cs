@@ -430,6 +430,14 @@ public static class WorkstationServiceCollectionExtensions
             }
 
             var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();
+            // Fat-finger runs ahead of the portfolio-aware rules (Priority -10) so a mistyped
+            // order is attributed to the mistake rather than to whichever exposure ceiling its
+            // inflated size happened to breach.
+            rules.Add(new Meridian.Risk.Rules.FatFingerRule(
+                exposureProvider,
+                () => runtime.MaxOrderQuantity,
+                () => runtime.MaxPriceDeviationPercent,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.FatFingerRule>>()));
             rules.Add(new Meridian.Risk.Rules.GrossExposureRule(
                 exposureProvider,
                 () => runtime.MaxGrossExposure,
