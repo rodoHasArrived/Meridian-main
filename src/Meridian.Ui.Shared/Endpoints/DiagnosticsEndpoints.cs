@@ -1,14 +1,15 @@
-using System.Text.Json;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Meridian.Core.Config;
-using Meridian.Contracts.Coordination;
+using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Coordination;
 using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
 using Meridian.Core.Diagnostics;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Platform.Diagnostics;
 using Meridian.Storage;
@@ -47,6 +48,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("RunDiagnosticsDryRun")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ViewDiagnostics))
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -290,6 +292,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("RunDiagnosticsValidate")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ViewDiagnostics))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -329,6 +332,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("TestDiagnosticsProvider")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ViewDiagnostics))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -401,6 +405,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("RunDiagnosticsSelftest")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ViewDiagnostics))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -418,6 +423,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("ValidateDiagnosticsCredentials")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageCredentials))
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -457,6 +463,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("TestDiagnosticsConnectivity")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ViewDiagnostics))
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -488,6 +495,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("ValidateDiagnosticsConfig")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ViewDiagnostics))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
