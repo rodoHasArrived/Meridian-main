@@ -212,6 +212,18 @@ above** — several of these are why a change is scoped the way it is.
   once the market reaches or passes above it, so a buy stop typed *beneath* the market is already
   crossed and a stop-market order that triggers on acceptance routes unbounded. Change 1 measures
   that mirrored direction under the same band.
+- **Matching the precedence is not enough on its own — the two must share the observation, and its
+  freshness policy.** Every other accessor on `AggregatePortfolioExposureProvider` discards
+  quotes and trades older than five minutes, on purpose; `PaperMarketObservation.Capture` applies no
+  age filter at all and the matcher fires from whatever the feed cache still holds. So a stale $130
+  print beside a fresh $100 ask makes a buy stop at $125 look resting to a freshness-aware accessor
+  while the gateway triggers it immediately. Change 1 resolves this by reading the matcher's own
+  captured observation through `PaperMarketObservation.ResolveStopTriggerPrice` — one shared method,
+  not two implementations that must agree — but **only where a paper gateway is composed**. Against
+  a live broker no in-process matcher decides the fill and the cache retains prints indefinitely, so
+  there the same precedence runs over *current* observations instead, and the posture defaults to
+  live because that is the side on which guessing wrong routes an unbounded order. The collar
+  inherits both halves.
 - **Changes 1 and 2 gate submission only, and that bound belongs in the plan rather than in a
   reviewer's thread.** `OrderManagementSystem.IsRiskIncreasing` revalidates a quantity increase or a
   numerically *higher* limit or stop price, but the dangerous direction is a *decrease* for a sell
@@ -341,6 +353,15 @@ above** — several of these are why a change is scoped the way it is.
   while hydrating management requests — or back the declaration with a filter that can resolve the
   session — and cover the browser-admin path in its tranche tests. Both are pre-existing conditions
   the burn-down *surfaces*; neither is caused by it, and neither can be discovered after the fact.
+- **Presence is not correctness: assert the *exact* permission, not that one exists.** A tranche
+  that attaches the wrong non-zero permission — a reporting permission to a structure mutation, say
+  — passes the behavioural sweep (the route now returns 403 to an unpermissioned caller) *and* the
+  metadata-presence assertion, while an unrelated role can execute the write. Nothing in the plan
+  or the suite closes that: `RoleAuthorizationTests` verifies what built-in roles contain, not what
+  each mapped endpoint declares. Each tranche therefore ratchets an expected-permission manifest —
+  route to declared permission, compared exactly — and tests that a representative *unrelated*
+  permission is rejected. The mixed `/api/fund-structure` family is where this matters most, since
+  it is precisely the group whose routes span structure and reporting permissions.
 - **The unresolved *writes* need a metadata baseline too, and the behavioural one is not it.** The
   112-entry ratchet records observed status codes and fixture failures, not declarations, so a route
   can sit in that baseline while its mapping carries no `EndpointAuthorizationMetadata` at all —
@@ -402,6 +423,17 @@ above** — several of these are why a change is scoped the way it is.
   unstamped rows, plus a quarantine or upgrade-validation path for whatever it still cannot
   attribute, and only then flip the predicate. Regression tests prove the tightened predicate; they
   do not prove the data was ready for it.
+- **And there is a third class of caller with no ambient tenant at all: background readers.**
+  `WorkstationFundScopeTenantAccessor.ResolveCallerTenant` returns null without an `HttpContext`,
+  and `PostgresLedgerJournalStore` derives its read predicate from that ambient accessor alone —
+  `ILedgerJournalStore` notes its unchanged interface serves roughly fifty internal and worker call
+  sites. So the moment an unresolved tenant fails closed, every out-of-request ledger read loses
+  access even when the job holds valid retained authority. `StatementFetchSchedulerService` is a
+  concrete case: it retains and reauthorizes tenant and company data, but never establishes an
+  ambient tenant before change 11's journal read, so scheduled reconciliation would fail or silently
+  produce an empty ledger population after the flip. Change 9 must inventory these background
+  readers and add an explicit scoped-worker or system authority for them, with a scheduled-import
+  regression test, before rejecting a null ambient tenant.
 - **The same applies to accounts, and not only the legacy ones.** `RequireFundScopedWriteTenant`
   needs a resolvable company on the session, but `InitialAccountBootstrapService` creates the ordinary
   first-run administrator with a null company, and `UserAccountConfig.CompanyId` is optional for both
