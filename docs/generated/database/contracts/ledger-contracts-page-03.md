@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 283. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 284. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -266,6 +266,8 @@ classDiagram
         +Guid? InstrumentId
         +string? InvestorId
         +string? OrganizationId
+    }
+    class Meridian_Contracts_Ledger_LedgerDimensionTags["LedgerDimensionTags"] {
     }
     class Meridian_Contracts_Ledger_LedgerJournalEntryDto["LedgerJournalEntryDto"] {
         +AccountingBasisKindDto AccountingBasis
@@ -659,20 +661,6 @@ classDiagram
         +string? SuggestedAction
         +string? TargetId
     }
-    class Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto["PostingRuleJournalCandidateRequestDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +DateTimeOffset AccountingTimestamp
-        +string Actor
-        +LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval
-        +Guid AggregateId
-        +AssetLotMutationInstructionDto? AssetLotMutation
-        +AccountingBookContextDto? BookContext
-        +Guid? BookPositionId
-        +string? CompanyId
-        +Guid? CorrelationId
-        +string? CounterpartyId
-        +string Currency
-    }
     Meridian_Contracts_Ledger_InvestorCapitalStatementDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionRequestDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionRequestDto --> Meridian_Contracts_Ledger_ManualJournalEntryLineDto
@@ -737,10 +725,6 @@ classDiagram
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentExpectedCashMovementDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentReconciliationLinkDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowStatusDto
-    Meridian_Contracts_Ledger_PostPostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto
     Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto
     Meridian_Contracts_Ledger_PostingRuleDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
 ```
