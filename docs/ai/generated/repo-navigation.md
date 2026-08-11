@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-11T14:06:52Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-11T14:13:13Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,7 +133,8 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Core/Config/ConfigTemplateGenerator.cs` | Host and Composition | `567a9ce9` (2026-08-11T13:42:19+00:00) | 5 |
+| `src/Meridian.Core/Config/ConfigTemplateGenerator.cs` | Host and Composition | `423de525` (2026-08-11T14:07:28+00:00) | 6 |
+| `src/Meridian.Core/Config/ConfigEnvironmentOverride.cs` | Host and Composition | `423de525` (2026-08-11T14:07:28+00:00) | 4 |
 | `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx` | Desktop and UI Workflows | `6daeb936` (2026-08-11T09:56:20+00:00) | 6 |
 | `src/Meridian.Mcp/Tools/ConventionTools.cs` | MCP Integration | `01652ac3` (2026-08-11T09:42:23+00:00) | 4 |
 | `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `80440650` (2026-08-11T09:39:23+00:00) | 7 |
@@ -147,5 +148,4 @@ Recent source-file activity from the last 14 days.
 | `src/Meridian.Ui/wwwroot/workstation/assets/cash-ladder-screen-k6ym6guS.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 | `src/Meridian.Ui/wwwroot/workstation/assets/checkbox-MO_IFx1t.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 | `src/Meridian.Ui/wwwroot/workstation/assets/concrete-oaHCV-89.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/covered-call-screen-DcglJeZk.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 
