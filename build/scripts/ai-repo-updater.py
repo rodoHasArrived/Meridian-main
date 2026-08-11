@@ -90,7 +90,22 @@ UNSEALED_CLASS = re.compile(r"(?<!\bsealed\s)(?<!\babstract\s)(?<!\bstatic\s)\bc
 IMPLEMENTS_ADR = re.compile(r"\[ImplementsAdr\(")
 STRING_INTERPOLATION_LOG = re.compile(r'_logger\.Log\w+\(\$"')
 TASK_RUN_IO = re.compile(r"Task\.Run\(")
-BLOCKING_ASYNC = re.compile(r"\.(Result|Wait\(\))")
+# `\b` after Result keeps `.Results` (a collection property) from matching.
+BLOCKING_ASYNC = re.compile(r"\.(?:Result\b|Wait\(\))")
+# The receiver immediately before `.Result`: either a task-ish identifier or an
+# `Async(...)` call. Without this, a `Task.FromResult(...)` elsewhere on the line
+# vouches for an unrelated `.Result` (e.g. a record-struct member named Result).
+BLOCKING_ASYNC_RECEIVER = re.compile(r"(?:\w*[Tt]ask|Async\s*\([^()]*\))\s*(?:\.\w+\s*\(\s*\))*\.(?:Result\b|Wait\(\))")
+# Accessing .Result after an explicit completion check cannot deadlock.
+COMPLETED_TASK_GUARD = re.compile(r"\bIs(?:CompletedSuccessfully|Completed|Faulted|Canceled)\b")
+SYNC_OVER_ASYNC = re.compile(r"\.GetAwaiter\(\)\.GetResult\(\)")
+# Sync IDisposable bridging to async teardown — the accepted pattern, no alternative.
+DISPOSE_CONTEXT_METHOD = re.compile(r"^(?:Dispose|DisposeCore|DisposeAsyncCore|Close|Shutdown|Finalize)$")
+DISPOSE_CALLEE = re.compile(r"\b(?:DisposeAsync|DisposeCoreAsync|TerminateAsync)\s*\(")
+METHOD_SIGNATURE = re.compile(
+    r"^\s*(?:(?:public|private|protected|internal|static|virtual|override|sealed|partial|async|new|extern)\s+)*"
+    r"[\w<>,\[\]\?\.]+\s+(\w+)\s*\("
+)
 STRUCTURED_LOG = re.compile(r'_logger\.Log\w+\("[^"]*\{')
 HTTP_CLIENT_NEW = re.compile(r"new\s+HttpClient\s*\(")
 
@@ -249,6 +264,33 @@ def is_inside_string_literal(line: str, index: int) -> bool:
     return in_string
 
 
+def enclosing_method_name(lines: list[str], index: int, lookback: int = 40) -> str | None:
+    """Return the nearest method name at or above ``index``, or None if not found.
+
+    Regex-based rather than parsed, so it can mis-attribute inside deeply nested
+    local functions; callers should treat a miss as "unknown", not "not a method".
+    """
+    for k in range(index, max(-1, index - lookback), -1):
+        match = METHOD_SIGNATURE.match(lines[k])
+        if match:
+            return match.group(1)
+    return None
+
+
+def is_sync_dispose_bridge(lines: list[str], index: int) -> bool:
+    """True when a sync-over-async call is the accepted IDisposable-over-async bridge.
+
+    Two independent signals, because neither alone is sufficient: the enclosing
+    method catches non-Dispose-named callees inside ``Dispose()``, while the callee
+    check catches dispose callbacks in DI-registration lambdas where the enclosing
+    method scan finds no name.
+    """
+    if DISPOSE_CALLEE.search(lines[index]):
+        return True
+    enclosing = enclosing_method_name(lines, index)
+    return bool(enclosing and DISPOSE_CONTEXT_METHOD.match(enclosing))
+
+
 # ---------------------------------------------------------------------------
 # Analysers
 # ---------------------------------------------------------------------------
@@ -326,19 +368,55 @@ def audit_code(root: Path, report: AuditReport) -> None:  # noqa: C901
         # --- Check: blocking async (.Result / .Wait()) ---
         for i, line in enumerate(lines, 1):
             match = BLOCKING_ASYNC.search(line)
-            if match and "Task" in line:
-                stripped = line.strip()
-                if stripped.startswith("//") or stripped.startswith("*"):
-                    continue
-                if is_inside_string_literal(line, match.start()):
-                    continue
-                report.add(Finding(
-                    category="blocking-async",
-                    severity="critical",
-                    file=rel, line=i,
-                    message="Blocking async code (.Result or .Wait()) can cause deadlocks.",
-                    fix_hint="Use 'await' instead of .Result or .Wait().",
-                ))
+            if not match:
+                continue
+            stripped = line.strip()
+            if stripped.startswith("//") or stripped.startswith("*"):
+                continue
+            if is_inside_string_literal(line, match.start()):
+                continue
+            # Require the receiver itself to look like a task; a Task.FromResult
+            # elsewhere on the line is not evidence about this .Result.
+            if not BLOCKING_ASYNC_RECEIVER.search(line):
+                continue
+            # An explicit completion check upstream makes the access safe.
+            guard_window = lines[max(0, i - 5):i - 1]
+            if any(COMPLETED_TASK_GUARD.search(prev) for prev in guard_window):
+                continue
+            report.add(Finding(
+                category="blocking-async",
+                severity="critical",
+                file=rel, line=i,
+                message="Blocking async code (.Result or .Wait()) can cause deadlocks.",
+                fix_hint="Use 'await' instead of .Result or .Wait().",
+            ))
+
+        # --- Check: sync-over-async (.GetAwaiter().GetResult()) ---
+        for i, line in enumerate(lines, 1):
+            match = SYNC_OVER_ASYNC.search(line)
+            if not match:
+                continue
+            stripped = line.strip()
+            if stripped.startswith("//") or stripped.startswith("*"):
+                continue
+            if is_inside_string_literal(line, match.start()):
+                continue
+            if is_sync_dispose_bridge(lines, i - 1):
+                continue
+            # Task.Run(...).GetAwaiter().GetResult() burns a pool thread *and*
+            # blocks on it — unambiguously wrong, unlike a plain sync bridge.
+            blocking_task_run = bool(TASK_RUN_IO.search(line))
+            report.add(Finding(
+                category="sync-over-async",
+                severity="critical" if blocking_task_run else "warning",
+                file=rel, line=i,
+                message=(
+                    "Task.Run(...).GetAwaiter().GetResult() blocks a thread-pool thread on async work."
+                    if blocking_task_run
+                    else "Sync-over-async (.GetAwaiter().GetResult()) can deadlock and stalls the caller."
+                ),
+                fix_hint="Make the caller async and await instead of blocking.",
+            ))
 
         # --- Check: Task.Run for likely I/O ---
         for i, line in enumerate(lines, 1):
