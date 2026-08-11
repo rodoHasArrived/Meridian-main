@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 29.3% |
-| Endpoint coverage | 40.3% |
-| Workstation contract coverage | 12.7% |
-| Endpoints documented | 250 / 620 |
-| Workstation contracts documented | 116 / 916 |
+| Weighted score | 29.2% |
+| Endpoint coverage | 40.2% |
+| Workstation contract coverage | 12.8% |
+| Endpoints documented | 249 / 620 |
+| Workstation contracts documented | 117 / 916 |
 
 ## Endpoint Coverage
 
@@ -512,7 +512,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/sampling/{sampleId}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:177` |
 | `POST` | `/api/schedules/cron/next-runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:42` |
 | `POST` | `/api/schedules/cron/validate` | Gap | `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:20` |
-| `POST` | `/api/security-master` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:343` |
+| `POST` | `/api/security-master` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:343` |
 | `POST` | `/api/security-master/aliases/upsert` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:427` |
 | `POST` | `/api/security-master/amend` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:371` |
 | `GET` | `/api/security-master/asset-profiles` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:77` |
@@ -1332,7 +1332,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `StatementReconciliationReportWorkflowStatusDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:209` |
 | `StatementRecordPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:73` |
 | `StatementRunBreakDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:346` |
-| `StatementRunCreateDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:298` |
+| `StatementRunCreateDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:298` |
 | `StatementRunDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:269` |
 | `StatementRunExceptionDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:361` |
 | `StatementRunReconcileRequestDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:316` |
@@ -1565,8 +1565,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 370 mapped endpoint gap(s).
-- Document or intentionally suppress 800 workstation contract gap(s).
+- Document or intentionally suppress 371 mapped endpoint gap(s).
+- Document or intentionally suppress 799 workstation contract gap(s).
 
 ---
 

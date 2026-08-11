@@ -202,18 +202,21 @@ above** — several of these are why a change is scoped the way it is.
   the baseline or the test fails. Progress is therefore mechanically measurable.
 - **Baseline concentration, recounted from current `origin/main` (112 entries).** The 152 figure in
   the row's own 2026-08-10 summary is a historical snapshot: 40 routes have been guarded since, and
-  `/api/environment-designer`, `/api/diagnostics`, `/api/storage`, and `/api/export` now have **zero**
+  `/api/environment-designer/*`, `/api/diagnostics/*`, `/api/storage/*`, and `/api/export/*` now have **zero**
   entries. Recount before scheduling a tranche — planning against 152 would allocate work to routes
   that are already done.
+  Prefixes are written in the `/api/name/*` route-family form on purpose: the API-coverage
+  dashboard indexes exact path tokens, so a bare `/api/name` here would credit that specific
+  root endpoint as documented when this table says nothing at all about its contract.
 
   | Prefix | Entries | | Prefix | Entries |
   | --- | ---: | --- | --- | ---: |
-  | `/api/fund-structure` | 34 | | `/api/quality` | 3 |
-  | `/api/workstation` | 16 | | `/api/subscriptions`, `/api/security-master`, `/api/schedules`, `/api/backfill`, `/api/alignment` | 2 each |
-  | `/api/maintenance` | 12 | | 11 single-entry prefixes (`sampling`, `reference-data`, `quant`, `providers`, `plaid`, `options`, `ledger`, `lean`, `health`, `execution`, `compliance`) | 11 |
-  | `/api/symbols` | 10 | | `/portal/...`, `/hooks/...` | 1 each |
-  | `/api/replay` | 6 | | | |
-  | `/api/packaging`, `/api/auth` | 4 each | | | |
+  | `/api/fund-structure/*` | 34 | | `/api/quality/*` | 3 |
+  | `/api/workstation/*` | 16 | | `/api/subscriptions/*`, `/api/security-master/*`, `/api/schedules/*`, `/api/backfill/*`, `/api/alignment/*` | 2 each |
+  | `/api/maintenance/*` | 12 | | 11 single-entry prefixes (`sampling`, `reference-data`, `quant`, `providers`, `plaid`, `options`, `ledger`, `lean`, `health`, `execution`, `compliance`) | 11 |
+  | `/api/symbols/*` | 10 | | `/portal/...`, `/hooks/...` | 1 each |
+  | `/api/replay/*` | 6 | | | |
+  | `/api/packaging/*`, `/api/auth/*` | 4 each | | | |
 - `EndpointAuthorization.RequirePermission` and `RequireAnyPermission` are generic over
   `IEndpointConventionBuilder`, so they apply to route groups as well as routes.
 - **Declare on permission-homogeneous groups only, never on the `/api/fund-structure` root.** That
@@ -321,6 +324,21 @@ above** — several of these are why a change is scoped the way it is.
   context and require it for ledger reads** — inventing a parallel, potentially unscoped ledger
   lookup would bypass the tenant authorization the retained value already carries. The
   journal→transaction projection semantics are a separate decision on top of that.
+- **But "already carried" holds only for the governed intake flow — one live caller cannot supply
+  a scope at all.** `POST /api/workstation/reconciliation/statement-runs` creates runs directly, and
+  its request body carries no accounting scope to propagate. `StatementRunCreateDto`
+  (`src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs`) is the workstation's
+  statement-run creation contract, and its full field set is the broker, source institution, fund
+  account id, external account id, statement period start and end, source path, original file name,
+  mapping profile id, tolerance profile id, and importer, plus an optional source file hash and
+  notes — no fund profile, ledger book, accounting period, or as-of date anywhere in it.
+  `ReconciliationApiService.ToWorkflowRequest` correspondingly builds the `StatementRunRequest`
+  without setting its optional `AccountingScope`. The moment ledger reads require that scope, this
+  path either breaks or silently keeps producing runs whose transaction population stays empty —
+  which is the current bug wearing a new name. Change 11 must therefore decide this caller's
+  disposition explicitly: extend the contract and resolve the added scope through the intake
+  authority as the governed flows do, migrate the caller behind that authority, or disable it.
+  Leaving it as-is is not one of the options, because the row's criterion is about the live path.
 - **And the live matcher is the one-to-one engine.** `StatementRunMatcher` invokes
   `new StatementMatchingEngine()`, not the split-capable `ReconciliationMatchingEngine`.
 - Together these decide the row's shape. camt.053 and BAI2 are *transaction* statements, so with an
