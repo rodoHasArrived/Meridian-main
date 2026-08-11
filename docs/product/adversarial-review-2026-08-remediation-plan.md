@@ -244,10 +244,17 @@ still `in_progress`.
   **Evidence:** `src/Meridian.Execution.Sdk/BrokerageOrderPlacementGate.cs:83-117` trusts four
   `appsettings` booleans and two `File.Exists` checks; content, freshness, and run linkage are never
   inspected.
-  **Change:** parse the two artifacts, verify schema, run id, and a maximum age, and derive each
-  flag from the parsed evidence rather than a mirrored boolean. Keep the existing fail-closed
-  refusal for the IB non-vendor build (`IBBrokerageGateway.cs:96-106`) — that part is correct.
-  **Verify:** test that a stale or hand-created artifact fails the gate.
+  **Change:** parse the two artifacts, verify schema, run id, and a maximum age — **but parsing
+  alone is not sufficient and the gate must not stop there.** A well-formed file with a current
+  timestamp and the expected run id is indistinguishable from genuine job output, and hashing the
+  same file proves only self-consistency, so a parse-only gate is still protected by a
+  caller-authored assertion. Bind the artifact to something the caller cannot mint: a signature or
+  MAC over its contents, or resolution of its hash and run id against an authoritative retained
+  validation receipt held outside the supplied files. Keep the existing fail-closed refusal for the
+  IB non-vendor build (`IBBrokerageGateway.cs:96-106`) — that part is correct.
+  **Verify:** a stale artifact fails; a hand-created but well-formed artifact fails **because its
+  signature or retained receipt does not resolve**. Without that binding the second case cannot be
+  tested at all, which is the tell that the gate is not real.
   **Effort:** M
 
 ---
@@ -770,8 +777,12 @@ still `in_progress`.
   `api.ts` exports have consumers — which is precisely why AR8-38/39/40-class defects shipped
   repeatedly. The only browser automation is the mocked-API Playwright smoke
   (`src/Meridian.Ui/dashboard/scripts/smoke-workstation.mjs`), which checks the seven nav roots.
-  **Change:** (a) a smoke test mounting every route in the typed catalog and asserting non-empty
-  content; (b) a static reachability assertion over `api.ts` exports and
+  **Change:** (a) a smoke test mounting every route in the typed catalog. **Assert more than
+  non-empty content** — a hardcoded not-connected card is non-empty, so both Family Office and the
+  former Formula Workbench placeholder would have passed the naive version, which is precisely the
+  class this item claims to catch. Assert instead that a discoverable route does not resolve to a
+  permanent unavailable/placeholder state, and cross-check mounted routes against
+  `UNWIRED_WORKSTATION_ROUTES` so a dead end is either registered as unwired or fails the test; (b) a static reachability assertion over `api.ts` exports and
   `components/meridian/*.tsx`, failing on new orphans with a frozen baseline; (c) a DI-resolution
   test asserting every registered interface with a concrete implementation resolves from the
   production container — that one test would have caught the unregistered recurring-journal service
@@ -913,9 +924,14 @@ still `in_progress`.
   `BackfillWorkerService.cs:1295`); `CrossProviderComparisonService` needs two concurrent providers
   while `src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:47` holds one
   active client and switches rather than fanning out.
-  **Change:** flip `enableCrossValidation` to true for the backfill composite (its output is a
-  best-effort warning, not a gate) and add a shadow-subscription mode to the failover client that
-  streams the backup provider read-only into the comparison service.
+  **Change:** add a shadow-subscription mode to the failover client that streams the backup provider
+  read-only into the comparison service. **Do not simply flip `enableCrossValidation` to true on the
+  backfill composite.** Every successful primary request would synchronously issue a second
+  full-range request to another provider (`CrossProviderValidator.cs:51-52`) while the validator
+  compares only the first five bars (`:57`) — doubling foreground latency, vendor quota, and
+  rate-limit pressure on every request for a five-bar sample, which can stall or exhaust a
+  multi-year backfill. Sample instead: compare a bounded number of sessions, and make comparison
+  opt-in with an explicit rate budget rather than an unconditional default.
   **Verify:** test that divergent prices from two providers raise a comparison warning.
   **Effort:** M
 
@@ -951,8 +967,14 @@ still `in_progress`.
   `ResolveReference`/`EntryReference` are nullable elsewhere, so ignoring nulls preserves duplicates
   while normalizing them to empty collapses distinct transactions. Namespace non-empty ids by
   provider and accounting scope, and define a deterministic fallback fingerprint (account, value
-  date, amount, sign, normalized description, plus an intra-key ordinal for genuine same-day
-  repeats) for records whose source supplies no identifier. Let built-in profiles carry a
+  date, amount, sign, normalized description) for records whose source supplies no identifier.
+  **Do not use a file-local ordinal as identity.** Two overlapping statements can carry different
+  subsets of otherwise identical no-id transactions, so a transaction that is `#2` in one file
+  becomes `#1` in the next while a genuinely new identical transaction also claims `#1` — the key
+  then either re-imports an existing row or silently discards a real one. Prefer stable source
+  evidence where the format supplies it (sequence number, running balance, posting order within a
+  statement page), and route transactions that remain genuinely indistinguishable to operator
+  review rather than resolving them automatically. Let built-in profiles carry a
   per-account accepted fingerprint and compare order and type, not just the name set.
   **Verify:** a Windows-1252 OFX imports with correct accents; re-importing an overlapping statement
   adds no duplicate rows.

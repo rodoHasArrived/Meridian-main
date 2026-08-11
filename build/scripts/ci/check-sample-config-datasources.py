@@ -159,6 +159,10 @@ def is_secret_key(key: str, value: object) -> bool:
       boolean or an interval.
     """
     folded = key.casefold()
+    # Exact masker names are credential fields whatever their shape: `"Credentials": {...}` and
+    # `"ApiTokens": []` teach the same habit as a scalar placeholder, and recursion alone would
+    # miss them when no nested key independently matches. Broad fragment matches stay scalar-only
+    # (below) so legitimate configuration sections are not flagged for containing "key" or "auth".
     if folded in SECRET_KEYS_FOLDED:
         return True
     # `null` is a credential placeholder just like `""` — Meridian already models nullable
@@ -180,7 +184,7 @@ def walk_secret_keys(node: object, path: str = "") -> list[str]:
     if isinstance(node, dict):
         for key, value in node.items():
             here = f"{path}.{key}" if path else key
-            if not isinstance(value, (dict, list)) and is_secret_key(key, value):
+            if is_secret_key(key, value):
                 findings.append(here)
             findings.extend(walk_secret_keys(value, here))
     elif isinstance(node, list):
@@ -225,7 +229,10 @@ def main() -> int:
         if "Provider" not in source:
             continue
         source_id = source.get("Id")
-        declared_type = str(source.get("Type", "")).casefold()
+        # DataSourceConfig.Type defaults to RealTime when the JSON field is omitted
+        # (src/Meridian.Core/Config/DataSourceConfig.cs:34), so a bare {"Provider": "Yahoo"} is
+        # modelled as a real-time source and must be checked, not skipped.
+        declared_type = str(source.get("Type", "RealTime")).casefold()
         needs_streaming = declared_type in {"realtime", "both"} or (
             isinstance(source_id, str) and source_id.casefold() in realtime_ids
         )
