@@ -629,7 +629,10 @@ does" and "why it cannot run right now" no longer share one string; commands tha
 still fall back to `Description` when mapped to `WorkstationCommandModel`. Both command bars surface
 that reason on disabled actions — `WorkspaceCommandBarControl` through a tooltip marked
 `ShowOnDisabled`, and `WorkstationCommandBarControl` inline beneath the label for primary commands
-and through a `ShowOnDisabled` tooltip for overflow commands. Command buttons expose
+and through a `ShowOnDisabled` tooltip for overflow commands. Both bars build their overflow
+`ContextMenu` in code-behind, so each menu item carries the same tooltip and automation metadata as
+the primary buttons. Strategy's `Promote to Paper` and `Open Trading Cockpit` publish state-specific
+reasons when no eligible run is selected, rather than repeating their descriptions. Command buttons expose
 `AutomationProperties.AutomationId` from the command's stable `Id`, falling back to a normalized
 label via `WorkspaceCommandAutomation` only when a command ships without one, so UI automation stays
 anchored to identity rather than to display copy.
