@@ -624,6 +624,15 @@ detail as its tooltip so missing source names or invalid priorities are visible 
 Data Quality now uses a compact freshness strip plus the shared workspace command bar instead of a
 duplicate hero. Refresh and quality-check actions stay in `WorkspaceCommandBarControl`, while the
 symbol-quality table remains on the shared dense-grid surface with selection-owned drilldown state.
+`WorkspaceCommandItem` carries `DisabledReason` separately from `Description`, so "what this command
+does" and "why it cannot run right now" no longer share one string; commands that leave it blank
+still fall back to `Description` when mapped to `WorkstationCommandModel`. Both command bars surface
+that reason on disabled actions — `WorkspaceCommandBarControl` through a tooltip marked
+`ShowOnDisabled`, and `WorkstationCommandBarControl` inline beneath the label for primary commands
+and through a `ShowOnDisabled` tooltip for overflow commands. Command buttons expose
+`AutomationProperties.AutomationId` from the command's stable `Id`, falling back to a normalized
+label via `WorkspaceCommandAutomation` only when a command ships without one, so UI automation stays
+anchored to identity rather than to display copy.
 Activity Log now uses compact action chrome instead of a duplicate hero. Export and clear remain
 guarded by view-model state, and disabled-action tooltips explain when retained or visible log
 entries are missing before support traces can be exported or cleared.
