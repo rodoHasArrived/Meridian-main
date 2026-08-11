@@ -41,8 +41,11 @@ payload into an `XDocument` and BAI2 decodes and splits the whole payload, neith
 record limit, and `StatementImportService` accepts an arbitrary source document so the upload byte
 cap does not cover the seam. Leaving that to change 10 would let the P0 gate read green on a control
 this plan's own evidence contradicts for the whole of changes 1–9, so **this adoption commit performs
-the downgrade**: `PRD-010` moves to evidence-gated with the two connectors named, and change 10
-restores implementation-complete when it lands with its adversarial proof. Nothing in changes 1–9
+the downgrade**: `PRD-010` moves to `Open` with the two connectors named, and change 10 restores
+implementation-complete when it lands with its adversarial proof. `Open` rather than
+`Evidence-gated`, because that tracker defines evidence-gated as automation that is present but
+cannot self-certify without a human decision, secret, machine, tag, or hosted run — and none of
+those would help when the bound itself does not exist. Nothing in changes 1–9
 depends on that row, so the correction costs the wave nothing and removes a false green from the
 tracker for its whole duration.
 
@@ -187,6 +190,11 @@ above** — several of these are why a change is scoped the way it is.
   $100,000 while a unit rail measures 100,000 shares. The rule must resolve both through the same
   seam the gateway reads and skip the ceiling for dollar-sized orders, whose economic size is gated
   by `OrderNotionalRule` instead, with coverage for each form.
+- **The ceiling also measures the largest effective *leg*, not the package count.** Alpaca sends the
+  top-level quantity alongside each `RatioQuantity`, so 600 packages with a 2:1 leg route 1,200
+  contracts while a package-count rule sees 600 and a 1,000 ceiling passes. Change 1 ships
+  `abs(Quantity × RatioQuantity)` over every leg, reducing to the plain quantity for a single-symbol
+  order, with ratio-specific coverage; change 2's collar inherits the same effective-size basis.
 - **Sizing and price controls use different reference seams — do not reuse the wrong one.**
   `TryGetExecutablePrice` is deliberately conservative: `AggregatePortfolioExposureProvider` returns
   the larger of mark and touch so a sell never under-measures the short it creates, which on a normal
@@ -211,6 +219,13 @@ above** — several of these are why a change is scoped the way it is.
   touch, market orders may carry a simulated observation in `LimitPrice` through the paper gateway,
   trailing stops have a broker-derived trigger that moves with the market, and a multi-leg limit is a
   package net not comparable to the top-level symbol's quote — none of those contribute a price.
+- **Except that the multi-leg exclusion goes too far, for the same reason the trailing-stop one
+  did.** Alpaca sends the top-level `LimitPrice` as `limit_price` with `order_class=mleg`, so the
+  package price *is* broker-enforced and a $1 net-credit spread can be routed with a $50 debit limit
+  and fill anywhere up to it. Having no top-level-symbol quote is an argument for deriving a
+  debit/credit-aware package reference from the leg quotes — or failing closed as unmeasurable when
+  it cannot be derived — not for leaving the one price the broker actually honours unmeasured.
+  Change 2 owns the package reference.
 - **But excluding the trailing stop's *trigger* is not the same as excluding the order.** The
   trigger moves with the market and cannot be measured against a snapshot; the **trail distance**
   is an operator-typed value and is exactly the fat-finger shape. Alpaca validates only that
@@ -506,6 +521,15 @@ above** — several of these are why a change is scoped the way it is.
 - `src/Meridian.Storage/Reporting/PostgresReportingArtifactAuditStore.cs` verifies a chain head
   inside the write transaction. That is the database-side precedent to follow rather than inventing
   a second scheme.
+- **A chain over the appends that happened does not prove every event was retained.**
+  `AccountingConfigurationService.SaveWithAuditAsync` awaits `_store.SaveAsync` and then, as a
+  separate operation, `_auditStore.AppendAsync`; the manual-journal lifecycle methods use the same
+  save-then-audit ordering. An append that fails after the mutation commits therefore leaves a
+  perfectly valid hash chain that simply omits the mutation — tamper-evidence over a record that
+  was never written is not tamper-evidence. Change 9 needs the mutation and its audit append made
+  atomic: a shared transaction where the stores allow it, a durable outbox, or a recoverable
+  pending-audit marker — with failure-injection proof that a crash between the two is detected
+  rather than absorbed.
 - **Chaining an existing history needs a declared boundary, or the chain asserts something false.**
   The accounting audit table originates in `V_ledger_010__accounting_configuration.sql`; `017` only
   adds tenant scope and `018` an index, so anchoring the family at 017/018 would leave every older
@@ -579,7 +603,11 @@ above** — several of these are why a change is scoped the way it is.
   upload and CLI callers cap bytes on the way in; this service seam does not, and it accepts a
   caller-supplied `StatementSourceDocument` directly. Change 10 therefore checks
   `StatementConnectorLimits.MaxFileBytes` in the shared preview/commit service *before* copying or
-  parsing, in addition to the streaming byte and record limits inside the connectors.
+  parsing, in addition to the streaming byte and record limits inside the connectors. And not only
+  on commit: `IStatementImportCommitService.ValidateAsync` is separately exposed, resolves the
+  connector, and calls `ParseAsync` directly, so an oversized document handed to validation is an
+  unbounded-memory path of its own. Both entry points take the cap, and the adversarial tests cover
+  both.
 - **Splitting the matcher is not enough — the result path cannot record a split either.**
   `StatementMatchResult` carries exactly one `BrokerEvidenceReference` and one
   `InternalEvidenceReference`, so a one-to-many outcome has nowhere to say which records formed it;
@@ -653,7 +681,8 @@ above** — several of these are why a change is scoped the way it is.
   blueprints, it takes the next free ordinal (029 today) and shifts the unshipped reservations up —
   which is permitted precisely because they have not shipped. **Shifting means every reference, not
   just the register table:** `incentive-fee-mechanics.md` names 029–030,
-  `commitment-and-capital-call-engine.md` names 031, `equalization-and-series-accounting.md` names
+  `commitment-and-capital-call-engine.md` reserves **031–032** and hard-codes that range in both its
+  shared-convention note and its migration section, `equalization-and-series-accounting.md` names
   033–035, and the mark blueprint depends on 036–038 applying in phase order. Updating
   [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md) alone would leave
   those documents hard-coded to displaced numbers, which is how a collision or a lower-after-higher
