@@ -16,6 +16,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using static Meridian.Contracts.Ledger.LedgerDimensionTags;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -2818,7 +2819,7 @@ public static partial class LedgerEndpoints
             PositionId = dimensions.PositionId
         };
 
-        return HasAnyCanonicalDimension(canonical) ? canonical : null;
+        return HasAnyDimension(canonical) ? canonical : null;
     }
 
 }
