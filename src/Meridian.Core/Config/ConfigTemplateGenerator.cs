@@ -306,12 +306,17 @@ public sealed class ConfigTemplateGenerator
             Alpaca = new
             {
                 // The credential placeholders stay in "${...}" form because ConfigValidationHelper
-                // recognises that prefix and warns the key still needs configuring. The bare
-                // ALPACA_KEY_ID/ALPACA_SECRET_KEY names do work — ConfigEnvironmentOverride keeps
-                // them as legacy aliases — but ALPACA_FEED has no such alias, so the trio is
-                // normalised on the MDC_ prefix that maps for all three.
-                KeyId = "${MDC_ALPACA_KEY_ID}",
-                SecretKey = "${MDC_ALPACA_SECRET_KEY}",
+                // recognises that prefix and warns the key still needs configuring.
+                //
+                // The bare names are deliberate and must not be "normalised" to MDC_ALPACA_*.
+                // Both spellings are mapped, but the bare ones win twice over: EnvToConfigMapping
+                // applies the legacy aliases after the MDC_ entries, and the backfill path resolves
+                // through ProviderCredentialResolver, which reads the bare ALPACA_KEY_ID from the
+                // environment ahead of any configured value. Advertising MDC_ALPACA_KEY_ID would
+                // therefore point operators at a variable a stale bare value silently overrides.
+                // Feed is the exception below: it has no bare alias at all.
+                KeyId = "${ALPACA_KEY_ID}",
+                SecretKey = "${ALPACA_SECRET_KEY}",
                 // Feed is not a credential and has no placeholder exemption: AlpacaOptionsValidator
                 // requires exactly "iex" or "sip", so "${ALPACA_FEED:-iex}" failed validation the
                 // moment an operator switched DataSource to Alpaca and the validator began running.
@@ -341,13 +346,15 @@ public sealed class ConfigTemplateGenerator
             Category = ConfigTemplateCategory.Deployment,
             EnvironmentVariables = new Dictionary<string, string>
             {
-                // Every name here must be one ConfigEnvironmentOverride actually maps, or the
-                // template advertises a setting the operator cannot change.
+                // Every name here must be one ConfigEnvironmentOverride actually maps *and* one
+                // that wins where two spellings exist, or the template advertises a setting the
+                // operator cannot reliably change. See the Alpaca block above for why the two
+                // credentials use the bare names while the feed uses the MDC_ prefix.
                 ["MDC_DATASOURCE"] = "Real-time data source provider (IB, Alpaca, Polygon, NYSE, Synthetic; default Synthetic)",
                 ["MDC_SYMBOLS"] = "Comma-separated list of symbols",
-                ["MDC_ALPACA_KEY_ID"] = "Alpaca API Key ID",
-                ["MDC_ALPACA_SECRET_KEY"] = "Alpaca Secret Key",
-                ["MDC_ALPACA_FEED"] = "Alpaca data feed (iex or sip)"
+                ["ALPACA_KEY_ID"] = "Alpaca API Key ID (takes precedence over MDC_ALPACA_KEY_ID)",
+                ["ALPACA_SECRET_KEY"] = "Alpaca Secret Key (takes precedence over MDC_ALPACA_SECRET_KEY)",
+                ["MDC_ALPACA_FEED"] = "Alpaca data feed (iex or sip); no bare ALPACA_FEED alias exists"
             }
         };
     }

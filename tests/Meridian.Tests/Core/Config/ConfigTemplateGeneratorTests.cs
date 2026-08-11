@@ -64,14 +64,12 @@ public sealed class ConfigTemplateGeneratorTests
         {
             ["MDC_DATASOURCE"] = "Polygon",
             ["MDC_SYMBOLS"] = "AAPL,MSFT",
-            ["MDC_ALPACA_KEY_ID"] = "probe-key-id",
-            ["MDC_ALPACA_SECRET_KEY"] = "probe-secret-key",
+            ["ALPACA_KEY_ID"] = "probe-key-id",
+            ["ALPACA_SECRET_KEY"] = "probe-secret-key",
             ["MDC_ALPACA_FEED"] = "sip"
         };
 
-        template.EnvironmentVariables!.Keys
-            .Where(key => key.StartsWith("MDC_", StringComparison.Ordinal))
-            .Should().BeEquivalentTo(probes.Keys);
+        template.EnvironmentVariables!.Keys.Should().BeEquivalentTo(probes.Keys);
 
         var original = probes.Keys.ToDictionary(
             name => name,
@@ -92,6 +90,42 @@ public sealed class ConfigTemplateGeneratorTests
             overridden.Alpaca!.KeyId.Should().Be("probe-key-id");
             overridden.Alpaca.SecretKey.Should().Be("probe-secret-key");
             overridden.Alpaca.Feed.Should().Be("sip");
+        }
+        finally
+        {
+            foreach (var (name, value) in original)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+        }
+    }
+
+    [Fact]
+    public void AlpacaCredentials_BareNamesWinOverMdcPrefixedOnes()
+    {
+        // This is why the template advertises the bare names. EnvToConfigMapping applies the
+        // legacy aliases after the MDC_ entries, so a container that still exports a stale
+        // ALPACA_KEY_ID overrides an operator who followed an MDC_ALPACA_KEY_ID instruction.
+        // Pinning the direction here means a reordering of that map cannot silently invert the
+        // contract the Docker template documents.
+        var names = new[]
+        {
+            "ALPACA_KEY_ID", "ALPACA_SECRET_KEY", "MDC_ALPACA_KEY_ID", "MDC_ALPACA_SECRET_KEY"
+        };
+        var original = names.ToDictionary(name => name, Environment.GetEnvironmentVariable);
+
+        try
+        {
+            Environment.SetEnvironmentVariable("MDC_ALPACA_KEY_ID", "prefixed-key");
+            Environment.SetEnvironmentVariable("MDC_ALPACA_SECRET_KEY", "prefixed-secret");
+            Environment.SetEnvironmentVariable("ALPACA_KEY_ID", "bare-key");
+            Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", "bare-secret");
+
+            var result = new ConfigEnvironmentOverride().ApplyOverrides(new AppConfig());
+
+            result.Alpaca.Should().NotBeNull();
+            result.Alpaca!.KeyId.Should().Be("bare-key");
+            result.Alpaca.SecretKey.Should().Be("bare-secret");
         }
         finally
         {

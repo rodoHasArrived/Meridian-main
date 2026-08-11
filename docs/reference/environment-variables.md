@@ -14,6 +14,9 @@ All configuration can be set via environment variables, following the [12-factor
 
 - Variables prefixed with `MDC_` are the canonical form
 - Legacy variables (without prefix) are also supported for backwards compatibility
+- **Canonical does not mean higher precedence.** Where both spellings exist, the bare one wins:
+  `ConfigEnvironmentOverride` applies the legacy aliases after the `MDC_` entries. Set one
+  spelling per setting rather than relying on which takes effect.
 - Use double underscore (`__`) for .NET configuration binding: `ALPACA__KEYID` maps to `Alpaca:KeyId`
 
 ## High-Risk Runtime and Security Controls (`MDC_*`)
@@ -76,8 +79,8 @@ strictly non-owning.
 | `MDC_ALPACA_FEED` | `Alpaca:Feed` | Data feed: `iex` (free), `sip` (paid) | No | `iex` |
 | `MDC_ALPACA_SANDBOX` | `Alpaca:UseSandbox` | Use paper trading endpoint | No | `false` |
 | `MDC_ALPACA_QUOTES` | `Alpaca:SubscribeQuotes` | Subscribe to quote data | No | `false` |
-| `ALPACA_KEY_ID` | `Alpaca:KeyId` | Legacy alias for `MDC_ALPACA_KEY_ID` | — | — |
-| `ALPACA_SECRET_KEY` | `Alpaca:SecretKey` | Legacy alias for `MDC_ALPACA_SECRET_KEY` | — | — |
+| `ALPACA_KEY_ID` | `Alpaca:KeyId` | Bare alias that **takes precedence over** `MDC_ALPACA_KEY_ID`: `ApplyOverrides` applies it later, and the backfill path reads it directly via `ProviderCredentialResolver` ahead of any configured value. Set this one, or unset it, if both exist. | — | — |
+| `ALPACA_SECRET_KEY` | `Alpaca:SecretKey` | Bare alias that **takes precedence over** `MDC_ALPACA_SECRET_KEY`, for the same reason. | — | — |
 | `ALPACA__KEYID` | `Alpaca:KeyId` | .NET config binding format | — | — |
 | `ALPACA__SECRETKEY` | `Alpaca:SecretKey` | .NET config binding format | — | — |
 
