@@ -45,7 +45,7 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 |----------|------------|-------------|----------|---------|
 | `MDC_DATA_ROOT` | `DataRoot` | Root directory for data storage | No | `data` |
 | `MDC_COMPRESS` | `Compress` | Enable gzip compression (`true`/`false`) | No | `false` |
-| `MDC_DATASOURCE` | `DataSource` | Streaming provider: `IB`, `Alpaca`, `Polygon`, `StockSharp`, `NYSE` | No | `IB` |
+| `MDC_DATASOURCE` | `DataSource` | Real-time streaming provider: `IB`, `Alpaca`, `Polygon`, `NYSE`, `Synthetic`. `Yahoo` is a `DataSourceKind` member but has no streaming factory, so it is backfill-only and rejected here. | No | `Synthetic` |
 
 Installed releases do not require users to set `MDC_DATA_ROOT`: the lifecycle supervisor injects the
 resolved manifest data root, defaulting to `%LOCALAPPDATA%\Meridian\Data`.
@@ -89,13 +89,7 @@ strictly non-owning.
 
 ## Interactive Brokers
 
-IB credentials are managed via TWS/Gateway, not environment variables. However, StockSharp IB connector settings can be set:
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_IB_HOST` | `StockSharp:InteractiveBrokers:Host` | TWS/Gateway hostname | No | `127.0.0.1` |
-| `MDC_STOCKSHARP_IB_PORT` | `StockSharp:InteractiveBrokers:Port` | TWS/Gateway port | No | `4002` |
-| `MDC_STOCKSHARP_IB_CLIENT_ID` | `StockSharp:InteractiveBrokers:ClientId` | Client ID | No | `1` |
+IB credentials are managed via TWS/Gateway, not environment variables.
 
 ## Historical Data Provider API Keys
 
@@ -163,52 +157,7 @@ Use this together with:
 | `DataRoot`, `Compress`, `DataSource` | `MDC_DATA_ROOT`, `MDC_COMPRESS`, `MDC_DATASOURCE` | Core runtime mode and storage root. |
 | `Backfill:*` | `MDC_BACKFILL_ENABLED`, `MDC_BACKFILL_PROVIDER`, `MDC_BACKFILL_SYMBOLS`, `MDC_BACKFILL_FROM`, `MDC_BACKFILL_TO` | Backfill execution posture and scope. |
 | `Storage:*` | `MDC_STORAGE_NAMING`, `MDC_STORAGE_PARTITION`, `MDC_STORAGE_RETENTION_DAYS`, `MDC_STORAGE_MAX_MB` | Retention and file-layout controls. |
-| `StockSharp:*` | `MDC_STOCKSHARP_*` | Connector mode and adapter credential wiring. |
 | `Alpaca:*` | `MDC_ALPACA_*` | Alpaca feed + credential override path. |
-
-## StockSharp Connector Configuration
-
-### Core Settings
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_ENABLED` | `StockSharp:Enabled` | Enable StockSharp connector | No | `false` |
-| `MDC_STOCKSHARP_CONNECTOR` | `StockSharp:ConnectorType` | Connector type: `Rithmic`, `IQFeed`, `CQG`, `InteractiveBrokers`, `Custom` | No | — |
-| `MDC_STOCKSHARP_ADAPTER_TYPE` | `StockSharp:AdapterType` | Custom adapter type name | No | — |
-| `MDC_STOCKSHARP_ADAPTER_ASSEMBLY` | `StockSharp:AdapterAssembly` | Custom adapter assembly name | No | — |
-| `MDC_STOCKSHARP_STORAGE_PATH` | `StockSharp:StoragePath` | StockSharp storage directory | No | — |
-| `MDC_STOCKSHARP_BINARY` | `StockSharp:UseBinaryStorage` | Use binary storage format | No | `false` |
-| `MDC_STOCKSHARP_REALTIME` | `StockSharp:EnableRealTime` | Enable real-time data | No | `true` |
-| `MDC_STOCKSHARP_HISTORICAL` | `StockSharp:EnableHistorical` | Enable historical data | No | `false` |
-
-### Rithmic
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_RITHMIC_SERVER` | `StockSharp:Rithmic:Server` | Rithmic server address | When using Rithmic | — |
-| `MDC_STOCKSHARP_RITHMIC_USERNAME` | `StockSharp:Rithmic:UserName` | Username | When using Rithmic | — |
-| `MDC_STOCKSHARP_RITHMIC_PASSWORD` | `StockSharp:Rithmic:Password` | Password | When using Rithmic | — |
-| `MDC_STOCKSHARP_RITHMIC_CERTFILE` | `StockSharp:Rithmic:CertFile` | Certificate file path | No | — |
-| `MDC_STOCKSHARP_RITHMIC_PAPER` | `StockSharp:Rithmic:UsePaperTrading` | Use paper trading | No | `false` |
-
-### IQFeed
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_IQFEED_HOST` | `StockSharp:IQFeed:Host` | IQFeed server host | No | `127.0.0.1` |
-| `MDC_STOCKSHARP_IQFEED_LEVEL1_PORT` | `StockSharp:IQFeed:Level1Port` | Level 1 data port | No | `5009` |
-| `MDC_STOCKSHARP_IQFEED_LEVEL2_PORT` | `StockSharp:IQFeed:Level2Port` | Level 2 data port | No | `9200` |
-| `MDC_STOCKSHARP_IQFEED_LOOKUP_PORT` | `StockSharp:IQFeed:LookupPort` | Lookup/history port | No | `9100` |
-| `MDC_STOCKSHARP_IQFEED_PRODUCT_ID` | `StockSharp:IQFeed:ProductId` | IQFeed product ID | When using IQFeed | — |
-| `MDC_STOCKSHARP_IQFEED_PRODUCT_VERSION` | `StockSharp:IQFeed:ProductVersion` | Product version | No | — |
-
-### CQG
-
-| Variable | Config Path | Description | Required | Default |
-|----------|------------|-------------|----------|---------|
-| `MDC_STOCKSHARP_CQG_USERNAME` | `StockSharp:CQG:UserName` | CQG username | When using CQG | — |
-| `MDC_STOCKSHARP_CQG_PASSWORD` | `StockSharp:CQG:Password` | CQG password | When using CQG | — |
-| `MDC_STOCKSHARP_CQG_DEMO` | `StockSharp:CQG:UseDemoServer` | Use demo server | No | `false` |
 
 ## Precedence Order
 

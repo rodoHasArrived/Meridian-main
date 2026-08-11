@@ -161,7 +161,11 @@ def is_secret_key(key: str, value: object) -> bool:
     folded = key.casefold()
     if folded in SECRET_KEYS_FOLDED:
         return True
-    return isinstance(value, str) and any(f in folded for f in SECRET_FRAGMENTS)
+    # `null` is a credential placeholder just like `""` — Meridian already models nullable
+    # credential properties such as BackfillConfig.ApiToken, so `"ApiToken": null` is a natural
+    # sample shape that still teaches operators to fill a secret in JSON. Numbers and booleans
+    # stay exempt so legitimate settings like StatusRefreshIntervalSeconds do not trip the gate.
+    return (isinstance(value, str) or value is None) and any(f in folded for f in SECRET_FRAGMENTS)
 
 
 def walk_secret_keys(node: object, path: str = "") -> list[str]:
@@ -238,6 +242,15 @@ def main() -> int:
         return (name, None) if name else (None, f"is not a DataSourceKind member ({valid})")
 
     streaming = streaming_source_ids()
+    if not streaming:
+        # An empty parse must not silently downgrade the real-time check to "anything goes":
+        # DataSourceKind contains historical-only members, so the Yahoo trap would reopen.
+        errors.append(
+            f"no streaming factories parsed from {STREAMING_SOURCE.relative_to(REPO_ROOT)}; "
+            f"the real-time DataSource check cannot run. Fix the parser or the path rather than "
+            f"letting the guard pass by default."
+        )
+
     for where, value in named:
         name, problem = resolve(value)
         if problem is not None:
@@ -254,6 +267,30 @@ def main() -> int:
                     f"{where} = {value!r} resolves to {name}, which has no streaming factory "
                     f"(registered: {', '.join(sorted(streaming))}). It cannot be a primary "
                     f"real-time source; document it under backfill instead."
+                )
+
+    # Every failover backup id must name a configured source. CollectorModeRunner resolves an
+    # unknown id by falling back to the top-level DataSource, so a stale reference silently mints a
+    # client under a misleading identity and can promote it after the real feeds fail. Removing the
+    # StockSharp source while leaving "stocksharp-tertiary" in a rule did exactly that.
+    configured_ids = {
+        source.get("Id")
+        for source in (document.get("DataSources", {}).get("Sources", []) or [])
+        if isinstance(source.get("Id"), str)
+    }
+    for rule_index, rule in enumerate(document.get("DataSources", {}).get("FailoverRules", []) or []):
+        referenced = [("PrimaryProviderId", rule.get("PrimaryProviderId"))]
+        referenced += [
+            (f"BackupProviderIds[{i}]", backup)
+            for i, backup in enumerate(rule.get("BackupProviderIds", []) or [])
+        ]
+        for field, provider_id in referenced:
+            if isinstance(provider_id, str) and provider_id not in configured_ids:
+                errors.append(
+                    f"DataSources.FailoverRules[{rule_index}].{field} = {provider_id!r} does not "
+                    f"match any configured source id ({', '.join(sorted(configured_ids)) or 'none'}). "
+                    f"CollectorModeRunner would fall back to the top-level DataSource under that "
+                    f"identity."
                 )
 
     for path in walk_secret_keys(document):

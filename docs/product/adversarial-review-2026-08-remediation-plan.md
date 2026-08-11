@@ -174,9 +174,14 @@ build in seven attempts, so today's supported user count is structurally zero.
   writes the raw 32-byte key beside the vault with only a Windows `Hidden` attempt; no
   `File.SetUnixFileMode` call exists in the credential path, so the mode follows the umask and is
   never validated on read.
-  **Change:** on non-Windows, set `UnixFileMode.UserRead | UserWrite` on both key and vault after
-  write; on read, refuse to load a key whose mode grants group or other access, with a diagnostic
-  naming the fix. Correct the WPF copy at `src/Meridian.Wpf/Views/CredentialManagementPage.xaml:237`,
+  **Change:** create the key with owner-only permissions **before the first byte is written** —
+  chmod-after-write is not sufficient. `AtomicFileWriter` creates its temporary file in the shared
+  `.mdc` directory with default permissions, flushes, and renames, so a post-write chmod leaves a
+  window in which another local user can read either the temporary file or the destination. Either
+  open the temp file with `UnixFileMode.UserRead | UserWrite` at creation and preserve the mode
+  across the rename, or restrict the containing directory to owner-only first so the window is not
+  reachable. On read, refuse to load a key whose mode grants group or other access, with a
+  diagnostic naming the fix. Correct the WPF copy at `src/Meridian.Wpf/Views/CredentialManagementPage.xaml:237`,
   which claims DPAPI unconditionally. File a follow-up for OS keyring backends.
   **Verify:** unit test asserting mode 0600 after write and a hard failure on a 0644 key.
   **Effort:** S
@@ -640,9 +645,14 @@ still `in_progress`.
   reports on it; `ci.yml` and `meridian-ci.yml` duplicate the same three lanes on push to main.
   `quality-gate` has never been activated as a required check.
   **Change:** delete `ci.yml` or reduce it to the nightly `verify-full` job; make `meridian-ci`'s
-  `quality-gate` the single required check. Note for operators: `quality-gate` runs with
-  `if: always()` and treats a **cancelled** lane as failure, so concurrent re-dispatches produce
-  spurious red — either accept that or exclude `cancelled` from the failure condition.
+  `quality-gate` the single required check. Operator note: `quality-gate` runs with `if: always()`
+  and treats a **cancelled** lane as failure, so concurrent re-dispatches produce spurious red.
+  **Keep it that way** — an earlier revision suggested excluding `cancelled`, which is wrong. Once
+  `quality-gate` is the only required check, ignoring cancellation would let a timed-out or
+  dependency-cancelled lane report green having produced no test result at all. Superseded runs are
+  already handled by workflow-level `cancel-in-progress`; the latest run must still require every
+  lane to equal `success`. The fix for the spurious red is to stop re-dispatching over a live run,
+  not to weaken the gate.
   **Verify:** open a scratch PR and confirm exactly one workflow reports, with real lanes.
   **Effort:** S · **Related:** `PRD-016`
 
