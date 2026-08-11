@@ -6,8 +6,7 @@ import {
   Settings2,
   Sparkles
 } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
-import { EmptyState } from "@/components/data/empty-state";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScreenLayout } from "@/components/ui/screen-layout";
