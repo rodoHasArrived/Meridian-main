@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Microsoft.AspNetCore.Builder;
@@ -127,6 +128,7 @@ public static class StorageQualityEndpoints
             return Results.Ok(new { acknowledged = alertId, timestamp = DateTimeOffset.UtcNow });
         })
         .WithName("AcknowledgeAlert").Produces(200)
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStorage))
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/quality/rankings/{symbol} — source rankings for a symbol
@@ -252,6 +254,7 @@ public static class StorageQualityEndpoints
             }, "Quality check failed.", logger);
         })
         .WithName("RunQualityCheck").Produces(200).Produces(400).Produces(404)
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStorage))
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 

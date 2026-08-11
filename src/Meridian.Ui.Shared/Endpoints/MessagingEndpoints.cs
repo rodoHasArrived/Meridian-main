@@ -1,8 +1,9 @@
 using System.Text.Json;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Monitoring;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -257,6 +258,7 @@ public static class MessagingEndpoints
             }
         })
         .WithName("TestMessaging")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -299,6 +301,7 @@ public static class MessagingEndpoints
             }, jsonOptions);
         })
         .WithName("PurgeMessagingQueue")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -388,6 +391,7 @@ public static class MessagingEndpoints
             }
         })
         .WithName("RetryMessagingError")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.AdminMaintenance))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

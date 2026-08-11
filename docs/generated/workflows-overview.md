@@ -4,10 +4,11 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `28`
+- Workflow count: `29`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
+| `.github/workflows/ai-navigation-refresh.yml` | AI Navigation Refresh | schedule, workflow_dispatch |
 | `.github/workflows/branch-cleanup.yml` | Branch Cleanup | workflow_dispatch |
 | `.github/workflows/ci.yml` | CI | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/codeql.yml` | CodeQL | pull_request, push, schedule, workflow_dispatch |
