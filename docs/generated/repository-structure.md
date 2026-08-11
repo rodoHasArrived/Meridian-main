@@ -1215,7 +1215,9 @@ Meridian-main
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
 │       ├── tests
+│       │   ├── test_ai_repo_updater_blocking_async.py
 │       │   ├── test_check_ai_navigation_freshness.py
+│       │   ├── test_check_file_size_ratchet.py
 │       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
 │       ├── ai-architecture-check.py
@@ -1439,6 +1441,7 @@ Meridian-main
 │   │   ├── git-hooks.md
 │   │   ├── github-actions-summary.md
 │   │   ├── github-actions-testing.md
+│   │   ├── god-file-burn-down-plan.md
 │   │   ├── modular-desktop-architecture.md
 │   │   ├── otlp-trace-visualization.md
 │   │   ├── process-lifecycle-diagnostics.md
@@ -1996,6 +1999,7 @@ Meridian-main
 │   │   │   ├── wpf-direct-lending.png
 │   │   │   ├── wpf-environment-designer.png
 │   │   │   ├── wpf-event-replay.png
+│   │   │   ├── wpf-evidence-workbench.png
 │   │   │   ├── wpf-export-presets.png
 │   │   │   ├── wpf-fund-accounting-close.png
 │   │   │   ├── wpf-fund-accounting-configure.png
@@ -2019,6 +2023,9 @@ Meridian-main
 │   │   │   ├── wpf-live-data.png
 │   │   │   ├── wpf-messaging-hub.png
 │   │   │   ├── wpf-notification-center.png
+│   │   │   ├── wpf-operations-continuity.png
+│   │   │   ├── wpf-operations-record-release.png
+│   │   │   ├── wpf-operator-readiness-console.png
 │   │   │   ├── wpf-options.png
 │   │   │   ├── wpf-order-book.png
 │   │   │   ├── wpf-package-manager.png

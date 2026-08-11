@@ -1,0 +1,145 @@
+from __future__ import annotations
+
+import contextlib
+import importlib.util
+import io
+import json
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+SCRIPT_PATH = Path(__file__).resolve().parents[1] / "ci" / "check-file-size.py"
+SPEC = importlib.util.spec_from_file_location("check_file_size", SCRIPT_PATH)
+assert SPEC and SPEC.loader
+ratchet = importlib.util.module_from_spec(SPEC)
+sys.modules["check_file_size"] = ratchet
+SPEC.loader.exec_module(ratchet)
+
+
+@contextlib.contextmanager
+def fake_repo(sources: dict[str, int], baseline: dict[str, int] | None, threshold: int = 10):
+    """Build a throwaway repo whose source files have the requested line counts."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        for rel, lines in sources.items():
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("\n".join("x" for _ in range(lines)) + "\n", encoding="utf-8")
+        if baseline is not None:
+            config = root / "build" / "config"
+            config.mkdir(parents=True, exist_ok=True)
+            (config / "file-size-baseline.json").write_text(
+                json.dumps({"threshold_lines": threshold, "files": baseline}, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+        original = ratchet._repo_root
+        ratchet._repo_root = lambda: root  # type: ignore[assignment]
+        try:
+            yield root
+        finally:
+            ratchet._repo_root = original  # type: ignore[assignment]
+
+
+def run(argv: list[str]) -> tuple[int, str]:
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        code = ratchet.main(argv)
+    return code, out.getvalue() + err.getvalue()
+
+
+def read_baseline(root: Path) -> dict[str, int]:
+    payload = json.loads((root / "build" / "config" / "file-size-baseline.json").read_text())
+    return {str(k): int(v) for k, v in payload["files"].items()}
+
+
+class TightenBaselineTests(unittest.TestCase):
+    def test_lowers_a_cap_when_the_file_shrank(self):
+        with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root)["src/big.cs"], 15)
+            self.assertIn("15 line(s) reclaimed", output)
+
+    # The safety property the whole flag rests on: --tighten-baseline must never be able to record
+    # growth, which is what separates it from --update-baseline.
+    def test_never_raises_a_cap_when_the_file_grew(self):
+        with fake_repo({"src/big.cs": 40}, {"src/big.cs": 30}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root)["src/big.cs"], 30)
+            self.assertIn("0 line(s) reclaimed", output)
+
+    def test_retires_a_file_that_dropped_below_the_threshold(self):
+        with fake_repo({"src/small.cs": 5}, {"src/small.cs": 30}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline"])
+
+            self.assertEqual(code, 0, output)
+            self.assertNotIn("src/small.cs", read_baseline(root))
+            self.assertIn("retired", output)
+
+    def test_rejects_being_combined_with_update_baseline(self):
+        with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}):
+            code, output = run(["--threshold", "10", "--update-baseline", "--tighten-baseline"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("choose either", output)
+
+    # A grown file must still fail the check afterwards - tightening is not an escape hatch.
+    def test_tightening_does_not_excuse_a_grown_file(self):
+        with fake_repo({"src/big.cs": 40}, {"src/big.cs": 30}):
+            run(["--threshold", "10", "--tighten-baseline"])
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 1)
+            self.assertIn("GREW past cap", output)
+
+
+class TrendReportingTests(unittest.TestCase):
+    def test_reports_tracked_totals_and_reclaimable_lines(self):
+        with fake_repo({"src/a.cs": 20, "src/b.cs": 25}, {"src/a.cs": 30, "src/b.cs": 25}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("2 tracked file(s)", output)
+            self.assertIn("55 capped line(s)", output)
+            self.assertIn("45 current line(s)", output)
+            self.assertIn("10 line(s) reclaimable", output)
+
+    def test_warns_about_files_sitting_at_their_cap(self):
+        with fake_repo({"src/pinned.cs": 30}, {"src/pinned.cs": 30}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("TIGHT", output)
+            self.assertIn("0 line(s) spare", output)
+
+    def test_does_not_warn_when_there_is_headroom(self):
+        with fake_repo({"src/roomy.cs": 20}, {"src/roomy.cs": 500}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertNotIn("TIGHT", output)
+
+    def test_reports_the_trend_on_failure_too(self):
+        with fake_repo({"src/grown.cs": 40}, {"src/grown.cs": 30}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 1)
+            self.assertIn("exceeded by 10", output)
+            self.assertIn("Baseline trend:", output)
+
+    def test_a_brand_new_oversized_file_still_fails(self):
+        with fake_repo({"src/fresh.cs": 40}, {}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 1)
+            self.assertIn("NEW god file", output)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -18,6 +18,11 @@ This mirrors the RatchetPlan discipline used by check-warning-suppressions.py an
 codifies ADR-017 (modular operational monolith) / ADR-018 (module conventions):
 capability logic belongs in composed, single-responsibility units, not god files.
 
+Containment is only half the job: the baseline records where the debt is, but nothing drives it
+down. Every run therefore also reports the trend — tracked files, capped lines, and how much of the
+baseline is reclaimable — so progress is a visible number rather than a per-file pass/fail. See
+docs/development/god-file-burn-down-plan.md for the burn-down targets those numbers feed.
+
 Exit codes:
     0  No new or grown god files
     1  One or more violations
@@ -26,6 +31,7 @@ Exit codes:
 Usage:
     python3 build/scripts/ci/check-file-size.py
     python3 build/scripts/ci/check-file-size.py --update-baseline
+    python3 build/scripts/ci/check-file-size.py --tighten-baseline
     python3 build/scripts/ci/check-file-size.py --threshold 2000
 """
 
@@ -138,6 +144,46 @@ def _write_baseline(root: Path, threshold: int, oversized: dict[str, int]) -> No
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+# Files this close to their cap are called out before a contributor trips over them. The ratchet
+# offers no headroom by construction — a freshly written baseline pins every file at its exact
+# current size — so without this warning the first signal is a failed CI run on a one-line change.
+TIGHT_HEADROOM_LINES = 25
+
+
+def _report_trend(baseline: dict[str, int], current: dict[str, int]) -> None:
+    """Print the burn-down numbers: what is tracked, and how much of it is reclaimable."""
+    tracked = {rel: cap for rel, cap in baseline.items() if rel in current}
+    capped = sum(baseline.values())
+    live = sum(current.get(rel, 0) for rel in baseline)
+    slack = sum(max(0, cap - current[rel]) for rel, cap in tracked.items())
+
+    print(
+        f"Baseline trend: {len(baseline)} tracked file(s), {capped:,} capped line(s), "
+        f"{live:,} current line(s), {slack:,} line(s) reclaimable."
+    )
+
+    tight = sorted(
+        ((cap - current[rel], rel, current[rel], cap)
+         for rel, cap in tracked.items()
+         if cap - current[rel] <= TIGHT_HEADROOM_LINES),
+        key=lambda item: (item[0], item[1]),
+    )
+    if tight:
+        print(
+            f"TIGHT: {len(tight)} of {len(tracked)} tracked file(s) are within "
+            f"{TIGHT_HEADROOM_LINES} line(s) of their cap. Adding a line to one of these fails this "
+            f"check; decompose before extending."
+        )
+        for headroom, rel, lines, cap in tight[:10]:
+            print(f"- {rel}: {lines}/{cap} ({headroom} line(s) spare)")
+        if len(tight) > 10:
+            print(f"- ... and {len(tight) - 10} more")
+    if slack:
+        print(
+            "Run --tighten-baseline to lock in the reclaimable lines so they cannot be given back."
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="check-file-size")
     parser.add_argument("--threshold", type=int, default=THRESHOLD_LINES)
@@ -146,7 +192,19 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Regenerate the baseline from the current tree instead of checking.",
     )
+    parser.add_argument(
+        "--tighten-baseline",
+        action="store_true",
+        help=(
+            "Lower caps to current line counts. Unlike --update-baseline this never raises a cap "
+            "or adds a file, so reclaimed lines cannot be silently given back."
+        ),
+    )
     args = parser.parse_args(argv)
+
+    if args.update_baseline and args.tighten_baseline:
+        print("ERROR: choose either --update-baseline or --tighten-baseline.", file=sys.stderr)
+        return 2
 
     root = _repo_root()
     src_root = root / "src"
@@ -168,6 +226,24 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     baseline = _load_baseline(root)
 
+    if args.tighten_baseline:
+        tightened = {
+            rel: min(cap, current[rel]) if rel in current else cap
+            for rel, cap in baseline.items()
+        }
+        # A file that dropped below the threshold leaves the baseline entirely.
+        tightened = {rel: cap for rel, cap in tightened.items() if rel in current}
+        reclaimed = sum(baseline[rel] - cap for rel, cap in tightened.items())
+        retired = sorted(set(baseline) - set(tightened))
+        _write_baseline(root, args.threshold, dict(sorted(tightened.items())))
+        print(
+            f"Tightened baseline: {reclaimed:,} line(s) reclaimed, "
+            f"{len(retired)} file(s) retired, {len(tightened)} still tracked."
+        )
+        for rel in retired:
+            print(f"- retired (now under threshold): {rel}")
+        return 0
+
     new_god_files: list[tuple[str, int]] = []
     grown_files: list[tuple[str, int, int]] = []
     for rel, lines in current.items():
@@ -185,15 +261,18 @@ def main(argv: list[str] | None = None) -> int:
                   f"Split it into composed units, or if unavoidable add it to the "
                   f"baseline with justification.", file=sys.stderr)
         for rel, lines, cap in grown_files:
-            print(f"- GREW past cap: {rel} now {lines} lines (baseline cap {cap}). "
-                  f"Reduce it, or update the baseline with justification.", file=sys.stderr)
+            print(f"- GREW past cap: {rel} now {lines} lines (baseline cap {cap}, "
+                  f"exceeded by {lines - cap}). Reduce it, or update the baseline with "
+                  f"justification.", file=sys.stderr)
+        _report_trend(baseline, current)
         return 1
 
     print(f"File-size ratchet OK: {len(current)} tracked file(s), "
           f"no new or grown god files (threshold {args.threshold} lines).")
+    _report_trend(baseline, current)
     if stale:
-        print("Notice: baseline entries now under threshold (tighten the ratchet "
-              "by rerunning --update-baseline):")
+        print("Notice: baseline entries now under threshold (retire them with "
+              "--tighten-baseline):")
         for rel in stale:
             print(f"- {rel}")
     return 0
