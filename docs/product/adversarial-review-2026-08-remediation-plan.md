@@ -72,8 +72,10 @@ misinformation. Do these first regardless of sequencing; they cost under a day i
   **Verify:** container boot logs report `PERSISTENCE: FULL`; `/readyz` lists no missing domain.
   **Effort:** S
 
-- [ ] **AR8-Q4 — Wire or disable the Strategy Designer buttons.** See AR8-39.
-- [ ] **AR8-Q5 — Delete the seven epoch-stamped dashboards.** See AR8-21.
+- [x] **AR8-Q4 — Wire or disable the Strategy Designer buttons.** See AR8-43. *(Done: both render
+  disabled with reasons; wiring is blocked on a missing document mapper — see AR8-43.)*
+- [ ] **AR8-Q5 — Correct the misleading dashboard metrics.** See AR8-24. *(Not a deletion: the
+  dashboards are live automation output — see the corrected item.)*
 - [ ] **AR8-Q6 — Delete the StockSharp sample-config block.** See AR8-05.
 
 ---
@@ -89,17 +91,29 @@ build in seven attempts, so today's supported user count is structurally zero.
   (`src/Meridian.Identity/Application/AuthenticationMode.cs:42-44`), and every request 503s asking
   for `MDC_USERS` with PBKDF2 hashes (`src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:198`).
   `--quickstart` never touches auth (`src/Meridian.Application/Services/ConfigurationWizard.cs:133-217`).
-  The installed path *does* have a bootstrap (`src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs:288`
-  → `/api/auth/bootstrap` → `src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs:10`),
-  but it ships only with the installer.
-  **Change:** add two verbs to `src/Meridian.Application/Commands/ConfigCommands.cs` —
-  `--hash-password` (stdin, prints the `pbkdf2-sha256$…` string) and `--create-user <name>`
-  (writes a local account through `IUserAccountStore`). Extend `--quickstart` to offer first-admin
-  creation, or to mint a `MDC_BOOTSTRAP_TOKEN` so the existing setup page works on source launches.
-  Update the README launch section to reference the new verb.
-  **Verify:** from a clean clone with no environment set, `--quickstart` then the documented launch
-  command reaches an authenticated workstation; add an integration test covering the round trip.
-  **Effort:** M
+  The installed path *does* have bootstrap machinery
+  (`src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs:288` → `/api/auth/bootstrap` →
+  `src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs:10`) — **but it is unreachable
+  as written.** In `LoginSessionMiddleware.InvokeAsync`, the `!sessionService.IsConfigured`
+  fail-closed block returns 503 at lines 98-115, *before* the `/setup/account` and `/api/auth`
+  exemptions at lines 118-125. On a fresh install no accounts exist, so `IsConfigured` is false;
+  `AllowAnonymousWhenUnconfigured` is true only in `Optional` mode (`LoginSessionService.cs:56`) and
+  packaged builds default to `Required`; the only earlier bypass, `IsLifecycleTokenRequest`
+  (`:201-223`), covers just `/api/system/lifecycle` and `/api/system/shutdown*`, and
+  `MDC_BOOTSTRAP_TOKEN` is never consulted by the middleware. **So the first-account gap is not
+  scoped to source launches — installed users are blocked by the same 503.**
+  **Change:** (a) reorder the middleware so `/setup/account` and `/api/auth/bootstrap` are exempt
+  *before* the unconfigured fail-closed branch — or allow them conditionally while unconfigured,
+  gated on a valid `MDC_BOOTSTRAP_TOKEN` and a loopback caller, mirroring `IsLifecycleTokenRequest`;
+  (b) add `--hash-password` and `--create-user <name>` verbs to
+  `src/Meridian.Application/Commands/ConfigCommands.cs` so source launches have a path too;
+  (c) extend `--quickstart` to offer first-admin creation or mint a bootstrap token; (d) update the
+  README launch section.
+  **Verify:** two tests — a fresh installed profile with zero accounts reaches `/setup/account` and
+  completes `/api/auth/bootstrap`, and a clean clone reaches an authenticated workstation via the
+  new verb. Both must fail against today's middleware ordering.
+  **Effort:** M · **Priority note:** this is the single highest-value fix in W1 — without it the
+  installer lane in AR8-08 produces an artifact whose first run cannot create an account.
 
 - [ ] **AR8-02 — Make the demo state its own posture.**
   **Evidence:** `src/Meridian/DemoWorkspaceCli.cs:106-131` sets `MERIDIAN_USE_INMEMORY_GOVERNANCE`,
@@ -128,7 +142,8 @@ build in seven attempts, so today's supported user count is structurally zero.
   error — the gap that let this rot undetected.
   **Effort:** M (repair) / S (archive) · **Related:** `PRD-013`
 
-- [x] **AR8-04 — Devcontainer durability.** Covered by AR8-Q3.
+- **AR8-04 — Devcontainer durability.** Alias of AR8-Q3, not a separate todo; tick the checkbox
+  there so the work is counted once.
 
 - [ ] **AR8-05 — Remove the phantom provider and plaintext secrets from the sample config.**
   **Evidence:** `config/appsettings.sample.json:88,585-619` lists `"StockSharp"` (absent from
@@ -331,14 +346,20 @@ still `in_progress`.
   `DataSource = Synthetic` (the default, `src/Meridian.Core/Config/AppConfig.cs:48`) reports `Real`
   and renders no banner. `src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:80-95` falls back to
   an Alpaca/Polygon key heuristic, so a working Tiingo key is mislabeled `Seeded`.
-  **Change:** feed the resolved streaming *and* historical provider set into
-  `ResolveComposedDataProvenance` and fail closed to `Simulated` when any registered provider
-  reports `IsSimulated`; delete the key heuristic. Hoist `IsSimulated` from `IMarketDataClient`
+  **Change:** derive provenance from the providers that actually supply the tape — the **active**
+  streaming client (`FailoverAwareMarketDataClient.ActiveClient`) and the historical provider that
+  served the data — not from every registered provider. A mixed registration (real primary plus an
+  inactive synthetic fallback) is the normal case, and failing on *any* registered simulated
+  provider would recreate exactly the false-red-banner problem AR8-19 fixes. Fail closed to
+  `Simulated` when the active provider reports `IsSimulated`, when provenance cannot be resolved, or
+  when a failover switches onto a simulated backup; delete the key heuristic. Hoist `IsSimulated`
+  from `IMarketDataClient`
   (`src/Meridian.ProviderSdk/IMarketDataClient.cs:36`) to the shared provider metadata interface so
   `IHistoricalDataProvider` carries it too — `SyntheticHistoricalDataProvider` currently advertises
   `FullFeatured` with no simulation marker.
-  **Verify:** test matrix over {durable, in-memory} × {real, synthetic} provider sets asserting the
-  banner state for each of the four combinations.
+  **Verify:** test matrix over {durable, in-memory} × {real, synthetic} provider sets, **plus the
+  mixed case** — a real active primary with a registered synthetic fallback must report `Real`, and
+  the same host must flip to `Simulated` once failover promotes the synthetic backup.
   **Effort:** M · **Depends on:** AR8-17
 
 - [ ] **AR8-19 — Stop the browser branding real installs SIMULATED.**
@@ -384,10 +405,14 @@ still `in_progress`.
   are running the latest version (1.6.1)" with no network call, against
   `src/Meridian.Wpf/Meridian.Wpf.csproj:38` (`1.0.0`); `:865-889` hardcodes three activity entries
   including "Cloud sync completed" for a product with no cloud sync.
-  **Change:** delete both methods. Bind Recent Activity to the real audit trail
-  (`ImmutableAuditLogService`, wired at `src/Meridian/UiServer.cs:306-308`). Either implement a
-  signed release-manifest check or remove the Check for Updates button
-  (`src/Meridian.Wpf/Views/SettingsPage.xaml:1262`).
+  **Change:** delete both methods. Bind Recent Activity to the real audit trail **through the shared
+  API seam, not the service directly**: `ImmutableAuditLogService` is registered in the host
+  (`src/Meridian/UiServer.cs:306-308`) and has zero references anywhere in `src/Meridian.Wpf`, so in
+  the installed topology it lives in a different process — resolving it from the WPF container would
+  fail or, worse, construct a second empty log. Expose retained activity as a read model over the
+  existing endpoint surface and consume that, preserving the shared-contract boundary both clients
+  are required to sit on. Either implement a signed release-manifest check or remove the Check for
+  Updates button (`src/Meridian.Wpf/Views/SettingsPage.xaml:1262`).
   **Verify:** `dotnet test tests/Meridian.Wpf.Tests --filter "FullyQualifiedName~Settings"`.
   **Effort:** S
 
@@ -400,17 +425,30 @@ still `in_progress`.
   **Verify:** test asserting `501`; the WPF page renders its unavailable state.
   **Effort:** S
 
-- [ ] **AR8-24 — Delete the dead status dashboards.**
-  **Evidence:** seven `docs/status/` dashboards are stamped `1970-01-01`;
-  `metrics-dashboard.md` reports 0 runs / 0 tests / 0.0% success; `doc-health-dashboard.md` still
-  prints "80/100 — Rating: Good"; `workflow-validation-summary.json` reports `"clean"` over 12 of 28
-  workflows.
-  **Change:** delete the seven epoch-stamped files and their generators unless the generator is
-  wired into a lane that actually runs. A missing dashboard is honest; a 1970 dashboard grading
-  itself "Good" is not. Widen the workflow manifest to all 28 workflows or state its scope in the
-  file.
-  **Verify:** `bash scripts/ci.sh --lane verify-docs`; no remaining doc claims a 1970 timestamp.
-  **Effort:** S · **Related:** `PRD-017`, `PRD-114`
+- [ ] **AR8-24 — Fix the misleading dashboard metrics (do *not* delete the dashboards).**
+  **Correction:** the review called these "dead dashboards" and inferred that from the
+  `1970-01-01` stamps. **That inference was wrong.** `build/scripts/docs/dashboard_rendering.py:13`
+  defines `STABLE_GENERATED_AT = "1970-01-01T00:00:00+00:00"` with `current_utc_timestamp()`
+  documented as returning "a stable ISO-8601 UTC timestamp for generated docs" — a deliberate
+  determinism choice so regeneration does not churn the tree on every run. (The same class of
+  problem bit this branch: a drifting coverage snapshot failed `regenerate-docs`.) These files are
+  live automation output — `run-docs-automation.py --profile core` regenerates the health, metrics,
+  API-contract, and example-validation artifacts, and the documentation workflow reads
+  `docs/status/doc-health-dashboard.json` to compute readiness deltas. Deleting them would break
+  those consumers and destroy CI evidence.
+  **What survives the correction:** the *numbers* are still misleading. `metrics-dashboard.md`
+  reports 0 workflow runs / 0 tests / 0.0% success across every workflow while CI demonstrably runs;
+  `doc-health-dashboard.md` prints "80/100 — Rating: Good" over 254 orphaned files; and
+  `docs/status/workflow-validation-summary.json` reports `"clean"` across 12 workflows while
+  `.github/workflows/` holds 28.
+  **Change:** (a) label the stable timestamp in the rendered header ("deterministic placeholder —
+  see the workflow run for actual generation time") so no reader treats it as a staleness signal;
+  (b) fix or retire the zero-valued metrics feed so the dashboard reports real run data or states
+  plainly that it has none; (c) re-derive the health grade from inputs that justify it, or drop the
+  letter grade; (d) widen the workflow manifest to all 28 workflows or record its scope in the file.
+  **Verify:** `bash scripts/ci.sh --lane verify-docs`; no dashboard reports a grade or "clean"
+  status over inputs it did not measure.
+  **Effort:** M · **Related:** `PRD-017`, `PRD-114`
 
 ---
 
@@ -512,11 +550,18 @@ still `in_progress`.
   files; there are no down-migrations, no `--migrate` verb, and nothing prints the pending set.
   `src/Meridian.Setup/InstallationTransaction.cs:142-181` promotes any payload over any installed
   version without comparison, so a downgrade silently runs an older host against a newer schema.
-  **Change:** record `ProductVersion` and a minimum-compatible schema ordinal in the migration
-  ledger; refuse startup on a backwards mismatch with a named diagnostic; add `--migrate --plan` to
-  print pending scripts before they run. The runner itself (advisory lock, single transaction,
-  SHA-256 drift detection) is sound and should not be rewritten.
-  **Verify:** test that an older host against a newer schema fails closed with the diagnostic.
+  **Change:** (a) **gate the implicit startup migration** — a `--migrate --plan` verb alone gives an
+  operator nothing while the nine `EnsureMigratedAsync` composition paths still apply schema changes
+  the moment the new host launches. Put automatic migration behind an explicit opt-in (an apply verb
+  or a configuration flag), and have startup *detect* pending migrations and refuse to serve with a
+  named diagnostic instead of silently applying them; (b) add `--migrate --plan` to print the
+  pending set and `--migrate --apply` to execute it; (c) record `ProductVersion` and a
+  minimum-compatible schema ordinal in the ledger and refuse startup on a backwards mismatch — note
+  this only protects a later downgrade and is not a substitute for (a). The runner itself (advisory
+  lock, single transaction, SHA-256 drift detection) is sound and should not be rewritten.
+  **Verify:** two tests — a host with pending migrations and no explicit apply refuses to serve and
+  leaves the schema untouched; an older host against a newer schema fails closed with the
+  diagnostic.
   **Effort:** M · **Depends on:** AR8-06 for a real rollback story
 
 - [ ] **AR8-32 — Enforce journal immutability in the database.**
@@ -649,8 +694,13 @@ still `in_progress`.
   **Change:** add a `build/scripts/ci/check-test-quality.py` ratchet failing on tautological
   assertions, bare catches, and base-`Exception` assertions in `tests/**`. Model it directly on
   `build/scripts/ci/check-file-size.py`, which already implements the shrink-only baseline pattern
-  against a checked-in JSON baseline — reuse that shape rather than inventing a second one. Delete
-  the self-referential doc tests.
+  against a checked-in JSON baseline — reuse that shape rather than inventing a second one.
+  **Replace, do not delete, the self-referential tests.** `DesktopWorkflowScriptTests.cs:321,343`
+  looks like a test asserting on prose, but it is the only thing keeping
+  `windows-desktop-build.yml` and `.github/workflows/README.md` describing the same validation
+  filter and commands — and AR8-38 changes that very workflow, so removing the check while editing
+  the thing it guards is the worst possible order. Swap the brittle string assertions for a
+  structured manifest or generator-backed parity check that survives rewording.
   **Verify:** the ratchet fails on a seeded `true.Should().BeTrue()`.
   **Effort:** M
 
@@ -817,9 +867,15 @@ still `in_progress`.
   **Change:** read the OFX `CHARSET`/`ENCODING` header and the XML declaration before decoding,
   default unknown bytes to Windows-1252 with a `StatementParseIssue.Warning`, and use
   `new UTF8Encoding(false, throwOnInvalidBytes: true)` so undecodable input errors instead of
-  mojibaking. Add transaction-level idempotency on `(externalAccountId, externalTransactionId)`
-  checked across runs. Let built-in profiles carry a per-account accepted fingerprint and compare
-  order and type, not just the name set.
+  mojibaking. Add transaction-level idempotency — but **not** a bare
+  `(externalAccountId, externalTransactionId)` pair: `Bai2StatementConnector.cs:113` and
+  `Camt053StatementConnector.cs:146` both emit `ExternalTransactionId: null` for valid records, and
+  `ResolveReference`/`EntryReference` are nullable elsewhere, so ignoring nulls preserves duplicates
+  while normalizing them to empty collapses distinct transactions. Namespace non-empty ids by
+  provider and accounting scope, and define a deterministic fallback fingerprint (account, value
+  date, amount, sign, normalized description, plus an intra-key ordinal for genuine same-day
+  repeats) for records whose source supplies no identifier. Let built-in profiles carry a
+  per-account accepted fingerprint and compare order and type, not just the name set.
   **Verify:** a Windows-1252 OFX imports with correct accents; re-importing an overlapping statement
   adds no duplicate rows.
   **Effort:** M · **Related:** `W9-INGEST-009`
@@ -880,9 +936,36 @@ registry rows rather than silent fixes:
 
 ## Coverage check
 
-All 49 review findings are represented: W1 (7) · W2 (3) · W3 (3) · W4 (1) · W5 (1) · W6 (8) ·
-W7 (2) · W8 (6) · W9 (3) · W10 (6) · W11 (7) · W12 (4) · W13 (3), plus six W0 quick wins that
-duplicate entries elsewhere for sequencing. Strengths named in the review — the ADR-019 composition
-policy, the bias-disclosure report, the reconciliation matching engine, OMS pre-trade enforcement,
-the durability primitives, and the auth primitives — are **not** to be regressed by any item above;
-several plans deliberately extend them rather than replace them.
+Counts are mechanical, not asserted — regenerate them by counting `^- \*\*` bullets per section in
+the review and `AR8-` identifiers per workstream here.
+
+**The review carries 51 findings** (an earlier revision of this section said 49; that was a
+miscount): §1 first mile 7 · §2 activation 7 · §3 truth 7 · §4 gates 9 · §5 durability 5 ·
+§6 UX 7 · §7 assurance 6 · program-level 3.
+
+**This plan carries 54 numbered todos**, `AR8-01`–`AR8-55` with `AR8-04` reserved as an alias of
+`AR8-Q3` rather than a separate item: W1 (7) · W2 (3) · W3 (3) · W4 (1) · W5 (1) · W6 (8) ·
+W7 (2) · W8 (6) · W9 (3) · W10 (6) · W11 (7) · W12 (4) · W13 (3) = 54. The six `AR8-Q*` quick wins
+are sequencing aliases of items that also appear in a workstream, so they are not counted again.
+
+**Reconciliation of 51 findings to 54 todos** — three todos have no 1:1 finding because they are
+mechanisms the findings imply rather than describe:
+
+| Section | Findings | Todos |
+|---|---|---|
+| §1 first mile | 7 | `AR8-01`, `AR8-02`, `AR8-03`, `AR8-Q3`, `AR8-05`, `AR8-06`, `AR8-07` **+ `AR8-08`** (the P0 publish→sign→install chain named in the section's opening) |
+| §2 activation | 7 | `AR8-42`, `AR8-43`, `AR8-15`, `AR8-25`, `AR8-26`, `AR8-49`, `AR8-50`, `AR8-12` |
+| §3 truth | 7 | `AR8-17`, `AR8-20`, `AR8-21`, `AR8-19`, `AR8-22`, `AR8-23`, `AR8-24` **+ `AR8-18`** (the provenance-derivation mechanism behind the banner finding) |
+| §4 gates | 9 | `AR8-13`, `AR8-14`, `AR8-16`, `AR8-09`, `AR8-11`, `AR8-35`, `AR8-32`, `AR8-33`, `AR8-34` **+ `AR8-10`** (the fat-finger/collar rules named as `W9-SAFETY-007`'s remainder) |
+| §5 durability | 5 | `AR8-27`, `AR8-28`, `AR8-29`, `AR8-30`, `AR8-31` |
+| §6 UX | 7 | `AR8-44`, `AR8-45`, `AR8-46`, `AR8-47`, `AR8-48`, `AR8-51`, `AR8-52` |
+| §7 assurance | 6 | `AR8-36`, `AR8-37`, `AR8-38`, `AR8-39`, `AR8-40`, `AR8-41` |
+| program-level | 3 | `AR8-53`, `AR8-54`, `AR8-55` |
+
+51 findings + 3 implied mechanisms = 54 todos, with every finding represented.
+
+Strengths named in the review — the ADR-019 composition policy, the bias-disclosure report, the
+reconciliation matching engine, OMS pre-trade enforcement, the durability primitives, and the auth
+primitives — are **not** to be regressed by any item above; several plans deliberately extend them
+rather than replace them. `AR8-24` and `AR8-40` were rewritten after review to *preserve* two
+controls an earlier draft proposed deleting.

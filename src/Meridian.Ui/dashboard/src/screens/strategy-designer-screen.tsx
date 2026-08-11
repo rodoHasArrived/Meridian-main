@@ -109,7 +109,24 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" aria-label="Save strategy design draft">
+          {/*
+            Both actions are deliberately disabled rather than bound to a handler. The workstation
+            endpoints and typed clients exist (`saveStrategyDesignerDraft`,
+            `runStrategyDesignerBacktest`), but two contract gaps block an honest wire-up:
+            the canvas holds a `StrategyBuilderDocument` and the API takes a `StrategyDesignDocument`
+            with no mapper between them, and a backtest run additionally requires governed evidence
+            references (operator acceptance, retained evidence, accounting, approvals, paper
+            validation, governed reports) that this screen cannot collect. Rendering an enabled
+            control that silently discards the operator's work — or posts empty evidence arrays into
+            a governance flow — is worse than a disabled one that says why.
+          */}
+          <Button
+            type="button"
+            variant="outline"
+            aria-label="Save strategy design draft"
+            disabled
+            disabledReason="Saving drafts needs a canvas-to-design-document mapping that is not implemented yet, so this action would discard your work."
+          >
             <Save className="h-4 w-4" aria-hidden="true" />
             <span className="ml-1.5">Save draft</span>
           </Button>
@@ -117,8 +134,11 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
             type="button"
             variant="secondary"
             aria-label={vm.backtest.runCommand.ariaLabel}
-            disabled={vm.backtest.runCommand.disabled}
-            disabledReason={vm.backtest.runCommand.disabledReason}
+            disabled
+            disabledReason={
+              vm.backtest.runCommand.disabledReason ??
+              "Running a backtest proof needs governed evidence references this screen cannot collect yet."
+            }
           >
             <PlayCircle className="h-4 w-4" aria-hidden="true" />
             <span className="ml-1.5">{vm.backtest.runCommand.label}</span>
