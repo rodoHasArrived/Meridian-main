@@ -70,14 +70,23 @@ questions:
   provider's staleness filter drops a six-minute-old print the matcher will still fire from. Note
   that last one — the age filter that protects every *valuation* accessor here is precisely wrong
   for this one, because the question is not "what is this worth" but "will the engine fire this",
-  and where the guard and the engine disagree the engine is the authority.
+  and where the guard and the engine disagree the engine is the authority. That reasoning holds
+  only while the paper matcher **is** the engine, so the unfiltered observation is used only in a
+  paper composition. Against a live broker nobody here decides the fill and the feed cache retains
+  prints indefinitely, so the same precedence runs over current observations instead — a stale $50
+  print must lose to a fresh $100 ask, or a buy stop at $60 reads as resting while the broker sees
+  it already crossed. The posture defaults to live, because that is where guessing wrong routes an
+  unbounded order.
 
-Note that these limbs gate **submission**. `OrderManagementSystem.IsRiskIncreasing` revalidates only
-quantity increases and numerically *higher* limit or stop prices, so an amendment that moves a price
-the dangerous way — a sell limit downward, or a buy stop down onto the wrong side of the market —
-does not currently re-enter the validator. Closing that is an OMS-wide change tracked on
-`W9-SAFETY-007`, not a property of this rule.
 - **A stop-limit's limit** is measured against *its own trigger*, which is what it is priced off.
+
+These limbs gate **submission**. `OrderManagementSystem.IsRiskIncreasing` revalidates only quantity
+increases and numerically *higher* limit or stop prices, so an amendment that moves a price the
+dangerous way — a sell limit downward, or a buy stop down onto the wrong side of the market — does
+not currently re-enter the validator. Closing that is an OMS-wide change tracked on
+`W9-SAFETY-007`, not a property of this rule. The rule also reads only the top-level `LimitPrice`
+and `StopPrice`, so the attached legs of an Alpaca bracket, OCO, or OTO order — routed from
+metadata — are not measured either; that gap is recorded on the same row.
 
 Both thresholds are read as a single `FatFingerThresholds` value rather than two accessors, so an
 evaluation cannot straddle a two-field configuration update and observe a pair that never existed.

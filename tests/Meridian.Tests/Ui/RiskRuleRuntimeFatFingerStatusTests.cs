@@ -231,6 +231,41 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
         status.State.Should().Be("Constrained");
     }
 
+    /// <summary>
+    /// The status projection makes a <em>time</em> claim — a breach in the last hour holds the rule
+    /// constrained — so reading a fixed number of newest entries silently drops that breach as soon
+    /// as enough unrelated activity follows it. Two hundred events after a refusal is an ordinary
+    /// morning on an active desk, and it turned a live breach into a healthy rule.
+    /// </summary>
+    [Fact]
+    public async Task FatFingerStatus_SurvivesHeavyUnrelatedAuditTrafficInsideTheWindow()
+    {
+        await using var audit = NewAudit();
+        var now = DateTimeOffset.UtcNow;
+
+        await audit.RecordAsync(RejectionEntry(
+            occurredAt: now.AddMinutes(-30),
+            code: FatFingerRule.QuantityCode,
+            message: "Fat-finger quantity: 100000.00 on AAPL exceeds the 1000.00 per-order ceiling"));
+
+        // 250 unrelated submissions, all newer, all well inside the same hour.
+        for (var i = 0; i < 250; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddMinutes(-20).AddSeconds(i),
+                Symbol: "MSFT"));
+        }
+
+        var status = await BuildService(audit).GetStatusAsync("FatFinger");
+
+        status!.IsBreached.Should().BeTrue("the breach is still inside the liveness window");
+        status.State.Should().Be("Constrained");
+    }
+
     // --- snapshot hydration ---
 
     /// <summary>

@@ -225,8 +225,8 @@ public sealed class RiskRuleRuntimeService
 
     public async Task<IReadOnlyList<RiskRuleStatusDto>> GetAllStatusesAsync(CancellationToken ct = default)
     {
-        var auditEntries = await GetAuditEntriesAsync(ct).ConfigureAwait(false);
         var asOf = DateTimeOffset.UtcNow;
+        var auditEntries = await GetAuditEntriesAsync(asOf, ct).ConfigureAwait(false);
         return
         [
             BuildPositionLimitStatus(auditEntries, asOf),
@@ -544,12 +544,24 @@ public sealed class RiskRuleRuntimeService
         }
     }
 
-    private async Task<IReadOnlyList<ExecutionAuditEntry>> GetAuditEntriesAsync(CancellationToken ct)
+    /// <summary>
+    /// Audit entries for the status projection: the newest 200 for history, and everything inside
+    /// the liveness window regardless of how much unrelated activity followed it.
+    /// <para>
+    /// A fixed count alone was wrong here, because every rule below makes a <em>time</em> claim —
+    /// "a breach in the last hour holds this rule constrained". Two hundred unrelated events after
+    /// a fat-finger refusal is an ordinary morning on an active desk, and it silently turned a live
+    /// breach into a healthy rule and reopened the readiness gate an hour early.
+    /// </para>
+    /// </summary>
+    private async Task<IReadOnlyList<ExecutionAuditEntry>> GetAuditEntriesAsync(
+        DateTimeOffset asOf,
+        CancellationToken ct)
     {
         var auditTrail = Resolve<ExecutionAuditTrailService>();
         return auditTrail is null
             ? Array.Empty<ExecutionAuditEntry>()
-            : await auditTrail.GetRecentAsync(200, ct).ConfigureAwait(false);
+            : await auditTrail.GetRecentOrSinceAsync(200, asOf - ViolationLivenessWindow, ct).ConfigureAwait(false);
     }
 
     private RiskRuleStatusDto BuildPositionLimitStatus(

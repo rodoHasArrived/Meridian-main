@@ -389,7 +389,14 @@ public static class WorkstationServiceCollectionExtensions
                 // than rebuilt from the collectors, so the guard that refuses wrong-side stops and
                 // the engine that fires them cannot disagree about what a stop triggers on. Lazy
                 // for the same DI-cycle reason as the order manager above.
-                liveFeedAccessor: sp.GetService<Meridian.Execution.Interfaces.ILiveFeedAdapter>));
+                liveFeedAccessor: sp.GetService<Meridian.Execution.Interfaces.ILiveFeedAdapter>,
+                // Only a paper composition may use the matcher's unfiltered observation for stop
+                // triggers. Against a live broker no matcher decides the fill, and the feed cache
+                // keeps prints indefinitely, so preferring a print there can measure a trigger
+                // against a price the market left hours ago.
+                paperMatchingIsAuthoritative: () =>
+                    sp.GetService<Meridian.Execution.Interfaces.IOrderGateway>()
+                        is Meridian.Execution.Adapters.PaperTradingGateway));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(

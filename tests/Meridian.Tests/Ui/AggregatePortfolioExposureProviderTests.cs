@@ -791,11 +791,48 @@ public sealed class AggregatePortfolioExposureProviderTests
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,
-            liveFeedAccessor: () => feed);
+            liveFeedAccessor: () => feed,
+            paperMatchingIsAuthoritative: () => true);
 
         IPortfolioExposureProvider seam = provider;
         seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
             .Should().Be(130m, "the matcher fires from that print regardless of its age");
+    }
+
+    /// <summary>
+    /// Against a live broker the paper matcher decides nothing, and the feed cache keeps prints
+    /// indefinitely — so preferring the print measures a trigger against a price the market may
+    /// have left hours ago. A stale $50 print beside a fresh $100 ask must not make a buy stop at
+    /// $60 look resting when the broker sees it already crossed.
+    /// </summary>
+    [Fact]
+    public void TryGetTriggerReferencePrice_InALivePosture_DoesNotPreferAStalePrint()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        var trades = new Meridian.Domain.Collectors.TradeDataCollector(publisher, quotes);
+
+        // A fresh two-sided book; the feed additionally holds an old print the cache never expires.
+        quotes.OnQuote(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            BidPrice: 99m,
+            BidSize: 100,
+            AskPrice: 100m,
+            AskSize: 100));
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            trades: trades,
+            liveFeedAccessor: () => new StubLiveFeed(lastTrade: 50m, bid: 99m, ask: 100m));
+
+        IPortfolioExposureProvider seam = provider;
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
+            .Should().Be(100m, "the default posture is live, where a stale print must lose to a fresh quote");
     }
 
     /// <summary>
@@ -812,7 +849,8 @@ public sealed class AggregatePortfolioExposureProviderTests
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,
-            liveFeedAccessor: () => feed);
+            liveFeedAccessor: () => feed,
+            paperMatchingIsAuthoritative: () => true);
 
         IPortfolioExposureProvider seam = provider;
         seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)

@@ -40,6 +40,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     private readonly TimeSpan _markMaxAge;
     private readonly Func<DateTimeOffset> _clock;
     private readonly Func<ILiveFeedAdapter?>? _liveFeedAccessor;
+    private readonly Func<bool> _paperMatchingIsAuthoritative;
 
     /// <summary>
     /// How old a quote or trade may be and still price an order. A stalled feed keeps
@@ -57,7 +58,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         Func<IOrderManager?>? orderManagerAccessor = null,
         TimeSpan? markMaxAge = null,
         Func<DateTimeOffset>? clock = null,
-        Func<ILiveFeedAdapter?>? liveFeedAccessor = null)
+        Func<ILiveFeedAdapter?>? liveFeedAccessor = null,
+        Func<bool>? paperMatchingIsAuthoritative = null)
     {
         _aggregatePortfolio = aggregatePortfolio ?? throw new ArgumentNullException(nameof(aggregatePortfolio));
         _portfolioState = portfolioState;
@@ -72,6 +74,9 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             : DefaultMarkMaxAge;
         _clock = clock ?? (static () => DateTimeOffset.UtcNow);
         _liveFeedAccessor = liveFeedAccessor;
+        // Defaults to false. A host that has not said which engine decides its fills is treated as
+        // a live one, because that is the posture where guessing wrong routes an unbounded order.
+        _paperMatchingIsAuthoritative = paperMatchingIsAuthoritative ?? (static () => false);
     }
 
     /// <summary>
@@ -172,7 +177,13 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             return null;
         }
 
-        if (_liveFeedAccessor?.Invoke() is { } feed)
+        // The unfiltered, trade-preferred observation is right only where the paper matcher is the
+        // engine. Against a live broker nobody here decides whether a stop fires, and the feed
+        // cache retains prints indefinitely, so "prefer the print" turns into "prefer a price the
+        // market may have left hours ago": a stale $50 print beside a fresh $100 ask makes a buy
+        // stop at $60 look comfortably resting while the broker sees it already crossed and routes
+        // it unbounded. Agreeing with an engine that is not running is not a safety property.
+        if (_paperMatchingIsAuthoritative() && _liveFeedAccessor?.Invoke() is { } feed)
         {
             var observed = PaperMarketObservation.Capture(feed, symbol).ResolveStopTriggerPrice(side);
             if (observed is > 0m)
@@ -181,8 +192,10 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             }
         }
 
-        // No feed means no bars either — they only ever arrive through one — so the collector
-        // fallback is trade then touch, which is what the matcher would resolve from the same
+        // Live posture, or no feed at all: the same precedence, but only over observations still
+        // current. A stale print loses to a fresh quote here, which is the opposite of the paper
+        // rule above and deliberately so. Bars arrive only through a feed, so with none composed
+        // the resolution is print then touch — what the matcher would resolve from the same
         // absence.
         return TryGetLastTradePrice(symbol) ?? TryGetTouchPrice(symbol, side);
     }

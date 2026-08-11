@@ -107,6 +107,38 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     }
 
     /// <summary>
+    /// The newest <paramref name="take"/> entries <em>plus</em> every retained entry at or after
+    /// <paramref name="since"/>, newest first.
+    /// <para>
+    /// A count-bounded query and a time-bounded claim do not mix. A caller that says "a breach in
+    /// the last hour holds this rule constrained" and then reads a fixed number of newest entries
+    /// silently drops that breach as soon as enough unrelated activity follows it — which on an
+    /// active desk happens well inside the hour, turning a live breach into a healthy rule and
+    /// reopening whatever gate reads it. The count still bounds ordinary history; the window is
+    /// what the caller actually reasons about, so both are honoured.
+    /// </para>
+    /// </summary>
+    public async Task<IReadOnlyList<ExecutionAuditEntry>> GetRecentOrSinceAsync(
+        int take,
+        DateTimeOffset since,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        await EnsureInitialisedAsync(ct).ConfigureAwait(false);
+
+        lock (_lock)
+        {
+            var ordered = _entries.OrderByDescending(static entry => entry.OccurredAt).ToArray();
+            var count = Math.Max(1, take);
+            // Ordered newest-first, so everything inside the window is a prefix — except that a
+            // misdated future entry sorts ahead of it. Counting forward past the window rather
+            // than assuming a prefix keeps those from displacing genuine entries.
+            var windowed = ordered.Count(entry => entry.OccurredAt >= since);
+            return ordered.Take(Math.Max(count, windowed)).ToArray();
+        }
+    }
+
+    /// <summary>
     /// Returns all retained audit entries in chronological order.
     /// </summary>
     public async Task<IReadOnlyList<ExecutionAuditEntry>> GetAllAsync(CancellationToken ct = default)
