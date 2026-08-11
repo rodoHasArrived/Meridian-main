@@ -94,7 +94,10 @@ parsing is shared with `PRD-010`; changes 1–3 are shared with `PRD-006`.
   blueprint; this wave takes 039 or higher.
 - It does not reopen deferred lanes, add a root workspace, or extend the risk-engine blueprint
   beyond its shipped PR 1. The decision journal, `/api/risk/decisions` read surface, and their WPF
-  parity remain design-only and are recorded as a deliberate deferral on `W9-SAFETY-007`.
+  parity remain design-only. Because live truth is the registry and not this page, change 1 writes
+  that deferral into the `W9-SAFETY-007` row itself — otherwise the follow-on work is either
+  silently lost or wrongly treated as a W9 acceptance requirement, since the deferral would exist
+  only here and in a draft blueprint.
 - It does not renegotiate the tranche boundaries as scope. A route that is legitimately
   permissionless moves to the documented allowlist with a stated reason; it does not stay in the
   remediation baseline.
@@ -289,10 +292,19 @@ above** — several of these are why a change is scoped the way it is.
 
 ## Delivery constraints
 
-- **Migration ordinals** are a global shared resource. Ordinals 029–038 are reserved by in-flight
-  blueprints (incentive fee, commitments, equalization, mark freshness). Any migration in this wave
-  takes 039 or higher and records the reservation in
-  [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+- **Migration ordinals** are a global shared resource, and this wave must follow the register's own
+  rule rather than pre-assigning a number. 029–038 are *reserved* by in-flight blueprints (incentive
+  fee, commitments, equalization, mark freshness) but **none of them has shipped** — the highest
+  ordinal on disk is still 028. Hard-coding 039 for change 9 would therefore claim a number above
+  ten absent migrations, and those would later apply after a higher ordinal had already been
+  recorded, which the mark blueprint treats as invalid ordering.
+
+  The register's contract is explicit: *"Re-derive the next free ordinal from disk at implementation
+  time and update this table if an unrelated lane lands first. Do not renumber a migration that has
+  already shipped."* So change 9 re-derives from disk when it is written. If it lands before those
+  blueprints, it takes the next free ordinal (029 today) and updates the reservation table in
+  [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md) to shift the
+  unshipped reservations up — which is permitted precisely because they have not shipped.
 - **Lane collisions.** Change 3 touches WPF Trading surfaces owned by `W8-WPF-PARITY-001`, and
   change 4 touches reporting groups that `W8-UX-CONSOL-001` is consolidating. Refresh
   [`docs/development/wpf-web-ui-alignment-plan.md`](../development/wpf-web-ui-alignment-plan.md)
@@ -314,3 +326,11 @@ bash scripts/ci.sh
 A row moves to `ready_for_acceptance` only when its registry entry links source and test paths for
 every exit criterion, generated roadmap docs are re-rendered on the same commit, and the
 GitHub-hosted `Meridian CI / quality-gate` check is green.
+
+**`quality-gate` alone cannot accept change 3.** Its lanes run on Ubuntu, where the WPF project
+builds as a stub, and the Windows desktop workflows are tag- or manual-dispatch only. A green gate
+plus linked test paths would therefore let `W9-SAFETY-007` advance without the rewired desktop code
+ever having been compiled, let alone executed — on the one criterion whose whole subject is WPF.
+Change 3 additionally requires a **named Windows WPF build-and-test result** (a `Targeted Test`
+run against `tests/Meridian.Wpf.Tests`, or the desktop workflow dispatched on the candidate commit),
+linked as evidence on the row. Without that link the criterion is not discharged.
