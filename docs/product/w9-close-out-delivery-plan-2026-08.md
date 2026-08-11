@@ -290,9 +290,16 @@ above** — several of these are why a change is scoped the way it is.
   today. So a metadata assertion over every endpoint fails immediately on existing reads, while a
   mutation-only assertion cannot discharge the criterion as written. Neither outcome is acceptable
   by accident. Decide explicitly in change 4 — inventory and remediate the read surface, or
-  allowlist it with a stated reason per family and record why role-level read access satisfies the
-  criterion — and give whichever path its own baseline. The mutation tranches below do not budget
-  for it.
+  declare it open — and give whichever path its own baseline. The mutation tranches below do not
+  budget for it.
+  **Note what the second option cannot be.** The criterion is that the test fails whenever any
+  mapped endpoint lacks an explicit policy or permission declaration, so "allowlisted" has to mean
+  *declared on the endpoint* — an explicit role, permission, or anonymous marker in
+  `EndpointAuthorizationMetadata` — not recorded in a side list that the assertion then skips.
+  Writing "these GET families are fine because access is role-level" into a separate baseline
+  leaves the endpoints exactly as undeclared as they are today and lets the row reach
+  `ready_for_acceptance` without satisfying its own criterion. An endpoint deliberately open to
+  every signed-in reader is a legitimate answer; it just has to say so on the endpoint.
 - **Guarding a route can also lock out callers that are authorized today, and two of them are
   systemic.** `EndpointAuthorization` resolves a caller's rights from
   `LoginSessionMiddleware.CurrentUserPermissionsKey` or its role key, and nothing else reaches it.
@@ -439,6 +446,17 @@ above** — several of these are why a change is scoped the way it is.
   Leaving it as-is is not one of the options, because the row's criterion is about the live path.
 - **And the live matcher is the one-to-one engine.** `StatementRunMatcher` invokes
   `new StatementMatchingEngine()`, not the split-capable `ReconciliationMatchingEngine`.
+- **Splitting the matcher is not enough — the result path cannot record a split either.**
+  `StatementMatchResult` carries exactly one `BrokerEvidenceReference` and one
+  `InternalEvidenceReference`, so a one-to-many outcome has nowhere to say which records formed it;
+  `StatementRunMatcher` then discards every exact and tolerance result after incrementing
+  `MatchCount`; and `StatementRunMatchArtifact` persists only that count alongside breaks and cases.
+  Two *different* split assignments with the same number of matches therefore produce a
+  byte-identical durable artifact. The row's criterion is deterministic one-to-one/one-to-many
+  semantics with stable tie-breakers and idempotent re-runs — none of which can be evidenced from an
+  artifact that cannot distinguish one grouping from another, however correct the matching is.
+  Change 11 must carry group-aware match records with evidence membership through the result type,
+  the mapper, and the persisted artifact, or its own acceptance evidence is unobtainable.
 - Together these decide the row's shape. camt.053 and BAI2 are *transaction* statements, so with an
   empty transaction population every bank row fails closed to a break, and one-to-many outcomes can
   never reach live casework no matter what the standalone kernels do. Tests written against those
