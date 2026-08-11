@@ -304,6 +304,88 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
         status!.IsBreached.Should().BeTrue("retention keeps the window, not just the newest N");
     }
 
+    /// <summary>
+    /// A back-dated entry appended after newer ones must not derail the window scan. Append order
+    /// is not timestamp order — `RecordAsync` takes a caller-built entry with any timestamp — and
+    /// a trim that assumed otherwise dropped the oldest *insertion*, which could be the live
+    /// breach, while keeping the back-dated tail.
+    /// </summary>
+    [Fact]
+    public async Task FatFingerStatus_SurvivesOutOfOrderAppendsPastTheCountCap()
+    {
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-unordered"),
+                InMemoryRetention: 100),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        var now = DateTimeOffset.UtcNow;
+        await audit.RecordAsync(RejectionEntry(
+            occurredAt: now.AddMinutes(-45),
+            code: FatFingerRule.QuantityCode,
+            message: "Fat-finger quantity: 100000.00 on AAPL exceeds the 1000.00 per-order ceiling"));
+
+        for (var i = 0; i < 300; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddMinutes(-30).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        // Appended last, but dated days ago: the tail is now older than everything before it.
+        await audit.RecordAsync(new ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Order",
+            Action: "OrderSubmitted",
+            Outcome: "Accepted",
+            OccurredAt: now.AddDays(-3),
+            Symbol: "MSFT"));
+
+        var status = await BuildService(audit).GetStatusAsync("FatFinger");
+
+        status!.IsBreached.Should().BeTrue("a back-dated append must not evict a live breach");
+    }
+
+    /// <summary>
+    /// When a burst exceeds the audit retention ceiling, the absence of a breach inside the window
+    /// is unverifiable — so no rule may report healthy. Logging the shortfall does not make the
+    /// claim true, and a readiness gate cannot distinguish a quiet hour from an unrecorded one.
+    /// </summary>
+    [Fact]
+    public async Task RuleStatus_WithIncompleteAuditRetention_RefusesToReportHealthy()
+    {
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-overrun"),
+                InMemoryRetention: 100),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        var now = DateTimeOffset.UtcNow;
+        // Past 20x the count cap, all inside the retention window.
+        for (var i = 0; i < 2_100; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddMinutes(-10).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        audit.RetentionWindowComplete.Should().BeFalse();
+
+        var statuses = await BuildService(audit).GetAllStatusesAsync();
+
+        statuses.Should().NotBeEmpty();
+        statuses.Should().OnlyContain(status => status.State == "Constrained");
+        statuses.Should().OnlyContain(status => status.Summary.Contains("Audit retention is incomplete"));
+    }
+
     // --- snapshot hydration ---
 
     /// <summary>

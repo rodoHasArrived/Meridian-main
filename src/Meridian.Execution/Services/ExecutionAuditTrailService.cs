@@ -63,6 +63,18 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     private readonly int _inMemoryRetention;
     private readonly TimeSpan _inMemoryRetentionWindow;
     private bool _windowTruncationLogged;
+    private bool _retentionWindowComplete = true;
+
+    /// <summary>
+    /// Whether every entry inside the retention window is actually retained.
+    /// <para>
+    /// False once a burst exceeds the hard ceiling below. A consumer that reasons over a time
+    /// window — "no breach in the last hour" — cannot make that claim from an incomplete window,
+    /// and logging the shortfall does not make the claim true. Reading this lets such a consumer
+    /// decline to assert safety instead, which is the only fail-closed answer available.
+    /// </para>
+    /// </summary>
+    public bool RetentionWindowComplete { get { lock (_lock) { return _retentionWindowComplete; } } }
 
     /// <summary>Default window kept regardless of the count cap. See the option's remarks.</summary>
     public static readonly TimeSpan DefaultInMemoryRetentionWindow = TimeSpan.FromHours(2);
@@ -229,7 +241,7 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
 
         lock (_lock)
         {
-            _entries.Add(entry);
+            InsertOrdered(entry);
             TrimRetainedEntries();
         }
 
@@ -313,6 +325,30 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Inserts in timestamp order rather than appending.
+    /// <para>
+    /// <see cref="RecordAsync(ExecutionAuditEntry, CancellationToken)"/> accepts a caller-built
+    /// entry with any timestamp, and concurrent callers can complete out of order, so append order
+    /// is not timestamp order. Trimming reasoned about a time window over what it assumed was a
+    /// sorted list: one back-dated entry at the tail ended the window scan immediately, the trim
+    /// concluded nothing was inside the window, and it then dropped the oldest *insertion* — which
+    /// could be a live breach — while keeping the back-dated tail. Sorting on the way in keeps that
+    /// assumption true for every reader instead of re-deriving it at each one. The common case is
+    /// still an append: the search starts at the end.
+    /// </para>
+    /// </summary>
+    private void InsertOrdered(ExecutionAuditEntry entry)
+    {
+        var index = _entries.Count;
+        while (index > 0 && _entries[index - 1].OccurredAt > entry.OccurredAt)
+        {
+            index--;
+        }
+
+        _entries.Insert(index, entry);
+    }
+
     private void TrimRetainedEntries()
     {
         if (_entries.Count <= _inMemoryRetention)
@@ -331,13 +367,16 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
 
         var hardCap = _inMemoryRetention * RetentionHardCapMultiplier;
         var keep = Math.Min(Math.Max(_inMemoryRetention, insideWindow), hardCap);
-        if (insideWindow > hardCap && !_windowTruncationLogged)
+
+        // Self-healing: once the burst ages past the window the retained set is whole again.
+        _retentionWindowComplete = insideWindow <= hardCap;
+        if (!_retentionWindowComplete && !_windowTruncationLogged)
         {
             // Once per process: this is a capacity signal, not per-append noise.
             _windowTruncationLogged = true;
             _logger.LogWarning(
                 "Execution audit retained {Kept} of {InsideWindow} entries inside the {Window} retention window; "
-                + "time-bounded consumers may not see the whole window.",
+                + "time-bounded consumers cannot assert the absence of an event over it.",
                 hardCap,
                 insideWindow,
                 _inMemoryRetentionWindow);

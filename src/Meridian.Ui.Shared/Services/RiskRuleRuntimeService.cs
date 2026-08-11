@@ -227,8 +227,8 @@ public sealed class RiskRuleRuntimeService
     {
         var asOf = DateTimeOffset.UtcNow;
         var auditEntries = await GetAuditEntriesAsync(asOf, ct).ConfigureAwait(false);
-        return
-        [
+        var statuses = new[]
+        {
             BuildPositionLimitStatus(auditEntries, asOf),
             BuildDrawdownStatus(auditEntries, asOf),
             BuildOrderRateStatus(auditEntries, asOf),
@@ -236,7 +236,44 @@ public sealed class RiskRuleRuntimeService
             BuildSymbolConcentrationStatus(auditEntries, asOf),
             BuildOrderNotionalStatus(auditEntries, asOf),
             BuildFatFingerStatus(auditEntries, asOf)
-        ];
+        };
+
+        return WithAuditCoverageApplied(statuses);
+    }
+
+    /// <summary>
+    /// Refuses to report a rule healthy when the audit window it reasons over is incomplete.
+    /// <para>
+    /// Every rule above makes the same claim — no breach inside the liveness window — and that
+    /// claim is unverifiable when a burst has exceeded the audit trail's retention ceiling. The
+    /// fail-closed answer is to stop asserting it, not to log the shortfall and carry on: a
+    /// readiness gate reading "Healthy" cannot tell the difference between a quiet hour and an
+    /// hour nobody kept the records for. A rule already reporting a breach is left alone — it is
+    /// already constrained, and an incomplete window cannot make that less true.
+    /// </para>
+    /// </summary>
+    private IReadOnlyList<RiskRuleStatusDto> WithAuditCoverageApplied(RiskRuleStatusDto[] statuses)
+    {
+        var auditTrail = Resolve<ExecutionAuditTrailService>();
+        if (auditTrail is null || auditTrail.RetentionWindowComplete)
+        {
+            return statuses;
+        }
+
+        _logger.LogWarning(
+            "Risk rule status reported constrained: the execution audit retention window is incomplete, "
+            + "so the absence of a recent breach cannot be established.");
+
+        return statuses
+            .Select(static status => status.IsBreached
+                ? status
+                : status with
+                {
+                    State = "Constrained",
+                    Summary = "Audit retention is incomplete for the liveness window, so a recent breach "
+                        + "cannot be ruled out. Treating the rule as constrained until coverage recovers.",
+                })
+            .ToArray();
     }
 
     public async Task<RiskRuleStatusDto?> GetStatusAsync(string ruleName, CancellationToken ct = default)
