@@ -226,8 +226,11 @@ above** — several of these are why a change is scoped the way it is.
   at $1 or sell stop at $1,000 is already crossed, triggers instantly, and becomes an unbounded
   market order — with no price control on it at all, because the limb skips stop prices entirely.
   An already-crossed or wildly deviated trigger is itself the fat-finger signal. Compare `StopPrice`
-  against the touch and reject or escalate it, and for stop-limit validate trigger and limit
-  independently rather than excluding the type wholesale.
+  against the **trigger reference** described above — `TryGetTriggerReferencePrice`, resolving last
+  trade, then bar close, then crossing side — and reject or escalate it, and for stop-limit validate
+  trigger and limit independently rather than excluding the type wholesale. Not the touch: with an
+  ask of 124 and a 130 print, a buy stop at 125 reads as resting against the touch while the matcher
+  fires it immediately.
 - `RiskRuleSeverity` is already decisional and `CompositeRiskValidator` already evaluates every rule
   rather than stopping at the first failure, so a collar can escalate for approval instead of
   hard-blocking. That was not expressible before the risk-engine blueprint's PR 1.
@@ -386,6 +389,16 @@ above** — several of these are why a change is scoped the way it is.
 
 ### `W9-GOV-008` — audit chain
 
+- **The Postgres store is not the only accounting audit store, and the other one is the default.**
+  `IAccountingActionAuditStore` resolves to `PostgresAccountingConfigurationStore` only where the
+  database composition is registered; the workstation and WPF compositions fall through to
+  `FileAccountingConfigurationStore`, whose `AppendAsync` adds the event to a list and persists the
+  snapshot with no predecessor hash and no chain verification. Anchoring the accounting half of this
+  change to the `V_ledger_017`/`018` family alone would let the criterion be declared discharged
+  while the *active* desktop and local-workstation accounting audit stays freely deletable and
+  reorderable without detection. Change 9 must chain and verify the file-backed store too — or fail
+  closed and disable those mutations in that posture — with local/WPF proof either way. This is not
+  a secondary path: it is what runs when nobody has stood up PostgreSQL.
 - `src/Meridian.Storage/Services/AuditChainService.cs` hash-chains *files* — path, file hash, and
   predecessor hash — with in-process and cross-process serialization and copy-on-write appends, and
   exposes chain verification. It does not cover accounting or ledger events.
@@ -446,6 +459,14 @@ above** — several of these are why a change is scoped the way it is.
   Leaving it as-is is not one of the options, because the row's criterion is about the live path.
 - **And the live matcher is the one-to-one engine.** `StatementRunMatcher` invokes
   `new StatementMatchingEngine()`, not the split-capable `ReconciliationMatchingEngine`.
+- **The byte cap has to move ahead of the copy, not just into the parsers.**
+  `StatementImportService.CommitAsync` runs `request.Document.Content.ToArray()` before connector
+  resolution and before `ParseAsync`, so a limit implemented only inside the camt.053 and BAI2
+  parsers still duplicates an arbitrarily large payload into memory before anything rejects it. The
+  upload and CLI callers cap bytes on the way in; this service seam does not, and it accepts a
+  caller-supplied `StatementSourceDocument` directly. Change 10 therefore checks
+  `StatementConnectorLimits.MaxFileBytes` in the shared preview/commit service *before* copying or
+  parsing, in addition to the streaming byte and record limits inside the connectors.
 - **Splitting the matcher is not enough — the result path cannot record a split either.**
   `StatementMatchResult` carries exactly one `BrokerEvidenceReference` and one
   `InternalEvidenceReference`, so a one-to-many outcome has nowhere to say which records formed it;
@@ -457,6 +478,21 @@ above** — several of these are why a change is scoped the way it is.
   artifact that cannot distinguish one grouping from another, however correct the matching is.
   Change 11 must carry group-aware match records with evidence membership through the result type,
   the mapper, and the persisted artifact, or its own acceptance evidence is unobtainable.
+- **The existing one-to-one path is not deterministic either, so split search alone cannot satisfy
+  the criterion.** `MatchStage` takes the first admissible internal item it encounters and
+  `MatchBestCandidate` keeps the first candidate at an equal score, so permuting an otherwise
+  identical population changes which records get paired. Change 11 has to route pair candidates
+  through a total deterministic ordering — `ReconciliationMatchKernel.SelectDeterministicAssignment`
+  is the existing one — and prove identical artifacts across input permutations, not merely across
+  re-runs of the same ordering.
+- **Split candidates must be partitioned by identity before their amounts are summed.**
+  `ReconciliationMatchKernel.TryFindSplit` filters candidates by *sign and amount only* — its own
+  remarks say so. The one-to-one path avoids nonsense pairings through `SameTransactionIdentity`;
+  applied naively, the split primitive would happily sum unmatched ledger transactions from
+  different instruments, currencies, types, or dates because they happen to add up to a statement
+  row. The primitive's `accept` overload is the seam for this. Change 11 must partition or validate
+  every candidate set by the same account, instrument-or-currency, type, and date constraints the
+  pair stages apply, with negative cross-identity tests proving a coincidental sum is refused.
 - Together these decide the row's shape. camt.053 and BAI2 are *transaction* statements, so with an
   empty transaction population every bank row fails closed to a break, and one-to-many outcomes can
   never reach live casework no matter what the standalone kernels do. Tests written against those
