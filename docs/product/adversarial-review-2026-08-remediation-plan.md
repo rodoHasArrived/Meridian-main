@@ -763,7 +763,7 @@ still `in_progress`.
 
 ## W10 — Make CI verify what users run
 
-- [ ] **AR8-52 — Wire Polygon streaming credentials, or keep it unadvertised.**
+- [ ] **AR8-56 — Wire Polygon streaming credentials, or keep it unadvertised.**
   **Evidence:** `ProviderFeatureRegistration.Registry.cs:77-82` constructs `PolygonMarketDataClient`
   with `reconnectionMetrics:` only, never passing `PolygonOptions`, and the constructor
   (`PolygonMarketDataClient.cs:60-76`) defaults to `new PolygonOptions()` — an empty `ApiKey` — and
@@ -1150,13 +1150,16 @@ the review and `AR8-` identifiers per workstream here.
 miscount): §1 first mile 7 · §2 activation 7 · §3 truth 7 · §4 gates 9 · §5 durability 5 ·
 §6 UX 7 · §7 assurance 6 · program-level 3.
 
-**This plan carries 54 numbered todos**, `AR8-01`–`AR8-55` with `AR8-04` reserved as an alias of
+**This plan carries 53 numbered todos**, `AR8-01`–`AR8-56` with `AR8-04` reserved as an alias of
 `AR8-Q3` rather than a separate item: W1 (7) · W2 (3) · W3 (3) · W4 (1) · W5 (1) · W6 (8) ·
-W7 (2) · W8 (6) · W9 (3) · W10 (6) · W11 (7) · W12 (4) · W13 (3) = 54. The six `AR8-Q*` quick wins
+W7 (2) · W8 (6) · W9 (3) · W10 (7) · W11 (5) · W12 (4) · W13 (3) = 53. The six `AR8-Q*` quick wins
 are sequencing aliases of items that also appear in a workstream, so they are not counted again.
 
-**Reconciliation of 51 findings to 54 todos** — three todos have no 1:1 finding because they are
-mechanisms the findings imply rather than describe:
+**Reconciliation of 51 findings to 53 todos.** Four todos have no 1:1 finding because they are
+mechanisms the findings imply rather than describe. Ids repeat across the rows below — a §-row
+maps a review section's findings onto whichever todos cover them, and those todos may live in
+different workstreams — so the row totals are not a second count of the plan. The authoritative
+count is the per-workstream union above:
 
 | Section | Findings | Todos |
 |---|---|---|
@@ -1166,10 +1169,13 @@ mechanisms the findings imply rather than describe:
 | §4 gates | 9 | `AR8-13`, `AR8-14`, `AR8-16`, `AR8-09`, `AR8-11`, `AR8-35`, `AR8-32`, `AR8-33`, `AR8-34` **+ `AR8-10`** (the fat-finger/collar rules named as `W9-SAFETY-007`'s remainder) |
 | §5 durability | 5 | `AR8-27`, `AR8-28`, `AR8-29`, `AR8-30`, `AR8-31` |
 | §6 UX | 7 | `AR8-44`, `AR8-45`, `AR8-46`, `AR8-47`, `AR8-48`, `AR8-51`, `AR8-52` |
-| §7 assurance | 6 | `AR8-36`, `AR8-37`, `AR8-38`, `AR8-39`, `AR8-40`, `AR8-41` |
+| §7 assurance | 6 | `AR8-36`, `AR8-37`, `AR8-38`, `AR8-39`, `AR8-40`, `AR8-41` **+ `AR8-56`** (the Polygon credential path this PR found unwired while removing it from the Docker template) |
 | program-level | 3 | `AR8-53`, `AR8-54`, `AR8-55` |
 
-51 findings + 3 implied mechanisms = 54 todos, with every finding represented.
+Every finding is represented. The per-workstream union is the count to trust: an earlier revision
+of this section asserted 54 todos with W11 at 7, but W11 carries 5 — AR8-41, AR8-43, and AR8-44
+appear in its prose while being owned by other workstreams. Recount mechanically rather than
+adjusting these numbers by hand.
 
 Strengths named in the review — the ADR-019 composition policy, the bias-disclosure report, the
 reconciliation matching engine, OMS pre-trade enforcement, the durability primitives, and the auth
