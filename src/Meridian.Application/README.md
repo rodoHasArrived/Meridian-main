@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-08-11
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Application
@@ -534,7 +534,6 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W3-CONT-001` | Research to paper continuity |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
-| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

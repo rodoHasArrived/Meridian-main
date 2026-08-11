@@ -454,7 +454,11 @@ above** — several of these are why a change is scoped the way it is.
   4 adds permission metadata, an authorized but tenantless session still reaches those handlers even
   once change 9 flips enforcement: the permission gate passes it and no tenant gate exists to stop
   it. Change 9 must enumerate the undecorated write routes and gate them, or allowlist the genuine
-  bootstrap operations with a stated reason. This is distinct from the fail-open *read* predicates
+  bootstrap operations with a stated reason. Change 9 also adds the `SRC-APP` ↔ `W9-GOV-008`
+  traceability mapping, since `PostgresFundStructureService` lives in `src/Meridian.Application` and
+  the roadmap-to-source trace otherwise routes implementers everywhere except the module holding the
+  service. That mapping regenerates a `src/` README, so it belongs to the change that touches source
+  rather than to this planning commit. This is distinct from the fail-open *read* predicates
   below — those pass rows, these pass requests.
 - **The write gate is not the whole criterion.** Flipping `RequireFundScopedWriteTenant` covers only
   the decorated write and evaluate routes. The exit criterion requires cross-tenant *reads* to fail
