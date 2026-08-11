@@ -162,9 +162,14 @@ build in seven attempts, so today's supported user count is structurally zero.
   destructive migration.
   **Change:** add `pg_dump.exe` (and `pg_restore.exe`) to the payload validation list. Add
   `backup` and `restore` verbs to `Meridian.LifecycleSupervisor` alongside
-  `start|stop|restart|status|preflight`, writing the same JSON receipt the recovery drill produces
-  and covering both the database and the data root as one recovery unit. Surface a "Back up now"
-  action in Settings.
+  `start|stop|restart|status|preflight`, writing the same JSON receipt the recovery drill produces.
+  **The two captures must share one coordinated point in time.** `pg_dump` yields a
+  transaction-consistent database snapshot, but copying the data root while the host still accepts
+  writes captures a different instant, so a restore can pair journal state with older or newer
+  retained files and evidence — calling them "one recovery unit" in a shared receipt does not make
+  them atomic. Require a supervisor stop, or a read-only barrier that quiesces writes, and bind both
+  captures to that barrier before the receipt may claim the backup is valid. Surface a "Back up now"
+  action in Settings that performs the barrier rather than a live copy.
   **Verify:** `tests/Meridian.Setup.Tests` (once running per AR8-34) covers backup → destructive
   change → restore → integrity check.
   **Effort:** L · **Depends on:** AR8-38 (Windows job) so `Meridian.Setup.Tests` actually runs · **Related:** `PRD-015`
@@ -360,8 +365,12 @@ still `in_progress`.
   served the data — not from every registered provider. A mixed registration (real primary plus an
   inactive synthetic fallback) is the normal case, and failing on *any* registered simulated
   provider would recreate exactly the false-red-banner problem AR8-19 fixes. Fail closed to
-  `Simulated` when the active provider reports `IsSimulated`, when provenance cannot be resolved, or
-  when a failover switches onto a simulated backup; delete the key heuristic. Hoist `IsSimulated`
+  `Simulated` when the active provider reports `IsSimulated` or when a failover switches onto a
+  simulated backup. **Do not coerce unresolved provenance to `Simulated`** — that contradicts
+  AR8-19, which needs uncertainty to stay distinguishable from confirmed synthetic data. Propagate
+  a third state, `unknown`, when provenance cannot be resolved, so the client can offer a retry
+  instead of showing the non-dismissable red warning on a real install. `Simulated` is reserved for
+  positively identified simulated providers. Delete the key heuristic. Hoist `IsSimulated`
   from `IMarketDataClient`
   (`src/Meridian.ProviderSdk/IMarketDataClient.cs:36`) to the shared provider metadata interface so
   `IHistoricalDataProvider` carries it too — `SyntheticHistoricalDataProvider` currently advertises
@@ -482,8 +491,17 @@ still `in_progress`.
   already exists, so this is genuinely wiring. Then sequence the remaining kernels by operator value:
   NAV-per-unit striking → capital calls → waterfall/carry → equalization, each needing a DTO, an
   endpoint, and a screen.
+  **Prerequisite — do this first.** The factory cannot be dropped in behind the current request:
+  `RunFeeAccrualDraftIntakeRequest` carries NAV, high-water mark, and two rates, while the kernels
+  additionally require an accrual day-count basis for management fees and a hurdle amount plus
+  crystallization posture for performance fees. Wiring without them forces an implementer either to
+  invent defaults or to keep passing the caller-supplied amount — both of which post materially
+  incorrect governed fee journals, which is worse than the un-prorated calculation being replaced.
+  Extend the request and the retained fee-term evidence with those inputs, sourced from the fund's
+  governing terms, before routing any draft through the factory.
   **Verify:** integration test posting a governed fee journal whose amount is *derived*; assert the
-  un-prorated path is no longer reachable.
+  un-prorated path is no longer reachable, and that a request missing day-count basis, hurdle, or
+  crystallization posture is rejected rather than defaulted.
   **Effort:** L (fee wiring M; full kernel sequence XL) · **Related:** `W9-NAV-006`
 
 - [ ] **AR8-26 — Post FX revaluation at period close.**
@@ -811,6 +829,14 @@ still `in_progress`.
   (`src/Meridian.Ui.Shared/Streaming/`) for operator-inbox and reconciliation-break topics; convert
   `/api/events/stream` to change-triggered emission with a heartbeat, as
   `WorkstationEndpoints.Stream.cs:71-101` already does correctly.
+  **Scope the topic key before adding either stream.** `StreamBroadcaster<TPayload>` builds one
+  payload per topic and sends that identical object to every subscriber, with no per-subscriber
+  authorization filtering. The existing `report-run:<id>` stream is safe because tenant and company
+  are encoded into the `StreamTopic`; inbox items and reconciliation breaks carry owners, evidence,
+  approvals, and amounts, so an unscoped topic would fan one tenant's queue out to another's
+  session. Encode tenant, company, and any permission-sensitive scope into both the topic key and
+  the query that builds the payload, and add a test that two tenants subscribed simultaneously
+  never receive each other's items.
   **Effort:** M
 
 - [ ] **AR8-48 — Split the monolith screens and cap the route bundles.**

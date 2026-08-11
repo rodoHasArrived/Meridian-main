@@ -202,12 +202,34 @@ def main() -> int:
     document = json.loads(strip_jsonc(SAMPLE.read_text(encoding="utf-8")))
     errors: list[str] = []
 
-    named: list[tuple[str, object]] = []
+    sources = document.get("DataSources", {}).get("Sources", []) or []
+    rules = document.get("DataSources", {}).get("FailoverRules", []) or []
+
+    # Ids drawn into real-time routing. CollectorModeRunner calls CreateStreamingClient for every
+    # provider named by a failover rule (`:122`) without consulting DataSourceConfig.Type, so a
+    # backfill-only kind referenced there throws at startup just like a bad top-level DataSource.
+    realtime_ids = {
+        str(rule.get("PrimaryProviderId", "")).casefold()
+        for rule in rules
+        if isinstance(rule.get("PrimaryProviderId"), str)
+    }
+    for rule in rules:
+        for backup in rule.get("BackupProviderIds", []) or []:
+            if isinstance(backup, str):
+                realtime_ids.add(backup.casefold())
+
+    named: list[tuple[str, object, bool]] = []
     if "DataSource" in document:
-        named.append(("DataSource", document["DataSource"]))
-    for index, source in enumerate(document.get("DataSources", {}).get("Sources", []) or []):
-        if "Provider" in source:
-            named.append((f"DataSources.Sources[{index}].Provider", source["Provider"]))
+        named.append(("DataSource", document["DataSource"], True))
+    for index, source in enumerate(sources):
+        if "Provider" not in source:
+            continue
+        source_id = source.get("Id")
+        declared_type = str(source.get("Type", "")).casefold()
+        needs_streaming = declared_type in {"realtime", "both"} or (
+            isinstance(source_id, str) and source_id.casefold() in realtime_ids
+        )
+        named.append((f"DataSources.Sources[{index}].Provider", source["Provider"], needs_streaming))
 
     valid = (
         f"names: {', '.join(sorted(kinds))}; numbers: "
@@ -251,7 +273,7 @@ def main() -> int:
             f"letting the guard pass by default."
         )
 
-    for where, value in named:
+    for where, value, needs_streaming in named:
         name, problem = resolve(value)
         if problem is not None:
             errors.append(
@@ -259,14 +281,15 @@ def main() -> int:
                 f"sample would throw at startup."
             )
             continue
-        # The top-level selector chooses the real-time client. Enum membership is not enough:
-        # a kind with no streaming factory is rejected at collector startup.
-        if where == "DataSource" and streaming and name is not None:
+        # Enum membership is not enough for anything that streams: a kind with no streaming
+        # factory is rejected at collector startup, whether it is the top-level selector, a source
+        # declared RealTime/Both, or a source pulled in by a failover rule.
+        if needs_streaming and streaming and name is not None:
             if name.casefold() not in {sid.casefold() for sid in streaming}:
                 errors.append(
                     f"{where} = {value!r} resolves to {name}, which has no streaming factory "
-                    f"(registered: {', '.join(sorted(streaming))}). It cannot be a primary "
-                    f"real-time source; document it under backfill instead."
+                    f"(registered: {', '.join(sorted(streaming))}). It cannot participate in "
+                    f"real-time routing; document it under backfill instead."
                 )
 
     # Every failover backup id must name a configured source. CollectorModeRunner resolves an
@@ -274,18 +297,19 @@ def main() -> int:
     # client under a misleading identity and can promote it after the real feeds fail. Removing the
     # StockSharp source while leaving "stocksharp-tertiary" in a rule did exactly that.
     configured_ids = {
-        source.get("Id")
-        for source in (document.get("DataSources", {}).get("Sources", []) or [])
-        if isinstance(source.get("Id"), str)
+        source["Id"] for source in sources if isinstance(source.get("Id"), str)
     }
-    for rule_index, rule in enumerate(document.get("DataSources", {}).get("FailoverRules", []) or []):
+    # CollectorModeRunner resolves ids with StringComparison.OrdinalIgnoreCase over a
+    # case-insensitive provider map, so the guard must not reject a casing the runtime accepts.
+    configured_folded = {source_id.casefold() for source_id in configured_ids}
+    for rule_index, rule in enumerate(rules):
         referenced = [("PrimaryProviderId", rule.get("PrimaryProviderId"))]
         referenced += [
             (f"BackupProviderIds[{i}]", backup)
             for i, backup in enumerate(rule.get("BackupProviderIds", []) or [])
         ]
         for field, provider_id in referenced:
-            if isinstance(provider_id, str) and provider_id not in configured_ids:
+            if isinstance(provider_id, str) and provider_id.casefold() not in configured_folded:
                 errors.append(
                     f"DataSources.FailoverRules[{rule_index}].{field} = {provider_id!r} does not "
                     f"match any configured source id ({', '.join(sorted(configured_ids)) or 'none'}). "
