@@ -879,6 +879,7 @@ Meridian-main
 │   │   ├── wpf-design-system-screen-impact.prompt.yml
 │   │   └── write-unit-tests.prompt.yml
 │   ├── workflows
+│   │   ├── ai-navigation-refresh.yml
 │   │   ├── branch-cleanup.yml
 │   │   ├── ci.yml
 │   │   ├── codeql.yml
@@ -1120,6 +1121,7 @@ Meridian-main
 │       │   │   ├── test_generate_structure_docs.py
 │       │   │   ├── test_markdown_generation_lint.py
 │       │   │   ├── test_pilot_readiness_dashboard.py
+│       │   │   ├── test_run_docs_automation_pilot_optin.py
 │       │   │   ├── test_scan_todos.py
 │       │   │   └── test_validate_docs_structure.py
 │       │   ├── add-todos.py
@@ -1214,6 +1216,7 @@ Meridian-main
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
 │       ├── tests
+│       │   ├── test_ai_repo_updater_blocking_async.py
 │       │   ├── test_check_ai_navigation_freshness.py
 │       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
@@ -1997,6 +2000,7 @@ Meridian-main
 │   │   │   ├── wpf-direct-lending.png
 │   │   │   ├── wpf-environment-designer.png
 │   │   │   ├── wpf-event-replay.png
+│   │   │   ├── wpf-evidence-workbench.png
 │   │   │   ├── wpf-export-presets.png
 │   │   │   ├── wpf-fund-accounting-close.png
 │   │   │   ├── wpf-fund-accounting-configure.png
@@ -2020,6 +2024,9 @@ Meridian-main
 │   │   │   ├── wpf-live-data.png
 │   │   │   ├── wpf-messaging-hub.png
 │   │   │   ├── wpf-notification-center.png
+│   │   │   ├── wpf-operations-continuity.png
+│   │   │   ├── wpf-operations-record-release.png
+│   │   │   ├── wpf-operator-readiness-console.png
 │   │   │   ├── wpf-options.png
 │   │   │   ├── wpf-order-book.png
 │   │   │   ├── wpf-package-manager.png
@@ -9249,6 +9256,7 @@ Meridian-main
 │   │   │   │   ├── ConfigEndpointTests.cs
 │   │   │   │   ├── CoveredCallEndpointAuthorizationTests.cs
 │   │   │   │   ├── DirectLendingEndpointMutationTests.cs
+│   │   │   │   ├── EndpointAuthorizationCoverageTests.cs
 │   │   │   │   ├── EndpointGuardTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointMetadataTests.cs

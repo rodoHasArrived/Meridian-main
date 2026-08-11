@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T09:51:19Z",
+  "generatedAt": "2026-08-11T13:48:44Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2225,6 +2225,22 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Core/Config/ConfigTemplateGenerator.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T13:42:19+00:00",
+      "lastCommit": "567a9ce9",
+      "lastSummary": "Emit a parseable Docker data source and fix two fixes that stop one layer short",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:56:20+00:00",
+      "lastCommit": "6daeb936",
+      "lastSummary": "Mirror the runtime secret predicate, fix a vacuous test, and regenerate nav last",
+      "touches": 6
+    },
+    {
       "path": "src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-08-11T09:36:32+00:00",
@@ -2239,14 +2255,6 @@
       "lastCommit": "9b6f2914",
       "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
       "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 5
     },
     {
       "path": "src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-De3JwixM.js",
@@ -2530,14 +2538,6 @@
     },
     {
       "path": "src/Meridian.Ui/wwwroot/workstation/assets/reporting-hub-B-V1h1wo.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/reporting-screen-D0ZwPagC.js",
       "subsystem": "Unmapped",
       "lastModified": "2026-08-11T09:36:32+00:00",
       "lastCommit": "9b6f2914",

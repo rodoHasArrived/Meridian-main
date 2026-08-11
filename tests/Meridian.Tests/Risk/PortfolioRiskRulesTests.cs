@@ -190,7 +190,7 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
-    public async Task Concentration_WithZeroPortfolioValue_Approves()
+    public async Task Concentration_WithZeroPortfolioValue_RejectsIncreasedExposure()
     {
         var rule = new SymbolConcentrationRule(
             Provider(grossExposure: 0m, portfolioValue: 0m),
@@ -199,7 +199,8 @@ public sealed class PortfolioRiskRulesTests
 
         var result = await rule.EvaluateAsync(CreateOrder(limitPrice: 100m));
 
-        result.IsApproved.Should().BeTrue();
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Contain("portfolio value is exhausted");
     }
 
     // --- OrderNotionalRule ---

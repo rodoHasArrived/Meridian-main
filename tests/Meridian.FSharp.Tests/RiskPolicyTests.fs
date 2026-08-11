@@ -197,8 +197,16 @@ let ``Symbol concentration rejects breach of the portfolio-value cap`` () =
     result.Reasons[0].Contains("Concentration limit") |> should equal true
 
 [<Fact>]
-let ``Symbol concentration approves without a positive portfolio value`` () =
+let ``Symbol concentration rejects increased exposure without a positive portfolio value`` () =
     let ctx = createPortfolioContext (createOrder OrderSide.Buy 100m) (Nullable 20_000m) (Nullable 20_000m) (Nullable 0m) (Nullable 10_000m) (Nullable()) (Nullable 25m) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateSymbolConcentration(ctx)
+
+    result.Approved |> should equal false
+    result.Reasons[0].Contains("portfolio value is exhausted") |> should equal true
+
+[<Fact>]
+let ``Symbol concentration permits reduced exposure without a positive portfolio value`` () =
+    let ctx = createPortfolioContextSigned (createOrder OrderSide.Sell 100m) (Nullable 20_000m) (Nullable 20_000m) (Nullable 20_000m) (Nullable -10_000m) (Nullable 10_000m) (Nullable -10_000m) (Nullable()) (Nullable 25m) (Nullable()) (Nullable())
     let result = RiskInterop.EvaluateSymbolConcentration(ctx)
 
     result.Approved |> should equal true

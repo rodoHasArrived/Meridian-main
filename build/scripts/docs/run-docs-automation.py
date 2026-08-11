@@ -377,6 +377,15 @@ def parse_args() -> argparse.Namespace:
         help="Optional Markdown output path for run summary.",
     )
     parser.add_argument(
+        "--include-pilot-readiness",
+        action="store_true",
+        help=(
+            "Regenerate the pilot-readiness dashboard. Off by default because its output "
+            "depends on the gitignored pilot-acceptance artifact left behind by a local test "
+            "run, which makes the committed dashboard non-reproducible."
+        ),
+    )
+    parser.add_argument(
         "--auto-create-todos",
         action="store_true",
         help="After scan-todos, create GitHub issues for untracked TODO items.",
@@ -398,6 +407,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+PILOT_READINESS_TASK = "generate-pilot-readiness-dashboard"
+
+
 def resolve_selected_scripts(args: argparse.Namespace) -> List[str]:
     if args.scripts:
         selected = [name.strip() for name in args.scripts.split(",") if name.strip()]
@@ -407,6 +419,17 @@ def resolve_selected_scripts(args: argparse.Namespace) -> List[str]:
     unknown = [name for name in selected if name not in SCRIPT_CONFIG]
     if unknown:
         raise ValueError(f"Unknown script names: {', '.join(unknown)}")
+
+    # generate-pilot-readiness-dashboard reads artifacts/pilot-acceptance/latest/pilot-readiness.json,
+    # which PilotAcceptanceHarnessTests writes and .gitignore keeps untracked. Whether that artifact
+    # happens to exist therefore decides whether the committed dashboard is regenerated as a
+    # placeholder or enriched with one local run's ephemeral identifiers (fresh GUIDs, session ids,
+    # timestamps). Anyone who ran the test suite and then any docs regeneration in the same workspace
+    # silently committed local test output as repository truth, and the drift gate only caught it
+    # afterwards. Opt in explicitly instead; the golden-path workflow calls the generator directly
+    # with its own artifact-scoped output paths and is unaffected.
+    if PILOT_READINESS_TASK in selected and not getattr(args, "include_pilot_readiness", False):
+        selected = [name for name in selected if name != PILOT_READINESS_TASK]
 
     # Validation: --auto-create-todos requires scan-todos
     if args.auto_create_todos and "scan-todos" not in selected:

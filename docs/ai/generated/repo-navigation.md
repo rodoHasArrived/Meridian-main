@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-11T09:51:19Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-11T13:48:44Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,9 +133,10 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
+| `src/Meridian.Core/Config/ConfigTemplateGenerator.cs` | Host and Composition | `567a9ce9` (2026-08-11T13:42:19+00:00) | 5 |
+| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx` | Desktop and UI Workflows | `6daeb936` (2026-08-11T09:56:20+00:00) | 6 |
 | `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx` | Desktop and UI Workflows | `9b6f2914` (2026-08-11T09:36:32+00:00) | 6 |
 | `src/Meridian.Ui/wwwroot/workstation/index.html` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 6 |
-| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx` | Desktop and UI Workflows | `9b6f2914` (2026-08-11T09:36:32+00:00) | 5 |
 | `src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-De3JwixM.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 | `src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen.view-model-iDvzJnjT.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 | `src/Meridian.Ui/wwwroot/workstation/assets/asset-detail-screen-BLvrTTUh.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
@@ -147,5 +148,4 @@ Recent source-file activity from the last 14 days.
 | `src/Meridian.Ui/wwwroot/workstation/assets/data-screen-Cmqjh7Fj.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 | `src/Meridian.Ui/wwwroot/workstation/assets/empty-state-Bzd3lRTw.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 | `src/Meridian.Ui/wwwroot/workstation/assets/entity-setup-wizard-C59Vj2qU.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/evidence-workbench-screen-D5SeJoFo.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 
