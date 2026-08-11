@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
@@ -3067,22 +3068,9 @@ public sealed partial class ReportPackRunReadService
         parameters.LedgerBook.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture)
         ?? NormalizeOptional(parameters.LedgerBook.LedgerBookCode);
 
-    private static bool IsSha256Hash(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value) || value.Trim().Length != 64)
-        {
-            return false;
-        }
-
-        try
-        {
-            return Convert.FromHexString(value.Trim()).Length == 32;
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
-    }
+    // Report-pack hashes are read back from persisted payloads, so surrounding whitespace is
+    // tolerated before the shared digest contract is applied.
+    private static bool IsSha256Hash(string? value) => Sha256Digest.IsWellFormed(value?.Trim());
 
     private static string BuildRunAuditRoute(string runId) =>
         UiApiRoutes.WithParam(UiApiRoutes.ReportingRunAuditTrail, "runId", runId);

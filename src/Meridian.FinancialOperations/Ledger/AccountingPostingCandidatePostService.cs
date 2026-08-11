@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -749,7 +750,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         }
 
         var fingerprint = Fingerprint(record.Projection);
-        if (!IsSha256(record.CanonicalFingerprint) ||
+        if (!Sha256Digest.IsWellFormed(record.CanonicalFingerprint) ||
             !string.Equals(record.CanonicalFingerprint, fingerprint, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
@@ -1031,11 +1032,6 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         => JsonElement.DeepEquals(
             JsonSerializer.SerializeToElement(left, CanonicalJsonOptions),
             JsonSerializer.SerializeToElement(right, CanonicalJsonOptions));
-
-    private static bool IsSha256(string? value)
-        => !string.IsNullOrWhiteSpace(value) &&
-           value.Length == 64 &&
-           value.All(static character => Uri.IsHexDigit(character));
 
     private static void RequireAssetAssertion(bool condition, string message)
     {

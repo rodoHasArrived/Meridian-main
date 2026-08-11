@@ -1,4 +1,5 @@
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Instruments.AssetOperations;
@@ -767,10 +768,9 @@ public sealed class AccountingPostingCandidateService :
             .ToArray();
     }
 
-    private static bool IsSha256(string? value)
-        => !string.IsNullOrWhiteSpace(value) &&
-           value.Trim().Length == 64 &&
-           value.Trim().All(static character => Uri.IsHexDigit(character));
+    // Posting-candidate fingerprints arrive from external authority projections, so surrounding
+    // whitespace is tolerated here before the shared digest contract is applied.
+    private static bool IsSha256(string? value) => Sha256Digest.IsWellFormed(value?.Trim());
 
     private async Task ValidateBookContextAsync(
         PostingRuleJournalCandidateRequestDto request,

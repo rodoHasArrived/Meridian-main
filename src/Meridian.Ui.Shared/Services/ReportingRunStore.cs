@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.Composition;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -680,8 +681,8 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
                 ?? throw new JsonException("Reporting run snapshot deserialized to null.");
             if (!string.Equals(snapshot.SchemaVersion, SchemaVersion, StringComparison.Ordinal)
                 || snapshot.Runs is null
-                || !IsSha256(snapshot.PayloadHashSha256)
-                || !FixedHashEquals(snapshot.PayloadHashSha256, ComputePayloadHash(snapshot.Runs)))
+                || !Sha256Digest.IsCanonical(snapshot.PayloadHashSha256)
+                || !Sha256Digest.FixedEquals(snapshot.PayloadHashSha256, ComputePayloadHash(snapshot.Runs)))
             {
                 throw new InvalidDataException(
                     "Reporting run snapshot schema or canonical payload checksum is invalid.");
@@ -689,8 +690,8 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
 
             var legacyRuns = snapshot.LegacyRuns
                 ?? throw new InvalidDataException("Reporting run snapshot has no legacy inventory collection.");
-            if (!IsSha256(snapshot.LegacyPayloadHashSha256)
-                || !FixedHashEquals(
+            if (!Sha256Digest.IsCanonical(snapshot.LegacyPayloadHashSha256)
+                || !Sha256Digest.FixedEquals(
                     snapshot.LegacyPayloadHashSha256!,
                     ComputeLegacyPayloadHash(legacyRuns, snapshot.LegacyArchiveReceipt)))
             {
@@ -806,12 +807,12 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
         var hasManifestHash = !string.IsNullOrWhiteSpace(run.ManifestHashSha256);
         if (hasDatasetHash != hasManifestHash
             || hasDatasetHash
-            && (!IsSha256(run.CertifiedDatasetHashSha256)
-                || !IsSha256(run.ManifestHashSha256)
-                || !FixedHashEquals(
+            && (!Sha256Digest.IsCanonical(run.CertifiedDatasetHashSha256)
+                || !Sha256Digest.IsCanonical(run.ManifestHashSha256)
+                || !Sha256Digest.FixedEquals(
                     run.CertifiedDatasetHashSha256!,
                     ComputeCertifiedRowsHash(run.Manifest.CertifiedDatasetRows))
-                || !FixedHashEquals(run.ManifestHashSha256!, ComputeManifestHash(run.Manifest))))
+                || !Sha256Digest.FixedEquals(run.ManifestHashSha256!, ComputeManifestHash(run.Manifest))))
         {
             throw new InvalidDataException(
                 "Legacy reporting run contains incomplete or mismatched optional integrity checksums.");
@@ -834,10 +835,10 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
                 && string.IsNullOrWhiteSpace(entry.OrganizationId)
                 || string.IsNullOrWhiteSpace(entry.RawPayloadJson)
                 || !string.Equals(entry.Remediation, LegacyRunRemediation, StringComparison.Ordinal)
-                || !FixedHashEquals(
+                || !Sha256Digest.FixedEquals(
                     entry.RawPayloadHashSha256,
                     ComputeSha256(Encoding.UTF8.GetBytes(entry.RawPayloadJson)))
-                || !FixedHashEquals(
+                || !Sha256Digest.FixedEquals(
                     entry.CanonicalPayloadHashSha256,
                     ComputeSha256(Encoding.UTF8.GetBytes(CanonicalizeJson(entry.RawPayloadJson)))))
             {
@@ -887,12 +888,12 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
             || run.AuditTrail is null
             || run.UpdatedAtUtc == default
             || run.UpdatedAtUtc.Offset != TimeSpan.Zero
-            || !IsSha256(run.CertifiedDatasetHashSha256)
-            || !IsSha256(run.ManifestHashSha256)
-            || !FixedHashEquals(
+            || !Sha256Digest.IsCanonical(run.CertifiedDatasetHashSha256)
+            || !Sha256Digest.IsCanonical(run.ManifestHashSha256)
+            || !Sha256Digest.FixedEquals(
                 run.CertifiedDatasetHashSha256!,
                 ComputeCertifiedRowsHash(run.Manifest.CertifiedDatasetRows))
-            || !FixedHashEquals(run.ManifestHashSha256!, ComputeManifestHash(run.Manifest)))
+            || !Sha256Digest.FixedEquals(run.ManifestHashSha256!, ComputeManifestHash(run.Manifest)))
         {
             throw new InvalidDataException(
                 "A retained reporting run has incomplete timestamps or mismatched manifest/dataset checksums.");
@@ -1054,7 +1055,7 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
             || string.IsNullOrWhiteSpace(receipt.Reason)
             || receipt.ArchivedAtUtc == default
             || receipt.ArchivedAtUtc.Offset != TimeSpan.Zero
-            || !FixedHashEquals(receipt.ArchivedPayloadHashSha256, ComputeLegacyEntriesHash(entries)))
+            || !Sha256Digest.FixedEquals(receipt.ArchivedPayloadHashSha256, ComputeLegacyEntriesHash(entries)))
         {
             throw new InvalidDataException("Legacy reporting run archive receipt is invalid.");
         }
@@ -1067,7 +1068,7 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
             archivedAtUtc = receipt.ArchivedAtUtc,
             archivedPayloadHash = receipt.ArchivedPayloadHashSha256
         })));
-        if (!FixedHashEquals(receipt.ArchiveId, expectedArchiveId))
+        if (!Sha256Digest.FixedEquals(receipt.ArchiveId, expectedArchiveId))
         {
             throw new InvalidDataException("Legacy reporting run archive receipt identity is invalid.");
         }
@@ -1182,18 +1183,6 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
 
     private static string ComputeSha256(ReadOnlySpan<byte> bytes) =>
         Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-
-    private static bool FixedHashEquals(string left, string right) =>
-        IsSha256(left)
-        && IsSha256(right)
-        && CryptographicOperations.FixedTimeEquals(
-            Convert.FromHexString(left),
-            Convert.FromHexString(right));
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(Uri.IsHexDigit)
-        && string.Equals(value, value.ToLowerInvariant(), StringComparison.Ordinal);
 
     private string SnapshotPath => Path.Combine(_options.RootDirectory, SnapshotFileName);
 
