@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Export;
+using Meridian.Identity.Auth;
 using Meridian.Storage.Export;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -506,6 +507,19 @@ public sealed class ExportEndpointsTests
             builder.Services.AddSingleton(exportService);
 
         var app = builder.Build();
+        // Export mutations now require ExportData. This minimal app composes no login
+        // middleware, so seed the permission the way LoginSessionMiddleware would, with a
+        // header override so a test can still exercise the unauthorized path.
+        app.Use((context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "export-operator";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
+                context.Request.Headers.TryGetValue("X-Test-Permissions", out var configured) &&
+                Enum.TryParse<UserPermission>(configured.ToString(), out var parsed)
+                    ? parsed
+                    : UserPermission.ExportData;
+            return next();
+        });
         app.MapExportEndpoints(JsonOptions);
 
         await app.StartAsync();
