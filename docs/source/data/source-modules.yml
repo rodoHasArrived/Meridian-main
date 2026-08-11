@@ -73,6 +73,7 @@ modules:
       - W3-CONT-001
       - W5-ACCT-001
       - W10-MARK-001
+      - W9-GOV-008
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -83,7 +84,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-08-04
+    last_reviewed: 2026-08-11
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts

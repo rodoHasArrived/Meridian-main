@@ -26,7 +26,7 @@ feature:
 
 | Row | Status entering the wave | What is actually open |
 | --- | --- | --- |
-| `W9-SAFETY-007` | `in_progress` | Fat-finger and price-collar rules absent from the mandatory validator; the two-lane safety-control sweep unaudited; the kill-switch sweep discards per-order cancellation outcomes |
+| `W9-SAFETY-007` | `in_progress` | Fat-finger and price-collar rules absent from the mandatory validator; the two-lane safety-control sweep unaudited; the kill-switch sweep discards per-order cancellation outcomes and never asks the gateways what is actually working |
 | `W9-GOV-008` | `planned` | 112 mutating routes still process permissionless requests; tenancy enforcement is off by default and reads stay fail-open; accounting/ledger audit events are not hash-chained |
 | `W9-INGEST-009` | `planned` | Institutional formats lack golden-file coverage, enforce no parse bounds, and cannot match transactions on the live path |
 
@@ -141,6 +141,13 @@ above** — several of these are why a change is scoped the way it is.
   kill-switch state that names the orders still working, and asserting the book rather than the
   call. It is small, it belongs with change 3 (the other criterion-one/three safety work), and
   without it the row can reach acceptance while the kill switch silently half-fires.
+  **And the population it sweeps is wrong before any outcome is aggregated.** `CancelAllAsync`
+  snapshots `GetOpenOrders()` — this OMS instance's in-memory dictionary — and never calls the
+  `GetOpenOrdersAsync` every brokerage gateway already implements. After a restart, or for an order
+  placed outside this instance, the local book is empty and the sweep "succeeds" while the broker's
+  orders keep working. Discovering and cancelling broker-reported orders across every gateway, and
+  reporting broker-only orders it cannot reconcile as partial or failed, is part of the same change,
+  with restart and out-of-band-order tests.
   **`W9-SAFETY-007` still reads as though criterion one were closed** — it says the coupling gap is
   closed, presents completed and failed sweep outcomes as proven, and lists only the rule catalogue
   and the UI sweep as remaining. Change 1 writes this correction into the row, because a
@@ -226,6 +233,14 @@ above** — several of these are why a change is scoped the way it is.
   debit/credit-aware package reference from the leg quotes — or failing closed as unmeasurable when
   it cannot be derived — not for leaving the one price the broker actually honours unmeasured.
   Change 2 owns the package reference.
+- **The same holds for broker-normalized child legs, and it changes what change 2 may discharge.**
+  `AlpacaBrokerageGateway.BuildOrderPayload` turns `take_profit.limit_price`,
+  `stop_loss.stop_price`, and `stop_loss.limit_price` metadata into broker-enforced child orders, so
+  a sound top-level order can pass both price rules while carrying an immediately triggering or
+  wildly deviated exit. Change 1 records that gap on `W9-SAFETY-007`; recording it is not the same
+  as leaving the criterion dischargeable over it. Change 2 must resolve and validate every
+  gateway-normalized child price, through the same metadata aliases the gateway reads, before it
+  marks the pre-trade rule criterion met.
 - **But excluding the trailing stop's *trigger* is not the same as excluding the order.** The
   trigger moves with the market and cannot be measured against a snapshot; the **trail distance**
   is an operator-typed value and is exactly the fat-finger shape. Alpaca validates only that
