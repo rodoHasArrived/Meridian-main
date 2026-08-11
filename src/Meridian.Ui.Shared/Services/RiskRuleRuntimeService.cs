@@ -964,8 +964,13 @@ public sealed class RiskRuleRuntimeService
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         DateTimeOffset asOf)
     {
-        var maxQuantity = MaxOrderQuantity;
-        var maxDeviationPercent = MaxPriceDeviationPercent;
+        // One reading of both limbs, for the same reason enforcement takes one: two separately
+        // locked reads can straddle a two-field update and observe a pair that never existed.
+        // Here the consequence is a status claim rather than an approval — the panel would report
+        // the rule unconfigured while both the old and the new configuration enforce a rail — and
+        // a guardrail that misreports itself is the failure this whole status surface exists to
+        // prevent.
+        var (maxQuantity, maxDeviationPercent) = FatFingerThresholds;
 
         // An unmeasurable refusal is not a breach: the rule refused an order it could not price
         // rather than measuring one past a band. Both rejections carry "fat-finger" text, so
