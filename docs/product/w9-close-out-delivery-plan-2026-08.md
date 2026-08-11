@@ -211,6 +211,15 @@ above** — several of these are why a change is scoped the way it is.
   touch, market orders may carry a simulated observation in `LimitPrice` through the paper gateway,
   trailing stops have a broker-derived trigger that moves with the market, and a multi-leg limit is a
   package net not comparable to the top-level symbol's quote — none of those contribute a price.
+- **But excluding the trailing stop's *trigger* is not the same as excluding the order.** The
+  trigger moves with the market and cannot be measured against a snapshot; the **trail distance**
+  is an operator-typed value and is exactly the fat-finger shape. Alpaca validates only that
+  exactly one of `TrailPrice` or `TrailPercent` is present and that the order class is simple — no
+  magnitude check at all — so a one-cent trail on a $100 symbol is accepted and becomes an
+  unbounded market order after a one-cent reversal, which is the outcome these controls exist to
+  prevent. Change 2 owns this, because a distance needs its own band rather than reusing a
+  through-the-market percentage: a trail is measured *from* the market, not *against* it. Change 1
+  records the gap on `W9-SAFETY-007` so the exclusion is not mistaken for coverage.
 - A trigger's wrong side is the **mirror** of a limit's: `PaperOrderMatchingPolicy` fires a buy stop
   once the market reaches or passes above it, so a buy stop typed *beneath* the market is already
   crossed and a stop-market order that triggers on acceptance routes unbounded. Change 1 measures
@@ -443,8 +452,18 @@ above** — several of these are why a change is scoped the way it is.
   stored accounts and `MDC_USERS`. Flipping enforcement therefore returns 403 to the *normal*
   administrator of an existing local installation, not just to the legacy `MDC_USERNAME` fallback.
   Change 9 needs a migration or an explicit company requirement covering every account source.
-- Slice 4c's remaining defense-in-depth items (fund-account sub-tables, fund-structure store) are
-  not a currently reachable cross-tenant residual and stay out of this wave.
+- **The fund-structure store is not defence-in-depth — it is a reachable cross-tenant read, and it
+  belongs in change 9.** An earlier revision of this plan excluded it on the assumption that it was
+  not currently reachable. That was wrong: `PostgresFundStructureService` contains no tenant column
+  and no predicate anywhere, `LoadSnapshotAsync` takes no scope and loads every organization,
+  business, fund, and relationship, `/api/fund-structure/graph` serves that snapshot, and the
+  mutations resolve their parent nodes from the same global view. `RequireFundScopedWriteTenant`
+  proves only that the caller has *some* tenant, so a tenant-A administrator can read tenant-B
+  structure and link or mutate tenant-B nodes by id. That is precisely the categorical criterion, on
+  precisely the route family the leading tranche guards. Change 9 must stamp tenancy on this store
+  and enforce ownership on both its reads and its writes.
+- Slice 4c's remaining fund-account sub-tables stay out of this wave; the fund-structure store does
+  not.
 
 ### `W9-GOV-008` — audit chain
 
