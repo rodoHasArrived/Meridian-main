@@ -1,6 +1,5 @@
 using Meridian.Contracts.Ledger;
 using Microsoft.AspNetCore.Http;
-using static Meridian.Contracts.Ledger.LedgerDimensionTags;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
