@@ -336,6 +336,14 @@ above** — several of these are why a change is scoped the way it is.
   quantity, deviation, and collar bands, or a fail-closed preflight that refuses a production
   composition whose catalogue is unconfigured. A test on a clean configuration, not one that
   supplies values, is what proves it.
+- **But a clean-start default and a one-time preflight do not hold the invariant.** `LoadSnapshot`
+  maps an absent optional threshold to null, and every existing `risk-rules.json` necessarily lacks
+  the newly added quantity, deviation, and collar fields — so an upgrade overwrites whatever default
+  the composition installed. `NormalizeThreshold` also maps `0m` to null by design, so an operator
+  can clear a supposedly mandatory rail through the config endpoint at any time after the preflight
+  passed. The invariant has to hold at snapshot load, at migration of an older snapshot, and on
+  every runtime update, with upgrade and clear-attempt tests rather than the clean-configuration
+  test alone.
 
 ### `W9-GOV-008` — authorization
 

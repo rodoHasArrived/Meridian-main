@@ -1,6 +1,6 @@
 {
   "total_files": 644,
-  "total_lines": 125641,
+  "total_lines": 125649,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2986,7 +2986,7 @@
     },
     {
       "path": "docs/product/w9-close-out-delivery-plan-2026-08.md",
-      "line_count": 773,
+      "line_count": 781,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
