@@ -30,6 +30,10 @@ KIND_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "DataSourceKind.c
 TYPE_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "DataSourceConfig.cs"
 MASKER_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "SensitiveValueMasker.cs"
 REGISTRY_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "SensitiveKeyRegistry.cs"
+CATALOG_SOURCE = (
+    REPO_ROOT / "src" / "Meridian.Infrastructure" / "Adapters" / "Core"
+    / "ProviderCapabilityDescriptorCatalog.cs"
+)
 STREAMING_SOURCE = (
     REPO_ROOT / "src" / "Meridian.Application" / "Composition" / "Features"
     / "ProviderFeatureRegistration.Registry.cs"
@@ -103,6 +107,42 @@ def streaming_source_ids() -> frozenset[str]:
         return frozenset(re.findall(r'RegisterStreamingFactory\(\s*"([^"]+)"', text))
     except OSError:
         return frozenset()
+
+
+# DataSourceKind names and catalog family keys agree by casefold except where the enum uses the
+# short broker code. Keep this map tiny and explicit rather than guessing with prefix matching.
+CATALOG_ALIASES = {"ib": "ibkr"}
+
+
+def historical_capable_families() -> frozenset[str]:
+    """Families declaring a historical provider in ProviderCapabilityDescriptorCatalog.
+
+    Two spellings appear in the catalog and both mean the same thing:
+
+    * named — ``new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider), ...)``;
+    * positional — ``new("alpaca", typeof(Streaming), typeof(Historical), ...)``, where the
+      second ``typeof`` before any named argument is the historical slot.
+
+    Reading only the named form would wrongly call Alpaca backfill-incapable, so both are parsed.
+    An unreadable catalog returns empty and the caller skips the check rather than inventing a
+    verdict.
+    """
+    try:
+        text = CATALOG_SOURCE.read_text(encoding="utf-8")
+    except OSError:
+        return frozenset()
+
+    capable: set[str] = set()
+    for match in re.finditer(r'new\(\s*\n?\s*"([a-z0-9_.-]+)"\s*,(.*?)(?=\n\s*new\(|\n\s*\];)', text, re.S):
+        family, body = match.group(1), match.group(2)
+        if re.search(r"\bHistorical:\s*typeof\(", body):
+            capable.add(family)
+            continue
+        # Positional args stop at the first named argument (Name: value).
+        positional = re.split(r"\b[A-Z][A-Za-z]*:", body, maxsplit=1)[0]
+        if len(re.findall(r"\btypeof\(", positional)) >= 2:
+            capable.add(family)
+    return frozenset(capable)
 
 
 def strip_jsonc(raw: str) -> str:
@@ -458,16 +498,47 @@ def main() -> int:
                 f"missing connection."
             )
             continue
-        if not must_stream:
-            continue
         name, reason = resolve(provider_by_folded_id.get(default_folded))
         if name is None:
             errors.append(f"DataSources.{field} = {default_id!r} names a source whose Provider {reason}.")
-        elif streaming and name.casefold() not in {sid.casefold() for sid in streaming}:
+            continue
+
+        if must_stream:
+            if streaming and name.casefold() not in {sid.casefold() for sid in streaming}:
+                errors.append(
+                    f"DataSources.{field} = {default_id!r} resolves to {name}, which has no "
+                    f"streaming factory (registered: {', '.join(sorted(streaming))}), so the "
+                    f"synthesized real-time binding cannot serve a live route."
+                )
+            continue
+
+        # Resolving to a configured source is not enough for the historical default: the family
+        # must actually implement backfill, and ProviderFactory gates every backfill provider on
+        # its own `Backfill.Providers.<Provider>.Enabled` opt-in. Pointing this default at
+        # Synthetic while that flag stayed false is exactly how this guard's own sample regressed
+        # — the binding is synthesized, the provider is never registered, and
+        # ProviderRoutingService drops the route as unsupported.
+        historical = historical_capable_families()
+        if historical and CATALOG_ALIASES.get(name.casefold(), name.casefold()) not in historical:
             errors.append(
-                f"DataSources.{field} = {default_id!r} resolves to {name}, which has no streaming "
-                f"factory (registered: {', '.join(sorted(streaming))}), so the synthesized "
-                f"real-time binding cannot serve a live route."
+                f"DataSources.{field} = {default_id!r} resolves to {name}, which declares no "
+                f"historical provider in ProviderCapabilityDescriptorCatalog (capable: "
+                f"{', '.join(sorted(historical))}), so no backfill route can be served."
+            )
+            continue
+
+        backfill_providers = document.get("Backfill", {}).get("Providers", {})
+        gate = next(
+            (value for key, value in backfill_providers.items() if key.casefold() == name.casefold()),
+            None,
+        )
+        if isinstance(gate, dict) and gate.get("Enabled") is not True:
+            errors.append(
+                f"DataSources.{field} = {default_id!r} resolves to {name}, but "
+                f"Backfill.Providers.{name}.Enabled is {gate.get('Enabled')!r}. "
+                f"ProviderFactory returns null for a backfill provider that is not opted in, so "
+                f"the synthesized historical binding would resolve to a family with no registered "
+                f"historical provider."
             )
 
     for path in walk_secret_keys(document):
