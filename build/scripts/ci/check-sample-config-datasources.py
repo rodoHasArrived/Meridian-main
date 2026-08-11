@@ -424,6 +424,52 @@ def main() -> int:
                     f"identity."
                 )
 
+    # ProviderRoutingMapper.GetEffectiveBindings synthesizes "legacy-default-realtime" and
+    # "legacy-default-historical" bindings from these two ids, with Enabled: true and without
+    # consulting EnableFailover. A dangling id is therefore not inert: ProviderRoutingEngine skips
+    # the binding as a missing connection, so routing previews and requests lose their route while
+    # every other gate stays green. Failover references were already checked; these were not.
+    data_sources = document.get("DataSources", {})
+    provider_by_folded_id = {
+        source["Id"].casefold(): source.get("Provider")
+        for source in sources
+        if isinstance(source.get("Id"), str)
+    }
+
+    for field, must_stream in (
+        ("DefaultRealTimeSourceId", True),
+        ("DefaultHistoricalSourceId", False),
+    ):
+        if field not in data_sources:
+            continue
+        default_id = data_sources[field]
+        if not isinstance(default_id, str) or not default_id.strip():
+            errors.append(
+                f"DataSources.{field} = {default_id!r} is not a usable source id; omit the field "
+                f"rather than leaving it empty, or the synthesized binding names nothing."
+            )
+            continue
+        default_folded = default_id.casefold()
+        if default_folded not in configured_folded:
+            errors.append(
+                f"DataSources.{field} = {default_id!r} does not match any configured source id "
+                f"({', '.join(sorted(configured_ids)) or 'none'}). GetEffectiveBindings still "
+                f"synthesizes a binding for it, which ProviderRoutingEngine then drops as a "
+                f"missing connection."
+            )
+            continue
+        if not must_stream:
+            continue
+        name, reason = resolve(provider_by_folded_id.get(default_folded))
+        if name is None:
+            errors.append(f"DataSources.{field} = {default_id!r} names a source whose Provider {reason}.")
+        elif streaming and name.casefold() not in {sid.casefold() for sid in streaming}:
+            errors.append(
+                f"DataSources.{field} = {default_id!r} resolves to {name}, which has no streaming "
+                f"factory (registered: {', '.join(sorted(streaming))}), so the synthesized "
+                f"real-time binding cannot serve a live route."
+            )
+
     for path in walk_secret_keys(document):
         errors.append(
             f"{path} is a secret-shaped key; the sample must not carry credential fields at all, "

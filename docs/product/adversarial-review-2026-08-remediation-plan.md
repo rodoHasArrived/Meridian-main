@@ -337,8 +337,17 @@ still `in_progress`.
   plus a test that **one operator gesture** clears 250 breaks. Assert the gesture, not the call
   count — both designs above are supported, and client-side chunking against the retained 100-item
   server cap would fail a single-call assertion. If the cap is raised instead, the same test passes
-  with one call. Either way, assert that chunks are sequenced correctly, that the idempotency key
-  makes a retry safe, and that any truncation is logged rather than silent.
+  with one call. Either way, assert that chunks are sequenced correctly and that any truncation is
+  logged rather than silent.
+
+  **"The idempotency key makes a retry safe" is not true as stated for the chunked design.** The
+  repository binds each idempotency key and command id to the hash of one *complete* request, so a
+  single gesture-level key makes the second chunk look like a conflicting payload under the same
+  key, while minting fresh keys on retry re-applies chunks that already committed before the
+  interruption. If chunking is the chosen route, derive a deterministic per-chunk command and
+  idempotency key and retain a parent-operation manifest that fixes the chunk boundaries and each
+  chunk's completion state, so a resumed gesture replays only what is outstanding. Raising the
+  server cap avoids the problem outright and is the cheaper option where it is acceptable.
   **Effort:** L · **Sequence:** assign + comment + sign-off first (highest frequency)
 
 ---
@@ -1034,10 +1043,14 @@ still `in_progress`.
   profile mapping an external transaction id, so overlapping or amended statements double-import.
   `StatementMappingProfileCatalog.cs:69-115` compares column-name sets only and returns early for
   built-in profiles, so drift detection never activates out of the box.
-  **Change:** read the OFX `CHARSET`/`ENCODING` header and the XML declaration before decoding,
-  default unknown bytes to Windows-1252 with a `StatementParseIssue.Warning`, and use
-  `new UTF8Encoding(false, throwOnInvalidBytes: true)` so undecodable input errors instead of
-  mojibaking. Add transaction-level idempotency — but **not** a bare
+  **Change:** read the OFX `CHARSET`/`ENCODING` header and the XML declaration before decoding, and
+  use `new UTF8Encoding(false, throwOnInvalidBytes: true)` so undecodable input errors instead of
+  mojibaking. **Do not default an unrecognised charset to Windows-1252 with a warning.** A
+  declared Shift-JIS file, or one with a damaged encoding header, would decode into corrupted
+  payee, description, and reference text, and the fallback fingerprint below includes the
+  normalized description — so the same transaction decoded two ways produces two fingerprints and
+  imports twice. A warning does not prevent that; it just annotates it. Recognise an explicit set
+  of supported encodings and quarantine or reject anything else until an operator names the codec. Add transaction-level idempotency — but **not** a bare
   `(externalAccountId, externalTransactionId)` pair: `Bai2StatementConnector.cs:113` and
   `Camt053StatementConnector.cs:146` both emit `ExternalTransactionId: null` for valid records, and
   `ResolveReference`/`EntryReference` are nullable elsewhere, so ignoring nulls preserves duplicates
