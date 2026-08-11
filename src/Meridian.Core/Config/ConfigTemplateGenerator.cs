@@ -293,11 +293,16 @@ public sealed class ConfigTemplateGenerator
         {
             DataRoot = "/data",
             Compress = true,
-            // Defaults to Synthetic so a generated container starts offline without keys, matching
-            // config/appsettings.sample.json and docs/reference/environment-variables.md. An IB
-            // fallback silently selected the bundled simulator in a normal build and attempted a
-            // TWS/Gateway connection under IBAPI.
-            DataSource = "${MDC_DATASOURCE:-Synthetic}",
+            // A parseable literal, not a "${MDC_DATASOURCE:-...}" placeholder. Nothing expands shell
+            // placeholders before deserialization — RunGenerateConfig writes this JSON verbatim and
+            // DataSourceKindConverter fails closed on an unknown string — so a placeholder here made
+            // the whole generated file unloadable regardless of what followed ":-". Credential
+            // placeholders elsewhere in this template survive only because callers detect them with
+            // StartsWith("${") and treat them as unset; the enum has no such escape hatch.
+            // Synthetic matches config/appsettings.sample.json so a generated container starts
+            // offline without keys, and MDC_DATASOURCE still overrides it through the normal
+            // environment path.
+            DataSource = "Synthetic",
             Alpaca = new
             {
                 KeyId = "${ALPACA_KEY_ID}",

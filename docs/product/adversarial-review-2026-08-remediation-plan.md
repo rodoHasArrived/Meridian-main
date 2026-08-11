@@ -417,9 +417,18 @@ still `in_progress`.
   and full capabilities including `Level2Book`. The simulator registers depth subscriptions it never
   services (`IBSimulationClient.cs:178,208`) and always emits `SequenceNumber: 0`.
   **Change:** in non-`IBAPI` builds, append "(simulation)" to the display name, drop `Level2Book`
-  and `TickByTick` from advertised capabilities, and **throw** on `SubscribeMarketDepth` instead of
-  returning a live-looking handle. Emit a real monotonic sequence.
-  **Verify:** test asserting the non-vendor build refuses depth subscription and never advertises L2.
+  and `TickByTick` from advertised capabilities, and emit a real monotonic sequence. **Throwing from
+  `SubscribeMarketDepth` is necessary but not sufficient** — `SubscriptionOrchestrator` catches the
+  failure, stores `_depthSubs[symbol] = -1`, and leaves the symbol registered in
+  `MarketDepthCollector`, so `DepthSubscriptions` and `ActiveSubscriptionCount` keep reporting a
+  depth subscription that can never produce data. That is the same live-looking state the item
+  exists to remove, one layer up. Have orchestration **skip depth entirely when the client does not
+  advertise `Level2Book`**, and ensure a failed subscription unregisters from the collector and is
+  omitted from active-subscription counts.
+  **Verify:** exercise the composed non-vendor path, not the client method in isolation — subscribe
+  a symbol whose `SubscribeDepth` is true (the shipped sample and the fallback symbol both default
+  that way) and assert that no depth subscription is reported and the collector holds no
+  registration. A client-level test alone passes while the phantom count remains.
   **Effort:** S
 
 - [ ] **AR8-21 — Fix the synthetic catalog's borrowed identity.**
@@ -528,10 +537,20 @@ still `in_progress`.
   consumers only in `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs:2206-2453`; the DB columns
   exist (`src/Meridian.Storage/Ledger/Migrations/V_ledger_026__journal_leg_currency.sql:6-7`) and
   nothing writes them.
-  **Change:** wire `BuildUnrealizedFxRevaluationLines` into the period-close draft path; populate the
-  journal-leg currency columns on every posting; surface CTA on the close surface.
+  **Prerequisite — governed FX inputs first.** `RunPeriodCloseDraftIntakeRequest` carries only fund,
+  currency, actor, and period identifiers, while `MultiCurrencyLedgerTranslator.Translate` needs
+  as-of FX rates and carrying base-currency balances. Wired as-is, omitted carrying balances make
+  every `BaseCurrencyVariance` null and `BuildUnrealizedFxRevaluationLines` emits **no lines at
+  all** — silently, so the close looks complete and the revaluation simply never happened. Accepting
+  caller-supplied rates instead posts materially incorrect close journals. Extend the governed close
+  inputs and services with retained rate evidence, account currencies, and carrying balances before
+  routing the close through this kernel.
+  **Change:** then wire `BuildUnrealizedFxRevaluationLines` into the period-close draft path;
+  populate the journal-leg currency columns on every posting; surface CTA on the close surface.
   **Verify:** integration test: two-currency book, rate move, balanced revaluation lines drafted and
-  posted at close.
+  posted at close — **plus** a test that missing or stale rate evidence fails closed rather than
+  drafting an empty revaluation. Without the second case a silently empty result is
+  indistinguishable from a correct one.
   **Effort:** M
 
 ---
