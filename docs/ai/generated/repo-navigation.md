@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-11T08:53:47Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-11T09:51:19Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx` | Desktop and UI Workflows | `d7ffaa85` (2026-08-11T08:44:18+00:00) | 5 |
-| `src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx` | Desktop and UI Workflows | `468cbeba` (2026-08-11T08:35:38+00:00) | 5 |
-| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx` | Desktop and UI Workflows | `468cbeba` (2026-08-11T08:35:38+00:00) | 4 |
-| `src/Meridian.Ui/wwwroot/workstation/index.html` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 3 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-BobEkx_M.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen.view-model-dThrecsR.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/asset-detail-screen-1lWd_jTt.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/cash-ladder-screen-CLjPbAp7.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/checkbox-BUMscIec.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/concrete-DL54RHEg.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/covered-call-screen-DiBBtxVF.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/daily-control-tower-screen-CSEJr6bl.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/data-screen-C54CuOu1.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/empty-state-C7144GuU.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
-| `src/Meridian.Ui/wwwroot/workstation/assets/entity-setup-wizard-DQk4sklJ.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx` | Desktop and UI Workflows | `9b6f2914` (2026-08-11T09:36:32+00:00) | 6 |
+| `src/Meridian.Ui/wwwroot/workstation/index.html` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 6 |
+| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx` | Desktop and UI Workflows | `9b6f2914` (2026-08-11T09:36:32+00:00) | 5 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-De3JwixM.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen.view-model-iDvzJnjT.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/asset-detail-screen-BLvrTTUh.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/cash-ladder-screen-k6ym6guS.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/checkbox-MO_IFx1t.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/concrete-oaHCV-89.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/covered-call-screen-DcglJeZk.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/daily-control-tower-screen-_bjyffGF.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/data-screen-Cmqjh7Fj.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/empty-state-Bzd3lRTw.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/entity-setup-wizard-C59Vj2qU.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/evidence-workbench-screen-D5SeJoFo.js` | Unmapped | `9b6f2914` (2026-08-11T09:36:32+00:00) | 1 |
 

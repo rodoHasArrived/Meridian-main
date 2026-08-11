@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react";
+import { useLocation } from "react-router-dom";
 import { axe } from "jest-axe";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QuantLabScreen } from "@/screens/quant-lab-screen";
@@ -38,12 +39,25 @@ describe("QuantLabScreen formulas tab (withdrawn)", () => {
   });
 
   it("canonicalizes the address so a shared link matches what is on screen", async () => {
-    renderWithRouter(<QuantLabScreen />, { initialEntries: ["/strategy/quant-lab?view=formulas"] });
+    // `renderWithRouter` mounts a MemoryRouter, which never touches `window.location` — asserting
+    // on it would pass no matter what the screen did. Read the router's own location instead.
+    function LocationProbe() {
+      const location = useLocation();
+      return <span data-testid="probe-search">{location.search}</span>;
+    }
+
+    renderWithRouter(
+      <>
+        <QuantLabScreen />
+        <LocationProbe />
+      </>,
+      { initialEntries: ["/strategy/quant-lab?view=formulas"] }
+    );
     await waitForAsyncEffects();
 
     // Otherwise Copy Link would share a URL claiming to be the Formula Workbench while the
     // operator is looking at the Script Lab.
-    expect(window.location.search).not.toContain("view=formulas");
+    expect(screen.getByTestId("probe-search").textContent).not.toContain("view=formulas");
   });
 
   it("keeps the script lab as the default tab", async () => {

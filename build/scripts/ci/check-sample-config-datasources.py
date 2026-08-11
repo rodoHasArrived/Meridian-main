@@ -28,6 +28,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SAMPLE = REPO_ROOT / "config" / "appsettings.sample.json"
 KIND_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "DataSourceKind.cs"
 MASKER_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "SensitiveValueMasker.cs"
+REGISTRY_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "SensitiveKeyRegistry.cs"
 STREAMING_SOURCE = (
     REPO_ROOT / "src" / "Meridian.Application" / "Composition" / "Features"
     / "ProviderFeatureRegistration.Registry.cs"
@@ -42,6 +43,33 @@ FALLBACK_SECRET_NAMES = frozenset(
         "ClientSecret", "PrivateKey", "Certificate",
     }
 )
+
+
+FALLBACK_SECRET_FRAGMENTS = frozenset(
+    {
+        "password", "pwd", "secret", "key", "token", "credential",
+        "connectionstring", "connection_string",
+        "auth", "authorization", "session", "refresh", "bearer", "certificate",
+    }
+)
+
+
+def secret_key_fragments() -> frozenset[str]:
+    """Mirror ``SensitiveKeyRegistry.Fragments``, the runtime predicate.
+
+    ``SensitiveKeyRegistry`` is explicit that per-surface lists are the bug it exists to fix, and
+    ``IsSensitive`` matches any key *containing* a fragment. Exact-name membership let real
+    property names through — ``ApiToken``, ``AccessToken``, ``RefreshToken`` are all sensitive at
+    runtime but match no exact entry.
+    """
+    try:
+        text = REGISTRY_SOURCE.read_text(encoding="utf-8")
+        block = text[text.index("Fragments") :]
+        block = block[: block.index("];")]
+        found = {f.casefold() for f in re.findall(r'"([A-Za-z_]+)"', block)}
+        return frozenset(found or FALLBACK_SECRET_FRAGMENTS)
+    except (OSError, ValueError):
+        return FALLBACK_SECRET_FRAGMENTS
 
 
 def secret_key_names() -> frozenset[str]:
@@ -114,6 +142,26 @@ def declared_kinds() -> dict[str, int]:
 
 
 SECRET_KEYS_FOLDED = frozenset(name.casefold() for name in secret_key_names())
+SECRET_FRAGMENTS = secret_key_fragments()
+
+
+def is_secret_key(key: str, value: object) -> bool:
+    """Flag credential-shaped keys the way the runtime redactor would.
+
+    Two rules, because the runtime predicate alone is too broad for a config sample:
+
+    * an **exact** ``SensitiveValueMasker`` property name is always a credential field, whatever
+      its value — this is what catches an empty ``"Password": ""`` placeholder;
+    * a **fragment** match (the runtime ``SensitiveKeyRegistry.IsSensitive`` rule) is flagged only
+      for string values. Fragments like ``refresh``, ``key`` and ``certificate`` legitimately
+      appear in non-credential settings — ``StatusRefreshIntervalSeconds`` (int) and
+      ``AllowSelfSignedCertificates`` (bool) are both in this sample — and a secret is never a
+      boolean or an interval.
+    """
+    folded = key.casefold()
+    if folded in SECRET_KEYS_FOLDED:
+        return True
+    return isinstance(value, str) and any(f in folded for f in SECRET_FRAGMENTS)
 
 
 def walk_secret_keys(node: object, path: str = "") -> list[str]:
@@ -128,7 +176,7 @@ def walk_secret_keys(node: object, path: str = "") -> list[str]:
     if isinstance(node, dict):
         for key, value in node.items():
             here = f"{path}.{key}" if path else key
-            if key.casefold() in SECRET_KEYS_FOLDED and not isinstance(value, (dict, list)):
+            if not isinstance(value, (dict, list)) and is_secret_key(key, value):
                 findings.append(here)
             findings.extend(walk_secret_keys(value, here))
     elif isinstance(node, list):
