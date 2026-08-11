@@ -96,6 +96,14 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     public static readonly TimeSpan DefaultInMemoryRetentionWindow = TimeSpan.FromHours(2);
 
     /// <summary>
+    /// The window this instance actually keeps. A consumer whose own claim spans longer than this
+    /// cannot establish that claim from this trail, however complete the window is — completeness
+    /// is measured against <em>this</em> window, so an entry older than it is trimmed without ever
+    /// registering as a gap. Consumers are expected to compare their horizon against this value.
+    /// </summary>
+    public TimeSpan InMemoryRetentionWindow => _inMemoryRetentionWindow;
+
+    /// <summary>
     /// Absolute ceiling on retained entries, as a multiple of the count cap. The window must not be
     /// able to grow memory without bound under a pathological burst; when this bites, the shortfall
     /// is logged rather than silently swallowed, because a consumer's time claim has just stopped

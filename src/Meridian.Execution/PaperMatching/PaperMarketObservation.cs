@@ -63,6 +63,20 @@ public readonly record struct PaperMarketObservation
     /// approving an already-triggered stop, or refusing one that is still resting.
     /// </para>
     /// </summary>
+    /// <summary>
+    /// The price an order on <paramref name="side"/> would trade against: the side it crosses,
+    /// then the last trade, then the bar close. <see langword="null"/> when nothing is observed.
+    /// <para>
+    /// The single definition of that precedence, shared for the same reason as
+    /// <see cref="ResolveStopTriggerPrice"/>: the matcher decides whether a limit is marketable
+    /// from this, and the pre-trade fat-finger guard decides whether that limit is priced through
+    /// the market. A guard missing a leg the matcher has — the bar close, on a bar-driven session
+    /// with no quote or print — refuses as unmeasurable an order the engine would happily evaluate.
+    /// </para>
+    /// </summary>
+    public decimal? ResolveAggressiveReferencePrice(OrderSide side) =>
+        (side == OrderSide.Buy ? AskPrice : BidPrice) ?? LastTradePrice ?? BarClose;
+
     public decimal? ResolveStopTriggerPrice(OrderSide side) =>
         LastTradePrice ?? BarClose ?? (side == OrderSide.Buy ? AskPrice : BidPrice);
 

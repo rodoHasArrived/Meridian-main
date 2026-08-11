@@ -255,14 +255,30 @@ public sealed class RiskRuleRuntimeService
     private IReadOnlyList<RiskRuleStatusDto> WithAuditCoverageApplied(RiskRuleStatusDto[] statuses)
     {
         var auditTrail = Resolve<ExecutionAuditTrailService>();
-        if (auditTrail is null || auditTrail.RetentionWindowComplete)
+        if (auditTrail is null)
+        {
+            return statuses;
+        }
+
+        // Two ways the evidence can fall short of the claim, and they need the same answer.
+        // Retention shorter than the liveness window is the subtler one: nothing is ever reported
+        // as a gap, because completeness is measured against the audit trail's own shorter window,
+        // so a 45-minute-old breach under a 30-minute retention window is trimmed silently while
+        // this service still promises to treat it as live. The consumer states its horizon, so the
+        // consumer is what has to check it.
+        var horizonCovered = auditTrail.InMemoryRetentionWindow >= ViolationLivenessWindow;
+        if (horizonCovered && auditTrail.RetentionWindowComplete)
         {
             return statuses;
         }
 
         _logger.LogWarning(
-            "Risk rule status reported constrained: the execution audit retention window is incomplete, "
-            + "so the absence of a recent breach cannot be established.");
+            "Risk rule status reported constrained: the execution audit trail cannot establish the absence "
+            + "of a breach over the {LivenessWindow} liveness window (retention window {RetentionWindow}, "
+            + "complete: {Complete}).",
+            ViolationLivenessWindow,
+            auditTrail.InMemoryRetentionWindow,
+            auditTrail.RetentionWindowComplete);
 
         return statuses
             .Select(static status => status.IsBreached
@@ -270,7 +286,7 @@ public sealed class RiskRuleRuntimeService
                 : status with
                 {
                     State = "Constrained",
-                    Summary = "Audit retention is incomplete for the liveness window, so a recent breach "
+                    Summary = "Audit retention does not cover the liveness window, so a recent breach "
                         + "cannot be ruled out. Treating the rule as constrained until coverage recovers.",
                 })
             .ToArray();

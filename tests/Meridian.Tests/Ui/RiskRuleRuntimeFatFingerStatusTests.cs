@@ -383,7 +383,7 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
 
         statuses.Should().NotBeEmpty();
         statuses.Should().OnlyContain(status => status.State == "Constrained");
-        statuses.Should().OnlyContain(status => status.Summary.Contains("Audit retention is incomplete"));
+        statuses.Should().OnlyContain(status => status.Summary.Contains("Audit retention does not cover"));
 
         // And it must stay incomplete. A single backdated append leaves the retained set fitting
         // the cap again, but the entries already discarded are still inside the window — judging
@@ -398,6 +398,31 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
             Symbol: "MSFT"));
 
         audit.RetentionWindowComplete.Should().BeFalse("the discarded entries are still inside the window");
+    }
+
+    /// <summary>
+    /// A retention window shorter than the liveness window is the subtler shortfall: nothing is
+    /// ever reported as a gap, because completeness is measured against the audit trail's own
+    /// window, so a 45-minute-old breach under 30-minute retention is trimmed silently while the
+    /// status still promises to treat it as live. The consumer states the horizon, so the consumer
+    /// checks it.
+    /// </summary>
+    [Fact]
+    public async Task RuleStatus_WithRetentionShorterThanTheLivenessWindow_RefusesToReportHealthy()
+    {
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-short-window"),
+                InMemoryRetention: 100,
+                InMemoryRetentionWindow: TimeSpan.FromMinutes(30)),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        audit.RetentionWindowComplete.Should().BeTrue("nothing has been discarded at all");
+
+        var statuses = await BuildService(audit).GetAllStatusesAsync();
+
+        statuses.Should().OnlyContain(status => status.State == "Constrained");
+        statuses.Should().OnlyContain(status => status.Summary.Contains("Audit retention does not cover"));
     }
 
     // --- snapshot hydration ---

@@ -105,6 +105,19 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             return null;
         }
 
+        // In a paper composition the matcher's observation is the authority for a limit too, and
+        // for the same reason as the trigger: it carries a bar-close leg this provider has no
+        // source for, so on a bar-driven session with no quote or print a perfectly ordinary limit
+        // would otherwise be refused as unmeasurable while the engine evaluates it normally.
+        if (_paperMatchingIsAuthoritative() && _liveFeedAccessor?.Invoke() is { } feed)
+        {
+            var observed = PaperMarketObservation.Capture(feed, symbol).ResolveAggressiveReferencePrice(side);
+            if (observed is > 0m)
+            {
+                return observed;
+            }
+        }
+
         // The raw crossing price, with none of ResolveMark's max-with-mid conservatism: that
         // rule exists so a sell never under-measures the short it creates, but it puts a sell
         // reference at the midpoint, which is not a price any sell can trade at.

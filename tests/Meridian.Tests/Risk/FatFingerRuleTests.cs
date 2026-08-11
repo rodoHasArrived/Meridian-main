@@ -329,6 +329,25 @@ public sealed class FatFingerRuleTests
     }
 
     [Fact]
+    public async Task Price_OnABarDrivenSession_MeasuresTheLimitAgainstTheBarClose()
+    {
+        // No quote and no print, only a bar. The matcher's own reference precedence ends at the
+        // bar close, so it would evaluate this limit normally; a guard that stopped at the print
+        // refuses an ordinary order as unmeasurable and blocks supported bar-only experiments.
+        var rule = new FatFingerRule(
+            new BarOnlyProvider(barClose: 100m),
+            () => new FatFingerThresholds(null, 10m),
+            NullLogger<FatFingerRule>.Instance);
+
+        var inside = await rule.EvaluateAsync(Order(limitPrice: 105m, side: OrderSide.Buy));
+        inside.IsApproved.Should().BeTrue();
+
+        var outside = await rule.EvaluateAsync(Order(limitPrice: 1_000m, side: OrderSide.Buy));
+        outside.IsApproved.Should().BeFalse();
+        outside.Code.Should().Be(FatFingerRule.PriceDeviationCode);
+    }
+
+    [Fact]
     public async Task StopTrigger_OnABarDrivenSession_UsesTheBarClose_NotTheQuote()
     {
         // No print at all, which is the ordinary case on a bar-driven session. The matcher falls
@@ -719,6 +738,21 @@ public sealed class FatFingerRuleTests
     /// midpoint. Mirrors the production provider: the valuation price takes the larger of mark
     /// and touch, while the touch price is the raw crossing side.
     /// </summary>
+    /// <summary>
+    /// A bar-driven session: no quote, no print, only a completed bar — the shape the matcher
+    /// still evaluates from and the guard must too.
+    /// </summary>
+    private sealed class BarOnlyProvider(decimal barClose) : IPortfolioExposureProvider
+    {
+        public PortfolioExposureSnapshot GetSnapshot() => PortfolioExposureSnapshot.Empty;
+
+        public decimal? TryGetReferencePrice(string symbol) => barClose;
+
+        public decimal? TryGetTouchPrice(string symbol, OrderSide side) => barClose;
+
+        public decimal? TryGetBarClosePrice(string symbol) => barClose;
+    }
+
     private sealed class TwoSidedBookProvider(
         decimal bid,
         decimal ask,
