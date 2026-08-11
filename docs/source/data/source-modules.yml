@@ -328,6 +328,7 @@ modules:
     roadmap_items:
       - W2-TRD-001
       - W7-LIVE-001
+      - W9-SAFETY-007
     stage_gates:
       - PaperSession
       - LiveReadiness
@@ -336,7 +337,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-08-11
 
   - id: SRC-STRATEGIES
     path: src/Meridian.Strategies

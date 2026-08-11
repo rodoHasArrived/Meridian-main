@@ -137,4 +137,34 @@ public interface IPortfolioExposureProvider
     /// </para>
     /// </summary>
     decimal? TryGetTouchPrice(string symbol, OrderSide side) => TryGetExecutablePrice(symbol, side);
+
+    /// <summary>
+    /// The most recent trade print for <paramref name="symbol"/>, or <see langword="null"/> when
+    /// none is current. Distinct from every quote-derived accessor above: a print is what the
+    /// market <i>did</i>, not what it is showing.
+    /// </summary>
+    decimal? TryGetLastTradePrice(string symbol) => null;
+
+    /// <summary>
+    /// The reference a <b>stop trigger</b> is measured against, resolved in the same order the
+    /// matcher resolves it: the last trade first, then the crossing side.
+    /// <para>
+    /// The <i>precedence</i> is the point, not just the sources.
+    /// <see cref="Meridian.Execution.PaperMatching.PaperOrderMatchingPolicy"/> fires a stop off the
+    /// traded price and reaches for the touch only when no print exists. Anything that checks the
+    /// quote first disagrees with it whenever the two differ: with a 100/120 quote and the last
+    /// trade at 100, a buy stop at 105 is resting, but against the 110 midpoint it looks 4.5%
+    /// crossed and against the 120 ask worse still — and in the other direction, a buy stop above
+    /// the ask but below the last trade looks correctly placed while the matcher fires it
+    /// immediately. A control that disagrees with the engine about whether an order has triggered
+    /// is not measuring the same market the engine is, in either direction.
+    /// </para>
+    /// <para>
+    /// This deliberately differs from <see cref="TryGetTouchPrice"/>, which is what a <i>limit</i>
+    /// is measured against — a limit trades at the touch, so for a limit the touch is not a
+    /// fallback but the answer.
+    /// </para>
+    /// </summary>
+    decimal? TryGetTriggerReferencePrice(string symbol, OrderSide side) =>
+        TryGetLastTradePrice(symbol) ?? TryGetTouchPrice(symbol, side);
 }

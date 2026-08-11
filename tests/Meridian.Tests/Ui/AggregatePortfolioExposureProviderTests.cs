@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Execution.Models;
+using Meridian.Risk;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Moq;
@@ -712,5 +713,97 @@ public sealed class AggregatePortfolioExposureProviderTests
             registry: new Meridian.Execution.Services.PortfolioRegistry());
 
         provider.GetSnapshot().PortfolioValue.Should().Be(75_000m);
+    }
+
+    // --- price accessors: which reference each control gets ---
+
+    /// <summary>
+    /// A one-sided book has no crossing price for the missing side, and the valuation accessor
+    /// answers with whichever side <em>is</em> present. For a sell that means the offer — the side
+    /// this order would never trade against — so a sell at 46 after a 50 print reads 54% through
+    /// the market instead of 8%, and any deviation band refuses it. The last print is the closest
+    /// thing to a crossing price when the book cannot supply one.
+    /// </summary>
+    [Fact]
+    public void TryGetTouchPrice_OneSidedBook_PrefersTheLastPrintOverTheOppositeQuote()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        var trades = new Meridian.Domain.Collectors.TradeDataCollector(publisher, quotes);
+
+        // Ask only: no bid at all on this book.
+        quotes.OnQuote(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            BidPrice: 0m,
+            BidSize: 0,
+            AskPrice: 100m,
+            AskSize: 100));
+        trades.OnTrade(new Meridian.Domain.Models.MarketTradeUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            Price: 50m,
+            Size: 100,
+            Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
+            SequenceNumber: 1));
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            trades: trades);
+
+        provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Sell)
+            .Should().Be(50m, "the 100 ask is the side a sell never crosses");
+
+        // The buy side still crosses at the ask, which the book does supply.
+        provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
+            .Should().Be(100m);
+    }
+
+    /// <summary>
+    /// A stop fires off the traded price, so its reference must prefer the print. The valuation
+    /// mark checks the quote first and returns the midpoint, which on a wide book reads a resting
+    /// trigger as already crossed.
+    /// </summary>
+    [Fact]
+    public void TryGetTriggerReferencePrice_PrefersTheLastPrintOverTheQuoteMidpoint()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        var trades = new Meridian.Domain.Collectors.TradeDataCollector(publisher, quotes);
+
+        quotes.OnQuote(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            BidPrice: 100m,
+            BidSize: 100,
+            AskPrice: 120m,
+            AskSize: 100));
+        trades.OnTrade(new Meridian.Domain.Models.MarketTradeUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            Price: 100m,
+            Size: 100,
+            Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
+            SequenceNumber: 1));
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            trades: trades);
+
+        IPortfolioExposureProvider seam = provider;
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy).Should().Be(100m);
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Sell).Should().Be(100m);
+        // Both quote-derived references are deliberately different, which is the whole reason the
+        // trigger gets its own seam: the mark says 110 and the crossing touch says 120.
+        provider.TryGetReferencePrice("AAPL").Should().Be(110m);
+        provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy).Should().Be(120m);
     }
 }

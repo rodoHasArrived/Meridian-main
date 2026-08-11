@@ -130,6 +130,7 @@ do_not_edit: true
 | `SRC-QUANTSCRIPT` | QuantScript | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-RISK` | Meridian risk | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-RISK` | Meridian risk | `W7-LIVE-001` | Live-readiness governance |
+| `SRC-RISK` | Meridian risk | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
 | `SRC-STORAGE` | Meridian storage | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-STORAGE` | Meridian storage | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-STORAGE` | Meridian storage | `W4-RECON-001` | Portfolio ledger reconciliation readiness |

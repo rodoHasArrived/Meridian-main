@@ -6,7 +6,7 @@ module_id: SRC-RISK
 path: src/Meridian.Risk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-05-20
+last_reviewed: 2026-08-11
 ---
 
 # src/Meridian.Risk
@@ -58,23 +58,24 @@ questions:
   of mid and touch; a price control must compare against what the order can actually trade at.
   Measuring a sell against that mark would make an ordinary marketable sell at the bid look priced
   through the market by half the spread.
-- **A trigger** is measured against the side-neutral `TryGetReferencePrice`, because
-  `PaperOrderMatchingPolicy` fires a stop off the traded price (last trade, then bar close) and only
-  falls back to the touch. On a 90/110 book with the last trade at 100, a buy stop at 105 is still
-  waiting; measuring it against the 110 ask would read it as already crossed and refuse an ordinary
-  breakout order.
+- **A trigger** is measured against `TryGetTriggerReferencePrice` — the last trade, falling back to
+  the crossing side — which is the same *precedence* `PaperOrderMatchingPolicy` uses. Checking a
+  quote first disagrees with the matcher whenever the two differ, in both directions: with a 100/120
+  quote and a 100 print, a buy stop at 105 is resting but looks crossed against the ask or the
+  midpoint; with a 130 print, a buy stop at 125 sits above the ask and looks correctly placed while
+  the matcher fires it immediately. A control that disagrees with the engine about whether an order
+  has already triggered is not measuring the same market the engine is.
+- **A stop-limit's limit** is measured against *its own trigger*, which is what it is priced off.
 
 Both thresholds are read as a single `FatFingerThresholds` value rather than two accessors, so an
 evaluation cannot straddle a two-field configuration update and observe a pair that never existed.
 
-Each price is measured against the reference it is meaningful to, and each order type contributes
-only the prices it genuinely puts at risk: a plain limit against the touch, a stop trigger against
-the touch, and a stop-limit's limit against *its own trigger* rather than today's market. Market,
-auction (`LimitOnOpen`/`LimitOnClose`), trailing-stop, and multi-leg orders contribute no price at
-all; `FatFingerRule`'s type remarks carry the reason for each exclusion. With the band configured, a
-measurable order whose symbol has no reference price is refused as `FAT_FINGER_UNMEASURABLE` rather
-than approved — a band an unpriceable order sails past is not a band — and that refusal is
-deliberately unmeasurable rather than a breach, so a pricing gap does not trip the circuit breaker.
+Market, auction (`LimitOnOpen`/`LimitOnClose`), trailing-stop, and multi-leg orders contribute no
+price at all; `FatFingerRule`'s type remarks carry the reason for each exclusion. With the band
+configured, a measurable order whose symbol has no reference price is refused as
+`FAT_FINGER_UNMEASURABLE` rather than approved — a band an unpriceable order sails past is not a
+band — and that refusal is deliberately unmeasurable rather than a breach, so a pricing gap does not
+trip the circuit breaker.
 
 ## Important workflows
 
@@ -135,6 +136,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | --- | --- |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W7-LIVE-001` | Live-readiness governance |
+| `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

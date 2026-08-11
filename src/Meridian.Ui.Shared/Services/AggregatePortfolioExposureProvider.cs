@@ -113,9 +113,44 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             }
         }
 
-        // One-sided or absent book: fall back to the valuation price rather than reporting no
-        // reference at all, since a missing reference makes a priced order unmeasurable.
+        // One-sided or absent book: there is no crossing price, so the last print is the closest
+        // thing to one. The valuation accessor must not be reached for first here — with a bid
+        // missing it answers with the ask, the side this order would NOT cross, so a sell would be
+        // measured against the offer. On a book showing only a 100 ask after a 50 print, that turns
+        // an ordinary sell at 46 from 8% through into 54% through and refuses it.
+        var lastTrade = TryGetLastTradePrice(symbol);
+        if (lastTrade is > 0m)
+        {
+            return lastTrade;
+        }
+
+        // Nothing traded and nothing crossable: fall back to the valuation price rather than
+        // reporting no reference at all, since a missing reference makes a priced order
+        // unmeasurable.
         return TryGetExecutablePrice(symbol, side);
+    }
+
+    /// <inheritdoc />
+    public decimal? TryGetLastTradePrice(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || _trades is null)
+        {
+            return null;
+        }
+
+        // Same freshness window as every other accessor here: a timestamp far in the future is as
+        // untrustworthy as a stale one, so a bad clock cannot hold a print live indefinitely.
+        var asOf = _clock();
+        var recent = _trades.GetRecentTrades(symbol, 1);
+        if (recent.Count > 0 &&
+            recent[0].Price > 0m &&
+            recent[0].Timestamp >= asOf - _markMaxAge &&
+            recent[0].Timestamp <= asOf + _markMaxAge)
+        {
+            return recent[0].Price;
+        }
+
+        return null;
     }
 
     /// <summary>

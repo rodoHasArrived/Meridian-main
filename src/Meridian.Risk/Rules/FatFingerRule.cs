@@ -207,14 +207,13 @@ public sealed class FatFingerRule : IRiskRule
         var stopPrice = HasMeasurableTrigger(request) ? request.StopPrice : null;
         if (stopPrice is > 0m)
         {
-            // A trigger is measured against the side-neutral market observation, NOT the crossing
-            // touch the limit limb uses. The matcher fires a stop off the traded price — last trade
-            // or bar close, with the touch only as a fallback — so measuring the trigger against the
-            // side the order would cross at reads a wide book as crossed when the matcher does not.
-            // On a 90/110 book with the last trade at 100, a buy stop at 105 is still waiting, but
-            // against the 110 ask it looks 4.5% through. The valuation mark resolves the same
-            // trade-preferred way, so it is what the trigger is compared with.
-            var triggerReference = _exposureProvider.TryGetReferencePrice(request.Symbol);
+            // A trigger is measured against the traded price, NOT the crossing touch the limit limb
+            // uses, because that is what the matcher fires it off. Measuring a trigger against the
+            // side the order would cross at reads a wide book as crossed when the matcher does not:
+            // with a 100/120 quote and the last trade at 100, a buy stop at 105 is still resting,
+            // yet against the 120 ask — or even the 110 midpoint the valuation mark would give —
+            // it looks already crossed.
+            var triggerReference = _exposureProvider.TryGetTriggerReferencePrice(request.Symbol, request.Side);
             if (triggerReference is null or <= 0m)
             {
                 return Task.FromResult(Unmeasurable(request, "the stop trigger"));

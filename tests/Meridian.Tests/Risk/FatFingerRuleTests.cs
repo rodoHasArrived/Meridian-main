@@ -304,15 +304,16 @@ public sealed class FatFingerRuleTests
     }
 
     [Fact]
-    public async Task StopTrigger_MeasuresTheTradedMark_NotTheCrossingSide()
+    public async Task StopTrigger_MeasuresTheLastTrade_NotTheTouchOrTheMidpoint()
     {
-        // Wide 90/110 book with the mark at 100. A buy stop at 105 is still waiting as far as
-        // the matcher is concerned — it triggers off the traded price, and 100 has not reached
-        // 105. Measuring the trigger against the 110 ask instead would read it as 4.5% already
-        // crossed and refuse an ordinary breakout order on a wide book. The limit limb keeps
-        // using the crossing side; a trigger and a limit answer different questions.
+        // A 100/120 book that last printed at 100. The matcher leaves a buy stop at 105 resting,
+        // because it fires off the print and 100 has not reached 105. Measuring that trigger
+        // against the 120 ask reads it 12.5% crossed, and against the 110 midpoint 4.5% crossed —
+        // both refuse an ordinary breakout order on a wide book. Only the print agrees with the
+        // engine, and a control that refuses orders the engine would leave working is not
+        // measuring the same market.
         var rule = new FatFingerRule(
-            new TwoSidedBookProvider(bid: 90m, ask: 110m),
+            new TwoSidedBookProvider(bid: 100m, ask: 120m, lastTrade: 100m),
             () => new FatFingerThresholds(null, 3m),
             NullLogger<FatFingerRule>.Instance);
 
@@ -325,6 +326,42 @@ public sealed class FatFingerRuleTests
             Order(stopPrice: 1m, side: OrderSide.Buy, type: OrderType.StopMarket));
         crossed.IsApproved.Should().BeFalse();
         crossed.Code.Should().Be(FatFingerRule.StopTriggerCode);
+    }
+
+    [Fact]
+    public async Task StopTrigger_WithNoPrint_FallsBackToTheCrossingSide_AsTheMatcherDoes()
+    {
+        // No print to prefer, so the matcher would compare against the ask for a buy — and so
+        // does this. A buy stop at 1 against a 110 ask is plainly crossed.
+        var rule = new FatFingerRule(
+            new TwoSidedBookProvider(bid: 90m, ask: 110m),
+            () => new FatFingerThresholds(null, 10m),
+            NullLogger<FatFingerRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 1m, side: OrderSide.Buy, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.StopTriggerCode);
+    }
+
+    [Fact]
+    public async Task StopTrigger_AboveTheAskButBelowTheLastTrade_IsRejected()
+    {
+        // The mismatch in the other direction. A 100/120 book that last printed at 130: a buy
+        // stop at 125 sits above the ask and looks correctly placed against any quote-derived
+        // reference, but the matcher fires off the 130 print and this order becomes an unbounded
+        // market order the moment it is accepted.
+        var rule = new FatFingerRule(
+            new TwoSidedBookProvider(bid: 100m, ask: 120m, lastTrade: 130m),
+            () => new FatFingerThresholds(null, 3m),
+            NullLogger<FatFingerRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            Order(stopPrice: 125m, side: OrderSide.Buy, type: OrderType.StopMarket));
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.StopTriggerCode);
     }
 
     [Fact]
@@ -621,10 +658,13 @@ public sealed class FatFingerRuleTests
     /// midpoint. Mirrors the production provider: the valuation price takes the larger of mark
     /// and touch, while the touch price is the raw crossing side.
     /// </summary>
-    private sealed class TwoSidedBookProvider(decimal bid, decimal ask) : IPortfolioExposureProvider
+    private sealed class TwoSidedBookProvider(decimal bid, decimal ask, decimal? lastTrade = null)
+        : IPortfolioExposureProvider
     {
         public PortfolioExposureSnapshot GetSnapshot() => PortfolioExposureSnapshot.Empty;
 
+        // The valuation mark takes the midpoint before it ever looks at a print, which is exactly
+        // why a trigger must not read it: production resolves marks the same way.
         public decimal? TryGetReferencePrice(string symbol) => (bid + ask) / 2m;
 
         public decimal? TryGetExecutablePrice(string symbol, OrderSide side) =>
@@ -632,5 +672,7 @@ public sealed class FatFingerRuleTests
 
         public decimal? TryGetTouchPrice(string symbol, OrderSide side) =>
             side is OrderSide.Buy ? ask : bid;
+
+        public decimal? TryGetLastTradePrice(string symbol) => lastTrade;
     }
 }
