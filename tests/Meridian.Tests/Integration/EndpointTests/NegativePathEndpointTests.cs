@@ -406,7 +406,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     {
         var payload = new { ProviderName = "", SaveAsDefault = false };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/providers/switch", content);
+        var response = await _providerClient.PostAsync("/api/providers/switch", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -415,7 +415,7 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     {
         var payload = new { ProviderName = "NotARealProvider", SaveAsDefault = false };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/providers/switch", content);
+        var response = await _providerClient.PostAsync("/api/providers/switch", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 

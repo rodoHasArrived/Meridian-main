@@ -80,7 +80,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task VerifyLean_ReturnsJsonWithChecks()
     {
-        var response = await _client.PostAsync("/api/lean/verify", content: null);
+        var response = await _strategyMutationClient.PostAsync("/api/lean/verify", content: null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -93,7 +93,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task VerifyLean_WhenNoLeanPath_InstalledIsFalse()
     {
-        var response = await _client.PostAsync("/api/lean/verify", content: null);
+        var response = await _strategyMutationClient.PostAsync("/api/lean/verify", content: null);
         var content = await response.Content.ReadAsStringAsync();
         var doc = JsonDocument.Parse(content);
 
@@ -130,7 +130,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
         var payload = new { symbols = new[] { "SPY" } };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/lean/sync", content);
+        var response = await _strategyMutationClient.PostAsync("/api/lean/sync", content);
 
         // Either 200 (queued) or 200 with error message when LEAN_DATA_PATH not set
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -169,7 +169,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
         // 1. Start backtest
         var startPayload = new { algorithmName = "SampleAlgorithm", algorithmLanguage = "CSharp" };
         var startContent = new StringContent(JsonSerializer.Serialize(startPayload), Encoding.UTF8, "application/json");
-        var startResp = await _client.PostAsync("/api/lean/backtest/start", startContent);
+        var startResp = await _strategyMutationClient.PostAsync("/api/lean/backtest/start", startContent);
         startResp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var startBody = await startResp.Content.ReadAsStringAsync();
@@ -200,11 +200,11 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
         resultsDoc.RootElement.GetProperty("backtestId").GetString().Should().Be(backtestId);
 
         // 4. Stop
-        var stopResp = await _client.PostAsync($"/api/lean/backtest/{backtestId}/stop", content: null);
+        var stopResp = await _strategyMutationClient.PostAsync($"/api/lean/backtest/{backtestId}/stop", content: null);
         stopResp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // 5. Delete
-        var deleteResp = await _client.DeleteAsync($"/api/lean/backtest/{backtestId}/delete");
+        var deleteResp = await _strategyMutationClient.DeleteAsync($"/api/lean/backtest/{backtestId}/delete");
         deleteResp.StatusCode.Should().Be(HttpStatusCode.OK);
         var deleteDoc = JsonDocument.Parse(await deleteResp.Content.ReadAsStringAsync());
         deleteDoc.RootElement.GetProperty("deleted").GetBoolean().Should().BeTrue();
@@ -229,7 +229,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task StopBacktest_UnknownId_Returns404()
     {
-        var response = await _client.PostAsync("/api/lean/backtest/nonexistent-id-xyz/stop", content: null);
+        var response = await _strategyMutationClient.PostAsync("/api/lean/backtest/nonexistent-id-xyz/stop", content: null);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -237,7 +237,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task DeleteBacktest_UnknownId_Returns404()
     {
-        var response = await _client.DeleteAsync("/api/lean/backtest/nonexistent-id-xyz/delete");
+        var response = await _strategyMutationClient.DeleteAsync("/api/lean/backtest/nonexistent-id-xyz/delete");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -294,7 +294,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
         var payload = new { enabled = false, leanDataPath = "/tmp/lean-test-data", intervalSeconds = 60 };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/lean/auto-export/configure", content);
+        var response = await _strategyMutationClient.PostAsync("/api/lean/auto-export/configure", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -308,7 +308,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task ConfigureAutoExport_NullBody_StillReturnsOk()
     {
-        var response = await _client.PostAsync("/api/lean/auto-export/configure",
+        var response = await _strategyMutationClient.PostAsync("/api/lean/auto-export/configure",
             new StringContent("{}", Encoding.UTF8, "application/json"));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);

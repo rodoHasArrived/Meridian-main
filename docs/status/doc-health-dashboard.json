@@ -1,6 +1,6 @@
 {
   "total_files": 644,
-  "total_lines": 125067,
+  "total_lines": 125070,
   "orphaned_count": 256,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2595,7 +2595,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10386,
+      "line_count": 10388,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2611,7 +2611,7 @@
     },
     {
       "path": "docs/generated/workflows-overview.md",
-      "line_count": 38,
+      "line_count": 39,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
