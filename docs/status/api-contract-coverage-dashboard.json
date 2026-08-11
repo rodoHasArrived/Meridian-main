@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.2,
-  "endpoint_coverage_percent": 40.2,
+  "score_percent": 29.3,
+  "endpoint_coverage_percent": 40.3,
   "contract_coverage_percent": 12.7,
   "summary": {
     "endpoint_count": 620,
-    "documented_endpoint_count": 249,
-    "undocumented_endpoint_count": 371,
+    "documented_endpoint_count": 250,
+    "undocumented_endpoint_count": 370,
     "workstation_contract_count": 916,
     "documented_workstation_contract_count": 116,
     "undocumented_workstation_contract_count": 800
@@ -3096,7 +3096,7 @@
       "method": "POST",
       "path": "/api/security-master",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:343",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",

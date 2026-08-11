@@ -51,7 +51,7 @@ evidence advanced in the same change.
 | 8 | B | Remainder to zero | `W9-GOV-008` | Route authorization coverage |
 | 9 | B | Fail-closed tenancy + hash-chained accounting **and ledger** audit | `W9-GOV-008` | Tenancy rejection on reads and writes; tamper-evident audit |
 | 10 | C | Golden-file packs and bounded-ingress proof | `W9-INGEST-009` | Connector evidence; PRD-010 limits |
-| 11 | C | Deterministic sided matching and casework feed | `W9-INGEST-009` | Match determinism; casework feed |
+| 11 | C | Ledger-transaction population, live split matcher, and casework feed | `W9-INGEST-009` | Match determinism; casework feed |
 
 ### Ordering rationale
 
@@ -71,8 +71,11 @@ and access revocation are the most sensitive unguarded mutations in the set.
 **Tenancy and audit last within the row (9).** Both are behaviour-changing rather than additive, and
 both are easier to reason about once every route in the sweep declares a permission.
 
-**Ingestion last (10–11).** It is evidence work against code that already ships, so it carries the
-least risk of colliding with the other two rows.
+**Ingestion last (10–11).** Originally sequenced last on the belief that it was evidence-only; that
+belief was wrong (see the correction under its source constraints). It stays last because it is the
+row least likely to collide with the other two, but change 11 carries real wiring — sourcing the
+ledger-transaction population and moving the live path onto the split-capable matcher — and its
+population-projection decision needs a domain owner before it starts.
 
 ## Posture relative to production readiness
 
@@ -132,8 +135,20 @@ above** — several of these are why a change is scoped the way it is.
 - `OrderNotionalRule` is the pattern: threshold accessors as `Func<decimal?>`, escalation banding,
   and an unmeasurable order rejected *as unmeasurable* rather than as a breach so a pricing gap
   cannot trip the circuit breaker. New rules should preserve that distinction.
-- The reference-price seam is `IPortfolioExposureProvider.TryGetExecutablePrice(symbol, side)`,
-  which prices the touch rather than the midpoint.
+- **Sizing and price controls use different reference seams — do not reuse the wrong one.**
+  `TryGetExecutablePrice` is deliberately conservative: `AggregatePortfolioExposureProvider` returns
+  the larger of mark and touch so a sell never under-measures the short it creates, which on a normal
+  book means it returns the **midpoint** for a sell, not the bid. That is right for notional,
+  exposure, and concentration. It is wrong for any control comparing an operator's price against the
+  market: a sell measured against the mid looks priced through by half the spread, so an ordinary
+  marketable sell at the bid is rejected on a wide book. Change 1 added
+  `IPortfolioExposureProvider.TryGetTouchPrice(symbol, side)` for the raw crossing side; the price
+  collar in change 2 uses that, not `TryGetExecutablePrice`.
+- The price limb applies only to immediately marketable limit types on single-symbol orders. Stop
+  and stop-limit prices are priced off the trigger, market orders may carry a simulated observation
+  in `LimitPrice` through the paper gateway, and a multi-leg limit is a package net that is not
+  comparable to the top-level symbol's quote. Change 1 establishes these exclusions; the collar
+  inherits them.
 - `RiskRuleSeverity` is already decisional and `CompositeRiskValidator` already evaluates every rule
   rather than stopping at the first failure, so a collar can escalate for approval instead of
   hard-blocking. That was not expressible before the risk-engine blueprint's PR 1.
@@ -146,10 +161,20 @@ above** — several of these are why a change is scoped the way it is.
   `tests/Meridian.Tests/Integration/EndpointTests/EndpointAuthorizationCoverageTests.cs` and is
   two-sided: a newly unguarded route fails, and a route that starts rejecting must be removed from
   the baseline or the test fails. Progress is therefore mechanically measurable.
-- Baseline concentration: `/api/fund-structure` 34, `/api/workstation` 16, `/api/maintenance` 12,
-  `/api/symbols` 10, then `/api/lean`, `/api/environment-designer`, and `/api/diagnostics` at 7
-  each, `/api/storage`, `/api/replay`, and `/api/export` at 6 each, `/api/auth` 5, and a long tail
-  of singletons plus two non-`/api` routes.
+- **Baseline concentration, recounted from current `origin/main` (112 entries).** The 152 figure in
+  the row's own 2026-08-10 summary is a historical snapshot: 40 routes have been guarded since, and
+  `/api/environment-designer`, `/api/diagnostics`, `/api/storage`, and `/api/export` now have **zero**
+  entries. Recount before scheduling a tranche — planning against 152 would allocate work to routes
+  that are already done.
+
+  | Prefix | Entries | | Prefix | Entries |
+  | --- | ---: | --- | --- | ---: |
+  | `/api/fund-structure` | 34 | | `/api/quality` | 3 |
+  | `/api/workstation` | 16 | | `/api/subscriptions`, `/api/security-master`, `/api/schedules`, `/api/backfill`, `/api/alignment` | 2 each |
+  | `/api/maintenance` | 12 | | 11 single-entry prefixes (`sampling`, `reference-data`, `quant`, `providers`, `plaid`, `options`, `ledger`, `lean`, `health`, `execution`, `compliance`) | 11 |
+  | `/api/symbols` | 10 | | `/portal/...`, `/hooks/...` | 1 each |
+  | `/api/replay` | 6 | | | |
+  | `/api/packaging`, `/api/auth` | 4 each | | | |
 - `EndpointAuthorization.RequirePermission` and `RequireAnyPermission` are generic over
   `IEndpointConventionBuilder`, so they apply to route groups as well as routes.
 - **Declare on permission-homogeneous groups only, never on the `/api/fund-structure` root.** That
@@ -167,6 +192,16 @@ above** — several of these are why a change is scoped the way it is.
   declaration". The current sweep proves *behaviour* (a 401/403 response), not *declaration*.
   `RequirePermission` already stamps `EndpointAuthorizationMetadata`, so a metadata assertion is the
   truer discharge and should sit alongside the behavioural sweep, not replace it.
+- **Read routes need their own decision, taken up front.** The existing sweep is mutation-only —
+  `MutatingMethods` is POST/PUT/PATCH/DELETE, and reads are excluded by design because the
+  workstation grants broad read access by role. But the criterion says *every mapped endpoint*
+  declares a policy or permission, and many GET routes carry no `EndpointAuthorizationMetadata`
+  today. So a metadata assertion over every endpoint fails immediately on existing reads, while a
+  mutation-only assertion cannot discharge the criterion as written. Neither outcome is acceptable
+  by accident. Decide explicitly in change 4 — inventory and remediate the read surface, or
+  allowlist it with a stated reason per family and record why role-level read access satisfies the
+  criterion — and give whichever path its own baseline. The mutation tranches below do not budget
+  for it.
 - The sweep records a test-host DI resolution failure as a violation rather than skipping it, so
   guarding a route can surface a fixture gap that must be closed with it.
 - `FundProfileScopeEndpointFilters` establishes that an unauthorized caller receives a uniform 403
@@ -219,11 +254,32 @@ above** — several of these are why a change is scoped the way it is.
 
 ### `W9-INGEST-009`
 
-- The 2026-07 adversarial review recorded that the live statement path ran a per-row self-check that
-  never consulted the internal book. **That premise is stale.** `StatementRunWorkflowService` now
-  takes an internal-population provider that defaults fail-closed to an empty book — every row
-  becomes a break — and both production compositions replace it with the retained ledger-side
-  provider. The row is criterion-level evidence work, not a rewiring.
+> **Correction (2026-08-11).** An earlier revision of this document claimed this row was
+> "criterion-level evidence work, not a rewiring," on the grounds that the 2026-07 adversarial
+> review's premise was stale. **That conclusion was wrong** and is retracted here so it is not
+> re-inherited. What was checked was the dependency-injection registration; what was not checked was
+> what the registered provider actually returns, or which engine the live matcher calls. Both are
+> recorded below. This row carries real wiring work.
+
+- The 2026-07 review's *wording* is outdated — `StatementRunWorkflowService` does take an
+  internal-population provider, it defaults fail-closed to an empty book, and both production
+  compositions replace it with `RetainedInternalReconciliationPopulationProvider`. Positions and
+  cash genuinely do come from the retained book.
+- **But the ledger-transaction population is empty by design.** That provider returns
+  `new InternalReconciliationPopulations(positions, cash, [])`, and its own remarks explain why:
+  the reconciliation context carries no ledger-book/period scope key, the journal is double-entry so
+  projecting one custodian-visible movement is a modeling choice, only custodian-reconcilable
+  postings should project at all, and fund-scoped journal reads are tenant-authorized. It "awaits an
+  authorized period-scoped ledger source and an agreed journal→transaction projection."
+- **And the live matcher is the one-to-one engine.** `StatementRunMatcher` invokes
+  `new StatementMatchingEngine()`, not the split-capable `ReconciliationMatchingEngine`.
+- Together these decide the row's shape. camt.053 and BAI2 are *transaction* statements, so with an
+  empty transaction population every bank row fails closed to a break, and one-to-many outcomes can
+  never reach live casework no matter what the standalone kernels do. Tests written against those
+  kernels would pass while the shipping path matched nothing. **Sourcing the ledger-transaction
+  population and moving the live path onto the split-capable engine are in scope for this row**, not
+  follow-on work — and the population decision is a domain modeling call that needs an owner before
+  change 11 starts.
 - Both connectors and the sided kernel family already exist under
   `src/Meridian.FinancialOperations/Reconciliation/`, with unit coverage under
   `tests/Meridian.Tests/Reconciliation/`.
