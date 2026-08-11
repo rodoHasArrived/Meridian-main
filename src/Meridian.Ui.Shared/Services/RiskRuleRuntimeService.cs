@@ -934,6 +934,17 @@ public sealed class RiskRuleRuntimeService
             Severity: escalateAt.HasValue ? "Escalate" : "Error");
     }
 
+    /// <summary>
+    /// Whether a rejection was the fat-finger rule refusing an order it could not price, rather
+    /// than measuring one past a band. Checked against the structured violation code first and the
+    /// rendered text only as a fallback, so the classification does not depend on message wording.
+    /// </summary>
+    private static bool IsUnmeasurableRefusal(ExecutionAuditEntry entry) =>
+        MatchesViolationMetadata(entry, FatFingerRule.UnmeasurableCode)
+        || (entry.Reason?.Contains(FatFingerRule.UnmeasurableCode, StringComparison.OrdinalIgnoreCase) ?? false)
+        || (entry.Message?.Contains("has no reference price", StringComparison.OrdinalIgnoreCase) ?? false)
+        || (entry.Reason?.Contains("has no reference price", StringComparison.OrdinalIgnoreCase) ?? false);
+
     private RiskRuleStatusDto BuildFatFingerStatus(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         DateTimeOffset asOf)
@@ -941,19 +952,20 @@ public sealed class RiskRuleRuntimeService
         var maxQuantity = MaxOrderQuantity;
         var maxDeviationPercent = MaxPriceDeviationPercent;
 
-        var matchedEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "fat-finger");
-
         // An unmeasurable refusal is not a breach: the rule refused an order it could not price
         // rather than measuring one past a band. Both rejections carry "fat-finger" text, so
         // without this split the dashboard would report a measured band violation for an hour
         // whenever a quote went missing - the exact claim the unmeasurable outcome exists to avoid.
-        var unmeasurableEntries = matchedEntries
-            .Where(entry => MatchesViolationMetadata(entry, FatFingerRule.UnmeasurableCode)
-                || (entry.Reason?.Contains(FatFingerRule.UnmeasurableCode, StringComparison.OrdinalIgnoreCase) ?? false)
-                || (entry.Message?.Contains("has no reference price", StringComparison.OrdinalIgnoreCase) ?? false)
-                || (entry.Reason?.Contains("has no reference price", StringComparison.OrdinalIgnoreCase) ?? false))
-            .ToList();
-        var violationEntries = matchedEntries.Except(unmeasurableEntries).ToList();
+        //
+        // The split runs over the FULL audit set, before any truncation. FindViolationEntries keeps
+        // only the five most recent matches, so classifying afterwards would let five fresh
+        // missing-quote refusals push a real breach out of the window entirely and drop the rule
+        // from Constrained back to Observe while the breach was still live.
+        var unmeasurable = auditEntries.Where(IsUnmeasurableRefusal).ToList();
+        var measured = auditEntries.Except(unmeasurable).ToList();
+
+        var violationEntries = FindViolationEntries(measured, actionHint: "OrderRejected", textHint: "fat-finger");
+        var unmeasurableEntries = FindViolationEntries(unmeasurable, actionHint: "OrderRejected", textHint: "fat-finger");
 
         var violations = DescribeViolations(violationEntries, "fat-finger");
         var configured = maxQuantity.HasValue || maxDeviationPercent.HasValue;
@@ -1297,6 +1309,19 @@ public sealed class RiskRuleRuntimeService
                 _maxOrderNotional = snapshot.MaxOrderNotional is > 0m ? snapshot.MaxOrderNotional : null;
                 _escalateOrderNotional = snapshot.EscalateOrderNotional is > 0m ? snapshot.EscalateOrderNotional : null;
                 _maxOrderQuantity = snapshot.MaxOrderQuantity is > 0m ? snapshot.MaxOrderQuantity : null;
+                // A deviation band of 100 or more can never reject a sell, so the update endpoint
+                // refuses it. A restored, hand-edited, or corrupted snapshot must not be able to
+                // start the host on a configuration the API would not accept: hydrating it would
+                // leave the sell side silently unprotected while the dashboard reported the rule
+                // configured. Reject rather than clamp - a value this far out means the file is not
+                // a configuration this service wrote, and the catch below fails closed on it.
+                if (snapshot.MaxPriceDeviationPercent is >= 100m)
+                {
+                    throw new InvalidOperationException(
+                        "The risk rule snapshot carries a fat-finger price-deviation band of 100 or more, which can never reject a sell. "
+                        + "Refusing to start with a silently one-sided price control.");
+                }
+
                 _maxPriceDeviationPercent = snapshot.MaxPriceDeviationPercent is > 0m ? snapshot.MaxPriceDeviationPercent : null;
             }
         }

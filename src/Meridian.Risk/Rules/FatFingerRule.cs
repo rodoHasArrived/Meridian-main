@@ -120,7 +120,11 @@ public sealed class FatFingerRule : IRiskRule
         // disagree about whether this order routes dollars.
         var routesDollars = BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null;
 
-        var quantityMagnitude = Math.Abs(request.Quantity);
+        // For a package the gateway routes each leg at Quantity x RatioQuantity, so the top-level
+        // count understates what actually reaches the venue: 100 packages with a mistyped ratio of
+        // 100 route 10,000 contracts on that leg while passing a 1,000 ceiling. Measure the largest
+        // effective leg instead, which reduces to the plain quantity for a single-symbol order.
+        var quantityMagnitude = ResolveEffectiveQuantity(request);
         if (!routesDollars && maxQuantity is > 0m && quantityMagnitude > maxQuantity.Value)
         {
             var quantityDecision = Interop.RiskInterop.EvaluateFatFinger(
@@ -201,6 +205,25 @@ public sealed class FatFingerRule : IRiskRule
     /// qualify, and never a package order — see the type remarks for the reasoning behind each
     /// exclusion.
     /// </summary>
+    /// <summary>
+    /// The largest quantity any single leg of this order actually routes. A package's legs each
+    /// route <c>Quantity × RatioQuantity</c>, so the top-level count alone understates the order —
+    /// and the gateway only checks that ratios are positive whole numbers, so a mistyped ratio is
+    /// exactly the kind of slip this rule exists to catch. Reduces to <see cref="OrderRequest.Quantity"/>
+    /// for a single-symbol order.
+    /// </summary>
+    private static decimal ResolveEffectiveQuantity(OrderRequest request)
+    {
+        var quantity = Math.Abs(request.Quantity);
+        if (request.Legs is not { Count: > 0 } legs)
+        {
+            return quantity;
+        }
+
+        var largestRatio = legs.Max(leg => Math.Abs(leg.RatioQuantity));
+        return largestRatio > 0m ? quantity * largestRatio : quantity;
+    }
+
     private static bool IsPriceLimbApplicable(OrderRequest request) =>
         request.Legs is null or { Count: 0 }
         && request.Type is OrderType.Limit;

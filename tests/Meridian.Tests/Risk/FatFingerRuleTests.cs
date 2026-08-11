@@ -227,6 +227,30 @@ public sealed class FatFingerRuleTests
     }
 
     [Fact]
+    public async Task Quantity_MultiLegOrder_MeasuresTheEffectiveLegQuantity()
+    {
+        var rule = Rule(maxQuantity: 1_000m);
+
+        // 100 packages at a mistyped ratio of 100 routes 10,000 contracts on that leg, even
+        // though the top-level count is only 100. The gateway checks only that ratios are
+        // positive whole numbers, so nothing else catches this.
+        var order = Order(quantity: 100m, limitPrice: 5m, side: OrderSide.Sell) with
+        {
+            Legs =
+            [
+                new OrderLeg { Symbol = "AAPL_C1", Side = OrderSide.Sell, RatioQuantity = 100m },
+                new OrderLeg { Symbol = "AAPL_C2", Side = OrderSide.Buy, RatioQuantity = 1m }
+            ]
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.QuantityCode);
+        result.ObservedValue.Should().Be(10_000m);
+    }
+
+    [Fact]
     public async Task Quantity_BrokerNotionalOrder_IsNotComparedWithTheShareCeiling()
     {
         var rule = Rule(maxQuantity: 1_000m);
