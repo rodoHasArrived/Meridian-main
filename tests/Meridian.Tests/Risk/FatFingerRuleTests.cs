@@ -251,6 +251,43 @@ public sealed class FatFingerRuleTests
     }
 
     [Fact]
+    public async Task Quantity_MultiLegProductThatWouldOverflow_SaturatesInsteadOfThrowing()
+    {
+        var rule = Rule(maxQuantity: 1_000m);
+
+        // Individually valid decimals whose product exceeds decimal.MaxValue. The gateway bounds
+        // neither, so this must report the structured quantity breach rather than blowing up into
+        // a generic evaluation failure.
+        var order = Order(quantity: 1e20m, limitPrice: 5m) with
+        {
+            Legs = [new OrderLeg { Symbol = "AAPL_C1", Side = OrderSide.Buy, RatioQuantity = 1e10m }]
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.QuantityCode);
+    }
+
+    [Fact]
+    public async Task Quantity_LimbDisabled_DoesNotEvaluateEffectiveQuantityForAnExcludedPackage()
+    {
+        // Only the price band is configured, and the price limb excludes packages. The quantity
+        // calculation must not run at all here - an arithmetic edge in it would otherwise refuse
+        // an order this rule does not gate on either limb.
+        var rule = Rule(maxQuantity: null, maxDeviationPercent: 10m);
+
+        var order = Order(quantity: 1e20m, limitPrice: 5m) with
+        {
+            Legs = [new OrderLeg { Symbol = "AAPL_C1", Side = OrderSide.Buy, RatioQuantity = 1e10m }]
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task Quantity_BrokerNotionalOrder_IsNotComparedWithTheShareCeiling()
     {
         var rule = Rule(maxQuantity: 1_000m);

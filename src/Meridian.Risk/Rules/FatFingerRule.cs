@@ -124,7 +124,13 @@ public sealed class FatFingerRule : IRiskRule
         // count understates what actually reaches the venue: 100 packages with a mistyped ratio of
         // 100 route 10,000 contracts on that leg while passing a 1,000 ceiling. Measure the largest
         // effective leg instead, which reduces to the plain quantity for a single-symbol order.
-        var quantityMagnitude = ResolveEffectiveQuantity(request);
+        // Only evaluated when the limb is actually active: the effective-quantity calculation is
+        // meaningless for a dollar-sized order and must not run for a package the price limb
+        // already excludes, or an arithmetic edge there would refuse an order this rule does not
+        // even gate.
+        var quantityMagnitude = !routesDollars && maxQuantity is > 0m
+            ? ResolveEffectiveQuantity(request)
+            : 0m;
         if (!routesDollars && maxQuantity is > 0m && quantityMagnitude > maxQuantity.Value)
         {
             var quantityDecision = Interop.RiskInterop.EvaluateFatFinger(
@@ -221,7 +227,20 @@ public sealed class FatFingerRule : IRiskRule
         }
 
         var largestRatio = legs.Max(leg => Math.Abs(leg.RatioQuantity));
-        return largestRatio > 0m ? quantity * largestRatio : quantity;
+        if (largestRatio <= 0m)
+        {
+            return quantity;
+        }
+
+        // Saturate rather than multiply blind. The gateway requires ratios to be positive whole
+        // numbers but sets no upper bound, so a product of two individually valid decimals can
+        // exceed decimal.MaxValue and throw — which the composite validator would turn into a
+        // generic evaluation failure instead of the structured quantity breach this is. Anything
+        // that would overflow is astronomically past any ceiling, so the cap reports the same
+        // verdict without the exception.
+        return quantity > decimal.MaxValue / largestRatio
+            ? decimal.MaxValue
+            : quantity * largestRatio;
     }
 
     private static bool IsPriceLimbApplicable(OrderRequest request) =>

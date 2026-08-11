@@ -964,8 +964,12 @@ public sealed class RiskRuleRuntimeService
         var unmeasurable = auditEntries.Where(IsUnmeasurableRefusal).ToList();
         var measured = auditEntries.Except(unmeasurable).ToList();
 
-        var violationEntries = FindViolationEntries(measured, actionHint: "OrderRejected", textHint: "fat-finger");
-        var unmeasurableEntries = FindViolationEntries(unmeasurable, actionHint: "OrderRejected", textHint: "fat-finger");
+        // Both actions: the rule gates amendments as well as submissions, and a refused amendment
+        // is audited as OrderModifyRejected. Matching only OrderRejected reported the rule healthy
+        // while it was actively refusing aggressive modifications.
+        string[] rejectionActions = ["OrderRejected", "OrderModifyRejected"];
+        var violationEntries = FindViolationEntries(measured, rejectionActions, textHint: "fat-finger");
+        var unmeasurableEntries = FindViolationEntries(unmeasurable, rejectionActions, textHint: "fat-finger");
 
         var violations = DescribeViolations(violationEntries, "fat-finger");
         var configured = maxQuantity.HasValue || maxDeviationPercent.HasValue;
@@ -1036,6 +1040,27 @@ public sealed class RiskRuleRuntimeService
     /// rule (and the operator readiness gate that reads it) indefinitely.
     /// </summary>
     private static readonly TimeSpan ViolationLivenessWindow = TimeSpan.FromHours(1);
+
+    /// <summary>
+    /// Overload for rules whose breaches can also refuse an <em>amendment</em>. A modification the
+    /// rule rejects is audited as <c>OrderModifyRejected</c>, not <c>OrderRejected</c>, so a
+    /// single-action query reports the rule healthy while it is actively refusing amendments.
+    /// </summary>
+    private static List<ExecutionAuditEntry> FindViolationEntries(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        IReadOnlyList<string> actionHints,
+        string textHint)
+    {
+        return auditEntries
+            .Where(entry =>
+                actionHints.Any(hint => string.Equals(entry.Action, hint, StringComparison.OrdinalIgnoreCase)) &&
+                ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 MatchesViolationMetadata(entry, textHint)))
+            .OrderByDescending(static entry => entry.OccurredAt)
+            .Take(5)
+            .ToList();
+    }
 
     private static List<ExecutionAuditEntry> FindViolationEntries(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
