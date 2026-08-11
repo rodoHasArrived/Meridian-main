@@ -212,15 +212,15 @@ def main() -> int:
     # Ids drawn into real-time routing. CollectorModeRunner calls CreateStreamingClient for every
     # provider named by a failover rule (`:122`) without consulting DataSourceConfig.Type, so a
     # backfill-only kind referenced there throws at startup just like a bad top-level DataSource.
-    realtime_ids = {
-        str(rule.get("PrimaryProviderId", "")).casefold()
-        for rule in rules
-        if isinstance(rule.get("PrimaryProviderId"), str)
-    }
+    realtime_ids: set[str] = set()
     for rule in rules:
-        for backup in rule.get("BackupProviderIds", []) or []:
-            if isinstance(backup, str):
-                realtime_ids.add(backup.casefold())
+        candidates = [rule.get("PrimaryProviderId")]
+        backups = rule.get("BackupProviderIds")
+        if isinstance(backups, list):
+            candidates += backups
+        for candidate in candidates:
+            if isinstance(candidate, str) and candidate.strip():
+                realtime_ids.add(candidate.casefold())
 
     named: list[tuple[str, object, bool]] = []
     if "DataSource" in document:
@@ -309,16 +309,48 @@ def main() -> int:
     # CollectorModeRunner resolves ids with StringComparison.OrdinalIgnoreCase over a
     # case-insensitive provider map, so the guard must not reject a casing the runtime accepts.
     configured_folded = {source_id.casefold() for source_id in configured_ids}
+    # An unexpected shape must be an error, never a skip. Three separate blind spots in this guard
+    # came from the same habit — a missing Type, a null credential value, and a null failover field
+    # each fell through a permissive `isinstance` check while the runtime failed on them. The
+    # runtime is unforgiving here: CollectorModeRunner calls `.Concat(rule.BackupProviderIds)` and
+    # `providerMap.ContainsKey(rule.PrimaryProviderId)`, both of which throw on null.
+    def require_provider_id(field: str, value: object, rule_index: int) -> str | None:
+        """Return a normalized id, or record why the value is unusable."""
+        if not isinstance(value, str):
+            errors.append(
+                f"DataSources.FailoverRules[{rule_index}].{field} = {value!r} is not a string. "
+                f"CollectorModeRunner dereferences this value directly and throws on null or a "
+                f"non-string, so an enabled failover rule would fail at startup."
+            )
+            return None
+        if not value.strip():
+            errors.append(
+                f"DataSources.FailoverRules[{rule_index}].{field} is empty; it cannot resolve to a "
+                f"configured source."
+            )
+            return None
+        return value
+
     for rule_index, rule in enumerate(rules):
-        referenced = [("PrimaryProviderId", rule.get("PrimaryProviderId"))]
-        referenced += [
-            (f"BackupProviderIds[{i}]", backup)
-            for i, backup in enumerate(rule.get("BackupProviderIds", []) or [])
+        referenced: list[tuple[str, object]] = [
+            ("PrimaryProviderId", rule.get("PrimaryProviderId"))
         ]
+        backups = rule.get("BackupProviderIds", [])
+        if backups is None or not isinstance(backups, list):
+            errors.append(
+                f"DataSources.FailoverRules[{rule_index}].BackupProviderIds = {backups!r} is not a "
+                f"list. CollectorModeRunner concatenates it directly and throws on null."
+            )
+            backups = []
+        referenced += [(f"BackupProviderIds[{i}]", backup) for i, backup in enumerate(backups)]
+
         for field, provider_id in referenced:
-            if isinstance(provider_id, str) and provider_id.casefold() not in configured_folded:
+            resolved = require_provider_id(field, provider_id, rule_index)
+            if resolved is None:
+                continue
+            if resolved.casefold() not in configured_folded:
                 errors.append(
-                    f"DataSources.FailoverRules[{rule_index}].{field} = {provider_id!r} does not "
+                    f"DataSources.FailoverRules[{rule_index}].{field} = {resolved!r} does not "
                     f"match any configured source id ({', '.join(sorted(configured_ids)) or 'none'}). "
                     f"CollectorModeRunner would fall back to the top-level DataSource under that "
                     f"identity."
