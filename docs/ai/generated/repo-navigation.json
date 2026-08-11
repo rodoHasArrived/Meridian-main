@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T15:39:41Z",
+  "generatedAt": "2026-08-11T15:59:53Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2227,10 +2227,10 @@
     {
       "path": "src/Meridian.Core/Config/ConfigTemplateGenerator.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-08-11T14:51:29+00:00",
-      "lastCommit": "d0a05dd2",
-      "lastSummary": "Close the third template placeholder and three overclaimed guarantees",
-      "touches": 7
+      "lastModified": "2026-08-11T15:40:27+00:00",
+      "lastCommit": "55159a89",
+      "lastSummary": "Advertise the Alpaca variables that actually win",
+      "touches": 8
     },
     {
       "path": "src/Meridian.Core/Config/ConfigEnvironmentOverride.cs",

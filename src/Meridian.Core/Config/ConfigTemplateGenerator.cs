@@ -334,7 +334,14 @@ public sealed class ConfigTemplateGenerator
             // ConfigEnvironmentOverride rather than through shell expansion that never ran.
             Symbols = new[]
             {
-                new { Symbol = "SPY", SubscribeTrades = true, SubscribeDepth = true }
+                // Depth is off because this template advertises providers that cannot serve it.
+                // Alpaca and Polygon report depth: false and return -1 from SubscribeMarketDepth,
+                // and SubscriptionOrchestrator calls _depthCollector.RegisterSubscription(symbol)
+                // *before* that call, then only stores the id when it is > 0 — the -1 return
+                // releases neither the registration nor the ownership lease the way the catch
+                // branch does. Requesting depth here would therefore leave an active-looking
+                // subscription that can never emit. An IB operator can turn it back on.
+                new { Symbol = "SPY", SubscribeTrades = true, SubscribeDepth = false }
             }
         };
 

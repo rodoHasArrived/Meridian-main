@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-11T15:39:41Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-11T15:59:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,7 +133,7 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Core/Config/ConfigTemplateGenerator.cs` | Host and Composition | `d0a05dd2` (2026-08-11T14:51:29+00:00) | 7 |
+| `src/Meridian.Core/Config/ConfigTemplateGenerator.cs` | Host and Composition | `55159a89` (2026-08-11T15:40:27+00:00) | 8 |
 | `src/Meridian.Core/Config/ConfigEnvironmentOverride.cs` | Host and Composition | `423de525` (2026-08-11T14:07:28+00:00) | 4 |
 | `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx` | Desktop and UI Workflows | `6daeb936` (2026-08-11T09:56:20+00:00) | 6 |
 | `src/Meridian.Mcp/Tools/ConventionTools.cs` | MCP Integration | `01652ac3` (2026-08-11T09:42:23+00:00) | 4 |

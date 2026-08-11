@@ -442,6 +442,13 @@ still `in_progress`.
   exists to remove, one layer up. Have orchestration **skip depth entirely when the client does not
   advertise `Level2Book`**, and ensure a failed subscription unregisters from the collector and is
   omitted from active-subscription counts.
+
+  **Cover the non-positive return, not only the throw.** `SubscriptionOrchestrator.cs:207-227`
+  calls `_depthCollector.RegisterSubscription(symbol)` before attempting the subscription, then
+  stores the id only `if (id > 0)`. The `catch` branch at least releases the ownership lease; a
+  plain `-1` return — which is what Alpaca and Polygon do, both reporting `depth: false` — falls
+  through both branches, leaving the collector registration *and* the lease in place. Fixing only
+  the exception path leaves the more common provider case untouched.
   **Verify:** exercise the composed non-vendor path, not the client method in isolation — subscribe
   a symbol whose `SubscribeDepth` is true (the shipped sample and the fallback symbol both default
   that way) and assert that no depth subscription is reported and the collector holds no
