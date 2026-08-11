@@ -1097,6 +1097,7 @@ Meridian-main
 │       │   ├── check-dashboard-type-barrel.py
 │       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
+│       │   ├── check-sample-config-datasources.py
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py

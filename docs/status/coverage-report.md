@@ -5,10 +5,10 @@
 
 ## Overall Coverage
 
-**2785 / 8779** items documented (**31.7%**) &mdash; Grade: **F**
+**2785 / 8766** items documented (**31.8%**) &mdash; Grade: **F**
 
 ```text
-[======--------------] 31.7%
+[======--------------] 31.8%
 ```
 
 ## Coverage by Category
@@ -17,7 +17,7 @@
 | ---------- | ----------- | ------- | ---------- | ------- |
 | Public Classes / Interfaces | 2688 | 8297 | 32.4% | F |
 | API Endpoints | 85 | 329 | 25.8% | F |
-| Configuration Options | 1 | 142 | 0.7% | F |
+| Configuration Options | 1 | 129 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
@@ -135,7 +135,7 @@
 | `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:546` |
 | ... and 194 more | |
 
-### Configuration Options (141 undocumented)
+### Configuration Options (128 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -189,13 +189,13 @@
 | `Backfill.ProviderPriority` | `config/appsettings.sample.json` |
 | `Backfill.EnableRateLimitRotation` | `config/appsettings.sample.json` |
 | `Backfill.RateLimitRotationThreshold` | `config/appsettings.sample.json` |
-| ... and 91 more | |
+| ... and 78 more | |
 
 ## Recommendations
 
 1. **Public Classes / Interfaces**: 5609 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 244 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
-3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+3. **Configuration Options**: 128 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
 

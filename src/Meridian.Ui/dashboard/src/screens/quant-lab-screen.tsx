@@ -58,14 +58,18 @@ const quantMetricColumns: DenseDataTableColumn<QuantMetricRowViewModel>[] = [
   }
 ];
 
-const QUANT_LAB_TABS = [
-  { id: "lab", label: "Script lab" },
-  { id: "formulas", label: "Formulas" }
-];
+// The Formulas tab is withheld while `/strategy/quant-lab?view=formulas` is registered in
+// UNWIRED_WORKSTATION_ROUTES. Filtering it only out of the command palette left the dead end fully
+// navigable from inside the screen, which is the more likely way an operator would find it. Restore
+// this entry in the same change that mounts the built strategy-formula-workbench component against
+// a real formula-catalog endpoint.
+const QUANT_LAB_TABS = [{ id: "lab", label: "Script lab" }];
 
 export function QuantLabScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const view = searchParams.get("view") === "formulas" ? "formulas" : "lab";
+  // A stale `?view=formulas` deep link or bookmark falls back to the script lab rather than
+  // rendering a permanent "not connected" card.
+  const view = "lab" as const;
 
   return (
     <ScreenLayout
@@ -81,21 +85,14 @@ export function QuantLabScreen() {
       <Tabs
         tabs={QUANT_LAB_TABS}
         value={view}
-        onValueChange={(nextView) => {
+        onValueChange={() => {
           const nextParams = new URLSearchParams(searchParams);
-          if (nextView === "lab") {
-            nextParams.delete("view");
-          } else {
-            nextParams.set("view", nextView);
-          }
+          nextParams.delete("view");
           setSearchParams(nextParams, { replace: true });
         }}
       >
         <TabPanel>
           {view === "lab" ? <ScriptLabPanel /> : null}
-        </TabPanel>
-        <TabPanel>
-          {view === "formulas" ? <FormulaWorkbenchPanel /> : null}
         </TabPanel>
       </Tabs>
     </ScreenLayout>
@@ -167,30 +164,6 @@ function ScriptLabPanel() {
         </div>
       </div>
     </div>
-  );
-}
-
-function FormulaWorkbenchPanel() {
-  return (
-    <Card className="panel-surface border-border/80">
-      <CardContent className="space-y-4">
-        <EmptyState
-          icon="docs"
-          title="Formula catalog is not connected"
-          detail="No strategy formula endpoint is available in this workstation build. Connect a governed catalog before authoring formulas here."
-        />
-        <div className="flex flex-wrap justify-center gap-2">
-          <Button asChild variant="outline">
-            <Link to="/settings/providers" aria-label="Review provider connections required by the formula workbench">
-              Review provider connections
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link to="/strategy">Open Strategy workspace</Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 

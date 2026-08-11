@@ -47,7 +47,7 @@ govern order:
 Six changes that are each a line or a deletion, carry no design risk, and remove active
 misinformation. Do these first regardless of sequencing; they cost under a day in total.
 
-- [ ] **AR8-Q1 — Populate `UNWIRED_WORKSTATION_ROUTES`.**
+- [x] **AR8-Q1 — Populate `UNWIRED_WORKSTATION_ROUTES`.** *(Done — see also AR8-44: the Quant Lab Formulas tab had to be withdrawn too, since the set only filters nav and the palette.)*
   **Evidence:** `src/Meridian.Ui/dashboard/src/lib/workspace.ts:141-149` declares the set with a
   doc comment naming Family Office and the Formula Workbench, then initializes it empty.
   **Change:** add `/portfolio/family-office` and `/strategy/quant-lab?view=formulas` (route key
@@ -57,14 +57,14 @@ misinformation. Do these first regardless of sequencing; they cost under a day i
   nav and palette results.
   **Effort:** S
 
-- [ ] **AR8-Q2 — Read the `error` field in the client error normalizer.**
+- [x] **AR8-Q2 — Read the `error` field in the client error normalizer.** *(Done, with regression tests for both body shapes.)*
   **Evidence:** `src/Meridian.Ui/dashboard/src/lib/api-errors.ts:55` reads only `detail`,
   `message`, `title`; 395 endpoints return `{ error: "..." }`.
   **Change:** append `readString(parsed.error)` to the fallback chain.
   **Verify:** unit test asserting a `{error}` body surfaces its text, not `Request failed (400)`.
   **Effort:** S · **Note:** partial relief for AR8-42; the full fix is the server-side rewrite.
 
-- [ ] **AR8-Q3 — Give the devcontainer a durable money path.**
+- [x] **AR8-Q3 — Give the devcontainer a durable money path.** *(Done — `MERIDIAN_DATABASE_URL` added; the two explicit per-domain strings still win for their domains.)*
   **Evidence:** `.devcontainer/docker-compose.yml:27-28` exports only security-master and
   direct-lending connection strings, so the ledger runs `PERSISTENCE: PARTIAL`.
   **Change:** add `MERIDIAN_DATABASE_URL: postgres://dev:devpass@db:5432/meridian`;
@@ -76,7 +76,7 @@ misinformation. Do these first regardless of sequencing; they cost under a day i
   disabled with reasons; wiring is blocked on a missing document mapper — see AR8-43.)*
 - [ ] **AR8-Q5 — Correct the misleading dashboard metrics.** See AR8-24. *(Not a deletion: the
   dashboards are live automation output — see the corrected item.)*
-- [ ] **AR8-Q6 — Delete the StockSharp sample-config block.** See AR8-05.
+- [x] **AR8-Q6 — Delete the StockSharp sample-config block.** See AR8-05. *(Done, with a new CI gate.)*
 
 ---
 
@@ -145,7 +145,7 @@ build in seven attempts, so today's supported user count is structurally zero.
 - **AR8-04 — Devcontainer durability.** Alias of AR8-Q3, not a separate todo; tick the checkbox
   there so the work is counted once.
 
-- [ ] **AR8-05 — Remove the phantom provider and plaintext secrets from the sample config.**
+- [x] **AR8-05 — Remove the phantom provider and plaintext secrets from the sample config.** *(Done 2026-08-11.)*
   **Evidence:** `config/appsettings.sample.json:88,585-619` lists `"StockSharp"` (absent from
   `src/Meridian.Core/Config/DataSourceKind.cs`, and the converter throws on unknown values at
   `DataSourceKindConverter.cs:27-28`) and ships `Rithmic.Password` / `CQG.Password` fields,
@@ -167,7 +167,7 @@ build in seven attempts, so today's supported user count is structurally zero.
   action in Settings.
   **Verify:** `tests/Meridian.Setup.Tests` (once running per AR8-34) covers backup → destructive
   change → restore → integrity check.
-  **Effort:** L · **Depends on:** AR8-34 for real coverage · **Related:** `PRD-015`
+  **Effort:** L · **Depends on:** AR8-38 (Windows job) so `Meridian.Setup.Tests` actually runs · **Related:** `PRD-015`
 
 - [ ] **AR8-07 — Enforce private permissions on the credential key.**
   **Evidence:** `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:639-724`
@@ -533,7 +533,7 @@ still `in_progress`.
   **Change:** add `PostgresReconciliationBreakQueueRepository` mirroring `PostgresOperationsContinuityStore`,
   with a migration. This is also the prerequisite for AR8-15's bulk actions at real volume.
   **Verify:** the Docker-gated suite (running per AR8-31) covers 500-break bulk transitions.
-  **Effort:** M · **Depends on:** AR8-31 for coverage
+  **Effort:** M · **Depends on:** AR8-37 (PostgreSQL in the PR lane) so the Docker-gated suite is not skipped
 
 - [ ] **AR8-30 — Partition rate limits by user.**
   **Evidence:** `src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:333` partitions by
@@ -733,7 +733,7 @@ still `in_progress`.
   **Verify:** the gate's baseline drops to the triaged number and cannot grow.
   **Effort:** L · **Depends on:** AR8-41
 
-- [ ] **AR8-43 — Wire or disable the Strategy Designer's primary actions.**
+- [x] **AR8-43 — Wire or disable the Strategy Designer's primary actions.** *(Done: both disabled with reasons. Wiring stays blocked — the canvas holds a `StrategyBuilderDocument`, the API takes a `StrategyDesignDocument`, and no mapper exists; a run additionally needs six governed evidence arrays the screen cannot collect. The ESLint rule is still outstanding.)*
   **Evidence:** `src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx:112-115` — "Save
   draft" has no `onClick`, no `asChild`, no submit; `:116-125` — "Run backtest proof" wires
   `disabled`/`disabledReason` but no handler, so it is *enabled* when validation passes and clicking
@@ -746,7 +746,7 @@ still `in_progress`.
   **Verify:** the lint rule fails on a seeded handler-less button; a test asserts the save round trip.
   **Effort:** S
 
-- [ ] **AR8-44 — Remove the navigable dead ends.** Covered by AR8-Q1 for the routing guard; also
+- [~] **AR8-44 — Remove the navigable dead ends.** *(Partial: the palette entry is filtered by AR8-Q1 and the Quant Lab Formulas tab is withdrawn, so neither dead end is reachable. Still open: wire `entityStructure` into `FamilyOfficeScreen` or mount the built formula workbench.)* Covered by AR8-Q1 for the routing guard; also
   remove the command-palette entry that advertises the unmounted Formula Workbench
   (`command-palette.view-model.ts:254-258`) or mount the existing 319-line
   `components/meridian/strategy-formula-workbench.tsx`, and either wire `entityStructure` into

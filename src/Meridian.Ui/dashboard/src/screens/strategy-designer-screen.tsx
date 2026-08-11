@@ -135,10 +135,16 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
             variant="secondary"
             aria-label={vm.backtest.runCommand.ariaLabel}
             disabled
-            disabledReason={
-              vm.backtest.runCommand.disabledReason ??
-              "Running a backtest proof needs governed evidence references this screen cannot collect yet."
-            }
+            // The evidence blocker is unconditional, so it must lead. Coalescing to the validation
+            // summary would tell an operator that fixing validation enables the run, and they would
+            // only meet the second blocker afterwards. Validation detail is appended, not
+            // substituted.
+            disabledReason={[
+              "Running a backtest proof needs governed evidence references (operator acceptance, retained evidence, accounting, approvals, paper validation, governed reports) that this screen cannot collect yet.",
+              vm.backtest.runCommand.disabledReason
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
             <PlayCircle className="h-4 w-4" aria-hidden="true" />
             <span className="ml-1.5">{vm.backtest.runCommand.label}</span>
