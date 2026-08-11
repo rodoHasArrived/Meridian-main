@@ -135,6 +135,11 @@ above** — several of these are why a change is scoped the way it is.
   kill-switch state that names the orders still working, and asserting the book rather than the
   call. It is small, it belongs with change 3 (the other criterion-one/three safety work), and
   without it the row can reach acceptance while the kill switch silently half-fires.
+  **`W9-SAFETY-007` still reads as though criterion one were closed** — it says the coupling gap is
+  closed, presents completed and failed sweep outcomes as proven, and lists only the rule catalogue
+  and the UI sweep as remaining. Change 1 writes this correction into the row, because a
+  registry-first implementer following live truth would otherwise advance it without ever fixing or
+  testing the incomplete cancellation.
 - `src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs` is the only file in
   `src/Meridian.Wpf/` that mentions cancel-all or kill-switch. Its Trading command bar publishes
   `Pause`, `Stop`, and `Flatten` as primary commands and `CancelAll` and `AcknowledgeRisk` as
@@ -168,6 +173,17 @@ above** — several of these are why a change is scoped the way it is.
 - `OrderNotionalRule` is the pattern: threshold accessors as `Func<decimal?>`, escalation banding,
   and an unmeasurable order rejected *as unmeasurable* rather than as a breach so a pricing gap
   cannot trip the circuit breaker. New rules should preserve that distinction.
+- **But a quantity ceiling cannot follow that pattern blindly, because `Quantity` is not always a
+  unit count.** Alpaca implements `INotionalOrderSizingGateway`, and the OMS replaces the routed
+  quantity with a metadata dollar amount for those orders — so comparing `Quantity` against a
+  share-or-contract ceiling either rejects a valid $5,000 order against a 1,000-share limit, or
+  inspects a placeholder the broker never routes. There are **two** forms: an explicit dollar amount
+  in metadata, and a boolean alias meaning "the quantity field is dollars", which the gateway
+  accepts in more spellings than `bool.TryParse` does — recognizing fewer of them than the gateway
+  is a silent bypass, since `notional=yes` on a 100,000-quantity order in a $0.01 symbol routes
+  $100,000 while a unit rail measures 100,000 shares. The rule must resolve both through the same
+  seam the gateway reads and skip the ceiling for dollar-sized orders, whose economic size is gated
+  by `OrderNotionalRule` instead, with coverage for each form.
 - **Sizing and price controls use different reference seams — do not reuse the wrong one.**
   `TryGetExecutablePrice` is deliberately conservative: `AggregatePortfolioExposureProvider` returns
   the larger of mark and touch so a sell never under-measures the short it creates, which on a normal
@@ -486,6 +502,14 @@ above** — several of these are why a change is scoped the way it is.
   artifact that cannot distinguish one grouping from another, however correct the matching is.
   Change 11 must carry group-aware match records with evidence membership through the result type,
   the mapper, and the persisted artifact, or its own acceptance evidence is unobtainable.
+- **Widening that artifact is a durability change, not just a shape change.**
+  `LoadVerifiedMatchArtifactAsync` deserializes a retained artifact, reserializes it with the
+  *current* type, and compares that hash against the stored recovery checkpoint. Adding a field —
+  even one defaulting to null — changes the serialized bytes, so every pre-upgrade matched run would
+  hash differently and be reported as corrupted on the first retry or re-import after deploying
+  change 11. The fix is a schema-versioned reader or a deterministic migration that preserves or
+  upgrades the legacy hash, with an upgrade/recovery test that starts from an artifact written by
+  the *current* schema rather than one written by the new code.
 - **The existing one-to-one path is not deterministic either, so split search alone cannot satisfy
   the criterion.** `MatchStage` takes the first admissible internal item it encounters and
   `MatchBestCandidate` keeps the first candidate at an equal score, so permuting an otherwise
