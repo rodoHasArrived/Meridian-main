@@ -168,7 +168,7 @@ public sealed class FatFingerRuleTests
         result.IsApproved.Should().BeTrue();
     }
 
-    // --- stop prices are never measured ---
+    // --- order types the price limb must not touch ---
 
     [Fact]
     public async Task Price_StopPriceIsNeverMeasured_SoStopLossesSurvive()
@@ -184,16 +184,52 @@ public sealed class FatFingerRuleTests
     }
 
     [Fact]
-    public async Task Price_StopLimitStillMeasuresItsLimitPrice()
+    public async Task Price_StopLimitIsExcluded_BecauseItsLimitIsPricedOffTheTrigger()
+    {
+        var rule = Rule(maxDeviationPercent: 5m);
+
+        // Market at 100: a sell stop at 90 with an 89 limit is an ordinary protective order.
+        // The 89 only becomes relevant once the market reaches 90, so measuring it against
+        // today's 100 would reject exactly the orders the stop exclusion exists to protect.
+        var result = await rule.EvaluateAsync(
+            Order(limitPrice: 89m, stopPrice: 90m, side: OrderSide.Sell, type: OrderType.StopLimit));
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Price_MarketOrderCarryingASimulatedPrice_IsNotMeasured()
     {
         var rule = Rule(maxDeviationPercent: 10m);
 
-        // The trigger is legitimately away from the market; the limit it fires at is not.
+        // The paper gateway lets a caller pass a simulated market observation through
+        // LimitPrice on a Market order. That is not an operator's typed limit, so comparing
+        // it against the live book would reject a paper order for a price nobody entered.
         var result = await rule.EvaluateAsync(
-            Order(limitPrice: 1_000m, stopPrice: 105m, side: OrderSide.Buy, type: OrderType.StopLimit));
+            Order(limitPrice: 1_000m, type: OrderType.Market));
 
-        result.IsApproved.Should().BeFalse();
-        result.Code.Should().Be(FatFingerRule.PriceDeviationCode);
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Price_MultiLegPackage_IsNotMeasuredAgainstTheTopLevelSymbol()
+    {
+        var rule = Rule(maxDeviationPercent: 10m);
+
+        // A $1 net credit on a spread is not comparable to a $100 quote for the underlying;
+        // measuring it would reject every credit spread as ~99% through the market.
+        var order = Order(limitPrice: 1m, side: OrderSide.Sell, type: OrderType.Limit) with
+        {
+            Legs =
+            [
+                new OrderLeg { Symbol = "AAPL_C1", Side = OrderSide.Sell, RatioQuantity = 1m },
+                new OrderLeg { Symbol = "AAPL_C2", Side = OrderSide.Buy, RatioQuantity = 1m }
+            ]
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeTrue();
     }
 
     // --- unmeasurable ---
@@ -221,6 +257,58 @@ public sealed class FatFingerRuleTests
         var result = await rule.EvaluateAsync(Order(quantity: 10m, limitPrice: 1_000m));
 
         result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DefiniteQuantityBreach_IsReportedAsSuch_EvenWithNoReferencePrice()
+    {
+        // Both limbs configured, quote missing. The quantity breach is definitive and needs no
+        // market data, so it must not be downgraded to a pricing-data gap — that would lose the
+        // stable code and the observed-vs-limit evidence for a mistake that is not in doubt.
+        var rule = Rule(maxQuantity: 1_000m, maxDeviationPercent: 10m, referencePrice: null);
+
+        var result = await rule.EvaluateAsync(Order(quantity: 100_000m, limitPrice: 1_000m));
+
+        result.IsApproved.Should().BeFalse();
+        result.IsUnmeasurable.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.QuantityCode);
+        result.ObservedValue.Should().Be(100_000m);
+        result.LimitValue.Should().Be(1_000m);
+    }
+
+    [Fact]
+    public async Task SellLimit_IsMeasuredAgainstTheBid_NotTheValuationMidpoint()
+    {
+        // Book 90/110, mid 100. A sell at 85 is 5.56% below the executable bid and must pass a
+        // 10% band. Measured against the midpoint it would read 15% and be rejected, which is
+        // why the rule takes the touch rather than the conservative valuation price.
+        var rule = new FatFingerRule(
+            new TwoSidedBookProvider(bid: 90m, ask: 110m),
+            () => null,
+            () => 10m,
+            NullLogger<FatFingerRule>.Instance);
+
+        var result = await rule.EvaluateAsync(Order(limitPrice: 85m, side: OrderSide.Sell));
+
+        result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task BuyLimit_IsMeasuredAgainstTheAsk()
+    {
+        var rule = new FatFingerRule(
+            new TwoSidedBookProvider(bid: 90m, ask: 110m),
+            () => null,
+            () => 10m,
+            NullLogger<FatFingerRule>.Instance);
+
+        // 115 is 4.5% through the 110 ask - inside the band - though it is 15% through the bid.
+        var inside = await rule.EvaluateAsync(Order(limitPrice: 115m, side: OrderSide.Buy));
+        inside.IsApproved.Should().BeTrue();
+
+        var outside = await rule.EvaluateAsync(Order(limitPrice: 200m, side: OrderSide.Buy));
+        outside.IsApproved.Should().BeFalse();
+        outside.Code.Should().Be(FatFingerRule.PriceDeviationCode);
     }
 
     [Fact]
@@ -252,5 +340,23 @@ public sealed class FatFingerRuleTests
         public PortfolioExposureSnapshot GetSnapshot() => PortfolioExposureSnapshot.Empty;
 
         public decimal? TryGetReferencePrice(string symbol) => referencePrice;
+    }
+
+    /// <summary>
+    /// A real two-sided book, so the sell side can be measured against the bid rather than the
+    /// midpoint. Mirrors the production provider: the valuation price takes the larger of mark
+    /// and touch, while the touch price is the raw crossing side.
+    /// </summary>
+    private sealed class TwoSidedBookProvider(decimal bid, decimal ask) : IPortfolioExposureProvider
+    {
+        public PortfolioExposureSnapshot GetSnapshot() => PortfolioExposureSnapshot.Empty;
+
+        public decimal? TryGetReferencePrice(string symbol) => (bid + ask) / 2m;
+
+        public decimal? TryGetExecutablePrice(string symbol, OrderSide side) =>
+            Math.Max((bid + ask) / 2m, side is OrderSide.Buy ? ask : bid);
+
+        public decimal? TryGetTouchPrice(string symbol, OrderSide side) =>
+            side is OrderSide.Buy ? ask : bid;
     }
 }

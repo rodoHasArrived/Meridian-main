@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -85,6 +87,60 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         return executable > 0m ? executable : null;
     }
 
+    /// <inheritdoc />
+    public decimal? TryGetTouchPrice(string symbol, OrderSide side)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        // The raw crossing price, with none of ResolveMark's max-with-mid conservatism: that
+        // rule exists so a sell never under-measures the short it creates, but it puts a sell
+        // reference at the midpoint, which is not a price any sell can trade at.
+        if (TryGetFreshQuote(symbol, out var bbo))
+        {
+            var touch = side switch
+            {
+                OrderSide.Buy when bbo.AskPrice > 0m => bbo.AskPrice,
+                OrderSide.Sell when bbo.BidPrice > 0m => bbo.BidPrice,
+                _ => (decimal?)null
+            };
+
+            if (touch is { } crossed)
+            {
+                return crossed;
+            }
+        }
+
+        // One-sided or absent book: fall back to the valuation price rather than reporting no
+        // reference at all, since a missing reference makes a priced order unmeasurable.
+        return TryGetExecutablePrice(symbol, side);
+    }
+
+    /// <summary>
+    /// The symbol's best bid/offer, but only while the feed that produced it is still current.
+    /// Shared by every price accessor so "current" has one definition: a timestamp far in the
+    /// future is as untrustworthy as a stale one, since a bad clock or a malformed feed record
+    /// must not hold a quote live indefinitely.
+    /// </summary>
+    private bool TryGetFreshQuote(string symbol, [NotNullWhen(true)] out BboQuotePayload? quote)
+    {
+        var asOf = _clock();
+        if (_quotes is not null &&
+            _quotes.TryGet(symbol, out var bbo) &&
+            bbo is not null &&
+            bbo.Timestamp >= asOf - _markMaxAge &&
+            bbo.Timestamp <= asOf + _markMaxAge)
+        {
+            quote = bbo;
+            return true;
+        }
+
+        quote = null;
+        return false;
+    }
+
     private decimal? ResolveMark(string symbol, OrderSide? side)
     {
         if (string.IsNullOrWhiteSpace(symbol))
@@ -98,11 +154,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         // a malformed feed record must not hold a mark live indefinitely.
         var latest = asOf + _markMaxAge;
 
-        if (_quotes is not null &&
-            _quotes.TryGet(symbol, out var bbo) &&
-            bbo is not null &&
-            bbo.Timestamp >= earliest &&
-            bbo.Timestamp <= latest)
+        if (TryGetFreshQuote(symbol, out var bbo))
         {
             // Valuing an ORDER never goes below the mark, and rises to the touch it will
             // cross. A buy pays the ask, so on a bid $1 / ask $100 book a market buy is

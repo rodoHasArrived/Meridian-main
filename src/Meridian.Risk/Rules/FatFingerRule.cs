@@ -1,4 +1,5 @@
 using Meridian.Execution;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -15,15 +16,28 @@ namespace Meridian.Risk.Rules;
 /// band would reject the entire resting book.
 /// </para>
 /// <para>
-/// Only <see cref="OrderRequest.LimitPrice"/> is measured. <see cref="OrderRequest.StopPrice"/>
-/// is deliberately never passed: a stop sits away from the market by design, so measuring it
-/// would reject every stop-loss. A stop-limit is still measured on its limit price, because an
-/// aggressive limit is a fat finger whether or not a trigger precedes it.
+/// The price limb applies only to <b>immediately marketable limit orders</b> —
+/// <see cref="OrderType.Limit"/>, <see cref="OrderType.LimitOnOpen"/>, and
+/// <see cref="OrderType.LimitOnClose"/> — because those are the only types whose limit price is
+/// meaningful against the current market. Everything else is excluded for a specific reason:
 /// </para>
+/// <list type="bullet">
+///   <item><see cref="OrderRequest.StopPrice"/> is never measured at all: a stop sits away from
+///     the market by design, so measuring it would reject every stop-loss.</item>
+///   <item><see cref="OrderType.StopLimit"/> is excluded too. Its limit is priced relative to the
+///     trigger, not to today's market — a sell stop at $90 with an $89 limit is an ordinary
+///     protective order, and measuring that $89 against a $100 market would reject it.</item>
+///   <item><see cref="OrderType.Market"/> is excluded even when it carries a
+///     <see cref="OrderRequest.LimitPrice"/>. The paper gateway lets a caller supply one as its
+///     simulated market observation, so on a market order that value is not an operator's typed
+///     limit and must not be compared against the live book.</item>
+///   <item>A multi-leg order is excluded: its limit is the net debit or credit for the
+///     <i>package</i>, which is not comparable to a quote for the top-level symbol. A $1 credit
+///     spread on a $200 underlying would otherwise look 99.5% through the market.</item>
+/// </list>
 /// <para>
-/// A market order carries no typed price, so the price limb does not apply to it — there is
-/// nothing to mistype. Its size is still gated by the quantity limb, and its economic size by
-/// <see cref="OrderNotionalRule"/>.
+/// Every excluded order still passes through the quantity limb, and its economic size is still
+/// gated by <see cref="OrderNotionalRule"/>.
 /// </para>
 /// <para>
 /// With the deviation band configured, a priced order whose symbol has no reference price is
@@ -86,20 +100,52 @@ public sealed class FatFingerRule : IRiskRule
             return Task.FromResult(RiskValidationResult.Approved());
         }
 
-        // Only the operator-entered limit price. See the type remarks: a stop price is away
-        // from the market by design and must never reach the deviation band.
-        var orderPrice = request.LimitPrice;
+        // The quantity limb needs no market data, so it is settled first and on its own. An
+        // oversized order is a definitive breach; reporting it as a pricing-data gap because its
+        // quote happened to be missing would lose the stable code and the observed-vs-limit
+        // evidence for a mistake that is not in doubt.
+        var quantityMagnitude = Math.Abs(request.Quantity);
+        if (maxQuantity is > 0m && quantityMagnitude > maxQuantity.Value)
+        {
+            var quantityDecision = Interop.RiskInterop.EvaluateFatFinger(
+                Interop.RiskInterop.CreateFatFingerContext(
+                    request,
+                    referencePrice: default(decimal?),
+                    orderPrice: default(decimal?),
+                    maxOrderQuantity: maxQuantity,
+                    maxPriceDeviationPercent: default(decimal?)));
 
-        // An order pays the touch, not the midpoint, so the reference is the side of the book
-        // this order would actually cross.
-        var referencePrice = _exposureProvider.TryGetExecutablePrice(request.Symbol, request.Side);
+            _logger.LogWarning(
+                "Fat-finger rule rejected an order on {Symbol}; the quantity limb breached its configured ceiling",
+                LogSanitizer.Sanitize(request.Symbol));
 
-        var deviationBandActive = maxDeviationPercent is > 0m;
-        if (deviationBandActive && orderPrice is > 0m && referencePrice is null or <= 0m)
+            return Task.FromResult(RiskValidationResult.Rejected(
+                quantityDecision.Reasons.FirstOrDefault() ?? "Fat-finger quantity ceiling breached.") with
+            {
+                Code = QuantityCode,
+                ObservedValue = quantityMagnitude,
+                LimitValue = maxQuantity
+            });
+        }
+
+        // Only an operator-entered limit on an immediately marketable order type. See the type
+        // remarks for why market, stop, stop-limit, and multi-leg orders are all excluded.
+        var orderPrice = IsPriceLimbApplicable(request) ? request.LimitPrice : null;
+        if (maxDeviationPercent is not > 0m || orderPrice is not > 0m)
+        {
+            return Task.FromResult(RiskValidationResult.Approved());
+        }
+
+        // A price control compares against what the order can actually trade at, so this takes
+        // the touch rather than the deliberately conservative valuation price: measuring a sell
+        // against the midpoint would make an ordinary marketable sell at the bid look like it is
+        // priced through the market by half the spread.
+        var referencePrice = _exposureProvider.TryGetTouchPrice(request.Symbol, request.Side);
+        if (referencePrice is null or <= 0m)
         {
             _logger.LogWarning(
                 "Fat-finger rule rejected a priced order it cannot measure: no reference price for {Symbol}",
-                request.Symbol);
+                LogSanitizer.Sanitize(request.Symbol));
             return Task.FromResult(RiskValidationResult.Unmeasurable(
                 $"Fat-finger band: {request.Symbol} has no reference price to measure the order price against.") with
             {
@@ -107,41 +153,41 @@ public sealed class FatFingerRule : IRiskRule
             });
         }
 
-        var context = Interop.RiskInterop.CreateFatFingerContext(
-            request,
-            referencePrice: referencePrice ?? default(decimal?),
-            orderPrice: orderPrice ?? default(decimal?),
-            maxOrderQuantity: maxQuantity,
-            maxPriceDeviationPercent: maxDeviationPercent);
-        var decision = Interop.RiskInterop.EvaluateFatFinger(context);
+        var decision = Interop.RiskInterop.EvaluateFatFinger(
+            Interop.RiskInterop.CreateFatFingerContext(
+                request,
+                referencePrice: referencePrice,
+                orderPrice: orderPrice,
+                maxOrderQuantity: default(decimal?),
+                maxPriceDeviationPercent: maxDeviationPercent));
 
         if (decision.Approved)
         {
             return Task.FromResult(RiskValidationResult.Approved());
         }
 
-        var reason = decision.Reasons.FirstOrDefault() ?? "Fat-finger check failed.";
-
-        // Attribution only. The F# policy has already decided admission; this picks which limb
-        // to report and what numbers to carry, so a mislabel could never change what the order
-        // does. Quantity is tested first because the policy tests it first.
-        var quantityMagnitude = Math.Abs(request.Quantity);
-        var isQuantityBreach = maxQuantity is > 0m && quantityMagnitude > maxQuantity.Value;
-
         _logger.LogWarning(
-            "Fat-finger rule rejected an order on {Symbol}; the {Limb} limb breached its configured band",
-            request.Symbol,
-            isQuantityBreach ? "quantity" : "price-deviation");
+            "Fat-finger rule rejected an order on {Symbol}; the price-deviation limb breached its configured band",
+            LogSanitizer.Sanitize(request.Symbol));
 
-        return Task.FromResult(RiskValidationResult.Rejected(reason) with
+        return Task.FromResult(RiskValidationResult.Rejected(
+            decision.Reasons.FirstOrDefault() ?? "Fat-finger price band breached.") with
         {
-            Code = isQuantityBreach ? QuantityCode : PriceDeviationCode,
-            ObservedValue = isQuantityBreach
-                ? quantityMagnitude
-                : ResolveAggressiveDeviationPercent(request.Side, orderPrice, referencePrice),
-            LimitValue = isQuantityBreach ? maxQuantity : maxDeviationPercent
+            Code = PriceDeviationCode,
+            ObservedValue = ResolveAggressiveDeviationPercent(request.Side, orderPrice, referencePrice),
+            LimitValue = maxDeviationPercent
         });
     }
+
+    /// <summary>
+    /// Whether this order's <see cref="OrderRequest.LimitPrice"/> is an operator-entered limit
+    /// that is meaningful against the current market. Only immediately marketable limit types
+    /// qualify, and never a package order — see the type remarks for the reasoning behind each
+    /// exclusion.
+    /// </summary>
+    private static bool IsPriceLimbApplicable(OrderRequest request) =>
+        request.Legs is null or { Count: 0 }
+        && request.Type is OrderType.Limit or OrderType.LimitOnOpen or OrderType.LimitOnClose;
 
     /// <summary>
     /// Signed deviation of the order's price from the reference, oriented so that a positive

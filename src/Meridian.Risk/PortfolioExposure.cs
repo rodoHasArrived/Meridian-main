@@ -107,12 +107,34 @@ public interface IPortfolioExposureProvider
     decimal? TryGetReferencePrice(string symbol) => null;
 
     /// <summary>
-    /// Reference price for valuing an order about to route on <paramref name="side"/>. A
+    /// Reference price for <b>valuing</b> an order about to route on <paramref name="side"/>. A
     /// midpoint is the right mark for a position already held, but it is not what an
     /// order pays: with a bid of $1 and an ask of $100, a market buy valued at the $50.50
     /// mid measures roughly half of what it will actually route. Implementations that can
     /// see the touch return the executable side of the book; the default falls back to the
     /// symbol mark.
+    /// <para>
+    /// <b>Deliberately conservative, and therefore not a touch price.</b> An implementation may
+    /// return the larger of mark and touch so a sell never under-measures the short it creates —
+    /// which on a normal book means it returns the <i>midpoint</i> for a sell, not the bid. That
+    /// is correct for notional, exposure, and concentration ceilings, and wrong for any control
+    /// that compares an operator's price against the market. Those use
+    /// <see cref="TryGetTouchPrice"/>.
+    /// </para>
     /// </summary>
     decimal? TryGetExecutablePrice(string symbol, OrderSide side) => TryGetReferencePrice(symbol);
+
+    /// <summary>
+    /// The price this order would actually cross at — the ask for a buy, the bid for a sell —
+    /// with no conservatism applied in either direction.
+    /// <para>
+    /// Separate from <see cref="TryGetExecutablePrice"/> because the two want opposite things. A
+    /// sizing control must never under-measure, so it takes the larger of mark and touch. A
+    /// <i>price</i> control must compare against what the order can actually trade at: measuring a
+    /// sell limit against the midpoint makes an ordinary marketable sell at the bid look like it
+    /// is priced through the market by half the spread, which on a wide book rejects a perfectly
+    /// normal order. Implementations without a two-sided book fall back to the executable price.
+    /// </para>
+    /// </summary>
+    decimal? TryGetTouchPrice(string symbol, OrderSide side) => TryGetExecutablePrice(symbol, side);
 }
