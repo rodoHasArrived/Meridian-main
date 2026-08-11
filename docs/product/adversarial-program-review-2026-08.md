@@ -63,16 +63,26 @@ and its Actions history shows seven manual `workflow_dispatch` attempts between 
   `Production`, so auth resolves to `Required`
   (`src/Meridian.Identity/Application/AuthenticationMode.cs:42-44`) and every request 503s with an
   instruction to set `MDC_USERS` with `passwordHash` values
-  (`src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:198`) — but no CLI verb, endpoint,
-  or documented recipe produces that PBKDF2 hash; the only callers of
-  `PasswordHashing.HashPassword` are internal (`src/Meridian.Identity/Infrastructure/UserAccountStore.cs:703`).
-  *Improvement:* add `--create-user` / `--hash-password` verbs to `ConfigCommands` and have
-  `--quickstart` offer to create the first local admin.
+  (`src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:198`) — but on this direct
+  source-launch path no CLI verb or documented recipe produces that PBKDF2 hash, and `--quickstart`
+  never touches auth (`src/Meridian.Application/Services/ConfigurationWizard.cs:133-217`). The
+  *installed* product does have a supported bootstrap: the supervisor injects `MDC_BOOTSTRAP_TOKEN`
+  (`src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs:288`) and opens a setup page that
+  posts to `/api/auth/bootstrap`, which hashes through the account store
+  (`src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs`,
+  `src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs:10`). So the gap is scoped but
+  real: the path the README puts in front of every developer and evaluator has no first-account
+  route, while the one that does exist ships only with the installer that has never built (above).
+  *Improvement:* add `--create-user` / `--hash-password` verbs to `ConfigCommands`, or let
+  `--quickstart` mint a bootstrap token for source launches.
 - **The one command that works, works by relaxing the safety posture.** `--seed-demo` reaches a
   populated screen by setting `MERIDIAN_USE_INMEMORY_GOVERNANCE=true`,
   `DOTNET_ENVIRONMENT=Development`, and `MDC_AUTH_MODE=optional`
-  (`src/Meridian/DemoWorkspaceCli.cs:106-131`) — a configuration ADR-019 marks unsupported.
-  Evaluators form their "it works" impression in a posture the project forbids.
+  (`src/Meridian/DemoWorkspaceCli.cs:106-131`). ADR-019 explicitly leaves Development and test
+  composition unchanged, so this is a legitimate evaluation posture rather than a forbidden one —
+  but it is non-production and cannot support any certification claim, and nothing in the demo
+  output says so. Evaluators form their "it works" impression under relaxed auth and non-durable
+  governance, then meet the first-mile wall above when they try the supported posture.
   *Improvement:* print a banner from `SeedAsync` naming each relaxed default and the graduation
   command.
 - **Every experimental deployment manifest is broken, not merely unsupported.** The Dockerfile
@@ -104,11 +114,14 @@ and its Actions history shows seven manual `workflow_dispatch` attempts between 
   (`docs/operators/failover-and-recovery.md:96-101`).
   *Improvement:* require `pg_dump` in the payload check and add `backup`/`restore` verbs to the
   lifecycle supervisor.
-- **On non-Windows, the credential vault stores its AES key next to the vault, world-readable.**
-  `FileProviderCredentialStore` writes the raw 32-byte key to the data root with only a Windows
-  `Hidden`-attribute attempt (`src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:639-724`);
-  no `File.SetUnixFileMode` call exists in the credential path. *Improvement:* chmod 600 both
-  files, refuse group/other-readable keys, plan for OS keyrings.
+- **On non-Windows, the credential vault never enforces private permissions on its own AES key.**
+  `FileProviderCredentialStore` writes the raw 32-byte key beside the vault it protects, guarded
+  only by a Windows `Hidden`-attribute attempt that no-ops on POSIX
+  (`src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:639-724`); no
+  `File.SetUnixFileMode` call exists in the credential path, so the mode is whatever the process
+  umask yields — owner-only on a hardened host, group/other-readable under the common defaults —
+  and nothing validates it on read. *Improvement:* set and verify 0600 on key and vault, refuse to
+  load a group/other-readable key, plan for OS keyrings.
 
 ## 2. The activation gap: built capability the user cannot reach
 
@@ -276,10 +289,16 @@ evidence:
   `StorageEndpoints.cs:274,434`, `ExportEndpoints.cs`, `DataQualityEndpoints.cs`). The code
   comments claim "coverage tests inspect this metadata to prove every mapped route declares an
   explicit authorization requirement" (`src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:11-13`);
-  no such test exists — the only endpoint-enumerating test asserts name uniqueness
-  (`tests/Meridian.Tests/Integration/EndpointTests/EndpointMetadataTests.cs:22-37`).
-  *Improvement:* a global endpoint filter denying routes without authorization metadata plus the
-  ~30-line coverage test the comment already promises.
+  no test enforces that universal claim. Scoped enumerating tests do exist and are the right shape
+  — `tests/Meridian.Tests/Integration/EndpointTests/ConfigDirectLendingAuthorizationTests.cs:142-154`
+  resolves `RouteEndpoint`s and requires `EndpointAuthorizationMetadata`, and
+  `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs:3086` checks permission and tenant
+  metadata across the evidence routes — but each is pinned to a hand-listed route set, so
+  the ~360 ungated routes are simply outside every list, and the broad enumerating test
+  (`tests/Meridian.Tests/Integration/EndpointTests/EndpointMetadataTests.cs:22-37`) asserts only
+  name uniqueness. *Improvement:* a global endpoint filter denying routes without authorization
+  metadata, plus generalizing the existing scoped pattern to the full `EndpointDataSource` with an
+  explicit anonymous allow-list.
 - **Tenancy fails open on both read and write.** The write gate defaults to
   `Enforce: false` (`src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:198-200`); the
   ownership guard allows on registry exception by design
@@ -336,8 +355,12 @@ evidence:
   from clean. In a fund-accounting product this is the most dangerous failure class. 22 catch
   sites in the dashboard's `src/screens/` tree discard the error object; 14 of 21 error-handling screens offer no
   retry; the design system's own `AsyncRegion` primitive (skeletons, contained errors, retry,
-  per-region boundary) is adopted by 1 of 68 screens, so a render error blanks the route and
-  ejects the operator to the home screen.
+  per-region boundary) is adopted by 1 of 68 screens. Route-level recovery does exist —
+  `RouteErrorBoundary` wraps every route, reports telemetry, and keeps the shell up
+  (`src/Meridian.Ui/dashboard/src/app.tsx:1002-1043`) — but with per-panel containment essentially
+  unadopted, one panel's render error still replaces the *whole* workbench route with a recovery
+  card whose only offered action is to leave for the Daily Control Tower, discarding the
+  operator's in-route filters and context.
 - **Operators see status codes instead of reasons.** 395 endpoints return `{ error: "..." }`
   while the client's normalizer reads only `detail`/`message`/`title`
   (`src/Meridian.Ui/dashboard/src/lib/api-errors.ts:55`), so a failed import renders "Request
@@ -405,13 +428,22 @@ The 14,000-test headline materially overstates delivered assurance:
 
 ## Program-level concerns
 
-- **Effort allocation is inverted.** In the last 300 commits, `docs/` files changed 1,001 times vs
-  635 for `src/` — documentation churn exceeds product churn in a program whose registry says no
-  P0 is closed. The registry meta-layer (registries, renderers, validators, hash checks) is
-  institutionally impressive but is absorbing the marginal hour that the first mile needs.
+- **Documentation churn dominates the commit surface.** In the last 300 commits, `docs/` file
+  touches outnumber `src/` 1,001 to 635. That is a churn measure, not an effort measure — one
+  generator run fans a single change across registries, dashboards, and inventories, as this very
+  review's commits demonstrate — so it should not be read as a direct verdict on where engineering
+  hours go. It is still worth watching alongside the harder evidence in this review: the registry
+  meta-layer is institutionally impressive while the first mile remains unshipped, and every
+  status number that layer emits (§3) is currently either stale or self-contradictory.
 - **Two co-equal UI lanes is a cost the program is not paying evenly.** 15 of 29 browser screens
-  are "Partial" on WPF and 2 are hard gaps (`docs/development/wpf-web-ui-alignment-plan.md`); a
-  desktop-only operator cannot approve, close, reopen, or accept evidence. Until the parity matrix
+  are "Partial" on WPF and 2 are hard gaps (`docs/development/wpf-web-ui-alignment-plan.md`). The
+  desktop lane does carry real governed actions — manual-journal approve/post/reverse and
+  rules-studio promotion approval (`src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:360-375`),
+  close-evidence review and period locking
+  (`src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:1425-1468`) — so the gap
+  is specific rather than categorical: operations-continuity approval/close/reopen mutations and
+  Evidence Vault document accept/reject remain browser-first, per the alignment plan's own Partial
+  rows. Until the parity matrix
   is honest in-product (screens labeled browser-first), the second lane multiplies every §6
   finding.
 - **Status documents disagree with each other.** The P0 tracker says 21 rows and "nine open W9

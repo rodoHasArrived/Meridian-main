@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 29.3% |
-| Endpoint coverage | 40.3% |
+| Weighted score | 29.4% |
+| Endpoint coverage | 40.5% |
 | Workstation contract coverage | 12.7% |
-| Endpoints documented | 250 / 620 |
+| Endpoints documented | 251 / 620 |
 | Workstation contracts documented | 116 / 916 |
 
 ## Endpoint Coverage
@@ -79,7 +79,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/auth/accounts/{username}/disable` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:312` |
 | `POST` | `/api/auth/accounts/{username}/password-reset` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:252` |
 | `GET` | `/api/auth/audit` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:403` |
-| `POST` | `/api/auth/bootstrap` | Gap | `src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs:18` |
+| `POST` | `/api/auth/bootstrap` | Documented | `src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs:18` |
 | `GET` | `/api/auth/desktop-launch/{ticket}` | Gap | `src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:52` |
 | `POST` | `/api/auth/login` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:35` |
 | `POST` | `/api/auth/logout` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:144` |
@@ -1565,7 +1565,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 370 mapped endpoint gap(s).
+- Document or intentionally suppress 369 mapped endpoint gap(s).
 - Document or intentionally suppress 800 workstation contract gap(s).
 
 ---
