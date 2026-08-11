@@ -221,11 +221,22 @@ above** — several of these are why a change is scoped the way it is.
   touch; a `StopMarket` or `StopLimit` *trigger* against a new `TryGetTriggerReferencePrice` seam
   that resolves **last trade, then bar close, then crossing side** — the exact precedence
   `PaperOrderMatchingPolicy.IsStopTriggered` uses (`LastTradePrice ?? BarClose`, quote last); and a
-  `StopLimit`'s limit against **its own trigger**, which is what it is priced off. Auction
-  limits (`LimitOnOpen`/`LimitOnClose`) price against a future cross rather than the continuous
-  touch, market orders may carry a simulated observation in `LimitPrice` through the paper gateway,
-  trailing stops have a broker-derived trigger that moves with the market, and a multi-leg limit is a
-  package net not comparable to the top-level symbol's quote — none of those contribute a price.
+  `StopLimit`'s limit against **its own trigger**, which is what it is priced off. Market orders may
+  carry a simulated observation in `LimitPrice` through the paper gateway, trailing stops have a
+  broker-derived trigger that moves with the market, auction limits (`LimitOnOpen`/`LimitOnClose`)
+  price against a future cross rather than the continuous touch, and a multi-leg limit is a package
+  net not comparable to the top-level symbol's quote — the first draft of this plan excluded all
+  four from the price limb on those grounds.
+- **Only the first of those four exclusions survives, and the three corrections below share one
+  shape.** Not having a comparable continuous reference is a fact about the *reference*, never about
+  whether the price is at risk. The test an exclusion has to pass is therefore whether the venue
+  enforces the price at all: if the broker honours it, a fat finger in it routes, and the absent
+  reference is an argument for deriving an order-type-appropriate one — or failing closed as
+  unmeasurable when it cannot be derived — not for leaving it unmeasured. Only the market order
+  passes that test, because `PaperTradingGateway` reads `LimitPrice` as a simulated observation and
+  Alpaca's `MapOrderType` sends `"market"`, so no venue treats the value as a price bound. Change 2
+  applies this test to any order type it proposes to exclude, and records the answer per type rather
+  than per example.
 - **Except that the multi-leg exclusion goes too far, for the same reason the trailing-stop one
   did.** Alpaca sends the top-level `LimitPrice` as `limit_price` with `order_class=mleg`, so the
   package price *is* broker-enforced and a $1 net-credit spread can be routed with a $50 debit limit
@@ -250,6 +261,17 @@ above** — several of these are why a change is scoped the way it is.
   prevent. Change 2 owns this, because a distance needs its own band rather than reusing a
   through-the-market percentage: a trail is measured *from* the market, not *against* it. Change 1
   records the gap on `W9-SAFETY-007` so the exclusion is not mistaken for coverage.
+- **And the auction-limit exclusion fails the same test, so it goes too.** An auction limit reaches
+  Alpaca as an ordinary broker-enforced limit: `MapOrderType` maps both `LimitOnOpen` and
+  `LimitOnClose` to `"limit"`, `MapTimeInForce` carries the auction timing separately as `opg`/`cls`,
+  and `BuildOrderPayload` writes `limit_price` unconditionally — while `BrokerageGatewayAdapter`
+  *requires* a positive limit price for these types, so the price is always present to be mistyped.
+  A $1,000 buy limit on a $100 symbol is accepted and can fill anywhere up to $1,000. Pricing
+  against a future cross makes the continuous touch the wrong *reference*; it does not make the
+  price unenforced. Change 2 must measure auction limits against an auction-appropriate reference —
+  the prior session's close or the indicative auction price where one is published — and fail closed
+  as unmeasurable when neither is available, which is how every other reference gap in this
+  catalogue is handled.
 - A trigger's wrong side is the **mirror** of a limit's: `PaperOrderMatchingPolicy` fires a buy stop
   once the market reaches or passes above it, so a buy stop typed *beneath* the market is already
   crossed and a stop-market order that triggers on acceptance routes unbounded. Change 1 measures
@@ -666,14 +688,37 @@ above** — several of these are why a change is scoped the way it is.
   through a total deterministic ordering — `ReconciliationMatchKernel.SelectDeterministicAssignment`
   is the existing one — and prove identical artifacts across input permutations, not merely across
   re-runs of the same ordering.
+- **Those member keys must be qualified by side, and permutation tests will not catch it if they
+  are not.** `SelectDeterministicAssignment` tracks one `consumed` set across both populations, and
+  its own contract says so: *"Member keys must be unique across both populations — prefix keys per
+  side when raw ids can collide."* The canonical engine already satisfies that incidentally, because
+  its keys are `SnapshotId + "\u001f" + <id>` and the two sides carry different snapshot ids. A
+  statement/ledger matcher has no such shared scheme, and a bank reference propagated into the
+  ledger is exactly how the same raw transaction id ends up on both sides — at which point
+  consuming one record silently blocks an otherwise valid match on the other. Change 11 passes
+  side-qualified keys (`statement:<id>`, `ledger:<id>`) and proves it with a cross-side
+  id-collision test; permuting the input never exercises this, because the collision is present in
+  every ordering.
 - **Split candidates must be partitioned by identity before their amounts are summed.**
   `ReconciliationMatchKernel.TryFindSplit` filters candidates by *sign and amount only* — its own
   remarks say so. The one-to-one path avoids nonsense pairings through `SameTransactionIdentity`;
   applied naively, the split primitive would happily sum unmatched ledger transactions from
   different instruments, currencies, types, or dates because they happen to add up to a statement
-  row. The primitive's `accept` overload is the seam for this. Change 11 must partition or validate
-  every candidate set by the same account, instrument-or-currency, type, and date constraints the
-  pair stages apply, with negative cross-identity tests proving a coincidental sum is refused.
+  row. Change 11 must partition every candidate set by the same account, instrument-or-currency,
+  type, and date constraints the pair stages apply, with negative cross-identity tests proving a
+  coincidental sum is refused.
+- **Partition, specifically — not the `accept` overload, which cannot substitute for it.** An
+  earlier draft of this bullet offered `accept` as an equivalent seam. It is not, because the cap is
+  applied first: `TryFindSplit` orders the same-sign pool by descending magnitude and
+  `.Take(MaxSplitSearchCandidates)` — 24 — *before* the search begins, and `accept` is consulted only
+  on subsets drawn from what survived that truncation. Give it an unmatched population holding more
+  than 24 larger same-sign transactions from other accounts, currencies, instruments, types, or
+  dates, and the valid legs never enter the pool at all; every subset `accept` sees is
+  cross-identity, it rejects all of them, and a genuine split is reported as a break. Filtering by
+  identity **before** the bounded kernel is what makes the bound land on candidates that could
+  actually match, so `accept` remains available for secondary constraints only. The regression must
+  carry more than 24 larger cross-identity candidates, since at or below the cap both approaches
+  agree and the test would pass either way.
 - Together these decide the row's shape. camt.053 and BAI2 are *transaction* statements, so with an
   empty transaction population every bank **transaction** row fails closed to a break — balance
   records are a different matter, since both connectors emit `StatementRecordKind.CashBalance`, the
