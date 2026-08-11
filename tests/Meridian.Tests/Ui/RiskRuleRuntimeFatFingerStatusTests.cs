@@ -266,6 +266,44 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
         status.State.Should().Be("Constrained");
     }
 
+    /// <summary>
+    /// The same claim, past the in-memory count cap. Widening the query alone was not enough: the
+    /// list it reads is itself count-bounded, so on a busy hour the breach was evicted before any
+    /// query saw it. Retention now keeps the window regardless of count, because a count cap
+    /// cannot support a time-bounded claim at all.
+    /// </summary>
+    [Fact]
+    public async Task FatFingerStatus_SurvivesMoreTrafficThanTheInMemoryCountCap()
+    {
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-capped"),
+                InMemoryRetention: 100),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        var now = DateTimeOffset.UtcNow;
+        await audit.RecordAsync(RejectionEntry(
+            occurredAt: now.AddMinutes(-45),
+            code: FatFingerRule.QuantityCode,
+            message: "Fat-finger quantity: 100000.00 on AAPL exceeds the 1000.00 per-order ceiling"));
+
+        // Five times the count cap, all newer, all inside the same hour.
+        for (var i = 0; i < 500; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddMinutes(-30).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        var status = await BuildService(audit).GetStatusAsync("FatFinger");
+
+        status!.IsBreached.Should().BeTrue("retention keeps the window, not just the newest N");
+    }
+
     // --- snapshot hydration ---
 
     /// <summary>

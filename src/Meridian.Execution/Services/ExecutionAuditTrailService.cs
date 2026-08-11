@@ -11,7 +11,15 @@ namespace Meridian.Execution.Services;
 public sealed record ExecutionAuditTrailOptions(
     string RootDirectory,
     int InMemoryRetention = 1_000,
-    WalSyncMode SyncMode = WalSyncMode.EveryWrite)
+    WalSyncMode SyncMode = WalSyncMode.EveryWrite,
+    /// <summary>
+    /// How far back retained entries are kept regardless of <see cref="InMemoryRetention"/>.
+    /// Consumers reason about this trail in time — "a breach in the last hour holds this rule
+    /// constrained" — and a count cap cannot support a claim like that: enough unrelated activity
+    /// inside the window silently evicts the very entry the claim is about. Two hours gives the
+    /// one-hour risk-status window room on both sides.
+    /// </summary>
+    TimeSpan? InMemoryRetentionWindow = null)
 {
     public static ExecutionAuditTrailOptions Default { get; } = new(
         Path.Combine(AppContext.BaseDirectory, "data", "execution", "audit"));
@@ -53,6 +61,19 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     private readonly WriteAheadLog _wal;
     private readonly ILogger<ExecutionAuditTrailService> _logger;
     private readonly int _inMemoryRetention;
+    private readonly TimeSpan _inMemoryRetentionWindow;
+    private bool _windowTruncationLogged;
+
+    /// <summary>Default window kept regardless of the count cap. See the option's remarks.</summary>
+    public static readonly TimeSpan DefaultInMemoryRetentionWindow = TimeSpan.FromHours(2);
+
+    /// <summary>
+    /// Absolute ceiling on retained entries, as a multiple of the count cap. The window must not be
+    /// able to grow memory without bound under a pathological burst; when this bites, the shortfall
+    /// is logged rather than silently swallowed, because a consumer's time claim has just stopped
+    /// being answerable.
+    /// </summary>
+    private const int RetentionHardCapMultiplier = 20;
     private readonly List<ExecutionAuditEntry> _entries = [];
     private readonly Lock _lock = new();
     private readonly Lock _initializationLock = new();
@@ -65,6 +86,9 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
         options ??= ExecutionAuditTrailOptions.Default;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _inMemoryRetention = Math.Max(100, options.InMemoryRetention);
+        _inMemoryRetentionWindow = options.InMemoryRetentionWindow is { } window && window > TimeSpan.Zero
+            ? window
+            : DefaultInMemoryRetentionWindow;
         _wal = new WriteAheadLog(
             options.WalDirectory,
             new WalOptions
@@ -296,6 +320,32 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
             return;
         }
 
-        _entries.RemoveRange(0, _entries.Count - _inMemoryRetention);
+        // Entries are held in chronological order, so anything inside the window is a suffix.
+        // Keep whichever is larger: the count cap, or that whole suffix.
+        var cutoff = DateTimeOffset.UtcNow - _inMemoryRetentionWindow;
+        var insideWindow = 0;
+        for (var index = _entries.Count - 1; index >= 0 && _entries[index].OccurredAt >= cutoff; index--)
+        {
+            insideWindow++;
+        }
+
+        var hardCap = _inMemoryRetention * RetentionHardCapMultiplier;
+        var keep = Math.Min(Math.Max(_inMemoryRetention, insideWindow), hardCap);
+        if (insideWindow > hardCap && !_windowTruncationLogged)
+        {
+            // Once per process: this is a capacity signal, not per-append noise.
+            _windowTruncationLogged = true;
+            _logger.LogWarning(
+                "Execution audit retained {Kept} of {InsideWindow} entries inside the {Window} retention window; "
+                + "time-bounded consumers may not see the whole window.",
+                hardCap,
+                insideWindow,
+                _inMemoryRetentionWindow);
+        }
+
+        if (_entries.Count > keep)
+        {
+            _entries.RemoveRange(0, _entries.Count - keep);
+        }
     }
 }
