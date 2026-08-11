@@ -6515,6 +6515,7 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-panel.view-model.ts
 │   │   │   │   │   ├── statement-import-preview.tsx
 │   │   │   │   │   ├── statement-import-screen.tsx
+│   │   │   │   │   ├── strategy-designer-screen.copy.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts

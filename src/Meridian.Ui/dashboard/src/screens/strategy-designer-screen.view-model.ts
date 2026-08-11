@@ -1,3 +1,4 @@
+import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
 import { formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -1390,15 +1391,6 @@ export function buildStrategyBuilderWorkbenchViewModel({
       ? `${validationMessages.length} advisory issue${validationMessages.length === 1 ? "" : "s"}`
       : "Design valid; backtest execution not yet available";
 
-  // Running a backtest proof needs governed evidence references — operator acceptance, retained
-  // evidence, accounting records, approvals, paper validation, governed reports — that this screen
-  // cannot collect, so the command is blocked for every design regardless of validation state.
-  // Keeping this in the view-model means the status text, proof summary, aria-label, and button all
-  // tell the operator the same story; overriding only the rendered button left the screen claiming
-  // the run was ready.
-  const backtestEvidenceBlocker =
-    "Backtest execution needs governed evidence references (operator acceptance, retained evidence, accounting, approvals, paper validation, governed reports) that this screen cannot collect yet.";
-
   return {
     document,
     metrics: [
@@ -1447,17 +1439,13 @@ export function buildStrategyBuilderWorkbenchViewModel({
     liveRegionMessage: `${document.name}. ${validationSummary}. ${selectedCell ? `${selectedCell.label} selected.` : "No cell selected."}`,
     backtest: {
       statusLabel: "Blocked",
-      proofSummary: errorCount > 0
-        ? `Fix designer validation before QuantScript preview. ${backtestEvidenceBlocker}`
-        : backtestEvidenceBlocker,
+      proofSummary: errorCount > 0 ? `Fix designer validation before QuantScript preview. ${BACKTEST_EVIDENCE_BLOCKER}` : BACKTEST_EVIDENCE_BLOCKER,
       datasetFingerprint,
       runCommand: {
         label: "Run backtest proof",
-        ariaLabel: errorCount > 0
-          ? `Run backtest proof blocked: ${validationSummary}. ${backtestEvidenceBlocker}`
-          : `Run backtest proof blocked: ${backtestEvidenceBlocker}`,
+        ariaLabel: `Run backtest proof blocked: ${BACKTEST_EVIDENCE_BLOCKER}`,
         disabled: true,
-        disabledReason: errorCount > 0 ? `${backtestEvidenceBlocker} Also: ${validationSummary}.` : backtestEvidenceBlocker
+        disabledReason: errorCount > 0 ? `${BACKTEST_EVIDENCE_BLOCKER} Also: ${validationSummary}.` : BACKTEST_EVIDENCE_BLOCKER
       },
       routeActions: [
         buildStrategyBuilderBackendLink("templates", "Templates", STRATEGY_DESIGNER_API_ENDPOINTS.templates, "GET"),

@@ -56,10 +56,17 @@ def strip_jsonc(raw: str) -> str:
     return re.sub(r",(\s*[}\]])", r"\1", "\n".join(out))
 
 
-def declared_kinds() -> set[str]:
+def declared_kinds() -> dict[str, int]:
+    """Return the enum's member names mapped to their numeric values.
+
+    Both forms matter: ``DataSourceKindConverter`` accepts a string name *and* a JSON number
+    (``reader.TokenType == JsonTokenType.Number``), so a sample carrying ``"DataSource": 99``
+    fails at startup exactly like an unknown name.
+    """
     text = KIND_SOURCE.read_text(encoding="utf-8")
     body = text[text.index("enum DataSourceKind") :]
-    return set(re.findall(r"^\s{4}([A-Za-z][A-Za-z0-9]*)\s*=\s*\d+\s*,?\s*$", body, re.MULTILINE))
+    pairs = re.findall(r"^\s{4}([A-Za-z][A-Za-z0-9]*)\s*=\s*(\d+)\s*,?\s*$", body, re.MULTILINE)
+    return {name: int(value) for name, value in pairs}
 
 
 def walk_secret_keys(node: object, path: str = "") -> list[str]:
@@ -96,20 +103,35 @@ def main() -> int:
     document = json.loads(strip_jsonc(SAMPLE.read_text(encoding="utf-8")))
     errors: list[str] = []
 
-    named: list[tuple[str, str]] = []
-    if isinstance(document.get("DataSource"), str):
+    named: list[tuple[str, object]] = []
+    if "DataSource" in document:
         named.append(("DataSource", document["DataSource"]))
     for index, source in enumerate(document.get("DataSources", {}).get("Sources", []) or []):
-        provider = source.get("Provider")
-        if isinstance(provider, str):
-            named.append((f"DataSources.Sources[{index}].Provider", provider))
+        if "Provider" in source:
+            named.append((f"DataSources.Sources[{index}].Provider", source["Provider"]))
 
+    valid = (
+        f"names: {', '.join(sorted(kinds))}; numbers: "
+        f"{', '.join(str(v) for v in sorted(kinds.values()))}"
+    )
     for where, value in named:
-        if value not in kinds:
+        # bool is a subclass of int in Python; a JSON true/false is never a valid enum value.
+        if isinstance(value, bool) or not isinstance(value, (str, int)):
             errors.append(
-                f"{where} = {value!r} is not a DataSourceKind member "
-                f"(valid: {', '.join(sorted(kinds))}). DataSourceKindConverter fails closed on "
-                f"unknown values, so this sample would throw at startup."
+                f"{where} = {value!r} is neither a name nor a number, so DataSourceKindConverter "
+                f"cannot read it ({valid})."
+            )
+        elif isinstance(value, str):
+            if value not in kinds:
+                errors.append(
+                    f"{where} = {value!r} is not a DataSourceKind member ({valid}). "
+                    f"DataSourceKindConverter fails closed on unknown values, so this sample "
+                    f"would throw at startup."
+                )
+        elif value not in kinds.values():
+            errors.append(
+                f"{where} = {value} is not a defined DataSourceKind value ({valid}). The "
+                f"converter accepts numbers but checks Enum.IsDefined, so this throws at startup."
             )
 
     for path in walk_secret_keys(document):

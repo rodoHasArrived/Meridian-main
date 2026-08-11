@@ -590,8 +590,13 @@ still `in_progress`.
   `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs:3086`) are each pinned to a hand-listed
   route set, so the ungated routes fall outside every list.
   **Change:** (a) add a global endpoint filter that **denies** any route lacking
-  `EndpointAuthorizationMetadata`, making the gap fail closed; (b) generalize the existing scoped
-  test to enumerate the full `EndpointDataSource` with an explicit, reviewed anonymous allow-list;
+  `EndpointAuthorizationMetadata`, making the gap fail closed — but drive it from an explicit,
+  reviewed anonymous allow-list, **the same list the test uses**. Applied literally without one,
+  the filter would break the health and readiness probes (`/healthz`, `/readyz`, `/livez`, which
+  carry no authorization metadata) and re-block `/setup/account` and `/api/auth/bootstrap`, undoing
+  AR8-01. Assert in a test that the runtime list and the test list stay identical, so neither can
+  drift; (b) generalize the existing scoped test to enumerate the full `EndpointDataSource` against
+  that shared allow-list;
   (c) add the missing gates file by file, highest-risk first (archive maintenance, storage, export).
   **Verify:** the generalized test fails on a deliberately ungated new route.
   **Effort:** L · **Related:** `W9-GOV-008` — this is its cheapest, most separable half
@@ -733,7 +738,7 @@ still `in_progress`.
   **Verify:** the gate's baseline drops to the triaged number and cannot grow.
   **Effort:** L · **Depends on:** AR8-41
 
-- [x] **AR8-43 — Wire or disable the Strategy Designer's primary actions.** *(Done: both disabled with reasons. Wiring stays blocked — the canvas holds a `StrategyBuilderDocument`, the API takes a `StrategyDesignDocument`, and no mapper exists; a run additionally needs six governed evidence arrays the screen cannot collect. The ESLint rule is still outstanding.)*
+- [~] **AR8-43 — Wire or disable the Strategy Designer's primary actions.** *(Partial, deliberately left open. Shipped: both actions are disabled, the blocker lives in the view-model so status/summary/aria-label/button agree, each reason is visible text wired via `aria-describedby` for keyboard and screen-reader operators, and a regression test covers it. **Not** shipped, so the box stays unticked: the ESLint rule banning handler-less buttons, and the save round-trip — wiring needs a `StrategyBuilderDocument` → `StrategyDesignDocument` mapper that does not exist, and a run needs six governed evidence arrays this screen cannot collect.)*
   **Evidence:** `src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx:112-115` — "Save
   draft" has no `onClick`, no `asChild`, no submit; `:116-125` — "Run backtest proof" wires
   `disabled`/`disabledReason` but no handler, so it is *enabled* when validation passes and clicking
@@ -743,8 +748,11 @@ still `in_progress`.
   with a reason (the `Button` component already supports this — see
   `operator-readiness-console.tsx:405`). Add an ESLint rule banning a `<Button>` with no handler,
   `asChild`, `type="submit"`, or `disabled`.
-  **Verify:** the lint rule fails on a seeded handler-less button; a test asserts the save round trip.
-  **Effort:** S
+  **Verify:** for the accepted disabled outcome — a test asserts both actions are disabled and that
+  each reason is reachable through `aria-describedby`, not only the `title` attribute (shipped). For
+  the remaining work — the lint rule fails on a seeded handler-less button, and a test asserts the
+  save round trip once a document mapper exists.
+  **Effort:** S (shipped part) / M (mapper plus wiring)
 
 - [~] **AR8-44 — Remove the navigable dead ends.** *(Partial. The Quant Lab formulas dead end is genuinely closed — the tab is withdrawn and a stale `?view=formulas` link degrades to the script lab. Family Office is only **suppressed from discovery**: out of nav and the palette, but `app.tsx` still mounts `FamilyOfficeScreen` on `/portfolio/family-office`, so an existing bookmark still lands on the permanent not-connected screen — deliberately, so old links resolve. Still open: wire `entityStructure` from the fund-structure read model or redirect the route, and mount the built formula workbench.)* Covered by AR8-Q1 for the routing guard; also
   remove the command-palette entry that advertises the unmounted Formula Workbench
