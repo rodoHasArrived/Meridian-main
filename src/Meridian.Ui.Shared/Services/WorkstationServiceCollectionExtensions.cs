@@ -435,8 +435,7 @@ public static class WorkstationServiceCollectionExtensions
             // inflated size happened to breach.
             rules.Add(new Meridian.Risk.Rules.FatFingerRule(
                 exposureProvider,
-                () => runtime.MaxOrderQuantity,
-                () => runtime.MaxPriceDeviationPercent,
+                () => runtime.FatFingerThresholds,
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.FatFingerRule>>()));
             rules.Add(new Meridian.Risk.Rules.GrossExposureRule(
                 exposureProvider,

@@ -7,6 +7,14 @@ using Interop = Meridian.FSharp.Interop;
 namespace Meridian.Risk.Rules;
 
 /// <summary>
+/// Both fat-finger limbs as one immutable reading, so an evaluation always sees a threshold pair
+/// that actually existed. <see langword="null"/> disables the corresponding limb.
+/// </summary>
+public readonly record struct FatFingerThresholds(
+    decimal? MaxOrderQuantity,
+    decimal? MaxPriceDeviationPercent);
+
+/// <summary>
 /// Blocks the classic order-entry mistakes: a quantity far larger than the desk ever intends to
 /// send in one order, a price typed far through the market, and a stop whose trigger is on the
 /// wrong side of it.
@@ -100,19 +108,23 @@ public sealed class FatFingerRule : IRiskRule
     public const string UnmeasurableCode = "FAT_FINGER_UNMEASURABLE";
 
     private readonly IPortfolioExposureProvider _exposureProvider;
-    private readonly Func<decimal?> _maxOrderQuantity;
-    private readonly Func<decimal?> _maxPriceDeviationPercent;
+    private readonly Func<FatFingerThresholds> _thresholds;
     private readonly ILogger<FatFingerRule> _logger;
 
+    /// <param name="thresholds">
+    /// Reads <b>both</b> limbs as one value. Two independently locked accessors would let an
+    /// evaluation straddle a configuration update and observe a pair that never existed: replacing
+    /// (quantity null, band 50) with (quantity 100, band null) atomically can still be read as the
+    /// old null quantity and the new null band, leaving the rule apparently unconfigured and
+    /// approving an oversized order that both the old and the new configuration would have caught.
+    /// </param>
     public FatFingerRule(
         IPortfolioExposureProvider exposureProvider,
-        Func<decimal?> maxOrderQuantity,
-        Func<decimal?> maxPriceDeviationPercent,
+        Func<FatFingerThresholds> thresholds,
         ILogger<FatFingerRule> logger)
     {
         _exposureProvider = exposureProvider ?? throw new ArgumentNullException(nameof(exposureProvider));
-        _maxOrderQuantity = maxOrderQuantity ?? throw new ArgumentNullException(nameof(maxOrderQuantity));
-        _maxPriceDeviationPercent = maxPriceDeviationPercent ?? throw new ArgumentNullException(nameof(maxPriceDeviationPercent));
+        _thresholds = thresholds ?? throw new ArgumentNullException(nameof(thresholds));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -134,8 +146,7 @@ public sealed class FatFingerRule : IRiskRule
     /// <inheritdoc />
     public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
-        var maxQuantity = _maxOrderQuantity();
-        var maxDeviationPercent = _maxPriceDeviationPercent();
+        var (maxQuantity, maxDeviationPercent) = _thresholds();
         if (maxQuantity is null or <= 0m && maxDeviationPercent is null or <= 0m)
         {
             return Task.FromResult(RiskValidationResult.Approved());
@@ -196,12 +207,15 @@ public sealed class FatFingerRule : IRiskRule
         var stopPrice = HasMeasurableTrigger(request) ? request.StopPrice : null;
         if (stopPrice is > 0m)
         {
-            // A price control compares against what the order can actually trade at, so this takes
-            // the touch rather than the deliberately conservative valuation price: measuring a sell
-            // against the midpoint would make an ordinary marketable sell at the bid look like it is
-            // priced through the market by half the spread.
-            var touch = _exposureProvider.TryGetTouchPrice(request.Symbol, request.Side);
-            if (touch is null or <= 0m)
+            // A trigger is measured against the side-neutral market observation, NOT the crossing
+            // touch the limit limb uses. The matcher fires a stop off the traded price — last trade
+            // or bar close, with the touch only as a fallback — so measuring the trigger against the
+            // side the order would cross at reads a wide book as crossed when the matcher does not.
+            // On a 90/110 book with the last trade at 100, a buy stop at 105 is still waiting, but
+            // against the 110 ask it looks 4.5% through. The valuation mark resolves the same
+            // trade-preferred way, so it is what the trigger is compared with.
+            var triggerReference = _exposureProvider.TryGetReferencePrice(request.Symbol);
+            if (triggerReference is null or <= 0m)
             {
                 return Task.FromResult(Unmeasurable(request, "the stop trigger"));
             }
@@ -209,7 +223,7 @@ public sealed class FatFingerRule : IRiskRule
             var triggerDecision = Interop.RiskInterop.EvaluateFatFingerStopTrigger(
                 Interop.RiskInterop.CreateFatFingerContext(
                     request,
-                    referencePrice: touch,
+                    referencePrice: triggerReference,
                     orderPrice: stopPrice,
                     maxOrderQuantity: default(decimal?),
                     maxPriceDeviationPercent: maxDeviationPercent));
@@ -226,7 +240,7 @@ public sealed class FatFingerRule : IRiskRule
                     Code = StopTriggerCode,
                     // Mirrored orientation: for a trigger the wrong side is the opposite of a
                     // limit's, so the reported number is taken as though the sides were swapped.
-                    ObservedValue = ResolveAggressiveDeviationPercent(Mirror(request.Side), stopPrice, touch),
+                    ObservedValue = ResolveAggressiveDeviationPercent(Mirror(request.Side), stopPrice, triggerReference),
                     LimitValue = maxDeviationPercent
                 });
             }

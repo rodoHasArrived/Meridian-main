@@ -49,12 +49,23 @@ without measuring.
   all. Trigger deviation is measured on the wrong side only, so a protective stop placed correctly
   never breaches however far away it sits.
 
-The price limbs depend on `IPortfolioExposureProvider.TryGetTouchPrice`, which is the raw crossing
-side of the book rather than the conservative `TryGetExecutablePrice` valuation mark the sizing
-rules use. The two references are deliberately different: sizing must never *under*-measure the
-exposure an order creates, while a price control must compare against what the order can actually
-trade at. Measuring a sell against the mark would make an ordinary marketable sell at the bid look
-priced through the market by half the spread.
+The two price limbs read *different* references, because a limit and a trigger answer different
+questions:
+
+- **A limit** is measured against `IPortfolioExposureProvider.TryGetTouchPrice` — the raw crossing
+  side of the book, not the conservative `TryGetExecutablePrice` valuation mark the sizing rules
+  use. Sizing must never *under*-measure the exposure an order creates, so its mark takes the larger
+  of mid and touch; a price control must compare against what the order can actually trade at.
+  Measuring a sell against that mark would make an ordinary marketable sell at the bid look priced
+  through the market by half the spread.
+- **A trigger** is measured against the side-neutral `TryGetReferencePrice`, because
+  `PaperOrderMatchingPolicy` fires a stop off the traded price (last trade, then bar close) and only
+  falls back to the touch. On a 90/110 book with the last trade at 100, a buy stop at 105 is still
+  waiting; measuring it against the 110 ask would read it as already crossed and refuse an ordinary
+  breakout order.
+
+Both thresholds are read as a single `FatFingerThresholds` value rather than two accessors, so an
+evaluation cannot straddle a two-field configuration update and observe a pair that never existed.
 
 Each price is measured against the reference it is meaningful to, and each order type contributes
 only the prices it genuinely puts at risk: a plain limit against the touch, a stop trigger against

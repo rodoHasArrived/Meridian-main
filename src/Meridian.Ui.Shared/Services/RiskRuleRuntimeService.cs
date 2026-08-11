@@ -165,6 +165,18 @@ public sealed class RiskRuleRuntimeService
     public decimal? MaxPriceDeviationPercent { get { lock (_gate) { return _maxPriceDeviationPercent; } } }
 
     /// <summary>
+    /// Both fat-finger limbs read under one lock, which is what the enforced rule consumes. Reading
+    /// the two properties above separately would let an evaluation straddle an update and observe a
+    /// pair that was never configured — a two-field change from (null quantity, 50% band) to
+    /// (100 quantity, null band) can otherwise be seen as (null, null), which the rule treats as
+    /// entirely unconfigured and approves through.
+    /// </summary>
+    public FatFingerThresholds FatFingerThresholds
+    {
+        get { lock (_gate) { return new FatFingerThresholds(_maxOrderQuantity, _maxPriceDeviationPercent); } }
+    }
+
+    /// <summary>
     /// Evaluates the drawdown circuit breaker against the same live portfolio state and
     /// operator-tuned threshold this service reports on the dashboard, so the guardrail can
     /// never show "Healthy" while it silently fails to gate an order. Invoked by the enforced
@@ -591,7 +603,8 @@ public sealed class RiskRuleRuntimeService
         var violations = FindViolations(
             auditEntries,
             actionHint: "OrderRejected",
-            textHint: "position");
+            textHint: "position",
+            asOf);
         var breached = violations.Count > 0;
         var state = breached
             ? "Constrained"
@@ -644,7 +657,8 @@ public sealed class RiskRuleRuntimeService
         var violations = FindViolations(
             auditEntries,
             actionHint: "OrderRejected",
-            textHint: "drawdown");
+            textHint: "drawdown",
+            asOf);
         if (breached && violations.Count == 0)
         {
             violations = [$"Current drawdown is {drawdownPercent:F2}%."];
@@ -746,7 +760,8 @@ public sealed class RiskRuleRuntimeService
         var violations = FindViolations(
             auditEntries,
             actionHint: "OrderRejected",
-            textHint: "rate");
+            textHint: "rate",
+            asOf);
         if (breached && violations.Count == 0)
         {
             violations = [$"Observed {recentOrderCount} orders in the last minute."];
@@ -773,7 +788,7 @@ public sealed class RiskRuleRuntimeService
         var snapshot = Resolve<Meridian.Risk.IPortfolioExposureProvider>()?.GetSnapshot();
         var grossExposure = snapshot?.GrossExposure ?? 0m;
 
-        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure", asOf);
         var violations = DescribeViolations(violationEntries, "gross exposure");
         // Live state follows current exposure plus breaches inside the liveness window;
         // older rejections stay as evidence without pinning the rule Constrained.
@@ -830,7 +845,7 @@ public sealed class RiskRuleRuntimeService
             }
         }
 
-        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "concentration");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "concentration", asOf);
         var violations = DescribeViolations(violationEntries, "concentration");
         var liveViolation = HasLiveViolation(violationEntries, asOf);
         var utilization = ComputeUtilization(topPercent, maxPercent);
@@ -883,7 +898,7 @@ public sealed class RiskRuleRuntimeService
             .Where(static entry => string.Equals(entry.RuleName, "OrderNotional", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "notional");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "notional", asOf);
         var violations = DescribeViolations(violationEntries, "notional");
         var configured = maxNotional.HasValue || escalateAt.HasValue;
         var breached = HasLiveViolation(violationEntries, asOf);
@@ -968,8 +983,8 @@ public sealed class RiskRuleRuntimeService
         // is audited as OrderModifyRejected. Matching only OrderRejected reported the rule healthy
         // while it was actively refusing aggressive modifications.
         string[] rejectionActions = ["OrderRejected", "OrderModifyRejected"];
-        var violationEntries = FindViolationEntries(measured, rejectionActions, textHint: "fat-finger");
-        var unmeasurableEntries = FindViolationEntries(unmeasurable, rejectionActions, textHint: "fat-finger");
+        var violationEntries = FindViolationEntries(measured, rejectionActions, textHint: "fat-finger", asOf);
+        var unmeasurableEntries = FindViolationEntries(unmeasurable, rejectionActions, textHint: "fat-finger", asOf);
 
         var violations = DescribeViolations(violationEntries, "fat-finger");
         var configured = maxQuantity.HasValue || maxDeviationPercent.HasValue;
@@ -1049,11 +1064,13 @@ public sealed class RiskRuleRuntimeService
     private static List<ExecutionAuditEntry> FindViolationEntries(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         IReadOnlyList<string> actionHints,
-        string textHint)
+        string textHint,
+        DateTimeOffset asOf)
     {
         return auditEntries
             .Where(entry =>
                 actionHints.Any(hint => string.Equals(entry.Action, hint, StringComparison.OrdinalIgnoreCase)) &&
+                IsDatedPlausibly(entry, asOf) &&
                 ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
                  (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
                  MatchesViolationMetadata(entry, textHint)))
@@ -1065,11 +1082,13 @@ public sealed class RiskRuleRuntimeService
     private static List<ExecutionAuditEntry> FindViolationEntries(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         string actionHint,
-        string textHint)
+        string textHint,
+        DateTimeOffset asOf)
     {
         return auditEntries
             .Where(entry =>
                 string.Equals(entry.Action, actionHint, StringComparison.OrdinalIgnoreCase) &&
+                IsDatedPlausibly(entry, asOf) &&
                 ((entry.Message?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
                  (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false) ||
                  MatchesViolationMetadata(entry, textHint)))
@@ -1077,6 +1096,22 @@ public sealed class RiskRuleRuntimeService
             .Take(5)
             .ToList();
     }
+
+    /// <summary>
+    /// Whether an entry's timestamp is believable enough to be evidence at all.
+    /// <para>
+    /// Misdated entries are dropped here, before the five-entry truncation, rather than only when
+    /// live state is computed. Filtering later is not equivalent: these entries sort newest-first,
+    /// so five far-future rows would take every slot and evict a genuine breach from half an hour
+    /// ago — and the retained five would then all fail the liveness bound, reporting the rule
+    /// Healthy at the exact moment it was constrained. An entry that cannot be dated is not
+    /// evidence for a breach or against one, so it is excluded from both the live state and the
+    /// displayed history. Only the future side is bounded: an entry older than the liveness window
+    /// is ordinary history and belongs in the list.
+    /// </para>
+    /// </summary>
+    private static bool IsDatedPlausibly(ExecutionAuditEntry entry, DateTimeOffset asOf) =>
+        entry.OccurredAt - asOf <= ViolationClockSkewAllowance;
 
     /// <summary>
     /// Searches the structured violation set the rejection audit carries, not just its headline.
@@ -1173,17 +1208,23 @@ public sealed class RiskRuleRuntimeService
     /// skewed entry could pin trading readiness for years. A bounded skew allowance keeps ordinary
     /// host/sink drift live while refusing to treat a misdated entry as evidence of anything.
     /// </para>
+    /// <para>
+    /// The upper bound is also applied by <see cref="IsDatedPlausibly"/> before candidates are
+    /// truncated, so it is deliberately repeated here: this method is the guarantee for any caller
+    /// that assembles its own entry list.
+    /// </para>
     /// </summary>
     private static bool HasLiveViolation(IReadOnlyList<ExecutionAuditEntry> entries, DateTimeOffset asOf) =>
         entries.Any(entry =>
             asOf - entry.OccurredAt <= ViolationLivenessWindow &&
-            entry.OccurredAt - asOf <= ViolationClockSkewAllowance);
+            IsDatedPlausibly(entry, asOf));
 
     private static List<string> FindViolations(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         string actionHint,
-        string textHint) =>
-        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint), textHint);
+        string textHint,
+        DateTimeOffset asOf) =>
+        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint, asOf), textHint);
 
     /// <summary>
     /// Drawdown as a percentage of the capital the P&amp;L was earned on, i.e. the starting

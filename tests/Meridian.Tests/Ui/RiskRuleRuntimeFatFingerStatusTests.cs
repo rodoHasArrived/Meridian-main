@@ -147,8 +147,39 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
         var status = await BuildService(audit).GetStatusAsync("FatFinger");
 
         status!.IsBreached.Should().BeFalse("a misdated entry is not evidence of a recent breach");
-        // Still visible as evidence — suppressed from live state, not hidden from the operator.
-        status.RecentViolations.Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// Misdated entries are dropped before the five-entry truncation, not after. They sort
+    /// newest-first, so five far-future rows would otherwise take every slot and evict a genuine
+    /// breach from half an hour ago — and the five that survived would then all fail the liveness
+    /// bound, reporting the rule Healthy at the exact moment it was constrained.
+    /// </summary>
+    [Fact]
+    public async Task FatFingerStatus_KeepsARealBreachBehindFiveMisdatedEntries()
+    {
+        await using var audit = NewAudit();
+        var now = DateTimeOffset.UtcNow;
+
+        await audit.RecordAsync(RejectionEntry(
+            occurredAt: now.AddMinutes(-30),
+            code: FatFingerRule.QuantityCode,
+            message: "Fat-finger quantity: 100000.00 on AAPL exceeds the 1000.00 per-order ceiling"));
+
+        for (var i = 1; i <= 5; i++)
+        {
+            await audit.RecordAsync(RejectionEntry(
+                occurredAt: now.AddYears(i),
+                code: FatFingerRule.QuantityCode,
+                message: "Fat-finger quantity: 999999.00 on AAPL exceeds the 1000.00 per-order ceiling"));
+        }
+
+        var status = await BuildService(audit).GetStatusAsync("FatFinger");
+
+        status!.IsBreached.Should().BeTrue("the genuine breach must not be evicted by misdated rows");
+        status.State.Should().Be("Constrained");
+        status.RecentViolations.Should().ContainSingle()
+            .Which.Should().Contain("100000");
     }
 
     /// <summary>

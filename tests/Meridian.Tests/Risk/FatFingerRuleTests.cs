@@ -41,8 +41,7 @@ public sealed class FatFingerRuleTests
         decimal? maxDeviationPercent = null,
         decimal? referencePrice = Reference) => new(
             new StubExposureProvider(referencePrice),
-            () => maxQuantity,
-            () => maxDeviationPercent,
+            () => new FatFingerThresholds(maxQuantity, maxDeviationPercent),
             NullLogger<FatFingerRule>.Instance);
 
     [Fact]
@@ -305,22 +304,50 @@ public sealed class FatFingerRuleTests
     }
 
     [Fact]
-    public async Task StopTrigger_MeasuresTheCrossingSide_NotTheValuationMark()
+    public async Task StopTrigger_MeasuresTheTradedMark_NotTheCrossingSide()
     {
-        // Wide 90/110 book. A buy stop at 95 is beneath the 110 ask by 13.6% — the price a buy
-        // actually crosses at — so it is already triggered against the side that matters. The
-        // 100 midpoint would read only 5% and let it through.
+        // Wide 90/110 book with the mark at 100. A buy stop at 105 is still waiting as far as
+        // the matcher is concerned — it triggers off the traded price, and 100 has not reached
+        // 105. Measuring the trigger against the 110 ask instead would read it as 4.5% already
+        // crossed and refuse an ordinary breakout order on a wide book. The limit limb keeps
+        // using the crossing side; a trigger and a limit answer different questions.
         var rule = new FatFingerRule(
             new TwoSidedBookProvider(bid: 90m, ask: 110m),
-            () => null,
-            () => 10m,
+            () => new FatFingerThresholds(null, 3m),
             NullLogger<FatFingerRule>.Instance);
 
-        var result = await rule.EvaluateAsync(
-            Order(stopPrice: 95m, side: OrderSide.Buy, type: OrderType.StopMarket));
+        var waiting = await rule.EvaluateAsync(
+            Order(stopPrice: 105m, side: OrderSide.Buy, type: OrderType.StopMarket));
+        waiting.IsApproved.Should().BeTrue();
 
-        result.IsApproved.Should().BeFalse();
-        result.Code.Should().Be(FatFingerRule.StopTriggerCode);
+        // The same book still catches a genuinely crossed trigger.
+        var crossed = await rule.EvaluateAsync(
+            Order(stopPrice: 1m, side: OrderSide.Buy, type: OrderType.StopMarket));
+        crossed.IsApproved.Should().BeFalse();
+        crossed.Code.Should().Be(FatFingerRule.StopTriggerCode);
+    }
+
+    [Fact]
+    public async Task Thresholds_AreReadAsOnePair_SoAnUpdateCannotBeStraddled()
+    {
+        // Two independently locked accessors let an evaluation read the old value of one limb
+        // and the new value of the other. Replacing (no ceiling, 50% band) with (100 ceiling,
+        // no band) atomically could be observed as (none, none) — the rule's "entirely
+        // unconfigured" shape — and approve an order both configurations would have rejected.
+        var readings = 0;
+        var rule = new FatFingerRule(
+            new StubExposureProvider(Reference),
+            () =>
+            {
+                readings++;
+                return new FatFingerThresholds(1_000m, 10m);
+            },
+            NullLogger<FatFingerRule>.Instance);
+
+        var result = await rule.EvaluateAsync(Order(quantity: 100_000m, limitPrice: 1_000m));
+
+        result.Code.Should().Be(FatFingerRule.QuantityCode);
+        readings.Should().Be(1, "one evaluation takes exactly one threshold reading");
     }
 
     [Fact]
@@ -533,8 +560,7 @@ public sealed class FatFingerRuleTests
         // why the rule takes the touch rather than the conservative valuation price.
         var rule = new FatFingerRule(
             new TwoSidedBookProvider(bid: 90m, ask: 110m),
-            () => null,
-            () => 10m,
+            () => new FatFingerThresholds(null, 10m),
             NullLogger<FatFingerRule>.Instance);
 
         var result = await rule.EvaluateAsync(Order(limitPrice: 85m, side: OrderSide.Sell));
@@ -547,8 +573,7 @@ public sealed class FatFingerRuleTests
     {
         var rule = new FatFingerRule(
             new TwoSidedBookProvider(bid: 90m, ask: 110m),
-            () => null,
-            () => 10m,
+            () => new FatFingerThresholds(null, 10m),
             NullLogger<FatFingerRule>.Instance);
 
         // 115 is 4.5% through the 110 ask - inside the band - though it is 15% through the bid.
