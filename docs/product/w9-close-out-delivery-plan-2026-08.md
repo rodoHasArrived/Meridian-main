@@ -39,9 +39,12 @@ implementation-complete on the claim that bounded schema-aware statement parsing
 source audit below establishes the opposite for two shipping connectors: camt.053 decodes the whole
 payload into an `XDocument` and BAI2 decodes and splits the whole payload, neither enforcing a
 record limit, and `StatementImportService` accepts an arbitrary source document so the upload byte
-cap does not cover the seam. Either downgrade `PRD-010` or explicitly scope camt.053 and BAI2 out of
-the supported envelope until change 10 lands — otherwise the P0 gate can read green on a control
-this plan's own evidence contradicts.
+cap does not cover the seam. Leaving that to change 10 would let the P0 gate read green on a control
+this plan's own evidence contradicts for the whole of changes 1–9, so **this adoption commit performs
+the downgrade**: `PRD-010` moves to evidence-gated with the two connectors named, and change 10
+restores implementation-complete when it lands with its adversarial proof. Nothing in changes 1–9
+depends on that row, so the correction costs the wave nothing and removes a false green from the
+tracker for its whole duration.
 
 ## Sequence
 
@@ -450,7 +453,7 @@ above** — several of these are why a change is scoped the way it is.
   database composition is registered; the workstation and WPF compositions fall through to
   `FileAccountingConfigurationStore`, whose `AppendAsync` adds the event to a list and persists the
   snapshot with no predecessor hash and no chain verification. Anchoring the accounting half of this
-  change to the `V_ledger_017`/`018` family alone would let the criterion be declared discharged
+  change to the accounting-configuration audit family alone would let the criterion be declared discharged
   while the *active* desktop and local-workstation accounting audit stays freely deletable and
   reorderable without detection. Change 9 must chain and verify the file-backed store too — or fail
   closed and disable those mutations in that posture — with local/WPF proof either way. This is not
@@ -461,8 +464,20 @@ above** — several of these are why a change is scoped the way it is.
 - `src/Meridian.Storage/Reporting/PostgresReportingArtifactAuditStore.cs` verifies a chain head
   inside the write transaction. That is the database-side precedent to follow rather than inventing
   a second scheme.
+- **Chaining an existing history needs a declared boundary, or the chain asserts something false.**
+  The accounting audit table originates in `V_ledger_010__accounting_configuration.sql`; `017` only
+  adds tenant scope and `018` an index, so anchoring the family at 017/018 would leave every older
+  row outside whatever change 9 treats as the beginning. Those rows exist in both the PostgreSQL
+  table and the file snapshot, and they were appended with no predecessor hash. Adding chain fields
+  and strict verification on top of them has exactly two failure modes and no third: verification
+  rejects the retained history outright, or it accepts it and thereby presents pre-upgrade events as
+  tamper-evident when nothing ever protected them. Change 9 therefore needs a schema-versioned
+  genesis or checkpoint that marks where the chain actually starts, a quarantine policy for rows
+  before it, and upgrade tests that begin from a history written by the *current* schema — the same
+  shape of requirement as the match-artifact versioning in change 11.
 - Accounting audit rows live in the accounting-configuration audit family established by
-  `V_ledger_017` and `V_ledger_018`. **That family is the accounting half only.** The exit criterion
+  `V_ledger_010`, with `V_ledger_017` adding tenant scope and `V_ledger_018` an index.
+  **That family is the accounting half only.** The exit criterion
   names accounting *and ledger* audit events, so the journal-append and other ledger-event paths are
   in scope for the same chain — anchoring the change on the accounting-action audit table alone
   would let the criterion be declared discharged while ledger events stay outside the chain. Name
