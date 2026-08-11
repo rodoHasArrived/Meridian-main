@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-11T07:32:08Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-11T08:53:47Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ Provider contracts, adapter implementations, storage catalog, WAL, and archival 
 WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 
 - Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`, `Meridian.Ui.Dashboard`
-- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
+- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/app.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/development/wpf-web-ui-alignment-plan.md`
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Desktop and UI Workflows | `67937170` (2026-08-10T19:58:43+00:00) | 5 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `c10b0e05` (2026-08-09T19:58:58+00:00) | 6 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `c10b0e05` (2026-08-09T19:58:58+00:00) | 5 |
-| `src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs` | Desktop and UI Workflows | `c10b0e05` (2026-08-09T19:58:58+00:00) | 1 |
-| `src/Meridian/UiServer.cs` | Host and Composition | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 6 |
-| `src/Meridian.Ui.Services/Services/StatusServiceBase.cs` | Desktop and UI Workflows | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 5 |
-| `src/Meridian/DemoWorkspaceCli.cs` | Host and Composition | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 5 |
-| `src/Meridian/Meridian.csproj` | Host and Composition | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 5 |
-| `src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs` | Host and Composition | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 4 |
-| `src/Meridian.Contracts/Operations/DataProvenance.cs` | Host and Composition | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 4 |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | Execution, Risk, and Strategies | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs` | Desktop and UI Workflows | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs` | Desktop and UI Workflows | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Services/ReportPackValidationService.cs` | Desktop and UI Workflows | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 4 |
-| `src/Meridian.Wpf/Features/Portfolio/Shell/PortfolioWorkspaceShellPage.xaml.cs` | Desktop and UI Workflows | `9f2d6a49` (2026-08-09T19:46:22+00:00) | 4 |
+| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx` | Desktop and UI Workflows | `d7ffaa85` (2026-08-11T08:44:18+00:00) | 5 |
+| `src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx` | Desktop and UI Workflows | `468cbeba` (2026-08-11T08:35:38+00:00) | 5 |
+| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx` | Desktop and UI Workflows | `468cbeba` (2026-08-11T08:35:38+00:00) | 4 |
+| `src/Meridian.Ui/wwwroot/workstation/index.html` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 3 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-BobEkx_M.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen.view-model-dThrecsR.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/asset-detail-screen-1lWd_jTt.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/cash-ladder-screen-CLjPbAp7.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/checkbox-BUMscIec.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/concrete-DL54RHEg.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/covered-call-screen-DiBBtxVF.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/daily-control-tower-screen-CSEJr6bl.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/data-screen-C54CuOu1.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/empty-state-C7144GuU.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
+| `src/Meridian.Ui/wwwroot/workstation/assets/entity-setup-wizard-DQk4sklJ.js` | Unmapped | `468cbeba` (2026-08-11T08:35:38+00:00) | 1 |
 

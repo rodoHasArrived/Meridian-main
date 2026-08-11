@@ -746,7 +746,7 @@ still `in_progress`.
   **Verify:** the lint rule fails on a seeded handler-less button; a test asserts the save round trip.
   **Effort:** S
 
-- [~] **AR8-44 — Remove the navigable dead ends.** *(Partial: the palette entry is filtered by AR8-Q1 and the Quant Lab Formulas tab is withdrawn, so neither dead end is reachable. Still open: wire `entityStructure` into `FamilyOfficeScreen` or mount the built formula workbench.)* Covered by AR8-Q1 for the routing guard; also
+- [~] **AR8-44 — Remove the navigable dead ends.** *(Partial. The Quant Lab formulas dead end is genuinely closed — the tab is withdrawn and a stale `?view=formulas` link degrades to the script lab. Family Office is only **suppressed from discovery**: out of nav and the palette, but `app.tsx` still mounts `FamilyOfficeScreen` on `/portfolio/family-office`, so an existing bookmark still lands on the permanent not-connected screen — deliberately, so old links resolve. Still open: wire `entityStructure` from the fund-structure read model or redirect the route, and mount the built formula workbench.)* Covered by AR8-Q1 for the routing guard; also
   remove the command-palette entry that advertises the unmounted Formula Workbench
   (`command-palette.view-model.ts:254-258`) or mount the existing 319-line
   `components/meridian/strategy-formula-workbench.tsx`, and either wire `entityStructure` into
@@ -801,8 +801,14 @@ still `in_progress`.
   is lowering its baseline as sections move out — not adding a new gate.
   **Change:** split `settings-screen.tsx` along the six sections already enumerated in
   `settings-route-state.ts:32-46`, lazy-load per `?view=`, and drop the ratchet baseline with each
-  split; add a `chunkSizeWarningLimit` and a CI bundle-budget check; delete the 13 tombstones and
-  let the 404 recovery panel handle stale bookmarks; de-duplicate the double-mounted route.
+  split; add a `chunkSizeWarningLimit` and a CI bundle-budget check; de-duplicate the
+  double-mounted route. **Keep the 13 redirect tombstones.** An earlier revision proposed deleting
+  them and letting the 404 panel absorb stale bookmarks; that was wrong. `legacyWorkspaceRedirect`
+  deliberately preserves query and hash state while mapping supported old paths
+  (`/accounting/trial-balance`, `/accounting/evidence`, `/data/watchlist`, and the legacy workspace
+  aliases) to their current destinations, with explicit regression tests. They are a few lines of
+  routing, not meaningful bundle weight, and deleting them would break saved links. If they must
+  go, use a versioned deprecation with a migration path — not a 404.
   **Effort:** L · **Related:** `W8-UX-CONSOL-001`
 
 ---

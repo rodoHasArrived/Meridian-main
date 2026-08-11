@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T07:32:08Z",
+  "generatedAt": "2026-08-11T08:53:47Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -181,6 +181,7 @@
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
         "src/Meridian.Ui/dashboard/package.json",
+        "src/Meridian.Ui/dashboard/src/app.tsx",
         "src/Meridian.Ui/dashboard/src/main.tsx",
         "src/Meridian.Wpf/App.xaml.cs",
         "src/Meridian.Wpf/MainWindow.xaml",
@@ -1244,7 +1245,8 @@
       ],
       "entrypoints": [
         "src/Meridian.Ui/dashboard/package.json",
-        "src/Meridian.Ui/dashboard/src/main.tsx"
+        "src/Meridian.Ui/dashboard/src/main.tsx",
+        "src/Meridian.Ui/dashboard/src/app.tsx"
       ],
       "keyContracts": [
         "src/Meridian.Ui/dashboard/package.json",
@@ -2223,323 +2225,323 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-10T19:58:43+00:00",
-      "lastCommit": "67937170",
-      "lastSummary": "W9-SAFETY-007: kill-switch activation now sweeps the open book; registry scoped honestly to in_progress",
+      "lastModified": "2026-08-11T08:44:18+00:00",
+      "lastCommit": "d7ffaa85",
+      "lastSummary": "Drop the imports orphaned by removing the formula workbench panel",
       "touches": 5
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:58:58+00:00",
-      "lastCommit": "c10b0e05",
-      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:58:58+00:00",
-      "lastCommit": "c10b0e05",
-      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 5
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:58:58+00:00",
-      "lastCommit": "c10b0e05",
-      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian/UiServer.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui.Services/Services/StatusServiceBase.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian/DemoWorkspaceCli.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian/Meridian.csproj",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 4
     },
     {
-      "path": "src/Meridian.Contracts/Operations/DataProvenance.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 4
+      "path": "src/Meridian.Ui/wwwroot/workstation/index.html",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportPackValidationService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Wpf/Features/Portfolio/Shell/PortfolioWorkspaceShellPage.xaml.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Wpf/Services/WorkspaceShellContextService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian/WorkstationAssetTree.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "9f2d6a49",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-BobEkx_M.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/AmountCell-DE93_Bra.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen.view-model-dThrecsR.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/LedgerTable-aYH95ble.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/asset-detail-screen-1lWd_jTt.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-BGQtIPOB.css",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/cash-ladder-screen-CLjPbAp7.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-CTECdPiW.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/checkbox-BUMscIec.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen.view-model-BbZsbHnx.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/concrete-DL54RHEg.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/activity-p5OclTbc.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/covered-call-screen-DiBBtxVF.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/asset-detail-screen-BM6AK4DP.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/daily-control-tower-screen-CSEJr6bl.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/button-BIxHpXlN.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/data-screen-C54CuOu1.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/card-DjFlq229.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/empty-state-C7144GuU.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/cash-ladder-screen-BWCoFcss.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/entity-setup-wizard-DQk4sklJ.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/chart-line-CjU_rwux.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/evidence-workbench-screen-CEmwgDuv.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/charts-DAaqk9E4.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/family-office-screen-DMDmN49m.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/checkbox-B-72uPMw.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/finance-standard-pages-screen-xrJgh5vA.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/chrome-bridge-B4RO-XWV.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/financial-record-explorer-D_EuS79K.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/circle-alert-Cx2Q6UKF.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/freshness-chip-BXVNd68X.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/circle-play-Bpv2Lpqa.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/freshness-chip.view-model-CEa4E-Ip.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/circle-x-38x5mnsL.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/index-DG0kU9bu.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/clipboard-list-BKwGSuNO.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/journal-entry-detail-screen-D1KHdcrD.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/concrete-B6Xqti72.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/live-quotes-screen-CniJWi5D.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/context-menu-BF6UTkjE.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/margin-control-center-screen-Ctf-lWQv.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/copy-BkSUj9Qt.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/market-data-screen-CGgOWkKX.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/covered-call-screen-BVUCUQj9.js",
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/metric-card-1FD4dm74.js",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22+00:00",
-      "lastCommit": "17f70d72",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/metric-card-Cva3JFOd.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operations-CQpLXFxf.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operations-continuity-screen-NtqL7mmp.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operations-continuity-screen.view-model-uZ5NhivP.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operations-record-release-screen-DbceCZpn.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operator-readiness-console-7aMiddZP.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/pagination-CbrHPMUM.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/portfolio-screen-CzAc_1Ec.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/portfolio-screen.view-model-6n_s3Wtr.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/quant-lab-screen-BNygnFXf.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/report-library-screen-n-H16wE9.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/report-run-parameters-screen-DkwL1IUm.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/wwwroot/workstation/assets/reporting-hub-DLJC4Dfm.js",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T08:35:38+00:00",
+      "lastCommit": "468cbeba",
+      "lastSummary": "Remove the StockSharp phantom provider and withdraw the Quant Lab formulas dead end",
       "touches": 1
     }
   ],

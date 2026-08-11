@@ -63,11 +63,18 @@ def declared_kinds() -> set[str]:
 
 
 def walk_secret_keys(node: object, path: str = "") -> list[str]:
+    """Report secret-shaped keys regardless of value.
+
+    The Rithmic and CQG password fields this guard exists to keep out were **empty strings**:
+    the harm was the shape of the sample teaching operators to type a live credential into
+    JSON, not the placeholder value. Requiring a non-empty value would let the exact regression
+    this guard was written for pass.
+    """
     findings: list[str] = []
     if isinstance(node, dict):
         for key, value in node.items():
             here = f"{path}.{key}" if path else key
-            if SECRET_KEY_PATTERN.match(key) and isinstance(value, str) and value.strip():
+            if SECRET_KEY_PATTERN.match(key) and not isinstance(value, (dict, list)):
                 findings.append(here)
             findings.extend(walk_secret_keys(value, here))
     elif isinstance(node, list):
@@ -107,8 +114,8 @@ def main() -> int:
 
     for path in walk_secret_keys(document):
         errors.append(
-            f"{path} holds a non-empty secret-shaped value; the sample must not carry live "
-            f"credentials. Use an environment variable instead."
+            f"{path} is a secret-shaped key; the sample must not carry credential fields at all, "
+            f"empty placeholder or not. Document an environment variable instead."
         )
 
     if errors:

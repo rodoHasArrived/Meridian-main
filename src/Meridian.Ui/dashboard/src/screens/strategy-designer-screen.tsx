@@ -133,18 +133,12 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           <Button
             type="button"
             variant="secondary"
+            // The unconditional evidence blocker now lives in the view-model, so the status label,
+            // proof summary, aria-label, and this button all state the same reason rather than the
+            // screen overriding a command the view-model still advertised as ready.
             aria-label={vm.backtest.runCommand.ariaLabel}
-            disabled
-            // The evidence blocker is unconditional, so it must lead. Coalescing to the validation
-            // summary would tell an operator that fixing validation enables the run, and they would
-            // only meet the second blocker afterwards. Validation detail is appended, not
-            // substituted.
-            disabledReason={[
-              "Running a backtest proof needs governed evidence references (operator acceptance, retained evidence, accounting, approvals, paper validation, governed reports) that this screen cannot collect yet.",
-              vm.backtest.runCommand.disabledReason
-            ]
-              .filter(Boolean)
-              .join(" ")}
+            disabled={vm.backtest.runCommand.disabled}
+            disabledReason={vm.backtest.runCommand.disabledReason}
           >
             <PlayCircle className="h-4 w-4" aria-hidden="true" />
             <span className="ml-1.5">{vm.backtest.runCommand.label}</span>

@@ -165,7 +165,10 @@ PROJECT_SEEDS: dict[str, ProjectSeed] = {
             "src/Meridian.Ui/dashboard/package.json",
             "src/Meridian.Ui/dashboard/src/main.tsx",
         ),
-        ("package.json", "src/main.tsx", "src/App.tsx"),
+        # `src/app.tsx` is lowercase on disk and owns the workstation shell and route table.
+        # The former "src/App.tsx" spelling resolved only on case-insensitive filesystems, so
+        # Linux generation silently produced a map without the application entrypoint.
+        ("package.json", "src/main.tsx", "src/app.tsx"),
     ),
     "Meridian.Backtesting": ProjectSeed(
         "Meridian.Backtesting",

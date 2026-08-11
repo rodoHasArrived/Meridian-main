@@ -1388,7 +1388,16 @@ export function buildStrategyBuilderWorkbenchViewModel({
     ? `${errorCount} blocking issue${errorCount === 1 ? "" : "s"}`
     : validationMessages.length > 0
       ? `${validationMessages.length} advisory issue${validationMessages.length === 1 ? "" : "s"}`
-      : "Ready for preview and backtest";
+      : "Design valid; backtest execution not yet available";
+
+  // Running a backtest proof needs governed evidence references — operator acceptance, retained
+  // evidence, accounting records, approvals, paper validation, governed reports — that this screen
+  // cannot collect, so the command is blocked for every design regardless of validation state.
+  // Keeping this in the view-model means the status text, proof summary, aria-label, and button all
+  // tell the operator the same story; overriding only the rendered button left the screen claiming
+  // the run was ready.
+  const backtestEvidenceBlocker =
+    "Backtest execution needs governed evidence references (operator acceptance, retained evidence, accounting, approvals, paper validation, governed reports) that this screen cannot collect yet.";
 
   return {
     document,
@@ -1437,16 +1446,18 @@ export function buildStrategyBuilderWorkbenchViewModel({
     validationSummary,
     liveRegionMessage: `${document.name}. ${validationSummary}. ${selectedCell ? `${selectedCell.label} selected.` : "No cell selected."}`,
     backtest: {
-      statusLabel: errorCount > 0 ? "Blocked" : "Ready",
+      statusLabel: "Blocked",
       proofSummary: errorCount > 0
-        ? "Fix designer validation before QuantScript preview or backtest execution."
-        : "Generated QuantScript will run through the existing Quant Lab and strategy run ledger.",
+        ? `Fix designer validation before QuantScript preview. ${backtestEvidenceBlocker}`
+        : backtestEvidenceBlocker,
       datasetFingerprint,
       runCommand: {
         label: "Run backtest proof",
-        ariaLabel: errorCount > 0 ? `Run backtest proof blocked: ${validationSummary}` : "Run backtest proof through Quant Lab",
-        disabled: errorCount > 0,
-        disabledReason: errorCount > 0 ? validationSummary : null
+        ariaLabel: errorCount > 0
+          ? `Run backtest proof blocked: ${validationSummary}. ${backtestEvidenceBlocker}`
+          : `Run backtest proof blocked: ${backtestEvidenceBlocker}`,
+        disabled: true,
+        disabledReason: errorCount > 0 ? `${backtestEvidenceBlocker} Also: ${validationSummary}.` : backtestEvidenceBlocker
       },
       routeActions: [
         buildStrategyBuilderBackendLink("templates", "Templates", STRATEGY_DESIGNER_API_ENDPOINTS.templates, "GET"),
