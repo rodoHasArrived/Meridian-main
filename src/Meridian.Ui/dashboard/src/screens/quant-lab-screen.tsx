@@ -6,6 +6,7 @@ import {
   Settings2,
   Sparkles
 } from "lucide-react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,6 +70,20 @@ export function QuantLabScreen() {
   // A stale `?view=formulas` deep link or bookmark falls back to the script lab rather than
   // rendering a permanent "not connected" card.
   const view = "lab" as const;
+  const staleViewParam = searchParams.get("view");
+
+  // Canonicalize the address when an obsolete view arrives, so the URL matches what is on screen.
+  // Without this the shell's Copy Link action would share a link claiming to be the Formula
+  // Workbench while the operator is looking at the Script Lab.
+  useEffect(() => {
+    if (staleViewParam === null) return;
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("view");
+    setSearchParams(nextParams, { replace: true });
+    // `searchParams` is intentionally omitted: it is a fresh object each render, and the effect
+    // only needs to re-run when the offending parameter changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staleViewParam, setSearchParams]);
 
   return (
     <ScreenLayout

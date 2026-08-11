@@ -300,7 +300,11 @@ still `in_progress`.
   client-side so 500 breaks are one operator gesture, and log any truncation rather than silently
   capping.
   **Verify:** `npm --prefix src/Meridian.Ui/dashboard run test` covering the drawer's nine actions;
-  an integration test clearing 250 breaks in one bulk call.
+  plus a test that **one operator gesture** clears 250 breaks. Assert the gesture, not the call
+  count — both designs above are supported, and client-side chunking against the retained 100-item
+  server cap would fail a single-call assertion. If the cap is raised instead, the same test passes
+  with one call. Either way, assert that chunks are sequenced correctly, that the idempotency key
+  makes a retry safe, and that any truncation is logged rather than silent.
   **Effort:** L · **Sequence:** assign + comment + sign-off first (highest frequency)
 
 ---

@@ -37,6 +37,15 @@ describe("QuantLabScreen formulas tab (withdrawn)", () => {
     expect(screen.queryByText("Formula catalog is not connected")).not.toBeInTheDocument();
   });
 
+  it("canonicalizes the address so a shared link matches what is on screen", async () => {
+    renderWithRouter(<QuantLabScreen />, { initialEntries: ["/strategy/quant-lab?view=formulas"] });
+    await waitForAsyncEffects();
+
+    // Otherwise Copy Link would share a URL claiming to be the Formula Workbench while the
+    // operator is looking at the Script Lab.
+    expect(window.location.search).not.toContain("view=formulas");
+  });
+
   it("keeps the script lab as the default tab", async () => {
     renderWithRouter(<QuantLabScreen />, { initialEntries: ["/strategy/quant-lab"] });
     await waitForAsyncEffects();
