@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Text.Json;
 using Meridian.Backtesting.Sdk;
-using Meridian.Strategies.Interfaces;
-using Meridian.Strategies.Models;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Storage;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Ui.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -142,6 +142,7 @@ public static class LeanEndpoints
             }, jsonOptions);
         })
         .WithName("VerifyLean")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStrategies))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -223,6 +224,7 @@ public static class LeanEndpoints
             }, jsonOptions);
         })
         .WithName("StartLeanSync")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStrategies))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -275,6 +277,7 @@ public static class LeanEndpoints
             }, jsonOptions);
         })
         .WithName("StartLeanBacktest")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStrategies))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -327,6 +330,7 @@ public static class LeanEndpoints
             return Results.Json(new { backtestId, status = "stopped" }, jsonOptions);
         })
         .WithName("StopLeanBacktest")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStrategies))
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -381,6 +385,7 @@ public static class LeanEndpoints
                 : Results.NotFound(new { error = $"Backtest '{backtestId}' not found" });
         })
         .WithName("DeleteLeanBacktest")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStrategies))
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -447,6 +452,7 @@ public static class LeanEndpoints
             }, jsonOptions);
         })
         .WithName("ConfigureLeanAutoExport")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageStrategies))
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
