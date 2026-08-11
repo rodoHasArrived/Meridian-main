@@ -162,14 +162,28 @@ above** — several of these are why a change is scoped the way it is.
   book means it returns the **midpoint** for a sell, not the bid. That is right for notional,
   exposure, and concentration. It is wrong for any control comparing an operator's price against the
   market: a sell measured against the mid looks priced through by half the spread, so an ordinary
-  marketable sell at the bid is rejected on a wide book. Change 1 added
-  `IPortfolioExposureProvider.TryGetTouchPrice(symbol, side)` for the raw crossing side; the price
-  collar in change 2 uses that, not `TryGetExecutablePrice`.
-- The price limb applies only to a plain `Limit` order on a single symbol. Stop and stop-limit
-  limits are priced off the trigger, auction limits (`LimitOnOpen`/`LimitOnClose`) price against a
-  future cross rather than the continuous touch, market orders may carry a simulated observation in
-  `LimitPrice` through the paper gateway, and a multi-leg limit is a package net not comparable to
-  the top-level symbol's quote. Change 1 establishes these exclusions; the collar inherits them.
+  marketable sell at the bid is rejected on a wide book. **`IPortfolioExposureProvider` on `main`
+  exposes only `TryGetReferencePrice` and `TryGetExecutablePrice`** — the seam a price control needs
+  does not exist there yet, and `W9-SAFETY-007.current_summary` on `main` still advertises
+  `TryGetExecutablePrice` as the available reference. Change 1 therefore *adds*
+  `TryGetTouchPrice(symbol, side)` for the raw crossing side and updates that row in the same change;
+  the collar in change 2 depends on change 1 having landed it. Until then, a registry-first
+  implementer reading only the row would build the collar on the midpoint-biased method this
+  paragraph rejects.
+- Each price is measured against the reference it is meaningful to, and each order type contributes
+  only the prices it genuinely puts at risk. A plain `Limit`'s limit is measured against the crossing
+  touch; a `StopMarket` or `StopLimit` *trigger* against the side-neutral valuation reference,
+  because the matcher fires a stop off the traded price and reaches for the touch only as a fallback;
+  and a `StopLimit`'s limit against **its own trigger**, which is what it is priced off. Auction
+  limits (`LimitOnOpen`/`LimitOnClose`) price against a future cross rather than the continuous
+  touch, market orders may carry a simulated observation in `LimitPrice` through the paper gateway,
+  trailing stops have a broker-derived trigger that moves with the market, and a multi-leg limit is a
+  package net not comparable to the top-level symbol's quote — none of those contribute a price.
+- A trigger's wrong side is the **mirror** of a limit's: `PaperOrderMatchingPolicy` fires a buy stop
+  once the market reaches or passes above it, so a buy stop typed *beneath* the market is already
+  crossed and a stop-market order that triggers on acceptance routes unbounded. Change 1 measures
+  that mirrored direction under the same band. The collar inherits every one of these distinctions;
+  reusing the limit orientation for a trigger would leave the same hole change 1 closed.
 - **The stop exclusion has a hole that changes 1–2 must close.** "A stop sits away from the market
   by design" is true only for a correctly-sided stop. `PaperOrderMatchingPolicy.IsStopTriggered`
   fires a buy when the market is at or above the stop and a sell when it is at or below it, after
@@ -244,6 +258,14 @@ above** — several of these are why a change is scoped the way it is.
   allowlist it with a stated reason per family and record why role-level read access satisfies the
   criterion — and give whichever path its own baseline. The mutation tranches below do not budget
   for it.
+- **The unresolved *writes* need a metadata baseline too, and the behavioural one is not it.** The
+  112-entry ratchet records observed status codes and fixture failures, not declarations, so a route
+  can sit in that baseline while its mapping carries no `EndpointAuthorizationMetadata` at all —
+  `POST /api/maintenance/execute` is one. An unconditional metadata assertion landing in change 4
+  therefore fails on every write still queued for changes 5–8, not only on reads. Enumerate the
+  metadata debt independently in change 4, ratchet it down with each tranche the same way the
+  behavioural baseline ratchets, and the assertion can merge with change 4 instead of being weakened
+  or deferred to the end of the row.
 - The sweep records a test-host DI resolution failure as a violation rather than skipping it, so
   guarding a route can surface a fixture gap that must be closed with it.
 - `FundProfileScopeEndpointFilters` establishes that an unauthorized caller receives a uniform 403
@@ -276,6 +298,17 @@ above** — several of these are why a change is scoped the way it is.
   unresolvable scope is rejected rather than defaulted - so documenting the deployment boundary
   explains the current behaviour but cannot discharge it. Reading the write-gate switch as "the
   remaining step" would close the row with the read side still open.
+- **But tightening `TenantReadPredicate` needs a data migration before it needs a test.** That
+  predicate emits `tenant_id is null or ...` on purpose: `V_ledger_020`, `V_ledger_021`, and
+  fund-account migration `003` backfill from the `fund_profile_tenancy` registry, and their own
+  headers state that rows they cannot attribute — accounting periods with no `ledger_book_id`, and
+  any row the registry never covered — stay null and fail-open until a later slice attributes them.
+  Rejecting null tenants without first attributing those rows does not close a leak; it hides
+  fund-account, journal/period, and operations-continuity records from *every* scoped reader on an
+  existing deployment. Change 9 must therefore carry a deterministic backfill for the remaining
+  unstamped rows, plus a quarantine or upgrade-validation path for whatever it still cannot
+  attribute, and only then flip the predicate. Regression tests prove the tightened predicate; they
+  do not prove the data was ready for it.
 - Slice 4c's remaining defense-in-depth items (fund-account sub-tables, fund-structure store) are
   not a currently reachable cross-tenant residual and stay out of this wave.
 
