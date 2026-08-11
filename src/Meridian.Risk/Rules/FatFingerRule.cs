@@ -34,9 +34,13 @@ public readonly record struct FatFingerThresholds(
 ///     against the current touch. This is the only type whose limit is meaningful against the
 ///     <i>current continuous</i> market, which is the only market this rule can see.</item>
 ///   <item><see cref="OrderType.StopMarket"/> — its <see cref="OrderRequest.StopPrice"/> is
-///     measured against the touch with the <b>mirrored</b> orientation described below. A stop is
-///     not measured for being far from the market — that is what a stop is — but for being on the
-///     <i>wrong side</i> of it, which is not a stop at all.</item>
+///     measured against
+///     <see cref="IPortfolioExposureProvider.TryGetTriggerReferencePrice"/>, <b>not</b> the touch,
+///     and with the <b>mirrored</b> orientation described below. That seam resolves the last
+///     trade, then the bar close, then the crossing side — the matcher's precedence, which differs
+///     from the touch on any wide book. A stop is not measured for being far from the market —
+///     that is what a stop is — but for being on the <i>wrong side</i> of it, which is not a stop
+///     at all.</item>
 ///   <item><see cref="OrderType.StopLimit"/> — both. Its trigger is measured like a stop-market
 ///     trigger, and its limit is measured against <b>its own trigger</b> rather than the market,
 ///     because that is what the limit is priced off: a sell stop at $90 with an $89 limit is an

@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-11
 ---
 
 # src/Meridian.Execution
@@ -211,6 +211,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W7-LIVE-001` | Live-readiness governance |
+| `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

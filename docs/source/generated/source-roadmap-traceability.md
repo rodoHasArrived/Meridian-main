@@ -96,6 +96,7 @@ do_not_edit: true
 | `SRC-EXECUTION` | Meridian execution | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-EXECUTION` | Meridian execution | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-EXECUTION` | Meridian execution | `W7-LIVE-001` | Live-readiness governance |
+| `SRC-EXECUTION` | Meridian execution | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
 | `SRC-EXECUTION-SDK` | Execution SDK | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-EXECUTION-SDK` | Execution SDK | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-FSHARP` | Meridian FSharp | `W3-CONT-001` | Research to paper continuity |
@@ -182,6 +183,7 @@ do_not_edit: true
 | `SRC-UI-SHARED` | UI shared contracts | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `SRC-UI-SHARED` | UI shared contracts | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-UI-SHARED` | UI shared contracts | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `SRC-UI-SHARED` | UI shared contracts | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
 | `SRC-WPF` | WPF workstation | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-WPF` | WPF workstation | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-WPF` | WPF workstation | `W5-ACCT-001` | Accounting records and operational evidence |
