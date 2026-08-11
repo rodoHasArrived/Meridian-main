@@ -55,7 +55,7 @@ stays `in_progress` until the completing change lands.
 | # | Phase | Change | Row | Criterion |
 | --: | --- | --- | --- | --- |
 | 1 | A | Fat-finger quantity and price-deviation rules | `W9-SAFETY-007` | Pre-trade rule catalogue — *contributes* |
-| 2 | A | Price-collar rule | `W9-SAFETY-007` | Pre-trade rule catalogue — **discharges** |
+| 2 | A | Price-collar rule **and the OMS amendment gate** | `W9-SAFETY-007` | Pre-trade rule catalogue — **discharges** |
 | 3 | A | Two-lane safety-control sweep | `W9-SAFETY-007` | No dead safety buttons |
 | 4 | B | Declarative authorization assertion + `/api/fund-structure` tranche | `W9-GOV-008` | Route authorization coverage |
 | 5 | B | `/api/workstation` + `/api/auth` tranche | `W9-GOV-008` | Route authorization coverage |
@@ -203,9 +203,17 @@ above** — several of these are why a change is scoped the way it is.
   accepted at $110 can be amended to $1 and trigger immediately as an unbounded market order — the
   very outcome the wrong-side trigger limb blocks on submission — with neither rule running. Every
   new limit or stop value needs to re-enter the price controls regardless of whether notional
-  increases. That is an OMS-wide change touching every rule, so it is deliberately **not** folded
-  into change 1 or 2; but it is a bound on what those changes guarantee, not adjacent work, and
-  `W9-SAFETY-007` records it as such.
+  increases.
+  **Change 2 owns that gate.** Deferring it was the wrong call and this revision reverses it: a rule
+  every amendment walks around is not "enforced by the mandatory validator" in any sense the
+  criterion means, so leaving the gate out would let change 2 mark the criterion discharged while a
+  working order can still be amended straight through both the deviation band and the collar. It is
+  genuinely OMS-wide — `IsRiskIncreasing` governs revalidation for *every* rule, so widening it
+  changes when position-limit, notional, and exposure rules re-run too — which is an argument for
+  landing it deliberately with its own tests, not for landing it never. Change 2 is where both price
+  rules exist, so it is where the gate that makes them real belongs. Change 1 additionally writes
+  the limitation into `W9-SAFETY-007` itself, so between the two changes the registry states the
+  bound rather than only these planning records.
 - **The trigger's reference precedence is load-bearing, not a detail.** Any accessor that consults a
   quote before a print disagrees with the matcher whenever the two differ, and it does so in *both*
   directions. With a 100/120 quote and a 100 print, a buy stop at 105 is resting yet reads as crossed
