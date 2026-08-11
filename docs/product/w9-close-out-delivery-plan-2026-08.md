@@ -458,7 +458,12 @@ above** — several of these are why a change is scoped the way it is.
   traceability mapping, since `PostgresFundStructureService` lives in `src/Meridian.Application` and
   the roadmap-to-source trace otherwise routes implementers everywhere except the module holding the
   service. That mapping regenerates a `src/` README, so it belongs to the change that touches source
-  rather than to this planning commit. This is distinct from the fail-open *read* predicates
+  rather than to this planning commit. Change 11 owes the same pair for `W9-INGEST-009`:
+  `RetainedInternalReconciliationPopulationProvider` — the provider that must acquire the scoped
+  ledger population — also lives in `src/Meridian.Application`, and neither the row's
+  `source_modules` nor `SRC-APP.roadmap_items` names it, so the trace routes implementers away from
+  the one module the change has to modify. Both mappings are bidirectional: the row lists the
+  module, and the module lists the row. This is distinct from the fail-open *read* predicates
   below — those pass rows, these pass requests.
 - **The write gate is not the whole criterion.** Flipping `RequireFundScopedWriteTenant` covers only
   the decorated write and evaluate routes. The exit criterion requires cross-tenant *reads* to fail

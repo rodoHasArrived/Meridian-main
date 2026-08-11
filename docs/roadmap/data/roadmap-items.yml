@@ -1214,8 +1214,6 @@ items:
       - SRC-UI-SHARED
     diagrams:
       - DIA-ASSURANCE-LOOP
-      - SRC-APP
-
     evidence:
       - type: doc
         path: docs/architecture/event-accounting-architecture.md
