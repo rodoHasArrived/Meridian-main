@@ -27,8 +27,8 @@ feature:
 | Row | Status entering the wave | What is actually open |
 | --- | --- | --- |
 | `W9-SAFETY-007` | `in_progress` | Fat-finger and price-collar rules absent from the mandatory validator; the two-lane safety-control sweep unaudited |
-| `W9-GOV-008` | `planned` | 152 mutating routes process permissionless requests; tenancy enforcement is off by default; accounting/ledger audit events are not hash-chained |
-| `W9-INGEST-009` | `planned` | Golden-file, bounded-ingress, and matcher-determinism evidence missing for the institutional formats |
+| `W9-GOV-008` | `planned` | 112 mutating routes still process permissionless requests; tenancy enforcement is off by default and reads stay fail-open; accounting/ledger audit events are not hash-chained |
+| `W9-INGEST-009` | `planned` | Institutional formats lack golden-file coverage, enforce no parse bounds, and cannot match transactions on the live path |
 
 Closing all three also supplies evidence toward `PRD-006`, `PRD-007`/`PRD-009`, and
 `PRD-010`/`PRD-101` in the [production-readiness tracker](implementation-todo-list.md). It does not
@@ -54,7 +54,7 @@ stays `in_progress` until the completing change lands.
 | 7 | B | Data and diagnostics tranche | `W9-GOV-008` | Route authorization coverage |
 | 8 | B | Remainder to zero | `W9-GOV-008` | Route authorization coverage |
 | 9 | B | Fail-closed tenancy + hash-chained accounting **and ledger** audit | `W9-GOV-008` | Tenancy rejection on reads and writes; tamper-evident audit |
-| 10 | C | Golden-file packs and bounded-ingress proof | `W9-INGEST-009` | Connector evidence; PRD-010 limits |
+| 10 | C | Golden-file packs and bounded-ingress **implementation** | `W9-INGEST-009` | Connector evidence; PRD-010 limits |
 | 11 | C | Ledger-transaction population, live split matcher, and casework feed | `W9-INGEST-009` | Match determinism; casework feed |
 
 ### Ordering rationale
@@ -68,8 +68,8 @@ assertion lands with the first tranche rather than after the count reaches zero.
 instrument once the baseline is already empty would prove nothing about the routes fixed before it.
 
 **Tranches by owner lane, largest first (4–8).** Each tranche maps to one owner lane so review stays
-tractable, and `/api/fund-structure` leads because it is 34 of the 152 and is mapped as a single
-route group. `/api/auth` is pulled early despite its small count: account disable, password reset,
+tractable, and `/api/fund-structure` leads because it is 34 of the remaining 112 and is mapped as a
+single route group. `/api/auth` is pulled early despite its small count: account disable, password reset,
 and access revocation are the most sensitive unguarded mutations in the set.
 
 **Tenancy and audit last within the row (9).** Both are behaviour-changing rather than additive, and
@@ -94,8 +94,9 @@ parsing is shared with `PRD-010`; changes 1–3 are shared with `PRD-006`.
 
 - It is not a completion claim. Each row moves only to `ready_for_acceptance`; `done` requires
   operator acceptance.
-- It does not open W10. `W10-MARK-001` keeps its reserved migration ordinals (036–038) and its
-  blueprint; this wave takes 039 or higher.
+- It does not open W10. `W10-MARK-001` keeps its blueprint and its place in the ordinal
+  reservation table; this wave re-derives its own ordinal from disk rather than pre-assigning one
+  above reservations that have not shipped (see Delivery constraints).
 - It does not reopen deferred lanes, add a root workspace, or extend the risk-engine blueprint
   beyond its shipped PR 1. The decision journal, `/api/risk/decisions` read surface, and their WPF
   parity remain design-only. Because live truth is the registry and not this page, change 1 writes
@@ -155,11 +156,20 @@ above** — several of these are why a change is scoped the way it is.
   marketable sell at the bid is rejected on a wide book. Change 1 added
   `IPortfolioExposureProvider.TryGetTouchPrice(symbol, side)` for the raw crossing side; the price
   collar in change 2 uses that, not `TryGetExecutablePrice`.
-- The price limb applies only to immediately marketable limit types on single-symbol orders. Stop
-  and stop-limit prices are priced off the trigger, market orders may carry a simulated observation
-  in `LimitPrice` through the paper gateway, and a multi-leg limit is a package net that is not
-  comparable to the top-level symbol's quote. Change 1 establishes these exclusions; the collar
-  inherits them.
+- The price limb applies only to a plain `Limit` order on a single symbol. Stop and stop-limit
+  limits are priced off the trigger, auction limits (`LimitOnOpen`/`LimitOnClose`) price against a
+  future cross rather than the continuous touch, market orders may carry a simulated observation in
+  `LimitPrice` through the paper gateway, and a multi-leg limit is a package net not comparable to
+  the top-level symbol's quote. Change 1 establishes these exclusions; the collar inherits them.
+- **The stop exclusion has a hole that changes 1–2 must close.** "A stop sits away from the market
+  by design" is true only for a correctly-sided stop. `PaperOrderMatchingPolicy.IsStopTriggered`
+  fires a buy when the market is at or above the stop and a sell when it is at or below it, after
+  which a stop-market routes as a **market order**. So with a $100 market, a fat-fingered buy stop
+  at $1 or sell stop at $1,000 is already crossed, triggers instantly, and becomes an unbounded
+  market order — with no price control on it at all, because the limb skips stop prices entirely.
+  An already-crossed or wildly deviated trigger is itself the fat-finger signal. Compare `StopPrice`
+  against the touch and reject or escalate it, and for stop-limit validate trigger and limit
+  independently rather than excluding the type wholesale.
 - `RiskRuleSeverity` is already decisional and `CompositeRiskValidator` already evaluates every rule
   rather than stopping at the first failure, so a collar can escalate for approval instead of
   hard-blocking. That was not expressible before the risk-engine blueprint's PR 1.
@@ -288,9 +298,17 @@ above** — several of these are why a change is scoped the way it is.
   empty transaction population every bank row fails closed to a break, and one-to-many outcomes can
   never reach live casework no matter what the standalone kernels do. Tests written against those
   kernels would pass while the shipping path matched nothing. **Sourcing the ledger-transaction
-  population and moving the live path onto the split-capable engine are in scope for this row**, not
+  population and giving the live path deterministic split matching are in scope for this row**, not
   follow-on work — and the population decision is a domain modeling call that needs an owner before
   change 11 starts.
+- **Do not read "split-capable engine" as swapping `StatementMatchingEngine` for
+  `ReconciliationMatchingEngine`.** That would lose transaction matching outright:
+  `StatementRunMatcher` builds statement, cash, *and* internal ledger-transaction populations and
+  converts `StatementMatchResult` values into casework, while `ReconciliationMatchingEngine.Run`
+  handles positions and cash only and has no transaction model at all. The deterministic
+  one-to-many primitives live in `ReconciliationMatchKernel`. Change 11 therefore extends
+  `StatementMatchingEngine` with those primitives, or introduces an adapter that preserves all
+  three populations — it does not replace the live engine.
 - Both connectors and the sided kernel family already exist under
   `src/Meridian.FinancialOperations/Reconciliation/`, with unit coverage under
   `tests/Meridian.Tests/Reconciliation/`.
