@@ -764,6 +764,52 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     /// <summary>
+    /// The guard must resolve the trigger from the same observation the matcher will consume, and
+    /// with the matcher's freshness policy — which is to say, none. Every other accessor on this
+    /// provider filters stale marks, on purpose; applying that filter here drops a print the
+    /// matcher will still trigger from, and the guard approves a stop that fires on arrival.
+    /// </summary>
+    [Fact]
+    public void TryGetTriggerReferencePrice_UsesTheMatcherObservation_IncludingAStalePrint()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        // Six minutes past this provider's mark window: the collectors would discard it, the
+        // matcher would not.
+        var feed = new StubLiveFeed(lastTrade: 130m, bid: 90m, ask: 100m);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            liveFeedAccessor: () => feed);
+
+        IPortfolioExposureProvider seam = provider;
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
+            .Should().Be(130m, "the matcher fires from that print regardless of its age");
+    }
+
+    /// <summary>
+    /// A bar-driven session has no print at all; the matcher falls to the bar close, so the guard
+    /// must too or it reads an already-triggered stop as resting.
+    /// </summary>
+    [Fact]
+    public void TryGetTriggerReferencePrice_FallsToTheBarClose_BeforeTheQuote()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var feed = new StubLiveFeed(lastTrade: null, bid: 90m, ask: 100m, barClose: 130m);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            liveFeedAccessor: () => feed);
+
+        IPortfolioExposureProvider seam = provider;
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
+            .Should().Be(130m);
+    }
+
+    /// <summary>
     /// A stop fires off the traded price, so its reference must prefer the print. The valuation
     /// mark checks the quote first and returns the midpoint, which on a wide book reads a resting
     /// trigger as already crossed.
@@ -801,9 +847,62 @@ public sealed class AggregatePortfolioExposureProviderTests
         IPortfolioExposureProvider seam = provider;
         seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy).Should().Be(100m);
         seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Sell).Should().Be(100m);
+        // No feed composed here, so this is the collector fallback path.
         // Both quote-derived references are deliberately different, which is the whole reason the
         // trigger gets its own seam: the mark says 110 and the crossing touch says 120.
         provider.TryGetReferencePrice("AAPL").Should().Be(110m);
         provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy).Should().Be(120m);
+    }
+
+    /// <summary>
+    /// The feed the matcher reads: a plain cache with no freshness policy of its own, which is
+    /// exactly the property under test.
+    /// </summary>
+    private sealed class StubLiveFeed(
+        decimal? lastTrade,
+        decimal? bid,
+        decimal? ask,
+        decimal? barClose = null) : Meridian.Execution.Interfaces.ILiveFeedAdapter
+    {
+        public IReadOnlySet<string> SubscribedSymbols { get; } = new HashSet<string> { "AAPL" };
+
+        public Meridian.Contracts.Domain.Models.Trade? GetLastTrade(string symbol) =>
+            lastTrade is { } price
+                ? new Meridian.Contracts.Domain.Models.Trade(
+                    DateTimeOffset.UtcNow,
+                    symbol,
+                    price,
+                    100,
+                    Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
+                    1)
+                : null;
+
+        public Meridian.Contracts.Domain.Models.BboQuotePayload? GetLastQuote(string symbol) =>
+            bid is { } b && ask is { } a
+                ? new Meridian.Contracts.Domain.Models.BboQuotePayload(
+                    DateTimeOffset.UtcNow,
+                    symbol,
+                    b,
+                    100,
+                    a,
+                    100,
+                    (b + a) / 2m,
+                    a - b,
+                    1)
+                : null;
+
+        public Meridian.Contracts.Domain.Models.LOBSnapshot? GetLastOrderBook(string symbol) => null;
+
+        public Meridian.Contracts.Domain.Models.HistoricalBar? GetLastBar(string symbol) =>
+            barClose is { } close
+                ? new Meridian.Contracts.Domain.Models.HistoricalBar(
+                    symbol,
+                    DateOnly.FromDateTime(DateTime.UtcNow),
+                    close,
+                    close,
+                    close,
+                    close,
+                    0)
+                : null;
     }
 }

@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
+using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
+using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Risk;
@@ -37,6 +39,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     private readonly Func<IOrderManager?>? _orderManagerAccessor;
     private readonly TimeSpan _markMaxAge;
     private readonly Func<DateTimeOffset> _clock;
+    private readonly Func<ILiveFeedAdapter?>? _liveFeedAccessor;
 
     /// <summary>
     /// How old a quote or trade may be and still price an order. A stalled feed keeps
@@ -53,7 +56,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         TradeDataCollector? trades = null,
         Func<IOrderManager?>? orderManagerAccessor = null,
         TimeSpan? markMaxAge = null,
-        Func<DateTimeOffset>? clock = null)
+        Func<DateTimeOffset>? clock = null,
+        Func<ILiveFeedAdapter?>? liveFeedAccessor = null)
     {
         _aggregatePortfolio = aggregatePortfolio ?? throw new ArgumentNullException(nameof(aggregatePortfolio));
         _portfolioState = portfolioState;
@@ -67,6 +71,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             ? configured
             : DefaultMarkMaxAge;
         _clock = clock ?? (static () => DateTimeOffset.UtcNow);
+        _liveFeedAccessor = liveFeedAccessor;
     }
 
     /// <summary>
@@ -128,6 +133,55 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         // reporting no reference at all, since a missing reference makes a priced order
         // unmeasurable.
         return TryGetExecutablePrice(symbol, side);
+    }
+
+    /// <summary>
+    /// Resolves the stop-trigger reference from <b>the same observation the matcher will
+    /// consume</b>, rather than reconstructing it here.
+    /// <para>
+    /// Reconstruction was the bug. Every accessor above filters its sources through
+    /// <see cref="DefaultMarkMaxAge"/>, because valuing risk off a stalled feed is how a symbol
+    /// cached before an outage measures a 1,000-share order at a price the market left behind.
+    /// The matcher applies no such filter: <see cref="PaperMarketObservation.Capture"/> takes the
+    /// feed's cached last trade, bar, and quote as they are. So a six-minute-old print at 130 with
+    /// a fresh 100 ask fires a buy stop at 125 immediately, while an age-filtered reconstruction
+    /// drops that print, falls to the 100 ask, and approves the order as resting. Reconstructing
+    /// the precedence <i>and</i> the freshness policy correctly is not something to get right
+    /// twice — so this reads the matcher's observation directly and resolves through the matcher's
+    /// own <see cref="PaperMarketObservation.ResolveStopTriggerPrice"/>.
+    /// </para>
+    /// <para>
+    /// The question this accessor answers is not "what is this worth" but "will the engine fire
+    /// this", and where the two disagree the engine is the authority. That is also why the age
+    /// filter is deliberately absent here and deliberately present everywhere else on this class.
+    /// Against a live broker the same resolution is the best available proxy, and it errs toward
+    /// the most recent print — the conservative direction for catching a wrong-side stop.
+    /// </para>
+    /// <para>
+    /// With no feed composed there is no matcher observation to share, so this falls back to the
+    /// interface default: last trade, then bar close, then touch, from the collectors.
+    /// </para>
+    /// </summary>
+    public decimal? TryGetTriggerReferencePrice(string symbol, OrderSide side)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        if (_liveFeedAccessor?.Invoke() is { } feed)
+        {
+            var observed = PaperMarketObservation.Capture(feed, symbol).ResolveStopTriggerPrice(side);
+            if (observed is > 0m)
+            {
+                return observed;
+            }
+        }
+
+        // No feed means no bars either — they only ever arrive through one — so the collector
+        // fallback is trade then touch, which is what the matcher would resolve from the same
+        // absence.
+        return TryGetLastTradePrice(symbol) ?? TryGetTouchPrice(symbol, side);
     }
 
     /// <inheritdoc />

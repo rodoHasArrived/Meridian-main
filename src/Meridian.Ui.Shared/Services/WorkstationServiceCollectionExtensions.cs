@@ -384,7 +384,12 @@ public static class WorkstationServiceCollectionExtensions
                 // Lazy accessor, not a constructor dependency: the OMS depends on the risk
                 // validator that consumes this provider, so resolving it eagerly would
                 // close a DI cycle. Working orders still reserve their exposure.
-                orderManagerAccessor: sp.GetService<Meridian.Execution.Sdk.IOrderManager>));
+                orderManagerAccessor: sp.GetService<Meridian.Execution.Sdk.IOrderManager>,
+                // The stop-trigger reference is read from the matcher's own observation rather
+                // than rebuilt from the collectors, so the guard that refuses wrong-side stops and
+                // the engine that fires them cannot disagree about what a stop triggers on. Lazy
+                // for the same DI-cycle reason as the order manager above.
+                liveFeedAccessor: sp.GetService<Meridian.Execution.Interfaces.ILiveFeedAdapter>));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(

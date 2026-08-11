@@ -58,15 +58,19 @@ questions:
   of mid and touch; a price control must compare against what the order can actually trade at.
   Measuring a sell against that mark would make an ordinary marketable sell at the bid look priced
   through the market by half the spread.
-- **A trigger** is measured against `TryGetTriggerReferencePrice` — last trade, then bar close,
-  then the crossing side — the same *precedence* `PaperOrderMatchingPolicy` uses
-  (`LastTradePrice ?? BarClose`, quote only as a last resort). Consulting a quote earlier disagrees
-  with the matcher whenever the two differ, in both directions: with a 100/120 quote and a 100
-  print, a buy stop at 105 is resting but looks crossed against the ask or midpoint; with a 130
-  print, a buy stop at 125 sits above the ask and looks correctly placed while the matcher fires it
-  immediately. Dropping the bar-close leg reproduces the second failure on a bar-driven session,
-  where there is no print at all. A control that disagrees with the engine about whether an order
-  has already triggered is not measuring the same market the engine is.
+- **A trigger** is measured against `TryGetTriggerReferencePrice`, which reads **the matcher's own
+  observation** rather than rebuilding one: the production provider captures
+  `PaperMarketObservation` from the live feed and resolves through
+  `PaperMarketObservation.ResolveStopTriggerPrice`, the single definition of the precedence
+  (`LastTradePrice ?? BarClose ?? crossing side`) that `PaperOrderMatchingPolicy` itself uses. That
+  is deliberately one shared method and not two matching implementations, because every attempt to
+  reconstruct it diverged somewhere: consulting the quote first falsely rejects a resting stop when
+  the print trails the quote and falsely approves an already-triggered one when it leads; dropping
+  the bar-close leg reproduces the false approval on a bar-driven session; and applying this
+  provider's staleness filter drops a six-minute-old print the matcher will still fire from. Note
+  that last one — the age filter that protects every *valuation* accessor here is precisely wrong
+  for this one, because the question is not "what is this worth" but "will the engine fire this",
+  and where the guard and the engine disagree the engine is the authority.
 
 Note that these limbs gate **submission**. `OrderManagementSystem.IsRiskIncreasing` revalidates only
 quantity increases and numerically *higher* limit or stop prices, so an amendment that moves a price
