@@ -30,6 +30,9 @@ KIND_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "DataSourceKind.c
 TYPE_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "DataSourceConfig.cs"
 MASKER_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "SensitiveValueMasker.cs"
 REGISTRY_SOURCE = REPO_ROOT / "src" / "Meridian.Core" / "Config" / "SensitiveKeyRegistry.cs"
+PROVIDER_FACTORY_SOURCE = (
+    REPO_ROOT / "src" / "Meridian.Infrastructure" / "Adapters" / "Core" / "ProviderFactory.cs"
+)
 CATALOG_SOURCE = (
     REPO_ROOT / "src" / "Meridian.Infrastructure" / "Adapters" / "Core"
     / "ProviderCapabilityDescriptorCatalog.cs"
@@ -112,6 +115,70 @@ def streaming_source_ids() -> frozenset[str]:
 # DataSourceKind names and catalog family keys agree by casefold except where the enum uses the
 # short broker code. Keep this map tiny and explicit rather than guessing with prefix matching.
 CATALOG_ALIASES = {"ib": "ibkr"}
+
+
+def backfill_activation() -> dict[str, str]:
+    """Map each backfill family to the activation rule its factory actually applies.
+
+    ``ProviderFactory`` has two, and they invert each other for an unset value:
+
+    * ``EnabledByDefault(cfg?.Enabled) => configuredEnabled != false`` — absent config or absent
+      ``Enabled`` still registers the provider; only an explicit ``false`` suppresses it;
+    * ``EnabledWhenOptedIn(cfg?.Enabled) => configuredEnabled == true`` — anything short of an
+      explicit ``true`` suppresses it.
+
+    Requiring an explicit ``{"Enabled": true}`` for every provider would reject a perfectly valid
+    Yahoo or Alpaca historical default, so the rule has to be read per family. Both member shapes
+    appear — a braced body and an expression-bodied ``=> CreateKeyedProvider(...)`` — and a family
+    that matches neither helper (TwelveData passes a hardcoded ``enabled: true``) is deliberately
+    left out of the map so the caller stays silent rather than guessing.
+    """
+    try:
+        text = PROVIDER_FACTORY_SOURCE.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+
+    activation: dict[str, str] = {}
+    for match in re.finditer(
+        r"private\s+IHistoricalDataProvider\?\s+Create(\w+)BackfillProvider\s*\(", text
+    ):
+        depth = 0
+        params_end = None
+        for index in range(match.end() - 1, len(text)):
+            if text[index] == "(":
+                depth += 1
+            elif text[index] == ")":
+                depth -= 1
+                if depth == 0:
+                    params_end = index
+                    break
+        if params_end is None:
+            continue
+
+        rest = text[params_end + 1 :]
+        lead = len(rest) - len(rest.lstrip())
+        tail = rest[lead:]
+        if tail.startswith("=>"):
+            body = tail[: tail.index(";") + 1] if ";" in tail else tail
+        elif tail.startswith("{"):
+            depth = 0
+            body = tail
+            for index, char in enumerate(tail):
+                if char == "{":
+                    depth += 1
+                elif char == "}":
+                    depth -= 1
+                    if depth == 0:
+                        body = tail[:index]
+                        break
+        else:
+            continue
+
+        if "EnabledWhenOptedIn" in body:
+            activation[match.group(1).casefold()] = "opt-in"
+        elif "EnabledByDefault" in body:
+            activation[match.group(1).casefold()] = "default-on"
+    return activation
 
 
 def historical_capable_families() -> frozenset[str]:
@@ -411,6 +478,31 @@ def main() -> int:
     # unknown id by falling back to the top-level DataSource, so a stale reference silently mints a
     # client under a misleading identity and can promote it after the real feeds fail. Removing the
     # StockSharp source while leaving "stocksharp-tertiary" in a rule did exactly that.
+    # Collecting ids into a set hid two shapes the runtime refuses. `ProviderRoutingSnapshot.Build`
+    # calls `ToDictionary(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)`,
+    # which throws on a null key and on two ids differing only by case — but a set silently drops
+    # the null and collapses the pair, so the guard passed a sample that dies the moment routing is
+    # first used. Validate the ids themselves before validating anything that references them.
+    seen_folded: dict[str, str] = {}
+    for index, source in enumerate(sources):
+        source_id = source.get("Id")
+        if not isinstance(source_id, str) or not source_id.strip():
+            errors.append(
+                f"DataSources.Sources[{index}].Id = {source_id!r} is not a usable id. "
+                f"ProviderRoutingSnapshot.Build keys connections by this value and throws on a "
+                f"null key, so routing fails the first time it is built."
+            )
+            continue
+        folded_id = source_id.casefold()
+        if folded_id in seen_folded:
+            errors.append(
+                f"DataSources.Sources[{index}].Id = {source_id!r} duplicates "
+                f"{seen_folded[folded_id]!r} under the OrdinalIgnoreCase comparer "
+                f"ProviderRoutingSnapshot.Build uses, which throws on a duplicate key."
+            )
+            continue
+        seen_folded[folded_id] = source_id
+
     configured_ids = {
         source["Id"] for source in sources if isinstance(source.get("Id"), str)
     }
@@ -532,25 +624,33 @@ def main() -> int:
             (value for key, value in backfill_providers.items() if key.casefold() == name.casefold()),
             None,
         )
-        # An absent block is not a pass. `EnabledWhenOptedIn(cfg?.Enabled)` sees a null config and
-        # returns no provider, exactly as it does for Enabled: false — so omitting the block fails
-        # at runtime identically while a permissive isinstance check would let it through. That is
-        # the same blind spot this guard's own docstring records three earlier instances of.
-        if not isinstance(gate, dict):
-            errors.append(
-                f"DataSources.{field} = {default_id!r} resolves to {name}, but the sample has no "
-                f"Backfill.Providers.{name} block. ProviderFactory opts in on "
-                f"`EnabledWhenOptedIn(cfg?.Enabled)`, which returns no provider for a missing "
-                f"config just as it does for a disabled one, so the synthesized historical "
-                f"binding would have no registered provider behind it."
-            )
-        elif gate.get("Enabled") is not True:
+        # Whether an absent block is fatal depends on which activation rule the family's factory
+        # applies, so the verdict is read from ProviderFactory rather than assumed. An explicit
+        # false suppresses the provider under both rules; a missing value only suppresses it under
+        # the opt-in rule. Treating every family as opt-in would reject a valid Yahoo or Alpaca
+        # default, and treating every family as default-on would miss the Synthetic case that
+        # started this. When the rule cannot be read, no verdict is issued.
+        enabled = gate.get("Enabled") if isinstance(gate, dict) else None
+        activation = backfill_activation().get(name.casefold())
+
+        if enabled is False:
             errors.append(
                 f"DataSources.{field} = {default_id!r} resolves to {name}, but "
-                f"Backfill.Providers.{name}.Enabled is {gate.get('Enabled')!r}. "
-                f"ProviderFactory returns null for a backfill provider that is not opted in, so "
-                f"the synthesized historical binding would resolve to a family with no registered "
-                f"historical provider."
+                f"Backfill.Providers.{name}.Enabled is false. Both of ProviderFactory's "
+                f"activation rules suppress a provider on an explicit false, so the synthesized "
+                f"historical binding would have no registered provider behind it."
+            )
+        elif enabled is not True and activation == "opt-in":
+            where = (
+                f"Backfill.Providers.{name}.Enabled is {enabled!r}"
+                if isinstance(gate, dict)
+                else f"the sample has no Backfill.Providers.{name} block"
+            )
+            errors.append(
+                f"DataSources.{field} = {default_id!r} resolves to {name}, but {where}. "
+                f"Create{name}BackfillProvider gates on EnabledWhenOptedIn, which registers the "
+                f"provider only for an explicit true, so the synthesized historical binding would "
+                f"have no registered provider behind it."
             )
 
     for path in walk_secret_keys(document):
