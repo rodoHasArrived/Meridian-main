@@ -293,7 +293,11 @@ public sealed class ConfigTemplateGenerator
         {
             DataRoot = "/data",
             Compress = true,
-            DataSource = "${MDC_DATASOURCE:-IB}",
+            // Defaults to Synthetic so a generated container starts offline without keys, matching
+            // config/appsettings.sample.json and docs/reference/environment-variables.md. An IB
+            // fallback silently selected the bundled simulator in a normal build and attempted a
+            // TWS/Gateway connection under IBAPI.
+            DataSource = "${MDC_DATASOURCE:-Synthetic}",
             Alpaca = new
             {
                 KeyId = "${ALPACA_KEY_ID}",
@@ -319,7 +323,7 @@ public sealed class ConfigTemplateGenerator
             Category = ConfigTemplateCategory.Deployment,
             EnvironmentVariables = new Dictionary<string, string>
             {
-                ["MDC_DATASOURCE"] = "Data source provider (IB, Alpaca, Polygon, NYSE)",
+                ["MDC_DATASOURCE"] = "Real-time data source provider (IB, Alpaca, Polygon, NYSE, Synthetic; default Synthetic)",
                 ["MDC_SYMBOLS"] = "Comma-separated list of symbols",
                 ["ALPACA_KEY_ID"] = "Alpaca API Key ID",
                 ["ALPACA_SECRET_KEY"] = "Alpaca Secret Key",

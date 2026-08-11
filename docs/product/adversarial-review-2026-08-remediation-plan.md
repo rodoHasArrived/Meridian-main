@@ -348,10 +348,21 @@ still `in_progress`.
   (`Collectors/TradeDataCollector.cs:237`, `QuoteCollector.cs:40`, `MarketDepthCollector.cs:122`,
   `L3OrderBookCollector.cs:189`), so Polygon trades are stored as Interactive Brokers.
   **Change:** add a required provenance member (`DataProvenance` or at minimum `IsSimulated` plus a
-  provider id) to `MarketEvent`; **remove the vendor-name defaults** so omitting a source is a
-  compile error; pass the owning provider id into each collector at construction.
-  **Verify:** compile break proves no caller can omit it; test asserting a Polygon-sourced event
-  carries `polygon`.
+  provider id) to `MarketEvent` and **remove the vendor-name defaults** so omitting a source is a
+  compile error. **Do not pass the provider id into the collector constructor** — an earlier
+  revision said to, and it cannot work: `CollectorFeatureRegistration.cs:19-42` registers
+  `QuoteCollector`, `TradeDataCollector`, and `MarketDepthCollector` as singletons, and
+  `ProviderFeatureRegistration.Registry.cs:32-94` injects those same instances into the IB, Alpaca,
+  Polygon, and NYSE clients. A constructor-level id would stamp every event with whichever provider
+  happened to construct it and would never change when failover switches — leaving the mislabeling
+  in place while looking fixed. Instead, either (a) have each adapter pass its provenance on every
+  ingress call, so the shared collector stamps what it is actually given, or (b) give each adapter a
+  thin provider-scoped facade that stamps calls before forwarding to the shared collector. (b) keeps
+  the adapter call sites unchanged and is the smaller diff; (a) is harder to get wrong later.
+  **Verify:** the compile break proves no caller can omit it; a test asserts a Polygon-sourced event
+  carries `polygon` **while an Alpaca client shares the same collector instance**, and that a
+  failover switch changes subsequent events' provenance. A single-provider test would pass against
+  the broken constructor design and prove nothing.
   **Effort:** M · **Blast radius:** every collector and storage consumer — do this before AR8-18.
 
 - [ ] **AR8-18 — Derive the provenance banner from the active tape.**
@@ -583,8 +594,13 @@ still `in_progress`.
   or a configuration flag), and have startup *detect* pending migrations and refuse to serve with a
   named diagnostic instead of silently applying them; (b) add `--migrate --plan` to print the
   pending set and `--migrate --apply` to execute it; (c) record `ProductVersion` and a
-  minimum-compatible schema ordinal in the ledger and refuse startup on a backwards mismatch — note
-  this only protects a later downgrade and is not a substitute for (a). The runner itself (advisory
+  minimum-compatible schema ordinal **per migration domain**, and refuse startup on a backwards
+  mismatch — note this only protects a later downgrade and is not a substitute for (a). One ledger
+  is not enough: fund accounts, fund structure, security master, banking, money market, asset
+  operations, direct lending, reporting, identity access, and the journal each configure a distinct
+  `LedgerTableName` in their own `*MigrationRunner`, so an older host could clear a single-ledger
+  check and then read an incompatible schema in another domain. Either validate every domain's
+  ordinal at startup or keep one central manifest covering all of them. The runner itself (advisory
   lock, single transaction, SHA-256 drift detection) is sound and should not be rewritten.
   **Verify:** two tests — a host with pending migrations and no explicit apply refuses to serve and
   leaves the schema untouched; an older host against a newer schema fails closed with the
@@ -600,7 +616,11 @@ still `in_progress`.
   **Change:** add the same append-only trigger to both journal tables, drop the cascade in favor of
   restrict, and add a deferred per-entry balance constraint. This is the property an auditor tests
   first and the cheapest half of `W9-GOV-008`.
-  **Verify:** Docker-gated test asserting `UPDATE`/`DELETE` on a posted journal raises.
+  **Verify:** Docker-gated tests asserting (i) `UPDATE`/`DELETE` on a posted journal raises, and
+  (ii) a transaction inserting legs whose aggregate debits and credits differ **fails to commit**,
+  while a balanced multi-leg insert succeeds. (i) alone only proves the append-only triggers — the
+  item could be marked complete while direct SQL still commits an unbalanced journal, which is the
+  half that matters to an auditor.
   **Effort:** M · **Related:** `W9-GOV-008`
 
 ---
@@ -694,9 +714,13 @@ still `in_progress`.
   added to the exemption list after failing the coverage gate — so `InstallationTransaction.Promote`
   and `RecoverInterruptedPromotion` are covered by tests that never execute. `windows-desktop-build.yml`
   is path-filtered, so a shared-contract change that breaks 1,697 WPF tests merges green.
-  **Change:** add a Windows job to `meridian-ci.yml` running the WPF, Setup, and Supervisor suites,
-  triggered unfiltered on changes to `Meridian.Contracts`, `Meridian.Ui.Services`,
-  `Meridian.Ui.Shared`, and the installer paths. Make the exemption list assert each entry is
+  **Change:** add a Windows job to `meridian-ci.yml` running the WPF, Setup, and Supervisor suites.
+  **Run it on every PR, or derive its path filter from the transitive project graph** — do not
+  hand-maintain a short list. `Meridian.Wpf.csproj` also references `Meridian.Identity`,
+  `Meridian.Backtesting`, `Meridian.Infrastructure`, `Meridian.Reporting`, `Meridian.Platform`,
+  `Meridian.Storage`, `Meridian.Workflow`, `Meridian.Strategies`, and `Meridian.QuantScript`, so a
+  four-path filter would leave the desktop lane skipped for most changes that can break it —
+  recreating in a narrower form the exact gap this item exists to close. Make the exemption list assert each entry is
   actually invoked by some workflow.
   **Verify:** a shared-contract edit triggers the Windows job.
   **Effort:** M
