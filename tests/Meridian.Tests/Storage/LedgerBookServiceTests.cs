@@ -1,2006 +1,1 @@
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.RateLimiting;
-using FluentAssertions;
-using Meridian.Contracts.Api;
-using Meridian.Identity.Auth;
-using Meridian.Contracts.FundStructure;
-using Meridian.Contracts.Ledger;
-using Meridian.Contracts.Workstation;
-using Meridian.Ledger;
-using Meridian.Storage.Ledger;
-using Meridian.Ui.Shared.Endpoints;
-using Meridian.Ui.Shared.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
-namespace Meridian.Tests.Storage;
-
-public sealed class LedgerBookServiceTests
-{
-    private static readonly JsonSerializerOptions ServerJsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new JsonStringEnumConverter() }
-    };
-
-    [Fact]
-    public async Task CreateBookAsync_WhenScopeAlreadyExists_ReturnsExistingBook()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var nodeId = Guid.NewGuid();
-        var request = new CreateLedgerBookRequest(
-            "alpha-fund",
-            nodeId,
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "usd");
-
-        var first = await service.CreateBookAsync(request);
-        var second = await service.CreateBookAsync(request with { DisplayName = "Alpha Fund Duplicate" });
-
-        second.LedgerBookId.Should().Be(first.LedgerBookId);
-        second.DisplayName.Should().Be("Alpha Fund");
-        (await service.ListBooksAsync(new LedgerBookQuery("alpha-fund", nodeId))).Should().ContainSingle();
-    }
-
-    [Fact]
-    public async Task CreateBookAsync_AllowsParallelBooksForSameNodeByAccountingBasis()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var nodeId = Guid.NewGuid();
-        var primary = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            nodeId,
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var gaap = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            nodeId,
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund GAAP",
-            "USD",
-            AccountingBasis: AccountingBasisKindDto.Gaap,
-            AccountingPolicyId: "gaap-default-v1",
-            AccountingPolicyVersion: "v1"));
-
-        gaap.LedgerBookId.Should().NotBe(primary.LedgerBookId);
-        primary.AccountingBasis.Should().Be(AccountingBasisKindDto.Primary);
-        gaap.AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
-        (await service.ListBooksAsync(new LedgerBookQuery("alpha-fund", nodeId))).Should().HaveCount(2);
-        (await service.ListBooksAsync(new LedgerBookQuery("alpha-fund", nodeId, AccountingBasis: AccountingBasisKindDto.Gaap)))
-            .Should()
-            .ContainSingle(book => book.LedgerBookId == gaap.LedgerBookId);
-    }
-
-    [Fact]
-    public async Task AssessRolloutAsync_ReportsMissingRequiredScopesAndPeriodReadiness()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var fundNodeId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-        var requiredGaapNodeId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            fundNodeId,
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund Primary",
-            "USD",
-            AccountingPolicyId: "primary-policy",
-            AccountingPolicyVersion: "v2"));
-        await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            1,
-            "2026-P01",
-            new DateOnly(2026, 1, 1),
-            new DateOnly(2026, 1, 31)));
-
-        var assessment = await service.AssessRolloutAsync(new LedgerBookRolloutAssessmentRequest(
-            FundProfileId: "alpha-fund",
-            RequiredScopes:
-            [
-                new LedgerBookRequiredScopeDto(fundNodeId, FundStructureNodeKindDto.Fund),
-                new LedgerBookRequiredScopeDto(requiredGaapNodeId, FundStructureNodeKindDto.Fund, AccountingBasisKindDto.Gaap, "Alpha Fund GAAP")
-            ]));
-
-        assessment.IsReady.Should().BeFalse();
-        assessment.BookCount.Should().Be(1);
-        assessment.OpenPeriodCount.Should().Be(1);
-        assessment.Books.Should().ContainSingle(status =>
-            status.LedgerBookId == book.LedgerBookId &&
-            status.PeriodCount == 1 &&
-            status.OpenPeriodCount == 1 &&
-            status.AccountingPolicyId == "primary-policy");
-        assessment.Issues.Should().Contain(issue =>
-            issue.Code == "LedgerBookRequiredScopeMissing" &&
-            issue.Severity == LedgerBookRolloutIssueSeverityDto.Critical &&
-            issue.FundStructureNodeId == requiredGaapNodeId &&
-            issue.AccountingBasis == AccountingBasisKindDto.Gaap);
-        assessment.Issues.Should().Contain(issue =>
-            issue.Code == "LedgerBookNoHardClosedPeriods" &&
-            issue.Severity == LedgerBookRolloutIssueSeverityDto.Warning &&
-            issue.LedgerBookId == book.LedgerBookId);
-        assessment.Issues.Should().NotContain(issue => issue.Code == "LedgerBookLegacyAccountingPolicy");
-    }
-
-    [Fact]
-    public async Task AppendAsync_WhenJournalBasisDiffersFromBookBasis_RejectsEntry()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund GAAP",
-            "USD",
-            AccountingBasis: AccountingBasisKindDto.Gaap,
-            AccountingPolicyId: "gaap-default-v1",
-            AccountingPolicyVersion: "v1"));
-        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            5,
-            "2026-P05",
-            new DateOnly(2026, 5, 1),
-            new DateOnly(2026, 5, 31)));
-
-        var act = () => store.AppendAsync(BuildBalancedEntry(
-            period.PeriodId,
-            revenue: 1_200m,
-            expense: 300m,
-            timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z")));
-
-        await act.Should().ThrowAsync<LedgerValidationException>()
-            .WithMessage("*basis 'Primary'*basis 'Gaap'*");
-    }
-
-    [Fact]
-    public async Task ClosePeriodAsync_SoftClose_PersistsSummaryAndPropagatesInboxWorkItem()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var inbox = new InMemoryOperatorInboxService();
-        var service = new PostgresLedgerBookService(store, inbox);
-
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var previous = await store.SavePeriodAsync(new LedgerAccountingPeriod(
-            Guid.NewGuid(),
-            book.LedgerBookId,
-            2026,
-            1,
-            "2026-P01",
-            new DateOnly(2026, 1, 1),
-            new DateOnly(2026, 1, 31),
-            "Open",
-            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
-            null,
-            0), expectedVersion: 0);
-        await store.AppendAsync(BuildBalancedEntry(
-            previous.PeriodId,
-            revenue: 800m,
-            expense: 300m,
-            timestamp: DateTimeOffset.Parse("2026-01-31T21:00:00Z")));
-        await store.SavePeriodAsync(previous with
-        {
-            Status = "HardClosed",
-            ClosedAt = DateTimeOffset.Parse("2026-02-01T00:00:00Z")
-        }, expectedVersion: previous.Version);
-
-        var current = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            2,
-            "2026-P02",
-            new DateOnly(2026, 2, 1),
-            new DateOnly(2026, 2, 28)));
-        await store.AppendAsync(BuildBalancedEntry(current.PeriodId, revenue: 1_200m, expense: 300m));
-        await inbox.UpsertItemAsync(new OperatorWorkItemDto(
-            WorkItemId: "reconciliation-break-alpha",
-            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
-            Label: "Reconciliation break requires review",
-            Detail: "Existing cash variance.",
-            Tone: OperatorWorkItemToneDto.Warning,
-            CreatedAt: DateTimeOffset.Parse("2026-02-15T10:00:00Z"),
-            Workspace: "Accounting",
-            TargetRoute: $"{UiApiRoutes.ReconciliationBreakQueue}?ledgerBookId={book.LedgerBookId:D}&periodId={current.PeriodId:D}",
-            TargetPageTag: "FundReconciliation",
-            Scope: $"ledger-book:{book.LedgerBookId:N};ledger-period:{current.PeriodId:N}"));
-        await inbox.UpsertItemAsync(new OperatorWorkItemDto(
-            WorkItemId: "reconciliation-break-other-book",
-            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
-            Label: "Other ledger book break",
-            Detail: "This break belongs to a different ledger book.",
-            Tone: OperatorWorkItemToneDto.Critical,
-            CreatedAt: DateTimeOffset.Parse("2026-02-15T11:00:00Z"),
-            Workspace: "Accounting",
-            TargetRoute: $"{UiApiRoutes.ReconciliationBreakQueue}?ledgerBookId={Guid.NewGuid():D}&periodId={Guid.NewGuid():D}",
-            TargetPageTag: "FundReconciliation",
-            Scope: $"ledger-book:{Guid.NewGuid():N};ledger-period:{Guid.NewGuid():N}"));
-
-        var result = await service.ClosePeriodAsync(
-            current.PeriodId,
-            new CloseLedgerPeriodRequest(
-                LedgerPeriodCloseKindDto.SoftClose,
-                ClosedBy: "fund-controller",
-                Notes: "Month-end soft close.",
-                RequiredSignoffRole: "Fund Controller",
-                ToleranceProfileId: "month-end-25bp"));
-
-        result.Period.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
-        result.Summary.TotalDebits.Should().Be(1_500m);
-        result.Summary.TotalCredits.Should().Be(1_500m);
-        result.Summary.NetIncome.Should().Be(900m);
-        result.Summary.PeriodOnPeriodVariance.Should().Be(400m);
-        result.Summary.OpenBreakCount.Should().Be(1);
-        result.Summary.SignoffStatus.Should().Be(LedgerPeriodSignoffStatusDto.Pending);
-        store.QueryHistory.Should().Contain(query =>
-            query.LedgerBookId == book.LedgerBookId &&
-            query.PeriodId == current.PeriodId);
-        result.Summary.TrialBalance.Should().Contain(row =>
-            row.AccountName == "Management fees" &&
-            row.AccountType == nameof(LedgerAccountType.Revenue) &&
-            row.Balance == 1_200m);
-        result.WorkItem.Kind.Should().Be(OperatorWorkItemKindDto.LedgerPeriodClose);
-        result.WorkItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
-        result.WorkItem.TargetPageTag.Should().Be("FundReconciliation");
-        result.WorkItem.Detail.Should().Contain("Fund Controller");
-        result.WorkItem.Detail.Should().Contain("month-end-25bp");
-        result.WorkItem.Detail.Should().Contain("FundReconciliation");
-        result.WorkItem.Scope.Should().Contain(book.LedgerBookId.ToString("N"));
-        result.WorkItem.Scope.Should().Contain(current.PeriodId.ToString("N"));
-        result.WorkItem.RequiredSignoffRole.Should().Be("Fund Controller");
-        result.WorkItem.ToleranceProfileId.Should().Be("month-end-25bp");
-        result.WorkItem.SignoffStatus.Should().Be(nameof(LedgerPeriodSignoffStatusDto.Pending));
-
-        var contributedItems = await inbox.GetItemsAsync();
-        contributedItems.Should().ContainSingle(item =>
-            item.WorkItemId == result.WorkItem.WorkItemId &&
-            item.Kind == OperatorWorkItemKindDto.LedgerPeriodClose &&
-            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
-            item.TargetPageTag == "FundReconciliation" &&
-            item.RequiredSignoffRole == "Fund Controller" &&
-            item.ToleranceProfileId == "month-end-25bp");
-    }
-
-    [Fact]
-    public async Task ClosePeriodAsync_WhenReviewedAutomationOrigin_RejectsBeforePeriodMutation()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var inbox = new InMemoryOperatorInboxService();
-        var service = new PostgresLedgerBookService(store, inbox);
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            3,
-            "2026-P03",
-            new DateOnly(2026, 3, 1),
-            new DateOnly(2026, 3, 31)));
-
-        var act = () => service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(
-                LedgerPeriodCloseKindDto.HardClose,
-                ClosedBy: "assistant",
-                ActionOrigin: OperationsActionOriginDto.AssistantDraft));
-
-        await act.Should().ThrowAsync<LedgerBookValidationException>()
-            .WithMessage("*Reviewed automation cannot close ledger periods*");
-        var retained = await store.GetPeriodAsync(period.PeriodId);
-        retained.Should().NotBeNull();
-        retained!.Status.Should().Be("Open");
-        var inboxItems = await inbox.GetItemsAsync();
-        inboxItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.LedgerPeriodClose);
-    }
-
-    [Fact]
-    public async Task ClosePeriodAsync_WhenPeriodAlreadySoftClosed_RejectsSecondSoftClose()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            3,
-            "2026-P03",
-            new DateOnly(2026, 3, 1),
-            new DateOnly(2026, 3, 31)));
-
-        await service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
-        var act = () => service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
-
-        await act.Should().ThrowAsync<LedgerPeriodTransitionException>()
-            .WithMessage("*Cannot transition*SoftClosed to SoftClosed*");
-    }
-
-    [Fact]
-    public async Task ClosePeriodAsync_OpenPeriodRejectsHardCloseUntilGovernedSoftCloseCompletes()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            3,
-            "2026-P03",
-            new DateOnly(2026, 3, 1),
-            new DateOnly(2026, 3, 31)));
-
-        var act = () => service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, "fund-controller"));
-
-        await act.Should().ThrowAsync<LedgerPeriodTransitionException>()
-            .WithMessage("*Cannot transition*Open to HardClosed*");
-        (await store.GetPeriodAsync(period.PeriodId))!.Status.Should().Be("Open");
-    }
-
-    [Fact]
-    public async Task ClosePeriodAsync_HardCloseWithTemporaryAccountResiduals_FailsClosedWithoutMutation()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            4,
-            "2026-P04",
-            new DateOnly(2026, 4, 1),
-            new DateOnly(2026, 4, 30)));
-        await store.AppendAsync(BuildBalancedEntry(
-            period.PeriodId,
-            revenue: 1_000m,
-            expense: 250m,
-            timestamp: new DateTimeOffset(2026, 4, 30, 21, 0, 0, TimeSpan.Zero)));
-        await service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
-
-        var act = () => service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, "fund-controller"));
-
-        await act.Should().ThrowAsync<LedgerBookValidationException>()
-            .WithMessage("*cannot be hard-closed*revenue/expense balance*closing-entry draft*");
-        var retained = await store.GetPeriodAsync(period.PeriodId);
-        retained.Should().NotBeNull();
-        retained!.Status.Should().Be("SoftClosed");
-        retained.ClosedAt.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task ClosePeriodAsync_HardCloseAndLateAdjustment_SerializeOnOnePeriodMutationGate()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            4,
-            "2026-P04-race",
-            new DateOnly(2026, 4, 1),
-            new DateOnly(2026, 4, 30)));
-        await service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
-        using var hardCloseEntered = new ManualResetEventSlim();
-        using var releaseHardClose = new ManualResetEventSlim();
-        using var appendAttempted = new ManualResetEventSlim();
-        store.HardCloseEntered = hardCloseEntered;
-        store.ReleaseHardClose = releaseHardClose;
-        store.AppendAttempted = appendAttempted;
-        var closeTask = Task.Run(() => service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, "fund-controller")));
-        var enteredHardClose = hardCloseEntered.Wait(TimeSpan.FromSeconds(5));
-        if (!enteredHardClose)
-        {
-            releaseHardClose.Set();
-        }
-
-        enteredHardClose.Should().BeTrue();
-        var lateAdjustment = BuildBalancedEntry(
-            period.PeriodId,
-            revenue: 200m,
-            expense: 50m,
-            timestamp: DateTimeOffset.Parse("2026-04-30T23:59:59Z")) with
-        {
-            PostingKind = LedgerPostingKindDto.Adjustment,
-            AdjustmentApproval = BuildApprovedAdjustmentApproval()
-        };
-
-        var appendTask = Task.Run(() => store.AppendAsync(lateAdjustment));
-        var attemptedAppend = appendAttempted.Wait(TimeSpan.FromSeconds(5));
-        if (!attemptedAppend)
-        {
-            releaseHardClose.Set();
-        }
-
-        attemptedAppend.Should().BeTrue();
-        var appendCompletedWhileHardCloseHeld = appendTask.IsCompleted;
-        releaseHardClose.Set();
-
-        var closed = await closeTask;
-        var append = async () => await appendTask;
-        appendCompletedWhileHardCloseHeld.Should().BeFalse(
-            "a journal append must wait while hard-close holds the period mutation boundary");
-        closed.Period.Status.Should().Be(LedgerPeriodStatusDto.HardClosed);
-        await append.Should().ThrowAsync<LedgerValidationException>()
-            .WithMessage("*hard-closed*");
-        (await store.GetByPeriodAsync(period.PeriodId)).Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task ReopenPeriodAsync_HardClosedPeriod_RequiresControllerAndScopedRestatementEvidence()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            5,
-            "2026-P05",
-            new DateOnly(2026, 5, 1),
-            new DateOnly(2026, 5, 31)));
-        await service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
-        await service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, "fund-controller"));
-        const string approval = "approval-restatement-2026-p05";
-        var evidence = $"evidence://restatement/reversal/period/{period.PeriodId:D}/book/{book.LedgerBookId:D}/approval/{approval}";
-
-        var unauthorized = () => service.ReopenPeriodAsync(
-            period.PeriodId,
-            new ReopenLedgerPeriodRequest(
-                "fund-accountant", "Accountant", "Correct retained close evidence.", approval, [evidence]));
-        await unauthorized.Should().ThrowAsync<LedgerBookValidationException>()
-            .WithMessage("*Controller or Fund Controller*");
-
-        var reopened = await service.ReopenPeriodAsync(
-            period.PeriodId,
-            new ReopenLedgerPeriodRequest(
-                "fund-controller", "Fund Controller", "Correct retained close evidence.", approval, [evidence]));
-
-        reopened.Period.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
-        reopened.Period.ClosedAt.Should().BeNull();
-        reopened.PriorStatus.Should().Be("HardClosed");
-        reopened.ApprovalReference.Should().Be(approval);
-        reopened.EvidenceLinks.Should().ContainSingle().Which.Should().Be(evidence);
-    }
-
-    [Fact]
-    public async Task AppendAsync_AfterSoftClose_AllowsOnlyAdjustmentPostingKind()
-    {
-        var store = new InMemoryLedgerJournalStore();
-        var service = new PostgresLedgerBookService(store);
-        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"));
-        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
-            book.LedgerBookId,
-            2026,
-            6,
-            "2026-P06",
-            new DateOnly(2026, 6, 1),
-            new DateOnly(2026, 6, 30)));
-
-        await service.ClosePeriodAsync(
-            period.PeriodId,
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
-
-        var originating = BuildBalancedEntry(
-            period.PeriodId,
-            revenue: 400m,
-            expense: 100m,
-            timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z"));
-        var adjustment = BuildBalancedEntry(
-            period.PeriodId,
-            revenue: 200m,
-            expense: 50m,
-            timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z")) with
-        {
-            PostingKind = LedgerPostingKindDto.Adjustment,
-            AdjustmentApproval = BuildApprovedAdjustmentApproval()
-        };
-
-        var originatingAct = () => store.AppendAsync(originating);
-        var adjustmentAct = () => store.AppendAsync(adjustment);
-
-        await originatingAct.Should().ThrowAsync<LedgerValidationException>()
-            .WithMessage("*soft-closed*Adjustment*");
-        await adjustmentAct.Should().NotThrowAsync();
-    }
-
-    [Fact]
-    public async Task CreateBookAsync_WhenCanceled_PropagatesCancellation()
-    {
-        var service = new PostgresLedgerBookService(new InMemoryLedgerJournalStore());
-        using var cts = new CancellationTokenSource();
-        await cts.CancelAsync();
-
-        var act = () => service.CreateBookAsync(new CreateLedgerBookRequest(
-            "alpha-fund",
-            Guid.NewGuid(),
-            FundStructureNodeKindDto.Fund,
-            "Alpha Fund",
-            "USD"), cts.Token);
-
-        await act.Should().ThrowAsync<OperationCanceledException>();
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_CreateListAndSoftClosePeriod_PropagatesCloseWorkItemToOperatorInbox()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-
-        var book = await PostJsonAsync<LedgerBookDto>(
-            client,
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                Guid.Parse("59f045cb-f681-4b0c-943d-44c946f78214"),
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund",
-                "USD"));
-        var period = await PostJsonAsync<LedgerPeriodDto>(
-            client,
-            UiApiRoutes.LedgerPeriods,
-            new CreateLedgerPeriodRequest(
-                book.LedgerBookId,
-                2026,
-                4,
-                "2026-P04",
-                new DateOnly(2026, 4, 1),
-                new DateOnly(2026, 4, 30)));
-
-        var openPeriods = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodDto>>(
-            $"{UiApiRoutes.LedgerPeriods}?ledgerBookId={book.LedgerBookId:D}&openOnly=true",
-            ServerJsonOptions);
-        openPeriods.Should().ContainSingle(p => p.PeriodId == period.PeriodId);
-
-        var closeRoute = UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", period.PeriodId.ToString());
-        var close = await PostJsonAsync<LedgerPeriodCloseResultDto>(
-            client,
-            closeRoute,
-            new CloseLedgerPeriodRequest(
-                LedgerPeriodCloseKindDto.SoftClose,
-                ClosedBy: "fund-controller",
-                RequiredSignoffRole: "Fund Controller",
-                ToleranceProfileId: "close-tolerance-v1"));
-
-        close.Period.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
-        close.WorkItem.Kind.Should().Be(OperatorWorkItemKindDto.LedgerPeriodClose);
-        close.WorkItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
-        close.WorkItem.TargetPageTag.Should().Be("FundReconciliation");
-        close.WorkItem.RequiredSignoffRole.Should().Be("Fund Controller");
-        close.WorkItem.ToleranceProfileId.Should().Be("close-tolerance-v1");
-
-        var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
-            UiApiRoutes.WorkstationOperatorInbox,
-            ServerJsonOptions);
-        inbox.Should().NotBeNull();
-        inbox!.Items.Should().Contain(item =>
-            item.WorkItemId == close.WorkItem.WorkItemId &&
-            item.Kind == OperatorWorkItemKindDto.LedgerPeriodClose &&
-            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
-            item.TargetPageTag == "FundReconciliation" &&
-            item.RequiredSignoffRole == "Fund Controller" &&
-            item.ToleranceProfileId == "close-tolerance-v1");
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_RolloutAssessment_ReturnsReadOnlyMigrationReadiness()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-        var nodeId = Guid.Parse("59f045cb-f681-4b0c-943d-44c946f78214");
-        var missingNodeId = Guid.Parse("77f045cb-f681-4b0c-943d-44c946f78214");
-
-        var book = await PostJsonAsync<LedgerBookDto>(
-            client,
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                nodeId,
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund",
-                "USD"));
-
-        var assessment = await PostJsonAsync<LedgerBookRolloutAssessmentDto>(
-            client,
-            UiApiRoutes.LedgerBookRolloutAssessment,
-            new LedgerBookRolloutAssessmentRequest(
-                FundProfileId: "alpha-fund",
-                RequiredScopes:
-                [
-                    new LedgerBookRequiredScopeDto(nodeId, FundStructureNodeKindDto.Fund),
-                    new LedgerBookRequiredScopeDto(missingNodeId, FundStructureNodeKindDto.Fund, AccountingBasisKindDto.Gaap, "Alpha Fund GAAP")
-                ]));
-
-        assessment.BookCount.Should().Be(1);
-        assessment.Books.Should().ContainSingle(status => status.LedgerBookId == book.LedgerBookId);
-        assessment.Issues.Should().Contain(issue =>
-            issue.Code == "LedgerBookMissingPeriods" &&
-            issue.Severity == LedgerBookRolloutIssueSeverityDto.Critical &&
-            issue.LedgerBookId == book.LedgerBookId);
-        assessment.Issues.Should().Contain(issue =>
-            issue.Code == "LedgerBookRequiredScopeMissing" &&
-            issue.Severity == LedgerBookRolloutIssueSeverityDto.Critical &&
-            issue.FundStructureNodeId == missingNodeId);
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_ClosePeriod_WhenReviewedAutomationOrigin_ReturnsBadRequestWithoutClosingPeriod()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-
-        var book = await PostJsonAsync<LedgerBookDto>(
-            client,
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                Guid.Parse("59f045cb-f681-4b0c-943d-44c946f78214"),
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund",
-                "USD"));
-        var period = await PostJsonAsync<LedgerPeriodDto>(
-            client,
-            UiApiRoutes.LedgerPeriods,
-            new CreateLedgerPeriodRequest(
-                book.LedgerBookId,
-                2026,
-                5,
-                "2026-P05",
-                new DateOnly(2026, 5, 1),
-                new DateOnly(2026, 5, 31)));
-
-        using var closeResponse = await client.PostAsJsonAsync(
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", period.PeriodId.ToString()),
-            new CloseLedgerPeriodRequest(
-                LedgerPeriodCloseKindDto.HardClose,
-                ClosedBy: "assistant",
-                ActionOrigin: OperationsActionOriginDto.AutomationAssistant),
-            ServerJsonOptions);
-        var openPeriods = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodDto>>(
-            $"{UiApiRoutes.LedgerPeriods}?ledgerBookId={book.LedgerBookId:D}&openOnly=true",
-            ServerJsonOptions);
-        var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
-            UiApiRoutes.WorkstationOperatorInbox,
-            ServerJsonOptions);
-
-        closeResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        openPeriods.Should().ContainSingle(item => item.PeriodId == period.PeriodId);
-        inbox.Should().NotBeNull();
-        inbox!.Items.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.LedgerPeriodClose);
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_PeriodReportingRoutes_ReturnTrialBalanceAndPnlSummary()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-        var store = app.Services.GetRequiredService<ILedgerJournalStore>();
-
-        var book = await PostJsonAsync<LedgerBookDto>(
-            client,
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                Guid.Parse("9dc7712e-8aa4-4c65-bc46-f6b8d0884695"),
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund",
-                "USD",
-                AccountingBasis: AccountingBasisKindDto.Gaap,
-                AccountingPolicyId: "gaap-close-v1",
-                AccountingPolicyVersion: "v1"));
-        var prior = await PostJsonAsync<LedgerPeriodDto>(
-            client,
-            UiApiRoutes.LedgerPeriods,
-            new CreateLedgerPeriodRequest(
-                book.LedgerBookId,
-                2026,
-                1,
-                "2026-P01",
-                new DateOnly(2026, 1, 1),
-                new DateOnly(2026, 1, 31)));
-        await store.AppendAsync(BuildBalancedEntry(
-            prior.PeriodId,
-            revenue: 800m,
-            expense: 300m,
-            timestamp: DateTimeOffset.Parse("2026-01-31T21:00:00Z")) with
-        {
-            AccountingBasis = AccountingBasisKindDto.Gaap,
-            AccountingPolicyId = "gaap-close-v1",
-            AccountingPolicyVersion = "v1"
-        });
-        await PostJsonAsync<LedgerPeriodCloseResultDto>(
-            client,
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", prior.PeriodId.ToString()),
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, ClosedBy: "fund-controller"));
-
-        var current = await PostJsonAsync<LedgerPeriodDto>(
-            client,
-            UiApiRoutes.LedgerPeriods,
-            new CreateLedgerPeriodRequest(
-                book.LedgerBookId,
-                2026,
-                2,
-                "2026-P02",
-                new DateOnly(2026, 2, 1),
-                new DateOnly(2026, 2, 28)));
-        await store.AppendAsync(BuildBalancedEntry(
-            current.PeriodId,
-            revenue: 1_200m,
-            expense: 300m,
-            timestamp: DateTimeOffset.Parse("2026-02-28T21:00:00Z")) with
-        {
-            AccountingBasis = AccountingBasisKindDto.Gaap,
-            AccountingPolicyId = "gaap-close-v1",
-            AccountingPolicyVersion = "v1"
-        });
-        await store.AppendAsync(BuildExpenseEntry(
-            current.PeriodId,
-            accountName: "Accrued performance fee expense",
-            amount: 50m,
-            timestamp: DateTimeOffset.Parse("2026-02-28T22:00:00Z")) with
-        {
-            AccountingBasis = AccountingBasisKindDto.Gaap,
-            AccountingPolicyId = "gaap-close-v1",
-            AccountingPolicyVersion = "v1"
-        });
-        await PostJsonAsync<LedgerPeriodCloseResultDto>(
-            client,
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", current.PeriodId.ToString()),
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, ClosedBy: "fund-controller"));
-
-        var trialBalance = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", current.PeriodId.ToString()),
-            ServerJsonOptions);
-        var pnl = await client.GetFromJsonAsync<LedgerPeriodPnlSummaryDto>(
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodPnlSummary, "periodId", current.PeriodId.ToString()),
-            ServerJsonOptions);
-        var trialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", current.PeriodId.ToString()),
-            ServerJsonOptions);
-
-        trialBalance.Should().NotBeNull();
-        trialBalance!.Should().Contain(row =>
-            row.AccountName == "Management fees" &&
-            row.AccountType == nameof(LedgerAccountType.Revenue) &&
-            row.Balance == 1_200m &&
-            row.AccountingBasis == AccountingBasisKindDto.Gaap &&
-            row.AccountingPolicyId == "gaap-close-v1");
-        pnl.Should().NotBeNull();
-        pnl!.TotalRevenue.Should().Be(1_200m);
-        pnl.TotalExpenses.Should().Be(350m);
-        pnl.NetIncome.Should().Be(850m);
-        pnl.PeriodOnPeriodVariance.Should().Be(350m);
-        pnl.RealizedRevenue.Should().Be(1_200m);
-        pnl.RealizedExpenses.Should().Be(300m);
-        pnl.RealizedNetIncome.Should().Be(900m);
-        pnl.AccrualAdjustmentRevenue.Should().Be(0m);
-        pnl.AccrualAdjustmentExpenses.Should().Be(50m);
-        pnl.AccrualBasisAdjustmentNetImpact.Should().Be(-50m);
-        pnl.RevenueLines.Should().ContainSingle(row => row.AccountName == "Management fees");
-        pnl.ExpenseLines.Should().Contain(row => row.AccountName == "Operating expense");
-        pnl.AccrualAdjustmentLines.Should().ContainSingle(row => row.AccountName == "Accrued performance fee expense");
-        trialBalanceReport.Should().NotBeNull();
-        trialBalanceReport!.PeriodId.Should().Be(current.PeriodId);
-        trialBalanceReport.LedgerBookId.Should().Be(book.LedgerBookId);
-        trialBalanceReport.IsPeriodLocked.Should().BeTrue();
-        trialBalanceReport.TotalDebits.Should().Be(1_550m);
-        trialBalanceReport.TotalCredits.Should().Be(1_550m);
-        trialBalanceReport.NetIncome.Should().Be(850m);
-        trialBalanceReport.PeriodOnPeriodVariance.Should().Be(350m);
-        trialBalanceReport.AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
-        trialBalanceReport.AccountingPolicyId.Should().Be("gaap-close-v1");
-        trialBalanceReport.Lines.Should().Contain(row =>
-            row.AccountName == "Management fees" &&
-            row.AccountType == nameof(LedgerAccountType.Revenue) &&
-            row.Balance == 1_200m);
-        trialBalanceReport.Signature.Algorithm.Should().Be("SHA256");
-        trialBalanceReport.Signature.PayloadChecksumSha256.Should().HaveLength(64);
-        trialBalanceReport.Signature.SignedBy.Should().Be("fund-controller");
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_PeriodReportingRoutes_RetainTrialBalanceDimensions()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-        var store = (InMemoryLedgerJournalStore)app.Services.GetRequiredService<ILedgerJournalStore>();
-
-        var book = await PostJsonAsync<LedgerBookDto>(
-            client,
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                Guid.Parse("183ef413-9db7-4f43-bc12-bd336d509c2d"),
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund",
-                "USD",
-                AccountingBasis: AccountingBasisKindDto.Gaap,
-                AccountingPolicyId: "gaap-close-v1",
-                AccountingPolicyVersion: "v1"));
-        var period = await PostJsonAsync<LedgerPeriodDto>(
-            client,
-            UiApiRoutes.LedgerPeriods,
-            new CreateLedgerPeriodRequest(
-                book.LedgerBookId,
-                2026,
-                6,
-                "2026-P06",
-                new DateOnly(2026, 6, 1),
-                new DateOnly(2026, 6, 30)));
-
-        var aggregateId = Guid.Parse("aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa");
-        var parallelAggregateId = Guid.Parse("bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb");
-        await store.AppendAsync(BuildDimensionalRevenueEntry(
-            period.PeriodId,
-            amount: 100m,
-            timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z"),
-            entityId: "entity-master",
-            costCenterId: "cost-center-investment-ops",
-            externalGlDepartment: "InvestmentOps",
-            aggregateId: aggregateId) with
-        {
-            AccountingBasis = AccountingBasisKindDto.Gaap,
-            AccountingPolicyId = "gaap-close-v1",
-            AccountingPolicyVersion = "v1"
-        });
-        await store.AppendAsync(BuildDimensionalRevenueEntry(
-            period.PeriodId,
-            amount: 200m,
-            timestamp: DateTimeOffset.Parse("2026-06-30T22:00:00Z"),
-            entityId: "entity-parallel",
-            costCenterId: "cost-center-fund-accounting",
-            externalGlDepartment: "FundAccounting",
-            aggregateId: parallelAggregateId) with
-        {
-            AccountingBasis = AccountingBasisKindDto.Gaap,
-            AccountingPolicyId = "gaap-close-v1",
-            AccountingPolicyVersion = "v1"
-        });
-        await PostJsonAsync<LedgerPeriodCloseResultDto>(
-            client,
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", period.PeriodId.ToString()),
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, ClosedBy: "fund-controller"));
-
-        var trialBalance = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", period.PeriodId.ToString()),
-            ServerJsonOptions);
-        var trialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString()),
-            ServerJsonOptions);
-        const string investmentOpsDimensionFilter =
-            "dimensionEntityId=entity-master&dimensionCostCenterId=cost-center-investment-ops&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps";
-        const string missingInvestmentOpsDimensionFilter =
-            "dimensionEntityId=entity-master&dimensionCostCenterId=missing-cost-center&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps";
-        const string missingFundAccountingDimensionFilter =
-            "dimensionEntityId=entity-master&dimensionCostCenterId=missing-cost-center&externalGlDimensionKey=Department&externalGlDimensionValue=FundAccounting";
-        var filteredPeriodTrialBalance = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
-            ServerJsonOptions);
-        var filteredPeriodTrialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
-            ServerJsonOptions);
-        var emptyInvestmentOpsReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?{missingInvestmentOpsDimensionFilter}",
-            ServerJsonOptions);
-        var emptyFundAccountingReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?{missingFundAccountingDimensionFilter}",
-            ServerJsonOptions);
-        var filteredPeriodPnl = await client.GetFromJsonAsync<LedgerPeriodPnlSummaryDto>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodPnlSummary, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
-            ServerJsonOptions);
-        var journalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString()),
-            ServerJsonOptions);
-        var filteredJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
-            ServerJsonOptions);
-        var aggregateJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerAggregateJournalEntries, "aggregateId", aggregateId.ToString())}?ledgerBookId={book.LedgerBookId:D}",
-            ServerJsonOptions);
-        var filteredAggregateJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerAggregateJournalEntries, "aggregateId", aggregateId.ToString())}?ledgerBookId={book.LedgerBookId:D}&{investmentOpsDimensionFilter}",
-            ServerJsonOptions);
-        var crossPeriodReport = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
-            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30",
-            ServerJsonOptions);
-        var filteredCrossPeriodReport = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
-            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30&{investmentOpsDimensionFilter}",
-            ServerJsonOptions);
-        var filteredPnlReport = await client.GetFromJsonAsync<LedgerCrossPeriodPnlReportDto>(
-            $"{UiApiRoutes.LedgerReportsPnlSummary}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30&{investmentOpsDimensionFilter}",
-            ServerJsonOptions);
-
-        trialBalance.Should().NotBeNull();
-        var revenueRows = trialBalance!
-            .Where(row => row.AccountName == "Management fees")
-            .ToArray();
-        revenueRows.Should().HaveCount(2);
-        revenueRows.Should().Contain(row =>
-            row.Balance == 100m &&
-            row.Dimensions != null &&
-            row.Dimensions.FundId == "alpha-fund" &&
-            row.Dimensions.EntityId == "entity-master" &&
-            row.Dimensions.CostCenterId == "cost-center-investment-ops" &&
-            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
-        revenueRows.Should().Contain(row =>
-            row.Balance == 200m &&
-            row.Dimensions != null &&
-            row.Dimensions.FundId == "alpha-fund" &&
-            row.Dimensions.EntityId == "entity-parallel" &&
-            row.Dimensions.CostCenterId == "cost-center-fund-accounting" &&
-            row.Dimensions.ExternalGlDimensions["Department"] == "FundAccounting");
-
-        trialBalanceReport.Should().NotBeNull();
-        trialBalanceReport!.Lines
-            .Where(row => row.AccountName == "Management fees")
-            .Should()
-            .HaveCount(2);
-        trialBalanceReport.Signature.PayloadChecksumSha256.Should().HaveLength(64);
-
-        filteredPeriodTrialBalance.Should().NotBeNull();
-        filteredPeriodTrialBalance!.Should().ContainSingle(row =>
-            row.AccountName == "Management fees" &&
-            row.Balance == 100m &&
-            row.Dimensions != null &&
-            row.Dimensions.EntityId == "entity-master" &&
-            row.Dimensions.CostCenterId == "cost-center-investment-ops" &&
-            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
-
-        filteredPeriodTrialBalanceReport.Should().NotBeNull();
-        filteredPeriodTrialBalanceReport!.Lines.Should().ContainSingle(row =>
-            row.AccountName == "Management fees" &&
-            row.Balance == 100m &&
-            row.Dimensions != null &&
-            row.Dimensions.EntityId == "entity-master" &&
-            row.Dimensions.CostCenterId == "cost-center-investment-ops" &&
-            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
-        filteredPeriodTrialBalanceReport.TotalDebits.Should().Be(0m);
-        filteredPeriodTrialBalanceReport.TotalCredits.Should().Be(100m);
-        filteredPeriodTrialBalanceReport.NetIncome.Should().Be(100m);
-        filteredPeriodTrialBalanceReport.Signature.PayloadChecksumSha256.Should()
-            .NotBe(trialBalanceReport.Signature.PayloadChecksumSha256);
-
-        emptyInvestmentOpsReport.Should().NotBeNull();
-        emptyInvestmentOpsReport!.Lines.Should().BeEmpty();
-        emptyInvestmentOpsReport.TotalDebits.Should().Be(0m);
-        emptyInvestmentOpsReport.TotalCredits.Should().Be(0m);
-        emptyInvestmentOpsReport.Signature.PayloadChecksumSha256.Should()
-            .NotBe(filteredPeriodTrialBalanceReport.Signature.PayloadChecksumSha256);
-
-        emptyFundAccountingReport.Should().NotBeNull();
-        emptyFundAccountingReport!.Lines.Should().BeEmpty();
-        emptyFundAccountingReport.Signature.PayloadChecksumSha256.Should()
-            .NotBe(emptyInvestmentOpsReport.Signature.PayloadChecksumSha256);
-
-        filteredPeriodPnl.Should().NotBeNull();
-        filteredPeriodPnl!.TotalRevenue.Should().Be(100m);
-        filteredPeriodPnl.TotalExpenses.Should().Be(0m);
-        filteredPeriodPnl.NetIncome.Should().Be(100m);
-        filteredPeriodPnl.RevenueLines.Should().ContainSingle(row =>
-            row.AccountName == "Management fees" &&
-            row.Dimensions != null &&
-            row.Dimensions.EntityId == "entity-master");
-
-        journalEntries.Should().NotBeNull();
-        journalEntries!.Should().HaveCount(2);
-        journalEntries.Should().OnlyContain(entry => entry.PeriodId == period.PeriodId && entry.LedgerBookId == book.LedgerBookId);
-        journalEntries.SelectMany(static entry => entry.Lines).Should().Contain(line =>
-            line.AccountName == "Management fees" &&
-            line.Dimensions != null &&
-            line.Dimensions.EntityId == "entity-master" &&
-            line.Dimensions.CostCenterId == "cost-center-investment-ops" &&
-            line.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
-
-        filteredJournalEntries.Should().NotBeNull();
-        var filteredJournalEntry = filteredJournalEntries!.Should().ContainSingle(entry =>
-            entry.PeriodId == period.PeriodId &&
-            entry.LedgerBookId == book.LedgerBookId &&
-            entry.TotalDebits == 0m &&
-            entry.TotalCredits == 100m &&
-            entry.Lines.Count == 1 &&
-            entry.Lines[0].AccountName == "Management fees").Subject;
-        var filteredJournalLine = filteredJournalEntry.Lines[0];
-        filteredJournalLine.Dimensions.Should().NotBeNull();
-        filteredJournalLine.Dimensions!.EntityId.Should().Be("entity-master");
-        filteredJournalLine.Dimensions.CostCenterId.Should().Be("cost-center-investment-ops");
-        filteredJournalLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
-
-        aggregateJournalEntries.Should().NotBeNull();
-        aggregateJournalEntries!.Should().ContainSingle(entry =>
-            entry.AggregateId == aggregateId &&
-            entry.PeriodId == period.PeriodId &&
-            entry.LedgerBookId == book.LedgerBookId &&
-            entry.Lines.Count == 2);
-
-        filteredAggregateJournalEntries.Should().NotBeNull();
-        var filteredAggregateEntry = filteredAggregateJournalEntries!.Should().ContainSingle(entry =>
-            entry.AggregateId == aggregateId &&
-            entry.PeriodId == period.PeriodId &&
-            entry.LedgerBookId == book.LedgerBookId &&
-            entry.TotalDebits == 0m &&
-            entry.TotalCredits == 100m &&
-            entry.Lines.Count == 1 &&
-            entry.Lines[0].AccountName == "Management fees").Subject;
-        filteredAggregateEntry.Lines[0].Dimensions.Should().NotBeNull();
-        filteredAggregateEntry.Lines[0].Dimensions!.EntityId.Should().Be("entity-master");
-        filteredAggregateEntry.Lines[0].Dimensions!.CostCenterId.Should().Be("cost-center-investment-ops");
-        filteredAggregateEntry.Lines[0].Dimensions!.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
-
-        crossPeriodReport.Should().NotBeNull();
-        crossPeriodReport!.Lines.Should().Contain(row =>
-            row.PeriodId == period.PeriodId &&
-            row.AccountName == "Management fees" &&
-            row.Balance == 100m &&
-            row.Dimensions != null &&
-            row.Dimensions.EntityId == "entity-master" &&
-            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
-        crossPeriodReport.Lines.Should().Contain(row =>
-            row.PeriodId == period.PeriodId &&
-            row.AccountName == "Management fees" &&
-            row.Balance == 200m &&
-            row.Dimensions != null &&
-            row.Dimensions.EntityId == "entity-parallel" &&
-            row.Dimensions.ExternalGlDimensions["Department"] == "FundAccounting");
-
-        filteredCrossPeriodReport.Should().NotBeNull();
-        filteredCrossPeriodReport!.Lines.Should().ContainSingle(row =>
-            row.PeriodId == period.PeriodId &&
-            row.AccountName == "Management fees" &&
-            row.Balance == 100m &&
-            row.Dimensions != null &&
-            row.Dimensions.EntityId == "entity-master" &&
-            row.Dimensions.CostCenterId == "cost-center-investment-ops" &&
-            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
-        filteredCrossPeriodReport.TotalDebits.Should().Be(0m);
-        filteredCrossPeriodReport.TotalCredits.Should().Be(100m);
-        filteredCrossPeriodReport.NetIncome.Should().Be(100m);
-
-        filteredPnlReport.Should().NotBeNull();
-        filteredPnlReport!.Periods.Should().ContainSingle(periodSummary =>
-            periodSummary.PeriodId == period.PeriodId &&
-            periodSummary.TotalRevenue == 100m &&
-            periodSummary.TotalExpenses == 0m &&
-            periodSummary.NetIncome == 100m);
-        filteredPnlReport.TotalRevenue.Should().Be(100m);
-        filteredPnlReport.NetIncome.Should().Be(100m);
-        store.QueryHistory.Should().Contain(query =>
-            query.LedgerBookId == book.LedgerBookId &&
-            query.PeriodId == period.PeriodId &&
-            query.LineDimensions == null);
-        store.QueryHistory.Should().Contain(query =>
-            query.LedgerBookId == book.LedgerBookId &&
-            query.PeriodId == period.PeriodId &&
-            query.LineDimensions != null &&
-            query.LineDimensions.EntityId == "entity-master" &&
-            query.LineDimensions.CostCenterId == "cost-center-investment-ops" &&
-            query.LineDimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
-        store.QueryHistory.Should().Contain(query =>
-            query.LedgerBookId == book.LedgerBookId &&
-            query.AggregateId == aggregateId &&
-            query.LineDimensions != null &&
-            query.LineDimensions.EntityId == "entity-master" &&
-            query.LineDimensions.CostCenterId == "cost-center-investment-ops" &&
-            query.LineDimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_CrossPeriodReportRoutes_ReturnClosedPeriodTrialBalanceAndPnlReports()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-        var store = app.Services.GetRequiredService<ILedgerJournalStore>();
-
-        var book = await PostJsonAsync<LedgerBookDto>(
-            client,
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                Guid.Parse("6575e74d-5665-4f7c-a5d1-2d8f205478ab"),
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund",
-                "USD",
-                AccountingBasis: AccountingBasisKindDto.Gaap,
-                AccountingPolicyId: "gaap-close-v1",
-                AccountingPolicyVersion: "v1"));
-
-        var first = await CreatePeriodWithPostingAsync(
-            client,
-            store,
-            book,
-            fiscalYear: 2026,
-            periodNo: 1,
-            label: "2026-P01",
-            start: new DateOnly(2026, 1, 1),
-            end: new DateOnly(2026, 1, 31),
-            revenue: 800m,
-            expense: 300m,
-            closeKind: LedgerPeriodCloseKindDto.SoftClose);
-        var second = await CreatePeriodWithPostingAsync(
-            client,
-            store,
-            book,
-            fiscalYear: 2026,
-            periodNo: 2,
-            label: "2026-P02",
-            start: new DateOnly(2026, 2, 1),
-            end: new DateOnly(2026, 2, 28),
-            revenue: 1_200m,
-            expense: 300m,
-            closeKind: LedgerPeriodCloseKindDto.SoftClose);
-        await PostJsonAsync<LedgerPeriodDto>(
-            client,
-            UiApiRoutes.LedgerPeriods,
-            new CreateLedgerPeriodRequest(
-                book.LedgerBookId,
-                2026,
-                3,
-                "2026-P03",
-                new DateOnly(2026, 3, 1),
-                new DateOnly(2026, 3, 31)));
-
-        var query = $"?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-01-01&endDate=2026-02-28";
-        var trialBalance = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
-            UiApiRoutes.LedgerReportsTrialBalance + query,
-            ServerJsonOptions);
-        var pnl = await client.GetFromJsonAsync<LedgerCrossPeriodPnlReportDto>(
-            UiApiRoutes.LedgerReportsPnlSummary + query,
-            ServerJsonOptions);
-
-        trialBalance.Should().NotBeNull();
-        trialBalance!.Periods.Select(period => period.PeriodId).Should().Equal(first.PeriodId, second.PeriodId);
-        trialBalance.Lines.Should().Contain(line =>
-            line.PeriodId == first.PeriodId &&
-            line.AccountName == "Management fees" &&
-            line.Balance == 800m &&
-            line.AccountingBasis == AccountingBasisKindDto.Gaap);
-        trialBalance.Lines.Should().Contain(line =>
-            line.PeriodId == second.PeriodId &&
-            line.AccountName == "Operating expense" &&
-            line.Balance == 300m);
-        trialBalance.TotalDebits.Should().Be(2_600m);
-        trialBalance.TotalCredits.Should().Be(2_600m);
-        trialBalance.NetIncome.Should().Be(1_400m);
-
-        pnl.Should().NotBeNull();
-        pnl!.Periods.Select(period => period.PeriodId).Should().Equal(first.PeriodId, second.PeriodId);
-        pnl.TotalRevenue.Should().Be(2_000m);
-        pnl.TotalExpenses.Should().Be(600m);
-        pnl.NetIncome.Should().Be(1_400m);
-        pnl.Periods[1].PeriodOnPeriodVariance.Should().Be(400m);
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_CrossPeriodReportRoutes_RejectInvalidDateRange()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-
-        using var response = await client.GetAsync($"{UiApiRoutes.LedgerReportsPnlSummary}?startDate=2026-03-01&endDate=2026-02-01");
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_CreateBook_WhenUserLacksLedgerMutationPermission_ReturnsForbidden()
-    {
-        await using var app = await CreateAppAsync(UserPermission.ViewTrades);
-        var client = app.GetTestClient();
-
-        using var response = await client.PostAsJsonAsync(
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                Guid.Parse("59f045cb-f681-4b0c-943d-44c946f78214"),
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund",
-                "USD"),
-            ServerJsonOptions);
-
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_ListBooks_WhenUserLacksLedgerReadPermission_ReturnsForbidden()
-    {
-        await using var app = await CreateAppAsync(UserPermission.ViewTrades);
-        var client = app.GetTestClient();
-
-        using var response = await client.GetAsync(UiApiRoutes.LedgerBooks);
-
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task LedgerEndpoints_ListBooksAndPeriods_FilterByAccountingBasis()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-        var nodeId = Guid.Parse("4b3b9f1f-9637-41a9-947e-42b4a4dc91fc");
-
-        await PostJsonAsync<LedgerBookDto>(
-            client,
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                nodeId,
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund",
-                "USD"));
-        var gaapBook = await PostJsonAsync<LedgerBookDto>(
-            client,
-            UiApiRoutes.LedgerBooks,
-            new CreateLedgerBookRequest(
-                "alpha-fund",
-                nodeId,
-                FundStructureNodeKindDto.Fund,
-                "Alpha Fund GAAP",
-                "USD",
-                AccountingBasis: AccountingBasisKindDto.Gaap,
-                AccountingPolicyId: "gaap-default-v1",
-                AccountingPolicyVersion: "v1"));
-        var gaapPeriod = await PostJsonAsync<LedgerPeriodDto>(
-            client,
-            UiApiRoutes.LedgerPeriods,
-            new CreateLedgerPeriodRequest(
-                gaapBook.LedgerBookId,
-                2026,
-                6,
-                "2026-P06",
-                new DateOnly(2026, 6, 1),
-                new DateOnly(2026, 6, 30)));
-
-        var books = await client.GetFromJsonAsync<IReadOnlyList<LedgerBookDto>>(
-            $"{UiApiRoutes.LedgerBooks}?fundProfileId=alpha-fund&fundStructureNodeId={nodeId:D}&accountingBasis=Gaap",
-            ServerJsonOptions);
-        var periods = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodDto>>(
-            $"{UiApiRoutes.LedgerPeriods}?fundProfileId=alpha-fund&fundStructureNodeId={nodeId:D}&accountingBasis=Gaap",
-            ServerJsonOptions);
-
-        books.Should().NotBeNull();
-        books!.Should().ContainSingle(book => book.LedgerBookId == gaapBook.LedgerBookId && book.AccountingBasis == AccountingBasisKindDto.Gaap);
-        periods.Should().NotBeNull();
-        periods!.Should().ContainSingle(period => period.PeriodId == gaapPeriod.PeriodId && period.AccountingBasis == AccountingBasisKindDto.Gaap);
-    }
-
-    [Fact]
-    public async Task OperatorInbox_ShouldAttachLedgerPeriodCloseNavigationWhenContributedItemIsSparse()
-    {
-        await using var app = await CreateAppAsync();
-        var inboxService = app.Services.GetRequiredService<IOperatorInboxService>();
-        await inboxService.UpsertItemAsync(new OperatorWorkItemDto(
-            WorkItemId: "ledger-period-close-sparse",
-            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
-            Label: "SoftClosed sign-off required",
-            Detail: "Period close requires controller sign-off.",
-            Tone: OperatorWorkItemToneDto.Warning,
-            CreatedAt: DateTimeOffset.Parse("2026-04-30T16:00:00Z")));
-
-        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>(
-            UiApiRoutes.WorkstationOperatorInbox,
-            ServerJsonOptions);
-
-        inbox.Should().NotBeNull();
-        inbox!.Items.Should().Contain(item =>
-            item.WorkItemId == "ledger-period-close-sparse" &&
-            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
-            item.TargetPageTag == "FundReconciliation" &&
-            item.Workspace == "Accounting");
-    }
-
-    [Fact]
-    public void LedgerBookMigration_DefinesLedgerBooksAndBookScopedPeriods()
-    {
-        var sql = ReadMigration("V_ledger_003__ledger_books.sql");
-
-        sql.Should().Contain("create table if not exists __SCHEMA__.ledger_books");
-        sql.Should().Contain("fund_structure_node_id uuid not null");
-        sql.Should().Contain("add column if not exists ledger_book_id uuid null");
-        sql.Should().Contain("ux_accounting_periods_book_fiscal_period");
-    }
-
-    [Fact]
-    public void AccountingBasisPolicyMigration_DefinesParallelBookPolicyShape()
-    {
-        var sql = ReadMigration("V_ledger_004__accounting_basis_policies.sql");
-
-        sql.Should().Contain("create table if not exists __SCHEMA__.accounting_policies");
-        sql.Should().Contain("fund_structure_node_id uuid null");
-        sql.Should().Contain("source_event_id uuid null");
-        sql.Should().Contain("add column if not exists accounting_basis text not null default 'Primary'");
-        sql.Should().Contain("add column if not exists accounting_policy_id text not null default 'legacy-v1'");
-        sql.Should().Contain("ux_ledger_books_fund_node_basis");
-        sql.Should().Contain("ix_accounting_policies_scope");
-        sql.Should().Contain("'Gaap', 'gaap-default-v1', 'v1'");
-        sql.Should().Contain("'Cash', 'cash-default-v1', 'v1'");
-        sql.Should().Contain("'Tax', 'tax-default-v1', 'v1'");
-        sql.Should().Contain("'Statutory', 'stat-default-v1', 'v1'");
-    }
-
-    private static async Task<T> PostJsonAsync<T>(HttpClient client, string route, object request)
-    {
-        using var response = await client.PostAsJsonAsync(route, request, ServerJsonOptions);
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created);
-        var payload = await response.Content.ReadFromJsonAsync<T>(ServerJsonOptions);
-        payload.Should().NotBeNull();
-        return payload!;
-    }
-
-    private static async Task<WebApplication> CreateAppAsync(
-        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageDirectLending)
-    {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = Environments.Development
-        });
-        builder.WebHost.UseTestServer();
-        builder.Services.AddRateLimiter(options =>
-            options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ =>
-                RateLimitPartition.GetNoLimiter("ledger-tests")));
-        builder.Services.AddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
-        builder.Services.AddSingleton<ILedgerJournalStore, InMemoryLedgerJournalStore>();
-        builder.Services.AddSingleton<ILedgerBookService>(sp =>
-            new PostgresLedgerBookService(
-                sp.GetRequiredService<ILedgerJournalStore>(),
-                sp.GetRequiredService<IOperatorInboxService>()));
-
-        var app = builder.Build();
-        app.Use((context, next) =>
-        {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-controller";
-            context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
-            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "ledger-test-company";
-            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "ledger-test-tenant";
-            return next();
-        });
-        app.UseRateLimiter();
-        app.MapLedgerEndpoints(ServerJsonOptions);
-        app.MapWorkstationEndpoints(ServerJsonOptions);
-
-        await app.StartAsync();
-        return app;
-    }
-
-    private static async Task<LedgerPeriodDto> CreatePeriodWithPostingAsync(
-        HttpClient client,
-        ILedgerJournalStore store,
-        LedgerBookDto book,
-        int fiscalYear,
-        int periodNo,
-        string label,
-        DateOnly start,
-        DateOnly end,
-        decimal revenue,
-        decimal expense,
-        LedgerPeriodCloseKindDto closeKind)
-    {
-        var period = await PostJsonAsync<LedgerPeriodDto>(
-            client,
-            UiApiRoutes.LedgerPeriods,
-            new CreateLedgerPeriodRequest(
-                book.LedgerBookId,
-                fiscalYear,
-                periodNo,
-                label,
-                start,
-                end));
-        await store.AppendAsync(BuildBalancedEntry(
-            period.PeriodId,
-            revenue,
-            expense,
-            new DateTimeOffset(end.ToDateTime(new TimeOnly(21, 0)), TimeSpan.Zero)) with
-        {
-            AccountingBasis = book.AccountingBasis,
-            AccountingPolicyId = book.AccountingPolicyId,
-            AccountingPolicyVersion = book.AccountingPolicyVersion
-        });
-        await PostJsonAsync<LedgerPeriodCloseResultDto>(
-            client,
-            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", period.PeriodId.ToString()),
-            new CloseLedgerPeriodRequest(closeKind, ClosedBy: "fund-controller"));
-
-        return period;
-    }
-
-    private static LedgerJournalEntryWrite BuildBalancedEntry(
-        Guid periodId,
-        decimal revenue,
-        decimal expense,
-        DateTimeOffset? timestamp = null)
-    {
-        var journalEntryId = Guid.NewGuid();
-        var occurredAt = timestamp ?? DateTimeOffset.Parse("2026-02-28T21:00:00Z");
-        const string description = "Month-end revenue and expense posting";
-        var lines = new[]
-        {
-            new LedgerEntry(
-                Guid.NewGuid(),
-                journalEntryId,
-                occurredAt,
-                new LedgerAccount("Cash", LedgerAccountType.Asset),
-                debit: revenue,
-                credit: 0m,
-                description),
-            new LedgerEntry(
-                Guid.NewGuid(),
-                journalEntryId,
-                occurredAt,
-                new LedgerAccount("Management fees", LedgerAccountType.Revenue),
-                debit: 0m,
-                credit: revenue,
-                description),
-            new LedgerEntry(
-                Guid.NewGuid(),
-                journalEntryId,
-                occurredAt,
-                new LedgerAccount("Operating expense", LedgerAccountType.Expense),
-                debit: expense,
-                credit: 0m,
-                description),
-            new LedgerEntry(
-                Guid.NewGuid(),
-                journalEntryId,
-                occurredAt,
-                new LedgerAccount("Cash", LedgerAccountType.Asset),
-                debit: 0m,
-                credit: expense,
-                description)
-        };
-
-        return new LedgerJournalEntryWrite(
-            new JournalEntry(journalEntryId, occurredAt, description, lines),
-            AggregateId: Guid.NewGuid(),
-            PeriodId: periodId);
-    }
-
-    private static LedgerJournalEntryWrite BuildExpenseEntry(
-        Guid periodId,
-        string accountName,
-        decimal amount,
-        DateTimeOffset timestamp)
-    {
-        var journalEntryId = Guid.NewGuid();
-        var description = $"{accountName} accrual adjustment";
-        var lines = new[]
-        {
-            new LedgerEntry(
-                Guid.NewGuid(),
-                journalEntryId,
-                timestamp,
-                new LedgerAccount(accountName, LedgerAccountType.Expense),
-                debit: amount,
-                credit: 0m,
-                description),
-            new LedgerEntry(
-                Guid.NewGuid(),
-                journalEntryId,
-                timestamp,
-                new LedgerAccount("Accrued liabilities", LedgerAccountType.Liability),
-                debit: 0m,
-                credit: amount,
-                description)
-        };
-
-        return new LedgerJournalEntryWrite(
-            new JournalEntry(journalEntryId, timestamp, description, lines),
-            AggregateId: Guid.NewGuid(),
-            PeriodId: periodId);
-    }
-
-    private static LedgerJournalEntryWrite BuildDimensionalRevenueEntry(
-        Guid periodId,
-        decimal amount,
-        DateTimeOffset timestamp,
-        string entityId,
-        string costCenterId,
-        string externalGlDepartment,
-        Guid? aggregateId = null)
-    {
-        var journalEntryId = Guid.NewGuid();
-        const string description = "Dimension-scoped revenue posting";
-        var lines = new[]
-        {
-            new LedgerEntry(
-                Guid.NewGuid(),
-                journalEntryId,
-                timestamp,
-                new LedgerAccount("Cash", LedgerAccountType.Asset),
-                debit: amount,
-                credit: 0m,
-                description),
-            new LedgerEntry(
-                Guid.NewGuid(),
-                journalEntryId,
-                timestamp,
-                new LedgerAccount("Management fees", LedgerAccountType.Revenue),
-                debit: 0m,
-                credit: amount,
-                description,
-                new LedgerLineDimensionSet(
-                    EntityId: entityId,
-                    CostCenterId: costCenterId,
-                    ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["Department"] = externalGlDepartment
-                    }))
-        };
-        var metadata = new JournalEntryMetadata(
-            StrategyId: "strategy-direct-lending",
-            FinancialAccountId: "operating-cash",
-            CounterpartyAccountId: "counterparty-bank");
-
-        return new LedgerJournalEntryWrite(
-            new JournalEntry(journalEntryId, timestamp, description, lines, metadata),
-            AggregateId: aggregateId ?? Guid.NewGuid(),
-            PeriodId: periodId);
-    }
-
-    private static LedgerAdjustmentApprovalMetadataDto BuildApprovedAdjustmentApproval() =>
-        new(
-            ApprovalId: "approval-ledger-adjustment-1",
-            Status: LedgerAdjustmentApprovalStatusDto.Approved,
-            ApprovedBy: "fund-controller",
-            ApprovedAt: DateTimeOffset.Parse("2026-06-30T22:00:00Z"),
-            ReasonCode: "month-end-true-up",
-            GovernanceCaseId: "case-ledger-close-1",
-            EvidenceLink: "evidence://ledger/adjustment/approval-1",
-            Notes: "Controller approved soft-close true-up.");
-
-    private static string ReadMigration(string fileName)
-    {
-        var root = FindRepoRoot();
-        var path = Path.Combine(root, "src", "Meridian.Storage", "Ledger", "Migrations", fileName);
-        return File.ReadAllText(path);
-    }
-
-    private static string FindRepoRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (Directory.Exists(Path.Combine(directory.FullName, "src", "Meridian.Storage")))
-            {
-                return directory.FullName;
-            }
-
-            directory = directory.Parent;
-        }
-
-        throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
-    }
-
-    private sealed class InMemoryLedgerJournalStore :
-        ILedgerJournalStore,
-        IAtomicLedgerPeriodCloseStore
-    {
-        private readonly object _periodMutationGate = new();
-        private readonly Dictionary<Guid, LedgerBookRecord> _books = [];
-        private readonly Dictionary<Guid, LedgerAccountingPeriod> _periods = [];
-        private readonly Dictionary<Guid, List<LedgerJournalEntryRecord>> _entriesByPeriod = [];
-        private long _sequence;
-
-        public List<LedgerJournalEntryQuery> QueryHistory { get; } = [];
-
-        public ManualResetEventSlim? HardCloseEntered { get; set; }
-
-        public ManualResetEventSlim? ReleaseHardClose { get; set; }
-
-        public ManualResetEventSlim? AppendAttempted { get; set; }
-
-        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            AppendAttempted?.Set();
-            lock (_periodMutationGate)
-            {
-                if (!_periods.TryGetValue(entry.PeriodId, out var period))
-                {
-                    throw new LedgerValidationException($"Accounting period '{entry.PeriodId}' was not found.");
-                }
-
-                LedgerPeriodPostingGuard.Validate(entry, period);
-
-                if (period.LedgerBookId is { } ledgerBookId &&
-                    _books.TryGetValue(ledgerBookId, out var book) &&
-                    book.AccountingBasis != entry.AccountingBasis)
-                {
-                    throw new LedgerValidationException(
-                        $"Journal entry '{entry.Entry.JournalEntryId}' basis '{entry.AccountingBasis}' does not match ledger book '{book.DisplayName}' basis '{book.AccountingBasis}'.");
-                }
-
-                if (!_entriesByPeriod.TryGetValue(entry.PeriodId, out var entries))
-                {
-                    entries = [];
-                    _entriesByPeriod[entry.PeriodId] = entries;
-                }
-
-                entries.Add(new LedgerJournalEntryRecord(
-                    entry.Entry,
-                    entry.AggregateId,
-                    entry.PeriodId,
-                    entry.CommandId,
-                    entry.CorrelationId,
-                    ++_sequence,
-                    DateTimeOffset.UtcNow,
-                    entry.AccountingBasis,
-                    entry.AccountingPolicyId,
-                    entry.AccountingPolicyVersion,
-                    entry.RuleId,
-                    entry.RuleVersion,
-                    entry.SourceEventId,
-                    entry.SourceJournalEntryId,
-                    entry.PostingKind,
-                    entry.AdjustmentApproval));
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
-                _entriesByPeriod.TryGetValue(periodId, out var entries)
-                    ? entries.ToArray()
-                    : []);
-        }
-
-        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
-            LedgerJournalEntryQuery query,
-            CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            QueryHistory.Add(query);
-            if (!query.LedgerBookId.HasValue &&
-                !query.PeriodId.HasValue &&
-                !query.AggregateId.HasValue &&
-                !query.SourceEventId.HasValue &&
-                query.LineDimensions is null &&
-                string.IsNullOrWhiteSpace(query.AccountName) &&
-                !query.OccurredFrom.HasValue &&
-                !query.OccurredTo.HasValue)
-            {
-                throw new ArgumentException("At least one journal query filter is required.", nameof(query));
-            }
-
-            IEnumerable<LedgerJournalEntryRecord> records = _entriesByPeriod.Values.SelectMany(static entries => entries);
-            if (query.LedgerBookId.HasValue)
-            {
-                records = records.Where(entry =>
-                    _periods.TryGetValue(entry.PeriodId, out var period) &&
-                    period.LedgerBookId == query.LedgerBookId.Value);
-            }
-
-            if (query.PeriodId.HasValue)
-            {
-                records = records.Where(entry => entry.PeriodId == query.PeriodId.Value);
-            }
-
-            if (query.AggregateId.HasValue)
-            {
-                records = records.Where(entry => entry.AggregateId == query.AggregateId.Value);
-            }
-
-            if (query.SourceEventId.HasValue)
-            {
-                records = records.Where(entry => entry.SourceEventId == query.SourceEventId.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.AccountName))
-            {
-                var accountName = query.AccountName.Trim();
-                records = records.Where(entry => entry.Entry.Lines.Any(line =>
-                    string.Equals(line.Account.Name, accountName, StringComparison.OrdinalIgnoreCase)));
-            }
-
-            if (query.OccurredFrom.HasValue)
-            {
-                records = records.Where(entry => entry.Entry.Timestamp >= query.OccurredFrom.Value);
-            }
-
-            if (query.OccurredTo.HasValue)
-            {
-                records = records.Where(entry => entry.Entry.Timestamp <= query.OccurredTo.Value);
-            }
-
-            if (query.LineDimensions is not null)
-            {
-                records = records.Where(entry => entry.Entry.Lines.Any(line =>
-                    MatchesLineDimensions(query.LineDimensions, line.Dimensions)));
-            }
-
-            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
-                records
-                    .OrderBy(static entry => entry.Entry.Timestamp)
-                    .ThenBy(static entry => entry.GlobalSequence)
-                    .ToArray());
-        }
-
-        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            var records = _entriesByPeriod.Values
-                .SelectMany(static entries => entries)
-                .Where(entry => entry.AggregateId == aggregateId)
-                .ToArray();
-            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(records);
-        }
-
-        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult(_periods.GetValueOrDefault(periodId));
-        }
-
-        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
-            Guid? ledgerBookId = null,
-            string? status = null,
-            string? fundProfileId = null,
-            Guid? fundStructureNodeId = null,
-            CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            IEnumerable<LedgerAccountingPeriod> periods = _periods.Values;
-            if (ledgerBookId.HasValue)
-            {
-                periods = periods.Where(period => period.LedgerBookId == ledgerBookId.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                periods = periods.Where(period => string.Equals(period.Status, status, StringComparison.Ordinal));
-            }
-
-            if (!string.IsNullOrWhiteSpace(fundProfileId) || fundStructureNodeId.HasValue)
-            {
-                periods = periods.Where(period =>
-                    period.LedgerBookId is { } id &&
-                    _books.TryGetValue(id, out var book) &&
-                    (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)) &&
-                    (!fundStructureNodeId.HasValue || book.FundStructureNodeId == fundStructureNodeId.Value));
-            }
-
-            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(
-                periods
-                    .OrderBy(static period => period.StartDate)
-                    .ThenBy(static period => period.PeriodNo)
-                    .ToArray());
-        }
-
-        public Task<LedgerAccountingPeriod> SavePeriodAsync(
-            LedgerAccountingPeriod period,
-            long expectedVersion,
-            PeriodCloseEventRecord? closeEvent = null,
-            CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            lock (_periodMutationGate)
-            {
-                if (_periods.TryGetValue(period.PeriodId, out var current))
-                {
-                    if (current.Version != expectedVersion)
-                    {
-                        throw new InvalidOperationException("Simulated period version conflict.");
-                    }
-
-                    var updated = period with { Version = expectedVersion + 1 };
-                    _periods[period.PeriodId] = updated;
-                    return Task.FromResult(updated);
-                }
-
-                if (expectedVersion != 0)
-                {
-                    throw new InvalidOperationException("Simulated period version conflict.");
-                }
-
-                var saved = period with { Version = 1 };
-                _periods[period.PeriodId] = saved;
-                return Task.FromResult(saved);
-            }
-        }
-
-        public Task<LedgerAccountingPeriod> SaveHardClosedPeriodAsync(
-            LedgerAccountingPeriod period,
-            long expectedVersion,
-            PeriodCloseEventRecord closeEvent,
-            CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            lock (_periodMutationGate)
-            {
-                HardCloseEntered?.Set();
-                ReleaseHardClose?.Wait(ct);
-                IEnumerable<LedgerJournalEntryRecord> retainedEntries =
-                    _entriesByPeriod.TryGetValue(period.PeriodId, out var entries)
-                        ? entries
-                        : [];
-                var residuals = retainedEntries
-                    .SelectMany(static record => record.Entry.Lines)
-                    .Where(static line => line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense)
-                    .GroupBy(static line => new
-                    {
-                        line.Account.Name,
-                        line.Account.AccountType,
-                        line.Account.Symbol,
-                        line.Account.FinancialAccountId,
-                        line.Dimensions
-                    })
-                    .Select(static group => new
-                    {
-                        group.Key.Name,
-                        Balance = group.Key.AccountType == LedgerAccountType.Revenue
-                            ? group.Sum(static line => line.Credit - line.Debit)
-                            : group.Sum(static line => line.Debit - line.Credit)
-                    })
-                    .Where(static row => row.Balance != 0m)
-                    .ToArray();
-                if (residuals.Length > 0)
-                {
-                    var preview = string.Join(
-                        "; ",
-                        residuals.Take(5).Select(static row =>
-                            FormattableString.Invariant($"{row.Name}={row.Balance}")));
-                    throw new LedgerBookValidationException(
-                        $"Accounting period '{period.Label}' cannot be hard-closed while {residuals.Length} revenue/expense balance(s) remain non-zero ({preview}). Post and approve the closing-entry draft before period lock.");
-                }
-
-                return SavePeriodAsync(period, expectedVersion, closeEvent, ct);
-            }
-        }
-
-        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult(_books.GetValueOrDefault(ledgerBookId));
-        }
-
-        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
-            string? fundProfileId = null,
-            Guid? fundStructureNodeId = null,
-            FundStructureNodeKindDto? fundStructureNodeKind = null,
-            CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            IEnumerable<LedgerBookRecord> books = _books.Values;
-            if (!string.IsNullOrWhiteSpace(fundProfileId))
-            {
-                books = books.Where(book => string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (fundStructureNodeId.HasValue)
-            {
-                books = books.Where(book => book.FundStructureNodeId == fundStructureNodeId.Value);
-            }
-
-            if (fundStructureNodeKind.HasValue)
-            {
-                books = books.Where(book => book.FundStructureNodeKind == fundStructureNodeKind.Value);
-            }
-
-            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>(
-                books.OrderBy(static book => book.DisplayName, StringComparer.Ordinal).ToArray());
-        }
-
-        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            _books[book.LedgerBookId] = book;
-            return Task.FromResult(book);
-        }
-
-        private static bool MatchesLineDimensions(
-            LedgerLineDimensionSet expected,
-            LedgerLineDimensionSet? actual)
-        {
-            if (actual is null)
-            {
-                return false;
-            }
-
-            return Matches(expected.FundId, actual.FundId)
-                   && Matches(expected.EntityId, actual.EntityId)
-                   && Matches(expected.SleeveId, actual.SleeveId)
-                   && Matches(expected.StrategyId, actual.StrategyId)
-                   && Matches(expected.InvestorId, actual.InvestorId)
-                   && Matches(expected.CapitalAccountId, actual.CapitalAccountId)
-                   && (!expected.InstrumentId.HasValue || expected.InstrumentId == actual.InstrumentId)
-                   && Matches(expected.TaxLotId, actual.TaxLotId)
-                   && Matches(expected.CostCenterId, actual.CostCenterId)
-                   && Matches(expected.CounterpartyId, actual.CounterpartyId)
-                   && Matches(expected.OrganizationId, actual.OrganizationId)
-                   && Matches(expected.PortfolioId, actual.PortfolioId)
-                   && Matches(expected.BookId, actual.BookId)
-                   && Matches(expected.AccountId, actual.AccountId)
-                   && Matches(expected.CustomerId, actual.CustomerId)
-                   && Matches(expected.VendorId, actual.VendorId)
-                   && Matches(expected.ProjectId, actual.ProjectId)
-                   && MatchesExternalGlDimensions(expected.ExternalGlDimensions, actual.ExternalGlDimensions);
-        }
-
-        private static bool Matches(string? expected, string? actual)
-            => string.IsNullOrWhiteSpace(expected) ||
-               string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase);
-
-        private static bool MatchesExternalGlDimensions(
-            IReadOnlyDictionary<string, string> expected,
-            IReadOnlyDictionary<string, string> actual)
-        {
-            foreach (var pair in expected)
-            {
-                if (!actual.TryGetValue(pair.Key, out var actualValue) ||
-                    !string.Equals(pair.Value, actualValue, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    }
-}
+YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíß~´é:-jZ.¶›­–)Þ³WW6–ær7—7FVÒäæWC°§W6–ær7—7FVÒäæWBä‡GGä§6öã°§W6–ær7—7FVÒåFW‡Bä§6öã°§W6–ær7—7FVÒåFW‡Bä§6öâå6W&–Æ—¦F–öã°§W6–ær7—7FVÒåF‡&VF–ærå&FTÆ–Ö—F–æs°§W6–ærfÇVVçD76W'F–öç3°§W6–ærÖW&–F–âä6öçG&7G2ä“°§W6–ærÖW&–F–âä–FVçF—G’äWFƒ°§W6–ærÖW&–F–âä6öçG&7G2ägVæE7G'V7GW&S°§W6–ærÖW&–F–âä6öçG&7G2äÆVFvW#°§W6–ærÖW&–F–âä6öçG&7G2åv÷&·7FF–öã°§W6–ærÖW&–F–âäÆVFvW#°§W6–ærÖW&–F–âå7F÷&vRäÆVFvW#°§W6–ærÖW&–F–âåV’å6†&VBäVæGö–çG3°§W6–ærÖW&–F–âåV’å6†&VBå6W'f–6W3°§W6–ærÖ–7&÷6ögBä7æWD6÷&Rä'V–ÆFW#°§W6–ærÖ–7&÷6ögBä7æWD6÷&Rä†÷7F–æs°§W6–ærÖ–7&÷6ögBä7æWD6÷&Rå&FTÆ–Ö—F–æs°§W6–ærÖ–7&÷6ögBä7æWD6÷&RåFW7D†÷7C°§W6–ærÖ–7&÷6ögBäW‡FVç6–öç2äFWVæFVæ7”–æ¦V7F–öã°§W6–ærÖ–7&÷6ögBäW‡FVç6–öç2ä†÷7F–æs°§W6–ærÖ÷° ¦æÖW76RÖW&–F–âåFW7G2å7F÷&vS° §V&Æ–26VÆVB6Æ72ÆVFvW$&ööµ6W'f–6UFW7G0§°¢&—fFR7FF–2&VFöæÇ’§6öå6W&–Æ—¦W$÷F–öç26W'fW$§6öä÷F–öç2ÒæWr‚¢°¢&÷W'G”æÖ–æuöÆ–7’Ò§6öäæÖ–æuöÆ–7’ä6ÖVÄ66RÀ¢6öçfW'FW'2Ò²æWr§6öå7G&–ætVçVÔ6öçfW'FW"‚’Ð¢Ó° ¢´f7EÐ¢V&Æ–27–æ2F6²7&VFT&öö´7–æ5õv†Vå66÷TÇ&VG”W†—7G5õ&WGW&ç4W†—7F–æt&öö²‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"æöFT–BÒwV–BäæWtwV–B‚“°¢f"&WVW7BÒæWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢æöFT–BÀ¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢'W6B"“° ¢f"f—'7BÒv—B6W'f–6Rä7&VFT&öö´7–æ2‡&WVW7B“°¢f"6V6öæBÒv—B6W'f–6Rä7&VFT&öö´7–æ2‡&WVW7Bv—F‚²F—7Æ”æÖRÒ$Ç†gVæBGWÆ–6FR"Ò“° ¢6V6öæBäÆVFvW$&öö´–Bå6†÷VÆB‚’ä&R†f—'7BäÆVFvW$&öö´–B“°¢6V6öæBäF—7Æ”æÖRå6†÷VÆB‚’ä&R‚$Ç†gVæB"“°¢†v—B6W'f–6RäÆ—7D&öö·47–æ2†æWrÆVFvW$&ööµVW'’‚&Ç†ÖgVæB"ÂæöFT–B’’’å6†÷VÆB‚’ä6öçF–å6–ævÆR‚“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²7&VFT&öö´7–æ5ôÆÆ÷w5&ÆÆVÄ&öö·4f÷%6ÖTæöFT'”66÷VçF–æt&6—2‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"æöFT–BÒwV–BäæWtwV–B‚“°¢f"&–Ö'’Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢æöFT–BÀ¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"vÒv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢æöFT–BÀ¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæBt"À¢%U4B"À¢66÷VçF–æt&6—3¢66÷VçF–æt&6—4¶–æDGFòävÀ¢66÷VçF–æuöÆ–7”–C¢&vÖFVfVÇB×c"À¢66÷VçF–æuöÆ–7•fW'6–öã¢'c"’“° ¢väÆVFvW$&öö´–Bå6†÷VÆB‚’äæ÷D&R‡&–Ö'’äÆVFvW$&öö´–B“°¢&–Ö'’ä66÷VçF–æt&6—2å6†÷VÆB‚’ä&R„66÷VçF–æt&6—4¶–æDGFòå&–Ö'’“°¢vä66÷VçF–æt&6—2å6†÷VÆB‚’ä&R„66÷VçF–æt&6—4¶–æDGFòäv“°¢†v—B6W'f–6RäÆ—7D&öö·47–æ2†æWrÆVFvW$&ööµVW'’‚&Ç†ÖgVæB"ÂæöFT–B’’’å6†÷VÆB‚’ä†fT6÷VçBƒ"“°¢†v—B6W'f–6RäÆ—7D&öö·47–æ2†æWrÆVFvW$&ööµVW'’‚&Ç†ÖgVæB"ÂæöFT–BÂ66÷VçF–æt&6—3¢66÷VçF–æt&6—4¶–æDGFòäv’’¢å6†÷VÆB‚¢ä6öçF–å6–ævÆR†&öö²Óâ&öö²äÆVFvW$&öö´–BÓÒväÆVFvW$&öö´–B“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²76W75&öÆÆ÷WD7–æ5õ&W÷'G4Ö—76–æu&WV—&VE66÷W4æEW&–öE&VF–æW72‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"gVæDæöFT–BÒwV–Bå'6R‚&ÖÖÖÖ"“°¢f"&WV—&VDvæöFT–BÒwV–Bå'6R‚&&&&&&&&"Ö&&&"Ö&&&"Ö&&&"Ö&&&&&&&&&&&""“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢gVæDæöFT–BÀ¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB&–Ö'’"À¢%U4B"À¢66÷VçF–æuöÆ–7”–C¢'&–Ö'’×öÆ–7’"À¢66÷VçF–æuöÆ–7•fW'6–öã¢'c""’“°¢v—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢À¢###bÕ"À¢æWrFFTöæÇ’ƒ##bÂÂ’À¢æWrFFTöæÇ’ƒ##bÂÂ3’’“° ¢f"76W76ÖVçBÒv—B6W'f–6Rä76W75&öÆÆ÷WD7–æ2†æWrÆVFvW$&ööµ&öÆÆ÷WD76W76ÖVçE&WVW7B€¢gVæE&öf–ÆT–C¢&Ç†ÖgVæB"À¢&WV—&VE66÷W3 ¢°¢æWrÆVFvW$&ööµ&WV—&VE66÷TGFò†gVæDæöFT–BÂgVæE7G'V7GW&TæöFT¶–æDGFòägVæB’À¢æWrÆVFvW$&ööµ&WV—&VE66÷TGFò‡&WV—&VDvæöFT–BÂgVæE7G'V7GW&TæöFT¶–æDGFòägVæBÂ66÷VçF–æt&6—4¶–æDGFòävÂ$Ç†gVæBt"¢Ò’“° ¢76W76ÖVçBä—5&VG’å6†÷VÆB‚’ä&TfÇ6R‚“°¢76W76ÖVçBä&öö´6÷VçBå6†÷VÆB‚’ä&Rƒ“°¢76W76ÖVçBä÷VåW&–öD6÷VçBå6†÷VÆB‚’ä&Rƒ“°¢76W76ÖVçBä&öö·2å6†÷VÆB‚’ä6öçF–å6–ævÆR‡7FGW2Óà¢7FGW2äÆVFvW$&öö´–BÓÒ&öö²äÆVFvW$&öö´–Bb`¢7FGW2åW&–öD6÷VçBÓÒb`¢7FGW2ä÷VåW&–öD6÷VçBÓÒb`¢7FGW2ä66÷VçF–æuöÆ–7”–BÓÒ'&–Ö'’×öÆ–7’"“°¢76W76ÖVçBä—77VW2å6†÷VÆB‚’ä6öçF–â†—77VRÓà¢—77VRä6öFRÓÒ$ÆVFvW$&ööµ&WV—&VE66÷TÖ—76–ær"b`¢—77VRå6WfW&—G’ÓÒÆVFvW$&ööµ&öÆÆ÷WD—77VU6WfW&—G”GFòä7&—F–6Âb`¢—77VRägVæE7G'V7GW&TæöFT–BÓÒ&WV—&VDvæöFT–Bb`¢—77VRä66÷VçF–æt&6—2ÓÒ66÷VçF–æt&6—4¶–æDGFòäv“°¢76W76ÖVçBä—77VW2å6†÷VÆB‚’ä6öçF–â†—77VRÓà¢—77VRä6öFRÓÒ$ÆVFvW$&öö´æô†&D6Æ÷6VEW&–öG2"b`¢—77VRå6WfW&—G’ÓÒÆVFvW$&ööµ&öÆÆ÷WD—77VU6WfW&—G”GFòåv&æ–ærb`¢—77VRäÆVFvW$&öö´–BÓÒ&öö²äÆVFvW$&öö´–B“°¢76W76ÖVçBä—77VW2å6†÷VÆB‚’äæ÷D6öçF–â†—77VRÓâ—77VRä6öFRÓÒ$ÆVFvW$&öö´ÆVv7”66÷VçF–æuöÆ–7’"“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²VæD7–æ5õv†Vä¦÷W&æÄ&6—4F–ffW'4g&öÔ&öö´&6—5õ&V¦V7G4VçG'’‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæBt"À¢%U4B"À¢66÷VçF–æt&6—3¢66÷VçF–æt&6—4¶–æDGFòävÀ¢66÷VçF–æuöÆ–7”–C¢&vÖFVfVÇB×c"À¢66÷VçF–æuöÆ–7•fW'6–öã¢'c"’“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢RÀ¢###bÕR"À¢æWrFFTöæÇ’ƒ##bÂRÂ’À¢æWrFFTöæÇ’ƒ##bÂRÂ3’’“° ¢f"7BÒ‚’Óâ7F÷&RäVæD7–æ2„'V–ÆD&Ææ6VDVçG'’€¢W&–öBåW&–öD–BÀ¢&WfVçVS¢ó#ÒÀ¢W‡Vç6S¢3ÒÀ¢F–ÖW7F×¢FFUF–ÖTöfg6WBå'6R‚###bÓRÓ3C#££¢"’’“° ¢v—B7Bå6†÷VÆB‚’åF‡&÷t7–æ3ÄÆVFvW%fÆ–FF–öäW†6WF–öãâ‚¢åv—F„ÖW76vR‚"¦&6—2u&–Ö'’r¦&6—2tvr¢"“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²6Æ÷6UW&–öD7–æ5õ6ögD6Æ÷6UõW'6—7G57VÖÖ'”æE&÷vFW4–æ&÷…v÷&´—FVÒ‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"–æ&÷‚ÒæWr–äÖVÖ÷'”÷W&F÷$–æ&÷…6W'f–6R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&RÂ–æ&÷‚“° ¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"&Wf–÷W2Òv—B7F÷&Rå6fUW&–öD7–æ2†æWrÆVFvW$66÷VçF–æuW&–öB€¢wV–BäæWtwV–B‚’À¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢À¢###bÕ"À¢æWrFFTöæÇ’ƒ##bÂÂ’À¢æWrFFTöæÇ’ƒ##bÂÂ3’À¢$÷Vâ"À¢FFUF–ÖTöfg6WBå'6R‚###bÓÓC££¢"’À¢çVÆÂÀ¢’ÂW‡V7FVEfW'6–öã¢“°¢v—B7F÷&RäVæD7–æ2„'V–ÆD&Ææ6VDVçG'’€¢&Wf–÷W2åW&–öD–BÀ¢&WfVçVS¢ƒÒÀ¢W‡Vç6S¢3ÒÀ¢F–ÖW7F×¢FFUF–ÖTöfg6WBå'6R‚###bÓÓ3C#££¢"’’“°¢v—B7F÷&Rå6fUW&–öD7–æ2‡&Wf–÷W2v—F€¢°¢7FGW2Ò$†&D6Æ÷6VB"À¢6Æ÷6VDBÒFFUF–ÖTöfg6WBå'6R‚###bÓ"ÓC££¢"¢ÒÂW‡V7FVEfW'6–öã¢&Wf–÷W2åfW'6–öâ“° ¢f"7W'&VçBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢"À¢###bÕ""À¢æWrFFTöæÇ’ƒ##bÂ"Â’À¢æWrFFTöæÇ’ƒ##bÂ"Â#‚’’“°¢v—B7F÷&RäVæD7–æ2„'V–ÆD&Ææ6VDVçG'’†7W'&VçBåW&–öD–BÂ&WfVçVS¢ó#ÒÂW‡Vç6S¢3Ò’“°¢v—B–æ&÷‚åW6W'D—FVÔ7–æ2†æWr÷W&F÷%v÷&´—FVÔGFò€¢v÷&´—FVÔ–C¢'&V6öæ6–Æ–F–öâÖ'&V²ÖÇ†"À¢¶–æC¢÷W&F÷%v÷&´—FVÔ¶–æDGFòå&V6öæ6–Æ–F–öä'&V²À¢Æ&VÃ¢%&V6öæ6–Æ–F–öâ'&V²&WV—&W2&Wf–Wr"À¢FWF–Ã¢$W†—7F–ær66‚f&–æ6Râ"À¢FöæS¢÷W&F÷%v÷&´—FVÕFöæTGFòåv&æ–ærÀ¢7&VFVDC¢FFUF–ÖTöfg6WBå'6R‚###bÓ"ÓUC££¢"’À¢v÷&·76S¢$66÷VçF–ær"À¢F&vWE&÷WFS¢B'µV”•&÷WFW2å&V6öæ6–Æ–F–öä'&VµVWVWÓöÆVFvW$&öö´–C×¶&öö²äÆVFvW$&öö´–C¤GÒgW&–öD–C×¶7W'&VçBåW&–öD–C¤GÒ"À¢F&vWEvUFs¢$gVæE&V6öæ6–Æ–F–öâ"À¢66÷S¢B&ÆVFvW"Ö&öö³§¶&öö²äÆVFvW$&öö´–C¤çÓ¶ÆVFvW"×W&–öC§¶7W'&VçBåW&–öD–C¤çÒ"’“°¢v—B–æ&÷‚åW6W'D—FVÔ7–æ2†æWr÷W&F÷%v÷&´—FVÔGFò€¢v÷&´—FVÔ–C¢'&V6öæ6–Æ–F–öâÖ'&V²Ö÷F†W"Ö&öö²"À¢¶–æC¢÷W&F÷%v÷&´—FVÔ¶–æDGFòå&V6öæ6–Æ–F–öä'&V²À¢Æ&VÃ¢$÷F†W"ÆVFvW"&öö²'&V²"À¢FWF–Ã¢%F†—2'&V²&VÆöæw2FòF–ffW&VçBÆVFvW"&öö²â"À¢FöæS¢÷W&F÷%v÷&´—FVÕFöæTGFòä7&—F–6ÂÀ¢7&VFVDC¢FFUF–ÖTöfg6WBå'6R‚###bÓ"ÓUC££¢"’À¢v÷&·76S¢$66÷VçF–ær"À¢F&vWE&÷WFS¢B'µV”•&÷WFW2å&V6öæ6–Æ–F–öä'&VµVWVWÓöÆVFvW$&öö´–C×´wV–BäæWtwV–B‚“¤GÒgW&–öD–C×´wV–BäæWtwV–B‚“¤GÒ"À¢F&vWEvUFs¢$gVæE&V6öæ6–Æ–F–öâ"À¢66÷S¢B&ÆVFvW"Ö&öö³§´wV–BäæWtwV–B‚“¤çÓ¶ÆVFvW"×W&–öC§´wV–BäæWtwV–B‚“¤çÒ"’“° ¢f"&W7VÇBÒv—B6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢7W'&VçBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B€¢ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÀ¢6Æ÷6VD'“¢&gVæBÖ6öçG&öÆÆW""À¢æ÷FW3¢$ÖöçF‚ÖVæB6ögB6Æ÷6Râ"À¢&WV—&VE6–væöfe&öÆS¢$gVæB6öçG&öÆÆW""À¢FöÆW&æ6U&öf–ÆT–C¢&ÖöçF‚ÖVæBÓ#V'"’“° ¢&W7VÇBåW&–öBå7FGW2å6†÷VÆB‚’ä&R„ÆVFvW%W&–öE7FGW4GFòå6ögD6Æ÷6VB“°¢&W7VÇBå7VÖÖ'’åF÷FÄFV&—G2å6†÷VÆB‚’ä&RƒóSÒ“°¢&W7VÇBå7VÖÖ'’åF÷FÄ7&VF—G2å6†÷VÆB‚’ä&RƒóSÒ“°¢&W7VÇBå7VÖÖ'’äæWD–æ6öÖRå6†÷VÆB‚’ä&Rƒ“Ò“°¢&W7VÇBå7VÖÖ'’åW&–öDöåW&–öEf&–æ6Rå6†÷VÆB‚’ä&RƒCÒ“°¢&W7VÇBå7VÖÖ'’ä÷Vä'&V´6÷VçBå6†÷VÆB‚’ä&Rƒ“°¢&W7VÇBå7VÖÖ'’å6–væöfe7FGW2å6†÷VÆB‚’ä&R„ÆVFvW%W&–öE6–væöfe7FGW4GFòåVæF–ær“°¢7F÷&RåVW'”†—7F÷'’å6†÷VÆB‚’ä6öçF–â‡VW'’Óà¢VW'’äÆVFvW$&öö´–BÓÒ&öö²äÆVFvW$&öö´–Bb`¢VW'’åW&–öD–BÓÒ7W'&VçBåW&–öD–B“°¢&W7VÇBå7VÖÖ'’åG&–Ä&Ææ6Rå6†÷VÆB‚’ä6öçF–â‡&÷rÓà¢&÷rä66÷VçDæÖRÓÒ$ÖævVÖVçBfVW2"b`¢&÷rä66÷VçEG—RÓÒæÖVöb„ÆVFvW$66÷VçEG—Rå&WfVçVR’b`¢&÷rä&Ææ6RÓÒó#Ò“°¢&W7VÇBåv÷&´—FVÒä¶–æBå6†÷VÆB‚’ä&R„÷W&F÷%v÷&´—FVÔ¶–æDGFòäÆVFvW%W&–öD6Æ÷6R“°¢&W7VÇBåv÷&´—FVÒåF&vWE&÷WFRå6†÷VÆB‚’ä&R…V”•&÷WFW2å&V6öæ6–Æ–F–öä'&VµVWVR“°¢&W7VÇBåv÷&´—FVÒåF&vWEvUFrå6†÷VÆB‚’ä&R‚$gVæE&V6öæ6–Æ–F–öâ"“°¢&W7VÇBåv÷&´—FVÒäFWF–Âå6†÷VÆB‚’ä6öçF–â‚$gVæB6öçG&öÆÆW""“°¢&W7VÇBåv÷&´—FVÒäFWF–Âå6†÷VÆB‚’ä6öçF–â‚&ÖöçF‚ÖVæBÓ#V'"“°¢&W7VÇBåv÷&´—FVÒäFWF–Âå6†÷VÆB‚’ä6öçF–â‚$gVæE&V6öæ6–Æ–F–öâ"“°¢&W7VÇBåv÷&´—FVÒå66÷Rå6†÷VÆB‚’ä6öçF–â†&öö²äÆVFvW$&öö´–BåFõ7G&–ær‚$â"’“°¢&W7VÇBåv÷&´—FVÒå66÷Rå6†÷VÆB‚’ä6öçF–â†7W'&VçBåW&–öD–BåFõ7G&–ær‚$â"’“°¢&W7VÇBåv÷&´—FVÒå&WV—&VE6–væöfe&öÆRå6†÷VÆB‚’ä&R‚$gVæB6öçG&öÆÆW""“°¢&W7VÇBåv÷&´—FVÒåFöÆW&æ6U&öf–ÆT–Bå6†÷VÆB‚’ä&R‚&ÖöçF‚ÖVæBÓ#V'"“°¢&W7VÇBåv÷&´—FVÒå6–væöfe7FGW2å6†÷VÆB‚’ä&R†æÖVöb„ÆVFvW%W&–öE6–væöfe7FGW4GFòåVæF–ær’“° ¢f"6öçG&–'WFVD—FV×2Òv—B–æ&÷‚ävWD—FV×47–æ2‚“°¢6öçG&–'WFVD—FV×2å6†÷VÆB‚’ä6öçF–å6–ævÆR†—FVÒÓà¢—FVÒåv÷&´—FVÔ–BÓÒ&W7VÇBåv÷&´—FVÒåv÷&´—FVÔ–Bb`¢—FVÒä¶–æBÓÒ÷W&F÷%v÷&´—FVÔ¶–æDGFòäÆVFvW%W&–öD6Æ÷6Rb`¢—FVÒåF&vWE&÷WFRÓÒV”•&÷WFW2å&V6öæ6–Æ–F–öä'&VµVWVRb`¢—FVÒåF&vWEvUFrÓÒ$gVæE&V6öæ6–Æ–F–öâ"b`¢—FVÒå&WV—&VE6–væöfe&öÆRÓÒ$gVæB6öçG&öÆÆW""b`¢—FVÒåFöÆW&æ6U&öf–ÆT–BÓÒ&ÖöçF‚ÖVæBÓ#V'"“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²6Æ÷6UW&–öD7–æ5õv†Vå&Wf–WvVDWFöÖF–öä÷&–v–åõ&V¦V7G4&Vf÷&UW&–öD×WFF–öâ‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"–æ&÷‚ÒæWr–äÖVÖ÷'”÷W&F÷$–æ&÷…6W'f–6R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&RÂ–æ&÷‚“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢2À¢###bÕ2"À¢æWrFFTöæÇ’ƒ##bÂ2Â’À¢æWrFFTöæÇ’ƒ##bÂ2Â3’’“° ¢f"7BÒ‚’Óâ6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B€¢ÆVFvW%W&–öD6Æ÷6T¶–æDGFòä†&D6Æ÷6RÀ¢6Æ÷6VD'“¢&76—7FçB"À¢7F–öä÷&–v–ã¢÷W&F–öç47F–öä÷&–v–äGFòä76—7FçDG&gB’“° ¢v—B7Bå6†÷VÆB‚’åF‡&÷t7–æ3ÄÆVFvW$&ööµfÆ–FF–öäW†6WF–öãâ‚¢åv—F„ÖW76vR‚"¥&Wf–WvVBWFöÖF–öâ6ææ÷B6Æ÷6RÆVFvW"W&–öG2¢"“°¢f"&WF–æVBÒv—B7F÷&RävWEW&–öD7–æ2‡W&–öBåW&–öD–B“°¢&WF–æVBå6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢&WF–æVBå7FGW2å6†÷VÆB‚’ä&R‚$÷Vâ"“°¢f"–æ&÷„—FV×2Òv—B–æ&÷‚ävWD—FV×47–æ2‚“°¢–æ&÷„—FV×2å6†÷VÆB‚’äæ÷D6öçF–â†—FVÒÓâ—FVÒä¶–æBÓÒ÷W&F÷%v÷&´—FVÔ¶–æDGFòäÆVFvW%W&–öD6Æ÷6R“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²6Æ÷6UW&–öD7–æ5õv†VåW&–öDÇ&VG•6ögD6Æ÷6VEõ&V¦V7G56V6öæE6ögD6Æ÷6R‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢2À¢###bÕ2"À¢æWrFFTöæÇ’ƒ##bÂ2Â’À¢æWrFFTöæÇ’ƒ##bÂ2Â3’’“° ¢v—B6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“°¢f"7BÒ‚’Óâ6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“° ¢v—B7Bå6†÷VÆB‚’åF‡&÷t7–æ3ÄÆVFvW%W&–öEG&ç6—F–öäW†6WF–öãâ‚¢åv—F„ÖW76vR‚"¤6ææ÷BG&ç6—F–öâ¥6ögD6Æ÷6VBFò6ögD6Æ÷6VB¢"“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²6Æ÷6UW&–öD7–æ5ô÷VåW&–öE&V¦V7G4†&D6Æ÷6UVçF–Äv÷fW&æVE6ögD6Æ÷6T6ö×ÆWFW2‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢2À¢###bÕ2"À¢æWrFFTöæÇ’ƒ##bÂ2Â’À¢æWrFFTöæÇ’ƒ##bÂ2Â3’’“° ¢f"7BÒ‚’Óâ6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòä†&D6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“° ¢v—B7Bå6†÷VÆB‚’åF‡&÷t7–æ3ÄÆVFvW%W&–öEG&ç6—F–öäW†6WF–öãâ‚¢åv—F„ÖW76vR‚"¤6ææ÷BG&ç6—F–öâ¤÷VâFò†&D6Æ÷6VB¢"“°¢†v—B7F÷&RävWEW&–öD7–æ2‡W&–öBåW&–öD–B’’å7FGW2å6†÷VÆB‚’ä&R‚$÷Vâ"“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²6Æ÷6UW&–öD7–æ5ô†&D6Æ÷6Uv—F…FV×÷&'”66÷VçE&W6–GVÇ5ôf–Ç46Æ÷6VEv—F†÷WD×WFF–öâ‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢BÀ¢###bÕB"À¢æWrFFTöæÇ’ƒ##bÂBÂ’À¢æWrFFTöæÇ’ƒ##bÂBÂ3’’“°¢v—B7F÷&RäVæD7–æ2„'V–ÆD&Ææ6VDVçG'’€¢W&–öBåW&–öD–BÀ¢&WfVçVS¢óÒÀ¢W‡Vç6S¢#SÒÀ¢F–ÖW7F×¢æWrFFUF–ÖTöfg6WBƒ##bÂBÂ3Â#ÂÂÂF–ÖU7âå¦W&ò’’“°¢v—B6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“° ¢f"7BÒ‚’Óâ6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòä†&D6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“° ¢v—B7Bå6†÷VÆB‚’åF‡&÷t7–æ3ÄÆVFvW$&ööµfÆ–FF–öäW†6WF–öãâ‚¢åv—F„ÖW76vR‚"¦6ææ÷B&R†&BÖ6Æ÷6VB§&WfVçVRöW‡Vç6R&Ææ6R¦6Æ÷6–ærÖVçG'’G&gB¢"“°¢f"&WF–æVBÒv—B7F÷&RävWEW&–öD7–æ2‡W&–öBåW&–öD–B“°¢&WF–æVBå6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢&WF–æVBå7FGW2å6†÷VÆB‚’ä&R‚%6ögD6Æ÷6VB"“°¢&WF–æVBä6Æ÷6VDBå6†÷VÆB‚’ä&TçVÆÂ‚“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²6Æ÷6UW&–öD7–æ5ô†&D6Æ÷6TæDÆFTF§W7FÖVçEõ6W&–Æ—¦TöäöæUW&–öD×WFF–öävFR‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢BÀ¢###bÕB×&6R"À¢æWrFFTöæÇ’ƒ##bÂBÂ’À¢æWrFFTöæÇ’ƒ##bÂBÂ3’’“°¢v—B6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“°¢W6–ærf"†&D6Æ÷6TVçFW&VBÒæWrÖçVÅ&W6WDWfVçE6Æ–Ò‚“°¢W6–ærf"&VÆV6T†&D6Æ÷6RÒæWrÖçVÅ&W6WDWfVçE6Æ–Ò‚“°¢W6–ærf"VæDGFV×FVBÒæWrÖçVÅ&W6WDWfVçE6Æ–Ò‚“°¢7F÷&Rä†&D6Æ÷6TVçFW&VBÒ†&D6Æ÷6TVçFW&VC°¢7F÷&Rå&VÆV6T†&D6Æ÷6RÒ&VÆV6T†&D6Æ÷6S°¢7F÷&RäVæDGFV×FVBÒVæDGFV×FVC°¢f"6Æ÷6UF6²ÒF6²å'Vâ‚‚’Óâ6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòä†&D6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’’“°¢f"VçFW&VD†&D6Æ÷6RÒ†&D6Æ÷6TVçFW&VBåv—B…F–ÖU7âäg&öÕ6V6öæG2ƒR’“°¢–b‚VçFW&VD†&D6Æ÷6R¢°¢&VÆV6T†&D6Æ÷6Rå6WB‚“°¢Ð ¢VçFW&VD†&D6Æ÷6Rå6†÷VÆB‚’ä&UG'VR‚“°¢f"ÆFTF§W7FÖVçBÒ'V–ÆD&Ææ6VDVçG'’€¢W&–öBåW&–öD–BÀ¢&WfVçVS¢#ÒÀ¢W‡Vç6S¢SÒÀ¢F–ÖW7F×¢FFUF–ÖTöfg6WBå'6R‚###bÓBÓ3C#3£S“£S•¢"’’v—F€¢°¢÷7F–æt¶–æBÒÆVFvW%÷7F–æt¶–æDGFòäF§W7FÖVçBÀ¢F§W7FÖVçD&÷fÂÒ'V–ÆD&÷fVDF§W7FÖVçD&÷fÂ‚¢Ó° ¢f"VæEF6²ÒF6²å'Vâ‚‚’Óâ7F÷&RäVæD7–æ2†ÆFTF§W7FÖVçB’“°¢f"GFV×FVDVæBÒVæDGFV×FVBåv—B…F–ÖU7âäg&öÕ6V6öæG2ƒR’“°¢–b‚GFV×FVDVæB¢°¢&VÆV6T†&D6Æ÷6Rå6WB‚“°¢Ð ¢GFV×FVDVæBå6†÷VÆB‚’ä&UG'VR‚“°¢f"VæD6ö×ÆWFVEv†–ÆT†&D6Æ÷6T†VÆBÒVæEF6²ä—46ö×ÆWFVC°¢&VÆV6T†&D6Æ÷6Rå6WB‚“° ¢f"6Æ÷6VBÒv—B6Æ÷6UF6³°¢f"VæBÒ7–æ2‚’Óâv—BVæEF6³°¢VæD6ö×ÆWFVEv†–ÆT†&D6Æ÷6T†VÆBå6†÷VÆB‚’ä&TfÇ6R€¢&¦÷W&æÂVæB×W7Bv—Bv†–ÆR†&BÖ6Æ÷6R†öÆG2F†RW&–öB×WFF–öâ&÷VæF'’"“°¢6Æ÷6VBåW&–öBå7FGW2å6†÷VÆB‚’ä&R„ÆVFvW%W&–öE7FGW4GFòä†&D6Æ÷6VB“°¢v—BVæBå6†÷VÆB‚’åF‡&÷t7–æ3ÄÆVFvW%fÆ–FF–öäW†6WF–öãâ‚¢åv—F„ÖW76vR‚"¦†&BÖ6Æ÷6VB¢"“°¢†v—B7F÷&RävWD'•W&–öD7–æ2‡W&–öBåW&–öD–B’’å6†÷VÆB‚’ä&TV×G’‚“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²&V÷VåW&–öD7–æ5ô†&D6Æ÷6VEW&–öEõ&WV—&W46öçG&öÆÆW$æE66÷VE&W7FFVÖVçDWf–FVæ6R‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢RÀ¢###bÕR"À¢æWrFFTöæÇ’ƒ##bÂRÂ’À¢æWrFFTöæÇ’ƒ##bÂRÂ3’’“°¢v—B6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“°¢v—B6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòä†&D6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“°¢6öç7B7G&–ær&÷fÂÒ&&÷fÂ×&W7FFVÖVçBÓ##b×R#°¢f"Wf–FVæ6RÒB&Wf–FVæ6S¢ò÷&W7FFVÖVçB÷&WfW'6Â÷W&–öB÷·W&–öBåW&–öD–C¤GÒö&öö²÷¶&öö²äÆVFvW$&öö´–C¤GÒö&÷fÂ÷¶&÷fÇÒ#° ¢f"VæWF†÷&—¦VBÒ‚’Óâ6W'f–6Rå&V÷VåW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr&V÷VäÆVFvW%W&–öE&WVW7B€¢&gVæBÖ66÷VçFçB"Â$66÷VçFçB"Â$6÷'&V7B&WF–æVB6Æ÷6RWf–FVæ6Râ"Â&÷fÂÂ¶Wf–FVæ6UÒ’“°¢v—BVæWF†÷&—¦VBå6†÷VÆB‚’åF‡&÷t7–æ3ÄÆVFvW$&ööµfÆ–FF–öäW†6WF–öãâ‚¢åv—F„ÖW76vR‚"¤6öçG&öÆÆW"÷"gVæB6öçG&öÆÆW"¢"“° ¢f"&V÷VæVBÒv—B6W'f–6Rå&V÷VåW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr&V÷VäÆVFvW%W&–öE&WVW7B€¢&gVæBÖ6öçG&öÆÆW""Â$gVæB6öçG&öÆÆW""Â$6÷'&V7B&WF–æVB6Æ÷6RWf–FVæ6Râ"Â&÷fÂÂ¶Wf–FVæ6UÒ’“° ¢&V÷VæVBåW&–öBå7FGW2å6†÷VÆB‚’ä&R„ÆVFvW%W&–öE7FGW4GFòå6ögD6Æ÷6VB“°¢&V÷VæVBåW&–öBä6Æ÷6VDBå6†÷VÆB‚’ä&TçVÆÂ‚“°¢&V÷VæVBå&–÷%7FGW2å6†÷VÆB‚’ä&R‚$†&D6Æ÷6VB"“°¢&V÷VæVBä&÷fÅ&VfW&Væ6Rå6†÷VÆB‚’ä&R†&÷fÂ“°¢&V÷VæVBäWf–FVæ6TÆ–æ·2å6†÷VÆB‚’ä6öçF–å6–ævÆR‚’åv†–6‚å6†÷VÆB‚’ä&R†Wf–FVæ6R“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²VæD7–æ5ôgFW%6ögD6Æ÷6UôÆÆ÷w4öæÇ”F§W7FÖVçE÷7F–æt¶–æB‚¢°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢bÀ¢###bÕb"À¢æWrFFTöæÇ’ƒ##bÂbÂ’À¢æWrFFTöæÇ’ƒ##bÂbÂ3’’“° ¢v—B6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’“° ¢f"÷&–v–æF–ærÒ'V–ÆD&Ææ6VDVçG'’€¢W&–öBåW&–öD–BÀ¢&WfVçVS¢CÒÀ¢W‡Vç6S¢ÒÀ¢F–ÖW7F×¢FFUF–ÖTöfg6WBå'6R‚###bÓbÓ3C#££¢"’“°¢f"F§W7FÖVçBÒ'V–ÆD&Ææ6VDVçG'’€¢W&–öBåW&–öD–BÀ¢&WfVçVS¢#ÒÀ¢W‡Vç6S¢SÒÀ¢F–ÖW7F×¢FFUF–ÖTöfg6WBå'6R‚###bÓbÓ3C#££¢"’’v—F€¢°¢÷7F–æt¶–æBÒÆVFvW%÷7F–æt¶–æDGFòäF§W7FÖVçBÀ¢F§W7FÖVçD&÷fÂÒ'V–ÆD&÷fVDF§W7FÖVçD&÷fÂ‚¢Ó° ¢f"÷&–v–æF–æt7BÒ‚’Óâ7F÷&RäVæD7–æ2†÷&–v–æF–ær“°¢f"F§W7FÖVçD7BÒ‚’Óâ7F÷&RäVæD7–æ2†F§W7FÖVçB“° ¢v—B÷&–v–æF–æt7Bå6†÷VÆB‚’åF‡&÷t7–æ3ÄÆVFvW%fÆ–FF–öäW†6WF–öãâ‚¢åv—F„ÖW76vR‚"§6ögBÖ6Æ÷6VB¤F§W7FÖVçB¢"“°¢v—BF§W7FÖVçD7Bå6†÷VÆB‚’äæ÷EF‡&÷t7–æ2‚“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²7&VFT&öö´7–æ5õv†Vä6æ6VÆVEõ&÷vFW46æ6VÆÆF–öâ‚¢°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R†æWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚’“°¢W6–ærf"7G2ÒæWr6æ6VÆÆF–öåFö¶Vå6÷W&6R‚“°¢v—B7G2ä6æ6VÄ7–æ2‚“° ¢f"7BÒ‚’Óâ6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–BäæWtwV–B‚’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’Â7G2åFö¶Vâ“° ¢v—B7Bå6†÷VÆB‚’åF‡&÷t7–æ3Ä÷W&F–öä6æ6VÆVDW†6WF–öãâ‚“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²ÆVFvW$VæGö–çG5ô7&VFTÆ—7DæE6ögD6Æ÷6UW&–öEõ&÷vFW46Æ÷6Uv÷&´—FVÕFô÷W&F÷$–æ&÷‚‚¢°¢v—BW6–ærf"Òv—B7&VFT7–æ2‚“°¢f"6Æ–VçBÒävWEFW7D6Æ–VçB‚“° ¢f"&öö²Òv—B÷7D§6öä7–æ3ÄÆVFvW$&öö´GFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW$&öö·2À¢æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–Bå'6R‚#S–cCV6"ÖccƒÓF#2Ó“C6BÓCF3“Cfcsƒ#B"’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B÷7D§6öä7–æ3ÄÆVFvW%W&–öDGFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW%W&–öG2À¢æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢BÀ¢###bÕB"À¢æWrFFTöæÇ’ƒ##bÂBÂ’À¢æWrFFTöæÇ’ƒ##bÂBÂ3’’“° ¢f"÷VåW&–öG2Òv—B6Æ–VçBävWDg&öÔ§6öä7–æ3Ä•&VDöæÇ”Æ—7CÄÆVFvW%W&–öDGFóãâ€¢B'µV”•&÷WFW2äÆVFvW%W&–öG7ÓöÆVFvW$&öö´–C×¶&öö²äÆVFvW$&öö´–C¤GÒf÷VäöæÇ“×G'VR"À¢6W'fW$§6öä÷F–öç2“°¢÷VåW&–öG2å6†÷VÆB‚’ä6öçF–å6–ævÆR‡ÓâåW&–öD–BÓÒW&–öBåW&–öD–B“° ¢f"6Æ÷6U&÷WFRÒV”•&÷WFW2åv—F…&Ò…V”•&÷WFW2äÆVFvW%W&–öD6Æ÷6RÂ'W&–öD–B"ÂW&–öBåW&–öD–BåFõ7G&–ær‚’“°¢f"6Æ÷6RÒv—B÷7D§6öä7–æ3ÄÆVFvW%W&–öD6Æ÷6U&W7VÇDGFóâ€¢6Æ–VçBÀ¢6Æ÷6U&÷WFRÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B€¢ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÀ¢6Æ÷6VD'“¢&gVæBÖ6öçG&öÆÆW""À¢&WV—&VE6–væöfe&öÆS¢$gVæB6öçG&öÆÆW""À¢FöÆW&æ6U&öf–ÆT–C¢&6Æ÷6R×FöÆW&æ6R×c"’“° ¢6Æ÷6RåW&–öBå7FGW2å6†÷VÆB‚’ä&R„ÆVFvW%W&–öE7FGW4GFòå6ögD6Æ÷6VB“°¢6Æ÷6Råv÷&´—FVÒä¶–æBå6†÷VÆB‚’ä&R„÷W&F÷%v÷&´—FVÔ¶–æDGFòäÆVFvW%W&–öD6Æ÷6R“°¢6Æ÷6Råv÷&´—FVÒåF&vWE&÷WFRå6†÷VÆB‚’ä&R…V”•&÷WFW2å&V6öæ6–Æ–F–öä'&VµVWVR“°¢6Æ÷6Råv÷&´—FVÒåF&vWEvUFrå6†÷VÆB‚’ä&R‚$gVæE&V6öæ6–Æ–F–öâ"“°¢6Æ÷6Råv÷&´—FVÒå&WV—&VE6–væöfe&öÆRå6†÷VÆB‚’ä&R‚$gVæB6öçG&öÆÆW""“°¢6Æ÷6Råv÷&´—FVÒåFöÆW&æ6U&öf–ÆT–Bå6†÷VÆB‚’ä&R‚&6Æ÷6R×FöÆW&æ6R×c"“° ¢f"–æ&÷‚Òv—B6Æ–VçBävWDg&öÔ§6öä7–æ3Ä÷W&F÷$–æ&÷„GFóâ€¢V”•&÷WFW2åv÷&·7FF–öä÷W&F÷$–æ&÷‚À¢6W'fW$§6öä÷F–öç2“°¢–æ&÷‚å6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢–æ&÷‚ä—FV×2å6†÷VÆB‚’ä6öçF–â†—FVÒÓà¢—FVÒåv÷&´—FVÔ–BÓÒ6Æ÷6Råv÷&´—FVÒåv÷&´—FVÔ–Bb`¢—FVÒä¶–æBÓÒ÷W&F÷%v÷&´—FVÔ¶–æDGFòäÆVFvW%W&–öD6Æ÷6Rb`¢—FVÒåF&vWE&÷WFRÓÒV”•&÷WFW2å&V6öæ6–Æ–F–öä'&VµVWVRb`¢—FVÒåF&vWEvUFrÓÒ$gVæE&V6öæ6–Æ–F–öâ"b`¢—FVÒå&WV—&VE6–væöfe&öÆRÓÒ$gVæB6öçG&öÆÆW""b`¢—FVÒåFöÆW&æ6U&öf–ÆT–BÓÒ&6Æ÷6R×FöÆW&æ6R×c"“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²ÆVFvW$VæGö–çG5õ&öÆÆ÷WD76W76ÖVçEõ&WGW&ç5&VDöæÇ”Ö–w&F–öå&VF–æW72‚¢°¢v—BW6–ærf"Òv—B7&VFT7–æ2‚“°¢f"6Æ–VçBÒävWEFW7D6Æ–VçB‚“°¢f"æöFT–BÒwV–Bå'6R‚#S–cCV6"ÖccƒÓF#2Ó“C6BÓCF3“Cfcsƒ#B"“°¢f"Ö—76–ætæöFT–BÒwV–Bå'6R‚#svcCV6"ÖccƒÓF#2Ó“C6BÓCF3“Cfcsƒ#B"“° ¢f"&öö²Òv—B÷7D§6öä7–æ3ÄÆVFvW$&öö´GFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW$&öö·2À¢æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢æöFT–BÀ¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“° ¢f"76W76ÖVçBÒv—B÷7D§6öä7–æ3ÄÆVFvW$&ööµ&öÆÆ÷WD76W76ÖVçDGFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW$&ööµ&öÆÆ÷WD76W76ÖVçBÀ¢æWrÆVFvW$&ööµ&öÆÆ÷WD76W76ÖVçE&WVW7B€¢gVæE&öf–ÆT–C¢&Ç†ÖgVæB"À¢&WV—&VE66÷W3 ¢°¢æWrÆVFvW$&ööµ&WV—&VE66÷TGFò†æöFT–BÂgVæE7G'V7GW&TæöFT¶–æDGFòägVæB’À¢æWrÆVFvW$&ööµ&WV—&VE66÷TGFò†Ö—76–ætæöFT–BÂgVæE7G'V7GW&TæöFT¶–æDGFòägVæBÂ66÷VçF–æt&6—4¶–æDGFòävÂ$Ç†gVæBt"¢Ò’“° ¢76W76ÖVçBä&öö´6÷VçBå6†÷VÆB‚’ä&Rƒ“°¢76W76ÖVçBä&öö·2å6†÷VÆB‚’ä6öçF–å6–ævÆR‡7FGW2Óâ7FGW2äÆVFvW$&öö´–BÓÒ&öö²äÆVFvW$&öö´–B“°¢76W76ÖVçBä—77VW2å6†÷VÆB‚’ä6öçF–â†—77VRÓà¢—77VRä6öFRÓÒ$ÆVFvW$&öö´Ö—76–æuW&–öG2"b`¢—77VRå6WfW&—G’ÓÒÆVFvW$&ööµ&öÆÆ÷WD—77VU6WfW&—G”GFòä7&—F–6Âb`¢—77VRäÆVFvW$&öö´–BÓÒ&öö²äÆVFvW$&öö´–B“°¢76W76ÖVçBä—77VW2å6†÷VÆB‚’ä6öçF–â†—77VRÓà¢—77VRä6öFRÓÒ$ÆVFvW$&ööµ&WV—&VE66÷TÖ—76–ær"b`¢—77VRå6WfW&—G’ÓÒÆVFvW$&ööµ&öÆÆ÷WD—77VU6WfW&—G”GFòä7&—F–6Âb`¢—77VRägVæE7G'V7GW&TæöFT–BÓÒÖ—76–ætæöFT–B“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²ÆVFvW$VæGö–çG5ô6Æ÷6UW&–öEõv†Vå&Wf–WvVDWFöÖF–öä÷&–v–åõ&WGW&ç4&E&WVW7Ev—F†÷WD6Æ÷6–æuW&–öB‚¢°¢v—BW6–ærf"Òv—B7&VFT7–æ2‚“°¢f"6Æ–VçBÒävWEFW7D6Æ–VçB‚“° ¢f"&öö²Òv—B÷7D§6öä7–æ3ÄÆVFvW$&öö´GFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW$&öö·2À¢æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–Bå'6R‚#S–cCV6"ÖccƒÓF#2Ó“C6BÓCF3“Cfcsƒ#B"’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’“°¢f"W&–öBÒv—B÷7D§6öä7–æ3ÄÆVFvW%W&–öDGFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW%W&–öG2À¢æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢RÀ¢###bÕR"À¢æWrFFTöæÇ’ƒ##bÂRÂ’À¢æWrFFTöæÇ’ƒ##bÂRÂ3’’“° ¢W6–ærf"6Æ÷6U&W7öç6RÒv—B6Æ–VçBå÷7D4§6öä7–æ2€¢V”•&÷WFW2åv—F…&Ò…V”•&÷WFW2äÆVFvW%W&–öD6Æ÷6RÂ'W&–öD–B"ÂW&–öBåW&–öD–BåFõ7G&–ær‚’’À¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B€¢ÆVFvW%W&–öD6Æ÷6T¶–æDGFòä†&D6Æ÷6RÀ¢6Æ÷6VD'“¢&76—7FçB"À¢7F–öä÷&–v–ã¢÷W&F–öç47F–öä÷&–v–äGFòäWFöÖF–öä76—7FçB’À¢6W'fW$§6öä÷F–öç2“°¢f"÷VåW&–öG2Òv—B6Æ–VçBävWDg&öÔ§6öä7–æ3Ä•&VDöæÇ”Æ—7CÄÆVFvW%W&–öDGFóãâ€¢B'µV”•&÷WFW2äÆVFvW%W&–öG7ÓöÆVFvW$&öö´–C×¶&öö²äÆVFvW$&öö´–C¤GÒf÷VäöæÇ“×G'VR"À¢6W'fW$§6öä÷F–öç2“°¢f"–æ&÷‚Òv—B6Æ–VçBävWDg&öÔ§6öä7–æ3Ä÷W&F÷$–æ&÷„GFóâ€¢V”•&÷WFW2åv÷&·7FF–öä÷W&F÷$–æ&÷‚À¢6W'fW$§6öä÷F–öç2“° ¢6Æ÷6U&W7öç6Rå7FGW46öFRå6†÷VÆB‚’ä&R„‡GG7FGW46öFRä&E&WVW7B“°¢÷VåW&–öG2å6†÷VÆB‚’ä6öçF–å6–ævÆR†—FVÒÓâ—FVÒåW&–öD–BÓÒW&–öBåW&–öD–B“°¢–æ&÷‚å6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢–æ&÷‚ä—FV×2å6†÷VÆB‚’äæ÷D6öçF–â†—FVÒÓâ—FVÒä¶–æBÓÒ÷W&F÷%v÷&´—FVÔ¶–æDGFòäÆVFvW%W&–öD6Æ÷6R“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²ÆVFvW$VæGö–çG5õW&–öE&W÷'F–æu&÷WFW5õ&WGW&åG&–Ä&Ææ6TæEæÅ7VÖÖ'’‚¢°¢v—BW6–ærf"Òv—B7&VFT7–æ2‚“°¢f"6Æ–VçBÒävWEFW7D6Æ–VçB‚“°¢f"7F÷&RÒå6W'f–6W2ävWE&WV—&VE6W'f–6SÄ”ÆVFvW$¦÷W&æÅ7F÷&Sâ‚“° ¢f"&öö²Òv—B÷7D§6öä7–æ3ÄÆVFvW$&öö´GFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW$&öö·2À¢æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–Bå'6R‚#–F3ss&RÓ†BÓF3cRÖ&3CbÖcf#†CƒƒCc“R"’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"À¢66÷VçF–æt&6—3¢66÷VçF–æt&6—4¶–æDGFòävÀ¢66÷VçF–æuöÆ–7”–C¢&vÖ6Æ÷6R×c"À¢66÷VçF–æuöÆ–7•fW'6–öã¢'c"’“°¢f"&–÷"Òv—B÷7D§6öä7–æ3ÄÆVFvW%W&–öDGFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW%W&–öG2À¢æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢À¢###bÕ"À¢æWrFFTöæÇ’ƒ##bÂÂ’À¢æWrFFTöæÇ’ƒ##bÂÂ3’’“°¢v—B7F÷&RäVæD7–æ2„'V–ÆD&Ææ6VDVçG'’€¢&–÷"åW&–öD–BÀ¢&WfVçVS¢ƒÒÀ¢W‡Vç6S¢3ÒÀ¢F–ÖW7F×¢FFUF–ÖTöfg6WBå'6R‚###bÓÓ3C#££¢"’’v—F€¢°¢66÷VçF–æt&6—2Ò66÷VçF–æt&6—4¶–æDGFòävÀ¢66÷VçF–æuöÆ–7”–BÒ&vÖ6Æ÷6R×c"À¢66÷VçF–æuöÆ–7•fW'6–öâÒ'c ¢Ò“°¢v—B÷7D§6öä7–æ3ÄÆVFvW%W&–öD6Æ÷6U&W7VÇDGFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2åv—F…&Ò…V”•&÷WFW2äÆVFvW%W&–öD6Æ÷6RÂ'W&–öD–B"Â&–÷"åW&–öD–BåFõ7G&–ær‚’’À¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ6Æ÷6VD'“¢&gVæBÖ6öçG&öÆÆW""’“° ¢f"7W'&VçBÒv—B÷7D§6öä7–æ3ÄÆVFvW%W&–öDGFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2äÆVFvW%W&–öG2À¢æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢"À¢###bÕ""À¢æWrFFTöæÇ’ƒ##bÂ"Â’À¢æWrFFTöæÇ’ƒ##bÂ"Â#‚’’“°¢v—B7F÷&RäVæD7–æ2„'V–ÆD&Ææ6VDVçG'’€¢7W'&VçBåW&–öD–BÀ¢&WfVçVS¢ó#ÒÀ¢W‡Vç6S¢3ÒÀ¢F–ÖW7F×¢FFUF–ÖTöfg6WBå'6R‚###bÓ"Ó#…C#££¢"’’v—F€¢°¢66÷VçF–æt&6—2Ò66÷VçF–æt&6—4¶–æDGFòävÀ¢66÷VçF–æuöÆ–7”–BÒ&vÖ6Æ÷6R×c"À¢66÷VçF–æuöÆ–7•fW'6–öâÒ'c ¢Ò“°¢v—B7F÷&RäVæD7–æ2„'V–ÆDW‡Vç6TVçG'’€¢7W'&VçBåW&–öD–BÀ¢66÷VçDæÖS¢$67'VVBW&f÷&Öæ6RfVRW‡Vç6R"À¢Ö÷VçC¢SÒÀ¢F–ÖW7F×¢FFUF–ÖTöfg6WBå'6R‚###bÓ"Ó#…C##££¢"’’v—F€¢°¢66÷VçF–æt&6—2Ò66÷VçF–æt&6—4¶–æDGFòävÀ¢66÷VçF–æuöÆ–7”–BÒ&vÖ6Æ÷6R×c"À¢66÷VçF–æuöÆ–7•fW'6–öâÒ'c ¢Ò“°¢v—B÷7D§6öä7–æ3ÄÆVFvW%W&–öD6Æ÷6U&W7VÇDGFóâ€¢6Æ–VçBÀ¢V”•&÷WFW2åv—F…&Ò…V”•&÷WFW2äÆVFvW%W&–öD6Æ÷6RÂ'W&–öD–B"Â7W'&VçBåW&–öD–BåFõ7G&–ær‚’’À¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ6Æ÷6VD'“¢&gVæBÖ6öçG&öÆÆW""’“° ¢f"G&–Ä&Ææ6RÒv—B6Æ–VçBävWDg&öÔ§6öä7–æ3Ä•&VDöæÇ”Æ—7CÄÆVFvW%W&–öEG&–Ä&Ææ6TÆ–æTGFóãâ€¢V”•&÷WFW2åv—F…&Ò…V”•&÷WFW2äÆVFvW%W&–öEG&–Ä&Ææ6RÂ'W&–öD–B"Â7W'&VçBåW&–öD–BåFõ7G&–ær‚’’À¢6W'fW$§6öä÷F–öç2“°¢f"æÂÒv—B6Æ–VçBävWDg&öÔ§6öä7–æ3ÄÆVFvW%W&–öEæÅ7VÖÖ'”GFóâ€¢V”•&÷WFW2åv—F…&Ò…V”•&÷WFW2äÆVFvW%W&–öEæÅ7VÖÖ'’Â'W&–öD–B"Â7W'&VçBåW&–öD–BåFõ7G&–ær‚’’À¢6W'fW$§6öä÷F–öç2“°¢f"G&–Ä&Ææ6U&W÷'BÒv—B6Æ–VçBävWDg&öÔ§6öä7–æ3ÄÆVFvW%G&–Ä&Ææ6U&W÷'DGFóâ€¢V”•&÷WFW2åv—F…&Ò…V”•&÷WFW2äÆVFvW%W&–öEG&–Ä&Ææ6U&W÷'BÂ'W&–öD–B"Â7W'&VçBåW&–öD–BåFõ7G&–ær‚’’À¢6W'fW$§6öä÷F–öç2“° ¢G&–Ä&Ææ6Rå6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢G&–Ä&Ææ6Rå6†÷VÆB‚’ä6öçF–â‡&÷rÓà¢&÷rä66÷VçDæÖRÓÒ$ÖævVÖVçBfVW2"b`¢&÷rä66÷VçEG—RÓÒæÖVöb„ÆVFvW$66÷VçEG—Rå&WfVçVR’b`¢&÷rä&Ææ6RÓÒó#Òb`¢&÷rä66÷VçF–æt&6—2ÓÒ66÷VçF–æt&6—4¶–æDGFòävb`¢&÷rä66÷VçF–æuöÆ–7”–BÓÒ&vÖ6Æ÷6R×c"“°¢æÂå6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢æÂåF÷FÅ&WfVçVRå6†÷VÆB‚’ä&Rƒó#Ò“°¢æÂåF÷FÄW‡Vç6W2å6†÷VÆB‚’ä&Rƒ3SÒ“°¢æÂäæWD–æ6öÖRå6†÷VÆB‚’ä&RƒƒSÒ“°¢æÂåW&–öDöåW&–öEf&–æ6Rå6†÷VÆB‚’ä&Rƒ3SÒ“°¢æÂå&VÆ—¦VE&WfVçVRå6†÷VÆB‚’ä&Rƒó#Ò“°¢æÂå&VÆ—¦VDW‡Vç6W2å6†÷VÆB‚’ä&Rƒ3Ò“°¢æÂå&VÆ—¦VDæWD–æ6öÖRå6†÷VÆB‚’ä&Rƒ“Ò“°¢æÂä67'VÄF§W7FÖVçE&WfVçVRå6†÷VÆB‚’ä&RƒÒ“°¢æÂä67'VÄF§W7FÖVçDW‡Vç6W2å6†÷VÆB‚’ä&RƒSÒ“°¢æÂä67'VÄ&6—4F§W7FÖVçDæWD–×7Bå6†÷VÆB‚’ä&R‚ÓSÒ“°¢æÂå&WfVçVTÆ–æW2å6†÷VÆB‚’ä6öçF–å6–ævÆR‡&÷rÓâ&÷rä66÷VçDæÖRÓÒ$ÖævVÖVçBfVW2"“°¢æÂäW‡Vç6TÆ–æW2å6†÷VÆB‚’ä6öçF–â‡&÷rÓâ&÷rä66÷VçDæÖRÓÒ$÷W&F–ærW‡Vç6R"“°¢æÂä67'VÄF§W7FÖVçDÆ–æW2å6†÷VÆB‚’ä6öçF–å6–ævÆR‡&÷rÓâ&÷rä66÷VçDæÖRÓÒ$67'VVBW&f÷&Öæ6RfVRW‡Vç6R"“°¢G&–Ä&Ææ6U&W÷'Bå6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢G&–Ä&Ææ6U&W÷'BåW&–öD–Bå6†÷VÆB‚’ä&R†7W'&VçBåW&–öD–B“°¢G&–Ä&Ææ6U&W÷'BäÆVFvW$&öö´–Bå6†÷VÆB‚’ä&R†&öö²äÆVFvW$&öö´–B“°¢G&–Ä&Ææ6U&W÷'Bä—5W&–öDÆö6¶VBå6†÷VÆB‚’ä&UG'VR‚“°¢G&–Ä&Ææ6U&W÷'BåF÷FÄFV&—G2å6†÷VÆB‚’ä&RƒóSSÒ“°¢G&–Ä&Ææ6U&W÷'BåF÷FÄ7&VF—G2å6†÷VÆB‚’ä&RƒóSSÒ“°¢G&–Ä&Ææ6U&W÷'BäæWD–æ6öÖRå6†÷VÆB‚’ä&RƒƒSÒ“°¢G&–Ä&Ææ6U&W÷'BåW&–öDöåW&–öEf&–æ6Rå6†÷VÆB‚’ä&Rƒ3SÒ“°¢G&–Ä&Ææ6U&W÷'Bä66÷VçF–æt&6—2å6†÷VÆB‚’ä&R„66÷VçF–æt&6—4¶–æDGFòäv“°¢G&–Ä&Ææ6U&W÷'Bä66÷VçF–æuöÆ–7”–Bå6†÷VÆB‚’ä&R‚&vÖ6Æ÷6R×c"“°¢G&–Ä&Ææ6U&W÷'BäÆ–æW2å6†÷VÆB‚’ä6öçF–â‡&÷rÓà¢&÷rä66÷VçDæÖRÓÒ$ÖævVÖVçBfVW2"b`¢&÷rä66÷VçEG—RÓÒæÖVöb„ÆVFvW$66÷VçEG—Rå&WfVçVR’b`¢&÷rä&Ææ6RÓÒó#Ò“°¢G&–Ä&Ææ6U&W÷'Bå6–væGW&RäÆv÷&—F†Òå6†÷VÆB‚’ä&R‚%4„#Sb"“°¢G&–Ä&Ææ6U&W÷'Bå6–væGW&Rå–ÆöD6†V6·7VÕ6†#Sbå6†÷VÆB‚’ä†fTÆVæwF‚ƒcB“°¢G&–Ä&Ææ6U&W÷'Bå6–væGW&Rå6–væVD'’å6†÷VÆB‚’ä&R‚&gVæBÖ6öçG&öÆÆW""“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²vWEW&–öE7VÖÖ'”7–æ5ôÖ—†VEv†—FW76TF–ÖVç6–öç5õ&WGW&ç46æöæ–6ÄÆVFvW%66÷R‚¢°¢W6–ærf"F–ÖV÷WBÒæWr6æ6VÆÆF–öåFö¶Vå6÷W&6R…F–ÖU7âäg&öÕ6V6öæG2ƒ3’“°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–Bå'6R‚&6ƒ“6#bÖFc32ÓCc3BÖF3’Ö#&S#s63Fr"’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’ÂF–ÖV÷WBåFö¶Vâ“°¢f"W&–öBÒv—B6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢rÀ¢###bÕr"À¢æWrFFTöæÇ’ƒ##bÂrÂ’À¢æWrFFTöæÇ’ƒ##bÂrÂ3’’ÂF–ÖV÷WBåFö¶Vâ“°¢f"¦÷W&æÄVçG'”–BÒwV–Bå'6R‚&“6VSƒ‚ÖcsfBÓCc‚ÖVFÖfS“&3“F6VFCB"“°¢f"F–ÖW7F×ÒFFUF–ÖTöfg6WBå'6R‚###bÓrÓ3C#££¢"“°¢6öç7B7G&–ærFW67&—F–öâÒ$ÖöçF‚ÖVæBF–ÖVç6–öæÂ&WfVçVR#°¢f"Æ–æW2ÒæWuµÐ¢°¢æWrÆVFvW$VçG'’€¢wV–Bå'6R‚&c3†#“F2ÖV#c2ÓCCRÖ#fSBÓ#Ff3ƒC#C3f""’À¢¦÷W&æÄVçG'”–BÀ¢F–ÖW7F×À¢æWrÆVFvW$66÷VçB‚$66‚"ÂÆVFvW$66÷VçEG—Rä76WB’À¢FV&—C¢ÒÀ¢7&VF—C¢ÒÀ¢FW67&—F–öâ’À¢æWrÆVFvW$VçG'’€¢wV–Bå'6R‚##3c–c2Ósf62ÓCcF"Ó–Ff"ÓVc–VccSC3sR"’À¢¦÷W&æÄVçG'”–BÀ¢F–ÖW7F×À¢æWrÆVFvW$66÷VçB‚$ÖævVÖVçBfVW2"ÂÆVFvW$66÷VçEG—Rå&WfVçVR’À¢FV&—C¢ÒÀ¢7&VF—C¢CÒÀ¢FW67&—F–öâÀ¢æWrÆVFvW$Æ–æTF–ÖVç6–öå6WB„VçF—G”–C¢"ÇB"’’À¢æWrÆVFvW$VçG'’€¢wV–Bå'6R‚#“fcS–3‚Óv2ÓFSvÖ&CRÓƒFcƒ–Cc†#Sf"’À¢¦÷W&æÄVçG'”–BÀ¢F–ÖW7F×À¢æWrÆVFvW$66÷VçB‚$Gf—6÷'’fVW2"ÂÆVFvW$66÷VçEG—Rå&WfVçVR’À¢FV&—C¢ÒÀ¢7&VF—C¢cÒÀ¢FW67&—F–öâÀ¢æWrÆVFvW$Æ–æTF–ÖVç6–öå6WB€¢VçF—G”–C¢""À¢6÷7D6VçFW$–C¢"–çfW7FÖVçBÖ÷W&F–öç2"À¢W‡FW&æÄvÄF–ÖVç6–öç3¢æWrF–7F–öæ'“Ç7G&–ærÂ7G&–æsâ…7G&–æt6ö×&W"ä÷&F–æÄ–væ÷&T66R¢°¢²"%ÒÒ&–væ÷&VB"À¢²$FW'FÖVçB%ÒÒ"–çfW7FÖVçB÷W&F–öç2 ¢Ò’¢Ó°¢v—B7F÷&RäVæD7–æ2€¢æWrÆVFvW$¦÷W&æÄVçG'•w&—FR€¢æWr¦÷W&æÄVçG'’†¦÷W&æÄVçG'”–BÂF–ÖW7F×ÂFW67&—F–öâÂÆ–æW2’À¢vw&VvFT–C¢wV–Bå'6R‚#6V3–S&BÓScƒÓC3#BÖ#6bÓ#v3ƒ“†fC"’À¢W&–öD–C¢W&–öBåW&–öD–B’À¢F–ÖV÷WBåFö¶Vâ“° ¢f"6Æ÷6RÒv—B6W'f–6Rä6Æ÷6UW&–öD7–æ2€¢W&–öBåW&–öD–BÀ¢æWr6Æ÷6TÆVFvW%W&–öE&WVW7B„ÆVFvW%W&–öD6Æ÷6T¶–æDGFòå6ögD6Æ÷6RÂ&gVæBÖ6öçG&öÆÆW""’À¢F–ÖV÷WBåFö¶Vâ“° ¢f"v†—FW76TöæÇ’Ò6Æ÷6Rå7VÖÖ'’åG&–Ä&Ææ6P¢å6–ævÆR‡&÷rÓâ&÷rä66÷VçDæÖRÓÒ$ÖævVÖVçBfVW2"“°¢v†—FW76TöæÇ’äF–ÖVç6–öç2å6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢v†—FW76TöæÇ’äF–ÖVç6–öç2ägVæD–Bå6†÷VÆB‚’ä&R‚&Ç†ÖgVæB"“°¢v†—FW76TöæÇ’äF–ÖVç6–öç2äVçF—G”–Bå6†÷VÆB‚’ä&TçVÆÂ€¢'v†—FW76RÖöæÇ’Æ–æR66÷R—2'6VçB&Vf÷&RF†R&öö²w2&WV—&VBgVæB66÷R—2Æ–VB"“° ¢f"Ö—†VBÒ6Æ÷6Rå7VÖÖ'’åG&–Ä&Ææ6Rå6–ævÆR‡&÷rÓâ&÷rä66÷VçDæÖRÓÒ$Gf—6÷'’fVW2"“°¢Ö—†VBäF–ÖVç6–öç2å6†÷VÆB‚’äæ÷D&TçVÆÂ‚“°¢Ö—†VBäF–ÖVç6–öç2ägVæD–Bå6†÷VÆB‚’ä&R‚&Ç†ÖgVæB"“°¢Ö—†VBäF–ÖVç6–öç2äVçF—G”–Bå6†÷VÆB‚’ä&TçVÆÂ‚“°¢Ö—†VBäF–ÖVç6–öç2ä6÷7D6VçFW$–Bå6†÷VÆB‚’ä&R‚&–çfW7FÖVçBÖ÷W&F–öç2"“°¢Ö—†VBäF–ÖVç6–öç2äW‡FW&æÄvÄF–ÖVç6–öç2å6†÷VÆB‚’ä†fT6÷VçBƒ“°¢Ö—†VBäF–ÖVç6–öç2äW‡FW&æÄvÄF–ÖVç6–öç5²$FW'FÖVçB%Òå6†÷VÆB‚’ä&R‚$–çfW7FÖVçB÷W&F–öç2"“°¢Ð ¢´f7EÐ¢V&Æ–27–æ2F6²ÆVFvW$VæGö–çG5ôF–ÖVç6–öä&÷VæF&–W5ô6æöæ–6Æ—¦UW7G&VÕ66÷TæD–væ÷&Uv†—FW76TöæÇ”Æ–æU66÷R‚¢°¢W6–ærf"F–ÖV÷WBÒæWr6æ6VÆÆF–öåFö¶Vå6÷W&6R…F–ÖU7âäg&öÕ6V6öæG2ƒ3’“°¢f"7F÷&RÒæWr–äÖVÖ÷'”ÆVFvW$¦÷W&æÅ7F÷&R‚“°¢f"6WGW6W'f–6RÒæWr÷7Fw&W4ÆVFvW$&ööµ6W'f–6R‡7F÷&R“°¢f"&öö²Òv—B6WGW6W'f–6Rä7&VFT&öö´7–æ2†æWr7&VFTÆVFvW$&ööµ&WVW7B€¢&Ç†ÖgVæB"À¢wV–Bå'6R‚#ƒs†cVRÓ#2ÓCF6"ÖSBÓs#c3C3#32"’À¢gVæE7G'V7GW&TæöFT¶–æDGFòägVæBÀ¢$Ç†gVæB"À¢%U4B"’ÂF–ÖV÷WBåFö¶Vâ“°¢f"W&–öBÒv—B6WGW6W'f–6Rä7&VFUW&–öD7–æ2†æWr7&VFTÆVFvW%W&–öE&WVW7B€¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢‚À¢###bÕ‚"À¢æWrFFTöæÇ’ƒ##bÂ‚Â’À¢æWrFFTöæÇ’ƒ##bÂ‚Â3’’ÂF–ÖV÷WBåFö¶Vâ“°¢f"¦÷W&æÄVçG'”–BÒwV–Bå'6R‚#VF3“&RÓFSBÓC#C"Ó†Vc’Ócc3c#FCR"“°¢f"F–ÖW7F×ÒFFUF–ÖTöfg6WBå'6R‚###bÓ‚Ó3C#££¢"“°¢v—B7F÷&RäVæD7–æ2€¢æWrÆVFvW$¦÷W&æÄVçG'•w&—FR€¢æWr¦÷W&æÄVçG'’€¢¦÷W&æÄVçG'”–BÀ¢F–ÖW7F×À¢%v†—FW76RF–ÖVç6–öâVæGö–çB&ööb"À¢°¢æWrÆVFvW$VçG'’€¢wV–Bå'6R‚&fS“3Ó“"ÓCvfÖ#sƒRÖcsc“V3cS6cB"’À¢¦÷W&æÄVçG'”–BÀ¢F–ÖW7F×À¢æWrÆVFvW$66÷VçB‚$66‚"ÂÆVFvW$66÷VçEG—Rä76WB’À¢FV&—C¢ÒÀ¢7&VF—C¢ÒÀ¢%v†—FW76RF–ÖVç6–öâVæGö–çB&ööb"’À¢æWrÆVFvW$VçG'’€¢wV–Bå'6R‚#3fccf#‚Ö&CRÓC“CBÖ&Sc‚ÓS6c##F#†&SC2"’À¢¦÷W&æÄVçG'”–BÀ¢F–ÖW7F×À¢æWrÆVFvW$66÷VçB‚$ÖævVÖVçBfVW2"ÂÆVFvW$66÷VçEG—Rå&WfVçVR’À¢FV&—C¢ÒÀ¢7&VF—C¢ÒÀ¢%v†—FW76RF–ÖVç6–öâVæGö–çB&ööb"À¢æWrÆVFvW$Æ–æTF–ÖVç6–öå6WB„VçF—G”–C¢"ÇB"’¢Ò’À¢vw&VvFT–C¢wV–Bå'6R‚#sSf6cCƒÓ6cV"ÓFV3’ÓƒS#‚Ö3#SF3†&R"’À¢W&–öD–C¢W&–öBåW&–öD–B’À¢F–ÖV÷WBåFö¶Vâ“° ¢f"W7G&VÕ7VÖÖ'’ÒæWrÆVFvW%W&–öE7VÖÖ'”GFò€¢W&–öBåW&–öD–BÀ¢&öö²äÆVFvW$&öö´–BÀ¢##bÀ¢úÓ«h‘éì¶»§q«^t€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹Õ¹‘%€ôô€‰…±Á¡„µ™Õ¹ˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%€ôô€‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì(€€€€€€€É•Ù•¹Õ•I½ÝÌ¹M¡½Õ± ¤¹½¹Ñ…¥¸¡É½Ü€ôø(€€€€€€€€€€€É½Ü¹	…±…¹”€ôô€ÈÀÁ´€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹Õ¹‘%€ôô€‰…±Á¡„µ™Õ¹ˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥ÑäµÁ…É…±±•°ˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%€ôô€‰½ÍÐµ•¹Ñ•Èµ™Õ¹µ…½Õ¹Ñ¥¹œˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰Õ¹‘½Õ¹Ñ¥¹œˆ¤ì((€€€€€€€ÑÉ¥…±	…±…¹•I•Á½ÉÐ¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€ÑÉ¥…±	…±…¹•I•Á½ÉÐ„¹1¥¹•Ì(€€€€€€€€€€€€¹]¡•É”¡É½Ü€ôøÉ½Ü¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ¤(€€€€€€€€€€€€¹M¡½Õ± ¤(€€€€€€€€€€€€¹!…Ù•½Õ¹Ð È¤ì(€€€€€€€ÑÉ¥…±	…±…¹•I•Á½ÉÐ¹M¥¹…ÑÕÉ”¹A…å±½…‘¡•­ÍÕµM¡„ÈÔØ¹M¡½Õ± ¤¹!…Ù•1•¹Ñ  ØÐ¤ì((€€€€€€€™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹”¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹”„¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡É½Ü€ôø(€€€€€€€€€€€É½Ü¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ€˜˜(€€€€€€€€€€€É½Ü¹	…±…¹”€ôô€ÄÀÁ´€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%€ôô€‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì((€€€€€€€™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹•I•Á½ÉÐ¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹•I•Á½ÉÐ„¹1¥¹•Ì¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡É½Ü€ôø(€€€€€€€€€€€É½Ü¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ€˜˜(€€€€€€€€€€€É½Ü¹	…±…¹”€ôô€ÄÀÁ´€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%€ôô€‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹•I•Á½ÉÐ¹Q½Ñ…±•‰¥ÑÌ¹M¡½Õ± ¤¹	” Á´¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹•I•Á½ÉÐ¹Q½Ñ…±É•‘¥ÑÌ¹M¡½Õ± ¤¹	” ÄÀÁ´¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹•I•Á½ÉÐ¹9•Ñ%¹½µ”¹M¡½Õ± ¤¹	” ÄÀÁ´¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹•I•Á½ÉÐ¹M¥¹…ÑÕÉ”¹A…å±½…‘¡•­ÍÕµM¡„ÈÔØ¹M¡½Õ± ¤(€€€€€€€€€€€€¹9½Ñ	”¡ÑÉ¥…±	…±…¹•I•Á½ÉÐ¹M¥¹…ÑÕÉ”¹A…å±½…‘¡•­ÍÕµM¡„ÈÔØ¤ì((€€€€€€€•µÁÑå%¹Ù•ÍÑµ•¹Ñ=ÁÍI•Á½ÉÐ¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€•µÁÑå%¹Ù•ÍÑµ•¹Ñ=ÁÍI•Á½ÉÐ„¹1¥¹•Ì¹M¡½Õ± ¤¹	•µÁÑä ¤ì(€€€€€€€•µÁÑå%¹Ù•ÍÑµ•¹Ñ=ÁÍI•Á½ÉÐ¹Q½Ñ…±•‰¥ÑÌ¹M¡½Õ± ¤¹	” Á´¤ì(€€€€€€€•µÁÑå%¹Ù•ÍÑµ•¹Ñ=ÁÍI•Á½ÉÐ¹Q½Ñ…±É•‘¥ÑÌ¹M¡½Õ± ¤¹	” Á´¤ì(€€€€€€€•µÁÑå%¹Ù•ÍÑµ•¹Ñ=ÁÍI•Á½ÉÐ¹M¥¹…ÑÕÉ”¹A…å±½…‘¡•­ÍÕµM¡„ÈÔØ¹M¡½Õ± ¤(€€€€€€€€€€€€¹9½Ñ	”¡™¥±Ñ•É•‘A•É¥½‘QÉ¥…±	…±…¹•I•Á½ÉÐ¹M¥¹…ÑÕÉ”¹A…å±½…‘¡•­ÍÕµM¡„ÈÔØ¤ì((€€€€€€€•µÁÑåÕ¹‘½Õ¹Ñ¥¹I•Á½ÉÐ¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€•µÁÑåÕ¹‘½Õ¹Ñ¥¹I•Á½ÉÐ„¹1¥¹•Ì¹M¡½Õ± ¤¹	•µÁÑä ¤ì(€€€€€€€•µÁÑåÕ¹‘½Õ¹Ñ¥¹I•Á½ÉÐ¹M¥¹…ÑÕÉ”¹A…å±½…‘¡•­ÍÕµM¡„ÈÔØ¹M¡½Õ± ¤(€€€€€€€€€€€€¹9½Ñ	”¡•µÁÑå%¹Ù•ÍÑµ•¹Ñ=ÁÍI•Á½ÉÐ¹M¥¹…ÑÕÉ”¹A…å±½…‘¡•­ÍÕµM¡„ÈÔØ¤ì((€€€€€€€™¥±Ñ•É•‘A•É¥½‘A¹°¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘A¹°„¹Q½Ñ…±I•Ù•¹Õ”¹M¡½Õ± ¤¹	” ÄÀÁ´¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘A¹°¹Q½Ñ…±áÁ•¹Í•Ì¹M¡½Õ± ¤¹	” Á´¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘A¹°¹9•Ñ%¹½µ”¹M¡½Õ± ¤¹	” ÄÀÁ´¤ì(€€€€€€€™¥±Ñ•É•‘A•É¥½‘A¹°¹I•Ù•¹Õ•1¥¹•Ì¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡É½Ü€ôø(€€€€€€€€€€€É½Ü¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ¤ì((€€€€€€€©½ÕÉ¹…±¹ÑÉ¥•Ì¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€©½ÕÉ¹…±¹ÑÉ¥•Ì„¹M¡½Õ± ¤¹!…Ù•½Õ¹Ð È¤ì(€€€€€€€©½ÕÉ¹…±¹ÑÉ¥•Ì¹M¡½Õ± ¤¹=¹±å½¹Ñ…¥¸¡•¹ÑÉä€ôø•¹ÑÉä¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜•¹ÑÉä¹1•‘•É	½½­%€ôô‰½½¬¹1•‘•É	½½­%¤ì(€€€€€€€©½ÕÉ¹…±¹ÑÉ¥•Ì¹M•±•Ñ5…¹ä¡ÍÑ…Ñ¥Œ•¹ÑÉä€ôø•¹ÑÉä¹1¥¹•Ì¤¹M¡½Õ± ¤¹½¹Ñ…¥¸¡±¥¹”€ôø(€€€€€€€€€€€±¥¹”¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ€˜˜(€€€€€€€€€€€±¥¹”¹¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€±¥¹”¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ€˜˜(€€€€€€€€€€€±¥¹”¹¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%€ôô€‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ€˜˜(€€€€€€€€€€€±¥¹”¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì((€€€€€€€™¥±Ñ•É•‘)½ÕÉ¹…±¹ÑÉ¥•Ì¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€Ù…È™¥±Ñ•É•‘)½ÕÉ¹…±¹ÑÉä€ô™¥±Ñ•É•‘)½ÕÉ¹…±¹ÑÉ¥•Ì„¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡•¹ÑÉä€ôø(€€€€€€€€€€€•¹ÑÉä¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€•¹ÑÉä¹1•‘•É	½½­%€ôô‰½½¬¹1•‘•É	½½­%€˜˜(€€€€€€€€€€€•¹ÑÉä¹Q½Ñ…±•‰¥ÑÌ€ôô€Á´€˜˜(€€€€€€€€€€€•¹ÑÉä¹Q½Ñ…±É•‘¥ÑÌ€ôô€ÄÀÁ´€˜˜(€€€€€€€€€€€•¹ÑÉä¹1¥¹•Ì¹½Õ¹Ð€ôô€Ä€˜˜(€€€€€€€€€€€•¹ÑÉä¹1¥¹•ÍlÁt¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ¤¹MÕ‰©•Ðì(€€€€€€€Ù…È™¥±Ñ•É•‘)½ÕÉ¹…±1¥¹”€ô™¥±Ñ•É•‘)½ÕÉ¹…±¹ÑÉä¹1¥¹•ÍlÁtì(€€€€€€€™¥±Ñ•É•‘)½ÕÉ¹…±1¥¹”¹¥µ•¹Í¥½¹Ì¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€™¥±Ñ•É•‘)½ÕÉ¹…±1¥¹”¹¥µ•¹Í¥½¹Ì„¹¹Ñ¥Ñå%¹M¡½Õ± ¤¹	” ‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ¤ì(€€€€€€€™¥±Ñ•É•‘)½ÕÉ¹…±1¥¹”¹¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%¹M¡½Õ± ¤¹	” ‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ¤ì(€€€€€€€™¥±Ñ•É•‘)½ÕÉ¹…±1¥¹”¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t¹M¡½Õ± ¤¹	” ‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì((€€€€€€€…É•…Ñ•)½ÕÉ¹…±¹ÑÉ¥•Ì¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€…É•…Ñ•)½ÕÉ¹…±¹ÑÉ¥•Ì„¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡•¹ÑÉä€ôø(€€€€€€€€€€€•¹ÑÉä¹É•…Ñ•%€ôô…É•…Ñ•%€˜˜(€€€€€€€€€€€•¹ÑÉä¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€•¹ÑÉä¹1•‘•É	½½­%€ôô‰½½¬¹1•‘•É	½½­%€˜˜(€€€€€€€€€€€•¹ÑÉä¹1¥¹•Ì¹½Õ¹Ð€ôô€È¤ì((€€€€€€€™¥±Ñ•É•‘É•…Ñ•)½ÕÉ¹…±¹ÑÉ¥•Ì¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€Ù…È™¥±Ñ•É•‘É•…Ñ•¹ÑÉä€ô™¥±Ñ•É•‘É•…Ñ•)½ÕÉ¹…±¹ÑÉ¥•Ì„¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡•¹ÑÉä€ôø(€€€€€€€€€€€•¹ÑÉä¹É•…Ñ•%€ôô…É•…Ñ•%€˜˜(€€€€€€€€€€€•¹ÑÉä¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€•¹ÑÉä¹1•‘•É	½½­%€ôô‰½½¬¹1•‘•É	½½­%€˜˜(€€€€€€€€€€€•¹ÑÉä¹Q½Ñ…±•‰¥ÑÌ€ôô€Á´€˜˜(€€€€€€€€€€€•¹ÑÉä¹Q½Ñ…±É•‘¥ÑÌ€ôô€ÄÀÁ´€˜˜(€€€€€€€€€€€•¹ÑÉä¹1¥¹•Ì¹½Õ¹Ð€ôô€Ä€˜˜(€€€€€€€€€€€•¹ÑÉä¹1¥¹•ÍlÁt¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ¤¹MÕ‰©•Ðì(€€€€€€€™¥±Ñ•É•‘É•…Ñ•¹ÑÉä¹1¥¹•ÍlÁt¹¥µ•¹Í¥½¹Ì¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€™¥±Ñ•É•‘É•…Ñ•¹ÑÉä¹1¥¹•ÍlÁt¹¥µ•¹Í¥½¹Ì„¹¹Ñ¥Ñå%¹M¡½Õ± ¤¹	” ‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ¤ì(€€€€€€€™¥±Ñ•É•‘É•…Ñ•¹ÑÉä¹1¥¹•ÍlÁt¹¥µ•¹Í¥½¹Ì„¹½ÍÑ•¹Ñ•É%¹M¡½Õ± ¤¹	” ‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ¤ì(€€€€€€€™¥±Ñ•É•‘É•…Ñ•¹ÑÉä¹1¥¹•ÍlÁt¹¥µ•¹Í¥½¹Ì„¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t¹M¡½Õ± ¤¹	” ‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì((€€€€€€€É½ÍÍA•É¥½‘I•Á½ÉÐ¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€É½ÍÍA•É¥½‘I•Á½ÉÐ„¹1¥¹•Ì¹M¡½Õ± ¤¹½¹Ñ…¥¸¡É½Ü€ôø(€€€€€€€€€€€É½Ü¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€É½Ü¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ€˜˜(€€€€€€€€€€€É½Ü¹	…±…¹”€ôô€ÄÀÁ´€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì(€€€€€€€É½ÍÍA•É¥½‘I•Á½ÉÐ¹1¥¹•Ì¹M¡½Õ± ¤¹½¹Ñ…¥¸¡É½Ü€ôø(€€€€€€€€€€€É½Ü¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€É½Ü¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ€˜˜(€€€€€€€€€€€É½Ü¹	…±…¹”€ôô€ÈÀÁ´€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥ÑäµÁ…É…±±•°ˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰Õ¹‘½Õ¹Ñ¥¹œˆ¤ì((€€€€€€€™¥±Ñ•É•‘É½ÍÍA•É¥½‘I•Á½ÉÐ¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€™¥±Ñ•É•‘É½ÍÍA•É¥½‘I•Á½ÉÐ„¹1¥¹•Ì¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡É½Ü€ôø(€€€€€€€€€€€É½Ü¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€É½Ü¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ€˜˜(€€€€€€€€€€€É½Ü¹	…±…¹”€ôô€ÄÀÁ´€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%€ôô€‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ€˜˜(€€€€€€€€€€€É½Ü¹¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì(€€€€€€€™¥±Ñ•É•‘É½ÍÍA•É¥½‘I•Á½ÉÐ¹Q½Ñ…±•‰¥ÑÌ¹M¡½Õ± ¤¹	” Á´¤ì(€€€€€€€™¥±Ñ•É•‘É½ÍÍA•É¥½‘I•Á½ÉÐ¹Q½Ñ…±É•‘¥ÑÌ¹M¡½Õ± ¤¹	” ÄÀÁ´¤ì(€€€€€€€™¥±Ñ•É•‘É½ÍÍA•É¥½‘I•Á½ÉÐ¹9•Ñ%¹½µ”¹M¡½Õ± ¤¹	” ÄÀÁ´¤ì((€€€€€€€™¥±Ñ•É•‘A¹±I•Á½ÉÐ¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€™¥±Ñ•É•‘A¹±I•Á½ÉÐ„¹A•É¥½‘Ì¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡Á•É¥½‘MÕµµ…Éä€ôø(€€€€€€€€€€€Á•É¥½‘MÕµµ…Éä¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€Á•É¥½‘MÕµµ…Éä¹Q½Ñ…±I•Ù•¹Õ”€ôô€ÄÀÁ´€˜˜(€€€€€€€€€€€Á•É¥½‘MÕµµ…Éä¹Q½Ñ…±áÁ•¹Í•Ì€ôô€Á´€˜˜(€€€€€€€€€€€Á•É¥½‘MÕµµ…Éä¹9•Ñ%¹½µ”€ôô€ÄÀÁ´¤ì(€€€€€€€™¥±Ñ•É•‘A¹±I•Á½ÉÐ¹Q½Ñ…±I•Ù•¹Õ”¹M¡½Õ± ¤¹	” ÄÀÁ´¤ì(€€€€€€€™¥±Ñ•É•‘A¹±I•Á½ÉÐ¹9•Ñ%¹½µ”¹M¡½Õ± ¤¹	” ÄÀÁ´¤ì(€€€€€€€ÍÑ½É”¹EÕ•Éå!¥ÍÑ½Éä¹M¡½Õ± ¤¹½¹Ñ…¥¸¡ÅÕ•Éä€ôø(€€€€€€€€€€€ÅÕ•Éä¹1•‘•É	½½­%€ôô‰½½¬¹1•‘•É	½½­%€˜˜(€€€€€€€€€€€ÅÕ•Éä¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì€ôô¹Õ±°¤ì(€€€€€€€ÍÑ½É”¹EÕ•Éå!¥ÍÑ½Éä¹M¡½Õ± ¤¹½¹Ñ…¥¸¡ÅÕ•Éä€ôø(€€€€€€€€€€€ÅÕ•Éä¹1•‘•É	½½­%€ôô‰½½¬¹1•‘•É	½½­%€˜˜(€€€€€€€€€€€ÅÕ•Éä¹A•É¥½‘%€ôôÁ•É¥½¹A•É¥½‘%€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%€ôô€‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì(€€€€€€€ÍÑ½É”¹EÕ•Éå!¥ÍÑ½Éä¹M¡½Õ± ¤¹½¹Ñ…¥¸¡ÅÕ•Éä€ôø(€€€€€€€€€€€ÅÕ•Éä¹1•‘•É	½½­%€ôô‰½½¬¹1•‘•É	½½­%€˜˜(€€€€€€€€€€€ÅÕ•Éä¹É•…Ñ•%€ôô…É•…Ñ•%€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì€„ô¹Õ±°€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì¹¹Ñ¥Ñå%€ôô€‰•¹Ñ¥Ñäµµ…ÍÑ•Èˆ€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì¹½ÍÑ•¹Ñ•É%€ôô€‰½ÍÐµ•¹Ñ•Èµ¥¹Ù•ÍÑµ•¹Ðµ½ÁÌˆ€˜˜(€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì¹áÑ•É¹…±±¥µ•¹Í¥½¹Íl‰•Á…ÉÑµ•¹Ð‰t€ôô€‰%¹Ù•ÍÑµ•¹Ñ=ÁÌˆ¤ì(€€€ô((€€€m…Ñt(€€€ÁÕ‰±¥Œ…Íå¹ŒQ…Í¬1•‘•É¹‘Á½¥¹ÑÍ}É½ÍÍA•É¥½‘I•Á½ÉÑI½ÕÑ•Í}I•ÑÕÉ¹±½Í•‘A•É¥½‘QÉ¥…±	…±…¹•¹‘A¹±I•Á½ÉÑÌ ¤(€€€ì(€€€€€€€…Ý…¥ÐÕÍ¥¹œÙ…È…ÁÀ€ô…Ý…¥ÐÉ•…Ñ•ÁÁÍå¹Œ ¤ì(€€€€€€€Ù…È±¥•¹Ð€ô…ÁÀ¹•ÑQ•ÍÑ±¥•¹Ð ¤ì(€€€€€€€Ù…ÈÍÑ½É”€ô…ÁÀ¹M•ÉÙ¥•Ì¹•ÑI•ÅÕ¥É•‘M•ÉÙ¥”ñ%1•‘•É)½ÕÉ¹…±MÑ½É”ø ¤ì((€€€€€€€Ù…È‰½½¬€ô…Ý…¥ÐA½ÍÑ)Í½¹Íå¹Œñ1•‘•É	½½­Ñ¼ø (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•É	½½­Ì°(€€€€€€€€€€€¹•ÜÉ•…Ñ•1•‘•É	½½­I•ÅÕ•ÍÐ (€€€€€€€€€€€€€€€€‰…±Á¡„µ™Õ¹ˆ°(€€€€€€€€€€€€€€€Õ¥¹A…ÉÍ” ˆØÔÜÕ”ÜÑ´ÔØØÔ´Ñ˜ÝŒµ„ÕÄ´Éá˜ÈÀÔÐÜá…ˆˆ¤°(€€€€€€€€€€€€€€€Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹‘Ñ¼¹Õ¹°(€€€€€€€€€€€€€€€€‰±Á¡„Õ¹ˆ°(€€€€€€€€€€€€€€€€‰UMˆ°(€€€€€€€€€€€€€€€½Õ¹Ñ¥¹	…Í¥Ìè½Õ¹Ñ¥¹	…Í¥Í-¥¹‘Ñ¼¹……À°(€€€€€€€€€€€€€€€½Õ¹Ñ¥¹A½±¥å%è€‰……Àµ±½Í”µØÄˆ°(€€€€€€€€€€€€€€€½Õ¹Ñ¥¹A½±¥åY•ÉÍ¥½¸è€‰ØÄˆ¤¤ì((€€€€€€€Ù…È™¥ÉÍÐ€ô…Ý…¥ÐÉ•…Ñ•A•É¥½‘]¥Ñ¡A½ÍÑ¥¹Íå¹Œ (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€ÍÑ½É”°(€€€€€€€€€€€‰½½¬°(€€€€€€€€€€€™¥Í…±e•…Èè€ÈÀÈØ°(€€€€€€€€€€€Á•É¥½‘9¼è€Ä°(€€€€€€€€€€€±…‰•°è€ˆÈÀÈØµ@ÀÄˆ°(€€€€€€€€€€€ÍÑ…ÉÐè¹•Ü…Ñ•=¹±ä ÈÀÈØ°€Ä°€Ä¤°(€€€€€€€€€€€•¹è¹•Ü…Ñ•=¹±ä ÈÀÈØ°€Ä°€ÌÄ¤°(€€€€€€€€€€€É•Ù•¹Õ”è€àÀÁ´°(€€€€€€€€€€€•áÁ•¹Í”è€ÌÀÁ´°(€€€€€€€€€€€±½Í•-¥¹è1•‘•ÉA•É¥½‘±½Í•-¥¹‘Ñ¼¹M½™Ñ±½Í”¤ì(€€€€€€€Ù…ÈÍ•½¹€ô…Ý…¥ÐÉ•…Ñ•A•É¥½‘]¥Ñ¡A½ÍÑ¥¹Íå¹Œ (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€ÍÑ½É”°(€€€€€€€€€€€‰½½¬°(€€€€€€€€€€€™¥Í…±e•…Èè€ÈÀÈØ°(€€€€€€€€€€€Á•É¥½‘9¼è€È°(€€€€€€€€€€€±…‰•°è€ˆÈÀÈØµ@ÀÈˆ°(€€€€€€€€€€€ÍÑ…ÉÐè¹•Ü…Ñ•=¹±ä ÈÀÈØ°€È°€Ä¤°(€€€€€€€€€€€•¹è¹•Ü…Ñ•=¹±ä ÈÀÈØ°€È°€Èà¤°(€€€€€€€€€€€É•Ù•¹Õ”è€Å|ÈÀÁ´°(€€€€€€€€€€€•áÁ•¹Í”è€ÌÀÁ´°(€€€€€€€€€€€±½Í•-¥¹è1•‘•ÉA•É¥½‘±½Í•-¥¹‘Ñ¼¹M½™Ñ±½Í”¤ì(€€€€€€€…Ý…¥ÐA½ÍÑ)Í½¹Íå¹Œñ1•‘•ÉA•É¥½‘Ñ¼ø (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•ÉA•É¥½‘Ì°(€€€€€€€€€€€¹•ÜÉ•…Ñ•1•‘•ÉA•É¥½‘I•ÅÕ•ÍÐ (€€€€€€€€€€€€€€€‰½½¬¹1•‘•É	½½­%°(€€€€€€€€€€€€€€€€ÈÀÈØ°(€€€€€€€€€€€€€€€€Ì°(€€€€€€€€€€€€€€€€ˆÈÀÈØµ@ÀÌˆ°(€€€€€€€€€€€€€€€¹•Ü…Ñ•=¹±ä ÈÀÈØ°€Ì°€Ä¤°(€€€€€€€€€€€€€€€¹•Ü…Ñ•=¹±ä ÈÀÈØ°€Ì°€ÌÄ¤¤¤ì((€€€€€€€Ù…ÈÅÕ•Éä€ô€ˆý±•‘•É	½½­%õí‰½½¬¹1•‘•É	½½­%éô™…½Õ¹Ñ¥¹	…Í¥Ìõ……À™ÍÑ…ÉÑ…Ñ”ôÈÀÈØ´ÀÄ´ÀÄ™•¹‘…Ñ”ôÈÀÈØ´ÀÈ´Èàˆì(€€€€€€€Ù…ÈÑÉ¥…±	…±…¹”€ô…Ý…¥Ð±¥•¹Ð¹•ÑÉ½µ)Í½¹Íå¹Œñ1•‘•ÉÉ½ÍÍA•É¥½‘QÉ¥…±	…±…¹•I•Á½ÉÑÑ¼ø (€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•ÉI•Á½ÉÑÍQÉ¥…±	…±…¹”€¬ÅÕ•Éä°(€€€€€€€€€€€M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì(€€€€€€€Ù…ÈÁ¹°€ô…Ý…¥Ð±¥•¹Ð¹•ÑÉ½µ)Í½¹Íå¹Œñ1•‘•ÉÉ½ÍÍA•É¥½‘A¹±I•Á½ÉÑÑ¼ø (€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•ÉI•Á½ÉÑÍA¹±MÕµµ…Éä€¬ÅÕ•Éä°(€€€€€€€€€€€M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì((€€€€€€€ÑÉ¥…±	…±…¹”¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€ÑÉ¥…±	…±…¹”„¹A•É¥½‘Ì¹M•±•Ð¡Á•É¥½€ôøÁ•É¥½¹A•É¥½‘%¤¹M¡½Õ± ¤¹ÅÕ…°¡™¥ÉÍÐ¹A•É¥½‘%°Í•½¹¹A•É¥½‘%¤ì(€€€€€€€ÑÉ¥…±	…±…¹”¹1¥¹•Ì¹M¡½Õ± ¤¹½¹Ñ…¥¸¡±¥¹”€ôø(€€€€€€€€€€€±¥¹”¹A•É¥½‘%€ôô™¥ÉÍÐ¹A•É¥½‘%€˜˜(€€€€€€€€€€€±¥¹”¹½Õ¹Ñ9…µ”€ôô€‰5…¹…•µ•¹Ð™••Ìˆ€˜˜(€€€€€€€€€€€±¥¹”¹	…±…¹”€ôô€àÀÁ´€˜˜(€€€€€€€€€€€±¥¹”¹½Õ¹Ñ¥¹	…Í¥Ì€ôô½Õ¹Ñ¥¹	…Í¥Í-¥¹‘Ñ¼¹……À¤ì(€€€€€€€ÑÉ¥…±	…±…¹”¹1¥¹•Ì¹M¡½Õ± ¤¹½¹Ñ…¥¸¡±¥¹”€ôø(€€€€€€€€€€€±¥¹”¹A•É¥½‘%€ôôÍ•½¹¹A•É¥½‘%€˜˜(€€€€€€€€€€€±¥¹”¹½Õ¹Ñ9…µ”€ôô€‰=Á•É…Ñ¥¹œ•áÁ•¹Í”ˆ€˜˜(€€€€€€€€€€€±¥¹”¹	…±…¹”€ôô€ÌÀÁ´¤ì(€€€€€€€ÑÉ¥…±	…±…¹”¹Q½Ñ…±•‰¥ÑÌ¹M¡½Õ± ¤¹	” É|ØÀÁ´¤ì(€€€€€€€ÑÉ¥…±	…±…¹”¹Q½Ñ…±É•‘¥ÑÌ¹M¡½Õ± ¤¹	” É|ØÀÁ´¤ì(€€€€€€€ÑÉ¥…±	…±…¹”¹9•Ñ%¹½µ”¹M¡½Õ± ¤¹	” Å|ÐÀÁ´¤ì((€€€€€€€Á¹°¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€Á¹°„¹A•É¥½‘Ì¹M•±•Ð¡Á•É¥½€ôøÁ•É¥½¹A•É¥½‘%¤¹M¡½Õ± ¤¹ÅÕ…°¡™¥ÉÍÐ¹A•É¥½‘%°Í•½¹¹A•É¥½‘%¤ì(€€€€€€€Á¹°¹Q½Ñ…±I•Ù•¹Õ”¹M¡½Õ± ¤¹	” É|ÀÀÁ´¤ì(€€€€€€€Á¹°¹Q½Ñ…±áÁ•¹Í•Ì¹M¡½Õ± ¤¹	” ØÀÁ´¤ì(€€€€€€€Á¹°¹9•Ñ%¹½µ”¹M¡½Õ± ¤¹	” Å|ÐÀÁ´¤ì(€€€€€€€Á¹°¹A•É¥½‘ÍlÅt¹A•É¥½‘=¹A•É¥½‘Y…É¥…¹”¹M¡½Õ± ¤¹	” ÐÀÁ´¤ì(€€€ô((€€€m…Ñt(€€€ÁÕ‰±¥Œ…Íå¹ŒQ…Í¬1•‘•É¹‘Á½¥¹ÑÍ}É½ÍÍA•É¥½‘I•Á½ÉÑI½ÕÑ•Í}I•©•Ñ%¹Ù…±¥‘…Ñ•I…¹” ¤(€€€ì(€€€€€€€…Ý…¥ÐÕÍ¥¹œÙ…È…ÁÀ€ô…Ý…¥ÐÉ•…Ñ•ÁÁÍå¹Œ ¤ì(€€€€€€€Ù…È±¥•¹Ð€ô…ÁÀ¹•ÑQ•ÍÑ±¥•¹Ð ¤ì((€€€€€€€ÕÍ¥¹œÙ…ÈÉ•ÍÁ½¹Í”€ô…Ý…¥Ð±¥•¹Ð¹•ÑÍå¹Œ ‰íU¥Á¥I½ÕÑ•Ì¹1•‘•ÉI•Á½ÉÑÍA¹±MÕµµ…ÉåôýÍÑ…ÉÑ…Ñ”ôÈÀÈØ´ÀÌ´ÀÄ™•¹‘…Ñ”ôÈÀÈØ´ÀÈ´ÀÄˆ¤ì((€€€€€€€É•ÍÁ½¹Í”¹MÑ…ÑÕÍ½‘”¹M¡½Õ± ¤¹	”¡!ÑÑÁMÑ…ÑÕÍ½‘”¹	…‘I•ÅÕ•ÍÐ¤ì(€€€ô((€€€m…Ñt(€€€ÁÕ‰±¥Œ…Íå¹ŒQ…Í¬1•‘•É¹‘Á½¥¹ÑÍ}É•…Ñ•	½½­}]¡•¹UÍ•É1…­Í1•‘•É5ÕÑ…Ñ¥½¹A•Éµ¥ÍÍ¥½¹}I•ÑÕÉ¹Í½É‰¥‘‘•¸ ¤(€€€ì(€€€€€€€…Ý…¥ÐÕÍ¥¹œÙ…È…ÁÀ€ô…Ý…¥ÐÉ•…Ñ•ÁÁÍå¹Œ¡UÍ•ÉA•Éµ¥ÍÍ¥½¸¹Y¥•ÝQÉ…‘•Ì¤ì(€€€€€€€Ù…È±¥•¹Ð€ô…ÁÀ¹•ÑQ•ÍÑ±¥•¹Ð ¤ì((€€€€€€€ÕÍ¥¹œÙ…ÈÉ•ÍÁ½¹Í”€ô…Ý…¥Ð±¥•¹Ð¹A½ÍÑÍ)Í½¹Íå¹Œ (€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•É	½½­Ì°(€€€€€€€€€€€¹•ÜÉ•…Ñ•1•‘•É	½½­I•ÅÕ•ÍÐ (€€€€€€€€€€€€€€€€‰…±Á¡„µ™Õ¹ˆ°(€€€€€€€€€€€€€€€Õ¥¹A…ÉÍ” ˆÔå˜ÀÐÕˆµ˜ØàÄ´ÑˆÁŒ´äÐÍ´ÐÑŒäÐÙ˜ÜàÈÄÐˆ¤°(€€€€€€€€€€€€€€€Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹‘Ñ¼¹Õ¹°(€€€€€€€€€€€€€€€€‰±Á¡„Õ¹ˆ°(€€€€€€€€€€€€€€€€‰UMˆ¤°(€€€€€€€€€€€M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì((€€€€€€€É•ÍÁ½¹Í”¹MÑ…ÑÕÍ½‘”¹M¡½Õ± ¤¹	”¡!ÑÑÁMÑ…ÑÕÍ½‘”¹½É‰¥‘‘•¸¤ì(€€€ô((€€€m…Ñt(€€€ÁÕ‰±¥Œ…Íå¹ŒQ…Í¬1•‘•É¹‘Á½¥¹ÑÍ}1¥ÍÑ	½½­Í}]¡•¹UÍ•É1…­Í1•‘•ÉI•…‘A•Éµ¥ÍÍ¥½¹}I•ÑÕÉ¹Í½É‰¥‘‘•¸ ¤(€€€ì(€€€€€€€…Ý…¥ÐÕÍ¥¹œÙ…È…ÁÀ€ô…Ý…¥ÐÉ•…Ñ•ÁÁÍå¹Œ¡UÍ•ÉA•Éµ¥ÍÍ¥½¸¹Y¥•ÝQÉ…‘•Ì¤ì(€€€€€€€Ù…È±¥•¹Ð€ô…ÁÀ¹•ÑQ•ÍÑ±¥•¹Ð ¤ì((€€€€€€€ÕÍ¥¹œÙ…ÈÉ•ÍÁ½¹Í”€ô…Ý…¥Ð±¥•¹Ð¹•ÑÍå¹Œ¡U¥Á¥I½ÕÑ•Ì¹1•‘•É	½½­Ì¤ì((€€€€€€€É•ÍÁ½¹Í”¹MÑ…ÑÕÍ½‘”¹M¡½Õ± ¤¹	”¡!ÑÑÁMÑ…ÑÕÍ½‘”¹½É‰¥‘‘•¸¤ì(€€€ô((€€€m…Ñt(€€€ÁÕ‰±¥Œ…Íå¹ŒQ…Í¬1•‘•É¹‘Á½¥¹ÑÍ}1¥ÍÑ	½½­Í¹‘A•É¥½‘Í}¥±Ñ•É	å½Õ¹Ñ¥¹	…Í¥Ì ¤(€€€ì(€€€€€€€…Ý…¥ÐÕÍ¥¹œÙ…È…ÁÀ€ô…Ý…¥ÐÉ•…Ñ•ÁÁÍå¹Œ ¤ì(€€€€€€€Ù…È±¥•¹Ð€ô…ÁÀ¹•ÑQ•ÍÑ±¥•¹Ð ¤ì(€€€€€€€Ù…È¹½‘•%€ôÕ¥¹A…ÉÍ” ˆÑˆÍˆå˜Å˜´äØÌÜ´ÐÅ„ä´äÐÝ”´ÐÉˆÑ„Ñ‘ŒäÅ™Œˆ¤ì((€€€€€€€…Ý…¥ÐA½ÍÑ)Í½¹Íå¹Œñ1•‘•É	½½­Ñ¼ø (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•É	½½­Ì°(€€€€€€€€€€€¹•ÜÉ•…Ñ•1•‘•É	½½­I•ÅÕ•ÍÐ (€€€€€€€€€€€€€€€€‰…±Á¡„µ™Õ¹ˆ°(€€€€€€€€€€€€€€€¹½‘•%°(€€€€€€€€€€€€€€€Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹‘Ñ¼¹Õ¹°(€€€€€€€€€€€€€€€€‰±Á¡„Õ¹ˆ°(€€€€€€€€€€€€€€€€‰UMˆ¤¤ì(€€€€€€€Ù…È……Á	½½¬€ô…Ý…¥ÐA½ÍÑ)Í½¹Íå¹Œñ1•‘•É	½½­Ñ¼ø (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•É	½½­Ì°(€€€€€€€€€€€¹•ÜÉ•…Ñ•1•‘•É	½½­I•ÅÕ•ÍÐ (€€€€€€€€€€€€€€€€‰…±Á¡„µ™Õ¹ˆ°(€€€€€€€€€€€€€€€¹½‘•%°(€€€€€€€€€€€€€€€Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹‘Ñ¼¹Õ¹°(€€€€€€€€€€€€€€€€‰±Á¡„Õ¹@ˆ°(€€€€€€€€€€€€€€€€‰UMˆ°(€€€€€€€€€€€€€€€½Õ¹Ñ¥¹	…Í¥Ìè½Õ¹Ñ¥¹	…Í¥Í-¥¹‘Ñ¼¹……À°(€€€€€€€€€€€€€€€½Õ¹Ñ¥¹A½±¥å%è€‰……Àµ‘•™…Õ±ÐµØÄˆ°(€€€€€€€€€€€€€€€½Õ¹Ñ¥¹A½±¥åY•ÉÍ¥½¸è€‰ØÄˆ¤¤ì(€€€€€€€Ù…È……ÁA•É¥½€ô…Ý…¥ÐA½ÍÑ)Í½¹Íå¹Œñ1•‘•ÉA•É¥½‘Ñ¼ø (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•ÉA•É¥½‘Ì°(€€€€€€€€€€€¹•ÜÉ•…Ñ•1•‘•ÉA•É¥½‘I•ÅÕ•ÍÐ (€€€€€€€€€€€€€€€……Á	½½¬¹1•‘•É	½½­%°(€€€€€€€€€€€€€€€€ÈÀÈØ°(€€€€€€€€€€€€€€€€Ø°(€€€€€€€€€€€€€€€€ˆÈÀÈØµ@ÀØˆ°(€€€€€€€€€€€€€€€¹•Ü…Ñ•=¹±ä ÈÀÈØ°€Ø°€Ä¤°(€€€€€€€€€€€€€€€¹•Ü…Ñ•=¹±ä ÈÀÈØ°€Ø°€ÌÀ¤¤¤ì((€€€€€€€Ù…È‰½½­Ì€ô…Ý…¥Ð±¥•¹Ð¹•ÑÉ½µ)Í½¹Íå¹Œñ%I•…‘=¹±å1¥ÍÐñ1•‘•É	½½­Ñ¼øø (€€€€€€€€€€€€‰íU¥Á¥I½ÕÑ•Ì¹1•‘•É	½½­Íôý™Õ¹‘AÉ½™¥±•%õ…±Á¡„µ™Õ¹™™Õ¹‘MÑÉÕÑÕÉ•9½‘•%õí¹½‘•%éô™…½Õ¹Ñ¥¹	…Í¥Ìõ……Àˆ°(€€€€€€€€€€€M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì(€€€€€€€Ù…ÈÁ•É¥½‘Ì€ô…Ý…¥Ð±¥•¹Ð¹•ÑÉ½µ)Í½¹Íå¹Œñ%I•…‘=¹±å1¥ÍÐñ1•‘•ÉA•É¥½‘Ñ¼øø (€€€€€€€€€€€€‰íU¥Á¥I½ÕÑ•Ì¹1•‘•ÉA•É¥½‘Íôý™Õ¹‘AÉ½™¥±•%õ…±Á¡„µ™Õ¹™™Õ¹‘MÑÉÕÑÕÉ•9½‘•%õí¹½‘•%éô™…½Õ¹Ñ¥¹	…Í¥Ìõ……Àˆ°(€€€€€€€€€€€M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì((€€€€€€€‰½½­Ì¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€‰½½­Ì„¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡‰½½¬€ôø‰½½¬¹1•‘•É	½½­%€ôô……Á	½½¬¹1•‘•É	½½­%€˜˜‰½½¬¹½Õ¹Ñ¥¹	…Í¥Ì€ôô½Õ¹Ñ¥¹	…Í¥Í-¥¹‘Ñ¼¹……À¤ì(€€€€€€€Á•É¥½‘Ì¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€Á•É¥½‘Ì„¹M¡½Õ± ¤¹½¹Ñ…¥¹M¥¹±”¡Á•É¥½€ôøÁ•É¥½¹A•É¥½‘%€ôô……ÁA•É¥½¹A•É¥½‘%€˜˜Á•É¥½¹½Õ¹Ñ¥¹	…Í¥Ì€ôô½Õ¹Ñ¥¹	…Í¥Í-¥¹‘Ñ¼¹……À¤ì(€€€ô((€€€m…Ñt(€€€ÁÕ‰±¥Œ…Íå¹ŒQ…Í¬=Á•É…Ñ½É%¹‰½á}M¡½Õ±‘ÑÑ…¡1•‘•ÉA•É¥½‘±½Í•9…Ù¥…Ñ¥½¹]¡•¹½¹ÑÉ¥‰ÕÑ•‘%Ñ•µ%ÍMÁ…ÉÍ” ¤(€€€ì(€€€€€€€…Ý…¥ÐÕÍ¥¹œÙ…È…ÁÀ€ô…Ý…¥ÐÉ•…Ñ•ÁÁÍå¹Œ ¤ì(€€€€€€€Ù…È¥¹‰½áM•ÉÙ¥”€ô…ÁÀ¹M•ÉÙ¥•Ì¹•ÑI•ÅÕ¥É•‘M•ÉÙ¥”ñ%=Á•É…Ñ½É%¹‰½áM•ÉÙ¥”ø ¤ì(€€€€€€€…Ý…¥Ð¥¹‰½áM•ÉÙ¥”¹UÁÍ•ÉÑ%Ñ•µÍå¹Œ¡¹•Ü=Á•É…Ñ½É]½É­%Ñ•µÑ¼ (€€€€€€€€€€€]½É­%Ñ•µ%è€‰±•‘•ÈµÁ•É¥½µ±½Í”µÍÁ…ÉÍ”ˆ°(€€€€€€€€€€€-¥¹è=Á•É…Ñ½É]½É­%Ñ•µ-¥¹‘Ñ¼¹1•‘•ÉA•É¥½‘±½Í”°(€€€€€€€€€€€1…‰•°è€‰M½™Ñ±½Í•Í¥¸µ½™˜É•ÅÕ¥É•ˆ°(€€€€€€€€€€€•Ñ…¥°è€‰A•É¥½±½Í”É•ÅÕ¥É•Ì½¹ÑÉ½±±•ÈÍ¥¸µ½™˜¸ˆ°(€€€€€€€€€€€Q½¹”è=Á•É…Ñ½É]½É­%Ñ•µQ½¹•Ñ¼¹]…É¹¥¹œ°(€€€€€€€€€€€É•…Ñ•‘Ðè…Ñ•Q¥µ•=™™Í•Ð¹A…ÉÍ” ˆÈÀÈØ´ÀÐ´ÌÁPÄØèÀÀèÀÁhˆ¤¤¤ì((€€€€€€€Ù…È¥¹‰½à€ô…Ý…¥Ð…ÁÀ¹•ÑQ•ÍÑ±¥•¹Ð ¤¹•ÑÉ½µ)Í½¹Íå¹Œñ=Á•É…Ñ½É%¹‰½áÑ¼ø (€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹]½É­ÍÑ…Ñ¥½¹=Á•É…Ñ½É%¹‰½à°(€€€€€€€€€€€M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì((€€€€€€€¥¹‰½à¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€¥¹‰½à„¹%Ñ•µÌ¹M¡½Õ± ¤¹½¹Ñ…¥¸¡¥Ñ•´€ôø(€€€€€€€€€€€¥Ñ•´¹]½É­%Ñ•µ%€ôô€‰±•‘•ÈµÁ•É¥½µ±½Í”µÍÁ…ÉÍ”ˆ€˜˜(€€€€€€€€€€€¥Ñ•´¹Q…É•ÑI½ÕÑ”€ôôU¥Á¥I½ÕÑ•Ì¹I•½¹¥±¥…Ñ¥½¹	É•…­EÕ•Õ”€˜˜(€€€€€€€€€€€¥Ñ•´¹Q…É•ÑA…•Q…œ€ôô€‰Õ¹‘I•½¹¥±¥…Ñ¥½¸ˆ€˜˜(€€€€€€€€€€€¥Ñ•´¹]½É­ÍÁ…”€ôô€‰½Õ¹Ñ¥¹œˆ¤ì(€€€ô((€€€m…Ñt(€€€ÁÕ‰±¥ŒÙ½¥1•‘•É	½½­5¥É…Ñ¥½¹}•™¥¹•Í1•‘•É	½½­Í¹‘	½½­M½Á•‘A•É¥½‘Ì ¤(€€€ì(€€€€€€€Ù…ÈÍÅ°€ôI•…‘5¥É…Ñ¥½¸ ‰Y}±•‘•É|ÀÀÍ}}±•‘•É}‰½½­Ì¹ÍÅ°ˆ¤ì((€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰É•…Ñ”Ñ…‰±”¥˜¹½Ð•á¥ÍÑÌ}}M!5}|¹±•‘•É}‰½½­Ìˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰™Õ¹‘}ÍÑÉÕÑÕÉ•}¹½‘•}¥ÕÕ¥¹½Ð¹Õ±°ˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰…‘½±Õµ¸¥˜¹½Ð•á¥ÍÑÌ±•‘•É}‰½½­}¥ÕÕ¥¹Õ±°ˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰Õá}…½Õ¹Ñ¥¹}Á•É¥½‘Í}‰½½­}™¥Í…±}Á•É¥½ˆ¤ì(€€€ô((€€€m…Ñt(€€€ÁÕ‰±¥ŒÙ½¥½Õ¹Ñ¥¹	…Í¥ÍA½±¥å5¥É…Ñ¥½¹}•™¥¹•ÍA…É…±±•±	½½­A½±¥åM¡…Á” ¤(€€€ì(€€€€€€€Ù…ÈÍÅ°€ôI•…‘5¥É…Ñ¥½¸ ‰Y}±•‘•É|ÀÀÑ}}…½Õ¹Ñ¥¹}‰…Í¥Í}Á½±¥¥•Ì¹ÍÅ°ˆ¤ì((€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰É•…Ñ”Ñ…‰±”¥˜¹½Ð•á¥ÍÑÌ}}M!5}|¹…½Õ¹Ñ¥¹}Á½±¥¥•Ìˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰™Õ¹‘}ÍÑÉÕÑÕÉ•}¹½‘•}¥ÕÕ¥¹Õ±°ˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰Í½ÕÉ•}•Ù•¹Ñ}¥ÕÕ¥¹Õ±°ˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰…‘½±Õµ¸¥˜¹½Ð•á¥ÍÑÌ…½Õ¹Ñ¥¹}‰…Í¥ÌÑ•áÐ¹½Ð¹Õ±°‘•™…Õ±Ð€AÉ¥µ…Éäœˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰…‘½±Õµ¸¥˜¹½Ð•á¥ÍÑÌ…½Õ¹Ñ¥¹}Á½±¥å}¥Ñ•áÐ¹½Ð¹Õ±°‘•™…Õ±Ð€±•…äµØÄœˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰Õá}±•‘•É}‰½½­Í}™Õ¹‘}¹½‘•}‰…Í¥Ìˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ‰¥á}…½Õ¹Ñ¥¹}Á½±¥¥•Í}Í½Á”ˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ˆ……Àœ°€……Àµ‘•™…Õ±ÐµØÄœ°€ØÄœˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ˆ…Í œ°€…Í µ‘•™…Õ±ÐµØÄœ°€ØÄœˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ˆQ…àœ°€Ñ…àµ‘•™…Õ±ÐµØÄœ°€ØÄœˆ¤ì(€€€€€€€ÍÅ°¹M¡½Õ± ¤¹½¹Ñ…¥¸ ˆMÑ…ÑÕÑ½Éäœ°€ÍÑ…Ðµ‘•™…Õ±ÐµØÄœ°€ØÄœˆ¤ì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ…Íå¹ŒQ…Í¬ñPøA½ÍÑ)Í½¹Íå¹ŒñPø¡!ÑÑÁ±¥•¹Ð±¥•¹Ð°ÍÑÉ¥¹œÉ½ÕÑ”°½‰©•ÐÉ•ÅÕ•ÍÐ¤(€€€ì(€€€€€€€ÕÍ¥¹œÙ…ÈÉ•ÍÁ½¹Í”€ô…Ý…¥Ð±¥•¹Ð¹A½ÍÑÍ)Í½¹Íå¹Œ¡É½ÕÑ”°É•ÅÕ•ÍÐ°M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì(€€€€€€€É•ÍÁ½¹Í”¹MÑ…ÑÕÍ½‘”¹M¡½Õ± ¤¹	•=¹•=˜¡!ÑÑÁMÑ…ÑÕÍ½‘”¹=,°!ÑÑÁMÑ…ÑÕÍ½‘”¹É•…Ñ•¤ì(€€€€€€€Ù…ÈÁ…å±½…€ô…Ý…¥ÐÉ•ÍÁ½¹Í”¹½¹Ñ•¹Ð¹I•…‘É½µ)Í½¹Íå¹ŒñPø¡M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì(€€€€€€€Á…å±½…¹M¡½Õ± ¤¹9½Ñ	•9Õ±° ¤ì(€€€€€€€É•ÑÕÉ¸Á…å±½…„ì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ…Íå¹ŒQ…Í¬ñ]•‰ÁÁ±¥…Ñ¥½¸øÉ•…Ñ•ÁÁÍå¹Œ (€€€€€€€UÍ•ÉA•Éµ¥ÍÍ¥½¸Á•Éµ¥ÍÍ¥½¹Ì€ôUÍ•ÉA•Éµ¥ÍÍ¥½¸¹Y¥•ÝQÉ…‘•ÌðUÍ•ÉA•Éµ¥ÍÍ¥½¸¹5…¹…•¥É•Ñ1•¹‘¥¹œ°(€€€€€€€%1•‘•É	½½­M•ÉÙ¥”ü±•‘•É	½½­M•ÉÙ¥”€ô¹Õ±°°(€€€€€€€%1•‘•É)½ÕÉ¹…±MÑ½É”ü©½ÕÉ¹…±MÑ½É”€ô¹Õ±°¤(€€€ì(€€€€€€€Ù…È‰Õ¥±‘•È€ô]•‰ÁÁ±¥…Ñ¥½¸¹É•…Ñ•	Õ¥±‘•È¡¹•Ü]•‰ÁÁ±¥…Ñ¥½¹=ÁÑ¥½¹Ì(€€€€€€€ì(€€€€€€€€€€€¹Ù¥É½¹µ•¹Ñ9…µ”€ô¹Ù¥É½¹µ•¹ÑÌ¹•Ù•±½Áµ•¹Ð(€€€€€€€ô¤ì(€€€€€€€‰Õ¥±‘•È¹]•‰!½ÍÐ¹UÍ•Q•ÍÑM•ÉÙ•È ¤ì(€€€€€€€‰Õ¥±‘•È¹M•ÉÙ¥•Ì¹‘‘I…Ñ•1¥µ¥Ñ•È¡½ÁÑ¥½¹Ì€ôø(€€€€€€€€€€€½ÁÑ¥½¹Ì¹‘‘A½±¥ä¡U¥¹‘Á½¥¹ÑÌ¹5ÕÑ…Ñ¥½¹I…Ñ•1¥µ¥ÑA½±¥ä°|€ôø(€€€€€€€€€€€€€€€I…Ñ•1¥µ¥ÑA…ÉÑ¥Ñ¥½¸¹•Ñ9½1¥µ¥Ñ•È ‰±•‘•ÈµÑ•ÍÑÌˆ¤¤¤ì(€€€€€€€‰Õ¥±‘•È¹M•ÉÙ¥•Ì¹‘‘M¥¹±•Ñ½¸ñ%=Á•É…Ñ½É%¹‰½áM•ÉÙ¥”°%¹5•µ½Éå=Á•É…Ñ½É%¹‰½áM•ÉÙ¥”ø ¤ì(€€€€€€€¥˜€¡©½ÕÉ¹…±MÑ½É”¥Ì¹Õ±°¤(€€€€€€€ì(€€€€€€€€€€€‰Õ¥±‘•È¹M•ÉÙ¥•Ì¹‘‘M¥¹±•Ñ½¸ñ%1•‘•É)½ÕÉ¹…±MÑ½É”°%¹5•µ½Éå1•‘•É)½ÕÉ¹…±MÑ½É”ø ¤ì(€€€€€€€ô(€€€€€€€•±Í”(€€€€€€€ì(€€€€€€€€€€€‰Õ¥±‘•È¹M•ÉÙ¥•Ì¹‘‘M¥¹±•Ñ½¸¡©½ÕÉ¹…±MÑ½É”¤ì(€€€€€€€ô((€€€€€€€¥˜€¡±•‘•É	½½­M•ÉÙ¥”¥Ì¹Õ±°¤(€€€€€€€ì(€€€€€€€€€€€‰Õ¥±‘•È¹M•ÉÙ¥•Ì¹‘‘M¥¹±•Ñ½¸ñ%1•‘•É	½½­M•ÉÙ¥”ø¡ÍÀ€ôø(€€€€€€€€€€€€€€€¹•ÜA½ÍÑÉ•Í1•‘•É	½½­M•ÉÙ¥” (€€€€€€€€€€€€€€€€€€€ÍÀ¹•ÑI•ÅÕ¥É•‘M•ÉÙ¥”ñ%1•‘•É)½ÕÉ¹…±MÑ½É”ø ¤°(€€€€€€€€€€€€€€€€€€€ÍÀ¹•ÑI•ÅÕ¥É•‘M•ÉÙ¥”ñ%=Á•É…Ñ½É%¹‰½áM•ÉÙ¥”ø ¤¤¤ì(€€€€€€€ô(€€€€€€€•±Í”(€€€€€€€ì(€€€€€€€€€€€‰Õ¥±‘•È¹M•ÉÙ¥•Ì¹‘‘M¥¹±•Ñ½¸¡±•‘•É	½½­M•ÉÙ¥”¤ì(€€€€€€€ô((€€€€€€€Ù…È…ÁÀ€ô‰Õ¥±‘•È¹	Õ¥± ¤ì(€€€€€€€…ÁÀ¹UÍ” ¡½¹Ñ•áÐ°¹•áÐ¤€ôø(€€€€€€€ì(€€€€€€€€€€€½¹Ñ•áÐ¹%Ñ•µÍm1½¥¹M•ÍÍ¥½¹5¥‘‘±•Ý…É”¹ÕÉÉ•¹ÑUÍ•É-•åt€ô€‰™Õ¹µ½¹ÑÉ½±±•Èˆì(€€€€€€€€€€€½¹Ñ•áÐ¹%Ñ•µÍm1½¥¹M•ÍÍ¥½¹5¥‘‘±•Ý…É”¹ÕÉÉ•¹ÑUÍ•ÉI½±•-•åt€ôUÍ•ÉI½±”¹½Õ¹Ñ¥¹œì(€€€€€€€€€€€½¹Ñ•áÐ¹%Ñ•µÍm1½¥¹M•ÍÍ¥½¹5¥‘‘±•Ý…É”¹ÕÉÉ•¹ÑUÍ•ÉA•Éµ¥ÍÍ¥½¹Í-•åt€ôÁ•Éµ¥ÍÍ¥½¹Ìì(€€€€€€€€€€€½¹Ñ•áÐ¹%Ñ•µÍm1½¥¹M•ÍÍ¥½¹5¥‘‘±•Ý…É”¹ÕÉÉ•¹ÑUÍ•É½µÁ…¹å%‘-•åt€ô€‰±•‘•ÈµÑ•ÍÐµ½µÁ…¹äˆì(€€€€€€€€€€€½¹Ñ•áÐ¹%Ñ•µÍm1½¥¹M•ÍÍ¥½¹5¥‘‘±•Ý…É”¹ÕÉÉ•¹ÑQ•¹…¹Ñ%‘-•åt€ô€‰±•‘•ÈµÑ•ÍÐµÑ•¹…¹Ðˆì(€€€€€€€€€€€É•ÑÕÉ¸¹•áÐ ¤ì(€€€€€€€ô¤ì(€€€€€€€…ÁÀ¹UÍ•I…Ñ•1¥µ¥Ñ•È ¤ì(€€€€€€€…ÁÀ¹5…Á1•‘•É¹‘Á½¥¹ÑÌ¡M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì(€€€€€€€…ÁÀ¹5…Á]½É­ÍÑ…Ñ¥½¹¹‘Á½¥¹ÑÌ¡M•ÉÙ•É)Í½¹=ÁÑ¥½¹Ì¤ì((€€€€€€€…Ý…¥Ð…ÁÀ¹MÑ…ÉÑÍå¹Œ ¤ì(€€€€€€€É•ÑÕÉ¸…ÁÀì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ…Íå¹ŒQ…Í¬ñ1•‘•ÉA•É¥½‘Ñ¼øÉ•…Ñ•A•É¥½‘]¥Ñ¡A½ÍÑ¥¹Íå¹Œ (€€€€€€€!ÑÑÁ±¥•¹Ð±¥•¹Ð°(€€€€€€€%1•‘•É)½ÕÉ¹…±MÑ½É”ÍÑ½É”°(€€€€€€€1•‘•É	½½­Ñ¼‰½½¬°(€€€€€€€¥¹Ð™¥Í…±e•…È°(€€€€€€€¥¹ÐÁ•É¥½‘9¼°(€€€€€€€ÍÑÉ¥¹œ±…‰•°°(€€€€€€€…Ñ•=¹±äÍÑ…ÉÐ°(€€€€€€€…Ñ•=¹±ä•¹°(€€€€€€€‘•¥µ…°É•Ù•¹Õ”°(€€€€€€€‘•¥µ…°•áÁ•¹Í”°(€€€€€€€1•‘•ÉA•É¥½‘±½Í•-¥¹‘Ñ¼±½Í•-¥¹¤(€€€ì(€€€€€€€Ù…ÈÁ•É¥½€ô…Ý…¥ÐA½ÍÑ)Í½¹Íå¹Œñ1•‘•ÉA•É¥½‘Ñ¼ø (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹1•‘•ÉA•É¥½‘Ì°(€€€€€€€€€€€¹•ÜÉ•…Ñ•1•‘•ÉA•É¥½‘I•ÅÕ•ÍÐ (€€€€€€€€€€€€€€€‰½½¬¹1•‘•É	½½­%°(€€€€€€€€€€€€€€€™¥Í…±e•…È°(€€€€€€€€€€€€€€€Á•É¥½‘9¼°(€€€€€€€€€€€€€€€±…‰•°°(€€€€€€€€€€€€€€€ÍÑ…ÉÐ°(€€€€€€€€€€€€€€€•¹¤¤ì(€€€€€€€…Ý…¥ÐÍÑ½É”¹ÁÁ•¹‘Íå¹Œ¡	Õ¥±‘	…±…¹•‘¹ÑÉä (€€€€€€€€€€€Á•É¥½¹A•É¥½‘%°(€€€€€€€€€€€É•Ù•¹Õ”°(€€€€€€€€€€€•áÁ•¹Í”°(€€€€€€€€€€€¹•Ü…Ñ•Q¥µ•=™™Í•Ð¡•¹¹Q½…Ñ•Q¥µ”¡¹•ÜQ¥µ•=¹±ä ÈÄ°€À¤¤°Q¥µ•MÁ…¸¹i•É¼¤¤Ý¥Ñ (€€€€€€€ì(€€€€€€€€€€€½Õ¹Ñ¥¹	…Í¥Ì€ô‰½½¬¹½Õ¹Ñ¥¹	…Í¥Ì°(€€€€€€€€€€€½Õ¹Ñ¥¹A½±¥å%€ô‰½½¬¹½Õ¹Ñ¥¹A½±¥å%°(€€€€€€€€€€€½Õ¹Ñ¥¹A½±¥åY•ÉÍ¥½¸€ô‰½½¬¹½Õ¹Ñ¥¹A½±¥åY•ÉÍ¥½¸(€€€€€€€ô¤ì(€€€€€€€…Ý…¥ÐA½ÍÑ)Í½¹Íå¹Œñ1•‘•ÉA•É¥½‘±½Í•I•ÍÕ±ÑÑ¼ø (€€€€€€€€€€€±¥•¹Ð°(€€€€€€€€€€€U¥Á¥I½ÕÑ•Ì¹]¥Ñ¡A…É…´¡U¥Á¥I½ÕÑ•Ì¹1•‘•ÉA•É¥½‘±½Í”°€‰Á•É¥½‘%ˆ°Á•É¥½¹A•É¥½‘%¹Q½MÑÉ¥¹œ ¤¤°(€€€€€€€€€€€¹•Ü±½Í•1•‘•ÉA•É¥½‘I•ÅÕ•ÍÐ¡±½Í•-¥¹°±½Í•‘	äè€‰™Õ¹µ½¹ÑÉ½±±•Èˆ¤¤ì((€€€€€€€É•ÑÕÉ¸Á•É¥½ì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ1•‘•É)½ÕÉ¹…±¹ÑÉå]É¥Ñ”	Õ¥±‘	…±…¹•‘¹ÑÉä (€€€€€€€Õ¥Á•É¥½‘%°(€€€€€€€‘•¥µ…°É•Ù•¹Õ”°(€€€€€€€‘•¥µ…°•áÁ•¹Í”°(€€€€€€€…Ñ•Q¥µ•=™™Í•ÐüÑ¥µ•ÍÑ…µÀ€ô¹Õ±°¤(€€€ì(€€€€€€€Ù…È©½ÕÉ¹…±¹ÑÉå%€ôÕ¥¹9•ÝÕ¥ ¤ì(€€€€€€€Ù…È½ÕÉÉ•‘Ð€ôÑ¥µ•ÍÑ…µÀ€üü…Ñ•Q¥µ•=™™Í•Ð¹A…ÉÍ” ˆÈÀÈØ´ÀÈ´ÈáPÈÄèÀÀèÀÁhˆ¤ì(€€€€€€€½¹ÍÐÍÑÉ¥¹œ‘•ÍÉ¥ÁÑ¥½¸€ô€‰5½¹Ñ µ•¹É•Ù•¹Õ”…¹•áÁ•¹Í”Á½ÍÑ¥¹œˆì(€€€€€€€Ù…È±¥¹•Ì€ô¹•Ýmt(€€€€€€€ì(€€€€€€€€€€€¹•Ü1•‘•É¹ÑÉä (€€€€€€€€€€€€€€€Õ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€€€€€©½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€½ÕÉÉ•‘Ð°(€€€€€€€€€€€€€€€¹•Ü1•‘•É½Õ¹Ð ‰…Í ˆ°1•‘•É½Õ¹ÑQåÁ”¹ÍÍ•Ð¤°(€€€€€€€€€€€€€€€‘•‰¥ÐèÉ•Ù•¹Õ”°(€€€€€€€€€€€€€€€É•‘¥Ðè€Á´°(€€€€€€€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸¤°(€€€€€€€€€€€¹•Ü1•‘•É¹ÑÉä (€€€€€€€€€€€€€€€Õ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€€€€€©½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€½ÕÉÉ•‘Ð°(€€€€€€€€€€€€€€€¹•Ü1•‘•É½Õ¹Ð ‰5…¹…•µ•¹Ð™••Ìˆ°1•‘•É½Õ¹ÑQåÁ”¹I•Ù•¹Õ”¤°(€€€€€€€€€€€€€€€‘•‰¥Ðè€Á´°(€€€€€€€€€€€€€€€É•‘¥ÐèÉ•Ù•¹Õ”°(€€€€€€€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸¤°(€€€€€€€€€€€¹•Ü1•‘•É¹ÑÉä (€€€€€€€€€€€€€€€Õ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€€€€€©½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€½ÕÉÉ•‘Ð°(€€€€€€€€€€€€€€€¹•Ü1•‘•É½Õ¹Ð ‰=Á•É…Ñ¥¹œ•áÁ•¹Í”ˆ°1•‘•É½Õ¹ÑQåÁ”¹áÁ•¹Í”¤°(€€€€€€€€€€€€€€€‘•‰¥Ðè•áÁ•¹Í”°(€€€€€€€€€€€€€€€É•‘¥Ðè€Á´°(€€€€€€€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸¤°(€€€€€€€€€€€¹•Ü1•‘•É¹ÑÉä (€€€€€€€€€€€€€€€Õ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€€€€€©½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€½ÕÉÉ•‘Ð°(€€€€€€€€€€€€€€€¹•Ü1•‘•É½Õ¹Ð ‰…Í ˆ°1•‘•É½Õ¹ÑQåÁ”¹ÍÍ•Ð¤°(€€€€€€€€€€€€€€€‘•‰¥Ðè€Á´°(€€€€€€€€€€€€€€€É•‘¥Ðè•áÁ•¹Í”°(€€€€€€€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸¤(€€€€€€€ôì((€€€€€€€É•ÑÕÉ¸¹•Ü1•‘•É)½ÕÉ¹…±¹ÑÉå]É¥Ñ” (€€€€€€€€€€€¹•Ü)½ÕÉ¹…±¹ÑÉä¡©½ÕÉ¹…±¹ÑÉå%°½ÕÉÉ•‘Ð°‘•ÍÉ¥ÁÑ¥½¸°±¥¹•Ì¤°(€€€€€€€€€€€É•…Ñ•%èÕ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€A•É¥½‘%èÁ•É¥½‘%¤ì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ1•‘•É)½ÕÉ¹…±¹ÑÉå]É¥Ñ”	Õ¥±‘áÁ•¹Í•¹ÑÉä (€€€€€€€Õ¥Á•É¥½‘%°(€€€€€€€ÍÑÉ¥¹œ…½Õ¹Ñ9…µ”°(€€€€€€€‘•¥µ…°…µ½Õ¹Ð°(€€€€€€€…Ñ•Q¥µ•=™™Í•ÐÑ¥µ•ÍÑ…µÀ¤(€€€ì(€€€€€€€Ù…È©½ÕÉ¹…±¹ÑÉå%€ôÕ¥¹9•ÝÕ¥ ¤ì(€€€€€€€Ù…È‘•ÍÉ¥ÁÑ¥½¸€ô€‰í…½Õ¹Ñ9…µ•ô…ÉÕ…°…‘©ÕÍÑµ•¹Ðˆì(€€€€€€€Ù…È±¥¹•Ì€ô¹•Ýmt(€€€€€€€ì(€€€€€€€€€€€¹•Ü1•‘•É¹ÑÉä (€€€€€€€€€€€€€€€Õ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€€€€€©½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€Ñ¥µ•ÍÑ…µÀ°(€€€€€€€€€€€€€€€¹•Ü1•‘•É½Õ¹Ð¡…½Õ¹Ñ9…µ”°1•‘•É½Õ¹ÑQåÁ”¹áÁ•¹Í”¤°(€€€€€€€€€€€€€€€‘•‰¥Ðè…µ½Õ¹Ð°(€€€€€€€€€€€€€€€É•‘¥Ðè€Á´°(€€€€€€€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸¤°(€€€€€€€€€€€¹•Ü1•‘•É¹ÑÉä (€€€€€€€€€€€€€€€Õ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€€€€€©½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€Ñ¥µ•ÍÑ…µÀ°(€€€€€€€€€€€€€€€¹•Ü1•‘•É½Õ¹Ð ‰ÉÕ•±¥…‰¥±¥Ñ¥•Ìˆ°1•‘•É½Õ¹ÑQåÁ”¹1¥…‰¥±¥Ñä¤°(€€€€€€€€€€€€€€€‘•‰¥Ðè€Á´°(€€€€€€€€€€€€€€€É•‘¥Ðè…µ½Õ¹Ð°(€€€€€€€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸¤(€€€€€€€ôì((€€€€€€€É•ÑÕÉ¸¹•Ü1•‘•É)½ÕÉ¹…±¹ÑÉå]É¥Ñ” (€€€€€€€€€€€¹•Ü)½ÕÉ¹…±¹ÑÉä¡©½ÕÉ¹…±¹ÑÉå%°Ñ¥µ•ÍÑ…µÀ°‘•ÍÉ¥ÁÑ¥½¸°±¥¹•Ì¤°(€€€€€€€€€€€É•…Ñ•%èÕ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€A•É¥½‘%èÁ•É¥½‘%¤ì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ1•‘•É)½ÕÉ¹…±¹ÑÉå]É¥Ñ”	Õ¥±‘¥µ•¹Í¥½¹…±I•Ù•¹Õ•¹ÑÉä (€€€€€€€Õ¥Á•É¥½‘%°(€€€€€€€‘•¥µ…°…µ½Õ¹Ð°(€€€€€€€…Ñ•Q¥µ•=™™Í•ÐÑ¥µ•ÍÑ…µÀ°(€€€€€€€ÍÑÉ¥¹œ•¹Ñ¥Ñå%°(€€€€€€€ÍÑÉ¥¹œ½ÍÑ•¹Ñ•É%°(€€€€€€€ÍÑÉ¥¹œ•áÑ•É¹…±±•Á…ÉÑµ•¹Ð°(€€€€€€€Õ¥ü…É•…Ñ•%€ô¹Õ±°¤(€€€ì(€€€€€€€Ù…È©½ÕÉ¹…±¹ÑÉå%€ôÕ¥¹9•ÝÕ¥ ¤ì(€€€€€€€½¹ÍÐÍÑÉ¥¹œ‘•ÍÉ¥ÁÑ¥½¸€ô€‰¥µ•¹Í¥½¸µÍ½Á•É•Ù•¹Õ”Á½ÍÑ¥¹œˆì(€€€€€€€Ù…È±¥¹•Ì€ô¹•Ýmt(€€€€€€€ì(€€€€€€€€€€€¹•Ü1•‘•É¹ÑÉä (€€€€€€€€€€€€€€€Õ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€€€€€©½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€Ñ¥µ•ÍÑ…µÀ°(€€€€€€€€€€€€€€€¹•Ü1•‘•É½Õ¹Ð ‰…Í ˆ°1•‘•É½Õ¹ÑQåÁ”¹ÍÍ•Ð¤°(€€€€€€€€€€€€€€€‘•‰¥Ðè…µ½Õ¹Ð°(€€€€€€€€€€€€€€€É•‘¥Ðè€Á´°(€€€€€€€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸¤°(€€€€€€€€€€€¹•Ü1•‘•É¹ÑÉä (€€€€€€€€€€€€€€€Õ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€€€€€©½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€Ñ¥µ•ÍÑ…µÀ°(€€€€€€€€€€€€€€€¹•Ü1•‘•É½Õ¹Ð ‰5…¹…•µ•¹Ð™••Ìˆ°1•‘•É½Õ¹ÑQåÁ”¹I•Ù•¹Õ”¤°(€€€€€€€€€€€€€€€‘•‰¥Ðè€Á´°(€€€€€€€€€€€€€€€É•‘¥Ðè…µ½Õ¹Ð°(€€€€€€€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸°(€€€€€€€€€€€€€€€¹•Ü1•‘•É1¥¹•¥µ•¹Í¥½¹M•Ð (€€€€€€€€€€€€€€€€€€€¹Ñ¥Ñå%è•¹Ñ¥Ñå%°(€€€€€€€€€€€€€€€€€€€½ÍÑ•¹Ñ•É%è½ÍÑ•¹Ñ•É%°(€€€€€€€€€€€€€€€€€€€áÑ•É¹…±±¥µ•¹Í¥½¹Ìè¹•Ü¥Ñ¥½¹…ÉäñÍÑÉ¥¹œ°ÍÑÉ¥¹œø¡MÑÉ¥¹½µÁ…É•È¹=É‘¥¹…±%¹½É•…Í”¤(€€€€€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€€€€€l‰•Á…ÉÑµ•¹Ð‰t€ô•áÑ•É¹…±±•Á…ÉÑµ•¹Ð(€€€€€€€€€€€€€€€€€€€ô¤¤(€€€€€€€ôì(€€€€€€€Ù…Èµ•Ñ…‘…Ñ„€ô¹•Ü)½ÕÉ¹…±¹ÑÉå5•Ñ…‘…Ñ„ (€€€€€€€€€€€MÑÉ…Ñ•å%è€‰ÍÑÉ…Ñ•äµ‘¥É•Ðµ±•¹‘¥¹œˆ°(€€€€€€€€€€€¥¹…¹¥…±½Õ¹Ñ%è€‰½Á•É…Ñ¥¹œµ…Í ˆ°(€€€€€€€€€€€½Õ¹Ñ•ÉÁ…ÉÑå½Õ¹Ñ%è€‰½Õ¹Ñ•ÉÁ…ÉÑäµ‰…¹¬ˆ¤ì((€€€€€€€É•ÑÕÉ¸¹•Ü1•‘•É)½ÕÉ¹…±¹ÑÉå]É¥Ñ” (€€€€€€€€€€€¹•Ü)½ÕÉ¹…±¹ÑÉä¡©½ÕÉ¹…±¹ÑÉå%°Ñ¥µ•ÍÑ…µÀ°‘•ÍÉ¥ÁÑ¥½¸°±¥¹•Ì°µ•Ñ…‘…Ñ„¤°(€€€€€€€€€€€É•…Ñ•%è…É•…Ñ•%€üüÕ¥¹9•ÝÕ¥ ¤°(€€€€€€€€€€€A•É¥½‘%èÁ•É¥½‘%¤ì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ1•‘•É‘©ÕÍÑµ•¹ÑÁÁÉ½Ù…±5•Ñ…‘…Ñ…Ñ¼	Õ¥±‘ÁÁÉ½Ù•‘‘©ÕÍÑµ•¹ÑÁÁÉ½Ù…° ¤€ôø(€€€€€€€¹•Ü (€€€€€€€€€€€ÁÁÉ½Ù…±%è€‰…ÁÁÉ½Ù…°µ±•‘•Èµ…‘©ÕÍÑµ•¹Ð´Äˆ°(€€€€€€€€€€€MÑ…ÑÕÌè1•‘•É‘©ÕÍÑµ•¹ÑÁÁÉ½Ù…±MÑ…ÑÕÍÑ¼¹ÁÁÉ½Ù•°(€€€€€€€€€€€ÁÁÉ½Ù•‘	äè€‰™Õ¹µ½¹ÑÉ½±±•Èˆ°(€€€€€€€€€€€ÁÁÉ½Ù•‘Ðè…Ñ•Q¥µ•=™™Í•Ð¹A…ÉÍ” ˆÈÀÈØ´ÀØ´ÌÁPÈÈèÀÀèÀÁhˆ¤°(€€€€€€€€€€€I•…Í½¹½‘”è€‰µ½¹Ñ µ•¹µÑÉÕ”µÕÀˆ°(€€€€€€€€€€€½Ù•É¹…¹•…Í•%è€‰…Í”µ±•‘•Èµ±½Í”´Äˆ°(€€€€€€€€€€€Ù¥‘•¹•1¥¹¬è€‰•Ù¥‘•¹”è¼½±•‘•È½…‘©ÕÍÑµ•¹Ð½…ÁÁÉ½Ù…°´Äˆ°(€€€€€€€€€€€9½Ñ•Ìè€‰½¹ÑÉ½±±•È…ÁÁÉ½Ù•Í½™Ðµ±½Í”ÑÉÕ”µÕÀ¸ˆ¤ì((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥ŒÍÑÉ¥¹œI•…‘5¥É…Ñ¥½¸¡ÍÑÉ¥¹œ™¥±•9…µ”¤(€€€ì(€€€€€€€Ù…ÈÉ½½Ð€ô¥¹‘I•Á½I½½Ð ¤ì(€€€€€€€Ù…ÈÁ…Ñ €ôA…Ñ ¹½µ‰¥¹”¡É½½Ð°€‰ÍÉŒˆ°€‰5•É¥‘¥…¸¹MÑ½É…”ˆ°€‰1•‘•Èˆ°€‰5¥É…Ñ¥½¹Ìˆ°™¥±•9…µ”¤ì(€€€€€€€É•ÑÕÉ¸¥±”¹I•…‘±±Q•áÐ¡Á…Ñ ¤ì(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥ŒÍÑÉ¥¹œ¥¹‘I•Á½I½½Ð ¤(€€€ì(€€€€€€€Ù…È‘¥É•Ñ½Éä€ô¹•Ü¥É•Ñ½Éå%¹™¼¡ÁÁ½¹Ñ•áÐ¹	…Í•¥É•Ñ½Éä¤ì(€€€€€€€Ý¡¥±”€¡‘¥É•Ñ½Éä¥Ì¹½Ð¹Õ±°¤(€€€€€€€ì(€€€€€€€€€€€¥˜€¡¥É•Ñ½Éä¹á¥ÍÑÌ¡A…Ñ ¹½µ‰¥¹”¡‘¥É•Ñ½Éä¹Õ±±9…µ”°€‰ÍÉŒˆ°€‰5•É¥‘¥…¸¹MÑ½É…”ˆ¤¤¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•ÑÕÉ¸‘¥É•Ñ½Éä¹Õ±±9…µ”ì(€€€€€€€€€€€ô((€€€€€€€€€€€‘¥É•Ñ½Éä€ô‘¥É•Ñ½Éä¹A…É•¹Ðì(€€€€€€€ô((€€€€€€€Ñ¡É½Ü¹•Ü¥É•Ñ½Éå9½Ñ½Õ¹‘á•ÁÑ¥½¸ ‰U¹…‰±”Ñ¼±½…Ñ”5•É¥‘¥…¸É•Á½Í¥Ñ½ÉäÉ½½Ð¸ˆ¤ì(€€€ô((€€€ÁÉ¥Ù…Ñ”Í•…±•±…ÍÌ%¹5•µ½Éå1•‘•É)½ÕÉ¹…±MÑ½É”€è(€€€€€€€%1•‘•É)½ÕÉ¹…±MÑ½É”°(€€€€€€€%Ñ½µ¥1•‘•ÉA•É¥½‘±½Í•MÑ½É”(€€€ì(€€€€€€€ÁÉ¥Ù…Ñ”É•…‘½¹±ä½‰©•Ð}Á•É¥½‘5ÕÑ…Ñ¥½¹…Ñ”€ô¹•Ü ¤ì(€€€€€€€ÁÉ¥Ù…Ñ”É•…‘½¹±ä¥Ñ¥½¹…ÉäñÕ¥°1•‘•É	½½­I•½Éø}‰½½­Ì€ômtì(€€€€€€€ÁÉ¥Ù…Ñ”É•…‘½¹±ä¥Ñ¥½¹…ÉäñÕ¥°1•‘•É½Õ¹Ñ¥¹A•É¥½ø}Á•É¥½‘Ì€ômtì(€€€€€€€ÁÉ¥Ù…Ñ”É•…‘½¹±ä¥Ñ¥½¹…ÉäñÕ¥°1¥ÍÐñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½Éøø}•¹ÑÉ¥•Í	åA•É¥½€ômtì(€€€€€€€ÁÉ¥Ù…Ñ”±½¹œ}Í•ÅÕ•¹”ì((€€€€€€€ÁÕ‰±¥Œ1¥ÍÐñ1•‘•É)½ÕÉ¹…±¹ÑÉåEÕ•ÉäøEÕ•Éå!¥ÍÑ½Éäì•Ðìô€ômtì((€€€€€€€ÁÕ‰±¥Œ5…¹Õ…±I•Í•ÑÙ•¹ÑM±¥´ü!…É‘±½Í•¹Ñ•É•ì•ÐìÍ•Ðìô((€€€€€€€ÁÕ‰±¥Œ5…¹Õ…±I•Í•ÑÙ•¹ÑM±¥´üI•±•…Í•!…É‘±½Í”ì•ÐìÍ•Ðìô((€€€€€€€ÁÕ‰±¥Œ5…¹Õ…±I•Í•ÑÙ•¹ÑM±¥´üÁÁ•¹‘ÑÑ•µÁÑ•ì•ÐìÍ•Ðìô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ÁÁ•¹‘Íå¹Œ¡1•‘•É)½ÕÉ¹…±¹ÑÉå]É¥Ñ”•¹ÑÉä°…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€ÁÁ•¹‘ÑÑ•µÁÑ•ü¹M•Ð ¤ì(€€€€€€€€€€€±½¬€¡}Á•É¥½‘5ÕÑ…Ñ¥½¹…Ñ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€¥˜€ …}Á•É¥½‘Ì¹QÉå•ÑY…±Õ”¡•¹ÑÉä¹A•É¥½‘%°½ÕÐÙ…ÈÁ•É¥½¤¤(€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€Ñ¡É½Ü¹•Ü1•‘•ÉY…±¥‘…Ñ¥½¹á•ÁÑ¥½¸ ‰½Õ¹Ñ¥¹œÁ•É¥½€í•¹ÑÉä¹A•É¥½‘%‘ôœÝ…Ì¹½Ð™½Õ¹¸ˆ¤ì(€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€1•‘•ÉA•É¥½‘A½ÍÑ¥¹Õ…É¹Y…±¥‘…Ñ”¡•¹ÑÉä°Á•É¥½¤ì((€€€€€€€€€€€€€€€¥˜€¡Á•É¥½¹1•‘•É	½½­%¥Ììô±•‘•É	½½­%€˜˜(€€€€€€€€€€€€€€€€€€€}‰½½­Ì¹QÉå•ÑY…±Õ”¡±•‘•É	½½­%°½ÕÐÙ…È‰½½¬¤€˜˜(€€€€€€€€€€€€€€€€€€€‰½½¬¹½Õ¹Ñ¥¹	…Í¥Ì€„ô•¹ÑÉä¹½Õ¹Ñ¥¹	…Í¥Ì¤(€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€Ñ¡É½Ü¹•Ü1•‘•ÉY…±¥‘…Ñ¥½¹á•ÁÑ¥½¸ (€€€€€€€€€€€€€€€€€€€€€€€€‰)½ÕÉ¹…°•¹ÑÉä€í•¹ÑÉä¹¹ÑÉä¹)½ÕÉ¹…±¹ÑÉå%‘ôœ‰…Í¥Ì€í•¹ÑÉä¹½Õ¹Ñ¥¹	…Í¥Íôœ‘½•Ì¹½Ðµ…Ñ ±•‘•È‰½½¬€í‰½½¬¹¥ÍÁ±…å9…µ•ôœ‰…Í¥Ì€í‰½½¬¹½Õ¹Ñ¥¹	…Í¥Íôœ¸ˆ¤ì(€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€¥˜€ …}•¹ÑÉ¥•Í	åA•É¥½¹QÉå•ÑY…±Õ”¡•¹ÑÉä¹A•É¥½‘%°½ÕÐÙ…È•¹ÑÉ¥•Ì¤¤(€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€•¹ÑÉ¥•Ì€ômtì(€€€€€€€€€€€€€€€€€€€}•¹ÑÉ¥•Í	åA•É¥½‘m•¹ÑÉä¹A•É¥½‘%‘t€ô•¹ÑÉ¥•Ìì(€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€•¹ÑÉ¥•Ì¹‘¡¹•Ü1•‘•É)½ÕÉ¹…±¹ÑÉåI•½É (€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹¹ÑÉä°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹É•…Ñ•%°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹A•É¥½‘%°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹½µµ…¹‘%°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹½ÉÉ•±…Ñ¥½¹%°(€€€€€€€€€€€€€€€€€€€€¬­}Í•ÅÕ•¹”°(€€€€€€€€€€€€€€€€€€€…Ñ•Q¥µ•=™™Í•Ð¹UÑ9½Ü°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹½Õ¹Ñ¥¹	…Í¥Ì°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹½Õ¹Ñ¥¹A½±¥å%°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹½Õ¹Ñ¥¹A½±¥åY•ÉÍ¥½¸°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹IÕ±•%°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹IÕ±•Y•ÉÍ¥½¸°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹M½ÕÉ•Ù•¹Ñ%°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹M½ÕÉ•)½ÕÉ¹…±¹ÑÉå%°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹A½ÍÑ¥¹-¥¹°(€€€€€€€€€€€€€€€€€€€•¹ÑÉä¹‘©ÕÍÑµ•¹ÑÁÁÉ½Ù…°¤¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹½µÁ±•Ñ•‘Q…Í¬ì(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ%I•…‘=¹±å1¥ÍÐñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½Éøø•Ñ	åA•É¥½‘Íå¹Œ¡Õ¥Á•É¥½‘%°…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ðñ%I•…‘=¹±å1¥ÍÐñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½Éøø (€€€€€€€€€€€€€€€}•¹ÑÉ¥•Í	åA•É¥½¹QÉå•ÑY…±Õ”¡Á•É¥½‘%°½ÕÐÙ…È•¹ÑÉ¥•Ì¤(€€€€€€€€€€€€€€€€€€€€ü•¹ÑÉ¥•Ì¹Q½ÉÉ…ä ¤(€€€€€€€€€€€€€€€€€€€€èmt¤ì(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ%I•…‘=¹±å1¥ÍÐñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½ÉøøEÕ•ÉåÍå¹Œ (€€€€€€€€€€€1•‘•É)½ÕÉ¹…±¹ÑÉåEÕ•ÉäÅÕ•Éä°(€€€€€€€€€€€…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€EÕ•Éå!¥ÍÑ½Éä¹‘¡ÅÕ•Éä¤ì(€€€€€€€€€€€¥˜€ …ÅÕ•Éä¹1•‘•É	½½­%¹!…ÍY…±Õ”€˜˜(€€€€€€€€€€€€€€€€…ÅÕ•Éä¹A•É¥½‘%¹!…ÍY…±Õ”€˜˜(€€€€€€€€€€€€€€€€…ÅÕ•Éä¹É•…Ñ•%¹!…ÍY…±Õ”€˜˜(€€€€€€€€€€€€€€€€…ÅÕ•Éä¹M½ÕÉ•Ù•¹Ñ%¹!…ÍY…±Õ”€˜˜(€€€€€€€€€€€€€€€ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì¥Ì¹Õ±°€˜˜(€€€€€€€€€€€€€€€ÍÑÉ¥¹œ¹%Í9Õ±±=É]¡¥Ñ•MÁ…”¡ÅÕ•Éä¹½Õ¹Ñ9…µ”¤€˜˜(€€€€€€€€€€€€€€€€…ÅÕ•Éä¹=ÕÉÉ•‘É½´¹!…ÍY…±Õ”€˜˜(€€€€€€€€€€€€€€€€…ÅÕ•Éä¹=ÕÉÉ•‘Q¼¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€Ñ¡É½Ü¹•ÜÉÕµ•¹Ñá•ÁÑ¥½¸ ‰Ð±•…ÍÐ½¹”©½ÕÉ¹…°ÅÕ•Éä™¥±Ñ•È¥ÌÉ•ÅÕ¥É•¸ˆ°¹…µ•½˜¡ÅÕ•Éä¤¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€%¹Õµ•É…‰±”ñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½ÉøÉ•½É‘Ì€ô}•¹ÑÉ¥•Í	åA•É¥½¹Y…±Õ•Ì¹M•±•Ñ5…¹ä¡ÍÑ…Ñ¥Œ•¹ÑÉ¥•Ì€ôø•¹ÑÉ¥•Ì¤ì(€€€€€€€€€€€¥˜€¡ÅÕ•Éä¹1•‘•É	½½­%¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•½É‘Ì€ôÉ•½É‘Ì¹]¡•É”¡•¹ÑÉä€ôø(€€€€€€€€€€€€€€€€€€€}Á•É¥½‘Ì¹QÉå•ÑY…±Õ”¡•¹ÑÉä¹A•É¥½‘%°½ÕÐÙ…ÈÁ•É¥½¤€˜˜(€€€€€€€€€€€€€€€€€€€Á•É¥½¹1•‘•É	½½­%€ôôÅÕ•Éä¹1•‘•É	½½­%¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€¡ÅÕ•Éä¹A•É¥½‘%¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•½É‘Ì€ôÉ•½É‘Ì¹]¡•É”¡•¹ÑÉä€ôø•¹ÑÉä¹A•É¥½‘%€ôôÅÕ•Éä¹A•É¥½‘%¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€¡ÅÕ•Éä¹É•…Ñ•%¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•½É‘Ì€ôÉ•½É‘Ì¹]¡•É”¡•¹ÑÉä€ôø•¹ÑÉä¹É•…Ñ•%€ôôÅÕ•Éä¹É•…Ñ•%¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€¡ÅÕ•Éä¹M½ÕÉ•Ù•¹Ñ%¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•½É‘Ì€ôÉ•½É‘Ì¹]¡•É”¡•¹ÑÉä€ôø•¹ÑÉä¹M½ÕÉ•Ù•¹Ñ%€ôôÅÕ•Éä¹M½ÕÉ•Ù•¹Ñ%¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€ …ÍÑÉ¥¹œ¹%Í9Õ±±=É]¡¥Ñ•MÁ…”¡ÅÕ•Éä¹½Õ¹Ñ9…µ”¤¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€Ù…È…½Õ¹Ñ9…µ”€ôÅÕ•Éä¹½Õ¹Ñ9…µ”¹QÉ¥´ ¤ì(€€€€€€€€€€€€€€€É•½É‘Ì€ôÉ•½É‘Ì¹]¡•É”¡•¹ÑÉä€ôø•¹ÑÉä¹¹ÑÉä¹1¥¹•Ì¹¹ä¡±¥¹”€ôø(€€€€€€€€€€€€€€€€€€€ÍÑÉ¥¹œ¹ÅÕ…±Ì¡±¥¹”¹½Õ¹Ð¹9…µ”°…½Õ¹Ñ9…µ”°MÑÉ¥¹½µÁ…É¥Í½¸¹=É‘¥¹…±%¹½É•…Í”¤¤¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€¡ÅÕ•Éä¹=ÕÉÉ•‘É½´¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•½É‘Ì€ôÉ•½É‘Ì¹]¡•É”¡•¹ÑÉä€ôø•¹ÑÉä¹¹ÑÉä¹Q¥µ•ÍÑ…µÀ€øôÅÕ•Éä¹=ÕÉÉ•‘É½´¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€¡ÅÕ•Éä¹=ÕÉÉ•‘Q¼¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•½É‘Ì€ôÉ•½É‘Ì¹]¡•É”¡•¹ÑÉä€ôø•¹ÑÉä¹¹ÑÉä¹Q¥µ•ÍÑ…µÀ€ðôÅÕ•Éä¹=ÕÉÉ•‘Q¼¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€¡ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì¥Ì¹½Ð¹Õ±°¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•½É‘Ì€ôÉ•½É‘Ì¹]¡•É”¡•¹ÑÉä€ôø•¹ÑÉä¹¹ÑÉä¹1¥¹•Ì¹¹ä¡±¥¹”€ôø(€€€€€€€€€€€€€€€€€€€5…Ñ¡•Í1¥¹•¥µ•¹Í¥½¹Ì¡ÅÕ•Éä¹1¥¹•¥µ•¹Í¥½¹Ì°±¥¹”¹¥µ•¹Í¥½¹Ì¤¤¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ðñ%I•…‘=¹±å1¥ÍÐñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½Éøø (€€€€€€€€€€€€€€€É•½É‘Ì(€€€€€€€€€€€€€€€€€€€€¹=É‘•É	ä¡ÍÑ…Ñ¥Œ•¹ÑÉä€ôø•¹ÑÉä¹¹ÑÉä¹Q¥µ•ÍÑ…µÀ¤(€€€€€€€€€€€€€€€€€€€€¹Q¡•¹	ä¡ÍÑ…Ñ¥Œ•¹ÑÉä€ôø•¹ÑÉä¹±½‰…±M•ÅÕ•¹”¤(€€€€€€€€€€€€€€€€€€€€¹Q½ÉÉ…ä ¤¤ì(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ%I•…‘=¹±å1¥ÍÐñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½Éøø•Ñ	åÉ•…Ñ•Íå¹Œ¡Õ¥…É•…Ñ•%°…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€Ù…ÈÉ•½É‘Ì€ô}•¹ÑÉ¥•Í	åA•É¥½¹Y…±Õ•Ì(€€€€€€€€€€€€€€€€¹M•±•Ñ5…¹ä¡ÍÑ…Ñ¥Œ•¹ÑÉ¥•Ì€ôø•¹ÑÉ¥•Ì¤(€€€€€€€€€€€€€€€€¹]¡•É”¡•¹ÑÉä€ôø•¹ÑÉä¹É•…Ñ•%€ôô…É•…Ñ•%¤(€€€€€€€€€€€€€€€€¹Q½ÉÉ…ä ¤ì(€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ðñ%I•…‘=¹±å1¥ÍÐñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½Éøø¡É•½É‘Ì¤ì(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ1•‘•É½Õ¹Ñ¥¹A•É¥½üø•ÑA•É¥½‘Íå¹Œ¡Õ¥Á•É¥½‘%°…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ð¡}Á•É¥½‘Ì¹•ÑY…±Õ•=É•™…Õ±Ð¡Á•É¥½‘%¤¤ì(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ%I•…‘=¹±å1¥ÍÐñ1•‘•É½Õ¹Ñ¥¹A•É¥½øø1¥ÍÑA•É¥½‘ÍÍå¹Œ (€€€€€€€€€€€Õ¥ü±•‘•É	½½­%€ô¹Õ±°°(€€€€€€€€€€€ÍÑÉ¥¹œüÍÑ…ÑÕÌ€ô¹Õ±°°(€€€€€€€€€€€ÍÑÉ¥¹œü™Õ¹‘AÉ½™¥±•%€ô¹Õ±°°(€€€€€€€€€€€Õ¥ü™Õ¹‘MÑÉÕÑÕÉ•9½‘•%€ô¹Õ±°°(€€€€€€€€€€€…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€%¹Õµ•É…‰±”ñ1•‘•É½Õ¹Ñ¥¹A•É¥½øÁ•É¥½‘Ì€ô}Á•É¥½‘Ì¹Y…±Õ•Ìì(€€€€€€€€€€€¥˜€¡±•‘•É	½½­%¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€Á•É¥½‘Ì€ôÁ•É¥½‘Ì¹]¡•É”¡Á•É¥½€ôøÁ•É¥½¹1•‘•É	½½­%€ôô±•‘•É	½½­%¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€ …ÍÑÉ¥¹œ¹%Í9Õ±±=É]¡¥Ñ•MÁ…”¡ÍÑ…ÑÕÌ¤¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€Á•É¥½‘Ì€ôÁ•É¥½‘Ì¹]¡•É”¡Á•É¥½€ôøÍÑÉ¥¹œ¹ÅÕ…±Ì¡Á•É¥½¹MÑ…ÑÕÌ°ÍÑ…ÑÕÌ°MÑÉ¥¹½µÁ…É¥Í½¸¹=É‘¥¹…°¤¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€ …ÍÑÉ¥¹œ¹%Í9Õ±±=É]¡¥Ñ•MÁ…”¡™Õ¹‘AÉ½™¥±•%¤ñð™Õ¹‘MÑÉÕÑÕÉ•9½‘•%¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€Á•É¥½‘Ì€ôÁ•É¥½‘Ì¹]¡•É”¡Á•É¥½€ôø(€€€€€€€€€€€€€€€€€€€Á•É¥½¹1•‘•É	½½­%¥Ììô¥€˜˜(€€€€€€€€€€€€€€€€€€€}‰½½­Ì¹QÉå•ÑY…±Õ”¡¥°½ÕÐÙ…È‰½½¬¤€˜˜(€€€€€€€€€€€€€€€€€€€€¡ÍÑÉ¥¹œ¹%Í9Õ±±=É]¡¥Ñ•MÁ…”¡™Õ¹‘AÉ½™¥±•%¤ñðÍÑÉ¥¹œ¹ÅÕ…±Ì¡‰½½¬¹Õ¹‘AÉ½™¥±•%°™Õ¹‘AÉ½™¥±•%°MÑÉ¥¹½µÁ…É¥Í½¸¹=É‘¥¹…±%¹½É•…Í”¤¤€˜˜(€€€€€€€€€€€€€€€€€€€€ …™Õ¹‘MÑÉÕÑÕÉ•9½‘•%¹!…ÍY…±Õ”ñð‰½½¬¹Õ¹‘MÑÉÕÑÕÉ•9½‘•%€ôô™Õ¹‘MÑÉÕÑÕÉ•9½‘•%¹Y…±Õ”¤¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ðñ%I•…‘=¹±å1¥ÍÐñ1•‘•É½Õ¹Ñ¥¹A•É¥½øø (€€€€€€€€€€€€€€€Á•É¥½‘Ì(€€€€€€€€€€€€€€€€€€€€¹=É‘•É	ä¡ÍÑ…Ñ¥ŒÁ•É¥½€ôøÁ•É¥½¹MÑ…ÉÑ…Ñ”¤(€€€€€€€€€€€€€€€€€€€€¹Q¡•¹	ä¡ÍÑ…Ñ¥ŒÁ•É¥½€ôøÁ•É¥½¹A•É¥½‘9¼¤(€€€€€€€€€€€€€€€€€€€€¹Q½ÉÉ…ä ¤¤ì(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ1•‘•É½Õ¹Ñ¥¹A•É¥½øM…Ù•A•É¥½‘Íå¹Œ (€€€€€€€€€€€1•‘•É½Õ¹Ñ¥¹A•É¥½Á•É¥½°(€€€€€€€€€€€±½¹œ•áÁ•Ñ•‘Y•ÉÍ¥½¸°(€€€€€€€€€€€A•É¥½‘±½Í•Ù•¹ÑI•½Éü±½Í•Ù•¹Ð€ô¹Õ±°°(€€€€€€€€€€€…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€±½¬€¡}Á•É¥½‘5ÕÑ…Ñ¥½¹…Ñ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€¥˜€¡}Á•É¥½‘Ì¹QÉå•ÑY…±Õ”¡Á•É¥½¹A•É¥½‘%°½ÕÐÙ…ÈÕÉÉ•¹Ð¤¤(€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€¥˜€¡ÕÉÉ•¹Ð¹Y•ÉÍ¥½¸€„ô•áÁ•Ñ•‘Y•ÉÍ¥½¸¤(€€€€€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€€€€€Ñ¡É½Ü¹•Ü%¹Ù…±¥‘=Á•É…Ñ¥½¹á•ÁÑ¥½¸ ‰M¥µÕ±…Ñ•Á•É¥½Ù•ÉÍ¥½¸½¹™±¥Ð¸ˆ¤ì(€€€€€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€€€€€Ù…ÈÕÁ‘…Ñ•€ôÁ•É¥½Ý¥Ñ ìY•ÉÍ¥½¸€ô•áÁ•Ñ•‘Y•ÉÍ¥½¸€¬€Äôì(€€€€€€€€€€€€€€€€€€€}Á•É¥½‘ÍmÁ•É¥½¹A•É¥½‘%‘t€ôÕÁ‘…Ñ•ì(€€€€€€€€€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ð¡ÕÁ‘…Ñ•¤ì(€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€¥˜€¡•áÁ•Ñ•‘Y•ÉÍ¥½¸€„ô€À¤(€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€Ñ¡É½Ü¹•Ü%¹Ù…±¥‘=Á•É…Ñ¥½¹á•ÁÑ¥½¸ ‰M¥µÕ±…Ñ•Á•É¥½Ù•ÉÍ¥½¸½¹™±¥Ð¸ˆ¤ì(€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€Ù…ÈÍ…Ù•€ôÁ•É¥½Ý¥Ñ ìY•ÉÍ¥½¸€ô€Äôì(€€€€€€€€€€€€€€€}Á•É¥½‘ÍmÁ•É¥½¹A•É¥½‘%‘t€ôÍ…Ù•ì(€€€€€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ð¡Í…Ù•¤ì(€€€€€€€€€€€ô(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ1•‘•É½Õ¹Ñ¥¹A•É¥½øM…Ù•!…É‘±½Í•‘A•É¥½‘Íå¹Œ (€€€€€€€€€€€1•‘•É½Õ¹Ñ¥¹A•É¥½Á•É¥½°(€€€€€€€€€€€±½¹œ•áÁ•Ñ•‘Y•ÉÍ¥½¸°(€€€€€€€€€€€A•É¥½‘±½Í•Ù•¹ÑI•½É±½Í•Ù•¹Ð°(€€€€€€€€€€€…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€±½¬€¡}Á•É¥½‘5ÕÑ…Ñ¥½¹…Ñ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€!…É‘±½Í•¹Ñ•É•ü¹M•Ð ¤ì(€€€€€€€€€€€€€€€I•±•…Í•!…É‘±½Í”ü¹]…¥Ð¡Ð¤ì(€€€€€€€€€€€€€€€%¹Õµ•É…‰±”ñ1•‘•É)½ÕÉ¹…±¹ÑÉåI•½ÉøÉ•Ñ…¥¹•‘¹ÑÉ¥•Ì€ô(€€€€€€€€€€€€€€€€€€€}•¹ÑÉ¥•Í	åA•É¥½¹QÉå•ÑY…±Õ”¡Á•É¥½¹A•É¥½‘%°½ÕÐÙ…È•¹ÑÉ¥•Ì¤(€€€€€€€€€€€€€€€€€€€€€€€€ü•¹ÑÉ¥•Ì(€€€€€€€€€€€€€€€€€€€€€€€€èmtì(€€€€€€€€€€€€€€€Ù…ÈÉ•Í¥‘Õ…±Ì€ôÉ•Ñ…¥¹•‘¹ÑÉ¥•Ì(€€€€€€€€€€€€€€€€€€€€¹M•±•Ñ5…¹ä¡ÍÑ…Ñ¥ŒÉ•½É€ôøÉ•½É¹¹ÑÉä¹1¥¹•Ì¤(€€€€€€€€€€€€€€€€€€€€¹]¡•É”¡ÍÑ…Ñ¥Œ±¥¹”€ôø±¥¹”¹½Õ¹Ð¹½Õ¹ÑQåÁ”¥Ì1•‘•É½Õ¹ÑQåÁ”¹I•Ù•¹Õ”½È1•‘•É½Õ¹ÑQåÁ”¹áÁ•¹Í”¤(€€€€€€€€€€€€€€€€€€€€¹É½ÕÁ	ä¡ÍÑ…Ñ¥Œ±¥¹”€ôø¹•Ü(€€€€€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€€€€€±¥¹”¹½Õ¹Ð¹9…µ”°(€€€€€€€€€€€€€€€€€€€€€€€±¥¹”¹½Õ¹Ð¹½Õ¹ÑQåÁ”°(€€€€€€€€€€€€€€€€€€€€€€€±¥¹”¹½Õ¹Ð¹Måµ‰½°°(€€€€€€€€€€€€€€€€€€€€€€€±¥¹”¹½Õ¹Ð¹¥¹…¹¥…±½Õ¹Ñ%°(€€€€€€€€€€€€€€€€€€€€€€€±¥¹”¹¥µ•¹Í¥½¹Ì(€€€€€€€€€€€€€€€€€€€ô¤(€€€€€€€€€€€€€€€€€€€€¹M•±•Ð¡ÍÑ…Ñ¥ŒÉ½ÕÀ€ôø¹•Ü(€€€€€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€€€€€É½ÕÀ¹-•ä¹9…µ”°(€€€€€€€€€€€€€€€€€€€€€€€	…±…¹”€ôÉ½ÕÀ¹-•ä¹½Õ¹ÑQåÁ”€ôô1•‘•É½Õ¹ÑQåÁ”¹I•Ù•¹Õ”(€€€€€€€€€€€€€€€€€€€€€€€€€€€€üÉ½ÕÀ¹MÕ´¡ÍÑ…Ñ¥Œ±¥¹”€ôø±¥¹”¹É•‘¥Ð€´±¥¹”¹•‰¥Ð¤(€€€€€€€€€€€€€€€€€€€€€€€€€€€€èÉ½ÕÀ¹MÕ´¡ÍÑ…Ñ¥Œ±¥¹”€ôø±¥¹”¹•‰¥Ð€´±¥¹”¹É•‘¥Ð¤(€€€€€€€€€€€€€€€€€€€ô¤(€€€€€€€€€€€€€€€€€€€€¹]¡•É”¡ÍÑ…Ñ¥ŒÉ½Ü€ôøÉ½Ü¹	…±…¹”€„ô€Á´¤(€€€€€€€€€€€€€€€€€€€€¹Q½ÉÉ…ä ¤ì(€€€€€€€€€€€€€€€¥˜€¡É•Í¥‘Õ…±Ì¹1•¹Ñ €ø€À¤(€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€Ù…ÈÁÉ•Ù¥•Ü€ôÍÑÉ¥¹œ¹)½¥¸ (€€€€€€€€€€€€€€€€€€€€€€€€ˆì€ˆ°(€€€€€€€€€€€€€€€€€€€€€€€É•Í¥‘Õ…±Ì¹Q…­” Ô¤¹M•±•Ð¡ÍÑ…Ñ¥ŒÉ½Ü€ôø(€€€€€€€€€€€€€€€€€€€€€€€€€€€½Éµ…ÑÑ…‰±•MÑÉ¥¹œ¹%¹Ù…É¥…¹Ð ‰íÉ½Ü¹9…µ•ôõíÉ½Ü¹	…±…¹•ôˆ¤¤¤ì(€€€€€€€€€€€€€€€€€€€Ñ¡É½Ü¹•Ü1•‘•É	½½­Y…±¥‘…Ñ¥½¹á•ÁÑ¥½¸ (€€€€€€€€€€€€€€€€€€€€€€€€‰½Õ¹Ñ¥¹œÁ•É¥½€íÁ•É¥½¹1…‰•±ôœ…¹¹½Ð‰”¡…Éµ±½Í•Ý¡¥±”íÉ•Í¥‘Õ…±Ì¹1•¹Ñ¡ôÉ•Ù•¹Õ”½•áÁ•¹Í”‰…±…¹”¡Ì¤É•µ…¥¸¹½¸µé•É¼€¡íÁÉ•Ù¥•Ýô¤¸A½ÍÐ…¹…ÁÁÉ½Ù”Ñ¡”±½Í¥¹œµ•¹ÑÉä‘É…™Ð‰•™½É”Á•É¥½±½¬¸ˆ¤ì(€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€É•ÑÕÉ¸M…Ù•A•É¥½‘Íå¹Œ¡Á•É¥½°•áÁ•Ñ•‘Y•ÉÍ¥½¸°±½Í•Ù•¹Ð°Ð¤ì(€€€€€€€€€€€ô(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ1•‘•É	½½­I•½Éüø•Ñ1•‘•É	½½­Íå¹Œ¡Õ¥±•‘•É	½½­%°…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ð¡}‰½½­Ì¹•ÑY…±Õ•=É•™…Õ±Ð¡±•‘•É	½½­%¤¤ì(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ%I•…‘=¹±å1¥ÍÐñ1•‘•É	½½­I•½Éøø1¥ÍÑ1•‘•É	½½­ÍÍå¹Œ (€€€€€€€€€€€ÍÑÉ¥¹œü™Õ¹‘AÉ½™¥±•%€ô¹Õ±°°(€€€€€€€€€€€Õ¥ü™Õ¹‘MÑÉÕÑÕÉ•9½‘•%€ô¹Õ±°°(€€€€€€€€€€€Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹‘Ñ¼ü™Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹€ô¹Õ±°°(€€€€€€€€€€€…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€%¹Õµ•É…‰±”ñ1•‘•É	½½­I•½Éø‰½½­Ì€ô}‰½½­Ì¹Y…±Õ•Ìì(€€€€€€€€€€€¥˜€ …ÍÑÉ¥¹œ¹%Í9Õ±±=É]¡¥Ñ•MÁ…”¡™Õ¹‘AÉ½™¥±•%¤¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€‰½½­Ì€ô‰½½­Ì¹]¡•É”¡‰½½¬€ôøÍÑÉ¥¹œ¹ÅÕ…±Ì¡‰½½¬¹Õ¹‘AÉ½™¥±•%°™Õ¹‘AÉ½™¥±•%°MÑÉ¥¹½µÁ…É¥Í½¸¹=É‘¥¹…±%¹½É•…Í”¤¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€¡™Õ¹‘MÑÉÕÑÕÉ•9½‘•%¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€‰½½­Ì€ô‰½½­Ì¹]¡•É”¡‰½½¬€ôø‰½½¬¹Õ¹‘MÑÉÕÑÕÉ•9½‘•%€ôô™Õ¹‘MÑÉÕÑÕÉ•9½‘•%¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€¥˜€¡™Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹¹!…ÍY…±Õ”¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€‰½½­Ì€ô‰½½­Ì¹]¡•É”¡‰½½¬€ôø‰½½¬¹Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹€ôô™Õ¹‘MÑÉÕÑÕÉ•9½‘•-¥¹¹Y…±Õ”¤ì(€€€€€€€€€€€ô((€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ðñ%I•…‘=¹±å1¥ÍÐñ1•‘•É	½½­I•½Éøø (€€€€€€€€€€€€€€€‰½½­Ì¹=É‘•É	ä¡ÍÑ…Ñ¥Œ‰½½¬€ôø‰½½¬¹¥ÍÁ±…å9…µ”°MÑÉ¥¹½µÁ…É•È¹=É‘¥¹…°¤¹Q½ÉÉ…ä ¤¤ì(€€€€€€€ô((€€€€€€€ÁÕ‰±¥ŒQ…Í¬ñ1•‘•É	½½­I•½ÉøM…Ù•1•‘•É	½½­Íå¹Œ¡1•‘•É	½½­I•½É‰½½¬°…¹•±±…Ñ¥½¹Q½­•¸Ð€ô‘•™…Õ±Ð¤(€€€€€€€ì(€€€€€€€€€€€Ð¹Q¡É½Ý%™…¹•±±…Ñ¥½¹I•ÅÕ•ÍÑ• ¤ì(€€€€€€€€€€€}‰½½­Ím‰½½¬¹1•‘•É	½½­%‘t€ô‰½½¬ì(€€€€€€€€€€€É•ÑÕÉ¸Q…Í¬¹É½µI•ÍÕ±Ð¡‰½½¬¤ì(€€€€€€€ô((€€€€€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ‰½½°5…Ñ¡•Í1¥¹•¥µ•¹Í¥½¹Ì (€€€€€€€€€€€1•‘•É1¥¹•¥µ•¹Í¥½¹M•Ð•áÁ•Ñ•°(€€€€€€€€€€€1•‘•É1¥¹•¥µ•¹Í¥½¹M•Ðü…ÑÕ…°¤(€€€€€€€ì(€€€€€€€€€€€¥˜€¡…ÑÕ…°¥Ì¹Õ±°¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€É•ÑÕÉ¸™…±Í”ì(€€€€€€€€€€€ô((€€€€€€€€€€€É•ÑÕÉ¸5…Ñ¡•Ì¡•áÁ•Ñ•¹Õ¹‘%°…ÑÕ…°¹Õ¹‘%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹¹Ñ¥Ñå%°…ÑÕ…°¹¹Ñ¥Ñå%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹M±••Ù•%°…ÑÕ…°¹M±••Ù•%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹MÑÉ…Ñ•å%°…ÑÕ…°¹MÑÉ…Ñ•å%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹%¹Ù•ÍÑ½É%°…ÑÕ…°¹%¹Ù•ÍÑ½É%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹…Á¥Ñ…±½Õ¹Ñ%°…ÑÕ…°¹…Á¥Ñ…±½Õ¹Ñ%¤(€€€€€€€€€€€€€€€€€€€˜˜€ …•áÁ•Ñ•¹%¹ÍÑÉÕµ•¹Ñ%¹!…ÍY…±Õ”ñð•áÁ•Ñ•¹%¹ÍÑÉÕµ•¹Ñ%€ôô…ÑÕ…°¹%¹ÍÑÉÕµ•¹Ñ%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹Q…á1½Ñ%°…ÑÕ…°¹Q…á1½Ñ%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹½ÍÑ•¹Ñ•É%°…ÑÕ…°¹½ÍÑ•¹Ñ•É%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹½Õ¹Ñ•ÉÁ…ÉÑå%°…ÑÕ…°¹½Õ¹Ñ•ÉÁ…ÉÑå%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹=É…¹¥é…Ñ¥½¹%°…ÑÕ…°¹=É…¹¥é…Ñ¥½¹%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹A½ÉÑ™½±¥½%°…ÑÕ…°¹A½ÉÑ™½±¥½%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹	½½­%°…ÑÕ…°¹	½½­%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹½Õ¹Ñ%°…ÑÕ…°¹½Õ¹Ñ%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹ÕÍÑ½µ•É%°…ÑÕ…°¹ÕÍÑ½µ•É%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹Y•¹‘½É%°…ÑÕ…°¹Y•¹‘½É%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•Ì¡•áÁ•Ñ•¹AÉ½©•Ñ%°…ÑÕ…°¹AÉ½©•Ñ%¤(€€€€€€€€€€€€€€€€€€€˜˜5…Ñ¡•ÍáÑ•É¹…±±¥µ•¹Í¥½¹Ì¡•áÁ•Ñ•¹áÑ•É¹…±±¥µ•¹Í¥½¹Ì°…ÑÕ…°¹áÑ•É¹…±±¥µ•¹Í¥½¹Ì¤ì(€€€€€€€ô((€€€€€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ‰½½°5…Ñ¡•Ì¡ÍÑÉ¥¹œü•áÁ•Ñ•°ÍÑÉ¥¹œü…ÑÕ…°¤(€€€€€€€€€€€€ôøÍÑÉ¥¹œ¹%Í9Õ±±=É]¡¥Ñ•MÁ…”¡•áÁ•Ñ•¤ñð(€€€€€€€€€€€€€€ÍÑÉ¥¹œ¹ÅÕ…±Ì¡•áÁ•Ñ•°…ÑÕ…°°MÑÉ¥¹½µÁ…É¥Í½¸¹=É‘¥¹…±%¹½É•…Í”¤ì((€€€€€€€ÁÉ¥Ù…Ñ”ÍÑ…Ñ¥Œ‰½½°5…Ñ¡•ÍáÑ•É¹…±±¥µ•¹Í¥½¹Ì (€€€€€€€€€€€%I•…‘=¹±å¥Ñ¥½¹…ÉäñÍÑÉ¥¹œ°ÍÑÉ¥¹œø•áÁ•Ñ•°(€€€€€€€€€€€%I•…‘=¹±å¥Ñ¥½¹…ÉäñÍÑÉ¥¹œ°ÍÑÉ¥¹œø…ÑÕ…°¤(€€€€€€€ì(€€€€€€€€€€€™½É•… €¡Ù…ÈÁ…¥È¥¸•áÁ•Ñ•¤(€€€€€€€€€€€ì(€€€€€€€€€€€€€€€¥˜€ ……ÑÕ…°¹QÉå•ÑY…±Õ”¡Á…¥È¹-•ä°½ÕÐÙ…È…ÑÕ…±Y…±Õ”¤ñð(€€€€€€€€€€€€€€€€€€€€…ÍÑÉ¥¹œ¹ÅÕ…±Ì¡Á…¥È¹Y…±Õ”°…ÑÕ…±Y…±Õ”°MÑÉ¥¹½µÁ…É¥Í½¸¹=É‘¥¹…±%¹½É•…Í”¤¤(€€€€€€€€€€€€€€€ì(€€€€€€€€€€€€€€€€€€€É•ÑÕÉ¸™…±Í”ì(€€€€€€€€€€€€€€€ô(€€€€€€€€€€€ô((€€€€€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì(€€€€€€€ô(€€€ô)ô

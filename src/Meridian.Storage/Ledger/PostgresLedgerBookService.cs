@@ -3,6 +3,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using static Meridian.Contracts.Ledger.LedgerDimensionSetNormalizer;
 
 namespace Meridian.Storage.Ledger;
 
@@ -816,19 +817,16 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         LedgerDimensionSetDto? dimensions,
         LedgerBookRecord book)
     {
-        var fundId = NormalizeOptional(dimensions?.FundId) ?? book.FundProfileId;
-        if (dimensions is null)
-        {
-            return new LedgerDimensionSetDto(FundId: fundId);
-        }
-
-        return dimensions with { FundId = fundId };
+        var canonical = LedgerDimensionSetNormalizer.Canonicalize(dimensions);
+        var fundId = canonical?.FundId ?? book.FundProfileId;
+        return LedgerDimensionSetNormalizer.Canonicalize(
+            (canonical ?? new LedgerDimensionSetDto()) with { FundId = fundId });
     }
 
     private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata)
     {
         var tags = metadata.Tags;
-        var externalGlDimensions = ExtractExternalGlDimensions(tags);
+        var externalGlDimensions = LedgerDimensionSetNormalizer.ExtractExternalGlDimensions(tags);
         var positionId = Guid.TryParse(FirstTag(tags, "positionId"), out var parsedPositionId)
             ? parsedPositionId
             : (Guid?)null;
@@ -855,7 +853,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             PositionId = positionId
         };
 
-        return HasAnyDimension(dimensionSet) ? dimensionSet : null;
+        return LedgerDimensionSetNormalizer.Canonicalize(dimensionSet);
     }
 
     private static LedgerDimensionSetDto? BuildDimensions(LedgerLineDimensionSet? dimensions)
@@ -888,7 +886,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             PositionId = dimensions.PositionId
         };
 
-        return HasAnyDimension(dimensionSet) ? dimensionSet : null;
+        return LedgerDimensionSetNormalizer.Canonicalize(dimensionSet);
     }
 
     private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata, Guid lineEntryId)
@@ -917,7 +915,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             TaxLotId: FirstTag(tags, prefix + "taxLotId"),
             CostCenterId: FirstTag(tags, prefix + "costCenterId"),
             CounterpartyId: FirstTag(tags, prefix + "counterpartyId"),
-            ExternalGlDimensions: ExtractExternalGlDimensions(tags, prefix),
+            ExternalGlDimensions: LedgerDimensionSetNormalizer.ExtractExternalGlDimensions(tags, prefix),
             OrganizationId: FirstTag(tags, prefix + "organizationId"),
             PortfolioId: FirstTag(tags, prefix + "portfolioId"),
             BookId: FirstTag(tags, prefix + "bookId"),
@@ -929,97 +927,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             PositionId = positionId
         };
 
-        return HasAnyDimension(dimensionSet) ? dimensionSet : null;
-    }
-
-    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions.FundId)
-           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
-           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
-           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
-           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
-           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
-           || dimensions.InstrumentId.HasValue
-           || dimensions.PositionId.HasValue
-           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
-           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
-           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
-           || dimensions.ExternalGlDimensions.Count > 0
-           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
-           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
-           || !string.IsNullOrWhiteSpace(dimensions.BookId)
-           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
-           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
-           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
-           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
-
-    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
-        IReadOnlyDictionary<string, string>? tags)
-        => ExtractExternalGlDimensions(tags, prefix: null);
-
-    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
-        IReadOnlyDictionary<string, string>? tags,
-        string? prefix)
-    {
-        if (tags is null || tags.Count == 0)
-        {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in tags)
-        {
-            var key = NormalizeOptional(pair.Key);
-            var value = NormalizeOptional(pair.Value);
-            if (key is null || value is null)
-            {
-                continue;
-            }
-
-            var scopedKey = prefix is null
-                ? key
-                : StripPrefix(key, prefix);
-            if (scopedKey is null)
-            {
-                continue;
-            }
-
-            var dimensionKey = StripPrefix(scopedKey, "externalGl.")
-                               ?? StripPrefix(scopedKey, "externalGl:")
-                               ?? StripPrefix(scopedKey, "gl.")
-                               ?? StripPrefix(scopedKey, "gl:");
-            if (!string.IsNullOrWhiteSpace(dimensionKey))
-            {
-                result[dimensionKey] = value;
-            }
-        }
-
-        return result;
-    }
-
-    private static string? StripPrefix(string value, string prefix)
-        => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-            ? NormalizeOptional(value[prefix.Length..])
-            : null;
-
-    private static string? FirstTag(
-        IReadOnlyDictionary<string, string>? tags,
-        params string[] keys)
-    {
-        if (tags is null || tags.Count == 0)
-        {
-            return null;
-        }
-
-        foreach (var key in keys)
-        {
-            if (tags.TryGetValue(key, out var value))
-            {
-                return NormalizeOptional(value);
-            }
-        }
-
-        return null;
+        return LedgerDimensionSetNormalizer.Canonicalize(dimensionSet);
     }
 
     private static string BuildAccumulatorKey(LedgerAccount account, LedgerDimensionSetDto? dimensions)

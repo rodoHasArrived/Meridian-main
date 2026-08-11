@@ -389,7 +389,7 @@ public static partial class LedgerEndpoints
                 line.RuleVersion,
                 line.SourceEventId,
                 line.SourceJournalEntryId,
-                CanonicalizeDimensions(line.Dimensions))))
+                LedgerDimensionSetNormalizer.Canonicalize(line.Dimensions))))
             .ToArray();
 
         return new LedgerCrossPeriodTrialBalanceReportDto(

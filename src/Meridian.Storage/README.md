@@ -317,7 +317,9 @@ logic. `DurableAutomatedJournalPoster` implements the ledger-owned
 target shape as in-memory backtests while still appending to the governed journal store first.
 `PostgresLedgerBookService` now uses that book/period hydration path before building period-close
 trial-balance summaries, keeping UI-facing close evidence tied to `ILedgerJournalStore.QueryAsync`
-and ledger-owned balance math.
+and ledger-owned balance math. Its report projection delegates dimension presence, trimming, blank
+external-GL removal, and compatibility-tag extraction to the Contracts-owned
+`LedgerDimensionSetNormalizer`, so mixed valid-plus-whitespace scope cannot leak from durable rows.
 
 ### Direct lending and operational projections
 
