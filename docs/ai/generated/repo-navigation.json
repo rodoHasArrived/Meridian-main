@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T14:51:11Z",
+  "generatedAt": "2026-08-11T15:16:31Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2227,10 +2227,10 @@
     {
       "path": "src/Meridian.Core/Config/ConfigTemplateGenerator.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-08-11T14:07:28+00:00",
-      "lastCommit": "423de525",
-      "lastSummary": "Make the Docker template loadable and MDC_SYMBOLS real",
-      "touches": 6
+      "lastModified": "2026-08-11T14:51:29+00:00",
+      "lastCommit": "d0a05dd2",
+      "lastSummary": "Close the third template placeholder and three overclaimed guarantees",
+      "touches": 7
     },
     {
       "path": "src/Meridian.Core/Config/ConfigEnvironmentOverride.cs",
@@ -2289,260 +2289,260 @@
       "touches": 6
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/index.html",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
+      "path": "src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:23:31+00:00",
+      "lastCommit": "1e14cf1e",
+      "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:23:31+00:00",
+      "lastCommit": "1e14cf1e",
+      "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:23:31+00:00",
+      "lastCommit": "1e14cf1e",
+      "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:23:31+00:00",
+      "lastCommit": "1e14cf1e",
+      "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:23:31+00:00",
+      "lastCommit": "1e14cf1e",
+      "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:18:32+00:00",
+      "lastCommit": "21cd5ebc",
+      "lastSummary": "Fix the god-file ratchet breach and make the disabled reasons reachable",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:18:32+00:00",
+      "lastCommit": "21cd5ebc",
+      "lastSummary": "Fix the god-file ratchet breach and make the disabled reasons reachable",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:18:32+00:00",
+      "lastCommit": "21cd5ebc",
+      "lastSummary": "Fix the god-file ratchet breach and make the disabled reasons reachable",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.copy.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:18:32+00:00",
+      "lastCommit": "21cd5ebc",
+      "lastSummary": "Fix the god-file ratchet breach and make the disabled reasons reachable",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:02:26+00:00",
+      "lastCommit": "0dca8544",
+      "lastSummary": "Wire the sample-config guard into CI and make the designer tell one story",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api-errors.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e2",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api-errors.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e2",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e2",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e2",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/command-palette.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e2",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e2",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T07:52:29+00:00",
+      "lastCommit": "0f9e40d8",
+      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-10T19:58:43+00:00",
+      "lastCommit": "67937170",
+      "lastSummary": "W9-SAFETY-007: kill-switch activation now sweeps the open book; registry scoped honestly to in_progress",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.FSharp/Risk/RiskRules.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-08-10T14:05:53-07:00",
+      "lastCommit": "62e512f6",
+      "lastSummary": "Fail closed on concentration with exhausted NAV",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-09T19:58:58+00:00",
+      "lastCommit": "c10b0e05",
+      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
       "touches": 6
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen-De3JwixM.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
+      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-09T19:58:58+00:00",
+      "lastCommit": "c10b0e05",
+      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-09T19:58:58+00:00",
+      "lastCommit": "c10b0e05",
+      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/accounting-screen.view-model-iDvzJnjT.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/asset-detail-screen-BLvrTTUh.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/cash-ladder-screen-k6ym6guS.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/checkbox-MO_IFx1t.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/concrete-oaHCV-89.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/covered-call-screen-DcglJeZk.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/daily-control-tower-screen-_bjyffGF.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/data-screen-Cmqjh7Fj.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/empty-state-Bzd3lRTw.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/entity-setup-wizard-C59Vj2qU.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/evidence-workbench-screen-D5SeJoFo.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/family-office-screen-2URxIi5Y.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/finance-standard-pages-screen-AqYKk5kD.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/financial-record-explorer-BjA6vh1a.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/freshness-chip-C8ot1GmJ.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/freshness-chip.view-model-Ql1lRODv.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/index-CJDwUmwW.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/journal-entry-detail-screen-D9dIpGHE.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/live-quotes-screen-C6du_rzZ.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/margin-control-center-screen-VP8_M9cJ.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/market-data-screen-ChEr6Hal.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/metric-card-CEMozrMX.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/metric-card-tX0Ov-7x.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operations-2zdINnlP.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operations-continuity-screen-Z8a79ExQ.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operations-continuity-screen.view-model-DIDQLyGt.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operations-record-release-screen-DFJ-k_rc.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/operator-readiness-console-STRfbXz5.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/pagination-C_SVRdTh.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/portfolio-screen-DP3iUtNM.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-11T09:36:32+00:00",
-      "lastCommit": "9b6f2914",
-      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
-      "touches": 1
+      "path": "src/Meridian/UiServer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-09T19:46:22+00:00",
+      "lastCommit": "9f2d6a49",
+      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
+      "touches": 6
     }
   ],
   "recentChangesWindowDays": 14,

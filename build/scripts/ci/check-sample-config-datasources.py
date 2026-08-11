@@ -167,27 +167,39 @@ def is_secret_key(key: str, value: object) -> bool:
     * an **exact** ``SensitiveValueMasker`` property name is always a credential field, whatever
       its value — this is what catches an empty ``"Password": ""`` placeholder;
     * a **fragment** match (the runtime ``SensitiveKeyRegistry.IsSensitive`` rule) is flagged for
-      every shape *except* numbers and booleans. Fragments like ``refresh``, ``key`` and
-      ``certificate`` legitimately appear in non-credential settings —
-      ``StatusRefreshIntervalSeconds`` (int) and ``AllowSelfSignedCertificates`` (bool) are both in
-      this sample — and a secret is never an interval or a flag.
+      scalar values. Fragments like ``refresh``, ``key`` and ``certificate`` legitimately appear in
+      non-credential settings — ``StatusRefreshIntervalSeconds`` (int) and
+      ``AllowSelfSignedCertificates`` (bool) are both in this sample — and a secret is never an
+      interval or a flag, so numbers and booleans are exempt.
 
-    Containers are deliberately included in the fragment rule. ``"ApiTokens": []`` is not an exact
-    masker name, so an earlier revision that restricted fragments to scalars let a
-    credential-shaped placeholder array through while claiming to catch it; recursion does not
-    help when no nested key independently matches. This is checked against the shipped sample,
-    where it flags nothing, so it tightens the gate without inventing a false positive.
+    **Containers get the narrower noun rule, not the fragments.** ``"ApiTokens": []`` must be
+    caught: it is not an exact masker name, so restricting containers to exact names lets a
+    credential-shaped placeholder array through, and recursion does not help when no nested key
+    independently matches. But the runtime fragment list is deliberately broad because
+    over-redacting a *value* is harmless, whereas over-flagging a *key* fails CI on legitimate
+    configuration. ``PaperTrading.Sessions`` is the concrete counter-example — an ordinary
+    paper-session object holding ``BaseDirectory``
+    (``ConfigJsonSchemaGenerator.cs:168-175``) that the ``session`` fragment would condemn. So a
+    container matches only when its name *ends with* a credential noun from the masker list,
+    singular or plural: ``ApiTokens`` and ``Certificates`` match, ``Sessions`` and
+    ``Authentication`` do not.
     """
     folded = key.casefold()
     if folded in SECRET_KEYS_FOLDED:
         return True
-    if not any(fragment in folded for fragment in SECRET_FRAGMENTS):
+    if isinstance(value, (dict, list)):
+        singular = folded[:-1] if folded.endswith("s") else folded
+        return any(
+            candidate.endswith(name)
+            for candidate in (folded, singular)
+            for name in SECRET_KEYS_FOLDED
+        )
+    # `null` is a credential placeholder just like `""` — Meridian models nullable credential
+    # properties such as BackfillConfig.ApiToken, so `"ApiToken": null` still teaches operators to
+    # fill a secret into JSON.
+    if isinstance(value, (bool, int, float)):
         return False
-    # Numbers and booleans stay exempt so legitimate settings like StatusRefreshIntervalSeconds and
-    # AllowSelfSignedCertificates do not trip the gate. Everything else counts, including `null`:
-    # Meridian models nullable credential properties such as BackfillConfig.ApiToken, so
-    # `"ApiToken": null` still teaches operators to fill a secret into JSON.
-    return not isinstance(value, (bool, int, float))
+    return any(fragment in folded for fragment in SECRET_FRAGMENTS)
 
 
 def walk_secret_keys(node: object, path: str = "") -> list[str]:

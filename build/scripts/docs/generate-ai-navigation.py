@@ -31,6 +31,13 @@ EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", ".
 DEFAULT_RECENT_CHANGES_DAYS = 14
 DEFAULT_RECENT_CHANGES_LIMIT = 40
 
+# Build output that lives under src/ but is not source. The recent-changes feed is a bounded
+# routing signal, and one dashboard rebuild rewrites dozens of hash-named bundle files at once —
+# enough to evict nearly every real source change from the list and leave agents routed at
+# "Unmapped" assets. The authored code for this tree is src/Meridian.Ui/dashboard/, which is
+# still tracked normally.
+RECENT_CHANGE_EXCLUDED_PREFIXES = ("src/Meridian.Ui/wwwroot/workstation/",)
+
 
 @dataclass(frozen=True)
 class ProjectSeed:
@@ -938,6 +945,9 @@ def collect_recent_source_changes(
             continue
 
         if current_header is None or not line.startswith("src/"):
+            continue
+
+        if line.startswith(RECENT_CHANGE_EXCLUDED_PREFIXES):
             continue
 
         if not (root / line).exists():

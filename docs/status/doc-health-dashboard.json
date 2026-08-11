@@ -1,6 +1,6 @@
 {
   "total_files": 645,
-  "total_lines": 126549,
+  "total_lines": 126547,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1129,7 +1129,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.providers.md",
-      "line_count": 882,
+      "line_count": 880,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
