@@ -158,6 +158,23 @@ review. Shared `/api/execution/controls/*` endpoints expose the snapshot plus se
 the global circuit breaker, default position limit, symbol position limits, and manual override
 create/clear actions so browser and desktop clients do not need client-local execution-control
 state.
+`ExecutionAuditTrailService` retains entries in memory by **count and time**, not count alone.
+`InMemoryRetention` (default 1,000) is the ordinary bound, and `InMemoryRetentionWindow` (default
+two hours) is kept regardless of it — because every consumer reasons about this trail in time, and a
+count cap cannot support a claim like "no breach in the last hour": enough unrelated activity inside
+the window silently evicts the very entry the claim is about. Entries are inserted in timestamp
+order rather than appended, since `RecordAsync` accepts a caller-built entry with any timestamp and
+concurrent callers can complete out of order.
+
+An absolute ceiling of twenty times the count cap stops a pathological burst from growing memory
+without bound. **When that ceiling bites, the effect is operational, not cosmetic:**
+`RetentionWindowComplete` goes false, and it stays false until the discarded region itself ages past
+the window — completeness is judged from what was dropped, not from whether the retained set happens
+to fit again. `RiskRuleRuntimeService` reads it and refuses to report *any* rule healthy while it is
+false, so a readiness gate cannot mistake an hour nobody kept records for a quiet one. Raise
+`InMemoryRetentionWindow` or `InMemoryRetention` for deployments whose event rate makes that ceiling
+reachable; the shortfall is logged once per process when it first occurs.
+
 OMS runtime guardrails are configuration-backed under `Execution:OrderManagement`:
 `MaxRetainedOrders`, `ExecutionChannelCapacity`, and `CancelAllMaxConcurrency`. Reg T margin rates
 are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
