@@ -224,6 +224,14 @@ above** — several of these are why a change is scoped the way it is.
   once the market reaches or passes above it, so a buy stop typed *beneath* the market is already
   crossed and a stop-market order that triggers on acceptance routes unbounded. Change 1 measures
   that mirrored direction under the same band.
+- **And sharing the resolver is still not sharing the observation.** The OMS validates first, then
+  `PaperTradingGateway.SubmitOrderAsync` calls `PaperMarketObservation.Capture` *again* before its
+  initial match, so the two decisions read the market at two different instants however identical
+  their logic. Validation can observe a $100 ask and approve a buy stop at $125; the gateway can
+  then capture a fresh $130 print and convert it to a market order immediately. Change 2 must
+  therefore either pass the validated snapshot into paper matching or re-run the price controls
+  against the gateway's captured snapshot before it triggers — one resolver over two captures is
+  still two answers.
 - **Matching the precedence is not enough on its own — the two must share the observation, and its
   freshness policy.** Every other accessor on `AggregatePortfolioExposureProvider` discards
   quotes and trades older than five minutes, on purpose; `PaperMarketObservation.Capture` applies no
@@ -244,6 +252,11 @@ above** — several of these are why a change is scoped the way it is.
   very outcome the wrong-side trigger limb blocks on submission — with neither rule running. Every
   new limit or stop value needs to re-enter the price controls regardless of whether notional
   increases.
+  Trailing stops need their own clause in that gate: `OrderModification.NewTrail` exists, but
+  `IsRiskIncreasing` ignores it, `BuildAmendedRequest` reconstructs neither `TrailPrice` nor
+  `TrailPercent`, and `OrderState` retains neither — so a caller can submit a sane trail and amend it
+  to one cent without the new control running at all. Change 2 owns the state retention, the
+  reconstruction, and unconditional revalidation of the amended distance.
   **Change 2 owns that gate.** Deferring it was the wrong call and this revision reverses it: a rule
   every amendment walks around is not "enforced by the mandatory validator" in any sense the
   criterion means, so leaving the gate out would let change 2 mark the criterion discharged while a
@@ -462,6 +475,16 @@ above** — several of these are why a change is scoped the way it is.
   structure and link or mutate tenant-B nodes by id. That is precisely the categorical criterion, on
   precisely the route family the leading tranche guards. Change 9 must stamp tenancy on this store
   and enforce ownership on both its reads and its writes.
+- **That stamping needs an attribution plan first, and it is harder here than in the ledger.**
+  `001_fund_structure.sql` carries the whole hierarchy — organizations, businesses, clients, funds,
+  vehicles, entities, portfolios, assignments, ownership links — with no tenant column, while
+  `fund_profile_tenancy` can attribute only fund-profile ids. So on a populated database every one
+  of the three options is wrong on its own: stamping rows to the upgrading caller misassigns shared
+  ancestors, leaving them null preserves exactly the leak being closed, and rejecting null hides the
+  retained graph from everyone. Change 9 needs a deterministic hierarchy backfill that derives
+  ownership downward from what `fund_profile_tenancy` *can* attribute, plus a quarantine for
+  mixed-owner or underivable ancestors and upgrade validation over both — the same shape as the
+  ledger backfill, one level further up the graph.
 - Slice 4c's remaining fund-account sub-tables stay out of this wave; the fund-structure store does
   not.
 
@@ -592,7 +615,9 @@ above** — several of these are why a change is scoped the way it is.
   every candidate set by the same account, instrument-or-currency, type, and date constraints the
   pair stages apply, with negative cross-identity tests proving a coincidental sum is refused.
 - Together these decide the row's shape. camt.053 and BAI2 are *transaction* statements, so with an
-  empty transaction population every bank row fails closed to a break, and one-to-many outcomes can
+  empty transaction population every bank **transaction** row fails closed to a break — balance
+  records are a different matter, since both connectors emit `StatementRecordKind.CashBalance`, the
+  retained provider loads internal cash balances, and `MatchCash` pairs them today, and one-to-many outcomes can
   never reach live casework no matter what the standalone kernels do. Tests written against those
   kernels would pass while the shipping path matched nothing. **Sourcing the ledger-transaction
   population and giving the live path deterministic split matching are in scope for this row**, not
