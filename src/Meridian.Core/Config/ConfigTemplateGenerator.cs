@@ -305,9 +305,17 @@ public sealed class ConfigTemplateGenerator
             DataSource = "Synthetic",
             Alpaca = new
             {
-                KeyId = "${ALPACA_KEY_ID}",
-                SecretKey = "${ALPACA_SECRET_KEY}",
-                Feed = "${ALPACA_FEED:-iex}"
+                // The credential placeholders stay in "${...}" form because ConfigValidationHelper
+                // recognises that prefix and warns the key still needs configuring. The bare
+                // ALPACA_KEY_ID/ALPACA_SECRET_KEY names do work — ConfigEnvironmentOverride keeps
+                // them as legacy aliases — but ALPACA_FEED has no such alias, so the trio is
+                // normalised on the MDC_ prefix that maps for all three.
+                KeyId = "${MDC_ALPACA_KEY_ID}",
+                SecretKey = "${MDC_ALPACA_SECRET_KEY}",
+                // Feed is not a credential and has no placeholder exemption: AlpacaOptionsValidator
+                // requires exactly "iex" or "sip", so "${ALPACA_FEED:-iex}" failed validation the
+                // moment an operator switched DataSource to Alpaca and the validator began running.
+                Feed = "iex"
             },
             Storage = new
             {
@@ -333,11 +341,13 @@ public sealed class ConfigTemplateGenerator
             Category = ConfigTemplateCategory.Deployment,
             EnvironmentVariables = new Dictionary<string, string>
             {
+                // Every name here must be one ConfigEnvironmentOverride actually maps, or the
+                // template advertises a setting the operator cannot change.
                 ["MDC_DATASOURCE"] = "Real-time data source provider (IB, Alpaca, Polygon, NYSE, Synthetic; default Synthetic)",
                 ["MDC_SYMBOLS"] = "Comma-separated list of symbols",
-                ["ALPACA_KEY_ID"] = "Alpaca API Key ID",
-                ["ALPACA_SECRET_KEY"] = "Alpaca Secret Key",
-                ["ALPACA_FEED"] = "Alpaca data feed (iex or sip)"
+                ["MDC_ALPACA_KEY_ID"] = "Alpaca API Key ID",
+                ["MDC_ALPACA_SECRET_KEY"] = "Alpaca Secret Key",
+                ["MDC_ALPACA_FEED"] = "Alpaca data feed (iex or sip)"
             }
         };
     }

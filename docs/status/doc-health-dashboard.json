@@ -1,6 +1,6 @@
 {
   "total_files": 645,
-  "total_lines": 126527,
+  "total_lines": 126549,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -3177,7 +3177,7 @@
     },
     {
       "path": "docs/reference/environment-variables.md",
-      "line_count": 193,
+      "line_count": 215,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

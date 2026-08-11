@@ -57,24 +57,41 @@ public sealed class ConfigTemplateGeneratorTests
         var config = JsonSerializer.Deserialize<AppConfig>(template.Json, AppConfigJsonOptions.Read);
 
         template.EnvironmentVariables.Should().NotBeNull();
-        template.EnvironmentVariables!.Should().ContainKey("MDC_DATASOURCE");
-        template.EnvironmentVariables.Should().ContainKey("MDC_SYMBOLS");
 
-        var original = new Dictionary<string, string?>
+        // Pinning the advertised set means adding a sixth variable fails here until it is proven
+        // to apply below, rather than silently joining the list unwired.
+        var probes = new Dictionary<string, string>
         {
-            ["MDC_DATASOURCE"] = Environment.GetEnvironmentVariable("MDC_DATASOURCE"),
-            ["MDC_SYMBOLS"] = Environment.GetEnvironmentVariable("MDC_SYMBOLS")
+            ["MDC_DATASOURCE"] = "Polygon",
+            ["MDC_SYMBOLS"] = "AAPL,MSFT",
+            ["MDC_ALPACA_KEY_ID"] = "probe-key-id",
+            ["MDC_ALPACA_SECRET_KEY"] = "probe-secret-key",
+            ["MDC_ALPACA_FEED"] = "sip"
         };
+
+        template.EnvironmentVariables!.Keys
+            .Where(key => key.StartsWith("MDC_", StringComparison.Ordinal))
+            .Should().BeEquivalentTo(probes.Keys);
+
+        var original = probes.Keys.ToDictionary(
+            name => name,
+            Environment.GetEnvironmentVariable);
 
         try
         {
-            Environment.SetEnvironmentVariable("MDC_DATASOURCE", "Polygon");
-            Environment.SetEnvironmentVariable("MDC_SYMBOLS", "AAPL,MSFT");
+            foreach (var (name, value) in probes)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
 
             var overridden = new ConfigEnvironmentOverride().ApplyOverrides(config!);
 
             overridden.DataSource.Should().Be(DataSourceKind.Polygon);
             overridden.Symbols!.Select(s => s.Symbol).Should().Equal("AAPL", "MSFT");
+            overridden.Alpaca.Should().NotBeNull();
+            overridden.Alpaca!.KeyId.Should().Be("probe-key-id");
+            overridden.Alpaca.SecretKey.Should().Be("probe-secret-key");
+            overridden.Alpaca.Feed.Should().Be("sip");
         }
         finally
         {
@@ -83,5 +100,29 @@ public sealed class ConfigTemplateGeneratorTests
                 Environment.SetEnvironmentVariable(name, value);
             }
         }
+    }
+
+    [Fact]
+    public void GenerateDocker_SwitchedToAlpaca_StillValidatesOnceCredentialsAreSupplied()
+    {
+        // The Alpaca block is not exercised by the default Synthetic template because
+        // AlpacaOptionsValidator runs only When(DataSource == Alpaca). That is exactly how the
+        // unparseable "${ALPACA_FEED:-iex}" survived: it became reachable only after an operator
+        // switched providers, which is the one moment the template is supposed to help.
+        var template = new ConfigTemplateGenerator().GenerateDocker();
+        var config = JsonSerializer.Deserialize<AppConfig>(template.Json, AppConfigJsonOptions.Read);
+
+        var switched = config! with
+        {
+            DataSource = DataSourceKind.Alpaca,
+            Alpaca = config.Alpaca! with { KeyId = "a-real-key-id", SecretKey = "a-real-secret-key" }
+        };
+
+        var findings = new FieldValidationStage().Validate(switched);
+
+        findings.Where(f => f.IsError).Should().BeEmpty(
+            "switching the generated template to Alpaca and supplying credentials must leave a "
+            + "loadable config; errors: {0}",
+            string.Join("; ", findings.Select(f => $"{f.Property}: {f.Message}")));
     }
 }

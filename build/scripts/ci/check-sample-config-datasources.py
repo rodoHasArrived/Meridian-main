@@ -166,24 +166,28 @@ def is_secret_key(key: str, value: object) -> bool:
 
     * an **exact** ``SensitiveValueMasker`` property name is always a credential field, whatever
       its value — this is what catches an empty ``"Password": ""`` placeholder;
-    * a **fragment** match (the runtime ``SensitiveKeyRegistry.IsSensitive`` rule) is flagged only
-      for string values. Fragments like ``refresh``, ``key`` and ``certificate`` legitimately
-      appear in non-credential settings — ``StatusRefreshIntervalSeconds`` (int) and
-      ``AllowSelfSignedCertificates`` (bool) are both in this sample — and a secret is never a
-      boolean or an interval.
+    * a **fragment** match (the runtime ``SensitiveKeyRegistry.IsSensitive`` rule) is flagged for
+      every shape *except* numbers and booleans. Fragments like ``refresh``, ``key`` and
+      ``certificate`` legitimately appear in non-credential settings —
+      ``StatusRefreshIntervalSeconds`` (int) and ``AllowSelfSignedCertificates`` (bool) are both in
+      this sample — and a secret is never an interval or a flag.
+
+    Containers are deliberately included in the fragment rule. ``"ApiTokens": []`` is not an exact
+    masker name, so an earlier revision that restricted fragments to scalars let a
+    credential-shaped placeholder array through while claiming to catch it; recursion does not
+    help when no nested key independently matches. This is checked against the shipped sample,
+    where it flags nothing, so it tightens the gate without inventing a false positive.
     """
     folded = key.casefold()
-    # Exact masker names are credential fields whatever their shape: `"Credentials": {...}` and
-    # `"ApiTokens": []` teach the same habit as a scalar placeholder, and recursion alone would
-    # miss them when no nested key independently matches. Broad fragment matches stay scalar-only
-    # (below) so legitimate configuration sections are not flagged for containing "key" or "auth".
     if folded in SECRET_KEYS_FOLDED:
         return True
-    # `null` is a credential placeholder just like `""` — Meridian already models nullable
-    # credential properties such as BackfillConfig.ApiToken, so `"ApiToken": null` is a natural
-    # sample shape that still teaches operators to fill a secret in JSON. Numbers and booleans
-    # stay exempt so legitimate settings like StatusRefreshIntervalSeconds do not trip the gate.
-    return (isinstance(value, str) or value is None) and any(f in folded for f in SECRET_FRAGMENTS)
+    if not any(fragment in folded for fragment in SECRET_FRAGMENTS):
+        return False
+    # Numbers and booleans stay exempt so legitimate settings like StatusRefreshIntervalSeconds and
+    # AllowSelfSignedCertificates do not trip the gate. Everything else counts, including `null`:
+    # Meridian models nullable credential properties such as BackfillConfig.ApiToken, so
+    # `"ApiToken": null` still teaches operators to fill a secret into JSON.
+    return not isinstance(value, (bool, int, float))
 
 
 def walk_secret_keys(node: object, path: str = "") -> list[str]:

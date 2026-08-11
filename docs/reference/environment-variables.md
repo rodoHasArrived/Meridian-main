@@ -46,7 +46,7 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 | `MDC_DATA_ROOT` | `DataRoot` | Root directory for data storage | No | `data` |
 | `MDC_COMPRESS` | `Compress` | Enable gzip compression (`true`/`false`) | No | `false` |
 | `MDC_DATASOURCE` | `DataSource` | Real-time streaming provider: `IB`, `Alpaca`, `Polygon`, `NYSE`, `Synthetic`. `Yahoo` is a `DataSourceKind` member but has no streaming factory, so it is backfill-only and rejected here. | No | `Synthetic` |
-| `MDC_SYMBOLS` | `Symbols` | Comma-separated symbols to subscribe, replacing the configured list (`SPY,QQQ`). Values are uppercased because `SymbolConfigValidator` matches `^[A-Z0-9\-\.\/]+$`, and each symbol takes the `SymbolConfig` defaults. Symbols needing per-symbol contract fields (options, preferreds with a `LocalSymbol`) must be configured in JSON instead. A value that yields no symbols fails startup rather than silently subscribing to nothing. | No | config file |
+| `MDC_SYMBOLS` | `Symbols` | Comma-separated symbols to subscribe, replacing the configured list (`SPY,QQQ`). Values are uppercased because `SymbolConfigValidator` matches `^[A-Z0-9\-\.\/]+$`, and each symbol takes the `SymbolConfig` defaults. Symbols needing per-symbol contract fields (options, preferreds with a `LocalSymbol`) must be configured in JSON instead. Unset **or empty** leaves the configured list alone — `ApplyOverrides` treats an empty value as absent for every variable. A non-empty value that yields no symbols (`" , , "`) fails startup rather than silently subscribing to nothing. | No | config file |
 
 Installed releases do not require users to set `MDC_DATA_ROOT`: the lifecycle supervisor injects the
 resolved manifest data root, defaulting to `%LOCALAPPDATA%\Meridian\Data`.
@@ -90,7 +90,29 @@ strictly non-owning.
 
 ## Interactive Brokers
 
-IB credentials are managed via TWS/Gateway, not environment variables.
+IB *credentials* are managed via TWS/Gateway, not environment variables. The *connection* settings
+are environment-configurable:
+
+| Variable | Config Path | Description | Required | Default |
+|----------|------------|-------------|----------|---------|
+| `MDC_IB_HOST` | `IB:Host` | TWS/Gateway host | No | `127.0.0.1` |
+| `MDC_IB_PORT` | `IB:Port` | TWS/Gateway socket port | No | `7497` (paper-safe) |
+| `MDC_IB_CLIENT_ID` | `IB:ClientId` | API client id; must be unique per concurrent connection | No | `1` |
+| `MDC_IB_PAPER` | `IB:UsePaperTrading` | Use the paper-trading account (`true`/`false`) | No | `true` |
+| `MDC_IB_SUBSCRIBE_DEPTH` | `IB:SubscribeDepth` | Request Level 2 market depth (`true`/`false`) | No | `true` |
+| `MDC_IB_DEPTH_LEVELS` | `IB:DepthLevels` | Depth levels to request | No | `10` |
+| `MDC_IB_TICK_BY_TICK` | `IB:TickByTick` | Use tick-by-tick streams (`true`/`false`) | No | `true` |
+
+### IB Client Portal
+
+The Client Portal HTTP surface is separate from the TWS/Gateway socket used for market data,
+historical data, and order routing.
+
+| Variable | Config Path | Description | Required | Default |
+|----------|------------|-------------|----------|---------|
+| `MDC_IB_CLIENT_PORTAL_ENABLED` | `IBClientPortal:Enabled` | Enable the Client Portal gateway path (`true`/`false`) | No | `false` |
+| `MDC_IB_CLIENT_PORTAL_BASE_URL` | `IBClientPortal:BaseUrl` | Client Portal gateway base URL | No | `https://localhost:5000` |
+| `MDC_IB_CLIENT_PORTAL_ALLOW_SELF_SIGNED` | `IBClientPortal:AllowSelfSignedCertificates` | Accept the gateway's self-signed certificate (`true`/`false`). Only ever honoured for loopback hosts — a non-loopback gateway must present a valid certificate regardless of this setting. | No | `true` |
 
 ## Historical Data Provider API Keys
 
