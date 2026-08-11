@@ -74,3 +74,13 @@ decisions:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+  - id: DEC-W9-CLOSEOUT-001
+    title: Close the 2026-07 first-order slate as one sequenced W9 close-out wave
+    status: accepted
+    decided_on: 2026-08-11
+    owner_lane: Core Team
+    summary: The three open rows of the 2026-07 first-order improvement slate are delivered as one sequenced wave rather than opportunistically, and docs/product/w9-close-out-delivery-plan-2026-08.md is authoritative for its sequence and source constraints. The adopted order is W9-SAFETY-007, then W9-GOV-008, then W9-INGEST-009, delivered as eleven changes with one roadmap row advanced per change and the row's registry status and evidence updated in the same change. Safety leads because it is the only in_progress row and the smallest, and its rule catalogue precedes the control sweep the rules are governed by. Within W9-GOV-008 the declarative authorization assertion lands with the first burn-down tranche rather than after it, because sharpening the instrument once the baseline is already empty would prove nothing about the routes fixed before it; the 152-route remediation baseline is then burned down in tranches scoped one owner lane each, largest first, with /api/auth pulled early because account disable, password reset, and access revocation are the most sensitive unguarded mutations in the set; fail-closed tenancy and hash-chained accounting audit land last within the row because both are behaviour-changing rather than additive. Ingestion is last because it is evidence work against code that already ships. The wave advances evidence toward PRD-006, PRD-007, PRD-009, PRD-010, and PRD-101 but does not close the P0 release gate and does not certify a release; every row moves only to ready_for_acceptance, and done still requires operator acceptance. The wave does not open W10, does not reopen deferred lanes, and does not extend the risk-engine blueprint beyond its shipped PR 1 - the decision journal, the risk decisions read surface, and their WPF parity remain a deliberate deferral recorded on W9-SAFETY-007. Migration ordinals 029-038 remain reserved by in-flight blueprints, so any migration in this wave takes 039 or higher.
+    related_roadmap_items:
+      - W9-SAFETY-007
+      - W9-GOV-008
+      - W9-INGEST-009
