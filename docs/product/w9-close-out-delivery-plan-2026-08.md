@@ -39,10 +39,14 @@ substitute for that tracker's P0 release gate.
 Eleven changes in three phases, one roadmap row per change, with the row's registry status and
 evidence advanced in the same change.
 
-| # | Phase | Change | Row | Criterion discharged |
+A criterion is **discharged** only by the change that completes it. Where two changes contribute to
+one criterion, the earlier one advances evidence but must not record the criterion as met — the row
+stays `in_progress` until the completing change lands.
+
+| # | Phase | Change | Row | Criterion |
 | --: | --- | --- | --- | --- |
-| 1 | A | Fat-finger quantity and price-deviation rules | `W9-SAFETY-007` | Pre-trade rule catalogue |
-| 2 | A | Price-collar rule | `W9-SAFETY-007` | Pre-trade rule catalogue |
+| 1 | A | Fat-finger quantity and price-deviation rules | `W9-SAFETY-007` | Pre-trade rule catalogue — *contributes* |
+| 2 | A | Price-collar rule | `W9-SAFETY-007` | Pre-trade rule catalogue — **discharges** |
 | 3 | A | Two-lane safety-control sweep | `W9-SAFETY-007` | No dead safety buttons |
 | 4 | B | Declarative authorization assertion + `/api/fund-structure` tranche | `W9-GOV-008` | Route authorization coverage |
 | 5 | B | `/api/workstation` + `/api/auth` tranche | `W9-GOV-008` | Route authorization coverage |
@@ -125,9 +129,13 @@ above** — several of these are why a change is scoped the way it is.
   `src/Meridian.Ui/dashboard/src/screens/trading-screen.view-model.ts` routes cancel-all through the
   workstation API and publishes a disabled flag, a disabled reason, and an aria label. Mirror that
   shape in WPF rather than defining a second one.
-- `AcknowledgeRisk` reports that acknowledgement is "captured locally for this workstation session".
-  Under the `W9-TRUTH-001` doctrine that is a truth problem in its own right: make it durable, or
-  say plainly that it is not.
+- `AcknowledgeRisk` reports that acknowledgement is "captured locally for this workstation session",
+  which is a `W9-TRUTH-001` problem in its own right — but **truthful copy is not one of the two
+  permitted outcomes.** The criterion allows only "invokes the real shared service" or "disabled
+  with an explicit not-wired state"; an enabled control that merely admits it does nothing is the
+  third option the criterion exists to forbid, and rewording it would leave an operator able to
+  click a safety action that changes nothing. Either wire it to durable acknowledgement or disable
+  it with the not-wired state. The same test applies to every control in the sweep.
 - The shared seam already exists in `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` —
   cancel-all, circuit-breaker, manual-override create and clear, and the position-close routes.
   `POST /orders/cancel-all` is mapped on the group without a `UiApiRoutes` constant, so a
@@ -331,6 +339,20 @@ GitHub-hosted `Meridian CI / quality-gate` check is green.
 builds as a stub, and the Windows desktop workflows are tag- or manual-dispatch only. A green gate
 plus linked test paths would therefore let `W9-SAFETY-007` advance without the rewired desktop code
 ever having been compiled, let alone executed — on the one criterion whose whole subject is WPF.
-Change 3 additionally requires a **named Windows WPF build-and-test result** (a `Targeted Test`
-run against `tests/Meridian.Wpf.Tests`, or the desktop workflow dispatched on the candidate commit),
-linked as evidence on the row. Without that link the criterion is not discharged.
+Change 3 additionally requires a **named Windows WPF build-and-test result** linked as evidence on
+the row. **The dispatch inputs are part of the requirement, because the defaults prove nothing:**
+`targeted-test.yml` defaults `runner` to `ubuntu-latest` and `enable_full_wpf_build` to `false`, and
+passes that value through explicitly — which defeats `Meridian.Wpf.Tests.csproj`'s own
+Windows-detection default, leaving `EnableDefaultCompileItems` false so **no test sources compile at
+all**. A default run against `tests/Meridian.Wpf.Tests` therefore goes green having executed
+nothing. Accept only:
+
+```bash
+gh workflow run targeted-test.yml --ref <branch> \
+  -f mode=dotnet-filtered -f runner=windows-latest -f enable_full_wpf_build=true \
+  -f dotnet_project=tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj \
+  -f dotnet_filter="FullyQualifiedName~TradingWorkspaceShell"
+```
+
+or the Windows-only `mode=wpf-dev-loop`, or the desktop workflow dispatched on the candidate commit.
+Without a run whose inputs actually compiled the WPF test sources, the criterion is not discharged.
