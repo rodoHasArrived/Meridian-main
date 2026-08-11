@@ -23,9 +23,14 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [2026-07 First-Order Improvement Slate](product-roadmap-priorities-2026-07.md) — ranked W9
     priority rationale (`W9-TRUTH-001` through `W9-INGEST-009`, decision `DEC-PRIORITY-SLATE-001`);
     live status stays in the roadmap registry
+  - [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md) — adopted sequence
+    for the three W9 rows still open (`W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, decision
+    `DEC-W9-CLOSEOUT-001`), with the source constraints found while checking each row against
+    current code; live status stays in the roadmap registry
   - [2026-07 Depth Slate](w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
-    live status stays in the roadmap registry
+    live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
+    ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status

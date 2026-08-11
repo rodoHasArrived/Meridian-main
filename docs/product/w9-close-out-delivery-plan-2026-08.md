@@ -18,8 +18,11 @@ The W9 slate is the registry's declared priority order, and it is mostly closed:
 `done`, and `W9-TRUTH-001`, `W9-DEMO-002`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, and
 `W9-NAV-006` are `ready_for_acceptance`. Three rows remain open.
 
-`DEC-DEPTH-SLATE-001` sequences the entire W10 depth slate behind W9, so a partly-open slate blocks
-the accepted next slate. Each open row also leaves a live defect rather than a missing feature:
+`DEC-DEPTH-SLATE-001` sequences the W10 depth slate behind W9, so a partly-open slate blocks the
+accepted next slate — with two deliberate exceptions the same decision records: `W10-MARK-001` and
+`W10-SEAM-001` are pulled forward because they serve the release gate rather than compete with it,
+and nothing here defers them. Each open W9 row also leaves a live defect rather than a missing
+feature:
 
 | Row | Status entering the wave | What is actually open |
 | --- | --- | --- |
@@ -46,7 +49,7 @@ evidence advanced in the same change.
 | 6 | B | Operations-surface tranche | `W9-GOV-008` | Route authorization coverage |
 | 7 | B | Data and diagnostics tranche | `W9-GOV-008` | Route authorization coverage |
 | 8 | B | Remainder to zero | `W9-GOV-008` | Route authorization coverage |
-| 9 | B | Fail-closed tenancy + hash-chained accounting audit | `W9-GOV-008` | Tenancy rejection; tamper-evident audit |
+| 9 | B | Fail-closed tenancy + hash-chained accounting **and ledger** audit | `W9-GOV-008` | Tenancy rejection on reads and writes; tamper-evident audit |
 | 10 | C | Golden-file packs and bounded-ingress proof | `W9-INGEST-009` | Connector evidence; PRD-010 limits |
 | 11 | C | Deterministic sided matching and casework feed | `W9-INGEST-009` | Match determinism; casework feed |
 
@@ -105,11 +108,17 @@ above** — several of these are why a change is scoped the way it is.
   `Pause`, `Stop`, and `Flatten` as primary commands and `CancelAll` and `AcknowledgeRisk` as
   secondary ones, and `ResolveActionRequest` maps every one of them to a pane-layout change plus a
   confirmation message. None reaches an execution-control service. These are the dead safety buttons
-  the row's third exit criterion forbids, so the sweep is a WPF rewire, not a two-lane audit.
-- The browser lane is already the reference implementation:
+  the row's third exit criterion forbids, and they are the largest known gap.
+- **The audit is still two-lane.** The exit criterion covers *every* WPF and browser safety control,
+  and the browser lane's cancel-all being wired says nothing about the rest of its safety surface.
+  The evidence this change owes is a full inventory of both lanes — each control listed with the
+  service it invokes or the explicit not-wired state it carries — even where the browser inventory
+  produces no code change. Treating the browser lane as "already done" because one control checks
+  out is exactly how a dead button survives a sweep.
+- The browser lane is the reference *contract*, not a reason to skip it:
   `src/Meridian.Ui/dashboard/src/screens/trading-screen.view-model.ts` routes cancel-all through the
   workstation API and publishes a disabled flag, a disabled reason, and an aria label. Mirror that
-  contract in WPF rather than defining a second one.
+  shape in WPF rather than defining a second one.
 - `AcknowledgeRisk` reports that acknowledgement is "captured locally for this workstation session".
   Under the `W9-TRUTH-001` doctrine that is a truth problem in its own right: make it durable, or
   say plainly that it is not.
@@ -143,8 +152,16 @@ above** — several of these are why a change is scoped the way it is.
   of singletons plus two non-`/api` routes.
 - `EndpointAuthorization.RequirePermission` and `RequireAnyPermission` are generic over
   `IEndpointConventionBuilder`, so they apply to route groups as well as routes.
-  `FundStructureEndpoints` maps its whole cluster under one group whose sub-groups already chain
-  `RequireWorkstationTenantScope()`, so most of that tranche is a group-level change.
+- **Declare on permission-homogeneous groups only, never on the `/api/fund-structure` root.** That
+  root mixes structure mutations with reporting routes governed by `ViewReporting`,
+  `ManageReporting`, `ApproveReporting`, and `DeliverReporting`, and with read routes. A root
+  `ManageFundStructure` declaration would deny legitimate reporting callers; a broad any-of
+  declaration would let an unrelated reporting permission satisfy an unguarded structure mutation
+  *and* still satisfy the metadata sweep, which is worse than leaving the route in the baseline —
+  it would look remediated. Push declarations down to the sub-groups that share one permission
+  (`FundStructureEndpoints` already maps `reportingGroup` and `legacyReportingGroup` separately), or
+  onto individual routes where a family is genuinely mixed. The group mechanism saves repetition,
+  not analysis: every one of the 34 routes still needs its permission chosen deliberately.
 - `UserPermission` already carries every flag the burn-down needs. No new permission values.
 - The criterion asks the test to fail "when a route lacks an explicit policy or permission
   declaration". The current sweep proves *behaviour* (a 401/403 response), not *declaration*.
@@ -171,6 +188,16 @@ above** — several of these are why a change is scoped the way it is.
   environment-variable admin path supplies only a username and password hash, so that profile
   resolves to a null tenant today. Give it a deployment-default company in the same change that
   flips the default, or local and demo startup break.
+- **The write gate is not the whole criterion.** Flipping `RequireFundScopedWriteTenant` covers only
+  the decorated write and evaluate routes. The exit criterion requires cross-tenant *reads* to fail
+  closed too, and today the read side is deliberately fail-open in two places: the
+  `RequireFundProfileTenantScope()` filter passes a blank fund, a caller with no tenant scope, or an
+  unavailable guard, and the storage `TenantReadPredicate` returns rows whose `tenant_id` is null so
+  unstamped legacy rows stay visible. Both are correct as written for a single-company deployment
+  and both are load-bearing for it, so this change owes an explicit decision per path — tighten, or
+  record why the deployment boundary still carries it — plus the tests that prove whichever way it
+  lands. Reading the write-gate switch as "the remaining step" would close the row with the read
+  side still open.
 - Slice 4c's remaining defense-in-depth items (fund-account sub-tables, fund-structure store) are
   not a currently reachable cross-tenant residual and stay out of this wave.
 
@@ -183,7 +210,12 @@ above** — several of these are why a change is scoped the way it is.
   inside the write transaction. That is the database-side precedent to follow rather than inventing
   a second scheme.
 - Accounting audit rows live in the accounting-configuration audit family established by
-  `V_ledger_017` and `V_ledger_018`.
+  `V_ledger_017` and `V_ledger_018`. **That family is the accounting half only.** The exit criterion
+  names accounting *and ledger* audit events, so the journal-append and other ledger-event paths are
+  in scope for the same chain — anchoring the change on the accounting-action audit table alone
+  would let the criterion be declared discharged while ledger events stay outside the chain. Name
+  the ledger event authority, its persistence, and its tamper-detection tests as part of this
+  change, not as a follow-on.
 
 ### `W9-INGEST-009`
 

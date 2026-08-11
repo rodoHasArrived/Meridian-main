@@ -1,11 +1,11 @@
 {
   "total_files": 644,
-  "total_lines": 125070,
-  "orphaned_count": 256,
+  "total_lines": 125107,
+  "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 223,
-  "average_lines": 194.2,
+  "average_lines": 194.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -224,7 +224,6 @@
     "docs/integrations/tastytrade-endpoint-coverage.md",
     "docs/product/adversarial-program-review-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
-    "docs/product/w9-close-out-delivery-plan-2026-08.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
     "docs/roadmap/generated-doc-policy.md",
@@ -2971,7 +2970,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 270,
+      "line_count": 275,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2987,7 +2986,7 @@
     },
     {
       "path": "docs/product/w9-close-out-delivery-plan-2026-08.md",
-      "line_count": 228,
+      "line_count": 260,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
