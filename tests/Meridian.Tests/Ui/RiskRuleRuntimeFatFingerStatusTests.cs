@@ -384,6 +384,20 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
         statuses.Should().NotBeEmpty();
         statuses.Should().OnlyContain(status => status.State == "Constrained");
         statuses.Should().OnlyContain(status => status.Summary.Contains("Audit retention is incomplete"));
+
+        // And it must stay incomplete. A single backdated append leaves the retained set fitting
+        // the cap again, but the entries already discarded are still inside the window — judging
+        // completeness from what is retained rather than from what was dropped would flip this
+        // back to healthy over a gap that has not aged out.
+        await audit.RecordAsync(new ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Order",
+            Action: "OrderSubmitted",
+            Outcome: "Accepted",
+            OccurredAt: now.AddDays(-3),
+            Symbol: "MSFT"));
+
+        audit.RetentionWindowComplete.Should().BeFalse("the discarded entries are still inside the window");
     }
 
     // --- snapshot hydration ---

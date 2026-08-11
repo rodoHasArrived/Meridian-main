@@ -63,7 +63,7 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     private readonly int _inMemoryRetention;
     private readonly TimeSpan _inMemoryRetentionWindow;
     private bool _windowTruncationLogged;
-    private bool _retentionWindowComplete = true;
+    private DateTimeOffset? _newestDiscardedInsideWindow;
 
     /// <summary>
     /// Whether every entry inside the retention window is actually retained.
@@ -73,8 +73,24 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     /// and logging the shortfall does not make the claim true. Reading this lets such a consumer
     /// decline to assert safety instead, which is the only fail-closed answer available.
     /// </para>
+    /// <para>
+    /// Incompleteness is <b>sticky until the gap itself ages out</b>. It is judged from the newest
+    /// entry ever discarded from inside the window, not from whether the currently retained set
+    /// fits the cap — those differ exactly when it matters, because once entries have been dropped
+    /// the retained set can fit again while the dropped ones are still inside the window.
+    /// </para>
     /// </summary>
-    public bool RetentionWindowComplete { get { lock (_lock) { return _retentionWindowComplete; } } }
+    public bool RetentionWindowComplete
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _newestDiscardedInsideWindow is not { } discarded
+                    || discarded < DateTimeOffset.UtcNow - _inMemoryRetentionWindow;
+            }
+        }
+    }
 
     /// <summary>Default window kept regardless of the count cap. See the option's remarks.</summary>
     public static readonly TimeSpan DefaultInMemoryRetentionWindow = TimeSpan.FromHours(2);
@@ -367,24 +383,40 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
 
         var hardCap = _inMemoryRetention * RetentionHardCapMultiplier;
         var keep = Math.Min(Math.Max(_inMemoryRetention, insideWindow), hardCap);
-
-        // Self-healing: once the burst ages past the window the retained set is whole again.
-        _retentionWindowComplete = insideWindow <= hardCap;
-        if (!_retentionWindowComplete && !_windowTruncationLogged)
+        if (_entries.Count <= keep)
         {
-            // Once per process: this is a capacity signal, not per-append noise.
-            _windowTruncationLogged = true;
-            _logger.LogWarning(
-                "Execution audit retained {Kept} of {InsideWindow} entries inside the {Window} retention window; "
-                + "time-bounded consumers cannot assert the absence of an event over it.",
-                hardCap,
-                insideWindow,
-                _inMemoryRetentionWindow);
+            return;
         }
 
-        if (_entries.Count > keep)
+        var removeCount = _entries.Count - keep;
+        // The list is timestamp-ordered, so the removed prefix is the oldest and the newest of
+        // them is the last one removed. Recording it is what makes incompleteness *sticky*:
+        // completeness has to be judged by what was discarded, not by what happens to be retained.
+        // Recomputing "insideWindow <= hardCap" on each trim looked self-healing and was not — once
+        // a burst had already dropped entries, a single backdated append could leave the retained
+        // set fitting the cap and flip the window back to "complete" while the dropped entries were
+        // still inside it, letting a consumer resume asserting safety over a gap.
+        var newestRemoved = _entries[removeCount - 1].OccurredAt;
+        if (newestRemoved >= cutoff)
         {
-            _entries.RemoveRange(0, _entries.Count - keep);
+            _newestDiscardedInsideWindow =
+                _newestDiscardedInsideWindow is { } existing && existing > newestRemoved
+                    ? existing
+                    : newestRemoved;
+
+            if (!_windowTruncationLogged)
+            {
+                // Once per process: this is a capacity signal, not per-append noise.
+                _windowTruncationLogged = true;
+                _logger.LogWarning(
+                    "Execution audit retained {Kept} of {InsideWindow} entries inside the {Window} retention window; "
+                    + "time-bounded consumers cannot assert the absence of an event over it.",
+                    keep,
+                    insideWindow,
+                    _inMemoryRetentionWindow);
+            }
         }
+
+        _entries.RemoveRange(0, removeCount);
     }
 }
