@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-11T07:54:48Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-11T10:32:01Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 5 |
-| `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29+00:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Desktop and UI Workflows | `679371700` (2026-08-10T19:58:43+00:00) | 5 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `c10b0e057` (2026-08-09T19:58:58+00:00) | 6 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `c10b0e057` (2026-08-09T19:58:58+00:00) | 5 |
-| `src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs` | Desktop and UI Workflows | `c10b0e057` (2026-08-09T19:58:58+00:00) | 1 |
-| `src/Meridian/UiServer.cs` | Host and Composition | `9f2d6a492` (2026-08-09T19:46:22+00:00) | 6 |
+| `src/Meridian.Mcp/Tools/ConventionTools.cs` | MCP Integration | `01652ac36` (2026-08-11T09:42:23Z) | 1 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 4 |
+| `src/Meridian.Wpf/Services/StrategyWorkspaceShellPresentationService.cs` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 1 |
+| `src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 1 |
+| `src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
 

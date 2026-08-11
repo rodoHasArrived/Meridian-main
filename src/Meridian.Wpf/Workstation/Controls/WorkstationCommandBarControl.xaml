@@ -18,11 +18,14 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
+                        <!-- DisabledReason renders inline below the label, so no tooltip is bound
+                             here: WPF suppresses tooltips on disabled controls by default, which is
+                             the only state where DisabledReason is populated. -->
                         <Button Tag="{Binding}"
                                 Click="OnPrimaryCommandClick"
                                 Margin="0,0,8,8"
                                 IsEnabled="{Binding IsEnabled}"
-                                ToolTip="{Binding DisabledReason}"
+                                AutomationProperties.AutomationId="{Binding AutomationId}"
                                 AutomationProperties.Name="{Binding Description}">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">

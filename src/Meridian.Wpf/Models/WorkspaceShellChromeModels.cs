@@ -119,6 +119,13 @@ public sealed class WorkspaceCommandItem
 
     public string Description { get; init; } = string.Empty;
 
+    /// <summary>
+    /// Why the command cannot run right now. Distinct from <see cref="Description"/>, which
+    /// describes what the command does regardless of state. Consumers that leave this blank fall
+    /// back to <see cref="Description"/> when mapped for presentation.
+    /// </summary>
+    public string DisabledReason { get; init; } = string.Empty;
+
     public string ShortcutHint { get; init; } = string.Empty;
 
     public string Glyph { get; init; } = string.Empty;
@@ -126,6 +133,32 @@ public sealed class WorkspaceCommandItem
     public string Tone { get; init; } = WorkspaceTone.Secondary;
 
     public bool IsEnabled { get; init; } = true;
+
+    public string AutomationId => WorkspaceCommandAutomation.ResolveId("WorkspaceCommand", Id, Label);
+}
+
+/// <summary>
+/// Resolves stable automation identifiers for command surfaces. Prefers the command's declared
+/// id so automation stays anchored to identity rather than to display copy, and falls back to a
+/// normalized label for commands that ship without one.
+/// </summary>
+public static class WorkspaceCommandAutomation
+{
+    public static string ResolveId(string prefix, string commandId, string label)
+    {
+        if (!string.IsNullOrWhiteSpace(commandId))
+        {
+            return commandId;
+        }
+
+        var normalized = Normalize(label);
+        return string.IsNullOrEmpty(normalized) ? $"{prefix}Action" : $"{prefix}{normalized}";
+    }
+
+    private static string Normalize(string value)
+        => string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : new string(value.Where(char.IsLetterOrDigit).ToArray());
 }
 
 public sealed class WorkspaceQueueItem
