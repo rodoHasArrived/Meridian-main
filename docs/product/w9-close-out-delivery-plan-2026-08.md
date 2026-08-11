@@ -26,7 +26,7 @@ feature:
 
 | Row | Status entering the wave | What is actually open |
 | --- | --- | --- |
-| `W9-SAFETY-007` | `in_progress` | Fat-finger and price-collar rules absent from the mandatory validator; the two-lane safety-control sweep unaudited |
+| `W9-SAFETY-007` | `in_progress` | Fat-finger and price-collar rules absent from the mandatory validator; the two-lane safety-control sweep unaudited; the kill-switch sweep discards per-order cancellation outcomes |
 | `W9-GOV-008` | `planned` | 112 mutating routes still process permissionless requests; tenancy enforcement is off by default and reads stay fail-open; accounting/ledger audit events are not hash-chained |
 | `W9-INGEST-009` | `planned` | Institutional formats lack golden-file coverage, enforce no parse bounds, and cannot match transactions on the live path |
 
@@ -123,6 +123,18 @@ above** — several of these are why a change is scoped the way it is.
 
 ### `W9-SAFETY-007` — safety controls
 
+- **Criterion one is not closed, contrary to what the row implied.** The 2026-08-10 change closed
+  the *coupling* gap — opening the breaker now issues the sweep — but the criterion says activation
+  *cancels all open orders*, and the sweep cannot establish that. `OrderManagementSystem.CancelAllAsync`
+  awaits `CancelOrderCoreAsync` per order inside a `Parallel.ForEachAsync` and **discards the
+  returned `OrderResult`**, so a broker that rejects an individual cancellation leaves that order
+  working while the sweep completes normally; `ExecutionEndpoints` then audits
+  `CircuitBreakerCancelAll` as `Completed`, its `Failed` branch firing only on a thrown exception.
+  The existing endpoint test asserts that `CancelAllAsync` was invoked, never that the open book
+  emptied. Closing this means aggregating the per-order outcomes, surfacing a failed or partial
+  kill-switch state that names the orders still working, and asserting the book rather than the
+  call. It is small, it belongs with change 3 (the other criterion-one/three safety work), and
+  without it the row can reach acceptance while the kill switch silently half-fires.
 - `src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs` is the only file in
   `src/Meridian.Wpf/` that mentions cancel-all or kill-switch. Its Trading command bar publishes
   `Pause`, `Stop`, and `Flatten` as primary commands and `CancelAll` and `AcknowledgeRisk` as
@@ -173,9 +185,9 @@ above** — several of these are why a change is scoped the way it is.
 - Each price is measured against the reference it is meaningful to, and each order type contributes
   only the prices it genuinely puts at risk. A plain `Limit`'s limit is measured against the crossing
   touch; a `StopMarket` or `StopLimit` *trigger* against a new `TryGetTriggerReferencePrice` seam
-  that resolves **last trade first, crossing side second** — the same precedence
-  `PaperOrderMatchingPolicy.IsStopTriggered` uses; and a `StopLimit`'s limit against **its own
-  trigger**, which is what it is priced off. Auction
+  that resolves **last trade, then bar close, then crossing side** — the exact precedence
+  `PaperOrderMatchingPolicy.IsStopTriggered` uses (`LastTradePrice ?? BarClose`, quote last); and a
+  `StopLimit`'s limit against **its own trigger**, which is what it is priced off. Auction
   limits (`LimitOnOpen`/`LimitOnClose`) price against a future cross rather than the continuous
   touch, market orders may carry a simulated observation in `LimitPrice` through the paper gateway,
   trailing stops have a broker-derived trigger that moves with the market, and a multi-leg limit is a
@@ -184,13 +196,27 @@ above** — several of these are why a change is scoped the way it is.
   once the market reaches or passes above it, so a buy stop typed *beneath* the market is already
   crossed and a stop-market order that triggers on acceptance routes unbounded. Change 1 measures
   that mirrored direction under the same band.
+- **Changes 1 and 2 gate submission only, and that bound belongs in the plan rather than in a
+  reviewer's thread.** `OrderManagementSystem.IsRiskIncreasing` revalidates a quantity increase or a
+  numerically *higher* limit or stop price, but the dangerous direction is a *decrease* for a sell
+  limit and for a buy stop alike: a sell accepted at $100 can be amended to $1, and a buy stop
+  accepted at $110 can be amended to $1 and trigger immediately as an unbounded market order — the
+  very outcome the wrong-side trigger limb blocks on submission — with neither rule running. Every
+  new limit or stop value needs to re-enter the price controls regardless of whether notional
+  increases. That is an OMS-wide change touching every rule, so it is deliberately **not** folded
+  into change 1 or 2; but it is a bound on what those changes guarantee, not adjacent work, and
+  `W9-SAFETY-007` records it as such.
 - **The trigger's reference precedence is load-bearing, not a detail.** Any accessor that consults a
   quote before a print disagrees with the matcher whenever the two differ, and it does so in *both*
   directions. With a 100/120 quote and a 100 print, a buy stop at 105 is resting yet reads as crossed
   against the ask or the midpoint — a false rejection. With a 130 print, a buy stop at 125 sits above
   the ask and looks correctly placed against every quote-derived reference while the matcher fires it
   immediately — a false *approval*, and an unbounded market order. Neither `TryGetReferencePrice`
-  (quote midpoint first) nor `TryGetTouchPrice` (bid/ask) is safe here on its own. The collar
+  (quote midpoint first) nor `TryGetTouchPrice` (bid/ask) is safe here on its own. Nor is
+  trade-then-quote: **the bar-close leg is load-bearing too**, because a bar-driven session has no
+  print at all, and skipping to the quote reproduces the false approval exactly — no print, a 130
+  close, a 100 ask, and a buy stop at 125 reads as resting 25% below the market while the matcher
+  triggers it. All three legs, in the matcher's order, or the two disagree somewhere. The collar
   inherits every one of these distinctions; reusing the limit's reference or orientation for a
   trigger would reopen the hole change 1 closed.
 - **The stop exclusion has a hole that changes 1–2 must close.** "A stop sits away from the market
@@ -310,6 +336,16 @@ above** — several of these are why a change is scoped the way it is.
   environment-variable admin path supplies only a username and password hash, so that profile
   resolves to a null tenant today. Give it a deployment-default company in the same change that
   flips the default, or local and demo startup break.
+- **Flipping the write gate also assumes the routes are decorated, and the leading tranche's are
+  not.** `FundScopedWriteTenantOptions` only affects routes already carrying
+  `RequireFundScopedWriteTenant`, and `FundStructureEndpoints` has none — the
+  `app.MapGroup("/api/fund-structure")` root and the writes beneath it, `POST
+  /api/fund-structure/organizations` among them, never resolve tenant scope at all. So after change
+  4 adds permission metadata, an authorized but tenantless session still reaches those handlers even
+  once change 9 flips enforcement: the permission gate passes it and no tenant gate exists to stop
+  it. Change 9 must enumerate the undecorated write routes and gate them, or allowlist the genuine
+  bootstrap operations with a stated reason. This is distinct from the fail-open *read* predicates
+  below — those pass rows, these pass requests.
 - **The write gate is not the whole criterion.** Flipping `RequireFundScopedWriteTenant` covers only
   the decorated write and evaluate routes. The exit criterion requires cross-tenant *reads* to fail
   closed too, and today the read side is deliberately fail-open in two places: the
