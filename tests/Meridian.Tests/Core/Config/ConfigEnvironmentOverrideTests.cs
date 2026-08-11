@@ -72,6 +72,34 @@ public sealed class ConfigEnvironmentOverrideTests
 
         result.Symbols.Should().NotBeNull();
         result.Symbols!.Select(s => s.Symbol).Should().Equal("SPY", "QQQ", "BRK.B");
+
+        // Depth stays off when nothing is configured to inherit from: the environment cannot know
+        // whether the selected provider advertises Level2Book, and SubscriptionOrchestrator leaks
+        // a registration and an ownership lease when the client answers -1.
+        result.Symbols.Should().OnlyContain(s => !s.SubscribeDepth && s.SubscribeTrades);
+    }
+
+    [Fact]
+    public void ApplyOverrides_Symbols_InheritCollectionTogglesWithoutContractIdentity()
+    {
+        // MDC_SYMBOLS changes which symbols are collected, not how. A configuration that
+        // deliberately enabled depth keeps it; one that disabled it — like the generated Docker
+        // template — is not silently re-enabled by the record defaults.
+        using var symbolsVar = new EnvironmentVariableScope("MDC_SYMBOLS", "IBM,GE");
+
+        var configured = new AppConfig(Symbols:
+        [
+            new SymbolConfig("SPY", SubscribeDepth: true, DepthLevels: 25, LocalSymbol: "PCG PRA", ConId: 12345)
+        ]);
+
+        var result = new ConfigEnvironmentOverride().ApplyOverrides(configured);
+
+        result.Symbols!.Select(s => s.Symbol).Should().Equal("IBM", "GE");
+        result.Symbols.Should().OnlyContain(s => s.SubscribeDepth && s.DepthLevels == 25);
+
+        // Contract identity is per-symbol and must not be carried across: a LocalSymbol or ConId
+        // belonging to SPY would describe the wrong instrument entirely on IBM and GE.
+        result.Symbols.Should().OnlyContain(s => s.LocalSymbol == null && s.ConId == null);
     }
 
     [Fact]

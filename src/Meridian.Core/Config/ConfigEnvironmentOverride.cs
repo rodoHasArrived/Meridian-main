@@ -212,7 +212,7 @@ public sealed class ConfigEnvironmentOverride
             "DataRoot" => config with { DataRoot = value },
             "Compress" => config with { Compress = ParseBool(value) },
             "DataSource" => config with { DataSource = ParseDataSource(value) },
-            "Symbols" => config with { Symbols = ParseSymbols(value) },
+            "Symbols" => config with { Symbols = ParseSymbols(value, config.Symbols) },
             "Synthetic" => ApplySyntheticOverride(config, parts.Skip(1).ToArray(), value),
             "Alpaca" => ApplyAlpacaOverride(config, parts.Skip(1).ToArray(), value),
             "IB" => ApplyIbOverride(config, parts.Skip(1).ToArray(), value),
@@ -398,14 +398,40 @@ public sealed class ConfigEnvironmentOverride
             fieldName: "DataSource");
     }
 
-    private static SymbolConfig[] ParseSymbols(string value)
+    private static SymbolConfig[] ParseSymbols(string value, SymbolConfig[]? configured)
     {
+        // MDC_SYMBOLS changes *which* symbols are collected, not *how*. Constructing bare
+        // SymbolConfig records would silently re-apply the record defaults — SubscribeDepth = true
+        // among them — and so undo a configuration that deliberately disabled depth, such as the
+        // generated Docker template. SubscriptionOrchestrator registers each symbol with
+        // MarketDepthCollector and takes an ownership lease before the client returns -1, and its
+        // non-positive return path releases neither, so re-enabling depth here would leave a
+        // phantom subscription for any provider that cannot serve it.
+        //
+        // The list is replaced wholesale, so the first configured symbol supplies the posture the
+        // new entries inherit. With nothing configured, collect trades and leave depth off: the
+        // environment cannot know whether the selected provider advertises Level2Book.
+        //
+        // Only the collection toggles are inherited. Copying the whole record would carry
+        // per-symbol contract identity — LocalSymbol, ConId, Strike, expiry — onto unrelated
+        // tickers, so the contract fields stay at their STK/SMART/USD defaults, which is what a
+        // comma-separated ticker list can actually express. Anything needing those fields belongs
+        // in JSON, as the reference states.
+        var first = configured is { Length: > 0 } ? configured[0] : null;
+        var subscribeTrades = first?.SubscribeTrades ?? true;
+        var subscribeDepth = first?.SubscribeDepth ?? false;
+        var depthLevels = first?.DepthLevels ?? 10;
+
         // SymbolConfigValidator matches ^[A-Z0-9\-\.\/]+$, so a lowercase ticker typed into the
         // environment would otherwise fail validation rather than subscribe. Character validity
         // is deliberately left to that validator instead of being restated here.
         var symbols = value
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(symbol => new SymbolConfig(symbol.ToUpperInvariant()))
+            .Select(symbol => new SymbolConfig(
+                symbol.ToUpperInvariant(),
+                SubscribeTrades: subscribeTrades,
+                SubscribeDepth: subscribeDepth,
+                DepthLevels: depthLevels))
             .ToArray();
 
         // Same fail-closed contract as MDC_DATASOURCE: a variable the operator deliberately set
