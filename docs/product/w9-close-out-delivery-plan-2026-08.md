@@ -34,6 +34,15 @@ Closing all three also supplies evidence toward `PRD-006`, `PRD-007`/`PRD-009`, 
 `PRD-010`/`PRD-101` in the [production-readiness tracker](implementation-todo-list.md). It does not
 substitute for that tracker's P0 release gate.
 
+**One tracker row needs correcting before this wave, not after it.** `PRD-010` is currently marked
+implementation-complete on the claim that bounded schema-aware statement parsing is enforced. The
+source audit below establishes the opposite for two shipping connectors: camt.053 decodes the whole
+payload into an `XDocument` and BAI2 decodes and splits the whole payload, neither enforcing a
+record limit, and `StatementImportService` accepts an arbitrary source document so the upload byte
+cap does not cover the seam. Either downgrade `PRD-010` or explicitly scope camt.053 and BAI2 out of
+the supported envelope until change 10 lands — otherwise the P0 gate can read green on a control
+this plan's own evidence contradicts.
+
 ## Sequence
 
 Eleven changes in three phases, one roadmap row per change, with the row's registry status and
@@ -175,6 +184,15 @@ above** — several of these are why a change is scoped the way it is.
   hard-blocking. That was not expressible before the risk-engine blueprint's PR 1.
 - `Meridian.Risk` has no dedicated test project, but `tests/Meridian.Tests/Risk/` already holds
   per-rule coverage. New rule tests belong there.
+- **Registering a rule is not enforcing it, and changes 1–2 owe the difference.**
+  `RiskRuleRuntimeService` initialises every portfolio-aware threshold to `null`, and the
+  `OrderNotionalRule` pattern approves when its thresholds are unconfigured. A deployment with no
+  `risk-rules.json` therefore composes all three new rules and enforces none of them, while tests
+  that pass explicit thresholds go green — so the catalogue this criterion demands could be
+  "complete" and inert in production simultaneously. These changes owe either safe defaults for the
+  quantity, deviation, and collar bands, or a fail-closed preflight that refuses a production
+  composition whose catalogue is unconfigured. A test on a clean configuration, not one that
+  supplies values, is what proves it.
 
 ### `W9-GOV-008` — authorization
 
@@ -250,10 +268,11 @@ above** — several of these are why a change is scoped the way it is.
   `RequireFundProfileTenantScope()` filter passes a blank fund, a caller with no tenant scope, or an
   unavailable guard, and the storage `TenantReadPredicate` returns rows whose `tenant_id` is null so
   unstamped legacy rows stay visible. Both are correct as written for a single-company deployment
-  and both are load-bearing for it, so this change owes an explicit decision per path — tighten, or
-  record why the deployment boundary still carries it — plus the tests that prove whichever way it
-  lands. Reading the write-gate switch as "the remaining step" would close the row with the read
-  side still open.
+  and both are load-bearing for it. **Both must nonetheless be tightened, with regression tests,
+  before the row advances.** The criterion is categorical - cross-tenant reads fail closed and an
+  unresolvable scope is rejected rather than defaulted - so documenting the deployment boundary
+  explains the current behaviour but cannot discharge it. Reading the write-gate switch as "the
+  remaining step" would close the row with the read side still open.
 - Slice 4c's remaining defense-in-depth items (fund-account sub-tables, fund-structure store) are
   not a currently reachable cross-tenant residual and stay out of this wave.
 
@@ -287,11 +306,21 @@ above** — several of these are why a change is scoped the way it is.
   compositions replace it with `RetainedInternalReconciliationPopulationProvider`. Positions and
   cash genuinely do come from the retained book.
 - **But the ledger-transaction population is empty by design.** That provider returns
-  `new InternalReconciliationPopulations(positions, cash, [])`, and its own remarks explain why:
-  the reconciliation context carries no ledger-book/period scope key, the journal is double-entry so
-  projecting one custodian-visible movement is a modeling choice, only custodian-reconcilable
-  postings should project at all, and fund-scoped journal reads are tenant-authorized. It "awaits an
-  authorized period-scoped ledger source and an agreed journal→transaction projection."
+  `new InternalReconciliationPopulations(positions, cash, [])`, and its own remarks explain why: no
+  ledger-book/period scope key reaches it, the journal is double-entry so projecting one
+  custodian-visible movement is a modeling choice, only custodian-reconcilable postings should
+  project at all, and fund-scoped journal reads are tenant-authorized. It "awaits an authorized
+  period-scoped ledger source and an agreed journal→transaction projection."
+- **The missing scope is a dropped hand-off, not an absent value — do not invent a new lookup.**
+  `StatementAccountingScope` (`FundProfileId`, `LedgerBookId`, `AccountingPeriodId`, `AsOfDate`) is
+  already carried on the run request and persisted on the run record, resolved against the
+  authenticated tenant and company by the intake authority. It is lost one layer down:
+  `InternalReconciliationPopulationContext` declares only fund account, external account, period
+  start/end, and base currency, and `StatementRunWorkflowService` builds it purely from the import.
+  So change 11's first move is to **propagate that authority-verified scope into the population
+  context and require it for ledger reads** — inventing a parallel, potentially unscoped ledger
+  lookup would bypass the tenant authorization the retained value already carries. The
+  journal→transaction projection semantics are a separate decision on top of that.
 - **And the live matcher is the one-to-one engine.** `StatementRunMatcher` invokes
   `new StatementMatchingEngine()`, not the split-capable `ReconciliationMatchingEngine`.
 - Together these decide the row's shape. camt.053 and BAI2 are *transaction* statements, so with an
@@ -328,9 +357,14 @@ above** — several of these are why a change is scoped the way it is.
   The register's contract is explicit: *"Re-derive the next free ordinal from disk at implementation
   time and update this table if an unrelated lane lands first. Do not renumber a migration that has
   already shipped."* So change 9 re-derives from disk when it is written. If it lands before those
-  blueprints, it takes the next free ordinal (029 today) and updates the reservation table in
-  [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md) to shift the
-  unshipped reservations up — which is permitted precisely because they have not shipped.
+  blueprints, it takes the next free ordinal (029 today) and shifts the unshipped reservations up —
+  which is permitted precisely because they have not shipped. **Shifting means every reference, not
+  just the register table:** `incentive-fee-mechanics.md` names 029–030,
+  `commitment-and-capital-call-engine.md` names 031, `equalization-and-series-accounting.md` names
+  033–035, and the mark blueprint depends on 036–038 applying in phase order. Updating
+  [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md) alone would leave
+  those documents hard-coded to displaced numbers, which is how a collision or a lower-after-higher
+  application gets created.
 - **Lane collisions.** Change 3 touches WPF Trading surfaces owned by `W8-WPF-PARITY-001`, and
   change 4 touches reporting groups that `W8-UX-CONSOL-001` is consolidating. Refresh
   [`docs/development/wpf-web-ui-alignment-plan.md`](../development/wpf-web-ui-alignment-plan.md)
@@ -374,3 +408,10 @@ gh workflow run targeted-test.yml --ref <branch> \
 
 or the Windows-only `mode=wpf-dev-loop`, or the desktop workflow dispatched on the candidate commit.
 Without a run whose inputs actually compiled the WPF test sources, the criterion is not discharged.
+
+**`quality-gate` alone cannot accept change 9 either, for the same class of reason.** Every lane runs
+on Ubuntu with `MERIDIAN_DISABLE_DOCKER_TESTS=true` and no PostgreSQL service, so a new ledger
+migration, the Postgres-backed accounting/ledger audit store, and cross-process chain serialization
+can all go unexecuted while the gate is green. Change 9 requires a named `Production Certification`
+run — or a targeted PostgreSQL-backed run — on the candidate commit, linked as evidence, exactly as
+change 3 requires named Windows proof.
