@@ -1,3 +1,4 @@
+using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 
@@ -322,13 +323,7 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
     }
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private static bool IsEffective(UserAccessAssignmentDto assignment, DateTimeOffset asOf)
         => assignment.EffectiveFrom <= asOf && (!assignment.EffectiveTo.HasValue || assignment.EffectiveTo > asOf);

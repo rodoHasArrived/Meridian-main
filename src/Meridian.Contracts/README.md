@@ -30,6 +30,12 @@ or provider implementations.
   case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
+  `OperationsOriginGuard` owns the "reviewed automation may not perform this action; a human
+  operator is required" control — the predicate and the canonical refusal message live there, so the
+  rule evolves in one place instead of across every module that enforces it. Every refusal carries
+  `HumanOperatorRequiredException`, either as the thrown exception or as the inner exception of a
+  module-specific type, so callers can identify a governance refusal uniformly. It derives from
+  `InvalidOperationException` so existing catch sites keep working.
 - `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
   reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
   superseded-generation manifest and receipt history, evidence-link, and recovery payloads.

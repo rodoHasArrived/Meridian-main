@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
@@ -1364,12 +1365,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
            reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this accounting report action.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private async Task SavePackageAsync(AccountingReportPackageBundleDto bundle, CancellationToken ct)
     {

@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
@@ -1639,7 +1640,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
         bool requireReopenApproval = false)
     {
         ArgumentNullException.ThrowIfNull(command);
-        if (command.ActionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(command.ActionOrigin))
         {
             throw new InvalidOperationException(
                 "Reviewed automation cannot queue closing entries or reversals; a human operator must perform the close action.");

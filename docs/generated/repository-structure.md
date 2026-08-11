@@ -1215,6 +1215,7 @@ Meridian-main
 │       │   ├── stop-collector.ps1
 │       │   └── stop-collector.sh
 │       ├── tests
+│       │   ├── test_ai_repo_updater_blocking_async.py
 │       │   ├── test_check_ai_navigation_freshness.py
 │       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
@@ -1996,6 +1997,7 @@ Meridian-main
 │   │   │   ├── wpf-direct-lending.png
 │   │   │   ├── wpf-environment-designer.png
 │   │   │   ├── wpf-event-replay.png
+│   │   │   ├── wpf-evidence-workbench.png
 │   │   │   ├── wpf-export-presets.png
 │   │   │   ├── wpf-fund-accounting-close.png
 │   │   │   ├── wpf-fund-accounting-configure.png
@@ -2019,6 +2021,9 @@ Meridian-main
 │   │   │   ├── wpf-live-data.png
 │   │   │   ├── wpf-messaging-hub.png
 │   │   │   ├── wpf-notification-center.png
+│   │   │   ├── wpf-operations-continuity.png
+│   │   │   ├── wpf-operations-record-release.png
+│   │   │   ├── wpf-operator-readiness-console.png
 │   │   │   ├── wpf-options.png
 │   │   │   ├── wpf-order-book.png
 │   │   │   ├── wpf-package-manager.png
@@ -3910,6 +3915,7 @@ Meridian-main
 │   │   │   ├── OperationalCaseHistoryContracts.cs
 │   │   │   ├── OperationalCaseHistoryHashing.cs
 │   │   │   ├── OperationsContractsJsonContext.cs
+│   │   │   ├── OperationsOriginGuard.cs
 │   │   │   └── VerifiedOperationOutcome.cs
 │   │   ├── Options
 │   │   │   └── OptionReferenceDtos.cs
@@ -8898,6 +8904,8 @@ Meridian-main
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
+│   │   │   ├── Operations
+│   │   │   │   └── OperationsOriginGuardTests.cs
 │   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── DataProvenanceTests.cs

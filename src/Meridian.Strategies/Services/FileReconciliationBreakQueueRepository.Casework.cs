@@ -1057,7 +1057,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
         return command.Action switch
         {
-            _ when RequiresHumanOrigin(command) && command.ActionOrigin != OperationsActionOriginDto.HumanOperator
+            _ when RequiresHumanOrigin(command) && !OperationsOriginGuard.IsHumanOperator(command.ActionOrigin)
                 => Invalid(item, "Reviewed automation cannot resolve, sign off, or reopen reconciliation cases; a human operator approval is required.", ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator, ["actionOrigin"], RequestedLifecycle(command)),
             ReconciliationCaseworkAction.Assign when string.IsNullOrWhiteSpace(command.Assignee)
                 => Invalid(item, "Assignee is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),

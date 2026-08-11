@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Evidence;
 
@@ -277,7 +278,7 @@ public sealed class AccountingProductionCertificationCommandService(
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Profile);
-        if (request.ActionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
         {
             throw new ArgumentException("Only a human operator can certify accounting production controls.");
         }

@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
@@ -703,9 +704,12 @@ public sealed class AccountingMigrationRunExecutionService
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
-            throw new ArgumentException("Only a human operator can execute accounting migration runs.", nameof(actionOrigin));
+            throw new ArgumentException(
+                "Only a human operator can execute accounting migration runs.",
+                nameof(actionOrigin),
+                OperationsOriginGuard.Refusal("execute accounting migration runs"));
         }
     }
 

@@ -1,0 +1,72 @@
+using Meridian.Contracts.Workstation;
+
+namespace Meridian.Contracts.Operations;
+
+/// <summary>
+/// Raised when an operation that requires a human operator is attempted by reviewed automation.
+/// </summary>
+/// <remarks>
+/// Derives from <see cref="InvalidOperationException"/> so that existing callers which catch
+/// <see cref="InvalidOperationException"/> keep working, while callers that want to render
+/// "this action needs a human approver" as a distinct, actionable state can catch this type
+/// instead of pattern-matching on message text.
+/// </remarks>
+public sealed class HumanOperatorRequiredException : InvalidOperationException
+{
+    public HumanOperatorRequiredException(string action)
+        : base(OperationsOriginGuard.RefusalMessage(action))
+        => Action = action;
+
+    public HumanOperatorRequiredException(string action, string message)
+        : base(message)
+        => Action = action;
+
+    /// <summary>The action that was refused, in the phrasing used by the refusal message.</summary>
+    public string Action { get; }
+}
+
+/// <summary>
+/// The single owner of the "reviewed automation may not perform this action; a human operator is
+/// required" governance control.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The predicate and the refusal message live here so the rule can evolve in one place. A realistic
+/// future change — admitting a second approved origin, recording an audit entry when automation is
+/// refused, or distinguishing "needs a human" from "needs a <i>second</i> human" — becomes one edit
+/// rather than a coordinated sweep where a missed module leaves a silent governance hole.
+/// </para>
+/// <para>
+/// Every refusal carries a <see cref="HumanOperatorRequiredException"/>, either as the thrown
+/// exception or as the inner exception of a module-specific type. Callers can therefore identify a
+/// governance refusal uniformly, regardless of which module raised it.
+/// </para>
+/// </remarks>
+public static class OperationsOriginGuard
+{
+    /// <summary>Returns <see langword="true"/> when the action originates from a human operator.</summary>
+    public static bool IsHumanOperator(OperationsActionOriginDto actionOrigin)
+        => actionOrigin == OperationsActionOriginDto.HumanOperator;
+
+    /// <summary>The canonical refusal message for <paramref name="action"/>.</summary>
+    public static string RefusalMessage(string action)
+        => $"Reviewed automation cannot {action}; a human operator approval is required.";
+
+    /// <summary>
+    /// Builds the uniform refusal signal without throwing it, for modules that raise their own
+    /// exception type and carry this as the inner exception.
+    /// </summary>
+    public static HumanOperatorRequiredException Refusal(string action) => new(action);
+
+    /// <summary>
+    /// Throws <see cref="HumanOperatorRequiredException"/> unless <paramref name="actionOrigin"/> is
+    /// a human operator.
+    /// </summary>
+    public static void RequireHumanOperator(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (!IsHumanOperator(actionOrigin))
+        {
+            throw new HumanOperatorRequiredException(action);
+        }
+    }
+}

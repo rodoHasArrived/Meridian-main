@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
@@ -2131,12 +2132,7 @@ public sealed class AccountingSystemIntegrationService
 
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this external accounting action.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)
