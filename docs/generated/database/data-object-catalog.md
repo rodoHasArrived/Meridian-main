@@ -15,7 +15,7 @@ This is a source inventory of public DTOs and related contract objects. Database
 | `class` | 180 |
 | `configuration` | 19 |
 | `dto` | 1246 |
-| `enum` | 348 |
+| `enum` | 349 |
 | `event` | 5 |
 | `payload` | 63 |
 | `record` | 308 |

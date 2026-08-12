@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
@@ -850,7 +851,7 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
             || !string.Equals(companyId, expectedScope.CompanyId, StringComparison.Ordinal)
             || !string.Equals(workflowId, expectedScope.WorkflowId, StringComparison.Ordinal)
             || !string.Equals(documentKey, expectedDocumentKey, StringComparison.Ordinal)
-            || !IsSha256(contentHash)
+            || !Sha256Digest.IsCanonical(contentHash)
             || byteSize <= 0
             || version <= 0
             || updatedAtUtc < storedAtUtc)
@@ -1010,10 +1011,6 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
 
     private static string ComputeSha256(ReadOnlySpan<byte> content) =>
         Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
-    private static bool IsSha256(string value) =>
-        value.Length == 64
-        && value.All(static character => character is >= '0' and <= '9' or >= 'a' and <= 'f');
 
     private static DateTimeOffset ReadUtcTimestamp(NpgsqlDataReader reader, int ordinal) =>
         new(DateTime.SpecifyKind(reader.GetDateTime(ordinal), DateTimeKind.Utc));

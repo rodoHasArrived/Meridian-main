@@ -3,6 +3,7 @@ using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -663,10 +664,10 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             || !string.Equals(snapshot.PeriodId, source.AccountingPeriodId, StringComparison.Ordinal)
             || !string.Equals(snapshot.SourceCheckpointId, source.CheckpointId, StringComparison.Ordinal)
             || !string.Equals(snapshot.SourceCheckpointHash, source.CheckpointHash, StringComparison.OrdinalIgnoreCase)
-            || !IsSha256(source.CheckpointHash)
-            || !IsSha256(snapshot.SnapshotHash)
-            || !IsSha256(snapshot.ReconciliationCheckpointHash)
-            || !IsSha256(parametersHash)
+            || !Sha256Digest.IsWellFormed(source.CheckpointHash)
+            || !Sha256Digest.IsWellFormed(snapshot.SnapshotHash)
+            || !Sha256Digest.IsWellFormed(snapshot.ReconciliationCheckpointHash)
+            || !Sha256Digest.IsWellFormed(parametersHash)
             || string.IsNullOrWhiteSpace(parametersJson)
             || !string.Equals(ComputeSha256(parametersJson), parametersHash, StringComparison.OrdinalIgnoreCase)
             || source.AsOfDate != contract.AsOfDate
@@ -1590,9 +1591,6 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         var normalized = value?.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
 
     private static string ComputeSha256(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
