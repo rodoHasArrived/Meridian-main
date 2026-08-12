@@ -1077,6 +1077,182 @@ Meridian-main
 │   │   └── __init__.py
 │   ├── rules
 │   │   └── doc-rules.yaml
+│   ├── schema-control
+│   │   ├── candidate
+│   │   │   ├── docs
+│   │   │   │   ├── contracts
+│   │   │   │   │   ├── asset-operations-contracts.md
+│   │   │   │   │   ├── banking-contracts.md
+│   │   │   │   │   ├── direct-lending-contracts-page-01.md
+│   │   │   │   │   ├── direct-lending-contracts-page-02.md
+│   │   │   │   │   ├── direct-lending-contracts.md
+│   │   │   │   │   ├── fund-governance-contracts-page-01.md
+│   │   │   │   │   ├── fund-governance-contracts-page-02.md
+│   │   │   │   │   ├── fund-governance-contracts.md
+│   │   │   │   │   ├── identity-access-contracts.md
+│   │   │   │   │   ├── ledger-contracts-page-01.md
+│   │   │   │   │   ├── ledger-contracts-page-02.md
+│   │   │   │   │   ├── ledger-contracts-page-03.md
+│   │   │   │   │   ├── ledger-contracts-page-04.md
+│   │   │   │   │   ├── ledger-contracts.md
+│   │   │   │   │   ├── money-market-contracts.md
+│   │   │   │   │   ├── reporting-contracts.md
+│   │   │   │   │   ├── security-master-contracts-page-01.md
+│   │   │   │   │   ├── security-master-contracts-page-02.md
+│   │   │   │   │   ├── security-master-contracts-page-03.md
+│   │   │   │   │   └── security-master-contracts.md
+│   │   │   │   ├── diagrams
+│   │   │   │   │   ├── asset_operations.mmd
+│   │   │   │   │   ├── banking.mmd
+│   │   │   │   │   ├── contracts-asset-operations-contracts.mmd
+│   │   │   │   │   ├── contracts-banking-contracts.mmd
+│   │   │   │   │   ├── contracts-direct-lending-contracts-page-01.mmd
+│   │   │   │   │   ├── contracts-direct-lending-contracts-page-02.mmd
+│   │   │   │   │   ├── contracts-fund-governance-contracts-page-01.mmd
+│   │   │   │   │   ├── contracts-fund-governance-contracts-page-02.mmd
+│   │   │   │   │   ├── contracts-identity-access-contracts.mmd
+│   │   │   │   │   ├── contracts-ledger-contracts-page-01.mmd
+│   │   │   │   │   ├── contracts-ledger-contracts-page-02.mmd
+│   │   │   │   │   ├── contracts-ledger-contracts-page-03.mmd
+│   │   │   │   │   ├── contracts-ledger-contracts-page-04.mmd
+│   │   │   │   │   ├── contracts-money-market-contracts.mmd
+│   │   │   │   │   ├── contracts-reporting-contracts.mmd
+│   │   │   │   │   ├── contracts-security-master-contracts-page-01.mmd
+│   │   │   │   │   ├── contracts-security-master-contracts-page-02.mmd
+│   │   │   │   │   ├── contracts-security-master-contracts-page-03.mmd
+│   │   │   │   │   ├── fund_accounts.mmd
+│   │   │   │   │   ├── fund_structure.mmd
+│   │   │   │   │   ├── identity_access.mmd
+│   │   │   │   │   ├── ledger.mmd
+│   │   │   │   │   ├── money_market.mmd
+│   │   │   │   │   ├── public.mmd
+│   │   │   │   │   ├── reporting.mmd
+│   │   │   │   │   └── security_master.mmd
+│   │   │   │   ├── modules
+│   │   │   │   │   ├── asset_operations.md
+│   │   │   │   │   ├── banking.md
+│   │   │   │   │   ├── fund_accounts.md
+│   │   │   │   │   ├── fund_structure.md
+│   │   │   │   │   ├── identity_access.md
+│   │   │   │   │   ├── ledger.md
+│   │   │   │   │   ├── money_market.md
+│   │   │   │   │   ├── public.md
+│   │   │   │   │   ├── reporting.md
+│   │   │   │   │   └── security_master.md
+│   │   │   │   ├── data-object-catalog.md
+│   │   │   │   ├── README.md
+│   │   │   │   └── schema-catalog.md
+│   │   │   ├── manifest
+│   │   │   │   ├── schemas
+│   │   │   │   │   ├── asset_operations.json
+│   │   │   │   │   ├── banking.json
+│   │   │   │   │   ├── fund_accounts.json
+│   │   │   │   │   ├── fund_structure.json
+│   │   │   │   │   ├── identity_access.json
+│   │   │   │   │   ├── ledger.json
+│   │   │   │   │   ├── money_market.json
+│   │   │   │   │   ├── public.json
+│   │   │   │   │   ├── reporting.json
+│   │   │   │   │   └── security_master.json
+│   │   │   │   ├── catalog.json
+│   │   │   │   ├── contracts.json
+│   │   │   │   ├── dependencies.json
+│   │   │   │   ├── migrations.json
+│   │   │   │   └── policies.json
+│   │   │   ├── reports
+│   │   │   │   ├── migration-application.json
+│   │   │   │   ├── policy-report.json
+│   │   │   │   └── summary.md
+│   │   │   └── render-manifest.json
+│   │   └── candidate-verify
+│   │       ├── docs
+│   │       │   ├── contracts
+│   │       │   │   ├── asset-operations-contracts.md
+│   │       │   │   ├── banking-contracts.md
+│   │       │   │   ├── direct-lending-contracts-page-01.md
+│   │       │   │   ├── direct-lending-contracts-page-02.md
+│   │       │   │   ├── direct-lending-contracts.md
+│   │       │   │   ├── fund-governance-contracts-page-01.md
+│   │       │   │   ├── fund-governance-contracts-page-02.md
+│   │       │   │   ├── fund-governance-contracts.md
+│   │       │   │   ├── identity-access-contracts.md
+│   │       │   │   ├── ledger-contracts-page-01.md
+│   │       │   │   ├── ledger-contracts-page-02.md
+│   │       │   │   ├── ledger-contracts-page-03.md
+│   │       │   │   ├── ledger-contracts-page-04.md
+│   │       │   │   ├── ledger-contracts.md
+│   │       │   │   ├── money-market-contracts.md
+│   │       │   │   ├── reporting-contracts.md
+│   │       │   │   ├── security-master-contracts-page-01.md
+│   │       │   │   ├── security-master-contracts-page-02.md
+│   │       │   │   ├── security-master-contracts-page-03.md
+│   │       │   │   └── security-master-contracts.md
+│   │       │   ├── diagrams
+│   │       │   │   ├── asset_operations.mmd
+│   │       │   │   ├── banking.mmd
+│   │       │   │   ├── contracts-asset-operations-contracts.mmd
+│   │       │   │   ├── contracts-banking-contracts.mmd
+│   │       │   │   ├── contracts-direct-lending-contracts-page-01.mmd
+│   │       │   │   ├── contracts-direct-lending-contracts-page-02.mmd
+│   │       │   │   ├── contracts-fund-governance-contracts-page-01.mmd
+│   │       │   │   ├── contracts-fund-governance-contracts-page-02.mmd
+│   │       │   │   ├── contracts-identity-access-contracts.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-01.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-02.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-03.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-04.mmd
+│   │       │   │   ├── contracts-money-market-contracts.mmd
+│   │       │   │   ├── contracts-reporting-contracts.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-01.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-02.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-03.mmd
+│   │       │   │   ├── fund_accounts.mmd
+│   │       │   │   ├── fund_structure.mmd
+│   │       │   │   ├── identity_access.mmd
+│   │       │   │   ├── ledger.mmd
+│   │       │   │   ├── money_market.mmd
+│   │       │   │   ├── public.mmd
+│   │       │   │   ├── reporting.mmd
+│   │       │   │   └── security_master.mmd
+│   │       │   ├── modules
+│   │       │   │   ├── asset_operations.md
+│   │       │   │   ├── banking.md
+│   │       │   │   ├── fund_accounts.md
+│   │       │   │   ├── fund_structure.md
+│   │       │   │   ├── identity_access.md
+│   │       │   │   ├── ledger.md
+│   │       │   │   ├── money_market.md
+│   │       │   │   ├── public.md
+│   │       │   │   ├── reporting.md
+│   │       │   │   └── security_master.md
+│   │       │   ├── data-object-catalog.md
+│   │       │   ├── README.md
+│   │       │   └── schema-catalog.md
+│   │       ├── manifest
+│   │       │   ├── schemas
+│   │       │   │   ├── asset_operations.json
+│   │       │   │   ├── banking.json
+│   │       │   │   ├── fund_accounts.json
+│   │       │   │   ├── fund_structure.json
+│   │       │   │   ├── identity_access.json
+│   │       │   │   ├── ledger.json
+│   │       │   │   ├── money_market.json
+│   │       │   │   ├── public.json
+│   │       │   │   ├── reporting.json
+│   │       │   │   └── security_master.json
+│   │       │   ├── catalog.json
+│   │       │   ├── contracts.json
+│   │       │   ├── dependencies.json
+│   │       │   ├── migrations.json
+│   │       │   └── policies.json
+│   │       ├── reports
+│   │       │   ├── artifact-drift.json
+│   │       │   ├── migration-application.json
+│   │       │   ├── policy-report.json
+│   │       │   ├── schema-diff.json
+│   │       │   ├── schema-diff.md
+│   │       │   └── summary.md
+│   │       └── render-manifest.json
 │   └── scripts
 │       ├── ai
 │       │   ├── tests
@@ -1399,6 +1575,7 @@ Meridian-main
 │   │   ├── provider-management.md
 │   │   ├── README.md
 │   │   ├── runtime-component-state-boundaries.md
+│   │   ├── security-master-extensibility-review.md
 │   │   ├── storage-design.md
 │   │   ├── strategy-builder-integration.md
 │   │   ├── strategy-engine-foundation.md
@@ -3966,6 +4143,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
+│   │   │   ├── SecurityAssetTermsFieldEditValidator.cs
 │   │   │   ├── SecurityAssetTermsSchema.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
@@ -5613,7 +5791,8 @@ Meridian-main
 │   │   │   │   ├── 023_security_master_quality_reports.sql
 │   │   │   │   ├── 024_security_master_schema_version_column.sql
 │   │   │   │   ├── 025_security_master_audit_stores.sql
-│   │   │   │   └── 026_security_master_operator_override_approvals.sql
+│   │   │   │   ├── 026_security_master_operator_override_approvals.sql
+│   │   │   │   └── 027_security_master_field_provenance.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -5628,6 +5807,7 @@ Meridian-main
 │   │   │   ├── IMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── IOperatorOverridesStore.cs
 │   │   │   ├── IOptionReferenceProjectionStore.cs
+│   │   │   ├── ISecurityFieldProvenanceStore.cs
 │   │   │   ├── ISecurityMasterCashFlowStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterPricingStore.cs
@@ -5647,6 +5827,7 @@ Meridian-main
 │   │   │   ├── PostgresMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── PostgresOperatorOverridesStore.cs
 │   │   │   ├── PostgresOptionReferenceProjectionStore.cs
+│   │   │   ├── PostgresSecurityFieldProvenanceStore.cs
 │   │   │   ├── PostgresSecurityMasterCashFlowStore.cs
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
 │   │   │   ├── PostgresSecurityMasterPricingStore.cs
@@ -6588,6 +6769,7 @@ Meridian-main
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
+│   │   │   │   │   ├── jest-axe.d.ts
 │   │   │   │   │   ├── lifecycle.ts
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
@@ -6641,7 +6823,7 @@ Meridian-main
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
 │   │   │   ├── tsconfig.reporting-p0.json
-│   │   │   ├── tsconfig.strict-null.json
+│   │   │   ├── tsconfig.strict.json
 │   │   │   └── vite.config.ts
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
@@ -9494,6 +9676,8 @@ Meridian-main
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterTests.cs
+│   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
+│   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs

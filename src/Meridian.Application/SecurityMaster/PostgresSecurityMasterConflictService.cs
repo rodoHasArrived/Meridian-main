@@ -138,7 +138,6 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 connection,
                 transaction,
                 openConflict,
-                selectedSource!,
                 ct).ConfigureAwait(false);
             if (!FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue))
             {
@@ -281,14 +280,13 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityMasterConflict conflict,
-        string selectedSource,
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            select currency, common_terms::text, asset_specific_terms::text, provenance::text, effective_from
+            select currency, common_terms::text, asset_specific_terms::text, effective_from
             from {Qualified("securities")}
             where security_id = @security_id
             for update;
@@ -303,13 +301,13 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
 
         using var commonTerms = JsonDocument.Parse(reader.GetString(1));
         using var assetTerms = JsonDocument.Parse(reader.GetString(2));
-        using var provenance = JsonDocument.Parse(reader.GetString(3));
-        var currentSource = SecurityMasterProvenanceReader.Read(provenance.RootElement).SourceSystem;
-        if (!string.Equals(currentSource, selectedSource, StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
 
+        // Deliberately no record-level provenance comparison here: record-level source flips on
+        // every amendment (including one from an unrelated third source touching a different
+        // field), so it cannot establish who supplied an unchanged individual field — that is what
+        // field-level provenance exists for. The guard that matters is the VALUE comparison below:
+        // a field conflict may only close when the persisted field value equals the value the
+        // selected source asserted.
         var detail = new SecurityDetailDto(
             conflict.SecurityId,
             "",
@@ -321,7 +319,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             [],
             [],
             0,
-            new DateTimeOffset(reader.GetDateTime(4), TimeSpan.Zero),
+            new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
             null);
         var terms = StructuredCashFlowTermsResolver.Resolve(detail);
         return conflict.FieldPath switch

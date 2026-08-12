@@ -413,6 +413,10 @@ internal static class SecurityMasterMapping
     /// carrying the document verbatim so the profile envelope and dynamic profile fields survive
     /// amend round-trips. A legacy CustomAsset row without a profile envelope degrades to the
     /// pre-existing OtherSecurity salvage instead of failing the read.
+    /// <para>The <c>profileVersion ?? 1</c> default is READ tolerance only: the F# write-path
+    /// validation (<c>validateKind</c>) parses the document and rejects create/amend commands whose
+    /// envelope lacks a numeric <c>profileVersion</c> or an object-valued <c>profileFields</c>, so
+    /// the default can never mint a canonical record with an incomplete envelope.</para>
     /// </summary>
     private static SecurityKind ToCustomAssetKind(JsonElement json)
     {

@@ -1,6 +1,7 @@
 namespace Meridian.FSharp.Domain
 
 open System
+open System.Text.Json
 
 type CreateSecurity = {
     SecurityId: SecurityId
@@ -80,6 +81,14 @@ module SecurityMaster =
                 (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
             @ require (terms.PrincipalSchedule |> List.forall (fun entry -> entry.Amount > 0m))
                 (error "bond_principal_schedule_invalid" "Bond principal schedule amounts must be greater than zero.")
+            @ require
+                (terms.PrincipalSchedule
+                 |> List.forall (fun entry ->
+                     entry.PaymentDate <= terms.Maturity
+                     && (terms.IssueDate |> Option.forall (fun issueDate -> entry.PaymentDate >= issueDate))))
+                (error
+                    "bond_principal_schedule_date_invalid"
+                    "Bond principal schedule dates must fall on or after IssueDate (when present) and on or before Maturity — out-of-term instalments are silently dropped by cash-flow projections instead of paying down principal.")
         | SecurityKind.FxSpot terms ->
             []
             @ requireNotBlank "fx_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -156,11 +165,11 @@ module SecurityMaster =
             @ requireNotBlank "structured_credit_collateral_required" "CollateralType" terms.CollateralType
             @ require (terms.OriginalFace > 0m)
                 (error "structured_credit_original_face_invalid" "StructuredCredit OriginalFace must be greater than zero.")
-            @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m))
-                (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be zero or greater when present.")
+            @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m && factor <= 1m))
+                (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be between zero and one when present — factors above one project cash flows exceeding the original principal.")
             @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
-            @ require (terms.FactorScheduleEntries |> List.forall (fun entry -> entry.Factor >= 0m))
-                (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be zero or greater.")
+            @ require (terms.FactorScheduleEntries |> List.forall (fun entry -> entry.Factor >= 0m && entry.Factor <= 1m))
+                (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be between zero and one — factors above one project cash flows exceeding the original principal.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor
@@ -232,11 +241,36 @@ module SecurityMaster =
         | SecurityKind.InvestmentFund _ ->
             []
         | SecurityKind.CustomAsset terms ->
+            // Write-path envelope validation: the DOCUMENT must declare the governance envelope the
+            // schema requires (numeric profileVersion, object-valued profileFields), so a tolerant
+            // read-side default can never let an incomplete envelope become a canonical record.
+            // Reads stay tolerant — this validation runs only on create/amend commands.
+            let envelopeErrors =
+                if String.IsNullOrWhiteSpace terms.TermsJson then
+                    []
+                else
+                    try
+                        use document = JsonDocument.Parse terms.TermsJson
+                        let root = document.RootElement
+                        if root.ValueKind <> JsonValueKind.Object then
+                            [ error "custom_asset_terms_invalid" "CustomAsset terms must be a JSON object." ]
+                        else
+                            []
+                            @ (match root.TryGetProperty "profileVersion" with
+                               | true, value when value.ValueKind = JsonValueKind.Number -> []
+                               | _ -> [ error "custom_asset_profile_version_missing" "CustomAsset terms must declare a numeric profileVersion." ])
+                            @ (match root.TryGetProperty "profileFields" with
+                               | true, value when value.ValueKind = JsonValueKind.Object -> []
+                               | _ -> [ error "custom_asset_profile_fields_missing" "CustomAsset terms must declare an object-valued profileFields." ])
+                    with :? JsonException ->
+                        [ error "custom_asset_terms_invalid" "CustomAsset terms must be valid JSON." ]
+
             []
             @ requireNotBlank "custom_asset_profile_required" "CustomProfileId" terms.CustomProfileId
             @ require (terms.ProfileVersion > 0)
                 (error "custom_asset_profile_version_invalid" "CustomAsset ProfileVersion must be greater than zero.")
             @ requireNotBlank "custom_asset_terms_required" "TermsJson" terms.TermsJson
+            @ envelopeErrors
 
     let private validateIdentifier (identifier: Identifier) =
         []

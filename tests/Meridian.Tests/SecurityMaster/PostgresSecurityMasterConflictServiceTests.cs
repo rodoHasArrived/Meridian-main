@@ -275,6 +275,53 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_FieldConflict_ThirdSourceAmendedUnrelatedField_StillResolvesWhenValueMatches()
+    {
+        // Record-level provenance flips on EVERY amendment, including one from an unrelated third
+        // source that did not touch the conflicted field. The resolution guard compares the
+        // persisted FIELD VALUE against the selected source's asserted value — it must not require
+        // the whole record's current source to equal the selected source, or any provider-C
+        // amendment makes a valid provider-A/B resolution permanently impossible.
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US0231351067", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US0231351067", "provB") with
+        {
+            Currency = "EUR",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        await canonicalStore.UpsertProjectionAsync(incoming, CancellationToken.None);
+        var service = NewService(canonicalStore);
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var conflict = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+
+        // provider-C amends the record without changing the conflicted currency field: the record's
+        // provenance now names provC, but the persisted currency is still provB's EUR.
+        await canonicalStore.UpsertProjectionAsync(incoming with
+        {
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provC" }),
+            Version = 2
+        }, CancellationToken.None);
+
+        var resolved = await service.ResolveAsync(
+            new ResolveConflictRequest(
+                conflict.ConflictId,
+                "Resolve",
+                "operator@meridian.test",
+                "provB's value is the persisted golden value.",
+                ChosenWinnerSource: "provB"),
+            CancellationToken.None);
+
+        resolved.Should().NotBeNull();
+        resolved!.Status.Should().Be("Resolved");
+        resolved.ResolvedWinnerSource.Should().Be("provB");
+        var lineage = await new PostgresSecurityFieldProvenanceStore(_fixture.Options)
+            .GetAsync(securityId, CancellationToken.None);
+        lineage.Should().ContainSingle().Which.SourceSystem.Should().Be("provB");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task ResolveAsync_DismissalOrIdentifierConflict_WritesNoFieldProvenance()
     {
         var securityId = Guid.NewGuid();

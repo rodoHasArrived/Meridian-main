@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 3
 
-Objects 161-177 of 177. References crossing pages remain available in the dependency manifest.
+Objects 161-178 of 178. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -83,12 +83,17 @@ classDiagram
         +DateOnly? MaturityDate
         +string? PaymentFrequency
         +decimal? PrincipalFace
+        +IReadOnlyList~StructuredPrincipalScheduleEntry~? PrincipalSchedule
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsResolver["StructuredCashFlowTermsResolver"] {
     }
     class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
         +DateOnly AsOfDate
         +decimal Factor
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
+        +decimal Amount
+        +DateOnly PaymentDate
     }
     class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
         +DateTimeOffset AsOf
@@ -150,5 +155,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
     Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
 ```

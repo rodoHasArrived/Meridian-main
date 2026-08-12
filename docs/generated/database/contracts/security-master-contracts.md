@@ -5,10 +5,10 @@
 This is an explicit module association, not a claim that a DTO is identical to a table.
 
 Mapped physical schemas: `security_master`.
-Catalogued objects: 177.
+Catalogued objects: 178.
 
 The catalog is split into 3 reviewable diagrams; no objects are omitted.
 
 - [Page 1: objects 1-80](security-master-contracts-page-01.md)
 - [Page 2: objects 81-160](security-master-contracts-page-02.md)
-- [Page 3: objects 161-177](security-master-contracts-page-03.md)
+- [Page 3: objects 161-178](security-master-contracts-page-03.md)

@@ -1186,6 +1186,72 @@ let private registrySampleKinds : (SecurityKind * string) list =
           CustomProfileId = "structured-credit-io-po"; ProfileVersion = 3
           TermsJson = """{"schemaVersion":3,"customProfileId":"structured-credit-io-po","profileVersion":3,"profileFields":{}}""" }, "CustomAsset" ]
 
+let private validationErrorCodes kind =
+    let command = { createEquityCreateCommand None with Kind = kind }
+    match SecurityMaster.create command with
+    | Ok _ -> []
+    | Error errors -> errors |> List.map (fun validationError -> validationError.Code)
+
+[<Fact>]
+let ``Bond principal schedule dates outside the bond term are rejected`` () =
+    let maturity = DateOnly(2030, 6, 15)
+    let baseTerms =
+        { BondTerms.fixedRate maturity 4.5m (Some "30/360") (Some "ACME") with
+            IssueDate = Some (DateOnly(2024, 6, 15)) }
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2031, 1, 1); Amount = 10m } ] })
+    |> should contain "bond_principal_schedule_date_invalid"
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2020, 1, 1); Amount = 10m } ] })
+    |> should contain "bond_principal_schedule_date_invalid"
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 10m } ] })
+    |> should not' (contain "bond_principal_schedule_date_invalid")
+
+[<Fact>]
+let ``Structured credit factors above one are rejected`` () =
+    let baseTerms = {
+        Tranche = "A-1"
+        PoolId = None
+        CollateralType = "CLO"
+        OriginalFace = 1_000_000m
+        CurrentFactor = Some 0.9m
+        CouponOrIndex = "SOFR+250"
+        FactorSchedule = None
+        FactorScheduleEntries = []
+    }
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })
+    |> should contain "structured_credit_current_factor_invalid"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.2m } ] })
+    |> should contain "structured_credit_factor_schedule_invalid"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.0m } ] })
+    |> should not' (contain "structured_credit_factor_schedule_invalid")
+
+[<Fact>]
+let ``CustomAsset writes require the declared profile envelope in the document`` () =
+    let kindWith termsJson =
+        SecurityKind.CustomAsset {
+            CustomProfileId = "structured-credit-io-po"
+            ProfileVersion = 3
+            TermsJson = termsJson
+        }
+
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileFields":{}}""")
+    |> should contain "custom_asset_profile_version_missing"
+
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":3}""")
+    |> should contain "custom_asset_profile_fields_missing"
+
+    validationErrorCodes (kindWith "not-json")
+    |> should contain "custom_asset_terms_invalid"
+
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":3,"profileFields":{}}""")
+    |> List.isEmpty
+    |> should equal true
+
 [<Fact>]
 let ``AssetClassRegistry exposes a distinct, non-empty asset-class taxonomy`` () =
     let classes = AssetClassRegistry.assetClasses

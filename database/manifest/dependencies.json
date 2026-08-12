@@ -9088,6 +9088,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.TradingParametersDto"
     },
     {
@@ -20092,6 +20098,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.TradingParametersDto"
     },
     {
@@ -29675,6 +29687,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
     },
     {
       "kind": "contract-reference",
@@ -42568,7 +42586,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "27f72fbcef223f0766fa28e3343701cfc9358acdab7a86392e7b35d70a65a0fb",
+  "fingerprint": "4db56e6beb8350471c4460d8f1374c2180a9ff575d85733bd86b5da4d687c9e0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -51704,6 +51722,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry"
     },
     {
       "classification": "dto",
@@ -62080,11 +62104,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2931,
-    "contract_set_memberships": 3350,
-    "edges": 7074,
+    "contract_references": 2932,
+    "contract_set_memberships": 3354,
+    "edges": 7079,
     "foreign_keys": 95,
     "logical_references": 6,
-    "nodes": 3357
+    "nodes": 3360
   }
 }
