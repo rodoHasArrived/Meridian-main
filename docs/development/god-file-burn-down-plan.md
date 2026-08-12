@@ -56,7 +56,8 @@ sibling partial class and still failed the ratchet, because adding one `using` d
 `LedgerEndpoints.cs` from 2,824 to 2,825 against a 2,824 cap.
 
 **A burn-down target is not achievable while every file is pinned at its cap.** Fixing the headroom
-problem is a prerequisite, not a nicety — which is why the mechanism changes below come first.
+problem is a prerequisite, not a nicety — and no mechanism for it exists yet, which is what the
+missing-mechanism section below records.
 
 ## Mechanism changes (this change)
 
@@ -68,30 +69,46 @@ Reporting only. No enforcement rule is altered, so nothing that passes today sta
 2. **Headroom warnings.** Files within 25 lines of their cap are listed as `TIGHT`. The wall is
    visible before a contributor hits it, and the report names decomposition candidates by urgency
    rather than by size.
-3. **`--tighten-baseline`.** Rewrites caps toward current line counts but **only downward** — it can
-   never record growth, unlike `--update-baseline`. This is what makes reclaimed lines permanent:
-   run it after a decomposition and the ground gained cannot be silently given back. It refuses to
-   run under a threshold other than the baseline's own, since scanning at a higher threshold would
-   retire files the baseline still protects.
-4. **`--buffer N`.** Tightening to the exact current count leaves the file pinned again, which is
-   the state this plan exists to escape. `--tighten-baseline --buffer 25` locks in the reduction
-   while asking for 25 lines of working room. It still never raises a cap above its existing value,
-   so a file that has barely moved keeps whatever headroom its old cap allowed — the command reports
-   the smallest amount actually retained rather than the amount requested. An entry is also held
-   rather than retired until the threshold itself provides the requested room, so a file parked just
-   under 2,000 lines cannot lose its cap and then fail as a brand-new god file on the next line.
 
-The distinction matters. `--update-baseline` is the escape hatch and should stay visible in review
-as tracked debt. `--tighten-baseline` is the ratchet actually ratcheting, and is safe to run
-routinely.
+## The missing mechanism
+
+Reporting makes the problem visible. It does not fix it, and the gap is specific:
+
+**There is no safe way to lock in a reduction.** `--update-baseline` regenerates from the tree, so
+it can raise a cap as easily as lower one — which is why it is the escape hatch that should surface
+in review as tracked debt. Nothing lowers caps only. Until that exists, lines reclaimed by a
+decomposition sit unprotected: the old cap still permits the file to grow straight back.
+
+**Nothing creates working headroom.** Any mechanism that lowers a cap to the current count re-pins
+the file, which is the state this plan exists to escape. A useful tool has to lock in most of a
+reduction while deliberately leaving room to edit.
+
+A first attempt at both — a downward-only `--tighten-baseline` with a `--buffer N` option — was
+drafted alongside this plan and **withdrawn**. Review found six distinct defects in it across five
+rounds: retired files dropped out of the reclaimed total, retirement discarded a cap while the file
+was still within the buffer of the threshold, an unreadable file was counted as empty and had its
+cap written away, the command returned success while the ratchet was failing, `--buffer` was
+accepted and ignored outside tightening, and the resulting slack made the tool recommend a command
+that destroyed the headroom it had just created.
+
+Every one of those lived in the same seam: the interaction between *file below threshold*, *file
+still in baseline*, and *tree currently failing*. A read-only check never has to reason about it. A
+mutating one does, on every path. That is the design work the mechanism needs, and it belongs in its
+own change with its own review rather than riding along with a reporting improvement.
+
+Until then, lock in a reduction with `--update-baseline` and justify the diff in review, as the
+ratchet's own documentation already directs.
 
 ## Targets
 
-Expressed against the 169,329-line baseline recorded above.
+These are **proposed** targets, not yet a registered commitment. `docs/roadmap/data/` is the
+authoritative planning registry, and it currently holds no god-file or file-size-ratchet item;
+adopting these numbers means adding one so registry validation, generated roadmap views, and status
+reconciliation can track them. Until that entry exists, treat this table as a recommendation from
+the audit rather than tracked delivery scope.
 
-| Horizon | Target | Rationale |
+| Horizon | Proposed target | Rationale |
 | --- | --- | --- |
-| Immediate | After each decomposition run `--tighten-baseline --buffer 25` | Locks in the reduction while leaving the file editable |
 | Per release | Retire **at least 2 files** from the baseline entirely | File count is the honest unit — a file drops out only when it is genuinely decomposed |
 | Per quarter | Reduce total capped lines by **15%** (~25,400 lines) | Matches the reduction rate issue #2619 proposes |
 
@@ -129,22 +146,29 @@ capability into partial classes or composed services. `LedgerEndpoints.cs` is al
 demonstrates the pattern; the remaining work is moving capability logic out of the endpoint layer
 into owning modules, per ADR-017 — which is the same move issue #2611 made for GL dimensions.
 
-## `dev-fixtures.ts` — exclude rather than refactor
+## `dev-fixtures.ts` — the exclusion case is weaker than the audit stated
 
 `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` is 6,673 lines, **4% of the entire baseline**,
-and is the third-largest entry. It is also dev-only: dynamically imported behind
-`import.meta.env.DEV`, tree-shaken from production builds, and verified by the Aug 2026 audit as not
-leaking into production.
+and the third-largest entry. Issue #2619 and the Aug 2026 audit both describe it as purely dev-only —
+dynamically imported behind `import.meta.env.DEV` and tree-shaken from production — and recommend
+excluding fixture files from the ratchet rather than refactoring them.
 
-Refactoring it would spend real effort for no production benefit. The recommendation is to exclude
-fixture files from the ratchet's scan — the same treatment `_is_excluded` already gives test files
-and generated sources, and for the same stated reason: *"tracked debt of a different kind"* that
-"would only add noise here."
+**That premise does not hold as stated.** `src/Meridian.Ui/dashboard/vite.config.ts:6` imports
+`resolveDevFixture` from this module *statically*, and the config is evaluated by `vite build`; its
+preview proxy calls the resolver at line 80. So the module is reachable from the build toolchain, not
+only from a guarded runtime path. The fixtures may still be absent from the emitted browser bundle —
+that part of the audit was not contradicted — but "dev-only, dynamically imported" is not an accurate
+description of the file's import graph, and it was the load-bearing half of the argument for
+excluding it.
 
-**This plan does not make that exclusion.** Removing 6,673 lines from a guardrail's scope is a policy
-decision that should be taken deliberately and visibly, not folded into a reporting change — and it
-would drop the headline number by 4% without decomposing anything, which is exactly the kind of
-metric movement this plan is trying to avoid rewarding. Raised here for a decision.
+Two things follow. The exclusion may still be the right call on effort grounds: refactoring fixture
+data buys little. But it should be decided on that basis, with the static config import either
+accepted or isolated first, rather than on a dev-only claim that is not true.
+
+**This plan makes no exclusion.** Removing 6,673 lines from a guardrail's scope is a policy decision
+that should be taken deliberately and visibly, not folded into a reporting change — and it would drop
+the headline number by 4% without decomposing anything, exactly the metric movement this plan tries
+not to reward. Raised here for a decision.
 
 ## Tracking
 
@@ -154,11 +178,11 @@ Re-measure by running the ratchet; the trend line is now part of its normal outp
 python3 build/scripts/ci/check-file-size.py
 ```
 
-After a decomposition lands, lock in the reduction while keeping the file editable:
+After a decomposition lands, lock in the reduction:
 
 ```bash
-python3 build/scripts/ci/check-file-size.py --tighten-baseline --buffer 25
+python3 build/scripts/ci/check-file-size.py --update-baseline
 ```
 
-Drop `--buffer` when retiring a file or when you want the cap pinned exactly. Either way, review the
-diff — caps should only ever fall.
+Review the diff carefully — this command can raise a cap as well as lower one, which is why a
+downward-only alternative is the missing mechanism described above. Caps should only ever fall.

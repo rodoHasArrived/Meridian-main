@@ -1,11 +1,11 @@
 {
   "total_files": 644,
-  "total_lines": 125025,
+  "total_lines": 125049,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 221,
-  "average_lines": 194.1,
+  "average_lines": 194.2,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1842,7 +1842,7 @@
     },
     {
       "path": "docs/development/god-file-burn-down-plan.md",
-      "line_count": 164,
+      "line_count": 188,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
