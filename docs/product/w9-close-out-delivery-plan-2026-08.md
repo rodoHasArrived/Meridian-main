@@ -148,6 +148,26 @@ above** — several of these are why a change is scoped the way it is.
   orders keep working. Discovering and cancelling broker-reported orders across every gateway, and
   reporting broker-only orders it cannot reconcile as partial or failed, is part of the same change,
   with restart and out-of-band-order tests.
+  **And cancelling the book is only half the criterion — the breaker does not actually block new
+  submissions.** `ExecutionOperatorControlService` line 454 reads
+  `if (_circuitBreaker.IsOpen && bypassOverride is null)`, so an active durable `BypassOrderControls`
+  override admits a fresh order *while the kill switch is open*, and
+  `OrderManagementSystemGovernanceTests.PlaceOrderAsync_WithBypassOverride_AllowsOrderWhileCircuitBreakerIsOpen`
+  asserts exactly that. This is deliberate behaviour with a test defending it, not an oversight, so
+  change 3 cannot quietly invert it: it must either make breaker activation suspend or revoke
+  active bypass overrides, or define and govern a narrow close-only exception explicitly — and
+  rewrite that test to the chosen semantics either way. Everything above is about emptying the book;
+  this is about the book refilling behind the sweep, and the criterion says the kill switch blocks
+  new submissions.
+  **A trip also races submissions already in flight.** `PlaceOrderAsync` consults the breaker
+  through `EvaluateOrder` at line 310, then does its reservation work, releases
+  `_preTradeReservationGate` at line 537, and only dispatches at line 544, while `ExecutionEndpoints`
+  flips the breaker and immediately snapshots for cancellation. An order that passed line 310 a
+  moment before the trip can therefore reach the broker *after* the sweep observed an empty local
+  and broker book and reported success. Change 3 has to serialize activation against placement, or
+  re-check the breaker immediately before dispatch and verify the broker book once in-flight
+  submissions have drained, with a concurrent trip/submission regression test. A sweep that is
+  correct about the orders it saw is still wrong if an approved order lands after it.
   **`W9-SAFETY-007` still reads as though criterion one were closed** — it says the coupling gap is
   closed, presents completed and failed sweep outcomes as proven, and lists only the rule catalogue
   and the UI sweep as remaining. Change 1 writes this correction into the row, because a
@@ -605,6 +625,20 @@ above** — several of these are why a change is scoped the way it is.
   reorderable without detection. Change 9 must chain and verify the file-backed store too — or fail
   closed and disable those mutations in that posture — with local/WPF proof either way. This is not
   a secondary path: it is what runs when nobody has stood up PostgreSQL.
+- **But chaining that store is not sufficient for it, because the head would live inside the thing
+  being protected.** `FileAccountingConfigurationStore` derives from
+  `JsonFileSnapshotStore<AccountingConfigurationSnapshot>`, whose own summary describes the model:
+  the snapshot is *"loaded on demand, mutated in memory, and persisted with `AtomicFileWriter`"* —
+  every write replaces the whole file. A predecessor-hash chain stored in that same snapshot
+  therefore verifies happily after a rollback to an older valid copy, or after the newest events are
+  removed together with the stored head: what remains is a shorter chain that is internally
+  perfectly consistent. Chain-and-verify detects *reordering and mutation*; it cannot detect
+  *deletion or rollback* when the verifier's anchor is inside the replaceable artifact, and a genesis
+  marker only fixes where the chain starts, never that its latest retained event is still present.
+  So the file posture additionally needs a monotonic head or checkpoint retained separately from the
+  snapshot — or an append-only/WORM authority — with explicit rollback and truncated-tail tests. The
+  Postgres precedent below verifies its head inside the write transaction, which is the same idea
+  where the store can enforce it; the file store cannot, so it has to keep the anchor outside.
 - `src/Meridian.Storage/Services/AuditChainService.cs` hash-chains *files* — path, file hash, and
   predecessor hash — with in-process and cross-process serialization and copy-on-write appends, and
   exposes chain verification. It does not cover accounting or ledger events.
@@ -758,6 +792,18 @@ above** — several of these are why a change is scoped the way it is.
   row. Change 11 must partition every candidate set by the same account, instrument-or-currency,
   type, and date constraints the pair stages apply, with negative cross-identity tests proving a
   coincidental sum is refused.
+- **Identity is not the only thing the kernel cannot see — neither is quantity.**
+  `SplitCandidate` is `(string Id, decimal Amount)`, so the search optimizes one scalar, while the
+  pair stages require *both* axes to agree: `StatementMatchingEngine` line 217 gates a transaction
+  match on `Abs(statement.Quantity - internalTransaction.Quantity) <= tolerance.TransactionQuantity`
+  alongside the net-amount test. A ten-share statement transaction can therefore be "matched" to two
+  same-identity ledger legs that total the correct cash but only five shares — the break disappears
+  and no casework is raised, which is a worse failure than a false break because nothing surfaces.
+  This is the constraint the `accept` callback is genuinely for, applied *after* identity
+  partitioning rather than instead of it: validate the subset's aggregate quantity against
+  `TransactionQuantity` tolerance, with a same-identity, correct-cash, wrong-quantity regression.
+  The two remedies are complements — partition decides which candidates may compete, `accept`
+  decides whether a competing subset is admissible.
 - **Partition, specifically — not the `accept` overload, which cannot substitute for it.** An
   earlier draft of this bullet offered `accept` as an equivalent seam. It is not, because the cap is
   applied first: `TryFindSplit` orders the same-sign pool by descending magnitude and
