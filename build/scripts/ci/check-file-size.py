@@ -18,6 +18,11 @@ This mirrors the RatchetPlan discipline used by check-warning-suppressions.py an
 codifies ADR-017 (modular operational monolith) / ADR-018 (module conventions):
 capability logic belongs in composed, single-responsibility units, not god files.
 
+Containment is only half the job: the baseline records where the debt is, but nothing drives it
+down. Every run therefore also reports the trend — tracked files, capped lines, and how much of the
+baseline is reclaimable — so progress is a visible number rather than a per-file pass/fail. See
+docs/development/god-file-burn-down-plan.md for the burn-down targets those numbers feed.
+
 Exit codes:
     0  No new or grown god files
     1  One or more violations
@@ -80,12 +85,23 @@ def _baseline_path(root: Path) -> Path:
     return root / "build" / "config" / "file-size-baseline.json"
 
 
-def _count_lines(path: Path) -> int:
+# Returns None when the size could not be determined, rather than a number that looks like a
+# measurement. An earlier version returned 0 on any OSError, which put "unreadable" and "empty" in
+# the same bucket and produced two distinct bugs from one line: a normal run reported an unreadable
+# file's whole cap as reclaimed, and --update-baseline dropped its cap entirely. Callers must decide
+# what an unknown means for them; there is no safe default here.
+def _try_count_lines(path: Path) -> int | None:
     try:
         with path.open("rb") as handle:
             return sum(1 for _ in handle)
-    except OSError:
+    except FileNotFoundError:
+        # Genuinely gone: zero is the honest count, and for a baselined entry it is the whole point
+        # of the trend. Distinguished here rather than by a stat() probe, because Path.exists() and
+        # Path.is_file() re-raise any OSError outside (ENOENT, ENOTDIR, EBADF, ELOOP) - EACCES among
+        # them - which would crash the caller on an untraversable parent.
         return 0
+    except OSError:
+        return None
 
 
 def _iter_source_files(src_root: Path) -> list[Path]:
@@ -98,18 +114,28 @@ def _iter_source_files(src_root: Path) -> list[Path]:
     return files
 
 
-def _scan(root: Path, threshold: int) -> dict[str, int]:
-    """Return {relative_path: line_count} for every oversized, non-excluded file."""
+def _scan(root: Path, threshold: int) -> tuple[dict[str, int], list[str]]:
+    """Oversized non-excluded files, plus every governed source whose size could not be read.
+
+    An unreadable file is indistinguishable from a small one here: it produces no line count, so it
+    is simply absent from the oversized set. That is harmless for a read-only check — the trend
+    reports baselined entries it could not read — but it is not harmless for anything that writes
+    the baseline from this result, because absent means "drop the cap".
+    """
     src_root = root / "src"
     oversized: dict[str, int] = {}
+    unreadable: list[str] = []
     for path in _iter_source_files(src_root):
         rel = path.relative_to(root).as_posix()
         if _is_excluded(rel):
             continue
-        lines = _count_lines(path)
+        lines = _try_count_lines(path)
+        if lines is None:
+            unreadable.append(rel)
+            continue
         if lines > threshold:
             oversized[rel] = lines
-    return dict(sorted(oversized.items()))
+    return dict(sorted(oversized.items())), sorted(unreadable)
 
 
 def _load_baseline(root: Path) -> dict[str, int]:
@@ -118,6 +144,8 @@ def _load_baseline(root: Path) -> dict[str, int]:
         return {}
     data = json.loads(path.read_text(encoding="utf-8"))
     return {str(k): int(v) for k, v in data.get("files", {}).items()}
+
+
 
 
 def _write_baseline(root: Path, threshold: int, oversized: dict[str, int]) -> None:
@@ -138,6 +166,110 @@ def _write_baseline(root: Path, threshold: int, oversized: dict[str, int]) -> No
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+# Files this close to their cap are called out before a contributor trips over them. The ratchet
+# offers no headroom by construction — a freshly written baseline pins every file at its exact
+# current size — so without this warning the first signal is a failed CI run on a one-line change.
+TIGHT_HEADROOM_LINES = 25
+
+
+def _live_lines(
+    root: Path, baseline: dict[str, int], current: dict[str, int]
+) -> tuple[dict[str, int], list[str]]:
+    """Current line count for every baselined file, plus the ones whose size could not be read.
+
+    A baselined file that has shrunk below the threshold is absent from `current`, so its real size
+    has to be read from disk. Treating it as zero would erase its lines from the totals and
+    overstate the reclaimable figure at exactly the moment a decomposition is about to retire it.
+
+    A file that is *present but unreadable* — a permission problem, a transient I/O error — is a
+    different case with the same shape, and the dangerous one: read as zero it is indistinguishable
+    from a file successfully deleted, so a failed read would be reported as the largest possible
+    reduction. Deleted files count as zero because their lines really are gone; unreadable ones are
+    held at their cap, contributing no reclaimable slack, and named in the output so nobody reads
+    the total as complete.
+
+    Neither case may raise. This runs after the pass/fail verdict has been printed, so an exception
+    here would replace a declared exit code with a traceback — turning a reporting nicety into a
+    broken gate.
+    """
+    live: dict[str, int] = {}
+    unreadable: list[str] = []
+    for rel, cap in baseline.items():
+        if rel in current:
+            live[rel] = current[rel]
+            continue
+
+        lines = _try_count_lines(root / rel)
+        if lines is None:
+            live[rel] = cap
+            unreadable.append(rel)
+        else:
+            live[rel] = lines
+
+    return live, unreadable
+
+
+def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int]) -> None:
+    """Print the burn-down numbers: what is tracked, and how much of it is reclaimable."""
+    live_lines, unreadable = _live_lines(root, baseline, current)
+    capped = sum(baseline.values())
+    live = sum(live_lines.values())
+    slack = sum(max(0, cap - live_lines[rel]) for rel, cap in baseline.items())
+
+    print(
+        f"Baseline trend: {len(baseline)} tracked file(s), {capped:,} capped line(s), "
+        f"{live:,} current line(s), {slack:,} line(s) reclaimable."
+    )
+    if unreadable:
+        print(
+            f"NOTE: {len(unreadable)} baselined file(s) could not be read and are counted at their "
+            f"cap, so the figures above understate rather than invent progress:"
+        )
+        for rel in unreadable:
+            print(f"- {rel}")
+
+    # Two kinds of entry are kept out of this list, for the same reason: their headroom is not a
+    # measurement.
+    #
+    # Over-cap files have negative headroom, so an unbounded comparison admits a file hundreds of
+    # lines past its cap, prints a negative "spare" count, claims an already-failing file "sits at
+    # its cap", and sorts ahead of the near-cap files this warning surfaces.
+    #
+    # Unreadable files were substituted at their cap by _live_lines, which is the safe choice for
+    # the aggregate totals but reads as exactly zero headroom here — so they would be announced as
+    # pinned, and enough of them could push genuine near-cap files out of the ten shown. The
+    # substitution stays; only the claim about it goes.
+    #
+    # Both are already reported by name elsewhere: over-cap files in the failure block with their
+    # exact overage, unreadable ones in the NOTE above.
+    unreadable_set = set(unreadable)
+    tight = sorted(
+        ((cap - live_lines[rel], rel, live_lines[rel], cap)
+         for rel, cap in baseline.items()
+         if rel not in unreadable_set and 0 <= cap - live_lines[rel] <= TIGHT_HEADROOM_LINES),
+        key=lambda item: (item[0], item[1]),
+    )
+    if tight:
+        pinned = sum(1 for headroom, *_ in tight if headroom == 0)
+        detail = (
+            f" {pinned} of them sit at their cap, where a single added line fails this check."
+            if pinned
+            else ""
+        )
+        print(
+            f"TIGHT: {len(tight)} of {len(baseline)} tracked file(s) are within "
+            f"{TIGHT_HEADROOM_LINES} line(s) of their cap.{detail} Decompose before extending."
+        )
+        for headroom, rel, lines, cap in tight[:10]:
+            print(f"- {rel}: {lines}/{cap} ({headroom} line(s) spare)")
+        if len(tight) > 10:
+            print(f"- ... and {len(tight) - 10} more")
+    if slack:
+        print(
+            "Those lines are not yet locked in: the caps still allow the file to grow back."
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="check-file-size")
     parser.add_argument("--threshold", type=int, default=THRESHOLD_LINES)
@@ -148,18 +280,44 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+
+
     root = _repo_root()
     src_root = root / "src"
     if not src_root.exists():
         print(f"ERROR: source root not found: {src_root}", file=sys.stderr)
         return 2
 
-    current = _scan(root, args.threshold)
+    current, unreadable_sources = _scan(root, args.threshold)
 
     if args.update_baseline:
+        # Refuse to write from an incomplete scan. An unreadable source is absent from `current`,
+        # and absent is how this file spells "no longer oversized" - so the write would silently
+        # delete that file's cap, and the trend printed afterwards reloads the new baseline and can
+        # no longer see the entry it just dropped. A transient permission or I/O error would
+        # therefore retire a protection with an exit code of 0 and a clean-looking report.
+        #
+        # The read-only path deliberately does not fail this way: it reports what it could not read
+        # and carries on, because a check that cannot see a file should not invent a verdict about
+        # it either way. Only the mutating path has to be certain.
+        if unreadable_sources:
+            print(
+                f"ERROR: refusing to rewrite the baseline. {len(unreadable_sources)} governed "
+                f"source file(s) could not be read, and writing now would drop their caps:",
+                file=sys.stderr,
+            )
+            for rel in unreadable_sources:
+                print(f"- {rel}", file=sys.stderr)
+            return 2
+
         _write_baseline(root, args.threshold, current)
         print(f"Wrote baseline with {len(current)} tracked file(s) "
               f"(threshold {args.threshold} lines).")
+        # Report against the baseline just written. This is the command run right after a
+        # decomposition lands, so it is the one moment an operator most wants the trend - and
+        # every file it just re-pinned shows up as TIGHT, which is the cost of the update being
+        # made visible at the point of making it.
+        _report_trend(root, _load_baseline(root), current)
         return 0
 
     baseline_path = _baseline_path(root)
@@ -178,6 +336,7 @@ def main(argv: list[str] | None = None) -> int:
 
     stale = sorted(set(baseline) - set(current))
 
+
     if new_god_files or grown_files:
         print("File-size ratchet FAILED:", file=sys.stderr)
         for rel, lines in new_god_files:
@@ -185,12 +344,15 @@ def main(argv: list[str] | None = None) -> int:
                   f"Split it into composed units, or if unavoidable add it to the "
                   f"baseline with justification.", file=sys.stderr)
         for rel, lines, cap in grown_files:
-            print(f"- GREW past cap: {rel} now {lines} lines (baseline cap {cap}). "
-                  f"Reduce it, or update the baseline with justification.", file=sys.stderr)
+            print(f"- GREW past cap: {rel} now {lines} lines (baseline cap {cap}, "
+                  f"exceeded by {lines - cap}). Reduce it, or update the baseline with "
+                  f"justification.", file=sys.stderr)
+        _report_trend(root, baseline, current)
         return 1
 
     print(f"File-size ratchet OK: {len(current)} tracked file(s), "
           f"no new or grown god files (threshold {args.threshold} lines).")
+    _report_trend(root, baseline, current)
     if stale:
         print("Notice: baseline entries now under threshold (tighten the ratchet "
               "by rerunning --update-baseline):")
