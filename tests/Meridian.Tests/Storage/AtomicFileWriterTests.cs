@@ -352,8 +352,9 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         await AtomicFileWriter.WriteAsync(
             path, "Hello 世界", UnixFileMode.UserRead | UnixFileMode.UserWrite);
 
+        // Byte-exact against a BOM-free encode: this pins both "no BOM" and the content in one
+        // assertion, where a prefix check would only rule out the three bytes it names.
         var bytes = await File.ReadAllBytesAsync(path);
-        bytes.Should().NotStartWith(new byte[] { 0xEF, 0xBB, 0xBF });
-        (await File.ReadAllTextAsync(path, Encoding.UTF8)).Should().Be("Hello 世界");
+        bytes.Should().Equal(Encoding.UTF8.GetBytes("Hello 世界"));
     }
 }
