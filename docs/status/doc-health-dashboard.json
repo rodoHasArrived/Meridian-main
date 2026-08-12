@@ -1,11 +1,11 @@
 {
-  "total_files": 643,
-  "total_lines": 124894,
+  "total_files": 644,
+  "total_lines": 125130,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 221,
-  "average_lines": 194.2,
+  "average_lines": 194.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1841,6 +1841,14 @@
       "stale": false
     },
     {
+      "path": "docs/development/god-file-burn-down-plan.md",
+      "line_count": 232,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/development/mockups/web-ui/README.md",
       "line_count": 27,
       "has_heading": true,
@@ -1898,7 +1906,7 @@
     },
     {
       "path": "docs/development/README.md",
-      "line_count": 141,
+      "line_count": 142,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2594,7 +2602,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10405,
+      "line_count": 10408,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
