@@ -1642,7 +1642,8 @@ public sealed class AccountingClosePostingWorkbenchBridge :
         ArgumentNullException.ThrowIfNull(command);
         if (!OperationsOriginGuard.IsHumanOperator(command.ActionOrigin))
         {
-            throw new InvalidOperationException(
+            throw new HumanOperatorRequiredException(
+                "queue closing entries or reversals",
                 "Reviewed automation cannot queue closing entries or reversals; a human operator must perform the close action.");
         }
 

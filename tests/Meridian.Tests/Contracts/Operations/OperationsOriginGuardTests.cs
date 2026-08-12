@@ -56,6 +56,21 @@ public sealed class OperationsOriginGuardTests
         exception.Should().BeAssignableTo<InvalidOperationException>();
     }
 
+    // Sites that already had bespoke wording keep it while still emitting the typed refusal, so a
+    // caller gets both the module's message and a machine-readable Action.
+    [Fact]
+    public void HumanOperatorRequiredException_CanKeepASiteSpecificMessage()
+    {
+        var exception = new HumanOperatorRequiredException(
+            "post generated accounting posting candidates",
+            "Generated accounting posting candidates require a human-operator action origin before append.");
+
+        exception.Action.Should().Be("post generated accounting posting candidates");
+        exception.Message.Should().Be(
+            "Generated accounting posting candidates require a human-operator action origin before append.");
+        exception.Should().BeAssignableTo<InvalidOperationException>();
+    }
+
     [Fact]
     public void RefusalMessage_IsTheCanonicalWording() =>
         OperationsOriginGuard.RefusalMessage("archive reports")

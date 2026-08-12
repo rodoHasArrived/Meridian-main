@@ -52,7 +52,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
         if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
         {
-            throw new InvalidOperationException("Generated accounting posting candidates require a human-operator action origin before append.");
+            throw new HumanOperatorRequiredException(
+                "post generated accounting posting candidates",
+                "Generated accounting posting candidates require a human-operator action origin before append.");
         }
 
         var journalStore = _journalStore

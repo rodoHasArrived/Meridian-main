@@ -2939,7 +2939,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         OperationsGateKeyDto? gate,
         string actionLabel)
     {
-        if (actionOrigin == OperationsActionOriginDto.HumanOperator)
+        if (OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
             return null;
         }

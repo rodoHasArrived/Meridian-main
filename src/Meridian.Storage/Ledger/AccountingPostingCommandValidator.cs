@@ -89,7 +89,9 @@ public static class AccountingPostingCommandValidator
 
         if (!OperationsOriginGuard.IsHumanOperator(command.ActionOrigin))
         {
-            throw new LedgerValidationException("Material accounting posting commands require a human-operator action origin.");
+            throw new LedgerValidationException(
+                "Material accounting posting commands require a human-operator action origin.",
+                OperationsOriginGuard.Refusal("append material accounting posting commands"));
         }
 
         if (string.IsNullOrWhiteSpace(command.IdempotencyKey))

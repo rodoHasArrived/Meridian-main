@@ -280,7 +280,10 @@ public sealed class AccountingProductionCertificationCommandService(
         ArgumentNullException.ThrowIfNull(request.Profile);
         if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
         {
-            throw new ArgumentException("Only a human operator can certify accounting production controls.");
+            throw new ArgumentException(
+                "Only a human operator can certify accounting production controls.",
+                nameof(request),
+                OperationsOriginGuard.Refusal("certify accounting production controls"));
         }
 
         var tenantId = RequireText(request.Profile.TenantId, "tenant id");
