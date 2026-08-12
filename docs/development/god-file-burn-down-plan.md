@@ -41,7 +41,8 @@ of several surfaces. Any plan that only addresses C# ViewModels leaves half the 
 None has more.
 
 That is not the occasional cliff issue #2619 describes — it is the steady state of the entire
-baseline. Adding one line to any god file fails CI today. The practical consequences:
+baseline. Adding one line fails CI today for 49 of the 50 — the ratchet rejects only `lines > cap`,
+so the file with a line spare would reach its cap and still pass, once. The practical consequences:
 
 - Any ordinary change to a god file — a `using` directive, a guard clause, a log line — forces a
   choice between an unrelated refactor and a `--update-baseline` commit.

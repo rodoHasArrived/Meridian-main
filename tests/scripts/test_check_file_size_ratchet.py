@@ -65,14 +65,25 @@ class TightenBaselineTests(unittest.TestCase):
             self.assertIn("15 line(s) reclaimed", output)
 
     # The safety property the whole flag rests on: --tighten-baseline must never be able to record
-    # growth, which is what separates it from --update-baseline.
-    def test_never_raises_a_cap_when_the_file_grew(self):
+    # growth, which is what separates it from --update-baseline. A grown file is refused outright
+    # rather than quietly written past, so tightening cannot hand automation a success for a tree
+    # that fails the ratchet.
+    def test_refuses_to_tighten_while_a_file_has_grown(self):
         with fake_repo({"src/big.cs": 40}, {"src/big.cs": 30}) as root:
             code, output = run(["--threshold", "10", "--tighten-baseline"])
 
-            self.assertEqual(code, 0, output)
+            self.assertEqual(code, 2)
+            self.assertIn("refusing to tighten while the ratchet is failing", output)
             self.assertEqual(read_baseline(root)["src/big.cs"], 30)
-            self.assertIn("0 line(s) reclaimed", output)
+
+    def test_refuses_to_tighten_while_a_new_god_file_exists(self):
+        with fake_repo({"src/big.cs": 20, "src/fresh.cs": 40}, {"src/big.cs": 30}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("NEW god file", output)
+            # The baseline is left exactly as it was.
+            self.assertEqual(read_baseline(root), {"src/big.cs": 30})
 
     def test_retires_a_file_that_dropped_below_the_threshold(self):
         with fake_repo({"src/small.cs": 5}, {"src/small.cs": 30}) as root:
@@ -169,6 +180,32 @@ class TightenBaselineTests(unittest.TestCase):
 
             self.assertEqual(code, 1)
             self.assertIn("GREW past cap", output)
+
+    # An unreadable tracked file counts as zero under the tolerant reader, which would retire it
+    # and write its cap away. A mutating run must abort instead.
+    def test_refuses_to_tighten_when_a_tracked_file_cannot_be_read(self):
+        with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}) as root:
+            unreadable = root / "src" / "big.cs"
+            unreadable.chmod(0o000)
+            try:
+                code, output = run(["--threshold", "10", "--tighten-baseline"])
+            finally:
+                unreadable.chmod(0o644)
+
+            # Running as root defeats the permission bit; skip rather than assert a false pass.
+            if code == 0:
+                self.skipTest("filesystem permissions are not enforced for this user")
+            self.assertEqual(code, 2)
+            self.assertIn("cannot read a tracked file", output)
+            self.assertEqual(read_baseline(root)["src/big.cs"], 30)
+
+    def test_rejects_buffer_without_tightening(self):
+        with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}) as root:
+            code, output = run(["--threshold", "10", "--update-baseline", "--buffer", "25"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("--buffer applies only to --tighten-baseline", output)
+            self.assertEqual(read_baseline(root)["src/big.cs"], 30)
 
 
 class TrendReportingTests(unittest.TestCase):

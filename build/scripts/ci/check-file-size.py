@@ -160,17 +160,36 @@ def _write_baseline(root: Path, threshold: int, oversized: dict[str, int]) -> No
 TIGHT_HEADROOM_LINES = 25
 
 
-def _live_lines(root: Path, baseline: dict[str, int], current: dict[str, int]) -> dict[str, int]:
+def _live_lines(
+    root: Path,
+    baseline: dict[str, int],
+    current: dict[str, int],
+    *,
+    strict: bool = False,
+) -> dict[str, int]:
     """Current line count for every baselined file, including ones the scan omits.
 
     A baselined file that has shrunk below the threshold is absent from `current`, so its real size
     has to be read from disk. Treating it as zero would erase its lines from the totals and
     overstate the reclaimable figure at exactly the moment a decomposition is about to retire it.
+
+    `strict` raises instead of falling back to zero for a file that exists but cannot be read. The
+    reporting path can tolerate a bad count; the tightening path cannot, because a file that looks
+    empty gets its cap written away.
     """
-    return {
-        rel: current[rel] if rel in current else _count_lines(root / rel)
-        for rel in baseline
-    }
+    lines: dict[str, int] = {}
+    for rel in baseline:
+        if rel in current:
+            lines[rel] = current[rel]
+            continue
+        path = root / rel
+        if strict and path.exists():
+            # Deliberately unguarded: an unreadable tracked file must abort a mutating run.
+            with path.open("rb") as handle:
+                lines[rel] = sum(1 for _ in handle)
+        else:
+            lines[rel] = _count_lines(path)
+    return lines
 
 
 def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int]) -> None:
@@ -243,6 +262,15 @@ def main(argv: list[str] | None = None) -> int:
         print("ERROR: choose either --update-baseline or --tighten-baseline.", file=sys.stderr)
         return 2
 
+    if args.buffer and not args.tighten_baseline:
+        print(
+            "ERROR: --buffer applies only to --tighten-baseline. Passing it elsewhere (notably "
+            "with --update-baseline) would silently pin caps to the current count, the opposite "
+            "of the requested headroom.",
+            file=sys.stderr,
+        )
+        return 2
+
     root = _repo_root()
     src_root = root / "src"
     if not src_root.exists():
@@ -263,6 +291,16 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     baseline = _load_baseline(root)
 
+    new_god_files: list[tuple[str, int]] = []
+    grown_files: list[tuple[str, int, int]] = []
+    for rel, lines in current.items():
+        if rel not in baseline:
+            new_god_files.append((rel, lines))
+        elif lines > baseline[rel]:
+            grown_files.append((rel, lines, baseline[rel]))
+
+    stale = sorted(set(baseline) - set(current))
+
     if args.tighten_baseline:
         # Raising the threshold would make _scan omit files that are still oversized by the
         # baseline's own standard, and the retirement filter below would then delete their caps —
@@ -281,7 +319,31 @@ def main(argv: list[str] | None = None) -> int:
             print("ERROR: --buffer cannot be negative.", file=sys.stderr)
             return 2
 
-        live_lines = _live_lines(root, baseline, current)
+        # Tightening writes a baseline and exits 0. Doing that while the tree still violates the
+        # ratchet would hand automation a success for a tree that fails the documented contract,
+        # and would bake the violation in as the new normal.
+        if new_god_files or grown_files:
+            print(
+                "ERROR: refusing to tighten while the ratchet is failing. Resolve these first:",
+                file=sys.stderr,
+            )
+            for rel, lines in new_god_files:
+                print(f"- NEW god file: {rel} has {lines} lines (> {args.threshold}).",
+                      file=sys.stderr)
+            for rel, lines, cap in grown_files:
+                print(f"- GREW past cap: {rel} now {lines} lines (baseline cap {cap}).",
+                      file=sys.stderr)
+            return 2
+
+        try:
+            live_lines = _live_lines(root, baseline, current, strict=True)
+        except OSError as error:
+            print(
+                f"ERROR: cannot read a tracked file, refusing to tighten: {error}. "
+                f"An unreadable file would be counted as empty and have its cap written away.",
+                file=sys.stderr,
+            )
+            return 2
         tightened: dict[str, int] = {}
         retired: list[str] = []
         reclaimed = 0
@@ -318,16 +380,6 @@ def main(argv: list[str] | None = None) -> int:
         for rel in retired:
             print(f"- retired (now under threshold): {rel}")
         return 0
-
-    new_god_files: list[tuple[str, int]] = []
-    grown_files: list[tuple[str, int, int]] = []
-    for rel, lines in current.items():
-        if rel not in baseline:
-            new_god_files.append((rel, lines))
-        elif lines > baseline[rel]:
-            grown_files.append((rel, lines, baseline[rel]))
-
-    stale = sorted(set(baseline) - set(current))
 
     if new_god_files or grown_files:
         print("File-size ratchet FAILED:", file=sys.stderr)
