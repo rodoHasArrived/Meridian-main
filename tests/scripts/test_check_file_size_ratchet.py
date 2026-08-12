@@ -127,6 +127,22 @@ class TrendReportingTests(unittest.TestCase):
             self.assertIn("exceeded by 10", output)
             self.assertIn("Baseline trend:", output)
 
+    # --update-baseline is the command run immediately after a decomposition, so it is the one run
+    # where the trend matters most. It used to return before reporting.
+    def test_reports_the_trend_after_updating_the_baseline(self):
+        with fake_repo({"src/a.cs": 20, "src/b.cs": 25}, {"src/a.cs": 30, "src/b.cs": 25}) as root:
+            code, output = run(["--threshold", "10", "--update-baseline"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("Wrote baseline with 2 tracked file(s)", output)
+            self.assertIn("Baseline trend:", output)
+            # Freshly written caps equal current lines, so nothing is reclaimable and every file
+            # is pinned - the report should say so rather than repeat the pre-update numbers.
+            self.assertIn("45 capped line(s)", output)
+            self.assertIn("0 line(s) reclaimable", output)
+            self.assertIn("2 of them sit at their cap", output)
+            self.assertEqual(read_baseline(root), {"src/a.cs": 20, "src/b.cs": 25})
+
     def test_a_brand_new_oversized_file_still_fails(self):
         with fake_repo({"src/fresh.cs": 40}, {}):
             code, output = run(["--threshold", "10"])

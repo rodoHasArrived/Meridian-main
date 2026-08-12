@@ -231,6 +231,11 @@ def main(argv: list[str] | None = None) -> int:
         _write_baseline(root, args.threshold, current)
         print(f"Wrote baseline with {len(current)} tracked file(s) "
               f"(threshold {args.threshold} lines).")
+        # Report against the baseline just written. This is the command run right after a
+        # decomposition lands, so it is the one moment an operator most wants the trend - and
+        # every file it just re-pinned shows up as TIGHT, which is the cost of the update being
+        # made visible at the point of making it.
+        _report_trend(root, _load_baseline(root), current)
         return 0
 
     baseline_path = _baseline_path(root)

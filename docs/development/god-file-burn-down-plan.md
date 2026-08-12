@@ -16,33 +16,35 @@ falling one, and records the mechanism changes that make progress visible.
 
 ## Where the baseline stands
 
-Measured 2026-08-11 against the ratchet's own scanner (threshold 2,000 lines):
+Measured against the ratchet's own scanner on this branch (threshold 2,000 lines). Reproduce with
+`python3 build/scripts/ci/check-file-size.py`, which prints the first three rows directly:
 
 | Metric | Value |
 | --- | ---: |
 | Baselined files | 50 |
 | Capped lines | 169,329 |
-| Reclaimable slack (current below cap) | **1 line** |
+| Current lines | 169,308 |
+| Reclaimable slack (current below cap) | **21 lines** |
 
-By surface:
+By surface, counted from the baseline's recorded caps:
 
 | Surface | Files | Lines | Share |
 | --- | ---: | ---: | ---: |
-| C# (`.cs`) | 29 | 87,858 | 52% |
+| C# (`.cs`) | 29 | 87,859 | 51% |
 | TypeScript (`.ts`) | 15 | 57,891 | 34% |
-| TSX (`.tsx`) | 6 | 23,579 | 14% |
+| TSX (`.tsx`) | 6 | 23,579 | 13% |
 
 The browser workstation is **48% of the baselined debt** (21 files, 81,470 lines) despite being one
 of several surfaces. Any plan that only addresses C# ViewModels leaves half the problem untouched.
 
 ## The finding that shapes the plan
 
-**49 of the 50 baselined files sit at exactly zero headroom.** One file has a single line spare.
-None has more.
+**48 of the 50 baselined files sit at exactly zero headroom, and all 50 are within 25 lines of their
+cap.** The 21 reclaimable lines are spread across two files.
 
 That is not the occasional cliff issue #2619 describes — it is the steady state of the entire
-baseline. Adding one line fails CI today for 49 of the 50 — the ratchet rejects only `lines > cap`,
-so the file with a line spare would reach its cap and still pass, once. The practical consequences:
+baseline. Adding one line fails CI today for 48 of the 50 — the ratchet rejects only `lines > cap`,
+so the two with slack would reach their caps and still pass, once. The practical consequences:
 
 - Any ordinary change to a god file — a `using` directive, a guard clause, a log line — forces a
   choice between an unrelated refactor and a `--update-baseline` commit.
@@ -59,13 +61,22 @@ sibling partial class and still failed the ratchet, because adding one `using` d
 problem is a prerequisite, not a nicety — and no mechanism for it exists yet, which is what the
 missing-mechanism section below records.
 
+Those 21 lines are themselves the trend working. They appeared when #2669 landed on `main` and
+removed lines from files whose caps this baseline still carries, moving the pinned count from 49 to
+48. That is exactly the signal the reporting below exists to make visible, and it is also why the
+numbers in this document are stated with the command that reproduces them rather than as fixed
+values: they move whenever a decomposition lands.
+
 ## Mechanism changes (this change)
 
 Reporting only. No enforcement rule is altered, so nothing that passes today starts failing.
 
 1. **Trend reporting.** Every run prints baselined file count, total capped lines, total current
-   lines, and reclaimable slack. The number the plan is trying to move is now visible in CI output
-   instead of requiring a script to compute.
+   lines, and reclaimable slack — including `--update-baseline`, which reports against the baseline
+   it just wrote. That is the run immediately after a decomposition lands, so it is the one an
+   operator most wants the numbers from, and every cap it re-pins shows up as `TIGHT` at the moment
+   of re-pinning. The number the plan is trying to move is now visible in CI output instead of
+   requiring a script to compute.
 2. **Headroom warnings.** Files within 25 lines of their cap are listed as `TIGHT`. The wall is
    visible before a contributor hits it, and the report names decomposition candidates by urgency
    rather than by size.
@@ -118,19 +129,30 @@ real seam was found.
 
 ## Sequencing
 
-**1. Highest-coupling C# ViewModels first — not the largest files.**
+**1. C# ViewModels with the most optional dependencies first — not the largest files.**
 
-| File | Lines | Public members | Injected deps |
-| --- | ---: | ---: | ---: |
-| `src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs` | 5,358 | 224 | 18 (13 nullable) |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | 4,408 | 212 | 20 |
-| `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs` | 3,325 | 152 | 14 |
-| `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs` | 2,313 | 134 | 19 |
+Counting method, so these can be rechecked: *lines* is the ratchet's own count; *public members* is
+declarations at class indentation beginning with `public`, excluding the constructor; *ctor params*
+and *optional* are the parameters of the public constructor and how many of those are nullable with
+a default. Ordered by optional dependencies, which is the axis this step is about.
 
-Thirteen nullable dependencies describe 2¹³ possible service configurations, none of which the type
+| File | Lines | Public members | Ctor params | Optional |
+| --- | ---: | ---: | ---: | ---: |
+| `src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs` | 5,357 | 223 | 18 | 15 |
+| `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs` | 2,313 | 126 | 14 | 12 |
+| `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs` | 3,325 | 135 | 12 | 4 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | 4,408 | 211 | 12 | 1 |
+
+Fifteen optional dependencies describe 2¹⁵ possible service configurations, none of which the type
 system distinguishes, so every method re-checks which collaborators exist. Split by workflow area
-into child ViewModels, each taking a **non-nullable** dependency set. The dependency count falling
-is the real win; the line count falling is a side effect.
+into child ViewModels, each taking a **non-nullable** dependency set. The optional-dependency count
+falling is the real win; the line count falling is a side effect.
+
+Note that size and coupling genuinely diverge here, which is the point of ordering by coupling.
+`SecurityMasterViewModel` is the second-largest file in the table and the *least* coupled of the
+four — 12 constructor parameters, one of them optional. It is a big class, not a tangled one, so it
+belongs in a size-driven pass rather than this one. `MainPageViewModel` is the smallest of the four
+and the second most coupled; it will fight back hardest per line removed.
 
 **2. Browser workstation screens, along the seams the UI already has.**
 
