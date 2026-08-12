@@ -85,12 +85,23 @@ def _baseline_path(root: Path) -> Path:
     return root / "build" / "config" / "file-size-baseline.json"
 
 
-def _count_lines(path: Path) -> int:
+# Returns None when the size could not be determined, rather than a number that looks like a
+# measurement. An earlier version returned 0 on any OSError, which put "unreadable" and "empty" in
+# the same bucket and produced two distinct bugs from one line: a normal run reported an unreadable
+# file's whole cap as reclaimed, and --update-baseline dropped its cap entirely. Callers must decide
+# what an unknown means for them; there is no safe default here.
+def _try_count_lines(path: Path) -> int | None:
     try:
         with path.open("rb") as handle:
             return sum(1 for _ in handle)
-    except OSError:
+    except FileNotFoundError:
+        # Genuinely gone: zero is the honest count, and for a baselined entry it is the whole point
+        # of the trend. Distinguished here rather than by a stat() probe, because Path.exists() and
+        # Path.is_file() re-raise any OSError outside (ENOENT, ENOTDIR, EBADF, ELOOP) - EACCES among
+        # them - which would crash the caller on an untraversable parent.
         return 0
+    except OSError:
+        return None
 
 
 def _iter_source_files(src_root: Path) -> list[Path]:
@@ -103,18 +114,28 @@ def _iter_source_files(src_root: Path) -> list[Path]:
     return files
 
 
-def _scan(root: Path, threshold: int) -> dict[str, int]:
-    """Return {relative_path: line_count} for every oversized, non-excluded file."""
+def _scan(root: Path, threshold: int) -> tuple[dict[str, int], list[str]]:
+    """Oversized non-excluded files, plus every governed source whose size could not be read.
+
+    An unreadable file is indistinguishable from a small one here: it produces no line count, so it
+    is simply absent from the oversized set. That is harmless for a read-only check — the trend
+    reports baselined entries it could not read — but it is not harmless for anything that writes
+    the baseline from this result, because absent means "drop the cap".
+    """
     src_root = root / "src"
     oversized: dict[str, int] = {}
+    unreadable: list[str] = []
     for path in _iter_source_files(src_root):
         rel = path.relative_to(root).as_posix()
         if _is_excluded(rel):
             continue
-        lines = _count_lines(path)
+        lines = _try_count_lines(path)
+        if lines is None:
+            unreadable.append(rel)
+            continue
         if lines > threshold:
             oversized[rel] = lines
-    return dict(sorted(oversized.items()))
+    return dict(sorted(oversized.items())), sorted(unreadable)
 
 
 def _load_baseline(root: Path) -> dict[str, int]:
@@ -178,19 +199,12 @@ def _live_lines(
             live[rel] = current[rel]
             continue
 
-        # One syscall, not an exists() probe followed by an open(). Path.exists() re-raises any
-        # OSError outside (ENOENT, ENOTDIR, EBADF, ELOOP) - EACCES among them - so probing first
-        # would crash the whole check on an untraversable parent directory, after it had already
-        # printed its verdict and before it could return a declared exit code. Letting open() raise
-        # sorts the two cases by exception type instead, and closes the probe/open race as well.
-        try:
-            with (root / rel).open("rb") as handle:
-                live[rel] = sum(1 for _ in handle)
-        except FileNotFoundError:
-            live[rel] = 0
-        except OSError:
+        lines = _try_count_lines(root / rel)
+        if lines is None:
             live[rel] = cap
             unreadable.append(rel)
+        else:
+            live[rel] = lines
 
     return live, unreadable
 
@@ -274,9 +288,28 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: source root not found: {src_root}", file=sys.stderr)
         return 2
 
-    current = _scan(root, args.threshold)
+    current, unreadable_sources = _scan(root, args.threshold)
 
     if args.update_baseline:
+        # Refuse to write from an incomplete scan. An unreadable source is absent from `current`,
+        # and absent is how this file spells "no longer oversized" - so the write would silently
+        # delete that file's cap, and the trend printed afterwards reloads the new baseline and can
+        # no longer see the entry it just dropped. A transient permission or I/O error would
+        # therefore retire a protection with an exit code of 0 and a clean-looking report.
+        #
+        # The read-only path deliberately does not fail this way: it reports what it could not read
+        # and carries on, because a check that cannot see a file should not invent a verdict about
+        # it either way. Only the mutating path has to be certain.
+        if unreadable_sources:
+            print(
+                f"ERROR: refusing to rewrite the baseline. {len(unreadable_sources)} governed "
+                f"source file(s) could not be read, and writing now would drop their caps:",
+                file=sys.stderr,
+            )
+            for rel in unreadable_sources:
+                print(f"- {rel}", file=sys.stderr)
+            return 2
+
         _write_baseline(root, args.threshold, current)
         print(f"Wrote baseline with {len(current)} tracked file(s) "
               f"(threshold {args.threshold} lines).")

@@ -43,6 +43,28 @@ def fake_repo(sources: dict[str, int], baseline: dict[str, int] | None, threshol
             ratchet._repo_root = original  # type: ignore[assignment]
 
 
+@contextlib.contextmanager
+def unreadable(*file_names: str):
+    """Make the named files report an unknown size, as a permission or I/O error would.
+
+    Patched rather than staged on disk: these tests run as root in some environments, where chmod is
+    ignored and a permission fixture would pass without exercising anything. `_scan` also only walks
+    real filenames, so substituting a directory - which works for the baselined-path reader - never
+    reaches it. Patching the one helper both readers share is the only form that holds everywhere.
+    """
+    original = ratchet._try_count_lines
+    targets = set(file_names)
+
+    def failing(path):
+        return None if path.name in targets else original(path)
+
+    ratchet._try_count_lines = failing
+    try:
+        yield
+    finally:
+        ratchet._try_count_lines = original
+
+
 def run(argv: list[str]) -> tuple[int, str]:
     out, err = io.StringIO(), io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
@@ -88,15 +110,10 @@ class TrendReportingTests(unittest.TestCase):
 
     # An unreadable file read as zero is indistinguishable from a deleted one, which would report a
     # failed read as the largest possible reduction. Hold it at its cap and say so.
-    #
-    # The unreadable path is a directory rather than a chmod'ed file on purpose: root ignores mode
-    # bits, so a permission-based fixture passes vacuously wherever tests run as root and only
-    # exercises the branch on the CI runner. A directory raises OSError from open() for everyone.
     def test_does_not_report_an_unreadable_file_as_reclaimed(self):
-        with fake_repo({}, {"src/locked.cs": 30}) as root:
-            (root / "src" / "locked.cs").mkdir(parents=True)
-
-            code, output = run(["--threshold", "10"])
+        with fake_repo({"src/locked.cs": 8}, {"src/locked.cs": 30}):
+            with unreadable("locked.cs"):
+                code, output = run(["--threshold", "10"])
 
             self.assertEqual(code, 0, output)
             self.assertIn("30 current line(s)", output)
@@ -111,10 +128,10 @@ class TrendReportingTests(unittest.TestCase):
     # The cap substitution reads as zero headroom, so an unreadable file would both claim to be
     # pinned and outrank genuinely near-cap files for the ten displayed slots.
     def test_an_unreadable_file_does_not_displace_a_genuine_tight_warning(self):
-        with fake_repo({"src/near.cs": 28}, {"src/near.cs": 30, "src/locked.cs": 40}) as root:
-            (root / "src" / "locked.cs").mkdir(parents=True)
-
-            code, output = run(["--threshold", "10"])
+        with fake_repo({"src/near.cs": 28, "src/locked.cs": 40},
+                       {"src/near.cs": 30, "src/locked.cs": 40}):
+            with unreadable("locked.cs"):
+                code, output = run(["--threshold", "10"])
 
             self.assertEqual(code, 0, output)
             self.assertIn("TIGHT: 1 of 2", output)
@@ -123,21 +140,14 @@ class TrendReportingTests(unittest.TestCase):
             self.assertNotIn("a single added line fails this check", output)
 
     # The trend prints after the verdict, so anything that raises here replaces a declared exit code
-    # with a traceback. An untraversable parent is the realistic trigger: Path.exists() re-raises
-    # EACCES rather than returning False, so probing before opening would crash the whole check.
-    def test_survives_a_baselined_path_that_cannot_be_stat_ed(self):
-        with fake_repo({"src/ok.cs": 20}, {"src/ok.cs": 30, "src/vault/secret.cs": 40}) as root:
-            locked = root / "src" / "vault"
-            locked.mkdir(parents=True)
-            (locked / "secret.cs").write_text("x\n" * 40, encoding="utf-8")
-            locked.chmod(0o000)
-            try:
+    # with a traceback. The realistic trigger is an untraversable parent, where Path.exists() and
+    # Path.is_file() re-raise EACCES rather than returning False - which is why neither is used.
+    def test_survives_a_baselined_path_that_cannot_be_read(self):
+        with fake_repo({"src/ok.cs": 20, "src/vault/secret.cs": 40},
+                       {"src/ok.cs": 30, "src/vault/secret.cs": 40}):
+            with unreadable("secret.cs"):
                 code, output = run(["--threshold", "10"])
-            finally:
-                locked.chmod(0o755)
 
-            # Root ignores mode bits, so this asserts only that the run completes with a declared
-            # exit code and no traceback - true whether or not the read was actually denied.
             self.assertEqual(code, 0, output)
             self.assertIn("Baseline trend:", output)
             self.assertNotIn("Traceback", output)
@@ -207,6 +217,31 @@ class TrendReportingTests(unittest.TestCase):
             self.assertIn("0 line(s) reclaimable", output)
             self.assertIn("2 of them sit at their cap", output)
             self.assertEqual(read_baseline(root), {"src/a.cs": 20, "src/b.cs": 25})
+
+    # Absent from the scan is how this script spells "no longer oversized", so writing the baseline
+    # from a scan that could not read everything silently retires the caps it could not see - and
+    # the trend printed afterwards reloads the new baseline, so the dropped entry is invisible.
+    def test_refuses_to_update_the_baseline_when_a_source_cannot_be_read(self):
+        with fake_repo({"src/ok.cs": 40, "src/flaky.cs": 30},
+                       {"src/ok.cs": 40, "src/flaky.cs": 30}) as root:
+            with unreadable("flaky.cs"):
+                code, output = run(["--threshold", "10", "--update-baseline"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("refusing to rewrite the baseline", output)
+            self.assertIn("src/flaky.cs", output)
+            # The cap it could not verify must survive the refusal.
+            self.assertEqual(read_baseline(root), {"src/ok.cs": 40, "src/flaky.cs": 30})
+
+    # The read-only path keeps reporting rather than failing: a check that cannot see a file should
+    # not invent a verdict about it, and a transient error must not redden an unrelated PR.
+    def test_an_unreadable_source_does_not_fail_the_ordinary_check(self):
+        with fake_repo({"src/ok.cs": 20, "src/flaky.cs": 30}, {"src/ok.cs": 30}):
+            with unreadable("flaky.cs"):
+                code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("Baseline trend:", output)
 
     def test_a_brand_new_oversized_file_still_fails(self):
         with fake_repo({"src/fresh.cs": 40}, {}):
