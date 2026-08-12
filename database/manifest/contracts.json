@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "bf07f103e7520b6de27389540788eda85eb4e404f5baa8d246dcd50620e53dc5",
+      "fingerprint": "8fbc07c0d39c149c89efc5c8b99333e0374ea10455e0ad9aba5bf28ea5464767",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1125,6 +1125,7 @@
         "Meridian.Contracts.Ledger.LedgerCrossPeriodTrialBalanceReportDto",
         "Meridian.Contracts.Ledger.LedgerCurrencyRounding",
         "Meridian.Contracts.Ledger.LedgerDimensionSetDto",
+        "Meridian.Contracts.Ledger.LedgerDimensionTags",
         "Meridian.Contracts.Ledger.LedgerJournalEntryDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseKindDto",
@@ -2965,7 +2966,7 @@
         "src/Meridian.Contracts/AccountingSystem",
         "src/Meridian.Contracts/Ledger"
       ],
-      "fingerprint": "3b4de2d6d4c8b2843bf5261e72c702fdbc3b5bc577c0bb050453644c797225cf",
+      "fingerprint": "0ea12fd423c232450c9aea6fa2bc52ab74a768aadff5ba001a49567c3e89f560",
       "id": "ledger-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AccountingSystem",
@@ -3167,6 +3168,7 @@
         "Meridian.Contracts.Ledger.LedgerCrossPeriodTrialBalanceReportDto",
         "Meridian.Contracts.Ledger.LedgerCurrencyRounding",
         "Meridian.Contracts.Ledger.LedgerDimensionSetDto",
+        "Meridian.Contracts.Ledger.LedgerDimensionTags",
         "Meridian.Contracts.Ledger.LedgerJournalEntryDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseKindDto",
@@ -3506,7 +3508,7 @@
       ]
     }
   ],
-  "fingerprint": "0ccca9538f1f7042d80596db76e64d90865210b54a4297bf117c13642221b2ec",
+  "fingerprint": "f7f981d160be96176629bb5d83164e1a9a0d6fe0d0663bcebec162f7371a18f6",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4838,7 +4840,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "fa4dc500f8cab68f75fc8d3f62f0237db44d7c54a2e13ac213055bbcc1d24398",
+      "fingerprint": "b1fdbdbfe6c38c449b2ea4edabdde1f216db9c95f450a51de58d07d3663d8134",
       "mapped_schemas": [
         "ledger"
       ],
@@ -4974,6 +4976,7 @@
         "Meridian.Contracts.Ledger.LedgerCrossPeriodTrialBalanceReportDto",
         "Meridian.Contracts.Ledger.LedgerCurrencyRounding",
         "Meridian.Contracts.Ledger.LedgerDimensionSetDto",
+        "Meridian.Contracts.Ledger.LedgerDimensionTags",
         "Meridian.Contracts.Ledger.LedgerJournalEntryDto",
         "Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
         "Meridian.Contracts.Ledger.LedgerPeriodCloseKindDto",
@@ -161523,6 +161526,44 @@
         {
           "line": 249,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "0586ecc89269b920de4da94b7cb27cee3e856332d821c6b2ff3c0316424b5866",
+      "full_name": "Meridian.Contracts.Ledger.LedgerDimensionTags",
+      "id": "Meridian.Contracts.Ledger.LedgerDimensionTags",
+      "kind": "class",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [],
+      "name": "LedgerDimensionTags",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.LedgerDimensionTags",
+      "references": [],
+      "source": {
+        "line": 20,
+        "path": "src/Meridian.Contracts/Ledger/LedgerDimensionTags.cs"
+      },
+      "sources": [
+        {
+          "line": 20,
+          "path": "src/Meridian.Contracts/Ledger/LedgerDimensionTags.cs"
         }
       ],
       "type_parameters": []
