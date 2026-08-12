@@ -525,6 +525,75 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         auditText.Should().NotContain("finnhub-secret");
     }
 
+    // The vault key sits in the same directory as the vault it decrypts, so on Unix the key file's
+    // mode is the whole of the protection: a reader who can open one can open the other. These
+    // cover that the mode is right at creation and repaired if a deployment already widened it.
+
+    [Fact]
+    public async Task SaveAsync_CreatesTheVaultKeyOwnerOnly()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "finnhub",
+            new Dictionary<string, string?> { ["ApiKey"] = "finnhub-secret" }));
+
+        var keyPath = Path.Combine(_root, ".mdc", "provider-credentials.key");
+        File.Exists(keyPath).Should().BeTrue();
+        File.GetUnixFileMode(keyPath)
+            .Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite,
+                "the key is the only thing standing between the vault file and its plaintext");
+    }
+
+    [Fact]
+    public async Task SaveAsync_CreatesTheVaultDirectoryOwnerOnly()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "finnhub",
+            new Dictionary<string, string?> { ["ApiKey"] = "finnhub-secret" }));
+
+        File.GetUnixFileMode(Path.Combine(_root, ".mdc"))
+            .Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+    }
+
+    [Fact]
+    public async Task ReadForProviderAsync_TightensAKeyLeftReadableByAnEarlierRelease()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "finnhub",
+            new Dictionary<string, string?> { ["ApiKey"] = "finnhub-secret" }));
+
+        // Reproduce what a pre-fix install left on disk: the umask default, world-readable.
+        var keyPath = Path.Combine(_root, ".mdc", "provider-credentials.key");
+        File.SetUnixFileMode(
+            keyPath,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        var read = await new FileProviderCredentialStore(_root).ReadForProviderAsync("finnhub");
+
+        File.GetUnixFileMode(keyPath).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        read.Should().NotBeNull();
+        read!.Get("ApiKey").Should().Be("finnhub-secret", "tightening permissions must not break decryption");
+    }
+
     private sealed class EnvironmentScope : IDisposable
     {
         private readonly string _name;

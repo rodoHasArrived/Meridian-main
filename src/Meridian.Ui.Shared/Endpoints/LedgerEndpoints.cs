@@ -2587,28 +2587,28 @@ public static partial class LedgerEndpoints
     private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata)
     {
         var tags = metadata.Tags;
-        var positionId = Guid.TryParse(FirstTag(tags, "positionId"), out var parsedPositionId)
+        var positionId = Guid.TryParse(LedgerDimensionTags.FirstTag(tags, "positionId"), out var parsedPositionId)
             ? parsedPositionId
             : (Guid?)null;
         var dimensions = new LedgerDimensionSetDto(
-            FundId: FirstTag(tags, "fundId", "fundProfileId"),
-            EntityId: FirstTag(tags, "entityId", "legalEntityId"),
-            SleeveId: FirstTag(tags, "sleeveId"),
-            StrategyId: metadata.StrategyId ?? FirstTag(tags, "strategyId"),
-            InvestorId: metadata.InvestorId ?? FirstTag(tags, "investorId"),
-            CapitalAccountId: metadata.CapitalAccountId ?? FirstTag(tags, "capitalAccountId"),
+            FundId: LedgerDimensionTags.FirstTag(tags, "fundId", "fundProfileId"),
+            EntityId: LedgerDimensionTags.FirstTag(tags, "entityId", "legalEntityId"),
+            SleeveId: LedgerDimensionTags.FirstTag(tags, "sleeveId"),
+            StrategyId: metadata.StrategyId ?? LedgerDimensionTags.FirstTag(tags, "strategyId"),
+            InvestorId: metadata.InvestorId ?? LedgerDimensionTags.FirstTag(tags, "investorId"),
+            CapitalAccountId: metadata.CapitalAccountId ?? LedgerDimensionTags.FirstTag(tags, "capitalAccountId"),
             InstrumentId: metadata.SecurityId,
-            TaxLotId: FirstTag(tags, "taxLotId", "lotId"),
-            CostCenterId: FirstTag(tags, "costCenterId"),
-            CounterpartyId: metadata.CounterpartyAccountId ?? FirstTag(tags, "counterpartyId", "counterpartyAccountId"),
-            ExternalGlDimensions: ExtractExternalGlDimensions(tags),
-            OrganizationId: FirstTag(tags, "organizationId"),
-            PortfolioId: FirstTag(tags, "portfolioId"),
-            BookId: metadata.LedgerBook ?? FirstTag(tags, "bookId"),
-            AccountId: metadata.FinancialAccountId ?? FirstTag(tags, "accountId"),
-            CustomerId: FirstTag(tags, "customerId"),
-            VendorId: FirstTag(tags, "vendorId"),
-            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"))
+            TaxLotId: LedgerDimensionTags.FirstTag(tags, "taxLotId", "lotId"),
+            CostCenterId: LedgerDimensionTags.FirstTag(tags, "costCenterId"),
+            CounterpartyId: metadata.CounterpartyAccountId ?? LedgerDimensionTags.FirstTag(tags, "counterpartyId", "counterpartyAccountId"),
+            ExternalGlDimensions: LedgerDimensionTags.ExtractExternalGlDimensions(tags),
+            OrganizationId: LedgerDimensionTags.FirstTag(tags, "organizationId"),
+            PortfolioId: LedgerDimensionTags.FirstTag(tags, "portfolioId"),
+            BookId: metadata.LedgerBook ?? LedgerDimensionTags.FirstTag(tags, "bookId"),
+            AccountId: metadata.FinancialAccountId ?? LedgerDimensionTags.FirstTag(tags, "accountId"),
+            CustomerId: LedgerDimensionTags.FirstTag(tags, "customerId"),
+            VendorId: LedgerDimensionTags.FirstTag(tags, "vendorId"),
+            ProjectId: metadata.ProjectId ?? LedgerDimensionTags.FirstTag(tags, "projectId"))
         {
             PositionId = positionId
         };
@@ -2658,28 +2658,28 @@ public static partial class LedgerEndpoints
             return null;
         }
 
-        var positionId = Guid.TryParse(FirstTag(tags, prefix + "positionId"), out var parsedPositionId)
+        var positionId = Guid.TryParse(LedgerDimensionTags.FirstTag(tags, prefix + "positionId"), out var parsedPositionId)
             ? parsedPositionId
             : (Guid?)null;
         var dimensions = new LedgerDimensionSetDto(
-            FundId: FirstTag(tags, prefix + "fundId"),
-            EntityId: FirstTag(tags, prefix + "entityId"),
-            SleeveId: FirstTag(tags, prefix + "sleeveId"),
-            StrategyId: FirstTag(tags, prefix + "strategyId"),
-            InvestorId: FirstTag(tags, prefix + "investorId"),
-            CapitalAccountId: FirstTag(tags, prefix + "capitalAccountId"),
-            InstrumentId: Guid.TryParse(FirstTag(tags, prefix + "instrumentId"), out var instrumentId) ? instrumentId : null,
-            TaxLotId: FirstTag(tags, prefix + "taxLotId"),
-            CostCenterId: FirstTag(tags, prefix + "costCenterId"),
-            CounterpartyId: FirstTag(tags, prefix + "counterpartyId"),
-            ExternalGlDimensions: ExtractExternalGlDimensions(tags, prefix),
-            OrganizationId: FirstTag(tags, prefix + "organizationId"),
-            PortfolioId: FirstTag(tags, prefix + "portfolioId"),
-            BookId: FirstTag(tags, prefix + "bookId"),
-            AccountId: FirstTag(tags, prefix + "accountId"),
-            CustomerId: FirstTag(tags, prefix + "customerId"),
-            VendorId: FirstTag(tags, prefix + "vendorId"),
-            ProjectId: FirstTag(tags, prefix + "projectId"))
+            FundId: LedgerDimensionTags.FirstTag(tags, prefix + "fundId"),
+            EntityId: LedgerDimensionTags.FirstTag(tags, prefix + "entityId"),
+            SleeveId: LedgerDimensionTags.FirstTag(tags, prefix + "sleeveId"),
+            StrategyId: LedgerDimensionTags.FirstTag(tags, prefix + "strategyId"),
+            InvestorId: LedgerDimensionTags.FirstTag(tags, prefix + "investorId"),
+            CapitalAccountId: LedgerDimensionTags.FirstTag(tags, prefix + "capitalAccountId"),
+            InstrumentId: Guid.TryParse(LedgerDimensionTags.FirstTag(tags, prefix + "instrumentId"), out var instrumentId) ? instrumentId : null,
+            TaxLotId: LedgerDimensionTags.FirstTag(tags, prefix + "taxLotId"),
+            CostCenterId: LedgerDimensionTags.FirstTag(tags, prefix + "costCenterId"),
+            CounterpartyId: LedgerDimensionTags.FirstTag(tags, prefix + "counterpartyId"),
+            ExternalGlDimensions: LedgerDimensionTags.ExtractExternalGlDimensions(tags, prefix),
+            OrganizationId: LedgerDimensionTags.FirstTag(tags, prefix + "organizationId"),
+            PortfolioId: LedgerDimensionTags.FirstTag(tags, prefix + "portfolioId"),
+            BookId: LedgerDimensionTags.FirstTag(tags, prefix + "bookId"),
+            AccountId: LedgerDimensionTags.FirstTag(tags, prefix + "accountId"),
+            CustomerId: LedgerDimensionTags.FirstTag(tags, prefix + "customerId"),
+            VendorId: LedgerDimensionTags.FirstTag(tags, prefix + "vendorId"),
+            ProjectId: LedgerDimensionTags.FirstTag(tags, prefix + "projectId"))
         {
             PositionId = positionId
         };
@@ -2818,7 +2818,7 @@ public static partial class LedgerEndpoints
             PositionId = dimensions.PositionId
         };
 
-        return HasAnyCanonicalDimension(canonical) ? canonical : null;
+        return LedgerDimensionTags.HasAnyDimension(canonical) ? canonical : null;
     }
 
 }
