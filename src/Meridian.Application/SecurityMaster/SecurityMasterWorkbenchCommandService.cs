@@ -570,6 +570,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             return;
         }
 
+        var safeFieldPathForLog = SanitizeForLog(request.FieldPath);
         string? assetClass = null;
         try
         {
@@ -583,14 +584,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             _logger.LogWarning(
                 ex,
                 "Resolving the asset class for {SecurityId} failed; skipping schema validation for field edit {FieldPath}.",
-                request.SecurityId, request.FieldPath);
+                request.SecurityId, safeFieldPathForLog);
         }
 
         if (string.IsNullOrWhiteSpace(assetClass))
         {
             _logger.LogWarning(
                 "Asset class for {SecurityId} could not be resolved; staging field edit {FieldPath} without schema validation.",
-                request.SecurityId, request.FieldPath);
+                request.SecurityId, safeFieldPathForLog);
             return;
         }
 
@@ -598,6 +599,16 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             throw new ArgumentException(error, nameof(request));
         }
+    }
+
+    private static string SanitizeForLog(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return value.Replace("\r", string.Empty).Replace("\n", string.Empty);
     }
 
     private async Task<long> GetCurrentVersionAsync(Guid securityId, CancellationToken ct)
