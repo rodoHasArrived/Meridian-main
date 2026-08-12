@@ -12,6 +12,7 @@ import type {
   AccountingTenantAdministrationProfile,
   RuleDryRunResult,
 } from "@/types";
+import { requirePresent } from "@/test/fixtures";
 
 describe("accounting governance view model", () => {  it("loads Accounting Rules Studio rules and runs shared dry-run previews", async () => {
     const workspace: AccountingConfigurationWorkspace = {
@@ -359,7 +360,7 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
         bookCount: 1,
         openPeriodCount: 1
       },
-      rulesStudioSummary: workspace.rulesStudio.summary,
+      rulesStudioSummary: requirePresent(workspace.rulesStudio, "workspace.rulesStudio").summary,
       ledgerBookWorkflows: {
         ledgerBookId: "book-primary",
         postingRulesLedgerBookNativeCertified: true,

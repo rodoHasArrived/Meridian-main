@@ -28,6 +28,7 @@ import type {
   OperationsReconciliationLaneSummary,
   PrivateCapitalCloseCockpit
 } from "@/types";
+import { requirePresent } from "@/test/fixtures";
 
 vi.mock("@/lib/api", () => ({
   acknowledgeOperationsContinuityChecklistTask: vi.fn(),
@@ -2105,7 +2106,7 @@ function createClosedWorkflowDetail(closeEvidence: OperationsEvidenceLink): Oper
       closePackageId: "close-package-2026-05",
       reportPackId: "report-pack-2026-05",
       retainedManifestId: "close-package-2026-05-manifest",
-      retainedManifestRoute: closeEvidence.route,
+      retainedManifestRoute: requirePresent(closeEvidence.route, "closeEvidence.route"),
       evidenceHash: "b5f6c7d8e9a00112233445566778899aabbccddeeff00112233445566778899",
       publishedAtUtc: "2026-05-10T18:45:00Z",
       publishedBy: "fund-controller",

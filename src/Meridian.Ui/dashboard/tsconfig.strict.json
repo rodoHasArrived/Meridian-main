@@ -1,20 +1,20 @@
 {
-  // Full `strict` gate for production source, enforced in CI as `npm run typecheck:strict`.
+  // Full `strict` gate for the dashboard, enforced in CI as `npm run typecheck:strict`.
   //
-  // The base tsconfig.json still sets "strict": false because it also covers test files, which are
-  // not clean yet. This config is the enforced contract: everything under src/ except tests
-  // compiles under the whole strict family. It is written as "strict": true rather than as a list
-  // of sub-flags so that a future TypeScript release cannot introduce a strict check that silently
-  // stays off here.
+  // The base tsconfig.json still sets "strict": false because it is what the editor and the Vite
+  // build read, and relaxing it there is what keeps day-to-day edits from being blocked by the
+  // wider repo. This config is the enforced contract: everything under src/ — production source
+  // and test files alike — compiles under the whole strict family. It is written as "strict": true
+  // rather than as a list of sub-flags so that a future TypeScript release cannot introduce a
+  // strict check that silently stays off here.
   //
-  // Remaining work is the excluded test files: 38 errors across 15 files when this was written,
-  // most of them uninitialised locals and possibly-undefined access in fixtures. Re-measure rather
-  // than trusting that number: copy this file with "exclude" set to [] and compile that copy.
-  // There is no tsc flag to override "exclude" from the command line.
+  // Test files were excluded when this gate was introduced (38 errors across 15 files). They are
+  // included now, so there is nothing left to exclude: the gate covers every file it claims to.
+  // Keep it that way — an exclusion added here is invisible from the command line, because there is
+  // no tsc flag that overrides "exclude".
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "strict": true
   },
-  "include": ["src"],
-  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
+  "include": ["src"]
 }

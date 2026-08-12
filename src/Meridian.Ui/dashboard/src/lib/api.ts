@@ -1114,7 +1114,10 @@ export function getTradingWorkspace(options: ApiRequestOptions & { fundAccountId
 
 export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
   const { fundAccountId, ...requestOptions } = options;
-  return getJson<TradingOperatorReadiness>(workstationTradingReadinessEndpoint(fundAccountId), requestOptions);
+  // Nullable to match the seam that consumes it: trading-screen.view-model.ts already declares
+  // `getTradingReadiness` as returning `TradingOperatorReadiness | null` and handles the absent
+  // case, while this layer claimed the readiness is always present. The two disagreed.
+  return getJson<TradingOperatorReadiness | null>(workstationTradingReadinessEndpoint(fundAccountId), requestOptions);
 }
 
 export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOptions = {}) {
