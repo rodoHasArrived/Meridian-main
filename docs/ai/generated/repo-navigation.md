@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-07-27T07:05:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-11T10:32:01Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ Provider contracts, adapter implementations, storage catalog, WAL, and archival 
 WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 
 - Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`, `Meridian.Ui.Dashboard`
-- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/app.tsx`
+- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/development/wpf-web-ui-alignment-plan.md`
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 13 |
-| `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 6 |
-| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 5 |
-| `src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 18 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 5 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationBreaks.cs` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 3 |
+| `src/Meridian.Mcp/Tools/ConventionTools.cs` | MCP Integration | `01652ac36` (2026-08-11T09:42:23Z) | 1 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 4 |
+| `src/Meridian.Wpf/Services/StrategyWorkspaceShellPresentationService.cs` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 1 |
+| `src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs` | Desktop and UI Workflows | `80440650a` (2026-08-11T09:39:23Z) | 1 |
+| `src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs` | Desktop and UI Workflows | `1e14cf1e0` (2026-08-11T09:23:31Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs` | Desktop and UI Workflows | `0f9e40d8d` (2026-08-11T07:52:29Z) | 1 |
 

@@ -100,6 +100,21 @@ The seeded workspace is the same sample workspace the browser onboarding wizard'
 choice provisions, so the demo and the guided first-run experience walk through identical data. See
 `dotnet run --project src/Meridian/Meridian.csproj -- --help demo` for the full command reference.
 
+### The workstation bundle the demo serves
+
+The browser workstation is served from one canonical, git-tracked bundle:
+`src/Meridian.Ui/wwwroot/workstation`. A fresh clone already carries it, so the demo reaches a
+populated `/workstation/` screen without Node.js installed, and the host resolves that same tree
+regardless of the directory you launch from. When you change dashboard source, regenerate and
+commit the bundle with:
+
+```powershell
+npm --prefix src/Meridian.Ui/dashboard run build
+```
+
+CI runs a freshness gate that fails when the tracked bundle lags `src/Meridian.Ui/dashboard`, so
+the served assets always match the same commit's dashboard source.
+
 ## First Help Commands
 
 Plain Windows/PowerShell path:
@@ -124,7 +139,7 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 | Goal | Command | Notes |
 | --- | --- | --- |
 | Seeded end-to-end demo (fastest evaluation) | `dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo` | Seeds an isolated, durable, `Seeded`-labelled demo workspace and opens the populated workstation. See [See It Working](#see-it-working-one-command-demo). |
-| Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Serves the host and, after assets are built, `http://localhost:8080/workstation/`. |
+| Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Serves the host and `http://localhost:8080/workstation/` from the tracked canonical bundle (`src/Meridian.Ui/wwwroot/workstation`), independent of launch directory. |
 | Desktop-local host mode | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Use when intentionally running the desktop-local host and streaming collector together. |
 | Browser workstation development | `npm --prefix src/Meridian.Ui/dashboard run dev` | Use for active React/TypeScript workstation work. |
 | WPF desktop development shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development` | Builds Debug artifacts and explicitly opts into the local Development/in-memory governance profile. |

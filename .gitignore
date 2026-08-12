@@ -273,16 +273,17 @@ __pycache__/
 .fakeactionlint
 /Meridian Design System/uploads
 /src/Meridian.Host/wwwroot/workstation/
-/src/Meridian.Ui/wwwroot/workstation
-/src/Meridian.Ui/wwwroot/workstation/assets
+# PRD-018: src/Meridian.Ui/wwwroot/workstation is the canonical TRACKED workstation bundle —
+# the dashboard build writes it, the host serves it, and CI's freshness gate keeps it current.
+# Only Vite's temporary build directories under it stay ignored.
+/src/Meridian.Ui/wwwroot/workstation/assets/.vite-temp/
+/src/Meridian.Ui/wwwroot/workstation/.vite-temp/
 /src/Meridian.Ui/dashboard/tsc-output.txt
 /src/Meridian.Ui/dashboard/artifacts/
 /src/Meridian.Ui/dashboard/artifacts/*.log
 /src/Meridian.Ui/dashboard/artifacts/*.tmp
 /src/Meridian.Ui/dashboard/artifacts/ui-cleanup-*.png
 /src/Meridian.Ui/dashboard/.tmp/
-/wwwroot/workstation/assets/.vite-temp/
-/wwwroot/workstation/.vite-temp/
 
 # Meridian SQLite adapter runtime artifacts
 # Why: Adapter source belongs in version control; local database files and

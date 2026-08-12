@@ -17,7 +17,6 @@
     "check-ai-routing-parity",
     "check-mode-escalation",
     "generate-coverage",
-    "generate-pilot-readiness-dashboard",
     "generate-paper-replay-reliability-dashboard",
     "generate-evidence-continuity-dashboard",
     "generate-governance-readiness-dashboard",
@@ -275,22 +274,6 @@
       "duration_seconds": 0.0,
       "status": "success",
       "output_file": "docs/status/coverage-report.md",
-      "error": null
-    },
-    {
-      "name": "generate-pilot-readiness-dashboard",
-      "command": [
-        "python3",
-        "build/scripts/docs/generate-pilot-readiness-dashboard.py",
-        "--output",
-        "docs/status/pilot-readiness-dashboard.md",
-        "--json-output",
-        "docs/status/pilot-readiness-dashboard.json"
-      ],
-      "return_code": 0,
-      "duration_seconds": 0.0,
-      "status": "success",
-      "output_file": "docs/status/pilot-readiness-dashboard.md",
       "error": null
     },
     {

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Contracts.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -75,8 +76,10 @@ public sealed class ProductionRegistrationGuardServiceTests
     }
 
     [Fact]
-    public async Task StartAsync_LocalWorkstationPosture_DoesNotRejectDevelopmentBindings()
+    public async Task StartAsync_LocalWorkstationPosture_UnlabeledInMemoryDurableBindings_RefusesStartupNamingBindings()
     {
+        // W9-TRUTH-001: the supported local posture asserts durable money-path stores at startup.
+        // Fabricated in-memory durables without the pinned non-real provenance label are refused.
         using var quietEnvironment = new ProductionEnvironmentQuietScope();
         using var host = BuildHost(services =>
         {
@@ -84,6 +87,41 @@ public sealed class ProductionRegistrationGuardServiceTests
             services.AddProductionRegistrationGuard();
             services.AddSingleton<ITestStore, InMemoryTestStore>();
             services.AddSingleton<ISecondaryTestStore>(_ => new InMemorySecondaryTestStore());
+        });
+
+        Func<Task> act = () => host.StartAsync();
+
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*Supported local-workstation posture requires durable money-path stores*InMemoryTestStore*");
+    }
+
+    [Fact]
+    public async Task StartAsync_LocalWorkstationPosture_LabeledComposition_AcceptsInMemoryDurableBindings()
+    {
+        // The pinned non-real label is the sanctioned way to run fabricated local stores: the
+        // persistent simulation label rides every surface instead of the durability assertion.
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+            services.ForceDataProvenanceLabel(DataProvenance.Seeded);
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<ITestStore, InMemoryTestStore>();
+        });
+
+        await host.StartAsync();
+        await host.StopAsync();
+    }
+
+    [Fact]
+    public async Task StartAsync_LocalWorkstationPosture_DoesNotRejectNonDurableDevelopmentBindings()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<ITestGadget, InMemoryTestGadget>();
         });
 
         await host.StartAsync();
@@ -132,6 +170,10 @@ public sealed class ProductionRegistrationGuardServiceTests
     private interface ITestStore;
 
     private interface ISecondaryTestStore;
+
+    private interface ITestGadget;
+
+    private sealed class InMemoryTestGadget : ITestGadget;
 
     private sealed class InMemoryTestStore : ITestStore;
 

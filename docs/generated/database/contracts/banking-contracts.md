@@ -5,7 +5,7 @@
 This is an explicit module association, not a claim that a DTO is identical to a table.
 
 Mapped physical schemas: `banking`.
-Catalogued objects: 10.
+Catalogued objects: 11.
 
 ```mermaid
 classDiagram
@@ -18,16 +18,16 @@ classDiagram
     class Meridian_Contracts_Banking_BankTransactionDto["BankTransactionDto"] {
         +decimal Amount
         +Guid BankTransactionId
+        +string? CanonicalInputHash
         +string Currency
         +DateOnly EffectiveDate
         +Guid EntityId
+        +string? EvidenceId
         +string? ExternalRef
         +bool IsVoided
+        +Guid? PendingPaymentId
         +DateTimeOffset RecordedAt
         +string? RecordedBy
-        +DateOnly SettlementDate
-        +DateOnly TransactionDate
-        +string TransactionType
     }
     class Meridian_Contracts_Banking_BankTransactionSeedRequest["BankTransactionSeedRequest"] {
         +int CountPerEntity
@@ -44,6 +44,7 @@ classDiagram
     }
     class Meridian_Contracts_Banking_InitiatePaymentRequest["InitiatePaymentRequest"] {
         +decimal Amount
+        +string? Currency
         +DateOnly EffectiveDate
         +string? ExternalRef
         +string? Notes
@@ -52,6 +53,10 @@ classDiagram
     }
     class Meridian_Contracts_Banking_PendingPaymentDto["PendingPaymentDto"] {
         +decimal Amount
+        +string? Currency
+        +DateTimeOffset? CurrencyRemediatedAt
+        +string? CurrencyRemediatedBy
+        +string? CurrencyRemediationReason
         +DateOnly EffectiveDate
         +Guid EntityId
         +string? ExternalRef
@@ -59,14 +64,12 @@ classDiagram
         +string? Notes
         +Guid PendingPaymentId
         +DateTimeOffset? ReviewedAt
-        +string? ReviewedBy
-        +string? ReviewNotes
-        +PaymentApprovalStatus Status
     }
     class Meridian_Contracts_Banking_RecordPaymentBankEvidenceRequest["RecordPaymentBankEvidenceRequest"] {
         +OperationsActionOriginDto ActionOrigin
         +decimal? Amount
         +string? Currency
+        +string? EvidenceId
         +string EvidenceType
         +string? ExternalRef
         +string? RecordedBy
@@ -77,6 +80,12 @@ classDiagram
         +OperationsActionOriginDto ActionOrigin
         +string Reason
         +string? ReviewedBy
+    }
+    class Meridian_Contracts_Banking_RemediatePaymentCurrencyRequest["RemediatePaymentCurrencyRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Currency
+        +string Reason
+        +string? RemediatedBy
     }
     Meridian_Contracts_Banking_PendingPaymentDto --> Meridian_Contracts_Banking_PaymentApprovalStatus
 ```

@@ -283,6 +283,9 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
                     Id = "PromoteToPaper",
                     Label = "Promote to Paper",
                     Description = "Promote the selected run",
+                    DisabledReason = canPromoteActiveRun
+                        ? string.Empty
+                        : "Select a completed run that is eligible for paper promotion.",
                     ShortcutHint = "Review",
                     Glyph = "\uE8FB",
                     IsEnabled = canPromoteActiveRun
@@ -292,6 +295,9 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
                     Id = "OpenTradingCockpit",
                     Label = "Open Trading Cockpit",
                     Description = "Open the selected run in trading",
+                    DisabledReason = canOpenTradingCockpit
+                        ? string.Empty
+                        : "Select a run before opening it in the trading cockpit.",
                     ShortcutHint = "Handoff",
                     Glyph = "\uE9F5",
                     IsEnabled = canOpenTradingCockpit

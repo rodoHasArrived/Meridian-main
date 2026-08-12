@@ -15,6 +15,7 @@ using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Lifecycle;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
@@ -137,10 +138,15 @@ public sealed class UiServer : IAsyncDisposable
             }
 
             var contentRootPath = Directory.GetCurrentDirectory();
+            // PRD-018: serve the canonical workstation bundle independent of launch directory.
+            // A null resolution keeps the legacy {contentRoot}/wwwroot default so the readiness
+            // check (not the web-root wiring) owns the operator-facing failure.
+            var workstationWebRootPath = WorkstationAssetTree.ResolveWebRoot(contentRootPath);
             var serviceRegistrationStopwatch = Stopwatch.StartNew();
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
-                ContentRootPath = contentRootPath
+                ContentRootPath = contentRootPath,
+                WebRootPath = workstationWebRootPath
             });
             if (File.Exists(configPath))
             {
@@ -494,6 +500,25 @@ public sealed class UiServer : IAsyncDisposable
 
             ValidateAuthenticationTransportSecurity(builder.Environment, _apiHostOptions);
             configureServices?.Invoke(builder.Services);
+
+            // W9-TRUTH-001: pin the provenance this composed graph must surface. A demo host is
+            // seeded by definition; otherwise the ADR-019 policy resolves the label — a
+            // supported-local composition that binds any in-memory durable store forces the
+            // simulated label, and a fully durable graph stays real (unlabeled). The pinned
+            // declaration feeds /api/demo/mode so both workstation shells keep rendering the
+            // persistent label, and tells the startup guard this composition deliberately runs
+            // labeled instead of asserting durable stores.
+            if (DemoWorkspaceLayout.IsDemoModeRequested(Array.Empty<string>()))
+            {
+                builder.Services.ForceDataProvenanceLabel(DataProvenance.Seeded);
+            }
+
+            var composedProvenance = ProductionServiceRegistrationPolicy.ResolveComposedDataProvenance(builder.Services);
+            if (composedProvenance.IsNonReal())
+            {
+                builder.Services.ForceDataProvenanceLabel(composedProvenance);
+            }
+
             serviceRegistrationStopwatch.Stop();
 
             var appBuildStopwatch = Stopwatch.StartNew();
@@ -915,10 +940,16 @@ public sealed class UiServer : IAsyncDisposable
                         "Workstation assets are not required by this host posture."));
                 }
 
-                var indexPath = Path.Combine(contentRootPath, "wwwroot", "workstation", "index.html");
-                return ValueTask.FromResult(File.Exists(indexPath)
-                    ? new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Workstation bundle is available.")
-                    : new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Workstation bundle is unavailable."));
+                // Re-probe on every readiness evaluation so a bundle built after startup is
+                // picked up by the next check instead of requiring a host restart.
+                var resolvedWebRoot = WorkstationAssetTree.ResolveWebRoot(contentRootPath);
+                return ValueTask.FromResult(resolvedWebRoot is not null
+                    ? new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Passing,
+                        $"Workstation bundle is available at {Path.Combine(resolvedWebRoot, "workstation")}.")
+                    : new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Failing,
+                        WorkstationAssetTree.DescribeUnavailable()));
             }));
 
         services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(

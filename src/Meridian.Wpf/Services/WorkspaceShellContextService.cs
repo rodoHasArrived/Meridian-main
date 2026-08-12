@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
@@ -191,6 +192,11 @@ public sealed class WorkspaceShellContextService
             return "Offline";
         }
 
+        if (ResolveServerReportedProvenance() is { } provenance)
+        {
+            return $"{provenance.Label()} data";
+        }
+
         if (status?.IsConnected == true)
         {
             return "Live";
@@ -211,9 +217,28 @@ public sealed class WorkspaceShellContextService
             return WorkspaceTone.Info;
         }
 
+        if (ResolveServerReportedProvenance() is not null)
+        {
+            return WorkspaceTone.Warning;
+        }
+
         return status?.IsConnected == true
             ? WorkspaceTone.Success
             : WorkspaceTone.Warning;
+    }
+
+    // W9-TRUTH-001: a connected backend that reports seeded/simulated/sample records must never
+    // present as "Live" on any workspace strip; unknown tokens degrade to Simulated, never Real.
+    private DataProvenance? ResolveServerReportedProvenance()
+    {
+        var token = _fixtureModeDetector.ServerDataProvenanceToken;
+        if (token is null)
+        {
+            return null;
+        }
+
+        var provenance = DataProvenanceExtensions.ParseTokenOrSimulated(token);
+        return provenance.IsNonReal() ? provenance : DataProvenance.Simulated;
     }
 
     private static string ResolveScopeValue(
