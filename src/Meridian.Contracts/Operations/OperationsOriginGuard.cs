@@ -53,6 +53,20 @@ public static class OperationsOriginGuard
         => $"Reviewed automation cannot {action}; a human operator approval is required.";
 
     /// <summary>
+    /// The canonical refusal text for a structured result, where the refusal is returned as data
+    /// rather than thrown.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately worded differently from <see cref="RefusalMessage"/>: this is read by an
+    /// operator looking at a blocked workflow, so it names what automation *may* still do, whereas
+    /// the exception message is read where an action already failed. Two audiences, two phrasings —
+    /// but both owned here, so a governance wording change stays one edit.
+    /// </remarks>
+    public static string BlockerMessage(string actionLabel)
+        => $"{actionLabel} requires a human operator origin; reviewed automation may suggest, "
+           + "summarize, draft, and flag but cannot mutate the operating record.";
+
+    /// <summary>
     /// Builds the uniform refusal signal without throwing it, for modules that raise their own
     /// exception type and carry this as the inner exception.
     /// </summary>

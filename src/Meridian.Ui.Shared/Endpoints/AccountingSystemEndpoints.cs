@@ -717,6 +717,11 @@ public static class AccountingSystemEndpoints
         }
     }
 
+    // Type first, message second. Refusals raised by a module-specific type carry the signal as the
+    // inner exception, so both positions are checked before falling back to the canonical wording,
+    // which is what a governance rewording would otherwise silently break.
     private static bool IsReviewedAutomationOriginError(Exception ex)
-        => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.OrdinalIgnoreCase);
+        => ex is HumanOperatorRequiredException
+            || ex.InnerException is HumanOperatorRequiredException
+            || ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.OrdinalIgnoreCase);
 }

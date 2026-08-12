@@ -87,6 +87,29 @@ public sealed class OperationsOriginGuardTests
             "Reviewed automation cannot execute accounting migration runs; a human operator approval is required.");
     }
 
+    // Gates that return a refusal as data rather than throwing use a different wording, aimed at an
+    // operator reading a blocked workflow. Pinned verbatim: these call sites previously held the
+    // string inline, so this asserts centralising it changed no API-visible text.
+    [Fact]
+    public void TheBlockerMessageKeepsItsStructuredResultWording()
+    {
+        OperationsOriginGuard.BlockerMessage("Approving a continuity plan").Should().Be(
+            "Approving a continuity plan requires a human operator origin; reviewed automation may "
+            + "suggest, summarize, draft, and flag but cannot mutate the operating record.");
+    }
+
+    // The two reconciliation gates that report refusals as structured results used to hold this
+    // text inline. Centralising them must not have reworded either one.
+    [Theory]
+    [InlineData("resolve, sign off, or reopen reconciliation cases",
+        "Reviewed automation cannot resolve, sign off, or reopen reconciliation cases; a human operator approval is required.")]
+    [InlineData("resolve or dismiss reconciliation breaks",
+        "Reviewed automation cannot resolve or dismiss reconciliation breaks; a human operator approval is required.")]
+    public void TheStructuredReconciliationRefusalsKeepTheirWording(string action, string expected)
+    {
+        OperationsOriginGuard.RefusalMessage(action).Should().Be(expected);
+    }
+
     // Modules that keep their own exception type carry the refusal as the inner exception, so a
     // caller can identify a governance refusal uniformly regardless of which module raised it.
     [Fact]

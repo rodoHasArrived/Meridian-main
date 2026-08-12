@@ -901,7 +901,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
             {
                 var validation = Invalid(
                     item,
-                    "Reviewed automation cannot resolve or dismiss reconciliation breaks; a human operator approval is required.",
+                    OperationsOriginGuard.RefusalMessage("resolve or dismiss reconciliation breaks"),
                     ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator,
                     ["actionOrigin"],
                     ReconciliationCaseLifecycleState.Resolved);

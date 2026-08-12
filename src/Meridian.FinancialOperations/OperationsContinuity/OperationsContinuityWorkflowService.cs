@@ -2946,7 +2946,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
 
         var blocker = new OperationsWorkflowBlockerDto(
             "REVIEWED_AUTOMATION_MATERIAL_ACTION_REJECTED",
-            $"{actionLabel} requires a human operator origin; reviewed automation may suggest, summarize, draft, and flag but cannot mutate the operating record.",
+            OperationsOriginGuard.BlockerMessage(actionLabel),
             gate,
             "Critical",
             []);
