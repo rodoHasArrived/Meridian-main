@@ -10,7 +10,8 @@ falling one, and records the mechanism changes that make progress visible.
 
 - Ratchet: [`../../build/scripts/ci/check-file-size.py`](../../build/scripts/ci/check-file-size.py)
 - Baseline: [`../../build/config/file-size-baseline.json`](../../build/config/file-size-baseline.json)
-- Contracts: ADR-017 (modular operational monolith), ADR-018 (module conventions)
+- Contracts: [ADR-017 (modular operational monolith)](../adr/017-modular-operational-monolith.md)
+  and [module conventions](../architecture/module-conventions.md)
 - Origin: issue #2619
 
 ## Where the baseline stands
@@ -66,9 +67,14 @@ Reporting only. No enforcement rule is altered, so nothing that passes today sta
 2. **Headroom warnings.** Files within 25 lines of their cap are listed as `TIGHT`. The wall is
    visible before a contributor hits it, and the report names decomposition candidates by urgency
    rather than by size.
-3. **`--tighten-baseline`.** Rewrites caps to current line counts but **only downward** — it can
+3. **`--tighten-baseline`.** Rewrites caps toward current line counts but **only downward** — it can
    never record growth, unlike `--update-baseline`. This is what makes reclaimed lines permanent:
-   run it after a decomposition and the ground gained cannot be silently given back.
+   run it after a decomposition and the ground gained cannot be silently given back. It refuses to
+   run under a threshold other than the baseline's own, since scanning at a higher threshold would
+   retire files the baseline still protects.
+4. **`--buffer N`.** Tightening to the exact current count leaves the file pinned again, which is
+   the state this plan exists to escape. `--tighten-baseline --buffer 25` locks in the reduction
+   while keeping 25 lines of working room, and still never raises a cap above its existing value.
 
 The distinction matters. `--update-baseline` is the escape hatch and should stay visible in review
 as tracked debt. `--tighten-baseline` is the ratchet actually ratcheting, and is safe to run
@@ -80,7 +86,7 @@ Expressed against the 169,329-line baseline recorded above.
 
 | Horizon | Target | Rationale |
 | --- | --- | --- |
-| Immediate | Restore working headroom via `--tighten-baseline` after each decomposition | Unblocks incremental work |
+| Immediate | After each decomposition run `--tighten-baseline --buffer 25` | Locks in the reduction while leaving the file editable |
 | Per release | Retire **at least 2 files** from the baseline entirely | File count is the honest unit — a file drops out only when it is genuinely decomposed |
 | Per quarter | Reduce total capped lines by **15%** (~25,400 lines) | Matches the reduction rate issue #2619 proposes |
 
@@ -143,10 +149,11 @@ Re-measure by running the ratchet; the trend line is now part of its normal outp
 python3 build/scripts/ci/check-file-size.py
 ```
 
-After a decomposition lands, reclaim the ground:
+After a decomposition lands, lock in the reduction while keeping the file editable:
 
 ```bash
-python3 build/scripts/ci/check-file-size.py --tighten-baseline
+python3 build/scripts/ci/check-file-size.py --tighten-baseline --buffer 25
 ```
 
-Review the diff — caps should only ever fall.
+Drop `--buffer` when retiring a file or when you want the cap pinned exactly. Either way, review the
+diff — caps should only ever fall.

@@ -126,6 +126,16 @@ def _load_baseline(root: Path) -> dict[str, int]:
     return {str(k): int(v) for k, v in data.get("files", {}).items()}
 
 
+def _baseline_threshold(root: Path) -> int | None:
+    """The threshold the committed baseline was generated against, if it records one."""
+    path = _baseline_path(root)
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    recorded = data.get("threshold_lines")
+    return int(recorded) if recorded is not None else None
+
+
 def _write_baseline(root: Path, threshold: int, oversized: dict[str, int]) -> None:
     path = _baseline_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -150,12 +160,18 @@ def _write_baseline(root: Path, threshold: int, oversized: dict[str, int]) -> No
 TIGHT_HEADROOM_LINES = 25
 
 
-def _report_trend(baseline: dict[str, int], current: dict[str, int]) -> None:
+def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int]) -> None:
     """Print the burn-down numbers: what is tracked, and how much of it is reclaimable."""
-    tracked = {rel: cap for rel, cap in baseline.items() if rel in current}
+    # A baselined file that has shrunk below the threshold is absent from `current`, so its real
+    # size has to be read from disk. Treating it as zero would erase its lines from the totals and
+    # overstate the reclaimable figure at exactly the moment a decomposition is about to retire it.
+    live_lines = {
+        rel: current[rel] if rel in current else _count_lines(root / rel)
+        for rel in baseline
+    }
     capped = sum(baseline.values())
-    live = sum(current.get(rel, 0) for rel in baseline)
-    slack = sum(max(0, cap - current[rel]) for rel, cap in tracked.items())
+    live = sum(live_lines.values())
+    slack = sum(max(0, cap - live_lines[rel]) for rel, cap in baseline.items())
 
     print(
         f"Baseline trend: {len(baseline)} tracked file(s), {capped:,} capped line(s), "
@@ -163,16 +179,21 @@ def _report_trend(baseline: dict[str, int], current: dict[str, int]) -> None:
     )
 
     tight = sorted(
-        ((cap - current[rel], rel, current[rel], cap)
-         for rel, cap in tracked.items()
-         if cap - current[rel] <= TIGHT_HEADROOM_LINES),
+        ((cap - live_lines[rel], rel, live_lines[rel], cap)
+         for rel, cap in baseline.items()
+         if cap - live_lines[rel] <= TIGHT_HEADROOM_LINES),
         key=lambda item: (item[0], item[1]),
     )
     if tight:
+        pinned = sum(1 for headroom, *_ in tight if headroom <= 0)
+        detail = (
+            f" {pinned} of them sit at their cap, where a single added line fails this check."
+            if pinned
+            else ""
+        )
         print(
-            f"TIGHT: {len(tight)} of {len(tracked)} tracked file(s) are within "
-            f"{TIGHT_HEADROOM_LINES} line(s) of their cap. Adding a line to one of these fails this "
-            f"check; decompose before extending."
+            f"TIGHT: {len(tight)} of {len(baseline)} tracked file(s) are within "
+            f"{TIGHT_HEADROOM_LINES} line(s) of their cap.{detail} Decompose before extending."
         )
         for headroom, rel, lines, cap in tight[:10]:
             print(f"- {rel}: {lines}/{cap} ({headroom} line(s) spare)")
@@ -196,8 +217,17 @@ def main(argv: list[str] | None = None) -> int:
         "--tighten-baseline",
         action="store_true",
         help=(
-            "Lower caps to current line counts. Unlike --update-baseline this never raises a cap "
-            "or adds a file, so reclaimed lines cannot be silently given back."
+            "Lower caps toward current line counts. Unlike --update-baseline this never raises a "
+            "cap or adds a file, so reclaimed lines cannot be silently given back."
+        ),
+    )
+    parser.add_argument(
+        "--buffer",
+        type=int,
+        default=0,
+        help=(
+            "With --tighten-baseline, leave this many lines of headroom above the current count "
+            "so the file stays editable. The cap is still never raised above its existing value."
         ),
     )
     args = parser.parse_args(argv)
@@ -227,18 +257,38 @@ def main(argv: list[str] | None = None) -> int:
     baseline = _load_baseline(root)
 
     if args.tighten_baseline:
+        # Raising the threshold would make _scan omit files that are still oversized by the
+        # baseline's own standard, and the retirement filter below would then delete their caps —
+        # a downward-only operation silently dropping protections. Require the same threshold.
+        recorded_threshold = _baseline_threshold(root)
+        if recorded_threshold is not None and recorded_threshold != args.threshold:
+            print(
+                f"ERROR: --tighten-baseline requires the baseline's own threshold "
+                f"({recorded_threshold}), got {args.threshold}. Tightening under a different "
+                f"threshold would retire files the baseline still protects.",
+                file=sys.stderr,
+            )
+            return 2
+
+        if args.buffer < 0:
+            print("ERROR: --buffer cannot be negative.", file=sys.stderr)
+            return 2
+
+        # min() keeps this strictly downward-only: the buffer can leave headroom above the current
+        # count, but never above the cap the baseline already recorded.
         tightened = {
-            rel: min(cap, current[rel]) if rel in current else cap
+            rel: min(cap, current[rel] + args.buffer)
             for rel, cap in baseline.items()
+            if rel in current
         }
-        # A file that dropped below the threshold leaves the baseline entirely.
-        tightened = {rel: cap for rel, cap in tightened.items() if rel in current}
         reclaimed = sum(baseline[rel] - cap for rel, cap in tightened.items())
+        # A file that dropped below the threshold leaves the baseline entirely.
         retired = sorted(set(baseline) - set(tightened))
         _write_baseline(root, args.threshold, dict(sorted(tightened.items())))
+        headroom = f", {args.buffer} line(s) of headroom kept" if args.buffer else ""
         print(
             f"Tightened baseline: {reclaimed:,} line(s) reclaimed, "
-            f"{len(retired)} file(s) retired, {len(tightened)} still tracked."
+            f"{len(retired)} file(s) retired, {len(tightened)} still tracked{headroom}."
         )
         for rel in retired:
             print(f"- retired (now under threshold): {rel}")
@@ -264,12 +314,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"- GREW past cap: {rel} now {lines} lines (baseline cap {cap}, "
                   f"exceeded by {lines - cap}). Reduce it, or update the baseline with "
                   f"justification.", file=sys.stderr)
-        _report_trend(baseline, current)
+        _report_trend(root, baseline, current)
         return 1
 
     print(f"File-size ratchet OK: {len(current)} tracked file(s), "
           f"no new or grown god files (threshold {args.threshold} lines).")
-    _report_trend(baseline, current)
+    _report_trend(root, baseline, current)
     if stale:
         print("Notice: baseline entries now under threshold (retire them with "
               "--tighten-baseline):")

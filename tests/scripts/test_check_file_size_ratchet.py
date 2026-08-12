@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 
 
-SCRIPT_PATH = Path(__file__).resolve().parents[1] / "ci" / "check-file-size.py"
+SCRIPT_PATH = Path(__file__).resolve().parents[2] / "build" / "scripts" / "ci" / "check-file-size.py"
 SPEC = importlib.util.spec_from_file_location("check_file_size", SCRIPT_PATH)
 assert SPEC and SPEC.loader
 ratchet = importlib.util.module_from_spec(SPEC)
@@ -82,6 +82,40 @@ class TightenBaselineTests(unittest.TestCase):
             self.assertNotIn("src/small.cs", read_baseline(root))
             self.assertIn("retired", output)
 
+    def test_buffer_keeps_working_headroom_while_still_reclaiming(self):
+        with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root)["src/big.cs"], 20)
+            self.assertIn("10 line(s) reclaimed", output)
+            self.assertIn("5 line(s) of headroom kept", output)
+
+    # The buffer must not become a way to raise a cap on a file that has not shrunk enough.
+    def test_buffer_never_raises_a_cap(self):
+        with fake_repo({"src/big.cs": 29}, {"src/big.cs": 30}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline", "--buffer", "50"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root)["src/big.cs"], 30)
+
+    def test_rejects_a_negative_buffer(self):
+        with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}):
+            code, output = run(["--threshold", "10", "--tighten-baseline", "--buffer", "-1"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("cannot be negative", output)
+
+    # Raising the threshold makes _scan omit files the baseline still protects; retiring them would
+    # be a downward-only operation quietly deleting caps.
+    def test_rejects_a_threshold_that_differs_from_the_baseline(self):
+        with fake_repo({"src/big.cs": 30}, {"src/big.cs": 30}) as root:
+            code, output = run(["--threshold", "40", "--tighten-baseline"])
+
+            self.assertEqual(code, 2)
+            self.assertIn("requires the baseline's own threshold", output)
+            self.assertEqual(read_baseline(root)["src/big.cs"], 30)
+
     def test_rejects_being_combined_with_update_baseline(self):
         with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}):
             code, output = run(["--threshold", "10", "--update-baseline", "--tighten-baseline"])
@@ -110,6 +144,16 @@ class TrendReportingTests(unittest.TestCase):
             self.assertIn("45 current line(s)", output)
             self.assertIn("10 line(s) reclaimable", output)
 
+    # A baselined file that shrank below the threshold drops out of the scan. Its lines still exist,
+    # so counting it as zero would erase them from the totals and overstate what is reclaimable.
+    def test_counts_a_file_that_shrank_below_the_threshold(self):
+        with fake_repo({"src/shrunk.cs": 8}, {"src/shrunk.cs": 30}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("8 current line(s)", output)
+            self.assertIn("22 line(s) reclaimable", output)
+
     def test_warns_about_files_sitting_at_their_cap(self):
         with fake_repo({"src/pinned.cs": 30}, {"src/pinned.cs": 30}):
             code, output = run(["--threshold", "10"])
@@ -117,6 +161,18 @@ class TrendReportingTests(unittest.TestCase):
             self.assertEqual(code, 0, output)
             self.assertIn("TIGHT", output)
             self.assertIn("0 line(s) spare", output)
+            self.assertIn("a single added line fails this check", output)
+
+    # A file with spare lines is approaching its cap, but one more line still passes - the warning
+    # must not claim otherwise.
+    def test_does_not_claim_one_line_fails_when_headroom_remains(self):
+        with fake_repo({"src/near.cs": 25}, {"src/near.cs": 30}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("TIGHT", output)
+            self.assertIn("5 line(s) spare", output)
+            self.assertNotIn("a single added line fails this check", output)
 
     def test_does_not_warn_when_there_is_headroom(self):
         with fake_repo({"src/roomy.cs": 20}, {"src/roomy.cs": 500}):

@@ -1217,7 +1217,6 @@ Meridian-main
 │       ├── tests
 │       │   ├── test_ai_repo_updater_blocking_async.py
 │       │   ├── test_check_ai_navigation_freshness.py
-│       │   ├── test_check_file_size_ratchet.py
 │       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
 │       ├── ai-architecture-check.py
@@ -10211,6 +10210,7 @@ Meridian-main
 │   │   ├── test_check_codex_skills.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_dashboard_type_barrel.py
+│   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_test_skip_register.py
