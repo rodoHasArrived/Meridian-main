@@ -1150,16 +1150,17 @@ the review and `AR8-` identifiers per workstream here.
 miscount): §1 first mile 7 · §2 activation 7 · §3 truth 7 · §4 gates 9 · §5 durability 5 ·
 §6 UX 7 · §7 assurance 6 · program-level 3.
 
-**This plan carries 53 numbered todos**, `AR8-01`–`AR8-56` with `AR8-04` reserved as an alias of
+**This plan carries 55 numbered todos**, `AR8-01`–`AR8-56` with `AR8-04` reserved as an alias of
 `AR8-Q3` rather than a separate item: W1 (7) · W2 (3) · W3 (3) · W4 (1) · W5 (1) · W6 (8) ·
-W7 (2) · W8 (6) · W9 (3) · W10 (7) · W11 (5) · W12 (4) · W13 (3) = 53. The six `AR8-Q*` quick wins
+W7 (2) · W8 (6) · W9 (3) · W10 (7) · W11 (7) · W12 (4) · W13 (3) = 55. Count every marker: a
+todo may be `- [ ]` open, `- [x]` done, or `- [~]` partial, and the two partial items (`AR8-43`,
+`AR8-44`) are deliberately left open — skipping them understates remaining work. The six `AR8-Q*` quick wins
 are sequencing aliases of items that also appear in a workstream, so they are not counted again.
 
-**Reconciliation of 51 findings to 53 todos.** Four todos have no 1:1 finding because they are
-mechanisms the findings imply rather than describe. Ids repeat across the rows below — a §-row
-maps a review section's findings onto whichever todos cover them, and those todos may live in
-different workstreams — so the row totals are not a second count of the plan. The authoritative
-count is the per-workstream union above:
+**Reconciliation of 51 findings to 55 todos** — four todos have no 1:1 finding because they are
+mechanisms the findings imply rather than describe. Ids repeat across the rows below, because a
+§-row maps a review section's findings onto whichever todos cover them and those todos may live in
+different workstreams:
 
 | Section | Findings | Todos |
 |---|---|---|
@@ -1172,10 +1173,7 @@ count is the per-workstream union above:
 | §7 assurance | 6 | `AR8-36`, `AR8-37`, `AR8-38`, `AR8-39`, `AR8-40`, `AR8-41` **+ `AR8-56`** (the Polygon credential path this PR found unwired while removing it from the Docker template) |
 | program-level | 3 | `AR8-53`, `AR8-54`, `AR8-55` |
 
-Every finding is represented. The per-workstream union is the count to trust: an earlier revision
-of this section asserted 54 todos with W11 at 7, but W11 carries 5 — AR8-41, AR8-43, and AR8-44
-appear in its prose while being owned by other workstreams. Recount mechanically rather than
-adjusting these numbers by hand.
+51 findings + 4 implied mechanisms = 55 todos, with every finding represented.
 
 Strengths named in the review — the ADR-019 composition policy, the bias-disclosure report, the
 reconciliation matching engine, OMS pre-trade enforcement, the durability primitives, and the auth
