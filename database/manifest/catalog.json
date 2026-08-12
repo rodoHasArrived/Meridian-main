@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "85a83d365a30fe98fd8202d353131ee0ee3887091784f90e76373700ed31bb92",
+  "database_fingerprint": "b1cbda5349fa1ed69e66a7e2f86e0f72a024191057243e7afe397870112b0249",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -12381,6 +12381,42 @@
       "object": "column:security_master.security_events.stream_version"
     },
     {
+      "fingerprint": "cadead7bc748bf941114cacf48a9ef23b89a86af58b522ac68806eadde36aad7",
+      "object": "column:security_master.security_field_provenance.as_of"
+    },
+    {
+      "fingerprint": "b4f653e4f76bdebf326f2ed5b19c4d565a907f273f9b6f42c2eba46f96d00ebc",
+      "object": "column:security_master.security_field_provenance.confidence"
+    },
+    {
+      "fingerprint": "d467983deb492738c905ca87746694c009e7a410002b26ee39903cbd08a54429",
+      "object": "column:security_master.security_field_provenance.field_path"
+    },
+    {
+      "fingerprint": "b9c32cf224d0eea685f241827843827659776087a7418f22d2c86a84fc2fe6f9",
+      "object": "column:security_master.security_field_provenance.origin"
+    },
+    {
+      "fingerprint": "e729c20df5b579c7990ca80d693d4a34600fa1ea1799194673ffddd888b8df74",
+      "object": "column:security_master.security_field_provenance.origin_reference"
+    },
+    {
+      "fingerprint": "761c5d91ab85be2950b0591dd9103845d6efe992d574b421a9b8fa5cf485f9a5",
+      "object": "column:security_master.security_field_provenance.recorded_at"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:security_master.security_field_provenance.security_id"
+    },
+    {
+      "fingerprint": "400d54068bc8e190d104aefbe8d7478f0996a5958bb6ed43851778c3b3c107f3",
+      "object": "column:security_master.security_field_provenance.source_system"
+    },
+    {
+      "fingerprint": "4761fc4956855e5135c291c137cd7b3d8fe2b61e48798a55464111d48bd4dcf9",
+      "object": "column:security_master.security_field_provenance.updated_by"
+    },
+    {
       "fingerprint": "77534e439b733eddd78e9a79fbad0b8429febc835c554256bcd4f601fe850e9d",
       "object": "column:security_master.security_identifiers.confidence"
     },
@@ -14963,6 +14999,10 @@
     {
       "fingerprint": "45f88f5c51e88c591e8e12f7b6f77bd4e0b60d14a7cc109b374fd3bc8eace43d",
       "object": "constraint:security_master.security_events.security_events_security_id_stream_version_key"
+    },
+    {
+      "fingerprint": "66b4a20cf573669ea752d580fa2828aaf81605ad5f1adaa0feeafb95445ce736",
+      "object": "constraint:security_master.security_field_provenance.security_field_provenance_pkey"
     },
     {
       "fingerprint": "43cd6bf6918d69d94084a85f9e5edb9014170b6089cc4f827eaee2dda2a3a573",
@@ -18485,6 +18525,10 @@
       "object": "index:security_master.ix_security_events_security_id_sequence"
     },
     {
+      "fingerprint": "5aec317cc407da76fcff7d7aa42abcead177b009f49a7047aebb8ae849cdd887",
+      "object": "index:security_master.ix_security_field_provenance_security"
+    },
+    {
       "fingerprint": "ec55ceb77c70d7fc257ac37eac056a6a3aa7b342f76ca9830937a9ea7a8374ff",
       "object": "index:security_master.ix_security_identifiers_lookup"
     },
@@ -18671,6 +18715,10 @@
     {
       "fingerprint": "83d03efaa42e0f1961ee7b37ccb08fd54cc28c8d81802017a553ac61c30b02a3",
       "object": "index:security_master.security_events_security_id_stream_version_key"
+    },
+    {
+      "fingerprint": "6d4a103bcb63242ab25a779f6e9d2bc00c6e197b50e77b3084a11cea290f3fce",
+      "object": "index:security_master.security_field_provenance_pkey"
     },
     {
       "fingerprint": "683fce49619ad6dd565b6d31697b180ae72e92eeb65052c61b237e90e13c5dd2",
@@ -19369,6 +19417,10 @@
       "object": "rls:security_master.security_events"
     },
     {
+      "fingerprint": "27ab7ae4a165427a6a6fd1679e8712bb17508d4bfae2c021b68ae420d0099feb",
+      "object": "rls:security_master.security_field_provenance"
+    },
+    {
       "fingerprint": "68207fa0e99cf37c18c35794eb1521a121838c1a210964a6d5ca99fac806bf0d",
       "object": "rls:security_master.security_identifiers"
     },
@@ -19481,7 +19533,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "d3baca69e8da5bfa325812c902497037c25dd3d55a0026064feb2394a1bebf57",
+      "fingerprint": "8e525e3de6b83f1f750797f58c6bac8f44f118fc610547527864e067c020b479",
       "object": "schema:security_master"
     },
     {
@@ -20055,6 +20107,10 @@
     {
       "fingerprint": "34b01b698a6c76a025bb9151ab7d1a7fdea4f3a0b9d966b62682d38a5bc23bbf",
       "object": "table:security_master.security_events"
+    },
+    {
+      "fingerprint": "8f82c3e299aea0aed7961ef4614965446c2559f6a89317d75402f66bf7f9ef54",
+      "object": "table:security_master.security_field_provenance"
     },
     {
       "fingerprint": "aa6edfaa218a72f303e82d5f504aea49e155a2efa202b2404f85ac2b088780c2",
@@ -101528,7 +101584,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "d3baca69e8da5bfa325812c902497037c25dd3d55a0026064feb2394a1bebf57",
+      "fingerprint": "8e525e3de6b83f1f750797f58c6bac8f44f118fc610547527864e067c020b479",
       "foreign_tables": [],
       "functions": [
         {
@@ -117983,6 +118039,290 @@
               "comment": null,
               "data_type": "text",
               "default": null,
+              "fingerprint": "d467983deb492738c905ca87746694c009e7a410002b26ee39903cbd08a54429",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_path",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b9c32cf224d0eea685f241827843827659776087a7418f22d2c86a84fc2fe6f9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "origin",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "400d54068bc8e190d104aefbe8d7478f0996a5958bb6ed43851778c3b3c107f3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_system",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "cadead7bc748bf941114cacf48a9ef23b89a86af58b522ac68806eadde36aad7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "as_of",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "4761fc4956855e5135c291c137cd7b3d8fe2b61e48798a55464111d48bd4dcf9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "b4f653e4f76bdebf326f2ed5b19c4d565a907f273f9b6f42c2eba46f96d00ebc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "confidence",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e729c20df5b579c7990ca80d693d4a34600fa1ea1799194673ffddd888b8df74",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "origin_reference",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "761c5d91ab85be2950b0591dd9103845d6efe992d574b421a9b8fa5cf485f9a5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "security_id",
+                "field_path",
+                "origin"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id, field_path, origin)",
+              "delete_action": null,
+              "fingerprint": "66b4a20cf573669ea752d580fa2828aaf81605ad5f1adaa0feeafb95445ce736",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_field_provenance_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "8f82c3e299aea0aed7961ef4614965446c2559f6a89317d75402f66bf7f9ef54",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_field_provenance_security ON security_master.security_field_provenance USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "5aec317cc407da76fcff7d7aa42abcead177b009f49a7047aebb8ae849cdd887",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_field_provenance_security",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_field_provenance_pkey ON security_master.security_field_provenance USING btree (security_id, field_path, origin)",
+              "expression": null,
+              "fingerprint": "6d4a103bcb63242ab25a779f6e9d2bc00c6e197b50e77b3084a11cea290f3fce",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "field_path",
+                "origin"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_field_provenance_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_field_provenance",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
               "fingerprint": "2370f05c7d4b8a5c5b7a65f03a0876a49ba79ce593144b0c29f29587f7d41389",
               "generated": null,
               "generated_expression": null,
@@ -124624,6 +124964,14 @@
           "forced": false,
           "policies": [],
           "relation": "security_events",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "27ab7ae4a165427a6a6fd1679e8712bb17508d4bfae2c021b68ae420d0099feb",
+          "forced": false,
+          "policies": [],
+          "relation": "security_field_provenance",
           "schema": "security_master"
         },
         {
@@ -141166,6 +141514,290 @@
           "is_partition": false,
           "kind": "table",
           "name": "security_events",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d467983deb492738c905ca87746694c009e7a410002b26ee39903cbd08a54429",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "field_path",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b9c32cf224d0eea685f241827843827659776087a7418f22d2c86a84fc2fe6f9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "origin",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "400d54068bc8e190d104aefbe8d7478f0996a5958bb6ed43851778c3b3c107f3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_system",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "cadead7bc748bf941114cacf48a9ef23b89a86af58b522ac68806eadde36aad7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "as_of",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "4761fc4956855e5135c291c137cd7b3d8fe2b61e48798a55464111d48bd4dcf9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "b4f653e4f76bdebf326f2ed5b19c4d565a907f273f9b6f42c2eba46f96d00ebc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "confidence",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e729c20df5b579c7990ca80d693d4a34600fa1ea1799194673ffddd888b8df74",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "origin_reference",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "761c5d91ab85be2950b0591dd9103845d6efe992d574b421a9b8fa5cf485f9a5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "security_id",
+                "field_path",
+                "origin"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id, field_path, origin)",
+              "delete_action": null,
+              "fingerprint": "66b4a20cf573669ea752d580fa2828aaf81605ad5f1adaa0feeafb95445ce736",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_field_provenance_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "8f82c3e299aea0aed7961ef4614965446c2559f6a89317d75402f66bf7f9ef54",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_field_provenance_security ON security_master.security_field_provenance USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "5aec317cc407da76fcff7d7aa42abcead177b009f49a7047aebb8ae849cdd887",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_field_provenance_security",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_field_provenance_pkey ON security_master.security_field_provenance USING btree (security_id, field_path, origin)",
+              "expression": null,
+              "fingerprint": "6d4a103bcb63242ab25a779f6e9d2bc00c6e197b50e77b3084a11cea290f3fce",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "field_path",
+                "origin"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_field_provenance_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_field_provenance",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",

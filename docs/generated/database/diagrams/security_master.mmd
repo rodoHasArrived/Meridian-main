@@ -618,6 +618,17 @@ erDiagram
     security_master_security_events_global_sequence_seq {
         text catalogued_object
     }
+    security_master_security_field_provenance {
+        uuid security_id PK
+        text field_path PK
+        text origin PK
+        text source_system
+        timestamp_with_time_zone as_of
+        text updated_by
+        numeric confidence
+        text origin_reference
+        timestamp_with_time_zone recorded_at
+    }
     security_master_security_identifiers {
         uuid security_id PK,FK
         text identifier_kind PK

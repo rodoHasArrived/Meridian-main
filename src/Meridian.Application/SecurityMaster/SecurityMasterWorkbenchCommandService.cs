@@ -165,9 +165,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             request.FundProfileId, ct)
             .ConfigureAwait(false);
 
+        // FieldPath and Actor are operator-supplied text; strip control characters so they cannot
+        // forge log entries.
         _logger.LogInformation(
             "Security Master field edit staged for {SecurityId} field {FieldPath} as draft revision {RevisionId} at version {Version} by {Actor}",
-            request.SecurityId, request.FieldPath, revision.RevisionId, currentVersion, request.Actor);
+            request.SecurityId, SanitizeForLog(request.FieldPath), revision.RevisionId, currentVersion, SanitizeForLog(request.Actor));
 
         // Record the edit's field-level attribution (origin OperatorFieldEdit, referenced to the
         // draft revision) so overlay lineage is durable alongside canonical conflict-resolution
@@ -570,16 +572,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     /// already run against the durable event stream.
     /// </summary>
     private async Task EnsureFieldEditIsSchemaValidAsync(UpdateSecurityFieldRequest request, CancellationToken ct)
-        var safeFieldPath = (request.FieldPath ?? string.Empty)
-            .Replace("\r", string.Empty, StringComparison.Ordinal)
-            .Replace("\n", string.Empty, StringComparison.Ordinal);
-
     {
         if (!SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(request.FieldPath))
         {
             return;
         }
 
+        // FieldPath is operator-supplied free text; strip control characters before logging so a
+        // crafted path cannot forge log entries.
         var safeFieldPathForLog = SanitizeForLog(request.FieldPath);
         string? assetClass = null;
         try
@@ -587,14 +587,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             var passport = await _queryService
                 .GetInstrumentPassportAsync(request.SecurityId, request.FundProfileId, ct)
                 .ConfigureAwait(false);
-                request.SecurityId, safeFieldPath);
+            assetClass = passport?.EconomicDefinition?.AssetClass;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogWarning(
                 ex,
                 "Resolving the asset class for {SecurityId} failed; skipping schema validation for field edit {FieldPath}.",
-                request.SecurityId, safeFieldPath);
+                request.SecurityId, safeFieldPathForLog);
         }
 
         if (string.IsNullOrWhiteSpace(assetClass))
@@ -609,16 +609,6 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             throw new ArgumentException(error, nameof(request));
         }
-    }
-
-    private static string SanitizeForLog(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty;
-        }
-
-        return value.Replace("\r", string.Empty).Replace("\n", string.Empty);
     }
 
     private async Task<long> GetCurrentVersionAsync(Guid securityId, CancellationToken ct)

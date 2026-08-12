@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 3
 
-Objects 81-160 of 174. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 177. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -208,6 +208,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType["SecurityAssetTermFieldType"] {
     }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermsFieldEditValidator["SecurityAssetTermsFieldEditValidator"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermsSchema["SecurityAssetTermsSchema"] {
         +IReadOnlyCollection~string~ AssetClasses
     }
@@ -266,6 +268,19 @@ classDiagram
         +DateTimeOffset? AsOf
         +decimal? Confidence
         +string FieldPath
+        +string SourceSystem
+        +string? UpdatedBy
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceOrigins["SecurityFieldProvenanceOrigins"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceRecord["SecurityFieldProvenanceRecord"] {
+        +DateTimeOffset? AsOf
+        +decimal? Confidence
+        +string FieldPath
+        +string Origin
+        +string? OriginReference
+        +DateTimeOffset RecordedAt
+        +Guid SecurityId
         +string SourceSystem
         +string? UpdatedBy
     }
@@ -513,28 +528,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto["SecurityValidationWorkflowDto"] {
     }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine["StructuredCashFlowLedgerLine"] {
-        +string Account
-        +string AccountType
-        +decimal Credit
-        +decimal Debit
-        +string? FinancialAccountId
-        +string? Symbol
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting["StructuredCashFlowLedgerPosting"] {
-        +string Description
-        +bool IsBalanced
-        +IReadOnlyList~StructuredCashFlowLedgerLine~ Lines
-        +DateTimeOffset PeriodDate
-        +decimal TotalCredits
-        +decimal TotalDebits
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult["StructuredCashFlowLedgerPostingResult"] {
-        +string? BlockedReason
-        +bool IsPostable
-        +IReadOnlyList~StructuredCashFlowLedgerPosting~ Postings
-        +Guid SecurityId
-    }
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
@@ -592,6 +585,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
 ```

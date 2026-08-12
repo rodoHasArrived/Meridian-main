@@ -130,9 +130,9 @@ and a readiness entry. But there is **no `SecurityKind.CustomAsset` case**. On d
 collapses into `OtherSecurity`:
 
 ```csharp
-// SecurityMasterMapping.cs:308
-"OtherSecurity" or "CustomAsset" => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
-    GetRequiredString(json, "category"), ...
+// SecurityMasterMapping.cs:308 (pre-fix state this review found)
+"OtherSecurity" or "CustomAsset" => SecurityKind.NewOtherSecurity(
+    new OtherSecurityTerms(GetRequiredString(json, "category") /* … */));
 ```
 
 The profile envelope is not among the five fields `OtherSecurityTerms` salvages. Since

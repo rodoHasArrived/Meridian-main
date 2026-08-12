@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 210,
-    "warning": 210
+    "total": 211,
+    "warning": 211
   },
   "failed": false,
   "findings": [
@@ -1280,6 +1280,16 @@
     {
       "details": {
         "schema": "security_master",
+        "table": "security_field_provenance"
+      },
+      "message": "Business table security_master.security_field_provenance does not have a table comment.",
+      "object": "security_master.security_field_provenance",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
         "table": "security_identifiers"
       },
       "message": "Business table security_master.security_identifiers does not have a table comment.",
@@ -2281,5 +2291,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "0467912887f0252781cd89a7e82be2e5464744fab138f4a18bd5965d74afdd2a"
+  "fingerprint": "fecc7edd8c8b92a5a146e68754848cfd360e29f1e6b020a5745f1afbe802cb34"
 }

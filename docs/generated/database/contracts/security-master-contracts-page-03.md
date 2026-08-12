@@ -2,11 +2,33 @@
 
 # `security-master-contracts` data objects - page 3 of 3
 
-Objects 161-174 of 174. References crossing pages remain available in the dependency manifest.
+Objects 161-177 of 177. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine["StructuredCashFlowLedgerLine"] {
+        +string Account
+        +string AccountType
+        +decimal Credit
+        +decimal Debit
+        +string? FinancialAccountId
+        +string? Symbol
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting["StructuredCashFlowLedgerPosting"] {
+        +string Description
+        +bool IsBalanced
+        +IReadOnlyList~StructuredCashFlowLedgerLine~ Lines
+        +DateTimeOffset PeriodDate
+        +decimal TotalCredits
+        +decimal TotalDebits
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult["StructuredCashFlowLedgerPostingResult"] {
+        +string? BlockedReason
+        +bool IsPostable
+        +IReadOnlyList~StructuredCashFlowLedgerPosting~ Postings
+        +Guid SecurityId
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
         +decimal? CurrentIndexRate
         +string? DayCountConvention
@@ -116,6 +138,8 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario
