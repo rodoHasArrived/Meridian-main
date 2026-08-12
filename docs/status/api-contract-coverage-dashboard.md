@@ -13,9 +13,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 |---|---:|
 | Weighted score | 29.2% |
 | Endpoint coverage | 40.2% |
-| Workstation contract coverage | 12.7% |
+| Workstation contract coverage | 12.8% |
 | Endpoints documented | 249 / 620 |
-| Workstation contracts documented | 116 / 916 |
+| Workstation contracts documented | 117 / 916 |
 
 ## Endpoint Coverage
 
@@ -1332,7 +1332,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `StatementReconciliationReportWorkflowStatusDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:209` |
 | `StatementRecordPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:73` |
 | `StatementRunBreakDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:346` |
-| `StatementRunCreateDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:298` |
+| `StatementRunCreateDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:298` |
 | `StatementRunDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:269` |
 | `StatementRunExceptionDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:361` |
 | `StatementRunReconcileRequestDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:316` |
@@ -1566,7 +1566,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 371 mapped endpoint gap(s).
-- Document or intentionally suppress 800 workstation contract gap(s).
+- Document or intentionally suppress 799 workstation contract gap(s).
 
 ---
 

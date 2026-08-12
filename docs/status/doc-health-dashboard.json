@@ -1,11 +1,11 @@
 {
-  "total_files": 714,
-  "total_lines": 146340,
+  "total_files": 715,
+  "total_lines": 147301,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 221,
-  "average_lines": 205.0,
+  "todo_count": 223,
+  "average_lines": 206.0,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1405,7 +1405,7 @@
     },
     {
       "path": "build/schema-control/candidate/docs/contracts/security-master-contracts-page-03.md",
-      "line_count": 154,
+      "line_count": 160,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2997,7 +2997,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
-      "line_count": 154,
+      "line_count": 160,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3165,7 +3165,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10588,
+      "line_count": 10589,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3509,7 +3509,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 447,
+      "line_count": 451,
       "has_heading": true,
       "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3541,7 +3541,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 270,
+      "line_count": 279,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3550,6 +3550,14 @@
     {
       "path": "docs/product/w10-depth-slate-2026-07.md",
       "line_count": 580,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/w9-close-out-delivery-plan-2026-08.md",
+      "line_count": 935,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
