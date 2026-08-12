@@ -4,14 +4,14 @@
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 29.2,
   "endpoint_coverage_percent": 40.2,
-  "contract_coverage_percent": 12.7,
+  "contract_coverage_percent": 12.8,
   "summary": {
     "endpoint_count": 620,
     "documented_endpoint_count": 249,
     "undocumented_endpoint_count": 371,
     "workstation_contract_count": 916,
-    "documented_workstation_contract_count": 116,
-    "undocumented_workstation_contract_count": 800
+    "documented_workstation_contract_count": 117,
+    "undocumented_workstation_contract_count": 799
   },
   "endpoints": [
     {
@@ -7189,7 +7189,7 @@
     {
       "name": "StatementRunCreateDto",
       "source": "src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:298",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementRunReconcileRequestDto",

@@ -50,6 +50,15 @@ documents:
       - W9-SAFETY-007
       - W9-GOV-008
       - W9-INGEST-009
+  - id: DOC-W9-CLOSEOUT-2026-08
+    path: docs/product/w9-close-out-delivery-plan-2026-08.md
+    title: 2026-08 W9 close-out delivery plan
+    role: planning_interpretation
+    owner_lane: Core Team
+    roadmap_items:
+      - W9-SAFETY-007
+      - W9-GOV-008
+      - W9-INGEST-009
   - id: DOC-DEPTH-SLATE-2026-07
     path: docs/product/w10-depth-slate-2026-07.md
     title: 2026-07 W10 depth slate

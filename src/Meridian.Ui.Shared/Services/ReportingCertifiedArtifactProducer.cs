@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
@@ -236,12 +237,12 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 || string.IsNullOrWhiteSpace(artifact.FileName)
                 || string.IsNullOrWhiteSpace(artifact.ContentType)
                 || artifact.ByteLength is <= 0
-                || artifact.ContentHashSha256 is not null && !IsSha256(artifact.ContentHashSha256))
+                || artifact.ContentHashSha256 is not null && !Sha256Digest.IsWellFormed(artifact.ContentHashSha256))
             || document.Artifacts.Select(static artifact => artifact.ArtifactId)
                 .Distinct(StringComparer.Ordinal).Count() != document.Artifacts.Length
             || document.CertifiedDatasetRowCount < 0
-            || !IsSha256(document.CertifiedDatasetHashSha256)
-            || !IsSha256(document.ParametersHash)
+            || !Sha256Digest.IsWellFormed(document.CertifiedDatasetHashSha256)
+            || !Sha256Digest.IsWellFormed(document.ParametersHash)
             || !string.Equals(
                 ComputeSha256(Encoding.UTF8.GetBytes(document.ParametersCanonicalJson)),
                 document.ParametersHash,
@@ -379,9 +380,9 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
         if (!string.Equals(source.SourceKind, DurableLedgerSourceKind, StringComparison.Ordinal)
             || !string.Equals(input.SourceCheckpointId, source.CheckpointId, StringComparison.Ordinal)
-            || !IsSha256(input.SourceCheckpointHash)
+            || !Sha256Digest.IsWellFormed(input.SourceCheckpointHash)
             || !string.Equals(input.SourceCheckpointHash, source.CheckpointHash, StringComparison.OrdinalIgnoreCase)
-            || !IsSha256(input.CertifiedDatasetHashSha256)
+            || !Sha256Digest.IsWellFormed(input.CertifiedDatasetHashSha256)
             || !string.Equals(
                 input.CertifiedDatasetHashSha256,
                 expectedDatasetHash,
@@ -443,13 +444,13 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         LedgerFinancialReportPack reportPack)
     {
         if (!string.Equals(reportPack.Signature.Algorithm, "SHA256", StringComparison.Ordinal)
-            || !IsSha256(reportPack.Signature.PayloadChecksumSha256)
+            || !Sha256Digest.IsWellFormed(reportPack.Signature.PayloadChecksumSha256)
             || reportPack.Artifacts.Count == 0
             || reportPack.Artifacts.Any(static artifact =>
                 artifact is null
                 || string.IsNullOrWhiteSpace(artifact.Name)
                 || string.IsNullOrWhiteSpace(artifact.ContentType)
-                || !IsSha256(artifact.ChecksumSha256))
+                || !Sha256Digest.IsWellFormed(artifact.ChecksumSha256))
             || reportPack.Artifacts
                 .Select(static artifact => artifact.Name)
                 .Distinct(StringComparer.Ordinal)
@@ -1003,7 +1004,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 || row.Keys.Any(string.IsNullOrWhiteSpace)
                 || row.Values.Any(static value => value is null))
             || string.IsNullOrWhiteSpace(manifest.CertifiedSnapshot.ParametersCanonicalJson)
-            || !IsSha256(manifest.CertifiedSnapshot.ParametersHash)
+            || !Sha256Digest.IsWellFormed(manifest.CertifiedSnapshot.ParametersHash)
             || !string.Equals(
                 manifest.CertifiedSnapshot.SourceCheckpointId,
                 manifest.AuthoritativeSource.CheckpointId,
@@ -1053,9 +1054,6 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
     private static string ComputeSha256(ReadOnlySpan<byte> content) =>
         Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
 
     private static string? NormalizeOptional(string? value)
     {

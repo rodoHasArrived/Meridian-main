@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.Composition;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.Scheduling;
 using Meridian.Identity.Auth;
@@ -256,7 +257,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                 var candidateHash = ComputeCanonicalHash(schedule);
                 if (expectedUpdatedAtUtc is null)
                 {
-                    if (FixedHashEquals(currentHash, candidateHash))
+                    if (Sha256Digest.FixedEquals(currentHash, candidateHash))
                     {
                         return;
                     }
@@ -271,7 +272,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                         current,
                         expectedUpdatedAtUtc.Value);
                 }
-                if (FixedHashEquals(currentHash, candidateHash))
+                if (Sha256Digest.FixedEquals(currentHash, candidateHash))
                 {
                     return;
                 }
@@ -455,7 +456,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             if (!string.Equals(snapshot.SchemaVersion, SchemaVersion, StringComparison.Ordinal)
                 || snapshot.Schedules is null
                 || snapshot.LegacySchedules is null
-                || !FixedHashEquals(
+                || !Sha256Digest.FixedEquals(
                     snapshot.PayloadHashSha256,
                     ComputeSnapshotHash(
                         snapshot.Schedules,
@@ -541,7 +542,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             if (entry is null
                 || !string.Equals(entry.SchemaVersion, EntrySchemaVersion, StringComparison.Ordinal)
                 || entry.Schedule is null
-                || !FixedHashEquals(entry.PayloadHashSha256, ComputeCanonicalHash(entry.Schedule)))
+                || !Sha256Digest.FixedEquals(entry.PayloadHashSha256, ComputeCanonicalHash(entry.Schedule)))
             {
                 throw new InvalidDataException(
                     "Reporting schedule entry schema or canonical payload checksum is invalid.");
@@ -616,8 +617,8 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                 || (string.IsNullOrWhiteSpace(entry.TenantId) != string.IsNullOrWhiteSpace(entry.CompanyId))
                 || string.IsNullOrWhiteSpace(entry.RawPayloadJson)
                 || !string.Equals(entry.Remediation, LegacyScheduleRemediation, StringComparison.Ordinal)
-                || !FixedHashEquals(entry.RawPayloadHashSha256, ComputeSha256(entry.RawPayloadJson))
-                || !FixedHashEquals(
+                || !Sha256Digest.FixedEquals(entry.RawPayloadHashSha256, ComputeSha256(entry.RawPayloadJson))
+                || !Sha256Digest.FixedEquals(
                     entry.CanonicalPayloadHashSha256,
                     ComputeSha256(CanonicalizeJson(entry.RawPayloadJson))))
             {
@@ -763,10 +764,10 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                     ignoreCase: false,
                     out _))
             || requireTypedRecipient
-            && (!IsSha256(handoff.DeliveryTargetsSnapshotHash)
+            && (!Sha256Digest.IsCanonical(handoff.DeliveryTargetsSnapshotHash)
                 || handoff.State == ReportingScheduledReleaseHandoffStateDto.PendingRelease
-                && (!IsSha256(schedule.DeliveryTargetsSnapshotHash)
-                    || !FixedHashEquals(
+                && (!Sha256Digest.IsCanonical(schedule.DeliveryTargetsSnapshotHash)
+                    || !Sha256Digest.FixedEquals(
                         handoff.DeliveryTargetsSnapshotHash,
                         schedule.DeliveryTargetsSnapshotHash!)))
             || handoff.Destination is null
@@ -895,7 +896,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             || string.IsNullOrWhiteSpace(receipt.Reason)
             || receipt.ArchivedAtUtc == default
             || receipt.ArchivedAtUtc.Offset != TimeSpan.Zero
-            || !FixedHashEquals(receipt.ArchivedPayloadHashSha256, payloadHash))
+            || !Sha256Digest.FixedEquals(receipt.ArchivedPayloadHashSha256, payloadHash))
         {
             throw new InvalidDataException("Legacy reporting schedule archive receipt is invalid.");
         }
@@ -908,7 +909,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             archivedAtUtc = receipt.ArchivedAtUtc,
             archivedPayloadHash = receipt.ArchivedPayloadHashSha256
         }));
-        if (!FixedHashEquals(receipt.ArchiveId, expectedId))
+        if (!Sha256Digest.FixedEquals(receipt.ArchiveId, expectedId))
         {
             throw new InvalidDataException("Legacy reporting schedule archive receipt identity is invalid.");
         }
@@ -930,23 +931,6 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
 
     private static string ComputeSha256(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
-
-    private static bool FixedHashEquals(string? left, string right)
-    {
-        if (!IsSha256(left) || !IsSha256(right))
-        {
-            return false;
-        }
-
-        return CryptographicOperations.FixedTimeEquals(
-            Convert.FromHexString(left!),
-            Convert.FromHexString(right));
-    }
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(Uri.IsHexDigit)
-        && string.Equals(value, value.ToLowerInvariant(), StringComparison.Ordinal);
 
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();

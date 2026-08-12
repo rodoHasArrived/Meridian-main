@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
@@ -385,8 +386,8 @@ public sealed class ReportingArtifactVaultService
         if (receipt is null
             || !string.Equals(receipt.EventId, auditEvent.EventId, StringComparison.Ordinal)
             || receipt.Sequence <= 0
-            || !IsSha256(receipt.Hash)
-            || (receipt.PreviousHash is not null && !IsSha256(receipt.PreviousHash)))
+            || !Sha256Digest.IsWellFormed(receipt.Hash)
+            || (receipt.PreviousHash is not null && !Sha256Digest.IsWellFormed(receipt.PreviousHash)))
         {
             throw new ReportingArtifactCatalogIntegrityException(
                 $"Artifact audit store returned an invalid receipt for event '{auditEvent.EventId}'.");
@@ -813,16 +814,13 @@ public sealed class ReportingArtifactVaultService
 
     private static void RequireSha256(string? value, string parameterName)
     {
-        if (!IsSha256(value))
+        if (!Sha256Digest.IsWellFormed(value))
         {
             throw new ArgumentException(
                 $"{parameterName} must contain exactly 64 hexadecimal SHA-256 characters.",
                 parameterName);
         }
     }
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
 
     private static bool Same(string? left, string? right) =>
         string.Equals(left?.Trim(), right?.Trim(), StringComparison.Ordinal);
