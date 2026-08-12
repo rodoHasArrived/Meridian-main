@@ -3424,6 +3424,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
 │   │   │   ├── ProviderIntegrationActivationService.cs
 │   │   │   ├── ProviderIntegrationDryRunService.cs
+│   │   │   ├── ProviderIntegrationFieldTransforms.cs
 │   │   │   ├── ProviderIntegrationHttpClientTransport.cs
 │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewService.cs
 │   │   │   ├── ProviderIntegrationMappedRecordIdentity.cs
@@ -8774,6 +8775,7 @@ Meridian-main
 │   │   │   │   ├── ProviderIntegrationActivationReadinessServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationFieldTransformsTests.cs
 │   │   │   │   ├── ProviderIntegrationHttpClientTransportTests.cs
 │   │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationMonitoringServiceTests.cs

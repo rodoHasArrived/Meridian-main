@@ -77,6 +77,11 @@ and UI presentation concerns in their owning layers.
   ambiguous denomination. Position and holding records that carry quantity, price, and market
   value are also checked before staging; if `quantity * price.amount` differs from
   `marketValue.amount` by more than one cent, the record stays in quarantine for operator review.
+  Field coercion itself — decimal and date parsing, transform-parameter lookup, and the
+  `negativeValues` sign flip — is owned by `ProviderIntegrationFieldTransforms`. The CSV dry-run,
+  REST dry-run, and quarantine-replay paths all route through it rather than carrying their own
+  copies, so a dry run and the replay it predicts coerce a value identically, and the
+  operator-visible `transform.*` issue codes have one definition.
   When a workstation endpoint supplies tenant context,
   setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
   provider-integration store before reading or writing manifests, connections, and retained
