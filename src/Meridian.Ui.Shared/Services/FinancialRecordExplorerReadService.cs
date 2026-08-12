@@ -4,7 +4,6 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
-using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Storage.Ledger;
@@ -3548,7 +3547,7 @@ public sealed partial class FinancialRecordExplorerReadService
             HasText(publication.SignedOffRole) &&
             HasText(publication.SignOffContext) &&
             publication.SignedOffAt != default &&
-            OperationsOriginGuard.IsHumanOperator(publication.ActionOrigin) &&
+            Meridian.Contracts.Operations.OperationsOriginGuard.IsHumanOperator(publication.ActionOrigin) &&
             HasCompleteReportEvidence(publication.EvidenceLinks) &&
             record.AuditTrail.Any(static audit =>
                 audit.ToState == ReportPackWorkflowStateDto.Approved &&
