@@ -44,9 +44,10 @@ or provider implementations.
   carry `HumanOperatorRequiredException`, either directly or as the inner exception of a
   module-specific type, so those refusals are identifiable by type; it derives from
   `InvalidOperationException` so existing catch sites keep working. Gates that return the refusal as
-  data instead surface `BlockerMessage` in an ordinary blocker or error DTO and throw nothing, so
-  absence of the exception does not mean the action passed — a structured result has to be read on
-  its own terms rather than by catching.
+  data instead carry shared refusal text in an ordinary blocker or error DTO and throw nothing —
+  `BlockerMessage` where an operator reads a blocked workflow, `RefusalMessage` where a caller reads
+  a rejected request — so absence of the exception does not mean the action passed, and a structured
+  result has to be read on its own terms rather than by catching.
 - `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
   reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
   superseded-generation manifest and receipt history, evidence-link, and recovery payloads.

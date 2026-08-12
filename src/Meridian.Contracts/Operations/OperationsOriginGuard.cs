@@ -38,8 +38,8 @@ public sealed class HumanOperatorRequiredException : InvalidOperationException
 /// </para>
 /// <para>
 /// Only the throwing gates carry a <see cref="HumanOperatorRequiredException"/>, directly or as an
-/// inner exception. Gates that return the refusal as data surface <see cref="BlockerMessage"/> in
-/// an ordinary DTO and throw nothing; absence of the exception does not mean the action passed.
+/// inner exception. Data-returning gates use <see cref="BlockerMessage"/> or <see cref="RefusalMessage"/>
+/// text in an ordinary DTO and throw nothing, so a missing exception does not mean the action passed.
 /// </para>
 /// </remarks>
 public static class OperationsOriginGuard
