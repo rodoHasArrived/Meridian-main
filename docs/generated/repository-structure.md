@@ -8753,6 +8753,7 @@ Meridian-main
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
 │   │   │   │   ├── ConfigurationUnificationTests.cs
 │   │   │   │   ├── ConfigValidatorCliTests.cs
+│   │   │   │   ├── OAuthTokenPersistencePermissionTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   └── ProviderCredentialStoreTests.cs
 │   │   │   ├── Coordination
