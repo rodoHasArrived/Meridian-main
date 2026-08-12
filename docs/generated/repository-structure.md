@@ -3426,6 +3426,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
 │   │   │   ├── ProviderIntegrationActivationService.cs
 │   │   │   ├── ProviderIntegrationDryRunService.cs
+│   │   │   ├── ProviderIntegrationFieldTransforms.cs
 │   │   │   ├── ProviderIntegrationHttpClientTransport.cs
 │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewService.cs
 │   │   │   ├── ProviderIntegrationMappedRecordIdentity.cs
@@ -3895,6 +3896,7 @@ Meridian-main
 │   │   │   ├── AutomatedJournalEvidenceDtos.cs
 │   │   │   ├── LedgerBookDtos.cs
 │   │   │   ├── LedgerCurrencyRounding.cs
+│   │   │   ├── LedgerDimensionTags.cs
 │   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Lifecycle
@@ -8752,6 +8754,7 @@ Meridian-main
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
 │   │   │   │   ├── ConfigurationUnificationTests.cs
 │   │   │   │   ├── ConfigValidatorCliTests.cs
+│   │   │   │   ├── OAuthTokenPersistencePermissionTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   └── ProviderCredentialStoreTests.cs
 │   │   │   ├── Coordination
@@ -8776,6 +8779,7 @@ Meridian-main
 │   │   │   │   ├── ProviderIntegrationActivationReadinessServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationFieldTransformsTests.cs
 │   │   │   │   ├── ProviderIntegrationHttpClientTransportTests.cs
 │   │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationMonitoringServiceTests.cs
@@ -8906,6 +8910,8 @@ Meridian-main
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
+│   │   │   ├── Ledger
+│   │   │   │   └── LedgerDimensionTagsTests.cs
 │   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── DataProvenanceTests.cs
