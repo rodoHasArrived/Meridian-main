@@ -199,7 +199,12 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                     updated.SecurityId,
                     updated.FieldPath,
                     updated.ResolvedWinnerSource,
-                    AsOf: resolutionTime,
+                    // AsOf is WHEN THE SOURCE ASSERTED the value. The conflict row does not retain
+                    // each candidate's source as-of, so it is unknown here — and per the
+                    // SecurityFieldProvenance contract an unknown as-of is null, never fabricated.
+                    // Writing the resolution time would misdate January vendor data resolved in
+                    // August as an August assertion. RecordedAt carries the resolution time.
+                    AsOf: null,
                     UpdatedBy: updated.ResolvedBy,
                     Confidence: null,
                     Origin: SecurityFieldProvenanceOrigins.ConflictResolution,

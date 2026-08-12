@@ -154,7 +154,9 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         row.Origin.Should().Be(SecurityFieldProvenanceOrigins.ConflictResolution);
         row.OriginReference.Should().Be(conflict.ConflictId.ToString("D"));
         row.UpdatedBy.Should().Be("operator@meridian.test");
-        row.AsOf.Should().NotBeNull("the attribution's as-of is the resolution time");
+        row.AsOf.Should().BeNull(
+            "the conflict row does not retain the winning source's own as-of, and an unknown as-of is null, never fabricated from the resolution time");
+        row.RecordedAt.Should().NotBe(default, "the resolution time is carried by RecordedAt");
     }
 
     [SecurityMasterDatabaseFact]

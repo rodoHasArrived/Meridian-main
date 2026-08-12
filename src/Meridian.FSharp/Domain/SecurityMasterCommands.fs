@@ -89,6 +89,13 @@ module SecurityMaster =
                 (error
                     "bond_principal_schedule_date_invalid"
                     "Bond principal schedule dates must fall on or after IssueDate (when present) and on or before Maturity — out-of-term instalments are silently dropped by cash-flow projections instead of paying down principal.")
+            @ require
+                (match terms.Par with
+                 | Some par -> (terms.PrincipalSchedule |> List.sumBy (fun entry -> entry.Amount)) <= par
+                 | None -> true)
+                (error
+                    "bond_principal_schedule_exceeds_par"
+                    "Bond principal schedule amounts must not sum to more than Par — projections cap instalments at the outstanding balance, so an over-committed schedule silently pays less than its persisted amounts.")
         | SecurityKind.FxSpot terms ->
             []
             @ requireNotBlank "fx_base_currency_required" "BaseCurrency" terms.BaseCurrency

@@ -1209,6 +1209,33 @@ let ``Bond principal schedule dates outside the bond term are rejected`` () =
     |> should not' (contain "bond_principal_schedule_date_invalid")
 
 [<Fact>]
+let ``Bond principal schedules summing to more than Par are rejected`` () =
+    let maturity = DateOnly(2030, 6, 15)
+    let baseTerms =
+        { BondTerms.fixedRate maturity 4.5m (Some "30/360") (Some "ACME") with
+            Par = Some 100m }
+
+    // Two 60s against a 100-par bond: projections would cap the second at 40, silently
+    // disagreeing with the persisted schedule.
+    validationErrorCodes (SecurityKind.Bond { baseTerms with
+                                                PrincipalSchedule =
+                                                    [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 60m }
+                                                      { PaymentDate = DateOnly(2029, 6, 15); Amount = 60m } ] })
+    |> should contain "bond_principal_schedule_exceeds_par"
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with
+                                                PrincipalSchedule =
+                                                    [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 60m }
+                                                      { PaymentDate = DateOnly(2029, 6, 15); Amount = 40m } ] })
+    |> should not' (contain "bond_principal_schedule_exceeds_par")
+
+    // Without Par there is no face to compare against; the schedule stands as authored.
+    validationErrorCodes (SecurityKind.Bond { baseTerms with
+                                                Par = None
+                                                PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 500m } ] })
+    |> should not' (contain "bond_principal_schedule_exceeds_par")
+
+[<Fact>]
 let ``Structured credit factors above one are rejected`` () =
     let baseTerms = {
         Tranche = "A-1"

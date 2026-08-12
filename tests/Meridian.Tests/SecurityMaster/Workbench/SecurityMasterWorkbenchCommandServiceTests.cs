@@ -122,6 +122,39 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_BlankValue_RemovesTheOverlayKeyInsteadOfStoringEmpty()
+    {
+        // A blank edit is a CLEAR: persisting an empty-string override would bypass type
+        // validation and read as an asserted value downstream.
+        var harness = new Harness(currentVersion: 3);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.couponRate",
+            NewValue: "   ",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Withdraw the staged coupon override.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(p =>
+                    (p.SetValues == null || p.SetValues.Count == 0)
+                    && p.RemoveKeys != null
+                    && p.RemoveKeys.Contains("assetSpecificTerms.couponRate")),
+                "ops.analyst",
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once,
+            "a blank edit must remove the overlay key, not upsert an empty value");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_RecordsOperatorFieldProvenance()
     {
         var harness = new Harness(currentVersion: 3);

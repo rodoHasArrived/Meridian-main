@@ -123,13 +123,18 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         // Stage the operator value as an override read-model annotation. The override store applies
         // the patch under a serializable, row-locked transaction; it does not advance the economic
-        // version, so the returned NewVersion is the unchanged canonical version.
+        // version, so the returned NewVersion is the unchanged canonical version. A blank value is
+        // a CLEAR: it removes the overlay key rather than persisting an empty-string override that
+        // would bypass type validation and read as an asserted value downstream.
+        var isClear = string.IsNullOrWhiteSpace(request.NewValue);
         var patch = new OperatorOverridesPatchRequest(
-            SetValues: new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                [request.FieldPath] = request.NewValue ?? string.Empty,
-            },
-            RemoveKeys: null)
+            SetValues: isClear
+                ? null
+                : new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    [request.FieldPath] = request.NewValue!,
+                },
+            RemoveKeys: isClear ? [request.FieldPath] : null)
         {
             ReasonCode = request.Justification,
         };

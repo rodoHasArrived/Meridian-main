@@ -111,8 +111,8 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             mandatoryPutDate = "2031-06-15",
             principalSchedule = new object[]
             {
-                new { paymentDate = "2030-06-15", amount = 500_000m },
-                new { paymentDate = "2031-06-15", amount = 500_000m }
+                new { paymentDate = "2030-06-15", amount = 400m },
+                new { paymentDate = "2031-06-15", amount = 400m }
             }
         },
         ["FxSpot"] = new { baseCurrency = "EUR", quoteCurrency = "USD" },

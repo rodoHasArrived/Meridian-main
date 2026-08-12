@@ -877,6 +877,23 @@ public static class SecurityMasterEndpoints
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK);
 
         /// <summary>
+        /// Returns the durable field-level provenance rows for a security: which source asserted
+        /// each field's value, under which origin (canonical conflict resolution vs. operator
+        /// overlay), referenced back to the conflict or revision that asserted it. This is the read
+        /// surface for the lineage that conflict resolutions and workbench edits persist.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterFieldProvenance, async (
+            Guid securityId,
+            [FromServices] ISecurityFieldProvenanceStore store,
+            CancellationToken ct) =>
+        {
+            var lineage = await store.GetAsync(securityId, ct).ConfigureAwait(false);
+            return Results.Json(lineage, jsonOptions);
+        })
+        .WithName("GetSecurityMasterFieldProvenance")
+        .Produces<IReadOnlyList<SecurityFieldProvenanceRecord>>(StatusCodes.Status200OK);
+
+        /// <summary>
         /// Applies a partial update to operator overrides for a security. Values listed in
         /// <c>SetValues</c> are upserted; keys in <c>RemoveKeys</c> are deleted. Requires the
         /// <c>ModifySecurityMaster</c> permission.
@@ -891,6 +908,23 @@ public static class SecurityMasterEndpoints
             [FromServices] IOperatorOverridesStore store,
             CancellationToken ct) =>
         {
+            // The assetSpecificTerms.* namespace is reserved for the governed workbench edit route,
+            // which schema-validates the key and type-coerces the value. Accepting those keys here
+            // would let a raw patch bypass that validation entirely.
+            var reservedKey = request.SetValues?.Keys.FirstOrDefault(
+                static key => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(key));
+            if (reservedKey is not null)
+            {
+                return Results.Problem(
+                    title: "Reserved override namespace",
+                    detail:
+                        $"Override key '{reservedKey}' targets the assetSpecificTerms namespace, which is " +
+                        "reserved for the schema-validated workbench field-edit route " +
+                        "(PUT security-master field edits). Use that route so the key and value are " +
+                        "validated against the asset class's declared term schema.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var actor = ResolveActor(context);
             var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
             return Results.Json(updated, jsonOptions);
@@ -898,6 +932,7 @@ public static class SecurityMasterEndpoints
         .WithName("PatchSecurityMasterOperatorOverrides")
         .Accepts<OperatorOverridesPatchRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
