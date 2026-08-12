@@ -104,6 +104,26 @@ class TrendReportingTests(unittest.TestCase):
             self.assertIn("could not be read", output)
             self.assertIn("src/locked.cs", output)
 
+    # The trend prints after the verdict, so anything that raises here replaces a declared exit code
+    # with a traceback. An untraversable parent is the realistic trigger: Path.exists() re-raises
+    # EACCES rather than returning False, so probing before opening would crash the whole check.
+    def test_survives_a_baselined_path_that_cannot_be_stat_ed(self):
+        with fake_repo({"src/ok.cs": 20}, {"src/ok.cs": 30, "src/vault/secret.cs": 40}) as root:
+            locked = root / "src" / "vault"
+            locked.mkdir(parents=True)
+            (locked / "secret.cs").write_text("x\n" * 40, encoding="utf-8")
+            locked.chmod(0o000)
+            try:
+                code, output = run(["--threshold", "10"])
+            finally:
+                locked.chmod(0o755)
+
+            # Root ignores mode bits, so this asserts only that the run completes with a declared
+            # exit code and no traceback - true whether or not the read was actually denied.
+            self.assertEqual(code, 0, output)
+            self.assertIn("Baseline trend:", output)
+            self.assertNotIn("Traceback", output)
+
     def test_warns_about_files_sitting_at_their_cap(self):
         with fake_repo({"src/pinned.cs": 30}, {"src/pinned.cs": 30}):
             code, output = run(["--threshold", "10"])

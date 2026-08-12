@@ -166,6 +166,10 @@ def _live_lines(
     reduction. Deleted files count as zero because their lines really are gone; unreadable ones are
     held at their cap, contributing no reclaimable slack, and named in the output so nobody reads
     the total as complete.
+
+    Neither case may raise. This runs after the pass/fail verdict has been printed, so an exception
+    here would replace a declared exit code with a traceback — turning a reporting nicety into a
+    broken gate.
     """
     live: dict[str, int] = {}
     unreadable: list[str] = []
@@ -174,14 +178,16 @@ def _live_lines(
             live[rel] = current[rel]
             continue
 
-        path = root / rel
-        if not path.exists():
-            live[rel] = 0
-            continue
-
+        # One syscall, not an exists() probe followed by an open(). Path.exists() re-raises any
+        # OSError outside (ENOENT, ENOTDIR, EBADF, ELOOP) - EACCES among them - so probing first
+        # would crash the whole check on an untraversable parent directory, after it had already
+        # printed its verdict and before it could return a declared exit code. Letting open() raise
+        # sorts the two cases by exception type instead, and closes the probe/open race as well.
         try:
-            with path.open("rb") as handle:
+            with (root / rel).open("rb") as handle:
                 live[rel] = sum(1 for _ in handle)
+        except FileNotFoundError:
+            live[rel] = 0
         except OSError:
             live[rel] = cap
             unreadable.append(rel)
