@@ -414,8 +414,16 @@ above** — several of these are why a change is scoped the way it is.
   today. So a metadata assertion over every endpoint fails immediately on existing reads, while a
   mutation-only assertion cannot discharge the criterion as written. Neither outcome is acceptable
   by accident. Decide explicitly in change 4 — inventory and remediate the read surface, or
-  declare it open — and give whichever path its own baseline. The mutation tranches below do not
-  budget for it.
+  declare it open — and give whichever path its own baseline.
+  **Whichever it picks, that baseline is the sequence's second ratchet and change 8 owns getting it
+  to zero.** Saying only that the mutation tranches do not budget for the read surface would let
+  changes 5–8 close every mutation route while mapped reads stay undeclared, and the criterion is
+  *every mapped endpoint* — so the sequence would end with the row undischargeable and no change
+  responsible for it. Change 4 therefore publishes the read baseline as a counted list alongside the
+  mutation baseline and allocates its entries across tranches 5–8 on the same owner-lane split, and
+  change 9 may record the criterion met only when **both** counts read zero. If the second option is
+  taken, the entries are discharged by stamping the open declaration on each endpoint, which is work
+  in the same tranches rather than an exemption from them.
   **Note what the second option cannot be.** The criterion is that the test fails whenever any
   mapped endpoint lacks an explicit policy or permission declaration, so "allowlisted" has to mean
   *declared on the endpoint* — an explicit role, permission, or anonymous marker in
@@ -544,6 +552,22 @@ above** — several of these are why a change is scoped the way it is.
   structure and link or mutate tenant-B nodes by id. That is precisely the categorical criterion, on
   precisely the route family the leading tranche guards. Change 9 must stamp tenancy on this store
   and enforce ownership on both its reads and its writes.
+- **And `PostgresFundStructureService` is not the only implementation, so naming it is not the same
+  as scoping the change.** When no fund-structure database is configured,
+  `StorageFeatureRegistration.cs:517` binds `IFundStructureService` to `InMemoryFundStructureService`,
+  and the desktop lane registers the same JSON-backed implementation independently at
+  `AccountingFeatureModule.cs:60`. That implementation contains **zero** occurrences of a tenant or
+  company identifier — not a null column, no filter at all — so every session it serves shares one
+  graph. What bounds this is posture, not the code: it is marked `INonProductionOnlyService`, and
+  ADR-019's `ProductionServiceRegistrationPolicy` prohibits such implementations in a production
+  composition and re-validates the final graph through `ProductionRegistrationGuardService`. So this
+  is not a production cross-tenant leak, and change 9's *migration* work is rightly Postgres-only.
+  It is still the implementation the local and desktop postures actually run, where an operator
+  switching company ids sees one undivided structure. Change 9 therefore decides explicitly, and
+  records which: partition the in-memory store by company id, or refuse fund-structure access
+  whenever that posture is configured for more than one company. Leaving it undecided lets the
+  criterion read as met on the strength of the Postgres change while the shipped desktop behaviour
+  is unchanged.
 - **That stamping needs an attribution plan first, and it is harder here than in the ledger.**
   `001_fund_structure.sql` carries the whole hierarchy — organizations, businesses, clients, funds,
   vehicles, entities, portfolios, assignments, ownership links — with no tenant column, while
@@ -764,6 +788,18 @@ above** — several of these are why a change is scoped the way it is.
   [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md) alone would leave
   those documents hard-coded to displaced numbers, which is how a collision or a lower-after-higher
   application gets created.
+
+  **All of that governs the ledger sequence only, and change 9 writes into two.** The 029-next rule
+  is scoped to `src/Meridian.Storage/Ledger/Migrations`, whose `V_ledger_NNN__name.sql` files run to
+  `V_ledger_028__wash_sale_activation.sql`. The fund-structure store is a separate runner with a
+  separate ledger — `FundStructureMigrationRunner` records into `fund_structure_schema_migrations`
+  and reads `src/Meridian.Storage/FundStructure/Migrations`, whose `NNN_name.sql` files run to
+  `003_linked_accounts.sql`. So change 9's ledger audit and tenancy DDL follows the 029–038
+  reservation process, while its fund-structure tenant columns independently take that sequence's
+  next ordinal, **004 today**, re-derived from disk on the same rule. Carrying 029 across both would
+  either file the fund-structure migration under the wrong runner or record an ordinal that later
+  fund-structure migrations must apply beneath. (`FundAccounts/Migrations` is a third such sequence,
+  at 004, if the fund-account work in this row reaches it.)
 - **Lane collisions.** Change 3 touches WPF Trading surfaces owned by `W8-WPF-PARITY-001`, and
   change 4 touches reporting groups that `W8-UX-CONSOL-001` is consolidating. Refresh
   [`docs/development/wpf-web-ui-alignment-plan.md`](../development/wpf-web-ui-alignment-plan.md)
