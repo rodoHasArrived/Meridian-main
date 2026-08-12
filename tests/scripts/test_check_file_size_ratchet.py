@@ -104,6 +104,21 @@ class TrendReportingTests(unittest.TestCase):
             self.assertEqual(code, 0, output)
             self.assertNotIn("TIGHT", output)
 
+    # The trend also prints on failure, where at least one file is over its cap by construction. A
+    # negative headroom trivially satisfies "within 25 lines", so an unbounded comparison would
+    # describe a file far past its cap as near it, and sort it ahead of the files that are.
+    def test_does_not_list_an_over_cap_file_as_tight(self):
+        with fake_repo({"src/grown.cs": 70, "src/near.cs": 28},
+                       {"src/grown.cs": 30, "src/near.cs": 30}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 1)
+            self.assertIn("exceeded by 40", output)
+            self.assertNotIn("-40 line(s) spare", output)
+            self.assertIn("TIGHT: 1 of 2", output)
+            self.assertIn("src/near.cs: 28/30 (2 line(s) spare)", output)
+            self.assertNotIn("a single added line fails this check", output)
+
     def test_reports_the_trend_on_failure_too(self):
         with fake_repo({"src/grown.cs": 40}, {"src/grown.cs": 30}):
             code, output = run(["--threshold", "10"])

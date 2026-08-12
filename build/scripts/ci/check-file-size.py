@@ -176,14 +176,18 @@ def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int])
         f"{live:,} current line(s), {slack:,} line(s) reclaimable."
     )
 
+    # Over-cap files are excluded. Their headroom is negative, so an unbounded comparison admits a
+    # file hundreds of lines past its cap, prints a negative "spare" count, claims an already-
+    # failing file "sits at its cap", and sorts ahead of the near-cap files this warning surfaces.
+    # They are reported by name and exact overage in the failure block instead.
     tight = sorted(
         ((cap - live_lines[rel], rel, live_lines[rel], cap)
          for rel, cap in baseline.items()
-         if cap - live_lines[rel] <= TIGHT_HEADROOM_LINES),
+         if 0 <= cap - live_lines[rel] <= TIGHT_HEADROOM_LINES),
         key=lambda item: (item[0], item[1]),
     )
     if tight:
-        pinned = sum(1 for headroom, *_ in tight if headroom <= 0)
+        pinned = sum(1 for headroom, *_ in tight if headroom == 0)
         detail = (
             f" {pinned} of them sit at their cap, where a single added line fails this check."
             if pinned
