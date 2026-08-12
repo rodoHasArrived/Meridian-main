@@ -6589,6 +6589,7 @@ Meridian-main
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
+│   │   │   │   │   ├── jest-axe.d.ts
 │   │   │   │   │   ├── lifecycle.ts
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
@@ -6642,7 +6643,7 @@ Meridian-main
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
 │   │   │   ├── tsconfig.reporting-p0.json
-│   │   │   ├── tsconfig.strict-null.json
+│   │   │   ├── tsconfig.strict.json
 │   │   │   └── vite.config.ts
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
