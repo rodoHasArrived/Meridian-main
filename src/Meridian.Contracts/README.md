@@ -40,10 +40,13 @@ or provider implementations.
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
   `OperationsOriginGuard` owns the "reviewed automation may not perform this action; a human
   operator is required" control — the predicate and the canonical refusal message live there, so the
-  rule evolves in one place instead of across every module that enforces it. Every refusal carries
-  `HumanOperatorRequiredException`, either as the thrown exception or as the inner exception of a
-  module-specific type, so callers can identify a governance refusal uniformly. It derives from
-  `InvalidOperationException` so existing catch sites keep working.
+  rule evolves in one place instead of across every module that enforces it. Only the throwing gates
+  carry `HumanOperatorRequiredException`, either directly or as the inner exception of a
+  module-specific type, so those refusals are identifiable by type; it derives from
+  `InvalidOperationException` so existing catch sites keep working. Gates that return the refusal as
+  data instead surface `BlockerMessage` in an ordinary blocker or error DTO and throw nothing, so
+  absence of the exception does not mean the action passed — a structured result has to be read on
+  its own terms rather than by catching.
 - `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
   reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
   superseded-generation manifest and receipt history, evidence-link, and recovery payloads.
