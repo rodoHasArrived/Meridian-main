@@ -214,14 +214,25 @@ def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int])
         for rel in unreadable:
             print(f"- {rel}")
 
-    # Over-cap files are excluded. Their headroom is negative, so an unbounded comparison admits a
-    # file hundreds of lines past its cap, prints a negative "spare" count, claims an already-
-    # failing file "sits at its cap", and sorts ahead of the near-cap files this warning surfaces.
-    # They are reported by name and exact overage in the failure block instead.
+    # Two kinds of entry are kept out of this list, for the same reason: their headroom is not a
+    # measurement.
+    #
+    # Over-cap files have negative headroom, so an unbounded comparison admits a file hundreds of
+    # lines past its cap, prints a negative "spare" count, claims an already-failing file "sits at
+    # its cap", and sorts ahead of the near-cap files this warning surfaces.
+    #
+    # Unreadable files were substituted at their cap by _live_lines, which is the safe choice for
+    # the aggregate totals but reads as exactly zero headroom here — so they would be announced as
+    # pinned, and enough of them could push genuine near-cap files out of the ten shown. The
+    # substitution stays; only the claim about it goes.
+    #
+    # Both are already reported by name elsewhere: over-cap files in the failure block with their
+    # exact overage, unreadable ones in the NOTE above.
+    unreadable_set = set(unreadable)
     tight = sorted(
         ((cap - live_lines[rel], rel, live_lines[rel], cap)
          for rel, cap in baseline.items()
-         if 0 <= cap - live_lines[rel] <= TIGHT_HEADROOM_LINES),
+         if rel not in unreadable_set and 0 <= cap - live_lines[rel] <= TIGHT_HEADROOM_LINES),
         key=lambda item: (item[0], item[1]),
     )
     if tight:

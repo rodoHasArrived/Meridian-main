@@ -103,6 +103,24 @@ class TrendReportingTests(unittest.TestCase):
             self.assertIn("0 line(s) reclaimable", output)
             self.assertIn("could not be read", output)
             self.assertIn("src/locked.cs", output)
+            # Substituting the cap keeps the totals honest, but it is not a measurement, so the
+            # file must not then be announced as sitting at its cap.
+            self.assertNotIn("TIGHT", output)
+            self.assertNotIn("a single added line fails this check", output)
+
+    # The cap substitution reads as zero headroom, so an unreadable file would both claim to be
+    # pinned and outrank genuinely near-cap files for the ten displayed slots.
+    def test_an_unreadable_file_does_not_displace_a_genuine_tight_warning(self):
+        with fake_repo({"src/near.cs": 28}, {"src/near.cs": 30, "src/locked.cs": 40}) as root:
+            (root / "src" / "locked.cs").mkdir(parents=True)
+
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("TIGHT: 1 of 2", output)
+            self.assertIn("src/near.cs: 28/30 (2 line(s) spare)", output)
+            self.assertNotIn("src/locked.cs: 40/40", output)
+            self.assertNotIn("a single added line fails this check", output)
 
     # The trend prints after the verdict, so anything that raises here replaces a declared exit code
     # with a traceback. An untraversable parent is the realistic trigger: Path.exists() re-raises
