@@ -16,15 +16,25 @@ falling one, and records the mechanism changes that make progress visible.
 
 ## Where the baseline stands
 
-Measured against the ratchet's own scanner on this branch (threshold 2,000 lines). Reproduce with
-`python3 build/scripts/ci/check-file-size.py`, which prints the first three rows directly:
+**For current figures, run the ratchet — do not trust the numbers below.**
+
+```bash
+python3 build/scripts/ci/check-file-size.py
+```
+
+It prints tracked files, capped lines, current lines and reclaimable slack on every run, including
+`--update-baseline`. Those totals move whenever anything lands on `main` that touches a baselined
+file, so any figure written into this document is stale by the next merge. The snapshot below is
+kept for the shape of the problem, not as a live reading.
+
+Snapshot at `bcd8295a` (threshold 2,000 lines):
 
 | Metric | Value |
 | --- | ---: |
 | Baselined files | 50 |
 | Capped lines | 169,329 |
-| Current lines | 169,308 |
-| Reclaimable slack (current below cap) | **21 lines** |
+| Current lines | 169,280 |
+| Reclaimable slack (current below cap) | **49 lines** |
 
 By surface, counted from the baseline's recorded caps:
 
@@ -39,12 +49,13 @@ of several surfaces. Any plan that only addresses C# ViewModels leaves half the 
 
 ## The finding that shapes the plan
 
-**48 of the 50 baselined files sit at exactly zero headroom, and all 50 are within 25 lines of their
-cap.** The 21 reclaimable lines are spread across two files.
+**Every baselined file is within 25 lines of its cap, and nearly all sit at exactly zero headroom**
+— 46 of 50 in the snapshot above, and the count has only ever moved by the handful of lines a
+merge happens to reclaim.
 
 That is not the occasional cliff issue #2619 describes — it is the steady state of the entire
-baseline. Adding one line fails CI today for 48 of the 50 — the ratchet rejects only `lines > cap`,
-so the two with slack would reach their caps and still pass, once. The practical consequences:
+baseline. For a pinned file, adding one line fails CI; the few with slack reach their cap and pass
+once, because the ratchet rejects only `lines > cap`. The practical consequences:
 
 - Any ordinary change to a god file — a `using` directive, a guard clause, a log line — forces a
   choice between an unrelated refactor and a `--update-baseline` commit.
@@ -61,9 +72,10 @@ sibling partial class and still failed the ratchet, because adding one `using` d
 problem is a prerequisite, not a nicety — and no mechanism for it exists yet, which is what the
 missing-mechanism section below records.
 
-Those 21 lines are themselves the trend working. They appeared when #2669 landed on `main` and
-removed lines from files whose caps this baseline still carries, moving the pinned count from 49 to
-48. That is exactly the signal the reporting below exists to make visible, and it is also why the
+The slack that does exist is the trend working. It appears when a change lands on `main` that
+removes lines from a file whose cap this baseline still carries — 1 line when this plan was first
+written, 49 by `bcd8295a`, with the pinned count falling 49 → 48 → 46 over the same span. That is
+exactly the signal the reporting below exists to make visible, and it is also why the
 numbers in this document are stated with the command that reproduces them rather than as fixed
 values: they move whenever a decomposition lands.
 
