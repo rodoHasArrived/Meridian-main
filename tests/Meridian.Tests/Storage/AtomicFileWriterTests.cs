@@ -301,4 +301,59 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
 
         File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
     }
+
+    [Fact]
+    public async Task WriteAsync_String_AppliesRequestedUnixCreateMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "secret.json");
+
+        await AtomicFileWriter.WriteAsync(
+            path, "{\"token\":\"secret\"}", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        (await File.ReadAllTextAsync(path)).Should().Be("{\"token\":\"secret\"}");
+    }
+
+    [Fact]
+    public async Task WriteAsync_String_ExplicitModeOverridesAnExistingWiderMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "widened.json");
+        await File.WriteAllTextAsync(path, "old");
+        File.SetUnixFileMode(
+            path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        await AtomicFileWriter.WriteAsync(path, "new", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    // The text overload writes through a byte path when a mode is requested; a BOM there would
+    // corrupt readers that token-split the raw content, so encoding must not change with the mode.
+    [Fact]
+    public async Task WriteAsync_String_WithModeStillWritesUtf8WithoutABom()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "nobom.txt");
+
+        await AtomicFileWriter.WriteAsync(
+            path, "Hello 世界", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        var bytes = await File.ReadAllBytesAsync(path);
+        bytes.Should().NotStartWith(new byte[] { 0xEF, 0xBB, 0xBF });
+        (await File.ReadAllTextAsync(path, Encoding.UTF8)).Should().Be("Hello 世界");
+    }
 }
