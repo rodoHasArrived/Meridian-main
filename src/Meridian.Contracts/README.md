@@ -38,6 +38,11 @@ or provider implementations.
   and event references, projection lineage, and query/command service contracts.
 - `Ledger/` - shared accounting configuration, ledger-book, posting-intent, journal query, dimension,
   authoritative book-context snapshot, and existing rule-pack reference contracts.
+  `LedgerDimensionTags` is the single owner of GL-dimension tag parsing and of the
+  "does this dimension set carry anything?" predicate. Storage, endpoint, reporting, and close
+  callers consume it rather than redeclaring a local copy, so a whitespace-only dimension value
+  cannot be treated as present at one layer and absent at another. Whitespace-only counts as
+  absent, matching the `NormalizeOptional` convention used across the ledger surface.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
   contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
