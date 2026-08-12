@@ -1862,6 +1862,7 @@ Meridian-main
 │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── README.md
 │   │   ├── w10-depth-slate-2026-07.md
+│   │   ├── w9-close-out-delivery-plan-2026-08.md
 │   │   ├── web-ui-improvements-brainstorm-2026-07.md
 │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   ├── web-ui-report-run-stream-blueprint-2026-07.md
@@ -6588,6 +6589,7 @@ Meridian-main
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
+│   │   │   │   │   ├── jest-axe.d.ts
 │   │   │   │   │   ├── lifecycle.ts
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
@@ -6641,7 +6643,7 @@ Meridian-main
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
 │   │   │   ├── tsconfig.reporting-p0.json
-│   │   │   ├── tsconfig.strict-null.json
+│   │   │   ├── tsconfig.strict.json
 │   │   │   └── vite.config.ts
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
