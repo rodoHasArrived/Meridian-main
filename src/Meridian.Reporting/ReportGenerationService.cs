@@ -3,6 +3,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using static Meridian.Contracts.Ledger.LedgerDimensionTags;
 
 namespace Meridian.Reporting;
 
@@ -232,27 +233,6 @@ public sealed class ReportGenerationService
 
         return merged;
     }
-
-    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions) =>
-        dimensions.FundId is not null ||
-        dimensions.EntityId is not null ||
-        dimensions.SleeveId is not null ||
-        dimensions.StrategyId is not null ||
-        dimensions.InvestorId is not null ||
-        dimensions.CapitalAccountId is not null ||
-        dimensions.InstrumentId is not null ||
-        dimensions.PositionId is not null ||
-        dimensions.TaxLotId is not null ||
-        dimensions.CostCenterId is not null ||
-        dimensions.CounterpartyId is not null ||
-        dimensions.ExternalGlDimensions.Count > 0 ||
-        dimensions.OrganizationId is not null ||
-        dimensions.PortfolioId is not null ||
-        dimensions.BookId is not null ||
-        dimensions.AccountId is not null ||
-        dimensions.CustomerId is not null ||
-        dimensions.VendorId is not null ||
-        dimensions.ProjectId is not null;
 
     private static string? TrimOrNull(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();

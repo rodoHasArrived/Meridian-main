@@ -6700,6 +6700,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionTags"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto"
     },
     {
@@ -18353,6 +18359,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionTags"
     },
     {
       "kind": "contract-set-member",
@@ -42514,7 +42526,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "ee314a6d9e6ed526c03a7d4d30ca5d4c01a59a3bd48e7b291d074302a59ea39a",
+  "fingerprint": "850423494fd96d9d8195111819c3cc35c2fdffd6e2d7f9feeecfaab6d7a80580",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -49262,6 +49274,12 @@
       "id": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerDimensionTags",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerDimensionTags"
     },
     {
       "classification": "dto",
@@ -61997,10 +62015,10 @@
   ],
   "summary": {
     "contract_references": 2931,
-    "contract_set_memberships": 3344,
-    "edges": 7067,
+    "contract_set_memberships": 3346,
+    "edges": 7069,
     "foreign_keys": 95,
     "logical_references": 6,
-    "nodes": 3354
+    "nodes": 3355
   }
 }

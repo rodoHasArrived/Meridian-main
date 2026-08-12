@@ -1077,6 +1077,91 @@ Meridian-main
 │   │   └── __init__.py
 │   ├── rules
 │   │   └── doc-rules.yaml
+│   ├── schema-control
+│   │   └── candidate
+│   │       ├── docs
+│   │       │   ├── contracts
+│   │       │   │   ├── asset-operations-contracts.md
+│   │       │   │   ├── banking-contracts.md
+│   │       │   │   ├── direct-lending-contracts-page-01.md
+│   │       │   │   ├── direct-lending-contracts-page-02.md
+│   │       │   │   ├── direct-lending-contracts.md
+│   │       │   │   ├── fund-governance-contracts-page-01.md
+│   │       │   │   ├── fund-governance-contracts-page-02.md
+│   │       │   │   ├── fund-governance-contracts.md
+│   │       │   │   ├── identity-access-contracts.md
+│   │       │   │   ├── ledger-contracts-page-01.md
+│   │       │   │   ├── ledger-contracts-page-02.md
+│   │       │   │   ├── ledger-contracts-page-03.md
+│   │       │   │   ├── ledger-contracts-page-04.md
+│   │       │   │   ├── ledger-contracts.md
+│   │       │   │   ├── money-market-contracts.md
+│   │       │   │   ├── reporting-contracts.md
+│   │       │   │   ├── security-master-contracts-page-01.md
+│   │       │   │   ├── security-master-contracts-page-02.md
+│   │       │   │   ├── security-master-contracts-page-03.md
+│   │       │   │   └── security-master-contracts.md
+│   │       │   ├── diagrams
+│   │       │   │   ├── asset_operations.mmd
+│   │       │   │   ├── banking.mmd
+│   │       │   │   ├── contracts-asset-operations-contracts.mmd
+│   │       │   │   ├── contracts-banking-contracts.mmd
+│   │       │   │   ├── contracts-direct-lending-contracts-page-01.mmd
+│   │       │   │   ├── contracts-direct-lending-contracts-page-02.mmd
+│   │       │   │   ├── contracts-fund-governance-contracts-page-01.mmd
+│   │       │   │   ├── contracts-fund-governance-contracts-page-02.mmd
+│   │       │   │   ├── contracts-identity-access-contracts.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-01.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-02.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-03.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-04.mmd
+│   │       │   │   ├── contracts-money-market-contracts.mmd
+│   │       │   │   ├── contracts-reporting-contracts.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-01.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-02.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-03.mmd
+│   │       │   │   ├── fund_accounts.mmd
+│   │       │   │   ├── fund_structure.mmd
+│   │       │   │   ├── identity_access.mmd
+│   │       │   │   ├── ledger.mmd
+│   │       │   │   ├── money_market.mmd
+│   │       │   │   ├── public.mmd
+│   │       │   │   ├── reporting.mmd
+│   │       │   │   └── security_master.mmd
+│   │       │   ├── modules
+│   │       │   │   ├── asset_operations.md
+│   │       │   │   ├── banking.md
+│   │       │   │   ├── fund_accounts.md
+│   │       │   │   ├── fund_structure.md
+│   │       │   │   ├── identity_access.md
+│   │       │   │   ├── ledger.md
+│   │       │   │   ├── money_market.md
+│   │       │   │   ├── public.md
+│   │       │   │   ├── reporting.md
+│   │       │   │   └── security_master.md
+│   │       │   ├── data-object-catalog.md
+│   │       │   ├── README.md
+│   │       │   └── schema-catalog.md
+│   │       ├── manifest
+│   │       │   ├── schemas
+│   │       │   │   ├── asset_operations.json
+│   │       │   │   ├── banking.json
+│   │       │   │   ├── fund_accounts.json
+│   │       │   │   ├── fund_structure.json
+│   │       │   │   ├── identity_access.json
+│   │       │   │   ├── ledger.json
+│   │       │   │   ├── money_market.json
+│   │       │   │   ├── public.json
+│   │       │   │   ├── reporting.json
+│   │       │   │   └── security_master.json
+│   │       │   ├── catalog.json
+│   │       │   ├── contracts.json
+│   │       │   ├── dependencies.json
+│   │       │   ├── migrations.json
+│   │       │   └── policies.json
+│   │       ├── reports
+│   │       │   └── policy-report.json
+│   │       └── render-manifest.json
 │   └── scripts
 │       ├── ai
 │       │   ├── tests
@@ -3895,6 +3980,7 @@ Meridian-main
 │   │   │   ├── AutomatedJournalEvidenceDtos.cs
 │   │   │   ├── LedgerBookDtos.cs
 │   │   │   ├── LedgerCurrencyRounding.cs
+│   │   │   ├── LedgerDimensionTags.cs
 │   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Lifecycle
@@ -8907,6 +8993,8 @@ Meridian-main
 │   │   │   │   └── UiApiClientTests.cs
 │   │   │   ├── Integrity
 │   │   │   │   └── Sha256DigestTests.cs
+│   │   │   ├── Ledger
+│   │   │   │   └── LedgerDimensionTagsTests.cs
 │   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── DataProvenanceTests.cs
