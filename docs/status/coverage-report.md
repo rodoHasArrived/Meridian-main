@@ -5,18 +5,18 @@
 
 ## Overall Coverage
 
-**2752 / 8781** items documented (**31.3%**) &mdash; Grade: **F**
+**2756 / 8782** items documented (**31.4%**) &mdash; Grade: **F**
 
 ```text
-[======--------------] 31.3%
+[======--------------] 31.4%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2655 | 8299 | 32.0% | F |
-| API Endpoints | 85 | 329 | 25.8% | F |
+| Public Classes / Interfaces | 2656 | 8300 | 32.0% | F |
+| API Endpoints | 88 | 329 | 26.7% | F |
 | Configuration Options | 1 | 142 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
@@ -79,7 +79,7 @@
 | `PersistenceStatusSnapshot` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:11` |
 | ... and 5594 more | |
 
-### API Endpoints (244 undocumented)
+### API Endpoints (241 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -133,7 +133,7 @@
 | `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:498` |
 | `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:522` |
 | `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:546` |
-| ... and 194 more | |
+| ... and 191 more | |
 
 ### Configuration Options (141 undocumented)
 
@@ -194,7 +194,7 @@
 ## Recommendations
 
 1. **Public Classes / Interfaces**: 5644 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 244 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+2. **API Endpoints**: 241 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
