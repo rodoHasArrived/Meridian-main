@@ -243,4 +243,62 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         File.Exists(path).Should().BeTrue();
         (await File.ReadAllBytesAsync(path)).Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task WriteAsync_Bytes_AppliesRequestedUnixCreateMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "secret.bin");
+
+        var content = new byte[] { 1, 2, 3 };
+
+        await AtomicFileWriter.WriteAsync(
+            path, content, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        (await File.ReadAllBytesAsync(path)).Should().Equal(content);
+    }
+
+    // Without an explicit mode the destination's permissions win, so replacing an over-permissive
+    // secret would silently restore the mode that made it over-permissive. An explicit mode has to
+    // override the destination rather than inherit from it.
+    [Fact]
+    public async Task WriteAsync_Bytes_ExplicitModeOverridesAnExistingWiderMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "widened.bin");
+        await File.WriteAllBytesAsync(path, new byte[] { 9 });
+        File.SetUnixFileMode(
+            path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        await AtomicFileWriter.WriteAsync(
+            path, new byte[] { 1, 2, 3 }, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    [Fact]
+    public async Task WriteAsync_Bytes_WithoutModeStillPreservesExistingPermissions()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "inherited.bin");
+        await File.WriteAllBytesAsync(path, new byte[] { 9 });
+        File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        await AtomicFileWriter.WriteAsync(path, new byte[] { 1, 2, 3 });
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
 }
