@@ -282,7 +282,7 @@ public sealed class AccountingProductionCertificationCommandService(
         {
             throw new ArgumentException(
                 "Only a human operator can certify accounting production controls.",
-                nameof(request),
+                paramName: null,
                 OperationsOriginGuard.Refusal("certify accounting production controls"));
         }
 
