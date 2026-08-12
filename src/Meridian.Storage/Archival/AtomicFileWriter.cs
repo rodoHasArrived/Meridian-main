@@ -70,9 +70,25 @@ public static partial class AtomicFileWriter
     /// Atomically writes content to a file.
     /// Uses a temporary file with rename to ensure atomicity.
     /// </summary>
+    public static Task WriteAsync(
+        string destinationPath,
+        string content,
+        CancellationToken ct = default)
+        => WriteAsync(destinationPath, content, unixCreateMode: null, ct);
+
+    /// <summary>
+    /// Atomically writes text content to a file, creating it with an explicit Unix permission mode.
+    /// </summary>
+    /// <remarks>
+    /// Text counterpart of the <see cref="byte"/>-array overload, with the same contract: the mode
+    /// is applied at creation rather than chmod'ed afterwards, and it suppresses the copy of the
+    /// destination's security metadata so an existing over-permissive file cannot re-widen its
+    /// replacement. Ignored on Windows, where ACLs rather than mode bits govern.
+    /// </remarks>
     public static async Task WriteAsync(
         string destinationPath,
         string content,
+        UnixFileMode? unixCreateMode,
         CancellationToken ct = default)
     {
         var directory = Path.GetDirectoryName(destinationPath);
@@ -87,13 +103,20 @@ public static partial class AtomicFileWriter
         try
         {
             // Write to temp file (no BOM: readers token-split the raw content, e.g. checksum sidecars)
-            await File.WriteAllTextAsync(tempPath, content, Utf8NoBom, ct);
+            if (unixCreateMode is { } mode && !OperatingSystem.IsWindows())
+            {
+                await WriteAllBytesWithModeAsync(tempPath, Utf8NoBom.GetBytes(content), mode, ct);
+            }
+            else
+            {
+                await File.WriteAllTextAsync(tempPath, content, Utf8NoBom, ct);
+            }
 
             // Sync the temp file to disk while it is still writable, before copying any
             // (possibly read-only) security metadata from the destination onto it.
             await SyncFileAsync(tempPath, ct);
 
-            if (destinationExists)
+            if (destinationExists && unixCreateMode is null)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
