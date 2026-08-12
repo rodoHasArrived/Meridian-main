@@ -5908,6 +5908,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrity.Sha256Digest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrity.Sha256DigestComparison"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AccountingActionAuditEventDto"
     },
     {
@@ -42514,7 +42526,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bf3409cadf03a48bf14090631e401f26e556a4f3732744c76c216be029fa761a",
+  "fingerprint": "850423494fd96d9d8195111819c3cc35c2fdffd6e2d7f9feeecfaab6d7a80580",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -48470,6 +48482,18 @@
       "id": "contract:Meridian.Contracts.Integrations.ValidationRuleDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Integrations.ValidationRuleDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Integrity.Sha256Digest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrity.Sha256Digest"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Integrity.Sha256DigestComparison",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrity.Sha256DigestComparison"
     },
     {
       "classification": "dto",
@@ -61991,10 +62015,10 @@
   ],
   "summary": {
     "contract_references": 2931,
-    "contract_set_memberships": 3344,
-    "edges": 7067,
+    "contract_set_memberships": 3346,
+    "edges": 7069,
     "foreign_keys": 95,
     "logical_references": 6,
-    "nodes": 3353
+    "nodes": 3355
   }
 }
