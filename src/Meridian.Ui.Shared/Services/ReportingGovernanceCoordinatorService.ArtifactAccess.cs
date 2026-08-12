@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
@@ -88,7 +89,7 @@ public sealed partial class ReportingGovernanceCoordinatorService
             || !string.Equals(record.FileName, declaration.FileName, StringComparison.Ordinal)
             || !string.Equals(record.ContentType, declaration.ContentType, StringComparison.Ordinal)
             || record.ByteLength <= 0
-            || !IsSha256(record.Identity.ContentHashSha256)
+            || !Sha256Digest.IsWellFormed(record.Identity.ContentHashSha256)
             || !string.Equals(
                 record.Identity.ContentHashSha256,
                 record.Identity.ContentHashSha256.ToLowerInvariant(),
@@ -120,9 +121,6 @@ public sealed partial class ReportingGovernanceCoordinatorService
 
     private static string ComputeSha256(ReadOnlySpan<byte> content) =>
         Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
 
     private static bool SameOptional(string? left, string? right) =>
         string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right)

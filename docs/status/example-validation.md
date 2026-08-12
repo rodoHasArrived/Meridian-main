@@ -99,6 +99,7 @@ No invalid code examples found.
 | `docs/development/documentation-contribution-guide.md` | 7 |
 | `docs/development/expanding-scripts.md` | 8 |
 | `docs/development/git-hooks.md` | 4 |
+| `docs/development/god-file-burn-down-plan.md` | 3 |
 | `docs/development/otlp-trace-visualization.md` | 5 |
 | `docs/development/provider-implementation.md` | 23 |
 | `docs/development/repository-organization-guide.md` | 8 |

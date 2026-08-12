@@ -1,0 +1,20 @@
+{
+  // Full `strict` gate for production source, enforced in CI as `npm run typecheck:strict`.
+  //
+  // The base tsconfig.json still sets "strict": false because it also covers test files, which are
+  // not clean yet. This config is the enforced contract: everything under src/ except tests
+  // compiles under the whole strict family. It is written as "strict": true rather than as a list
+  // of sub-flags so that a future TypeScript release cannot introduce a strict check that silently
+  // stays off here.
+  //
+  // Remaining work is the excluded test files: 38 errors across 15 files when this was written,
+  // most of them uninitialised locals and possibly-undefined access in fixtures. Re-measure rather
+  // than trusting that number: copy this file with "exclude" set to [] and compile that copy.
+  // There is no tsc flag to override "exclude" from the command line.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true
+  },
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
+}
