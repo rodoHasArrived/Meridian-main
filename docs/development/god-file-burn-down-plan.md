@@ -74,7 +74,11 @@ Reporting only. No enforcement rule is altered, so nothing that passes today sta
    retire files the baseline still protects.
 4. **`--buffer N`.** Tightening to the exact current count leaves the file pinned again, which is
    the state this plan exists to escape. `--tighten-baseline --buffer 25` locks in the reduction
-   while keeping 25 lines of working room, and still never raises a cap above its existing value.
+   while asking for 25 lines of working room. It still never raises a cap above its existing value,
+   so a file that has barely moved keeps whatever headroom its old cap allowed — the command reports
+   the smallest amount actually retained rather than the amount requested. An entry is also held
+   rather than retired until the threshold itself provides the requested room, so a file parked just
+   under 2,000 lines cannot lose its cap and then fail as a brand-new god file on the next line.
 
 The distinction matters. `--update-baseline` is the escape hatch and should stay visible in review
 as tracked debt. `--tighten-baseline` is the ratchet actually ratcheting, and is safe to run

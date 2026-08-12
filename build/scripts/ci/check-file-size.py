@@ -160,15 +160,22 @@ def _write_baseline(root: Path, threshold: int, oversized: dict[str, int]) -> No
 TIGHT_HEADROOM_LINES = 25
 
 
-def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int]) -> None:
-    """Print the burn-down numbers: what is tracked, and how much of it is reclaimable."""
-    # A baselined file that has shrunk below the threshold is absent from `current`, so its real
-    # size has to be read from disk. Treating it as zero would erase its lines from the totals and
-    # overstate the reclaimable figure at exactly the moment a decomposition is about to retire it.
-    live_lines = {
+def _live_lines(root: Path, baseline: dict[str, int], current: dict[str, int]) -> dict[str, int]:
+    """Current line count for every baselined file, including ones the scan omits.
+
+    A baselined file that has shrunk below the threshold is absent from `current`, so its real size
+    has to be read from disk. Treating it as zero would erase its lines from the totals and
+    overstate the reclaimable figure at exactly the moment a decomposition is about to retire it.
+    """
+    return {
         rel: current[rel] if rel in current else _count_lines(root / rel)
         for rel in baseline
     }
+
+
+def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int]) -> None:
+    """Print the burn-down numbers: what is tracked, and how much of it is reclaimable."""
+    live_lines = _live_lines(root, baseline, current)
     capped = sum(baseline.values())
     live = sum(live_lines.values())
     slack = sum(max(0, cap - live_lines[rel]) for rel, cap in baseline.items())
@@ -274,18 +281,36 @@ def main(argv: list[str] | None = None) -> int:
             print("ERROR: --buffer cannot be negative.", file=sys.stderr)
             return 2
 
-        # min() keeps this strictly downward-only: the buffer can leave headroom above the current
-        # count, but never above the cap the baseline already recorded.
-        tightened = {
-            rel: min(cap, current[rel] + args.buffer)
-            for rel, cap in baseline.items()
-            if rel in current
-        }
-        reclaimed = sum(baseline[rel] - cap for rel, cap in tightened.items())
-        # A file that dropped below the threshold leaves the baseline entirely.
-        retired = sorted(set(baseline) - set(tightened))
-        _write_baseline(root, args.threshold, dict(sorted(tightened.items())))
-        headroom = f", {args.buffer} line(s) of headroom kept" if args.buffer else ""
+        live_lines = _live_lines(root, baseline, current)
+        tightened: dict[str, int] = {}
+        retired: list[str] = []
+        reclaimed = 0
+        for rel, cap in sorted(baseline.items()):
+            lines = live_lines[rel]
+            # Retiring an entry removes its cap, so the file's only remaining protection is the
+            # threshold itself. Hold the entry until the threshold supplies the requested headroom,
+            # otherwise a file dropped to one line under it would fail as a brand-new god file on
+            # the next added line rather than having the buffer it was promised.
+            if lines + args.buffer <= args.threshold:
+                retired.append(rel)
+                reclaimed += max(0, cap - lines)
+                continue
+            # min() keeps this strictly downward-only: the buffer can leave headroom above the
+            # current count, but never above the cap the baseline already recorded.
+            tightened[rel] = min(cap, lines + args.buffer)
+            reclaimed += cap - tightened[rel]
+
+        _write_baseline(root, args.threshold, tightened)
+
+        headroom = ""
+        if args.buffer and tightened:
+            smallest = min(cap - live_lines[rel] for rel, cap in tightened.items())
+            headroom = (
+                f", {args.buffer} line(s) of headroom kept"
+                if smallest >= args.buffer
+                else f", as little as {smallest} line(s) of headroom retained "
+                     f"(requested {args.buffer}; existing caps limited the rest)"
+            )
         print(
             f"Tightened baseline: {reclaimed:,} line(s) reclaimed, "
             f"{len(retired)} file(s) retired, {len(tightened)} still tracked{headroom}."

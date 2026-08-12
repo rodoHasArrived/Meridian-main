@@ -82,6 +82,34 @@ class TightenBaselineTests(unittest.TestCase):
             self.assertNotIn("src/small.cs", read_baseline(root))
             self.assertIn("retired", output)
 
+    # Retiring a file is the plan's headline goal, so its reduction must show up in the total
+    # rather than being dropped along with its baseline entry.
+    def test_counts_a_retired_file_in_the_reclaimed_total(self):
+        with fake_repo({"src/small.cs": 5}, {"src/small.cs": 30}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("25 line(s) reclaimed", output)
+            self.assertNotIn("src/small.cs", read_baseline(root))
+
+    # Retiring drops the cap, leaving only the threshold as protection. A file parked just under
+    # the threshold would then fail as a brand-new god file on the next line, not use its buffer.
+    def test_holds_an_entry_until_the_threshold_supplies_the_buffer(self):
+        with fake_repo({"src/near.cs": 9}, {"src/near.cs": 40}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertEqual(read_baseline(root)["src/near.cs"], 14)
+            self.assertIn("0 file(s) retired", output)
+
+    def test_retires_once_the_threshold_itself_covers_the_buffer(self):
+        with fake_repo({"src/tiny.cs": 3}, {"src/tiny.cs": 40}) as root:
+            code, output = run(["--threshold", "10", "--tighten-baseline", "--buffer", "5"])
+
+            self.assertEqual(code, 0, output)
+            self.assertNotIn("src/tiny.cs", read_baseline(root))
+            self.assertIn("1 file(s) retired", output)
+
     def test_buffer_keeps_working_headroom_while_still_reclaiming(self):
         with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}) as root:
             code, output = run(["--threshold", "10", "--tighten-baseline", "--buffer", "5"])
@@ -98,6 +126,16 @@ class TightenBaselineTests(unittest.TestCase):
 
             self.assertEqual(code, 0, output)
             self.assertEqual(read_baseline(root)["src/big.cs"], 30)
+
+    # Claiming the requested buffer was kept when the existing cap allowed only one line would
+    # send a contributor into the next ratchet failure believing they had room.
+    def test_reports_the_headroom_actually_retained_not_the_request(self):
+        with fake_repo({"src/big.cs": 29}, {"src/big.cs": 30}):
+            code, output = run(["--threshold", "10", "--tighten-baseline", "--buffer", "25"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("as little as 1 line(s) of headroom retained", output)
+            self.assertIn("requested 25", output)
 
     def test_rejects_a_negative_buffer(self):
         with fake_repo({"src/big.cs": 15}, {"src/big.cs": 30}):
