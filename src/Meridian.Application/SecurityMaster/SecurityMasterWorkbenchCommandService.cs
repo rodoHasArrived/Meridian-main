@@ -570,6 +570,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     /// already run against the durable event stream.
     /// </summary>
     private async Task EnsureFieldEditIsSchemaValidAsync(UpdateSecurityFieldRequest request, CancellationToken ct)
+        var safeFieldPath = (request.FieldPath ?? string.Empty)
+            .Replace("\r", string.Empty, StringComparison.Ordinal)
+            .Replace("\n", string.Empty, StringComparison.Ordinal);
+
     {
         if (!SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(request.FieldPath))
         {
@@ -583,14 +587,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             var passport = await _queryService
                 .GetInstrumentPassportAsync(request.SecurityId, request.FundProfileId, ct)
                 .ConfigureAwait(false);
-            assetClass = passport?.EconomicDefinition?.AssetClass;
+                request.SecurityId, safeFieldPath);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogWarning(
                 ex,
                 "Resolving the asset class for {SecurityId} failed; skipping schema validation for field edit {FieldPath}.",
-                request.SecurityId, safeFieldPathForLog);
+                request.SecurityId, safeFieldPath);
         }
 
         if (string.IsNullOrWhiteSpace(assetClass))
