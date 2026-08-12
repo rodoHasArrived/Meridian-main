@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
@@ -1237,7 +1238,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         if (manifest.Sections.IsDefaultOrEmpty
             || manifest.Sections.Any(section =>
                 string.IsNullOrWhiteSpace(section.SectionId)
-                || !IsSha256(section.Hash)
+                || !Sha256Digest.IsWellFormed(section.Hash)
                 || section.Lineage is null
                 || !string.Equals(section.DatasetSnapshotId, manifest.CertifiedSnapshot.SnapshotId, StringComparison.Ordinal)
                 || !string.Equals(section.ReconciliationCheckpointId, manifest.CertifiedSnapshot.ReconciliationCheckpointId, StringComparison.Ordinal)
@@ -1272,7 +1273,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         RequireText(scope.PeriodId, nameof(scope.PeriodId));
         RequireText(access.PolicyId, nameof(access.PolicyId));
         RequireText(access.PolicyVersion, nameof(access.PolicyVersion));
-        if (!IsSha256(access.PolicyHash) || !IsSha256(snapshot.SnapshotHash))
+        if (!Sha256Digest.IsWellFormed(access.PolicyHash) || !Sha256Digest.IsWellFormed(snapshot.SnapshotHash))
         {
             throw new ReportingGovernanceException(
                 "Certified snapshot and immutable access policy hashes must be SHA-256 values.");
@@ -1308,7 +1309,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
             || readiness.Checks.Count == 0
             || readiness.BlockingReasons is null
             || readiness.BlockingReasons.Count != 0
-            || !IsSha256(readiness.EvidenceHash)
+            || !Sha256Digest.IsWellFormed(readiness.EvidenceHash)
             || !Equals(readiness.ResolvedTemplate, template)
             || readiness.ResolvedParameters.AsOfDate != parameters.AsOfDate
             || !string.Equals(readiness.ResolvedParameters.PeriodId, parameters.PeriodId, StringComparison.Ordinal)

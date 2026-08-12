@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 
@@ -36,7 +37,7 @@ public sealed partial class ReportingGovernanceCoordinatorService
             || !AccessScopesEqual(certification.Access, manifest.ImmutableAccessScope)
             || !Equals(certification.Snapshot, manifest.CertifiedSnapshot)
             || string.IsNullOrWhiteSpace(certification.SourceCheckpointId)
-            || !IsSha256(certification.SourceCheckpointHash)
+            || !Sha256Digest.IsWellFormed(certification.SourceCheckpointHash)
             || certification.EvidenceIds.IsDefaultOrEmpty
             || certification.EvidenceIds.Any(string.IsNullOrWhiteSpace)
             || certification.EvidenceIds.Distinct(StringComparer.Ordinal).Count() != certification.EvidenceIds.Length
@@ -52,7 +53,7 @@ public sealed partial class ReportingGovernanceCoordinatorService
                 certification.SourceCheckpointId,
                 certification.Snapshot.ReconciliationCheckpointId,
                 StringComparison.Ordinal)
-            || !IsSha256(certification.Snapshot.ReconciliationCheckpointHash)
+            || !Sha256Digest.IsWellFormed(certification.Snapshot.ReconciliationCheckpointHash)
             || !certification.EvidenceIds.Contains(
                 BuildSourceCheckpointEvidence(
                     certification.SourceCheckpointId,

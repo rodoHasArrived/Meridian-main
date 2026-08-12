@@ -24,6 +24,14 @@ or provider implementations.
 
 ## Key folders and files
 
+- `Integrity/` - the canonical SHA-256 digest contract. `Sha256Digest` is the single required seam
+  for digest validation and comparison; do not add a local `IsSha256`/`FixedHashEquals` helper.
+  It keeps three questions apart on purpose: `IsCanonical` enforces Meridian's canonical form
+  (64 lowercase hex) on write and certification paths, `IsWellFormed` accepts any 64 hex characters
+  for read paths, and `Compare`/`FixedEquals` decide whether two digests denote the same bytes.
+  Comparison is case-insensitive, because hex casing is a presentation detail and not a security
+  property, and it reports a malformed digest distinctly from a genuine mismatch so callers can stop
+  surfacing a data-hygiene problem as an integrity failure.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
 - `Operations/` - the program-wide verified terminal-outcome contract and append-only operational

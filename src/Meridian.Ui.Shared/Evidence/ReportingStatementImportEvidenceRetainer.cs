@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.IO;
 using Meridian.Reporting;
@@ -456,7 +457,7 @@ public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportE
             || !string.Equals(identity.VaultId, expectedVaultId, StringComparison.Ordinal)
             || !string.Equals(identity.ManifestPath, expectedManifestKey, StringComparison.Ordinal)
             || !string.Equals(identity.ManifestRoute, statusRoute, StringComparison.Ordinal)
-            || !IsSha256(identity.ContentHashSha256)
+            || !Sha256Digest.IsCanonical(identity.ContentHashSha256)
             || identity.Artifacts.Count != 3)
         {
             return null;
@@ -558,7 +559,7 @@ public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportE
             || document.Scope != scope
             || !string.Equals(document.DocumentKey, documentKey, StringComparison.Ordinal)
             || document.ByteSize != content.LongLength
-            || !IsSha256(document.Identity.ContentHashSha256)
+            || !Sha256Digest.IsCanonical(document.Identity.ContentHashSha256)
             || !string.Equals(
                 ComputeHash(content),
                 document.Identity.ContentHashSha256,
@@ -778,11 +779,6 @@ public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportE
 
     private static string ComputeHash(ReadOnlySpan<byte> content) =>
         Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(static character =>
-            character is >= '0' and <= '9' or >= 'a' and <= 'f');
 
     private static string RequireIdentity(string? value, string kind) =>
         string.IsNullOrWhiteSpace(value)
