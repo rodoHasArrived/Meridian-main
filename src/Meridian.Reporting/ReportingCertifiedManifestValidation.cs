@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -57,7 +58,7 @@ public static class ReportingCertifiedManifestValidation
                 "A retained certified reporting manifest must bind its scope, authoritative source, resolved parameters, readiness parameters, and snapshot to the same canonical non-empty GUID accounting-period identity.");
         }
 
-        if (!IsSha256(readiness.EvidenceHash)
+        if (!Sha256Digest.IsWellFormed(readiness.EvidenceHash)
             || !IsUtc(readiness.EvaluatedAtUtc)
             || readiness.Status != ReportingRunReadinessStatusDto.Ready
             || !readiness.CanGenerateDraft
@@ -117,7 +118,7 @@ public static class ReportingCertifiedManifestValidation
                 snapshot.SourceCheckpointHash,
                 source.CheckpointHash,
                 StringComparison.OrdinalIgnoreCase)
-            || !IsSha256(source.CheckpointHash)
+            || !Sha256Digest.IsWellFormed(source.CheckpointHash)
             || source.EvidenceIds.IsDefaultOrEmpty
             || source.EvidenceIds.Any(string.IsNullOrWhiteSpace)
             || source.EvidenceIds.Distinct(StringComparer.Ordinal).Count() != source.EvidenceIds.Length
@@ -143,7 +144,7 @@ public static class ReportingCertifiedManifestValidation
         }
 
         var expectedSnapshotHash = ComputeSnapshotHash(manifest);
-        if (!FixedHashEquals(snapshot.SnapshotHash, expectedSnapshotHash))
+        if (!Sha256Digest.FixedEquals(snapshot.SnapshotHash, expectedSnapshotHash))
         {
             throw new InvalidDataException(
                 "The retained certified snapshot hash does not match its template, scope, access, parameters, source, reconciliation, readiness, and certified-dataset binding.");
@@ -246,16 +247,6 @@ public static class ReportingCertifiedManifestValidation
             ReportingAccountingBasisDto.Statutory => "Statutory",
             _ => "Primary"
         };
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
-
-    private static bool FixedHashEquals(string left, string right) =>
-        IsSha256(left)
-        && IsSha256(right)
-        && CryptographicOperations.FixedTimeEquals(
-            Convert.FromHexString(left),
-            Convert.FromHexString(right));
 
     private static string ComputeSha256(ReadOnlySpan<byte> value) =>
         Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();

@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
@@ -889,11 +890,8 @@ public sealed class ReportingRunCertificationService
     private static string ComputeHash(ReadOnlySpan<byte> value) =>
         Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
 
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
-
     private static bool IsLowercaseSha256(string? value) =>
-        IsSha256(value)
+        Sha256Digest.IsWellFormed(value)
         && string.Equals(value, value!.ToLowerInvariant(), StringComparison.Ordinal);
 
     private static string? NormalizeOptional(string? value)

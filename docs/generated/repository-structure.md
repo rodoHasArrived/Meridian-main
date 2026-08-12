@@ -3885,6 +3885,8 @@ Meridian-main
 │   │   ├── Integrations
 │   │   │   ├── ProviderIntegrationContracts.cs
 │   │   │   └── ProviderIntegrationContractsJsonContext.cs
+│   │   ├── Integrity
+│   │   │   └── Sha256Digest.cs
 │   │   ├── Ledger
 │   │   │   ├── AccountingBookContextDtos.cs
 │   │   │   ├── AccountingConfigurationCloseReportingDtos.cs
@@ -8908,6 +8910,8 @@ Meridian-main
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
+│   │   │   ├── Integrity
+│   │   │   │   └── Sha256DigestTests.cs
 │   │   │   ├── Ledger
 │   │   │   │   └── LedgerDimensionTagsTests.cs
 │   │   │   ├── Operations
