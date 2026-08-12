@@ -37,18 +37,9 @@ public sealed class HumanOperatorRequiredException : InvalidOperationException
 /// rather than a coordinated sweep where a missed module leaves a silent governance hole.
 /// </para>
 /// <para>
-/// Refusals take two shapes, and only one of them is typed. Gates that <i>throw</i> — whether via
-/// <see cref="RequireHumanOperator"/> or by wrapping <see cref="Refusal"/> in a module-specific
-/// exception — always carry a <see cref="HumanOperatorRequiredException"/>, directly or as the
-/// inner exception, so a caller can identify those uniformly by type. Gates that return the refusal
-/// as data do not: they surface <see cref="BlockerMessage"/> text inside an ordinary blocker or
-/// error DTO and throw nothing.
-/// </para>
-/// <para>
-/// So do not write a caller that treats "no <see cref="HumanOperatorRequiredException"/>" as "not a
-/// governance refusal" — that is only sound on the throwing paths. A structured result has to be
-/// read on its own terms. Giving those results a stable typed discriminator would remove the
-/// asymmetry, but that is a deliberate API change and not something to infer from this remark.
+/// Only the throwing gates carry a <see cref="HumanOperatorRequiredException"/>, directly or as an
+/// inner exception. Gates that return the refusal as data surface <see cref="BlockerMessage"/> in
+/// an ordinary DTO and throw nothing; absence of the exception does not mean the action passed.
 /// </para>
 /// </remarks>
 public static class OperationsOriginGuard
