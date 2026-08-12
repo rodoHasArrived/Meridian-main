@@ -119,6 +119,71 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_FieldConflict_WritesWinnerFieldProvenanceWithTheClose()
+    {
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US88160R1014", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US88160R1014", "provB") with
+        {
+            Currency = "EUR",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+
+        var service = NewService(StoreReturning());
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+
+        var open = await service.GetOpenConflictsAsync(CancellationToken.None);
+        var conflict = open.Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+        conflict.FieldPath.Should().Be("CommonTerms.currency");
+
+        var resolved = await service.ResolveAsync(
+            new ResolveConflictRequest(conflict.ConflictId, "Resolve", "operator@meridian.test", "provB confirmed.", ChosenWinnerSource: "provB"),
+            CancellationToken.None);
+        resolved.Should().NotBeNull();
+
+        // The winning attribution is durable field lineage, committed with the conflict close.
+        var provenanceStore = new PostgresSecurityFieldProvenanceStore(_fixture.Options);
+        var lineage = await provenanceStore.GetAsync(securityId, CancellationToken.None);
+        var row = lineage.Should().ContainSingle().Subject;
+        row.FieldPath.Should().Be("CommonTerms.currency");
+        row.SourceSystem.Should().Be("provB");
+        row.Origin.Should().Be(SecurityFieldProvenanceOrigins.ConflictResolution);
+        row.OriginReference.Should().Be(conflict.ConflictId.ToString("D"));
+        row.UpdatedBy.Should().Be("operator@meridian.test");
+        row.AsOf.Should().NotBeNull("the attribution's as-of is the resolution time");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_DismissalOrIdentifierConflict_WritesNoFieldProvenance()
+    {
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US4642872000", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US4642872000", "provB") with
+        {
+            Currency = "GBP",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+
+        var service = NewService(StoreReturning());
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var open = await service.GetOpenConflictsAsync(CancellationToken.None);
+        var conflict = open.Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+
+        // A dismissal records no winner, so it must assert no field attribution.
+        var dismissed = await service.ResolveAsync(
+            new ResolveConflictRequest(conflict.ConflictId, "Dismiss", "operator@meridian.test", "Values equivalent."),
+            CancellationToken.None);
+        dismissed.Should().NotBeNull();
+        dismissed!.Status.Should().Be("Dismissed");
+
+        var provenanceStore = new PostgresSecurityFieldProvenanceStore(_fixture.Options);
+        var lineage = await provenanceStore.GetAsync(securityId, CancellationToken.None);
+        lineage.Should().BeEmpty("dismissals and identifier-ownership resolutions carry no field-source winner");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task ResolveAsync_WhenConflictNotFound_ReturnsNull()
     {
         var result = await NewService(StoreReturning()).ResolveAsync(

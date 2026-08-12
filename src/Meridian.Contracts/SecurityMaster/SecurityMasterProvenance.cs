@@ -51,6 +51,42 @@ public sealed record SecurityFieldProvenance(
     decimal? Confidence);
 
 /// <summary>
+/// Canonical origins for persisted field-level provenance rows. The origin distinguishes canonical
+/// golden-record attribution from overlay annotations, so an operator edit can never masquerade as
+/// (or clobber) a conflict-resolution winner.
+/// </summary>
+public static class SecurityFieldProvenanceOrigins
+{
+    /// <summary>The attribution written when a golden-record conflict resolves to a winning source.</summary>
+    public const string ConflictResolution = "ConflictResolution";
+
+    /// <summary>The attribution written when an operator stages an overlay field edit.</summary>
+    public const string OperatorFieldEdit = "OperatorFieldEdit";
+}
+
+/// <summary>
+/// A persisted field-level provenance row: the durable form of <see cref="SecurityFieldProvenance"/>,
+/// keyed by (security, field path, origin). <see cref="OriginReference"/> points back at the artifact
+/// that asserted the attribution — the conflict id for conflict resolutions, the revision id for
+/// operator field edits — so lineage is traceable to its governing record.
+/// </summary>
+public sealed record SecurityFieldProvenanceRecord(
+    Guid SecurityId,
+    string FieldPath,
+    string SourceSystem,
+    DateTimeOffset? AsOf,
+    string? UpdatedBy,
+    decimal? Confidence,
+    string Origin,
+    string? OriginReference,
+    DateTimeOffset RecordedAt)
+{
+    /// <summary>Projects the durable row onto the display-level field-provenance shape.</summary>
+    public SecurityFieldProvenance ToFieldProvenance()
+        => new(FieldPath, SourceSystem, AsOf, UpdatedBy, Confidence);
+}
+
+/// <summary>
 /// Typed reader for the Security Master provenance JSON
 /// (<c>{ sourceSystem, sourceRecordId, asOf, updatedBy, reason }</c> — the shape the F# snapshot
 /// serializer writes). Reads are tolerant: a missing or malformed document yields

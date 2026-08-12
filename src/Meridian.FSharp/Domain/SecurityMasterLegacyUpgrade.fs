@@ -588,6 +588,10 @@ module SecurityMasterLegacyUpgrade =
                             LiquidityFeeEligible = None
                         }
             }
+        | SecurityKind.CustomAsset _ ->
+            // Custom-asset terms are an opaque profile-governed document; no structural
+            // economic-term modules can be extracted without interpreting the profile.
+            SecurityTermModules.empty
 
     let toEconomicDefinition (record: SecurityMasterRecord) =
         {

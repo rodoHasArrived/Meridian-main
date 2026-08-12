@@ -48,6 +48,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     private readonly IAffectedLedgerBookResolver _affectedLedgerBookResolver;
     private readonly IReadOnlyList<ISecurityMasterRevisionPublishedHandler> _handlers;
     private readonly ILogger<SecurityMasterWorkbenchCommandService> _logger;
+    private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
 
     public SecurityMasterWorkbenchCommandService(
         ISecurityMasterEventStore eventStore,
@@ -60,7 +61,8 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         IPeriodAwareRestatementResolver restatementResolver,
         IAffectedLedgerBookResolver affectedLedgerBookResolver,
         IEnumerable<ISecurityMasterRevisionPublishedHandler> handlers,
-        ILogger<SecurityMasterWorkbenchCommandService> logger)
+        ILogger<SecurityMasterWorkbenchCommandService> logger,
+        ISecurityFieldProvenanceStore? fieldProvenance = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _overrides = overrides ?? throw new ArgumentNullException(nameof(overrides));
@@ -75,6 +77,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             .OrderBy(static h => h.Order)
             .ToArray();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _fieldProvenance = fieldProvenance;
     }
 
     public async Task<SecurityMasterEditResultDto> UpdateSecurityFieldAsync(
@@ -107,6 +110,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
         }
+
+        // Edits addressing the assetSpecificTerms namespace are anchored to the declared
+        // per-asset-class schema: the key must be a declared term field and the value must coerce
+        // to its declared type. Paths outside that namespace remain the free annotation surface.
+        await EnsureFieldEditIsSchemaValidAsync(request, ct).ConfigureAwait(false);
 
         // Stage the operator value as an override read-model annotation. The override store applies
         // the patch under a serializable, row-locked transaction; it does not advance the economic
@@ -155,6 +163,36 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         _logger.LogInformation(
             "Security Master field edit staged for {SecurityId} field {FieldPath} as draft revision {RevisionId} at version {Version} by {Actor}",
             request.SecurityId, request.FieldPath, revision.RevisionId, currentVersion, request.Actor);
+
+        // Record the edit's field-level attribution (origin OperatorFieldEdit, referenced to the
+        // draft revision) so overlay lineage is durable alongside canonical conflict-resolution
+        // lineage. Best-effort: the staged edit and draft revision are already the authoritative
+        // artifacts, so a lineage write failure is logged rather than failing the edit.
+        if (_fieldProvenance is not null)
+        {
+            try
+            {
+                await _fieldProvenance.UpsertAsync(
+                    new SecurityFieldProvenanceRecord(
+                        request.SecurityId,
+                        request.FieldPath,
+                        OperatorSourceSystem,
+                        AsOf: request.EffectiveFrom,
+                        UpdatedBy: request.Actor,
+                        Confidence: null,
+                        Origin: SecurityFieldProvenanceOrigins.OperatorFieldEdit,
+                        OriginReference: revision.RevisionId.ToString("D"),
+                        RecordedAt: DateTimeOffset.UtcNow),
+                    ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Field edit for {SecurityId} field {FieldPath} staged, but recording field provenance failed; the override and draft revision remain authoritative.",
+                    request.SecurityId, request.FieldPath);
+            }
+        }
 
         var changeEntry = BuildChangeEntry(
             currentVersion,
@@ -516,6 +554,50 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             RestatementRequired: restatement.RestatementRequired,
             RestatementCandidates: restatement.Candidates,
             InvalidatedProjections: invalidated);
+    }
+
+    /// <summary>
+    /// Anchors <c>assetSpecificTerms.*</c> field edits to the declared per-asset-class schema. The
+    /// record's asset class comes from the passport read model; when it cannot be resolved (read
+    /// model degraded or unavailable), validation is skipped with a warning rather than turning a
+    /// read-model outage into an edit outage — the existence and staleness guards above have
+    /// already run against the durable event stream.
+    /// </summary>
+    private async Task EnsureFieldEditIsSchemaValidAsync(UpdateSecurityFieldRequest request, CancellationToken ct)
+    {
+        if (!SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(request.FieldPath))
+        {
+            return;
+        }
+
+        string? assetClass = null;
+        try
+        {
+            var passport = await _queryService
+                .GetInstrumentPassportAsync(request.SecurityId, request.FundProfileId, ct)
+                .ConfigureAwait(false);
+            assetClass = passport?.EconomicDefinition?.AssetClass;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Resolving the asset class for {SecurityId} failed; skipping schema validation for field edit {FieldPath}.",
+                request.SecurityId, request.FieldPath);
+        }
+
+        if (string.IsNullOrWhiteSpace(assetClass))
+        {
+            _logger.LogWarning(
+                "Asset class for {SecurityId} could not be resolved; staging field edit {FieldPath} without schema validation.",
+                request.SecurityId, request.FieldPath);
+            return;
+        }
+
+        if (!SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, request.FieldPath, request.NewValue, out var error))
+        {
+            throw new ArgumentException(error, nameof(request));
+        }
     }
 
     private async Task<long> GetCurrentVersionAsync(Guid securityId, CancellationToken ct)

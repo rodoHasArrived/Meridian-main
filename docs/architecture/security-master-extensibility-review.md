@@ -280,6 +280,23 @@ for: a per-asset workaround on a surface that is otherwise generic.
 
 ## Top 5 Refactoring Priorities
 
+> **Implementation status (2026-08-12):** all five priorities below have landed a first slice on
+> this branch. (1) `SecurityAssetTermsSchemaRoundTripTests` now walks every declared asset class
+> with a fully-populated payload and asserts the F#→C#→F# codec loop is byte-stable and that the
+> serialized field set equals the declared schema exactly — the guard immediately surfaced and
+> fixed two live drifts (equity `votingRightsCat` was never serialized; `EquityClassification.Other`
+> values failed every read). (2) `SecurityKind.CustomAsset` is a first-class case carrying the
+> profile envelope plus the verbatim document, and amend/deactivate now refuse records whose stored
+> asset class the node cannot round-trip. (3) Migration 027 adds `security_field_provenance`;
+> conflict resolution writes the winning attribution in the same transaction that closes the
+> conflict, and operator field edits record overlay lineage under a distinct origin.
+> (4) `SecurityAssetTermsFieldEditValidator` anchors `assetSpecificTerms.*` workbench edits to the
+> declared schema (key must exist, value must coerce to the declared type). (5) `BondTerms` gained a
+> typed `principalSchedule` and `StructuredCreditTerms` a typed dated `factorScheduleEntries` that
+> the structured cash-flow resolver now consumes. Remaining follow-ups: full typed-amendment publish
+> flow (complete-event emission), step/inflation coupon structures, and the canonical-home ruling
+> for MBS/ABS/CLO.
+
 **1. Generate the codecs from `SecurityAssetTermsSchema`, or assert them against it.**
 The table already names every field, type, requiredness, and alias. Make the F# serializer and the
 C# `ToSecurityKind` either source-generated from it or covered by a round-trip test that walks

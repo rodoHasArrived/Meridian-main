@@ -78,6 +78,8 @@ module SecurityMaster =
             []
             @ require (BondTerms.couponRate terms |> Option.forall (fun rate -> rate >= 0m))
                 (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
+            @ require (terms.PrincipalSchedule |> List.forall (fun entry -> entry.Amount > 0m))
+                (error "bond_principal_schedule_invalid" "Bond principal schedule amounts must be greater than zero.")
         | SecurityKind.FxSpot terms ->
             []
             @ requireNotBlank "fx_base_currency_required" "BaseCurrency" terms.BaseCurrency
@@ -157,6 +159,8 @@ module SecurityMaster =
             @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m))
                 (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be zero or greater when present.")
             @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
+            @ require (terms.FactorScheduleEntries |> List.forall (fun entry -> entry.Factor >= 0m))
+                (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be zero or greater.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor
@@ -227,6 +231,12 @@ module SecurityMaster =
                 (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
         | SecurityKind.InvestmentFund _ ->
             []
+        | SecurityKind.CustomAsset terms ->
+            []
+            @ requireNotBlank "custom_asset_profile_required" "CustomProfileId" terms.CustomProfileId
+            @ require (terms.ProfileVersion > 0)
+                (error "custom_asset_profile_version_invalid" "CustomAsset ProfileVersion must be greater than zero.")
+            @ requireNotBlank "custom_asset_terms_required" "TermsJson" terms.TermsJson
 
     let private validateIdentifier (identifier: Identifier) =
         []

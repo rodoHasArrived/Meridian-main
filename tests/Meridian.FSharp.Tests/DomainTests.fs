@@ -210,6 +210,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         LegalFinalMaturity = None
         PreRefundDate = None
         MandatoryPutDate = None
+        PrincipalSchedule = []
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -601,6 +602,7 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         LegalFinalMaturity = None
         PreRefundDate = None
         MandatoryPutDate = None
+        PrincipalSchedule = []
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
@@ -632,6 +634,7 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         CurrentFactor = Some 0.9825m
         CouponOrIndex = "SOFR+250"
         FactorSchedule = Some "monthly-trustee"
+        FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.9825m } ]
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -1178,7 +1181,10 @@ let private registrySampleKinds : (SecurityKind * string) list =
           UnderlyingId = secId (); WarrantType = "Call"; Strike = None; Expiry = None; Multiplier = None }, "Warrant"
       SecurityKind.InvestmentFund {
           FundType = None; FundFamily = None; NavCurrency = None; DistributionPolicy = None
-          IsStableNav = None; PricingSource = None }, "InvestmentFund" ]
+          IsStableNav = None; PricingSource = None }, "InvestmentFund"
+      SecurityKind.CustomAsset {
+          CustomProfileId = "structured-credit-io-po"; ProfileVersion = 3
+          TermsJson = """{"schemaVersion":3,"customProfileId":"structured-credit-io-po","profileVersion":3,"profileFields":{}}""" }, "CustomAsset" ]
 
 [<Fact>]
 let ``AssetClassRegistry exposes a distinct, non-empty asset-class taxonomy`` () =

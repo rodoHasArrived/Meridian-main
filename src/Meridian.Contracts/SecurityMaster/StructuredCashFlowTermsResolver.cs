@@ -21,7 +21,10 @@ public static class StructuredCashFlowTermsResolver
     private static readonly string[] DayCountAliases = ["dayCountConvention", "dayCount", "dayCountBasis"];
 
     // Factor-schedule container keys and, within each row, the date/factor key aliases.
-    private static readonly string[] FactorScheduleAliases = ["factorSchedule", "factorSchedules"];
+    // "factorScheduleEntries" is the typed array the F# StructuredCredit serializer emits; the
+    // other spellings cover vendor payloads. Free-text "factorSchedule" strings are skipped by the
+    // array check below, so the typed key must resolve first.
+    private static readonly string[] FactorScheduleAliases = ["factorScheduleEntries", "factorSchedule", "factorSchedules"];
     private static readonly string[] FactorScheduleDateAliases = ["asOfDate", "factorDate", "effectiveDate", "date"];
     private static readonly string[] FactorScheduleFactorAliases = ["factor", "currentFactor"];
 

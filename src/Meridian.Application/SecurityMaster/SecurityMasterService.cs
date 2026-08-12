@@ -63,6 +63,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
+        EnsureAssetClassRoundTripsSafely(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, currentProjection));
         var projection = CreateProjectionFromResult(
@@ -168,6 +169,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
+        EnsureAssetClassRoundTripsSafely(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
         var projection = CreateProjectionFromResult(
@@ -320,6 +322,24 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         _serviceCts.Cancel();
         _serviceCts.Dispose();
+    }
+
+    /// <summary>
+    /// Read tolerance must not become write tolerance: a record whose stored asset class this node
+    /// does not recognize deserializes through the OtherSecurity fallback, so re-serializing it on
+    /// amend or deactivate would silently rewrite its asset class and drop its terms. Refuse the
+    /// write instead — the record stays readable, and the change must come from a node that
+    /// supports the class.
+    /// </summary>
+    private static void EnsureAssetClassRoundTripsSafely(SecurityProjectionRecord projection)
+    {
+        if (!SecurityAssetClassCatalog.AssetClasses.Contains(projection.AssetClass, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Security '{projection.SecurityId:D}' has asset class '{projection.AssetClass}', which this node does not recognize. " +
+                "Amending or deactivating it here would re-serialize the record through the OtherSecurity fallback and rewrite its " +
+                "asset class, so the write is refused. Apply the change from a node that supports this asset class.");
+        }
     }
 
     private static SecurityProjectionRecord CreateProjectionFromResult(

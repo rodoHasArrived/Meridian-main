@@ -16,6 +16,164 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     // ---- UpdateSecurityField ------------------------------------------------------------------
 
     [Fact]
+    public async Task UpdateSecurityField_AssetTermTypeMismatch_ThrowsArgument()
+    {
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Option");
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.strike",
+            NewValue: "not-a-number",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Correct the strike.");
+
+        var ex = await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>();
+        ex.Which.Message.Should().Contain("Decimal");
+        harness.Overrides.Verify(
+            o => o.PatchAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<long?>()),
+            Times.Never,
+            "a type-invalid asset-term edit must be rejected before any overlay write");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_UndeclaredAssetTerm_ThrowsArgumentListingDeclaredFields()
+    {
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.strike",
+            NewValue: "100",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Typo: bonds have no strike.");
+
+        var ex = await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>();
+        ex.Which.Message.Should().Contain("not a declared asset-specific term").And.Contain("maturity");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ValidTypedAssetTerm_Stages()
+    {
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.maturity",
+            NewValue: "2031-06-15",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Vendor corrected the maturity.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_AssetClassUnresolvable_SkipsSchemaValidationAndStages()
+    {
+        // The harness's passport mock returns null by default: the read model cannot resolve the
+        // record's asset class. Validation must degrade to a warning, not an edit outage — the
+        // existence/staleness guards already ran against the durable event stream.
+        var harness = new Harness(currentVersion: 3);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.someUnknownField",
+            NewValue: "value",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Edit while read model is degraded.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileFieldsPathOnCustomAsset_Stages()
+    {
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.tranche",
+            NewValue: "A2",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Profile-governed field correction.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_RecordsOperatorFieldProvenance()
+    {
+        var harness = new Harness(currentVersion: 3);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "EconomicDefinition.Coupon",
+            NewValue: "4.25",
+            EffectiveFrom: new DateTimeOffset(2026, 3, 15, 0, 0, 0, TimeSpan.Zero),
+            Actor: "ops.analyst",
+            Justification: "Coupon correction.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        harness.FieldProvenance.Verify(
+            p => p.UpsertAsync(
+                It.Is<SecurityFieldProvenanceRecord>(r =>
+                    r.SecurityId == SecurityId
+                    && r.FieldPath == "EconomicDefinition.Coupon"
+                    && r.Origin == SecurityFieldProvenanceOrigins.OperatorFieldEdit
+                    && r.UpdatedBy == "ops.analyst"
+                    && r.OriginReference == result.RevisionId.ToString("D")),
+                It.IsAny<CancellationToken>()),
+            Times.Once,
+            "an operator field edit must record its field-level attribution referenced to the draft revision");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProvenanceWriteFailure_DoesNotFailTheEdit()
+    {
+        var harness = new Harness(currentVersion: 3);
+        harness.FieldProvenance
+            .Setup(p => p.UpsertAsync(It.IsAny<SecurityFieldProvenanceRecord>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("provenance store down"));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "EconomicDefinition.Coupon",
+            NewValue: "4.25",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Coupon correction.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "field lineage is best-effort; the staged override and draft revision remain authoritative");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_OperatorOriginNoJustification_Throws()
     {
         var harness = new Harness(currentVersion: 3);
@@ -685,6 +843,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public Mock<IOperationsContinuityWorkflowService> Workflow { get; } = new(MockBehavior.Loose);
         public Mock<IPeriodAwareRestatementResolver> Restatement { get; } = new(MockBehavior.Loose);
         public Mock<IAffectedLedgerBookResolver> AffectedBooks { get; } = new(MockBehavior.Loose);
+        public Mock<ISecurityFieldProvenanceStore> FieldProvenance { get; } = new(MockBehavior.Loose);
         public ISecurityMasterRevisionStore Revisions { get; } = new InMemorySecurityMasterRevisionStore();
         public SecurityMasterWorkbenchCommandService Service { get; }
 
@@ -722,7 +881,35 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 Restatement.Object,
                 AffectedBooks.Object,
                 handlers ?? Array.Empty<ISecurityMasterRevisionPublishedHandler>(),
-                NullLogger<SecurityMasterWorkbenchCommandService>.Instance);
+                NullLogger<SecurityMasterWorkbenchCommandService>.Instance,
+                FieldProvenance.Object);
+        }
+
+        /// <summary>
+        /// Makes the passport read model resolve the security to <paramref name="assetClass"/> so
+        /// assetSpecificTerms edits are schema-validated against that class. Only the economic
+        /// definition drill-in is read by the validation path; the rest of the passport is inert.
+        /// </summary>
+        public void SetPassportAssetClass(string assetClass)
+        {
+            var passport = new InstrumentPassportDto(
+                SecurityId,
+                Identity: null!,
+                EconomicDefinition: new SecurityMasterEconomicDefinitionDrillInDto(
+                    SecurityId, assetClass, "USD", 3, DateTimeOffset.UtcNow, null,
+                    null, null, null, null, null, null, null, null, null),
+                IdentifierSummary: null!,
+                ProviderMappings: [],
+                LifecycleEvents: [],
+                CorporateActions: [],
+                Pricing: null!,
+                Usage: null!,
+                TrustPosture: null!,
+                RetrievedAtUtc: DateTimeOffset.UtcNow);
+
+            QueryService
+                .Setup(q => q.GetInstrumentPassportAsync(It.IsAny<Guid>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(passport);
         }
 
         /// <summary>

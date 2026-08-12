@@ -41,6 +41,35 @@ public sealed class StructuredCashFlowTermsResolverTests
     }
 
     [Fact]
+    public void Resolve_ShouldPreferTypedFactorScheduleEntriesOverFreeTextFactorSchedule()
+    {
+        // The canonical F# StructuredCredit serializer emits a free-text factorSchedule (legacy
+        // trustee-report pointer) alongside the typed factorScheduleEntries array. The resolver
+        // must skip the non-array string and seed FactorAsOf from the typed entries.
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            tranche = "B",
+            originalFace = 10_000_000m,
+            currentFactor = 0.8235m,
+            factorSchedule = "See trustee report 2026-07",
+            factorScheduleEntries = new object[]
+            {
+                new { asOfDate = "2026-06-01", factor = 0.8412m },
+                new { asOfDate = "2026-07-01", factor = 0.8235m }
+            }
+        }));
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.HasFactorSchedule.Should().BeTrue(
+            "the typed factorScheduleEntries array must resolve even when the legacy free-text factorSchedule is present");
+        terms.FactorAsOf(new DateOnly(2026, 6, 15)).Should().Be(0.8412m);
+        terms.FactorAsOf(new DateOnly(2026, 7, 15)).Should().Be(0.8235m);
+        terms.FactorAsOf(new DateOnly(2026, 5, 1)).Should().Be(0.8235m,
+            "before the first scheduled point the scalar currentFactor is the fallback");
+    }
+
+    [Fact]
     public void Resolve_ShouldReadTypedCashFlowLegs()
     {
         var security = Build(JsonSerializer.SerializeToElement(new

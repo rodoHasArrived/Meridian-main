@@ -98,42 +98,86 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             : "Resolved";
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
+        // The close and the winner's field-provenance write-back commit together: a resolved field
+        // conflict whose winning attribution is missing (or vice versa) must not be observable.
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
-        // Atomic compare-and-set: only an Open conflict transitions, and the winner, resolver, and
-        // reason are captured in the SAME write as the close. A concurrent resolver that lost the race
-        // matches zero rows and observes null instead of overwriting the first operator's decision.
-        command.CommandText =
-            $"""
-            update {Qualified(ConflictsTable)}
-            set status = @status,
-                resolved_winner_source = @resolved_winner_source,
-                resolved_by = @resolved_by,
-                resolved_reason = @resolved_reason,
-                resolved_at = @resolved_at
-            where conflict_id = @conflict_id and status = 'Open'
-            returning {ConflictColumns};
-            """;
-        command.Parameters.AddWithValue("status", newStatus);
-        command.Parameters.AddWithValue("resolved_winner_source", (object?)request.ChosenWinnerSource ?? DBNull.Value);
-        command.Parameters.AddWithValue("resolved_by", request.ResolvedBy);
-        command.Parameters.AddWithValue("resolved_reason", (object?)request.Reason ?? DBNull.Value);
-        command.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
-        command.Parameters.AddWithValue("conflict_id", request.ConflictId);
-
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        SecurityMasterConflict updated;
+        await using (var command = connection.CreateCommand())
         {
-            return null;
+            command.Transaction = transaction;
+
+            // Atomic compare-and-set: only an Open conflict transitions, and the winner, resolver, and
+            // reason are captured in the SAME write as the close. A concurrent resolver that lost the race
+            // matches zero rows and observes null instead of overwriting the first operator's decision.
+            command.CommandText =
+                $"""
+                update {Qualified(ConflictsTable)}
+                set status = @status,
+                    resolved_winner_source = @resolved_winner_source,
+                    resolved_by = @resolved_by,
+                    resolved_reason = @resolved_reason,
+                    resolved_at = @resolved_at
+                where conflict_id = @conflict_id and status = 'Open'
+                returning {ConflictColumns};
+                """;
+            command.Parameters.AddWithValue("status", newStatus);
+            command.Parameters.AddWithValue("resolved_winner_source", (object?)request.ChosenWinnerSource ?? DBNull.Value);
+            command.Parameters.AddWithValue("resolved_by", request.ResolvedBy);
+            command.Parameters.AddWithValue("resolved_reason", (object?)request.Reason ?? DBNull.Value);
+            command.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
+            command.Parameters.AddWithValue("conflict_id", request.ConflictId);
+
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                return null;
+            }
+
+            updated = MapConflict(reader);
         }
 
-        var updated = MapConflict(reader);
+        if (updated.Status == "Resolved"
+            && !string.IsNullOrWhiteSpace(updated.ResolvedWinnerSource)
+            && IsFieldLevelConflict(updated.ConflictKind))
+        {
+            // Write the winning attribution back onto the record's field lineage in the SAME
+            // transaction that closed the conflict — this is what lets the golden record durably
+            // answer "which source supplied this field, as of when" after a resolution.
+            await PostgresSecurityFieldProvenanceSql.UpsertAsync(
+                connection,
+                transaction,
+                _options.Schema,
+                new SecurityFieldProvenanceRecord(
+                    updated.SecurityId,
+                    updated.FieldPath,
+                    updated.ResolvedWinnerSource!,
+                    AsOf: updated.ResolvedAt,
+                    UpdatedBy: updated.ResolvedBy,
+                    Confidence: null,
+                    Origin: SecurityFieldProvenanceOrigins.ConflictResolution,
+                    OriginReference: updated.ConflictId.ToString("D"),
+                    RecordedAt: DateTimeOffset.UtcNow),
+                ct).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+
         // ResolvedBy is request-supplied text; flatten line endings so it cannot forge log entries.
         _logger.LogInformation(
             "Conflict {ConflictId} for security {SecurityId} {Status} by {ResolvedBy}",
             updated.ConflictId, updated.SecurityId, newStatus, request.ResolvedBy?.ReplaceLineEndings(" "));
         return updated;
     }
+
+    /// <summary>
+    /// Field-level conflict kinds carry a real term path whose winning source is meaningful field
+    /// provenance. Identifier-ambiguity conflicts resolve ownership between two securities, not a
+    /// field's source, so they do not write field lineage.
+    /// </summary>
+    private static bool IsFieldLevelConflict(string conflictKind)
+        => string.Equals(conflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
+           || string.Equals(conflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal);
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
     {

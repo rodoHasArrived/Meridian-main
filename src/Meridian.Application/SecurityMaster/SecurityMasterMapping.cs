@@ -305,12 +305,13 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "sweepFrequency")),
                 ToOption(GetOptionalString(json, "targetAccountType")),
                 ToOption(GetOptionalDecimal(json, "yieldRate")))),
-            "OtherSecurity" or "CustomAsset" => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+            "OtherSecurity" => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
                 GetRequiredString(json, "category"),
                 ToOption(GetOptionalString(json, "subType")),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
                 ToOption(GetOptionalString(json, "issuerName")),
                 ToOption(GetOptionalString(json, "settlementType")))),
+            "CustomAsset" => ToCustomAssetKind(json),
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
@@ -332,7 +333,8 @@ internal static class SecurityMasterMapping
                 GetRequiredDecimal(terms, "originalFace"),
                 ToOption(GetOptionalDecimal(terms, "currentFactor")),
                 GetRequiredString(terms, "couponOrIndex"),
-                ToOption(GetOptionalString(terms, "factorSchedule")))),
+                ToOption(GetOptionalString(terms, "factorSchedule")),
+                ToFSharpList(GetOptionalArrayItems(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -406,6 +408,33 @@ internal static class SecurityMasterMapping
         };
     }
 
+    /// <summary>
+    /// Maps a CustomAsset payload to the first-class <see cref="SecurityKind.CustomAsset"/> case,
+    /// carrying the document verbatim so the profile envelope and dynamic profile fields survive
+    /// amend round-trips. A legacy CustomAsset row without a profile envelope degrades to the
+    /// pre-existing OtherSecurity salvage instead of failing the read.
+    /// </summary>
+    private static SecurityKind ToCustomAssetKind(JsonElement json)
+    {
+        if (json.ValueKind == JsonValueKind.Object
+            && json.TryGetProperty("customProfileId", out var customProfileId)
+            && customProfileId.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(customProfileId.GetString()))
+        {
+            return SecurityKind.NewCustomAsset(new CustomAssetTerms(
+                customProfileId.GetString()!,
+                GetOptionalInt(json, "profileVersion") ?? 1,
+                json.GetRawText()));
+        }
+
+        return SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+            GetOptionalString(json, "category") ?? "CustomAsset",
+            ToOption(GetOptionalString(json, "subType")),
+            ToOption(GetOptionalDateOnly(json, "maturity")),
+            ToOption(GetOptionalString(json, "issuerName")),
+            ToOption(GetOptionalString(json, "settlementType"))));
+    }
+
     private static BondSubclass ParseBondSubclass(string? subclass) => subclass switch
     {
         "Sovereign" => BondSubclass.Sovereign,
@@ -458,7 +487,8 @@ internal static class SecurityMasterMapping
             ToPaymentFrequencyOption(GetOptionalString(json, "paymentFrequency")),
             ToOption(GetOptionalDateOnly(json, "legalFinalMaturity")),
             ToOption(GetOptionalDateOnly(json, "preRefundDate")),
-            ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")));
+            ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")),
+            ToFSharpList(GetOptionalArrayItems(json, "principalSchedule").Select(ToPrincipalPaymentEntry)));
     }
 
     private static SwapLeg ToSwapLeg(JsonElement json)
@@ -478,6 +508,11 @@ internal static class SecurityMasterMapping
         => new(
             GetRequiredDateOnly(json, "paymentDate"),
             GetRequiredDecimal(json, "amount"));
+
+    private static FactorScheduleEntry ToFactorScheduleEntry(JsonElement json)
+        => new(
+            GetRequiredDateOnly(json, "asOfDate"),
+            GetRequiredDecimal(json, "factor"));
 
     private static Provenance ToProvenance(string sourceSystem, string updatedBy, string? sourceRecordId, string? reason, DateTimeOffset asOf)
         => new(sourceSystem, ToOption(sourceRecordId), asOf, updatedBy, ToOption(reason));
@@ -763,9 +798,12 @@ internal static class SecurityMasterMapping
                     ToPreferredTerms(GetRequiredObject(json, "preferredTerms")),
                     ToConvertibleTerms(GetRequiredObject(json, "convertibleTerms")))),
             "Other" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewOther(GetRequiredString(json, "otherClassification"))),
+                EquityClassification.NewOther(GetOptionalString(json, "otherClassification") ?? "Other")),
             null => FSharpOption<EquityClassification>.None,
-            _ => throw new InvalidOperationException($"Unsupported equity classification '{raw}'.")
+            // Read tolerance: rows written before the serializer emitted the "Other" discriminant
+            // carry the raw label in the classification slot. Treat any unrecognized value as an
+            // Other classification instead of failing every read of the row.
+            _ => FSharpOption<EquityClassification>.Some(EquityClassification.NewOther(raw))
         };
     }
 
