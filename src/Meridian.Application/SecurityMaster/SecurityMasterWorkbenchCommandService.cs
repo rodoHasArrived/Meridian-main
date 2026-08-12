@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
@@ -36,6 +37,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 {
     private const string OperatorFieldEditEventType = "operator-field-edit";
     private const string OperatorSourceSystem = "operator-workbench";
+    private static readonly Regex LogUnsafeControlChars = new(@"[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\r\n]+", RegexOptions.Compiled);
+
+    private static string SanitizeForLog(string? value) =>
+        string.IsNullOrEmpty(value) ? string.Empty : LogUnsafeControlChars.Replace(value, " ").Trim();
 
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly IOperatorOverridesStore _overrides;
@@ -187,10 +192,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                var safeFieldPathForLog = SanitizeForLog(request.FieldPath);
                 _logger.LogWarning(
                     ex,
                     "Field edit for {SecurityId} field {FieldPath} staged, but recording field provenance failed; the override and draft revision remain authoritative.",
-                    request.SecurityId, request.FieldPath);
+                    request.SecurityId, safeFieldPathForLog);
             }
         }
 
