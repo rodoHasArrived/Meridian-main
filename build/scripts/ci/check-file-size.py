@@ -151,22 +151,47 @@ def _write_baseline(root: Path, threshold: int, oversized: dict[str, int]) -> No
 TIGHT_HEADROOM_LINES = 25
 
 
-def _live_lines(root: Path, baseline: dict[str, int], current: dict[str, int]) -> dict[str, int]:
-    """Current line count for every baselined file, including ones the scan omits.
+def _live_lines(
+    root: Path, baseline: dict[str, int], current: dict[str, int]
+) -> tuple[dict[str, int], list[str]]:
+    """Current line count for every baselined file, plus the ones whose size could not be read.
 
     A baselined file that has shrunk below the threshold is absent from `current`, so its real size
     has to be read from disk. Treating it as zero would erase its lines from the totals and
     overstate the reclaimable figure at exactly the moment a decomposition is about to retire it.
+
+    A file that is *present but unreadable* — a permission problem, a transient I/O error — is a
+    different case with the same shape, and the dangerous one: read as zero it is indistinguishable
+    from a file successfully deleted, so a failed read would be reported as the largest possible
+    reduction. Deleted files count as zero because their lines really are gone; unreadable ones are
+    held at their cap, contributing no reclaimable slack, and named in the output so nobody reads
+    the total as complete.
     """
-    return {
-        rel: current[rel] if rel in current else _count_lines(root / rel)
-        for rel in baseline
-    }
+    live: dict[str, int] = {}
+    unreadable: list[str] = []
+    for rel, cap in baseline.items():
+        if rel in current:
+            live[rel] = current[rel]
+            continue
+
+        path = root / rel
+        if not path.exists():
+            live[rel] = 0
+            continue
+
+        try:
+            with path.open("rb") as handle:
+                live[rel] = sum(1 for _ in handle)
+        except OSError:
+            live[rel] = cap
+            unreadable.append(rel)
+
+    return live, unreadable
 
 
 def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int]) -> None:
     """Print the burn-down numbers: what is tracked, and how much of it is reclaimable."""
-    live_lines = _live_lines(root, baseline, current)
+    live_lines, unreadable = _live_lines(root, baseline, current)
     capped = sum(baseline.values())
     live = sum(live_lines.values())
     slack = sum(max(0, cap - live_lines[rel]) for rel, cap in baseline.items())
@@ -175,6 +200,13 @@ def _report_trend(root: Path, baseline: dict[str, int], current: dict[str, int])
         f"Baseline trend: {len(baseline)} tracked file(s), {capped:,} capped line(s), "
         f"{live:,} current line(s), {slack:,} line(s) reclaimable."
     )
+    if unreadable:
+        print(
+            f"NOTE: {len(unreadable)} baselined file(s) could not be read and are counted at their "
+            f"cap, so the figures above understate rather than invent progress:"
+        )
+        for rel in unreadable:
+            print(f"- {rel}")
 
     # Over-cap files are excluded. Their headroom is negative, so an unbounded comparison admits a
     # file hundreds of lines past its cap, prints a negative "spare" count, claims an already-

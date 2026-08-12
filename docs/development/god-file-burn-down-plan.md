@@ -163,10 +163,20 @@ paired. This is where the volume is — 48% of the baseline.
 
 **3. Endpoint and query-service monoliths.**
 
-`WorkstationEndpoints.cs` (4,478) and `SecurityMasterWorkbenchQueryService.cs` (4,740) split by
-capability into partial classes or composed services. `LedgerEndpoints.cs` is already partial and
-demonstrates the pattern; the remaining work is moving capability logic out of the endpoint layer
-into owning modules, per ADR-017 — which is the same move issue #2611 made for GL dimensions.
+`WorkstationEndpoints.cs` (4,478) decomposes into **independent capability groups**, not into more
+partials of itself. [Module conventions](../architecture/module-conventions.md) names that
+distinction explicitly: a capability group is a static class exposing one `Map…` extension that
+registers its own `MapGroup("/api/workstation/<capability>")`, and *"accreting handlers onto a single
+`partial class` such as `WorkstationEndpoints`"* is called out there as an anti-pattern being
+retired. `FundAccountEndpoints.cs` and `FundStructureEndpoints.cs` are the models.
+
+The distinction is about what a class owns, not about the `partial` keyword — `FundStructureEndpoints`
+is itself spread over six files. Splitting a group that already owns one capability is fine;
+splitting the monolith into more partials keeps one class owning many capabilities and moves nothing.
+
+`SecurityMasterWorkbenchQueryService.cs` (4,740) is the same shape one layer down and splits into
+composed services. For both, the line count falls as a consequence of moving capability logic into
+owning modules per ADR-017 — the same move issue #2611 made for GL dimensions.
 
 ## `dev-fixtures.ts` — the exclusion case is weaker than the audit stated
 

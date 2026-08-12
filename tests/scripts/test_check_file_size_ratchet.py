@@ -77,6 +77,33 @@ class TrendReportingTests(unittest.TestCase):
             self.assertIn("8 current line(s)", output)
             self.assertIn("22 line(s) reclaimable", output)
 
+    # A deleted file's lines really are gone, so zero is the honest count.
+    def test_counts_a_deleted_file_as_zero(self):
+        with fake_repo({"src/kept.cs": 20}, {"src/kept.cs": 30, "src/gone.cs": 40}):
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("20 current line(s)", output)
+            self.assertIn("50 line(s) reclaimable", output)
+
+    # An unreadable file read as zero is indistinguishable from a deleted one, which would report a
+    # failed read as the largest possible reduction. Hold it at its cap and say so.
+    #
+    # The unreadable path is a directory rather than a chmod'ed file on purpose: root ignores mode
+    # bits, so a permission-based fixture passes vacuously wherever tests run as root and only
+    # exercises the branch on the CI runner. A directory raises OSError from open() for everyone.
+    def test_does_not_report_an_unreadable_file_as_reclaimed(self):
+        with fake_repo({}, {"src/locked.cs": 30}) as root:
+            (root / "src" / "locked.cs").mkdir(parents=True)
+
+            code, output = run(["--threshold", "10"])
+
+            self.assertEqual(code, 0, output)
+            self.assertIn("30 current line(s)", output)
+            self.assertIn("0 line(s) reclaimable", output)
+            self.assertIn("could not be read", output)
+            self.assertIn("src/locked.cs", output)
+
     def test_warns_about_files_sitting_at_their_cap(self):
         with fake_repo({"src/pinned.cs": 30}, {"src/pinned.cs": 30}):
             code, output = run(["--threshold", "10"])
