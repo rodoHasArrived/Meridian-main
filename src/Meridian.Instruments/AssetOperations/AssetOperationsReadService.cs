@@ -437,13 +437,46 @@ public static class AssetOperationsProjectionBuilder
 
             if (bond.AccrualConvention?.FixedCouponRate is decimal coupon && coupon > 0m && outstandingPrincipal > 0m)
             {
-                var couponAmount = CalculateBondCouponAmount(
-                    outstandingPrincipal,
+                var couponAmount = 0m;
+                var segmentStart = accrualStart;
+                var segmentOutstanding = outstandingPrincipal;
+                var segmentSinkIndex = sinkingFundIndex;
+                while (segmentSinkIndex < sinkingFundEntries.Length &&
+                       sinkingFundEntries[segmentSinkIndex].SinkDate < accrualEnd &&
+                       segmentOutstanding > 0m)
+                {
+                    var sink = sinkingFundEntries[segmentSinkIndex++];
+                    var sinkAmount = RoundCash(sink.Amount);
+                    if (sink.SinkDate <= segmentStart)
+                    {
+                        segmentOutstanding = RoundCash(
+                            decimal.Max(0m, segmentOutstanding - sinkAmount));
+                        continue;
+                    }
+
+                    couponAmount += CalculateBondCouponSegmentAmount(
+                        segmentOutstanding,
+                        coupon,
+                        dayCountConvention,
+                        segmentStart,
+                        sink.SinkDate,
+                        paymentFrequency,
+                        accrualStart,
+                        accrualEnd);
+                    segmentOutstanding = RoundCash(
+                        decimal.Max(0m, segmentOutstanding - sinkAmount));
+                    segmentStart = sink.SinkDate;
+                }
+
+                couponAmount = RoundCash(couponAmount + CalculateBondCouponSegmentAmount(
+                    segmentOutstanding,
                     coupon,
                     dayCountConvention,
-                    accrualStart,
+                    segmentStart,
                     accrualEnd,
-                    paymentFrequency);
+                    paymentFrequency,
+                    accrualStart,
+                    accrualEnd));
 
                 if (couponAmount > 0m)
                 {
@@ -853,22 +886,26 @@ public static class AssetOperationsProjectionBuilder
         };
     }
 
-    private static decimal CalculateBondCouponAmount(
+    private static decimal CalculateBondCouponSegmentAmount(
         decimal principalBasis,
         decimal couponRatePercent,
         string? dayCountConvention,
-        DateOnly accrualStart,
-        DateOnly accrualEnd,
-        int paymentFrequency)
+        DateOnly segmentStart,
+        DateOnly segmentEnd,
+        int paymentFrequency,
+        DateOnly couponPeriodStart,
+        DateOnly couponPeriodEnd)
     {
         var convention = DayCountConventions.Parse(dayCountConvention);
-        // An absent/unrecognized convention keeps the historical "one coupon period" assumption for the
-        // read-model preview; recognized conventions route through the canonical day-count engine so this
-        // preview ties with the GL accrual and cost-basis-relief paths.
+        // Preserve the historical one-period fallback for an absent convention, while apportioning that
+        // period across principal events so multiple segments cannot each receive a full coupon.
+        var couponPeriodDays = Math.Max(1, couponPeriodEnd.DayNumber - couponPeriodStart.DayNumber);
         var yearFraction = convention == DayCountConvention.Unknown
-            ? 1m / Math.Max(1, paymentFrequency)
-            : DayCountConventions.Fraction(convention, accrualStart, accrualEnd);
-        return RoundCash(principalBasis * (couponRatePercent / 100m) * yearFraction);
+            ? (decimal)(segmentEnd.DayNumber - segmentStart.DayNumber) /
+              couponPeriodDays /
+              Math.Max(1, paymentFrequency)
+            : DayCountConventions.Fraction(convention, segmentStart, segmentEnd);
+        return principalBasis * (couponRatePercent / 100m) * yearFraction;
     }
 
     private static decimal RoundCash(decimal amount)

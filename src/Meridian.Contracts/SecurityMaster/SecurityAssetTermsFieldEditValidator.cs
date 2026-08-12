@@ -53,11 +53,26 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
-        // Profile-backed classes carry dynamic, profile-governed fields under profileFields; their
-        // inner shape is owned by the approved profile version, not this schema.
+        // Profile-backed classes carry dynamic, profile-governed fields beneath profileFields;
+        // their inner shape is owned by the approved profile version, not this schema. A whole-root
+        // replacement still has to be a JSON object, including for profile-backed asset classes
+        // whose static schema does not declare the synthetic profileFields envelope.
         if (string.Equals(key, "profileFields", StringComparison.OrdinalIgnoreCase)
             && SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms)
         {
+            if (nestedPath.Length > 0 || string.IsNullOrWhiteSpace(newValue))
+            {
+                return true;
+            }
+
+            if (!ValueCoercesToType(SecurityAssetTermFieldType.Object, newValue))
+            {
+                error =
+                    $"Value '{newValue}' does not parse as the declared type Object for " +
+                    $"'{AssetSpecificTermsPrefix}profileFields' on asset class '{assetClass}'.";
+                return false;
+            }
+
             return true;
         }
 

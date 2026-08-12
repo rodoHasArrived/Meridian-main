@@ -28,6 +28,11 @@ public static class StructuredCashFlowTermsResolver
     private static readonly string[] FactorScheduleDateAliases = ["asOfDate", "factorDate", "effectiveDate", "date"];
     private static readonly string[] FactorScheduleFactorAliases = ["factor", "currentFactor"];
 
+    // Contractual principal schedule emitted by the Bond codec.
+    private static readonly string[] PrincipalScheduleAliases = ["principalSchedule"];
+    private static readonly string[] PrincipalScheduleDateAliases = ["paymentDate"];
+    private static readonly string[] PrincipalScheduleAmountAliases = ["amount"];
+
     // Leg-container keys and, within each leg row, the per-field key aliases. "legType" is the
     // spelling the F# SwapLeg serializer persists; the rest cover vendor variants.
     private static readonly string[] LegContainerAliases = ["legs", "swapLegs", "cashFlowLegs"];
@@ -59,7 +64,57 @@ public static class StructuredCashFlowTermsResolver
             PaymentFrequency: SecurityTermReader.ReadString(sources, PaymentFrequencyAliases),
             DayCountConvention: SecurityTermReader.ReadString(sources, DayCountAliases),
             FactorSchedule: ReadFactorSchedule(sources),
-            Legs: ReadLegs(sources));
+            Legs: ReadLegs(sources),
+            PrincipalSchedule: ReadPrincipalSchedule(sources));
+    }
+
+    private static IReadOnlyList<StructuredPrincipalScheduleEntry> ReadPrincipalSchedule(
+        IReadOnlyList<JsonElement> sources)
+    {
+        foreach (var source in sources)
+        {
+            foreach (var alias in PrincipalScheduleAliases)
+            {
+                if (!SecurityTermReader.TryGetProperty(source, alias, out var array) ||
+                    array.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                var entries = new List<StructuredPrincipalScheduleEntry>();
+                foreach (var item in array.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    var paymentDate = SecurityTermReader.ReadDate(item, PrincipalScheduleDateAliases);
+                    var amount = SecurityTermReader.ReadDecimal(item, PrincipalScheduleAmountAliases);
+                    if (paymentDate is null || amount is null || amount.Value <= 0m)
+                    {
+                        continue;
+                    }
+
+                    entries.Add(new StructuredPrincipalScheduleEntry(paymentDate.Value, amount.Value));
+                }
+
+                if (entries.Count > 0)
+                {
+                    // The ledger bridge derives one principal journal id per security/date, so
+                    // combine same-day contractual rows before they reach projection consumers.
+                    return entries
+                        .GroupBy(static entry => entry.PaymentDate)
+                        .Select(static group => new StructuredPrincipalScheduleEntry(
+                            group.Key,
+                            group.Sum(static entry => entry.Amount)))
+                        .OrderBy(static entry => entry.PaymentDate)
+                        .ToArray();
+                }
+            }
+        }
+
+        return Array.Empty<StructuredPrincipalScheduleEntry>();
     }
 
     private static IReadOnlyList<StructuredCashFlowLeg>? ReadLegs(IReadOnlyList<JsonElement> sources)

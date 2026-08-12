@@ -1,4 +1,6 @@
 using System.Data.Common;
+using System.Globalization;
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
@@ -98,9 +100,54 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             : "Resolved";
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        // The close and the winner's field-provenance write-back commit together: a resolved field
-        // conflict whose winning attribution is missing (or vice versa) must not be observable.
+        // The close and the winner's truthful field-provenance write-back commit together. The
+        // current persisted value is locked and checked before any field conflict can close.
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+
+        SecurityMasterConflict? openConflict;
+        await using (var select = connection.CreateCommand())
+        {
+            select.Transaction = transaction;
+            select.CommandText =
+                $"""
+                select {ConflictColumns}
+                from {Qualified(ConflictsTable)}
+                where conflict_id = @conflict_id and status = 'Open'
+                for update;
+                """;
+            select.Parameters.AddWithValue("conflict_id", request.ConflictId);
+            await using var reader = await select.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            openConflict = await reader.ReadAsync(ct).ConfigureAwait(false) ? MapConflict(reader) : null;
+        }
+
+        if (openConflict is null)
+        {
+            return null;
+        }
+
+        var resolvingField = newStatus == "Resolved" && IsFieldLevelConflict(openConflict.ConflictKind);
+        var selectedSource = resolvingField
+            ? ResolveSelectedSource(openConflict, request.ChosenWinnerSource, request.Resolution)
+            : request.ChosenWinnerSource?.Trim();
+        var selectedValue = resolvingField
+            ? ResolveSelectedValue(openConflict, selectedSource!)
+            : string.Empty;
+        if (resolvingField)
+        {
+            var persistedValue = await ReadPersistedFieldValueAsync(
+                connection,
+                transaction,
+                openConflict,
+                selectedSource!,
+                ct).ConfigureAwait(false);
+            if (!FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue))
+            {
+                throw new InvalidOperationException(
+                    $"Conflict '{openConflict.ConflictId:D}' cannot resolve to source '{selectedSource}' because " +
+                    $"the persisted value for '{openConflict.FieldPath}' does not match that source's selected value. " +
+                    "Apply the selected value through a governed amendment, then retry the resolution.");
+            }
+        }
 
         SecurityMasterConflict updated;
         await using (var command = connection.CreateCommand())
@@ -122,7 +169,9 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 returning {ConflictColumns};
                 """;
             command.Parameters.AddWithValue("status", newStatus);
-            command.Parameters.AddWithValue("resolved_winner_source", (object?)request.ChosenWinnerSource ?? DBNull.Value);
+            command.Parameters.AddWithValue(
+                "resolved_winner_source",
+                newStatus == "Resolved" ? (object?)selectedSource ?? DBNull.Value : DBNull.Value);
             command.Parameters.AddWithValue("resolved_by", request.ResolvedBy);
             command.Parameters.AddWithValue("resolved_reason", (object?)request.Reason ?? DBNull.Value);
             command.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
@@ -141,9 +190,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             && !string.IsNullOrWhiteSpace(updated.ResolvedWinnerSource)
             && IsFieldLevelConflict(updated.ConflictKind))
         {
-            // Write the winning attribution back onto the record's field lineage in the SAME
-            // transaction that closed the conflict — this is what lets the golden record durably
-            // answer "which source supplied this field, as of when" after a resolution.
+            var resolutionTime = updated.ResolvedAt
+                ?? throw new InvalidOperationException("A resolved conflict must retain its resolution timestamp.");
             await PostgresSecurityFieldProvenanceSql.UpsertAsync(
                 connection,
                 transaction,
@@ -151,13 +199,13 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 new SecurityFieldProvenanceRecord(
                     updated.SecurityId,
                     updated.FieldPath,
-                    updated.ResolvedWinnerSource!,
-                    AsOf: updated.ResolvedAt,
+                    updated.ResolvedWinnerSource,
+                    AsOf: resolutionTime,
                     UpdatedBy: updated.ResolvedBy,
                     Confidence: null,
                     Origin: SecurityFieldProvenanceOrigins.ConflictResolution,
                     OriginReference: updated.ConflictId.ToString("D"),
-                    RecordedAt: DateTimeOffset.UtcNow),
+                    RecordedAt: resolutionTime),
                 ct).ConfigureAwait(false);
         }
 
@@ -178,6 +226,137 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
     private static bool IsFieldLevelConflict(string conflictKind)
         => string.Equals(conflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
            || string.Equals(conflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal);
+
+    private static string ResolveSelectedSource(
+        SecurityMasterConflict conflict,
+        string? requestedSource,
+        string resolution)
+    {
+        if (string.IsNullOrWhiteSpace(requestedSource))
+        {
+            if (string.Equals(resolution, "AcceptA", StringComparison.OrdinalIgnoreCase))
+            {
+                return conflict.ProviderA;
+            }
+
+            if (string.Equals(resolution, "AcceptB", StringComparison.OrdinalIgnoreCase))
+            {
+                return conflict.ProviderB;
+            }
+
+            throw new InvalidOperationException(
+                $"Field conflict '{conflict.ConflictId:D}' requires a selected candidate source.");
+        }
+
+        if (string.Equals(requestedSource.Trim(), conflict.ProviderA.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return conflict.ProviderA;
+        }
+
+        if (string.Equals(requestedSource.Trim(), conflict.ProviderB.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return conflict.ProviderB;
+        }
+
+        return requestedSource.Trim();
+    }
+
+    private static string ResolveSelectedValue(SecurityMasterConflict conflict, string selectedSource)
+    {
+        if (string.Equals(selectedSource, conflict.ProviderA, StringComparison.OrdinalIgnoreCase))
+        {
+            return conflict.ValueA;
+        }
+
+        if (string.Equals(selectedSource, conflict.ProviderB, StringComparison.OrdinalIgnoreCase))
+        {
+            return conflict.ValueB;
+        }
+
+        throw new InvalidOperationException(
+            $"Conflict '{conflict.ConflictId:D}' can only resolve to '{conflict.ProviderA}' or '{conflict.ProviderB}'.");
+    }
+
+    private async Task<string?> ReadPersistedFieldValueAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityMasterConflict conflict,
+        string selectedSource,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select currency, common_terms::text, asset_specific_terms::text, provenance::text, effective_from
+            from {Qualified("securities")}
+            where security_id = @security_id
+            for update;
+            """;
+        command.Parameters.AddWithValue("security_id", conflict.SecurityId);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        using var commonTerms = JsonDocument.Parse(reader.GetString(1));
+        using var assetTerms = JsonDocument.Parse(reader.GetString(2));
+        using var provenance = JsonDocument.Parse(reader.GetString(3));
+        var currentSource = SecurityMasterProvenanceReader.Read(provenance.RootElement).SourceSystem;
+        if (!string.Equals(currentSource, selectedSource, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var detail = new SecurityDetailDto(
+            conflict.SecurityId,
+            "",
+            SecurityStatusDto.Active,
+            "",
+            reader.GetString(0),
+            commonTerms.RootElement.Clone(),
+            assetTerms.RootElement.Clone(),
+            [],
+            [],
+            0,
+            new DateTimeOffset(reader.GetDateTime(4), TimeSpan.Zero),
+            null);
+        var terms = StructuredCashFlowTermsResolver.Resolve(detail);
+        return conflict.FieldPath switch
+        {
+            "EconomicTerms.maturityDate" => terms.MaturityDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            "EconomicTerms.issueDate" => terms.IssueDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            "EconomicTerms.couponRate" => terms.CouponRate?.ToString(CultureInfo.InvariantCulture),
+            "EconomicTerms.principalFace" => terms.PrincipalFace?.ToString(CultureInfo.InvariantCulture),
+            "EconomicTerms.paymentFrequency" => terms.PaymentFrequency,
+            "EconomicTerms.dayCountConvention" => terms.DayCountConvention,
+            "CommonTerms.currency" => detail.Currency,
+            "CommonTerms.countryOfRisk" => SecurityTermReader.ReadString(detail.CommonTerms, "countryOfRisk"),
+            _ => null,
+        };
+    }
+
+    private static bool FieldValuesMatch(string fieldPath, string? persisted, string selected)
+    {
+        if (string.IsNullOrWhiteSpace(persisted))
+        {
+            return false;
+        }
+
+        if (string.Equals(fieldPath, "EconomicTerms.dayCountConvention", StringComparison.Ordinal))
+        {
+            var persistedConvention = DayCountConventions.Parse(persisted);
+            var selectedConvention = DayCountConventions.Parse(selected);
+            if (persistedConvention != DayCountConvention.Unknown || selectedConvention != DayCountConvention.Unknown)
+            {
+                return persistedConvention == selectedConvention;
+            }
+        }
+
+        return string.Equals(persisted.Trim(), selected.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
     {

@@ -346,6 +346,17 @@ public sealed class AssetObligationProjectionService
                     null,
                     security.Version),
             security.Version,
+            SinkingFund: terms.HasPrincipalSchedule
+                ? new BondSinkingFundDto(
+                    security.SecurityId,
+                    terms.PrincipalSchedule!
+                        .Where(entry => entry.PaymentDate >= issueDate && entry.PaymentDate <= maturity)
+                        .Select(static entry => new BondSinkingFundEntryDto(entry.PaymentDate, entry.Amount))
+                        .ToArray(),
+                    SinkFrequency: null,
+                    IsProRata: false,
+                    Version: security.Version)
+                : null,
             InflationLinked: terms.CurrentFactor is null
                 ? null
                 : new BondInflationLinkedDto(

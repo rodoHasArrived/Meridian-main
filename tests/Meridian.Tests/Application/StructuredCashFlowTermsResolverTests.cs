@@ -41,6 +41,36 @@ public sealed class StructuredCashFlowTermsResolverTests
     }
 
     [Fact]
+    public void Resolve_ShouldReadAndAggregateContractualPrincipalSchedule()
+    {
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-30", amount = 25m },
+                new { paymentDate = "2027-06-30", amount = 30m },
+                new { paymentDate = "2027-06-30", amount = 10m },
+                new { paymentDate = "2029-06-30", amount = -1m }
+            }
+        }));
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.HasPrincipalSchedule.Should().BeTrue();
+        terms.PrincipalSchedule.Should().SatisfyRespectively(
+            first =>
+            {
+                first.PaymentDate.Should().Be(new DateOnly(2027, 6, 30));
+                first.Amount.Should().Be(40m);
+            },
+            second =>
+            {
+                second.PaymentDate.Should().Be(new DateOnly(2028, 6, 30));
+                second.Amount.Should().Be(25m);
+            });
+    }
+
+    [Fact]
     public void Resolve_ShouldPreferTypedFactorScheduleEntriesOverFreeTextFactorSchedule()
     {
         // The canonical F# StructuredCredit serializer emits a free-text factorSchedule (legacy
@@ -189,6 +219,8 @@ public sealed class StructuredCashFlowTermsResolverTests
         terms.MaturityDate.Should().BeNull();
         terms.HasFactorSchedule.Should().BeFalse();
         terms.FactorSchedule.Should().BeEmpty();
+        terms.HasPrincipalSchedule.Should().BeFalse();
+        terms.PrincipalSchedule.Should().BeEmpty();
     }
 
     private static SecurityDetailDto Build(JsonElement assetSpecificTerms)

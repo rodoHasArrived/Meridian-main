@@ -240,9 +240,23 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
 
         // Seed the outstanding factor from the typed factor schedule as of today, falling back to the
         // scalar current factor when no dated schedule point applies.
+        var contractualPrincipal = terms.PrincipalSchedule?
+            .Where(entry => entry.PaymentDate >= issueDate && entry.PaymentDate <= maturity)
+            .ToArray() ?? [];
         var scheduledFactor = terms.FactorAsOf(asOfDate);
-        var factor = scheduledFactor is > 0m ? scheduledFactor.Value : 1m;
+        var hasAuthoritativeFactor = scheduledFactor is >= 0m;
+        var factor = hasAuthoritativeFactor ? scheduledFactor.GetValueOrDefault() : 1m;
         var outstanding = RoundCash(principalBasis * factor);
+        if (!hasAuthoritativeFactor && contractualPrincipal.Length > 0)
+        {
+            // Without an as-of factor, completed contractual payments are the best retained
+            // evidence of today's outstanding. A factor already reflects those payments and must
+            // not be reduced a second time.
+            var paidBeforeAsOf = contractualPrincipal
+                .Where(entry => entry.PaymentDate < asOfDate)
+                .Sum(static entry => entry.Amount);
+            outstanding = RoundCash(decimal.Max(0m, outstanding - paidBeforeAsOf));
+        }
         var annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m) + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
@@ -256,6 +270,22 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (periods.Length == 0)
         {
             return Empty();
+        }
+
+        if (contractualPrincipal.Length > 0)
+        {
+            var contractualEntries = BuildContractualPrincipalSchedule(
+                contractualPrincipal,
+                periods,
+                asOfDate,
+                maturity,
+                principalBasis,
+                outstanding,
+                annualRate,
+                terms.DayCountConvention);
+            return new StructuredCashFlowProjectionDto(
+                security.SecurityId, sourceKind, scenario, asOf, contractualEntries, staleness,
+                sourceLastUpdatedUtc, factorSchedule, terms);
         }
 
         var entries = new List<StructuredCashFlowScheduleEntry>(periods.Length);
@@ -289,6 +319,97 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
 
         return new StructuredCashFlowProjectionDto(
             security.SecurityId, sourceKind, scenario, asOf, entries, staleness, sourceLastUpdatedUtc, factorSchedule, terms);
+    }
+
+    private static IReadOnlyList<StructuredCashFlowScheduleEntry> BuildContractualPrincipalSchedule(
+        IReadOnlyList<StructuredPrincipalScheduleEntry> contractualPrincipal,
+        IReadOnlyList<(DateOnly AccrualStart, DateOnly PaymentDate)> periods,
+        DateOnly asOfDate,
+        DateOnly maturity,
+        decimal principalBasis,
+        decimal openingOutstanding,
+        decimal annualRate,
+        string? dayCountConvention)
+    {
+        var couponDates = periods
+            .Select(static period => period.PaymentDate)
+            .ToHashSet();
+        var principalByDate = contractualPrincipal
+            .Where(entry => entry.PaymentDate >= asOfDate)
+            .GroupBy(static entry => entry.PaymentDate)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Sum(static entry => entry.Amount));
+        var eventDates = couponDates
+            .Concat(principalByDate.Keys)
+            .Distinct()
+            .OrderBy(static date => date)
+            .ToArray();
+
+        var entries = new List<StructuredCashFlowScheduleEntry>(eventDates.Length);
+        var outstanding = openingOutstanding;
+        var accrualCursor = periods[0].AccrualStart;
+        var completedInPeriod = contractualPrincipal
+            .Where(entry => entry.PaymentDate >= accrualCursor && entry.PaymentDate < asOfDate)
+            .OrderBy(static entry => entry.PaymentDate)
+            .ToArray();
+        var accrualOutstanding = decimal.Min(
+            principalBasis,
+            openingOutstanding + completedInPeriod.Sum(static entry => entry.Amount));
+        var accruedInterest = 0m;
+        foreach (var completed in completedInPeriod)
+        {
+            if (completed.PaymentDate > accrualCursor && annualRate > 0m && accrualOutstanding > 0m)
+            {
+                accruedInterest += accrualOutstanding * annualRate
+                    * DayCountConventions.Fraction(dayCountConvention, accrualCursor, completed.PaymentDate);
+            }
+
+            accrualOutstanding = RoundCash(decimal.Max(0m, accrualOutstanding - completed.Amount));
+            accrualCursor = completed.PaymentDate;
+        }
+
+        outstanding = accrualOutstanding;
+
+        foreach (var date in eventDates)
+        {
+            if (date > accrualCursor && annualRate > 0m && outstanding > 0m)
+            {
+                accruedInterest += outstanding * annualRate
+                    * DayCountConventions.Fraction(dayCountConvention, accrualCursor, date);
+            }
+
+            var isCouponDate = couponDates.Contains(date);
+            var interest = isCouponDate ? RoundCash(accruedInterest) : 0m;
+            if (isCouponDate)
+            {
+                accruedInterest = 0m;
+            }
+
+            var scheduledPrincipal = principalByDate.TryGetValue(date, out var scheduledAmount)
+                ? RoundCash(scheduledAmount)
+                : 0m;
+            var principal = date == maturity
+                ? outstanding
+                : decimal.Min(outstanding, scheduledPrincipal);
+            principal = RoundCash(principal);
+            outstanding = RoundCash(decimal.Max(0m, outstanding - principal));
+
+            if (isCouponDate || principal > 0m)
+            {
+                entries.Add(new StructuredCashFlowScheduleEntry(
+                    ToUtcDateTimeOffset(date),
+                    principal,
+                    interest,
+                    principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis)));
+            }
+
+            // Contractual principal is paid after any coupon accrued through the same date, then
+            // the reduced balance accrues from that date forward.
+            accrualCursor = date;
+        }
+
+        return entries;
     }
 
     private static StructuredCashFlowProjectionDto BuildLegBasedProjection(

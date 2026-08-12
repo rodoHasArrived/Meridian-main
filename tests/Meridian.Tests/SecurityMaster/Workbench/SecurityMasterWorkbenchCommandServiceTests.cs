@@ -125,6 +125,19 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     public async Task UpdateSecurityField_RecordsOperatorFieldProvenance()
     {
         var harness = new Harness(currentVersion: 3);
+        var overrideRecordedAt = new DateTimeOffset(2026, 3, 14, 23, 59, 0, TimeSpan.Zero);
+        harness.Overrides
+            .Setup(o => o.PatchAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<OperatorOverridesPatchRequest>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>(),
+                "ops.analyst",
+                overrideRecordedAt));
 
         var request = new UpdateSecurityFieldRequest(
             SecurityId: SecurityId,
@@ -144,7 +157,8 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                     && r.FieldPath == "EconomicDefinition.Coupon"
                     && r.Origin == SecurityFieldProvenanceOrigins.OperatorFieldEdit
                     && r.UpdatedBy == "ops.analyst"
-                    && r.OriginReference == result.RevisionId.ToString("D")),
+                    && r.OriginReference == result.RevisionId.ToString("D")
+                    && r.RecordedAt == overrideRecordedAt),
                 It.IsAny<CancellationToken>()),
             Times.Once,
             "an operator field edit must record its field-level attribution referenced to the draft revision");

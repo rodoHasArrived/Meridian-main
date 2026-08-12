@@ -133,9 +133,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             ReasonCode = request.Justification,
         };
+        OperatorOverridesDto stagedOverride;
         try
         {
-            await _overrides
+            stagedOverride = await _overrides
                 .PatchAsync(
                     request.SecurityId,
                     patch,
@@ -189,7 +190,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                         Confidence: null,
                         Origin: SecurityFieldProvenanceOrigins.OperatorFieldEdit,
                         OriginReference: revision.RevisionId.ToString("D"),
-                        RecordedAt: DateTimeOffset.UtcNow),
+                        // PatchAsync returns the timestamp assigned while the serialized overlay
+                        // write holds its row lock. Ordering lineage by that authoritative write
+                        // time prevents a delayed older edit from replacing a newer attribution.
+                        RecordedAt: stagedOverride.UpdatedAt),
                     ct).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

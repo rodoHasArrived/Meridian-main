@@ -129,7 +129,9 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
             Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
         };
 
-        var service = NewService(StoreReturning());
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        await canonicalStore.UpsertProjectionAsync(incoming, CancellationToken.None);
+        var service = NewService(canonicalStore);
         await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
 
         var open = await service.GetOpenConflictsAsync(CancellationToken.None);
@@ -138,9 +140,10 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         conflict.FieldPath.Should().Be("CommonTerms.currency");
 
         var resolved = await service.ResolveAsync(
-            new ResolveConflictRequest(conflict.ConflictId, "Resolve", "operator@meridian.test", "provB confirmed.", ChosenWinnerSource: "provB"),
+            new ResolveConflictRequest(conflict.ConflictId, "AcceptB", "operator@meridian.test", "provB confirmed."),
             CancellationToken.None);
         resolved.Should().NotBeNull();
+        resolved!.ResolvedWinnerSource.Should().Be("provB");
 
         // The winning attribution is durable field lineage, committed with the conflict close.
         var provenanceStore = new PostgresSecurityFieldProvenanceStore(_fixture.Options);
@@ -152,6 +155,123 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         row.OriginReference.Should().Be(conflict.ConflictId.ToString("D"));
         row.UpdatedBy.Should().Be("operator@meridian.test");
         row.AsOf.Should().NotBeNull("the attribution's as-of is the resolution time");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_FieldConflict_OriginalWinner_ShouldRemainOpenUntilValueIsRestored()
+    {
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US5949181045", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US5949181045", "provB") with
+        {
+            Currency = "EUR",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        await canonicalStore.UpsertProjectionAsync(incoming, CancellationToken.None);
+        var service = NewService(canonicalStore);
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var conflict = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+
+        var act = () => service.ResolveAsync(
+            new ResolveConflictRequest(
+                conflict.ConflictId,
+                "Resolve",
+                "operator@meridian.test",
+                "Original source selected for a later governed restore.",
+                ChosenWinnerSource: "provA"),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Apply the selected value through a governed amendment*");
+        var canonical = await canonicalStore.GetProjectionAsync(securityId, CancellationToken.None);
+        canonical.Should().NotBeNull();
+        canonical!.Currency.Should().Be("EUR");
+        var retained = await service.GetConflictAsync(conflict.ConflictId, CancellationToken.None);
+        retained.Should().NotBeNull();
+        retained!.Status.Should().Be("Open");
+        retained.ResolvedWinnerSource.Should().BeNull();
+        var lineage = await new PostgresSecurityFieldProvenanceStore(_fixture.Options)
+            .GetAsync(securityId, CancellationToken.None);
+        lineage.Should().BeEmpty(
+            "provA cannot be asserted until its selected value is restored");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task FieldProvenanceUpsert_StaleRecord_ShouldNotReplaceNewerAttribution()
+    {
+        var securityId = Guid.NewGuid();
+        var store = new PostgresSecurityFieldProvenanceStore(_fixture.Options);
+        var newerRecordedAt = new DateTimeOffset(2026, 6, 1, 12, 2, 0, TimeSpan.Zero);
+        var newer = new SecurityFieldProvenanceRecord(
+            securityId,
+            "EconomicDefinition.Coupon",
+            "new-provider",
+            AsOf: newerRecordedAt,
+            UpdatedBy: "new-operator",
+            Confidence: 0.99m,
+            Origin: SecurityFieldProvenanceOrigins.OperatorFieldEdit,
+            OriginReference: "revision-new",
+            RecordedAt: newerRecordedAt);
+        await store.UpsertAsync(newer, CancellationToken.None);
+
+        await store.UpsertAsync(newer with
+        {
+            SourceSystem = "stale-provider",
+            UpdatedBy = "stale-operator",
+            OriginReference = "revision-stale",
+            RecordedAt = newerRecordedAt.AddMinutes(-1)
+        }, CancellationToken.None);
+
+        var retained = (await store.GetAsync(securityId, CancellationToken.None))
+            .Should().ContainSingle().Subject;
+        retained.SourceSystem.Should().Be("new-provider");
+        retained.UpdatedBy.Should().Be("new-operator");
+        retained.OriginReference.Should().Be("revision-new");
+        retained.RecordedAt.Should().Be(newerRecordedAt);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_FieldConflict_StaleChallengerWinner_ShouldRemainOpen()
+    {
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US02079K3059", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US02079K3059", "provB") with
+        {
+            Currency = "EUR",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        await canonicalStore.UpsertProjectionAsync(incoming, CancellationToken.None);
+        var service = NewService(canonicalStore);
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var conflict = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+
+        await canonicalStore.UpsertProjectionAsync(incoming with
+        {
+            Currency = "GBP",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provC" }),
+            Version = 2
+        }, CancellationToken.None);
+
+        var act = () => service.ResolveAsync(
+            new ResolveConflictRequest(
+                conflict.ConflictId,
+                "Resolve",
+                "operator@meridian.test",
+                "provB no longer matches the golden record.",
+                ChosenWinnerSource: "provB"),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        var retained = await service.GetConflictAsync(conflict.ConflictId, CancellationToken.None);
+        retained!.Status.Should().Be("Open");
+        var lineage = await new PostgresSecurityFieldProvenanceStore(_fixture.Options)
+            .GetAsync(securityId, CancellationToken.None);
+        lineage.Should().BeEmpty();
     }
 
     [SecurityMasterDatabaseFact]

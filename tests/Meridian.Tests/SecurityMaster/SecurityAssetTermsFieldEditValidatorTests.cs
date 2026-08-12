@@ -95,6 +95,26 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
             .Should().BeTrue(error);
     }
 
+    [Theory]
+    [InlineData("CustomAsset")]
+    [InlineData("OtherSecurity")]
+    public void ProfileFieldsRoot_OnProfileBackedClass_RequiresJsonObject(string assetClass)
+    {
+        SecurityAssetTermsFieldEditValidator.TryValidate(
+                assetClass, "assetSpecificTerms.profileFields", "{\"tranche\":\"A2\"}", out var validError)
+            .Should().BeTrue(validError);
+
+        SecurityAssetTermsFieldEditValidator.TryValidate(
+                assetClass, "assetSpecificTerms.profileFields", "not-json", out var textError)
+            .Should().BeFalse();
+        textError.Should().Contain("declared type Object");
+
+        SecurityAssetTermsFieldEditValidator.TryValidate(
+                assetClass, "assetSpecificTerms.profileFields", "[]", out var arrayError)
+            .Should().BeFalse();
+        arrayError.Should().Contain("declared type Object");
+    }
+
     [Fact]
     public void ProfileFieldsPath_OnNonProfileBackedClass_IsRejected()
     {

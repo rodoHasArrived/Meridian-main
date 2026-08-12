@@ -100,6 +100,51 @@ public sealed class SecurityMasterCashFlowServiceTests
         projection.Schedule.First().InterestAmount.Should().BeGreaterThan(0m);
     }
 
+    [Theory]
+    [InlineData(StructuredCashFlowSourceKind.CalculatedBullet)]
+    [InlineData(StructuredCashFlowSourceKind.CalculatedSinker)]
+    public async Task GetProjectionAsync_ContractualPrincipalSchedule_ShouldOverrideSyntheticPrincipal(
+        StructuredCashFlowSourceKind sourceKind)
+    {
+        var securityId = Guid.NewGuid();
+        var nextMonth = DateOnly.FromDateTime(DateTime.UtcNow.Date).AddMonths(1);
+        var issueDate = new DateOnly(nextMonth.Year, nextMonth.Month, 1);
+        var firstPrincipalDate = issueDate.AddMonths(3);
+        var firstCouponDate = issueDate.AddMonths(6);
+        var secondPrincipalDate = issueDate.AddMonths(9);
+        var maturity = issueDate.AddYears(1);
+        var service = BuildService(
+            StoreWith(securityId, sourceKind),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate,
+                maturityDate = maturity,
+                par = 100m,
+                couponRate = 6m,
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                principalSchedule = new object[]
+                {
+                    new { paymentDate = secondPrincipalDate, amount = 20m },
+                    new { paymentDate = firstPrincipalDate, amount = 30m }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule
+            .Select(static row => DateOnly.FromDateTime(row.PeriodDate.UtcDateTime.Date))
+            .Should().Equal(firstPrincipalDate, firstCouponDate, secondPrincipalDate, maturity);
+        projection.Schedule.Select(static row => row.PrincipalAmount)
+            .Should().Equal(30m, 0m, 20m, 50m);
+        projection.Schedule.Select(static row => row.InterestAmount)
+            .Should().Equal(new[] { 0m, 2.55m, 0m, 1.8m },
+                "interest accrues on each balance segment and is paid only on coupon dates");
+        projection.Schedule.Last().Factor.Should().Be(0m);
+        projection.TermsUsed!.PrincipalSchedule.Should().HaveCount(2);
+    }
+
     [Fact]
     public async Task GetProjectionAsync_MonthEndIssueDate_ShouldAnchorScheduleWithoutStubPeriod()
     {
@@ -159,6 +204,44 @@ public sealed class SecurityMasterCashFlowServiceTests
         // this is a floor rather than an equality); the one-day stub the old schedule produced
         // accrued about 0.01.
         projection.Schedule.Should().OnlyContain(static row => row.InterestAmount > 0.9m);
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_MidPeriod_ShouldAccrueThroughCompletedPrincipalWithoutReemittingIt()
+    {
+        var securityId = Guid.NewGuid();
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueMonth = asOf.AddMonths(-4);
+        var issueDate = new DateOnly(issueMonth.Year, issueMonth.Month, 1);
+        var completedPrincipalDate = issueDate.AddMonths(3);
+        var firstCouponDate = issueDate.AddMonths(6);
+        var maturity = issueDate.AddYears(1);
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedSinker),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate,
+                maturityDate = maturity,
+                par = 100m,
+                couponRate = 6m,
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                principalSchedule = new object[]
+                {
+                    new { paymentDate = completedPrincipalDate, amount = 30m }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().NotContain(row =>
+            DateOnly.FromDateTime(row.PeriodDate.UtcDateTime.Date) == completedPrincipalDate);
+        projection.Schedule.First().Should().Match<StructuredCashFlowScheduleEntry>(row =>
+            DateOnly.FromDateTime(row.PeriodDate.UtcDateTime.Date) == firstCouponDate
+            && row.PrincipalAmount == 0m
+            && row.InterestAmount == 2.55m);
+        projection.Schedule.Last().PrincipalAmount.Should().Be(70m);
     }
 
     [Fact]

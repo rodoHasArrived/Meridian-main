@@ -31,7 +31,7 @@ public static class PostgresSecurityFieldProvenanceSql
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            insert into {schema}.{Table} (
+            insert into {schema}.{Table} as current_provenance (
                 security_id, field_path, origin, source_system, as_of, updated_by, confidence,
                 origin_reference, recorded_at)
             values (
@@ -43,7 +43,8 @@ public static class PostgresSecurityFieldProvenanceSql
                 updated_by = excluded.updated_by,
                 confidence = excluded.confidence,
                 origin_reference = excluded.origin_reference,
-                recorded_at = excluded.recorded_at;
+                recorded_at = excluded.recorded_at
+            where excluded.recorded_at > current_provenance.recorded_at;
             """;
         command.Parameters.AddWithValue("security_id", record.SecurityId);
         command.Parameters.AddWithValue("field_path", record.FieldPath);
