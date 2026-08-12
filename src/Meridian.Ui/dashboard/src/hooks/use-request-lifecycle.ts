@@ -31,7 +31,13 @@ export interface RequestLifecycleToken {
   signal: AbortSignal;
   startedAt: string;
   isCurrent: () => boolean;
-  safeSetState: <T>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<T>) => boolean;
+  /**
+   * `T` is deduced from `setter` alone. `value` is wrapped in `NoInfer` because the common call
+   * `safeSetState(setModel, null)` would otherwise deduce `T` as `null` from the value and then
+   * demand a `Dispatch<SetStateAction<null>>` setter, which no caller has. Under
+   * `strictFunctionTypes` that mismatch is an error rather than a silently bivariant pass.
+   */
+  safeSetState: <T>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<NoInfer<T>>) => boolean;
 }
 
 export interface RequestRetryContext {
@@ -126,7 +132,7 @@ export function useRequestLifecycle({
   const safeSetState = useCallback(<T,>(
     version: number,
     setter: Dispatch<SetStateAction<T>>,
-    value: SetStateAction<T>
+    value: SetStateAction<NoInfer<T>>
   ) => {
     if (!isCurrentVersion(version)) {
       return false;
@@ -238,7 +244,7 @@ export function useRequestLifecycle({
       signal: controller.signal,
       startedAt,
       isCurrent: () => isCurrentVersion(version),
-      safeSetState: <T,>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<T>) => safeSetState(version, setter, value)
+      safeSetState: <T,>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<NoInfer<T>>) => safeSetState(version, setter, value)
     };
   }, [clearScheduledRetry, isCurrentVersion, maxRetries, operation, runningMessage, safeSetState]);
 
