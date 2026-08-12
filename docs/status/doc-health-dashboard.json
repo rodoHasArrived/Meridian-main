@@ -1,6 +1,6 @@
 {
   "total_files": 644,
-  "total_lines": 125745,
+  "total_lines": 125776,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2938,7 +2938,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 447,
+      "line_count": 451,
       "has_heading": true,
       "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2986,7 +2986,7 @@
     },
     {
       "path": "docs/product/w9-close-out-delivery-plan-2026-08.md",
-      "line_count": 862,
+      "line_count": 889,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

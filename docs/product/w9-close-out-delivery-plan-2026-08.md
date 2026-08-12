@@ -500,8 +500,20 @@ above** — several of these are why a change is scoped the way it is.
   `RetainedInternalReconciliationPopulationProvider` — the provider that must acquire the scoped
   ledger population — also lives in `src/Meridian.Application`, and neither the row's
   `source_modules` nor `SRC-APP.roadmap_items` names it, so the trace routes implementers away from
-  the one module the change has to modify. Both mappings are bidirectional: the row lists the
-  module, and the module lists the row. This is distinct from the fail-open *read* predicates
+  the one module the change has to modify. Change 11 owes a **second** pair for the same row:
+  `StatementRunMatchArtifact`, its file store, and `StatementDurabilityJsonContext` all live in
+  `src/Meridian.Infrastructure/Reconciliation`, so the artifact schema-versioning or migration that
+  change makes mandatory is owned there — and `W9-INGEST-009` currently carries **no**
+  `source_modules` key at all while `SRC-INFRASTRUCTURE.roadmap_items` lists only `W1-DATA-001`,
+  `W2-TRD-001`, and `W7-LIVE-001`. All three mappings are bidirectional: the row lists the module,
+  and the module lists the row.
+
+  All of them are deferred to their owning changes for one mechanical reason, verified rather than
+  assumed: adding a row to a module regenerates that module's `src/**/README.md`, and
+  `enforce_phase_scope.py` allows this planning commit only `docs/**`, `tools/roadmap/**`, and one
+  workflow file — `src/**` first becomes writable at PR7. Applying the `SRC-INFRASTRUCTURE` pair
+  here rewrites `src/Meridian.Infrastructure/README.md` and puts this PR out of phase, which is the
+  same way the `SRC-APP` pair was caught. This is distinct from the fail-open *read* predicates
   below — those pass rows, these pass requests.
 - **The write gate is not the whole criterion.** Flipping `RequireFundScopedWriteTenant` covers only
   the decorated write and evaluate routes. The exit criterion requires cross-tenant *reads* to fail
@@ -672,6 +684,21 @@ above** — several of these are why a change is scoped the way it is.
   disposition explicitly: extend the contract and resolve the added scope through the intake
   authority as the governed flows do, migrate the caller behind that authority, or disable it.
   Leaving it as-is is not one of the options, because the row's criterion is about the live path.
+- **The workstation POST is not the only unscoped caller — the shipping CLI is the other, and it is
+  in worse shape.** `StatementImportCommands` (`src/Meridian.Application/Commands/`, the
+  `--statement-import` command) constructs a `StatementImportCommitRequest` and calls `CommitAsync`
+  directly, bypassing the workflow service entirely. That record carries **no scope member at all**
+  — its parameters are document, connector, source kind and institution, fund account, external
+  account, period start and end, tolerance profile, and importer — so there is not even an optional
+  `AccountingScope` to leave unset. Worse, it defaults `FundAccountId` to the literal
+  `"legacy-fund-account"` and `ExternalAccountId` to `"legacy-external-account"` when the flags are
+  omitted, so an operator can commit a run under synthetic account identity today. Once change 11
+  requires a period-scoped ledger source, this path fails or produces an empty transaction
+  population exactly as the POST does, and every CLI-imported bank transaction reports as a break.
+  Inventorying only the workstation caller would let the row advance with the CLI still broken, so
+  change 11 gives the CLI the same three-way disposition — route it through the intake authority
+  with authoritative scope inputs, or disable its commit path — and treats the `legacy-*` identity
+  defaults as part of that decision rather than a separate cleanup.
 - **And the live matcher is the one-to-one engine.** `StatementRunMatcher` invokes
   `new StatementMatchingEngine()`, not the split-capable `ReconciliationMatchingEngine`.
 - **The byte cap has to move ahead of the copy, not just into the parsers.**
