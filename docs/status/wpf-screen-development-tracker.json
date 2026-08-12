@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "af59b62c3ed9",
+  "sourceFingerprint": "6e9ecf7db66a",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 97,
@@ -424,6 +424,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceShellProvenanceBadgeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
@@ -440,7 +441,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +10 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +11 more."
         }
       ],
       "openTaskCount": 0
@@ -1394,6 +1395,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceShellProvenanceBadgeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
@@ -1410,7 +1412,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more."
         }
       ],
       "openTaskCount": 0

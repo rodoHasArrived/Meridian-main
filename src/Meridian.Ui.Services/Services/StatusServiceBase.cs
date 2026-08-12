@@ -301,26 +301,26 @@ public abstract class StatusServiceBase
             using var document = JsonDocument.Parse(json);
             var enabled = document.RootElement.TryGetProperty("enabled", out var enabledElement)
                 && enabledElement.ValueKind == JsonValueKind.True;
-            string? provenance = null;
-            if (enabled)
+            // A server-reported provenance field always wins, even when the demo heuristic says
+            // disabled — a credentialed host can still deliberately run on a labeled in-memory
+            // composition (W9-TRUTH-001) and must keep being labeled. Without the field, demo
+            // enabled keeps its legacy seeded meaning.
+            string? provenance = enabled ? "seeded" : null;
+            if (document.RootElement.TryGetProperty("provenance", out var provenanceElement))
             {
-                provenance = "seeded";
-                if (document.RootElement.TryGetProperty("provenance", out var provenanceElement))
+                provenance = provenanceElement.ValueKind switch
                 {
-                    provenance = provenanceElement.ValueKind switch
+                    JsonValueKind.String => provenanceElement.GetString(),
+                    // DataProvenance serialized numerically: Real=0, Simulated=1, Seeded=2, Sample=3.
+                    JsonValueKind.Number => provenanceElement.GetInt32() switch
                     {
-                        JsonValueKind.String => provenanceElement.GetString(),
-                        // DataProvenance serialized numerically: Real=0, Simulated=1, Seeded=2, Sample=3.
-                        JsonValueKind.Number => provenanceElement.GetInt32() switch
-                        {
-                            0 => null,
-                            1 => "simulated",
-                            3 => "sample",
-                            _ => "seeded"
-                        },
-                        _ => provenance
-                    };
-                }
+                        0 => null,
+                        1 => "simulated",
+                        3 => "sample",
+                        _ => "seeded"
+                    },
+                    _ => provenance
+                };
             }
 
             FixtureModeDetector.Instance.ReportServerDataProvenance(provenance);

@@ -74,6 +74,7 @@
     <Compile Include="..\Shared\CorporateActions\*.cs" Link="Shared\CorporateActions\%(Filename)%(Extension)" />
     <None Include="..\Meridian.ProcessTestHelper\Meridian.ProcessTestHelper.runtimeconfig.json" CopyToOutputDirectory="PreserveNewest" Link="Meridian.ProcessTestHelper.runtimeconfig.json" />
     <None Include="..\fixtures\corporate-actions\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\corporate-actions\golden\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\fixtures\fund-economics\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\fund-economics\golden\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <Import Project="..\..\src\Meridian.QuantScript.Worker\QuantScriptWorker.Sidecar.targets" />

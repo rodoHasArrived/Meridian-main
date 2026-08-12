@@ -7,7 +7,7 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-08-03
+  snapshot_date: 2026-08-10
   status: active
   active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, Evidence Vault, statement-onboarding, bounded W6 backtest-evidence, and bounded W7 live-readiness governance milestones; WPF parity and browser workstation screen consolidation remain in progress; the ranked W9 first-order improvement slate (W9-TRUTH-001 through W9-INGEST-009) is the accepted planned priority order for the next delivery decisions, followed by the W10 depth slate (W10-MARK-001 through W10-CONSOL-001) which deepens existing functionality and mostly wires already-built capability rather than adding surface
   scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes. WPF desktop product/UI work is reactivated as an active co-equal lane whose immediate focus is web-UI parity over shared contracts.

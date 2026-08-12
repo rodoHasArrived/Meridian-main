@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -383,6 +384,35 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
         if (snapshot.LifecycleEvents.Count == 0)
         {
             throw new ArgumentException("Report-pack lifecycle events are required.", nameof(snapshot));
+        }
+
+        EnsureProvenanceMarkBlocksDeliverableStatus(snapshot);
+    }
+
+    // W9-TRUTH-001 durable-boundary gate: a pack whose retained provenance mark parses to a
+    // simulated, seeded, or sample origin may persist only in non-deliverable states. Refusing the
+    // write here means no caller — present or future — can promote simulated figures into an
+    // approvable, exported, or retained deliverable, matching the ledger append boundary posture.
+    private static void EnsureProvenanceMarkBlocksDeliverableStatus(FundReportPackSnapshotDto snapshot)
+    {
+        var token = snapshot.Provenance.DataProvenanceToken;
+        if (string.IsNullOrWhiteSpace(token)
+            || !DataProvenanceExtensions.ParseTokenOrSimulated(token).IsNonReal())
+        {
+            return;
+        }
+
+        if (snapshot.Status is GovernanceReportPackStatusDto.Validated
+            or GovernanceReportPackStatusDto.Approved
+            or GovernanceReportPackStatusDto.Exported
+            or GovernanceReportPackStatusDto.Retained
+            or GovernanceReportPackStatusDto.Restated)
+        {
+            throw new ArgumentException(
+                $"Report pack '{snapshot.ReportId}' carries the '{token.Trim().ToLowerInvariant()}' data-provenance " +
+                $"mark and cannot persist in the '{snapshot.Status}' state. Simulated, seeded, or sample figures " +
+                "never become an approvable deliverable; the pack must stay review-required with its mark retained.",
+                nameof(snapshot));
         }
     }
 

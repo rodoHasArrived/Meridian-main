@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-08-03
+Snapshot date: 2026-08-10
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -563,16 +563,16 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | in_progress |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-08-08 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-09 |
 
 ### Current Summary
 
-Core slice implemented 2026-08-08. The browser shell now mounts the persistent non-dismissable data-provenance banner above every workspace, and the WPF shell banner extends beyond fixture/offline to label a connected backend that reports seeded/simulated data (status poll feeds FixtureModeDetector; the dashboard badge parses the server token fail-closed). Startup rejection is proven per real prohibited binding - 62 focused tests pin every in-memory/no-op durable-role implementation against the production guard, the supported-local durability assertion, and the forced-simulated provenance resolution - and Ui.Shared in-memory durable stores now carry the explicit INonProductionOnlyService marker (lower layers stay on the enforced ADR-019 name-prefix mechanism). Evidence gating extends beyond the existing ledger validator - strategy runs, reconciliation break-queue items, and report-pack provenance now carry a data-provenance token, the seeded demo stamps it everywhere, and PromotionService fail-closes approval of any run marked simulated/seeded/sample with an audited PromotionSimulatedProvenanceBlocked decision. Remaining before done - per-screen WPF badges beyond the shell banner and Dashboard, hard entry-time blocks (not just carried marks plus review-required posture) at the reconciliation-intake and report-pack-validation seams, and wiring the supported-local durability assertion into host startup composition.
+Implementation completed 2026-08-09; the three items that remained after the 2026-08-08 core slice are closed. Per-screen WPF labeling - the shared workspace context strip's Environment badge now resolves the server-reported provenance token fail-closed (a connected seeded backend can never read "Live"; unknown tokens degrade to SIMULATED), and the Portfolio and Reporting shells, which previously rendered an empty strip, now compose the shared context service so all seven workspaces carry the badge. Hard entry-time blocks - reconciliation-break intake refuses an unmarked item whose source declares a simulated/seeded/sample origin at the single durable chokepoint (FileReconciliationBreakQueueRepository, mirroring the ledger append boundary; carried marks are normalized to the canonical vocabulary), and report packs that cite simulated/seeded runs inherit the strongest non-real mark, always fail validation with a Critical provenance issue (ResolveStatus can never return Validated), and the durable report-pack boundary refuses to persist a marked pack in any approvable/exported/retained state. Startup wiring - the ADR-019 startup guard now runs the supported-local durability assertion (an unlabeled local composition with in-memory durable-role bindings refuses startup naming the bindings; a pinned non-real provenance declaration is the sanctioned labeled alternative), UiServer pins the composed provenance into the graph (seeded for demo hosts, forced-simulated for in-memory local durables), and /api/demo/mode plus the status-poll parser surface the pinned label to both workstation shells even when demo heuristics say disabled.
 
 ### Exit Criteria
 
@@ -652,16 +652,16 @@ Implementation completed 2026-08-08. Both paper gateways now match through the s
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 4 of the 2026-07 first-order improvement slate. Alpaca is the only turnkey live venue and its order feedback loop is broken; trade-update and fill events must stream back into order lifecycle state, positions, and the durable trade-fill posting path instead of relying on polling or manual refresh.
+Implementation verified complete 2026-08-10; the 2026-07-21 premise that the order feedback loop was broken no longer matches source. The authenticated trade_updates stream (AlpacaTradeUpdatesClient) normalizes every broker event into an ExecutionReport and admits it to a durable content-hashed inbox that deduplicates broker event ids, survives restart, and replays unacknowledged envelopes; AlpacaBrokerageGateway exposes that stream as the execution-gateway report stream, blocks live submission while the stream is unhealthy, and after every authenticated reconnect reconciles the REST order snapshot plus exact FILL activities from the acknowledged watermark so fills missed during a disconnect backfill without polling. The OrderManagementSystem consumes the gateway stream from construction, applies partial fills, cancels, and rejects to tracked order state with monotonic cumulative-fill handling and terminal-state latching, converts cumulative broker quantities into deduplicated increments, and routes each genuine increment through the existing durable trade-fill posting and ledger handoff path with retained-failure replay; host composition wires the trade-updates client into the gateway and the trade-fill ledger posting scope. The 2026-08-10 acceptance candidate closes the exit-criterion evidence gap by adding out-of-order delivery tests at the stream client (admission without loss, backfill watermark never regresses, duplicate and out-of-order REST fill replay admits each exact fill once) and at the OMS (a stale lower cumulative publishes no increment and never regresses portfolio or accounting), plus an end-to-end loop suite driving raw Alpaca trade_updates JSON through the client into a real OMS asserting lifecycle transitions and exactly-once accounting handoff under duplicate, out-of-order, cancel, reject, and reconnect REST-replay delivery. Acceptance caveats recorded 2026-08-10 from automated review, all pre-existing rather than introduced by this candidate - the hosted submission health gate treats trade-update recency as stream liveness, so an idle or order-free live account blocks new submissions once the 30-second stale window lapses (submission-side only); reconnect FILL-activity backfill starts exactly at the acknowledged watermark with no overlap window, so a fill the stream skipped beneath an already-acknowledged newer event is recovered only through the order-snapshot lane, which restores quantity at snapshot average-price attribution rather than exact per-fill economics; and a durably admitted fill replayed into a freshly restarted host is acknowledged without reaching the accounting handoff when the restarted OMS no longer tracks its order, leaving recovery to the brokerage activity-sync lane. These are acceptance-review inputs and follow-up candidates, not exit-criterion regressions.
 
 ### Exit Criteria
 
@@ -679,16 +679,16 @@ Rank 4 of the 2026-07 first-order improvement slate. Alpaca is the only turnkey 
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 5 of the 2026-07 first-order improvement slate. Ops teams currently re-type every deliverable into Excel; governed report packs must export client-presentable PDF and XLSX artifacts, including a partners-capital statement, so the governed output is the deliverable rather than an input to manual reformatting.
+Implementation completed 2026-08-10. The phase-1 client-grade rendering lane had already merged - Meridian.Documents renders governed ledger report packs to deterministic client-presentable PDF (QuestPDF) and XLSX (ClosedXML) with fixed metadata and canonical zip ordering so re-rendering reproduces the bytes, the certified reporting path binds every primary document to an exact checkpoint-bound canonical ledger presentation and fails closed without one, and certified packages retain report-pack signatures and provenance manifests alongside the artifacts. This acceptance candidate completes the deferred presentation half by absorbing and validating the stalled bespoke partners-capital layout (supersedes PR 2525) against current main - PartnersCapitalStatementLayout classifies each capital account by partner role from stable ledger account names, computes ownership shares that foot to 100 percent while excluding non-partner equity, anchors the statement to the fund's ledger-backed net asset value with an explicit reconciliation flag, and never alters a ledger figure; the renderer emits a purpose-built PDF section (NAV context strip, role-labelled per-partner roll-forward, ownership column, reconciliation footnote) and a dedicated typed-numeric XLSX sheet with accounting/percent formats plus a NAV anchor block so operators can sum and pivot without retyping. Certification tests were updated to the bespoke sheet shape while keeping their governance intent - primary bytes must equal the canonical Documents renderer output and display-row rebuild fingerprints remain forbidden.
 
 ### Exit Criteria
 
@@ -707,16 +707,16 @@ Rank 5 of the 2026-07 first-order improvement slate. Ops teams currently re-type
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 6 of the 2026-07 first-order improvement slate. The hard math a fund accountant needs still lives in Excel; unitized NAV series, fee accruals with hurdles and crystallization, distribution waterfalls, and capital-call and commitment tracking must become ledger-backed first-class calculations.
+Implementation verified complete 2026-08-10; the calculation surface the 2026-07-21 summary said "still lives in Excel" has been ledger-backed source for some time and the missing piece was the exit-criterion golden-file evidence. Unitization - ShareClassUnitRegisterProjector folds dated subscriptions/redemptions into a pure, deterministic per-class unit register (units outstanding, per-investor holdings, NAV per unit via NavPerUnitCalculator, running high-water mark, and single-NAV equalisation credits/contingent redemptions via EqualizationCalculator for equalising classes), with the movement-level register as the auditable calculation trail and restatement handled by re-projection plus the report-pack restatement lifecycle. Fee economics - the Meridian.FSharp.Ledger FundEconomics kernels compute day-weighted management fees, straight-line expense accruals, and performance fees with hurdle, high-water mark, and crystallization treatment, and FundEconomicsJournalFactory converts fee, NAV, and waterfall outcomes into governed journal drafts. Waterfall and commitments - EuropeanDistributionWaterfall runs return-of-capital, preferred-return, solved GP catch-up (including sub-100 percent catch-up rates), and carried-interest tiers with cumulative threading across distributions; CapitalCallScheduleDraftBuilder, CapitalCallPlanBuilder, and CommitmentRollForwardCalculator maintain the net-called plus uncalled plus expired equals total invariant with recallable-distribution handling; and the ledger partners-capital reconciliation suite ties these to the W9-REPORT-005 statement. The 2026-08-10 acceptance candidate closes criterion four by adding a golden-file worked-example pack (tests/fixtures/fund-economics/golden) with hand-computed figures independent of the implementation - day-count fee and expense examples, a four-period threaded performance-fee cycle proving the high-water mark moves only on crystallization and only to post-fee NAV, a three-distribution threaded waterfall whose cumulative GP take is exactly its carry share of profit, a sub-100 percent catch-up example pinning the documented pool-rounding drift, equalisation credit/contingent cases, and a full-year unit-register scenario whose aggregate holding value ties to class NAV - all asserted step by step against the real kernels.
 
 ### Exit Criteria
 
@@ -736,16 +736,16 @@ Rank 6 of the 2026-07 first-order improvement slate. The hard math a fund accoun
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 7 of the 2026-07 first-order improvement slate. Safety surfaces must never overpromise; the kill switch must actually cancel all open orders and halt routing, pre-trade rules must cover fat-finger, max-notional, and price-collar checks, and WPF safety buttons must be wired to the real shared controls or visibly demoted.
+Source-verified 2026-08-10 and substantially further along than the 2026-07-21 premise, with the remaining gaps now named precisely. Already implemented - the durable execution circuit breaker (versioned atomic snapshot, pending-trip file, operator endpoint) blocks order submission through the operator-controls gate the OMS consults, manual overrides are supported kinds with durable state, breaker activation and override events append to the execution audit trail, the OMS exposes a concurrent CancelAllAsync sweep behind the governed cancel-all endpoint, and the mandatory CompositeRiskValidator enforces drawdown-guardrail, order-rate, position-limit, gross-exposure, symbol-concentration, and max-order-notional rules (with escalation banding and fail-closed handling of unmeasurable orders) fed live from RiskRuleRuntimeService. The 2026-08-10 change closes the criterion-one coupling gap - opening the breaker now issues the kill-switch cancel-all sweep after the durable breaker flip, with completed and failed sweep outcomes audited separately from the activation, proven at the endpoint seam. Remaining before acceptance - fat-finger quantity and price-deviation rules and a price-collar rule do not yet exist in the mandatory validator (the reference-price seam already exists as IPortfolioExposureProvider.TryGetExecutablePrice, and new rules follow the OrderNotionalRule pattern with thresholds surfaced through RiskRuleRuntimeService state and config endpoints); and the WPF and browser safety-control sweep (every button wired to the shared execution-control service or explicitly demoted) has not been audited.
 
 ### Exit Criteria
 
@@ -770,11 +770,11 @@ Rank 7 of the 2026-07 first-order improvement slate. Safety surfaces must never 
 | Priority | high |
 | Owner lane | Platform Security and Governance |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 8 of the 2026-07 first-order improvement slate. Governance is the brand and these are the gaps in it; every mapped route needs explicit authorization coverage, tenancy must fail closed instead of defaulting, and accounting audit history needs tamper-evident hash chaining, aligned with PRD-001, PRD-007, and PRD-009.
+Rank 8 of the 2026-07 first-order improvement slate. Source-verification snapshot 2026-08-10 - substantial implementation already exists and the row needs criterion-level verification rather than greenfield build. RoleAuthorizationTests and the per-workspace tenant-scope endpoint suites (for example WorkstationEndpointsTests.StrategyTenantScope) cover authorization and tenancy behavior, and Meridian.Storage AuditChainService provides the hash-chained audit seam; The 2026-08-10 change lands the criterion-one instrument - EndpointAuthorizationCoverageTests mechanically enumerates every mapped mutating route from the composed application's endpoint graph and proves a zero-permission caller is rejected, with a five-route documented permissionless allowlist and a frozen 152-route remediation baseline ratchet: the sweep found 152 mutating routes (largely the pre-workstation /api surface) that today process permissionless requests - unguarded 200/201 writes, validate-before-authorize orderings, and test-host registration gaps - so the baseline tolerates exactly those known-debt routes, fails on any newly mapped unguarded route, and fails when a remediated route is not removed. The 2026-08-10 burn-down guarded the 40 highest-risk success-status routes (diagnostics, export, lean, messaging, storage, storage-quality, analytics repair, environment designer, provider failover, quant-lab parameter extraction) with Require endpoint filters mapped to family permissions, shrinking the baseline from 152 to 112. Remaining before acceptance - burn down the residual 112-route baseline (each fix shrinks it), prove fail-closed tenancy rejection for requests without resolvable scope across all write surfaces, and prove cross-process audit-chain serialization with verification tooling and tamper-detection tests aligned with the PRD-007 evidence-chain notes.
 
 ### Exit Criteria
 
@@ -799,11 +799,11 @@ Rank 8 of the 2026-07 first-order improvement slate. Governance is the brand and
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-21 |
+| Last reviewed | 2026-08-10 |
 
 ### Current Summary
 
-Rank 9 of the 2026-07 first-order improvement slate. Reconciliation value is capped by what can be ingested and trusted; ISO 20022 camt.053 and BAI2 bank statements must normalize through the delivered W5X-CONNECT-001 connector seam, and the reconciliation matcher must become explicitly sided between statement and ledger populations with deterministic match and break semantics.
+Rank 9 of the 2026-07 first-order improvement slate. Source-verification snapshot 2026-08-10 - the core surface already exists: Camt053StatementConnector and Bai2StatementConnector normalize through the W5X-CONNECT-001 connector seam alongside the statement-import command path, and the reconciliation lane carries a dedicated match kernel with sided statement-versus-ledger populations (ReconciliationMatchKernel, StatementRunMatcher, StatementRunMatchingService, ReconciliationMatchingEngine). Criterion-level verification remains before acceptance - golden-file regression coverage for both formats was not found in the FinancialOperations test tree, PRD-010 bounded-ingress enforcement for both parsers needs proof, and the deterministic one-to-one/one-to-many/unmatched-break semantics with stable tie-breakers and idempotent re-runs need focused evidence against the named kernels.
 
 ### Exit Criteria
 
