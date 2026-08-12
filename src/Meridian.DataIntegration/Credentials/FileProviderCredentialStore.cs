@@ -605,7 +605,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct)
     {
-        Directory.CreateDirectory(_directoryPath);
+        EnsureVaultDirectory();
         vault.Version = VaultVersion;
         vault.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -697,18 +697,72 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return plainBytes;
     }
 
+    // The AES-GCM key lives in the same directory as the ciphertext it opens, so on Unix the file
+    // mode is the only thing separating the two: a reader who can open the vault can open the key
+    // beside it. Owner-only is therefore a correctness requirement of the encryption, not
+    // defence in depth.
+    private const UnixFileMode OwnerOnlyFileMode =
+        UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+    private const UnixFileMode OwnerOnlyDirectoryMode =
+        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+
     private async Task<byte[]> GetOrCreateLocalKeyAsync(CancellationToken ct)
     {
-        Directory.CreateDirectory(_directoryPath);
+        EnsureVaultDirectory();
         if (File.Exists(_keyPath))
         {
+            RestrictExistingKeyFile(_keyPath);
             return await File.ReadAllBytesAsync(_keyPath, ct).ConfigureAwait(false);
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
-        await AtomicFileWriter.WriteAsync(_keyPath, key, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(_keyPath, key, OwnerOnlyFileMode, ct).ConfigureAwait(false);
         TrySetHidden(_keyPath);
         return key;
+    }
+
+    // Only a directory this store creates is narrowed. An existing .mdc is left as the deployment
+    // configured it - it is shared with other credential state, and silently removing access a
+    // running install depends on would be a worse failure than the one being prevented. The key
+    // file's own mode is what actually protects the key, and that is enforced either way.
+    private void EnsureVaultDirectory()
+    {
+        if (OperatingSystem.IsWindows() || Directory.Exists(_directoryPath))
+        {
+            Directory.CreateDirectory(_directoryPath);
+            return;
+        }
+
+        Directory.CreateDirectory(_directoryPath, OwnerOnlyDirectoryMode);
+    }
+
+    private static void RestrictExistingKeyFile(string path)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        try
+        {
+            var mode = File.GetUnixFileMode(path);
+            var exposed = mode & ~OwnerOnlyFileMode;
+            if (exposed == UnixFileMode.None)
+            {
+                return;
+            }
+
+            File.SetUnixFileMode(path, OwnerOnlyFileMode);
+            Log.Warning(
+                "Provider credential vault key at {KeyPath} was reachable beyond its owner ({ExposedMode}); tightened to owner-only. The key should be treated as disclosed and provider credentials rotated.",
+                path,
+                exposed);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            Log.Warning(ex, "Could not verify permissions on the provider credential vault key at {KeyPath}", path);
+        }
     }
 
     private static void TrySetHidden(string path)
