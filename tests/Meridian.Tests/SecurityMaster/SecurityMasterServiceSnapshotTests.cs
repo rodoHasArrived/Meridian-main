@@ -765,6 +765,76 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task CreateAsync_UnmappedProfileWithSpoofedClassMetadata_StaysCustomAsset()
+    {
+        // Field names and classification metadata are caller-controlled: a payload pinned to the
+        // approved co-invest-spv profile that ALSO carries structured-credit field names and
+        // category = "StructuredCredit" satisfies the co-invest profile's own rules, so it must
+        // stay a CustomAsset — reclassifying on the spoofed shape would hand it StructuredCredit
+        // validators and projection behavior its profile never granted.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        var detail = await service.CreateAsync(new CreateSecurityRequest(
+            securityId,
+            "CustomAsset",
+            JsonSerializer.SerializeToElement(new { displayName = "Spoofed SPV", currency = "USD" }),
+            JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "co-invest-spv",
+                profileVersion = 1,
+                category = "StructuredCredit",
+                profileFields = new
+                {
+                    vehicle = "Meridian Co-Invest I",
+                    underlyingCompanyOrSecurity = "Acme Holdings",
+                    sponsor = "Meridian Growth Partners",
+                    commitment = 1_000_000m,
+                    economics = "1/10 over 8",
+                    reportingCadence = "Quarterly",
+                    tranche = "A-1",
+                    collateralType = "CLO",
+                    originalFace = 1_000_000m,
+                    couponOrIndex = "SOFR+250"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "governance.lead",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "SPV-APPROVAL-1"
+                }
+            }),
+            new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "SPV-SPOOF", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+            },
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "create"));
+
+        detail.AssetClass.Should().Be("CustomAsset",
+            "an unmapped profile id must never reclassify, whatever field names or metadata the envelope carries");
+    }
+
+    [Fact]
     public async Task CreateAsync_ReclassifiedRecordViolatingKindInvariants_RefusesTheWrite()
     {
         // The pinned profile's field ranges can be LOOSER than the resolved first-class kind's

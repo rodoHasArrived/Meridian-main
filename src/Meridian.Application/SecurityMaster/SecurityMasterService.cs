@@ -731,97 +731,53 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private static bool TryResolveProfileBackedAlternativeAssetClass(JsonElement assetSpecificTerms, out string assetClass)
     {
         var profileId = GetString(assetSpecificTerms, "customProfileId");
+
+        // ONLY a registered reclassifying profile id changes the class. Field names and
+        // classification metadata are caller-controlled, so any heuristic on them would let a
+        // payload pinned to an unrelated profile (which validates against THAT profile's rules)
+        // spoof its way into another class's validators and projection behavior. A profile id
+        // outside this map keeps the record a CustomAsset.
+        if (profileId is null || !KnownProfileAssetClasses.TryGetValue(profileId, out var resolvedClass))
+        {
+            assetClass = string.Empty;
+            return false;
+        }
+
+        // Envelope metadata that names a DIFFERENT class's keyword is refused rather than
+        // resolved: silently preferring the profile would hide the contradiction from the caller
+        // who asserted it.
         var category = GetString(assetSpecificTerms, "category");
         var subType = GetString(assetSpecificTerms, "subType");
         var accountingClassification = GetString(assetSpecificTerms, "accountingClassification");
-
-        // A registered profile id decides the class by itself. Envelope metadata that names a
-        // DIFFERENT class's keyword is refused rather than resolved: honoring either signal would
-        // let a mislabeled record pick its validators, and silently preferring the profile would
-        // hide the contradiction from the caller who asserted it.
-        if (profileId is not null && KnownProfileAssetClasses.TryGetValue(profileId, out var resolvedClass))
+        foreach (var (candidateClass, keywords) in AssetClassMetadataKeywords)
         {
-            foreach (var (candidateClass, keywords) in AssetClassMetadataKeywords)
+            if (string.Equals(candidateClass, resolvedClass, StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(candidateClass, resolvedClass, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                var conflicting = keywords.FirstOrDefault(keyword =>
-                    string.Equals(category, keyword, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(subType, keyword, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(accountingClassification, keyword, StringComparison.OrdinalIgnoreCase));
-                if (conflicting is not null)
-                {
-                    throw new InvalidOperationException(
-                        $"Profile '{profileId}' resolves to asset class '{resolvedClass}', but the envelope's " +
-                        $"classification metadata ('{conflicting}') belongs to '{candidateClass}'. The profile is " +
-                        "the identity of a profile-backed record — correct the category/subType/accountingClassification " +
-                        "metadata (or the profile reference) so they agree before the write can proceed.");
-                }
+                continue;
             }
 
-            assetClass = resolvedClass;
-            return true;
+            var conflicting = keywords.FirstOrDefault(keyword =>
+                string.Equals(category, keyword, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(subType, keyword, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(accountingClassification, keyword, StringComparison.OrdinalIgnoreCase));
+            if (conflicting is not null)
+            {
+                throw new InvalidOperationException(
+                    $"Profile '{profileId}' resolves to asset class '{resolvedClass}', but the envelope's " +
+                    $"classification metadata ('{conflicting}') belongs to '{candidateClass}'. The profile is " +
+                    "the identity of a profile-backed record — correct the category/subType/accountingClassification " +
+                    "metadata (or the profile reference) so they agree before the write can proceed.");
+            }
         }
 
-        // Unregistered profile ids fall back to the legacy heuristics: a recognizable field shape
-        // corroborated by classification metadata.
-        if (ProfileFieldsContain(assetSpecificTerms, "tranche", "collateralType", "originalFace", "couponOrIndex")
-            && MatchesAny(category, subType, accountingClassification, "StructuredCredit", "MBS", "ABS", "CLO", "CMBS"))
-        {
-            assetClass = "StructuredCredit";
-            return true;
-        }
-
-        if (ProfileFieldsContain(assetSpecificTerms, "gpSponsor", "strategy", "vintage", "commitment", "navDate")
-            && MatchesAny(category, subType, accountingClassification, "PrivateFunds", "PartnershipInterest", "PrivateFund"))
-        {
-            assetClass = "PrivateFundInterest";
-            return true;
-        }
-
-        if (ProfileFieldsContain(assetSpecificTerms, "issuer", "shareClass", "round", "costBasis")
-            && MatchesAny(category, subType, accountingClassification, "PrivateEquity", "PrivateCompanyEquity"))
-        {
-            assetClass = "PrivateCompanyEquity";
-            return true;
-        }
-
-        if (ProfileFieldsContain(assetSpecificTerms, "propertyType", "addressOrMarket", "ownershipPercent", "appraisalValue", "valuationDate")
-            && MatchesAny(category, subType, accountingClassification, "RealEstate", "RealEstateInterest", "RealEstateHolding"))
-        {
-            assetClass = "RealEstateHolding";
-            return true;
-        }
-
-        if (ProfileFieldsContain(assetSpecificTerms, "counterparty", "committedAmount", "effectiveDate")
-            && MatchesAny(category, subType, accountingClassification, "CommitmentGuarantee", "UnfundedCommitment", "Guarantee"))
-        {
-            assetClass = "CommitmentGuarantee";
-            return true;
-        }
-
-        assetClass = string.Empty;
-        return false;
+        assetClass = resolvedClass;
+        return true;
     }
 
     private static string? GetString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String
             ? value.GetString()
             : null;
-
-    private static bool MatchesAny(string? category, string? subType, string? accountingClassification, params string[] expected)
-        => expected.Any(value =>
-            string.Equals(category, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(subType, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(accountingClassification, value, StringComparison.OrdinalIgnoreCase));
-
-    private static bool ProfileFieldsContain(JsonElement assetSpecificTerms, params string[] requiredFieldKeys)
-        => assetSpecificTerms.TryGetProperty("profileFields", out var profileFields)
-           && profileFields.ValueKind == System.Text.Json.JsonValueKind.Object
-           && requiredFieldKeys.All(key => profileFields.TryGetProperty(key, out _));
 
     private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
     {
