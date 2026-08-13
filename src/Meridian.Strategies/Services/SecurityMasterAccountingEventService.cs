@@ -416,9 +416,13 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         events.Add(accrualEvent);
         previews.Add(CreateInterestAccrualPreview(security, position, accrualEvent));
 
+        // The period end is EXCLUSIVE (the adapter's ResolvePeriod supplies the next month's
+        // first day), matching the factor-schedule filtering: an inclusive comparison would emit
+        // a first-of-month coupon in this period AND again next period, where the same date is
+        // that run's PeriodStart — duplicate expected cash events and journal previews.
         if (terms.NextCouponDate is DateOnly couponDate &&
             couponDate >= request.PeriodStart &&
-            couponDate <= request.PeriodEnd)
+            couponDate < request.PeriodEnd)
         {
             var couponAmount = RoundMoney(position.ParAmount * NormalizeRate(terms.CouponRate.Value) / terms.PaymentFrequencyPerYear!.Value);
             if (couponAmount > 0m)

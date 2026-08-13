@@ -1003,6 +1003,102 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ClearingRequiredTermOverride_ValidatesTheRevealedCanonicalValue()
+    {
+        // Clearing a staged maturity override removes only the OVERLAY value: the post-clear read
+        // reveals the canonical maturity, so the reconstruction must validate that state. Deleting
+        // the canonical term from the reconstruction envelope would model a Bond with no maturity,
+        // fail the strict kind mapping, and wrongly refuse a legitimate clear.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturity = "2030-01-01",
+            par = 100m
+        });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.maturity"] = "2031-01-01" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.maturity",
+            NewValue: null,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Remove maturity override; the canonical maturity is correct.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.Should().NotBeNull();
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(),
+                It.Is<OperatorOverridesPatchRequest>(patch =>
+                    patch.RemoveKeys != null && patch.RemoveKeys.Contains("assetSpecificTerms.maturity")),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_DraftCreationFails_RestoresThePriorApprovalDecision()
+    {
+        // The compensating patch resets the surviving overlay values to Pending; when the prior
+        // overlay was already Approved, that would strand reviewed values behind
+        // SM_OVERRIDE_APPROVAL_REQUIRED with no revision left to approve them — so the prior
+        // decision is re-recorded with its original reviewer.
+        var harness = new Harness(currentVersion: 3, revisions: new ThrowingRevisionStore());
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturity = "2030-01-01",
+            par = 100m
+        });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.couponRate"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddDays(-1))
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Approved,
+                ReviewedBy = "risk.reviewer"
+            });
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: "80",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*staged override was reverted*");
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision =>
+                    decision.Decision == SecurityOverrideApprovalStatusDto.Approved
+                    && decision.Reviewer == "risk.reviewer"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ConcurrentEditsOnSameSecurity_SerializeTheValidatePatchWindow()
     {
         // Two concurrent edits to the same security must not both validate against the same
@@ -1722,8 +1818,12 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     // ---- Submit / Approve through the gate ----------------------------------------------------
 
     [Fact]
-    public async Task Submit_WithoutWorkflow_ReturnsSubmittedState()
+    public async Task Submit_WithoutWorkflow_IsRejectedAndTheRevisionStaysDraft()
     {
+        // The only approval command requires the revision's BOUND workflow to match the approving
+        // one, so a workflow-less submission could never be approved — it would strand permanently
+        // in Submitted. The service boundary rejects it up front (matching the HTTP endpoint) and
+        // the revision stays Draft for a corrected resubmission.
         var harness = new Harness(currentVersion: 2);
         var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft);
 
@@ -1733,11 +1833,11 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             Actor: "ops.analyst",
             Note: "Ready for review.");
 
-        var result = await harness.Service.SubmitForApprovalAsync(request);
+        await harness.Service.Invoking(s => s.SubmitForApprovalAsync(request))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*requires an approval workflow*");
 
-        result.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
-        result.RevisionId.Should().Be(revisionId);
-        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
         harness.Workflow.Verify(
             w => w.SubmitForApprovalAsync(It.IsAny<Guid>(), It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
             Times.Never);
@@ -2050,6 +2150,116 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
             Times.Never);
         (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+    }
+
+    [Fact]
+    public async Task Approve_WhileFieldEditIsMidFlight_WaitsForTheGateAndDefersTheDecision()
+    {
+        // The approval's staged-revision check and override decision run under the SAME
+        // per-security gate the field-edit route holds across its patch + draft creation. An
+        // approval arriving while an edit sits between its committed patch and its draft creation
+        // must wait for the gate and then observe the edit's draft — deferring the security-level
+        // decision instead of co-approving the freshly Pending, unreviewed value.
+        var workflowId = Guid.NewGuid();
+        var revisions = new GatedRevisionStore();
+        var harness = new Harness(currentVersion: 3, revisions: revisions);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturity = "2030-01-01",
+            par = 100m
+        });
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 4));
+
+        // The overlay turns Pending the moment the edit's patch commits — exactly the state an
+        // ungated approval would co-approve.
+        var patched = false;
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => patched
+                ? new OperatorOverridesDto(
+                    SecurityId,
+                    new Dictionary<string, string> { ["assetSpecificTerms.par"] = "80" },
+                    "ops.analyst",
+                    DateTimeOffset.UtcNow)
+                {
+                    ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+                }
+                : null);
+        harness.Overrides
+            .Setup(o => o.PatchAsync(
+                It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<long?>()))
+            .ReturnsAsync((Guid id, OperatorOverridesPatchRequest _, string actor, CancellationToken _, long? _) =>
+            {
+                patched = true;
+                return new OperatorOverridesDto(id, new Dictionary<string, string>(), actor, DateTimeOffset.UtcNow);
+            });
+
+        revisions.GateFieldEditDrafts = true;
+        var editTask = harness.Service.UpdateSecurityFieldAsync(new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: "80",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction."));
+        await revisions.DraftEntered.Task;
+
+        // The edit has committed its patch and is parked inside draft creation: start the approval
+        // and give it a head start — without the shared gate it would record the decision now.
+        var approveTask = harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revisionId, workflowId, 3, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+        await Task.Delay(100);
+        revisions.ReleaseDrafts.TrySetResult();
+
+        await Task.WhenAll(editTask, approveTask);
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+    }
+
+    private sealed class GatedRevisionStore : ISecurityMasterRevisionStore
+    {
+        private readonly InMemorySecurityMasterRevisionStore _inner = new();
+
+        public bool GateFieldEditDrafts { get; set; }
+        public TaskCompletionSource DraftEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseDrafts { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
+            => _inner.CreateDraftAsync(securityId, actor, ct);
+
+        public async Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+            Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom,
+            string fieldJustification, string? fundProfileId = null, CancellationToken ct = default)
+        {
+            if (GateFieldEditDrafts)
+            {
+                DraftEntered.TrySetResult();
+                await ReleaseDrafts.Task;
+            }
+
+            return await _inner.CreateDraftAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, ct);
+        }
+
+        public Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default)
+            => _inner.GetAsync(revisionId, ct);
+
+        public Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default)
+            => _inner.ListBySecurityAsync(securityId, ct);
+
+        public Task<SecurityMasterRevisionRecord> TransitionAsync(
+            Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next,
+            string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default)
+            => _inner.TransitionAsync(revisionId, expected, next, actor, workflowIdForSubmit, ct);
     }
 
     [Fact]

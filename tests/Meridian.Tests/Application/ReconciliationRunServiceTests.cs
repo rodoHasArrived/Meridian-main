@@ -249,7 +249,9 @@ public sealed class ReconciliationRunServiceTests
         var request = new SecurityMasterAccountingEventRequest(
             RunId: "run-sm-fixed-coupon",
             PeriodStart: new DateOnly(2026, 1, 1),
-            PeriodEnd: new DateOnly(2026, 1, 31),
+            // Period end is EXCLUSIVE (the adapter supplies the next month's first day), so the
+            // 2026-01-31 coupon below is IN this period.
+            PeriodEnd: new DateOnly(2026, 2, 1),
             Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND2", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
             Positions: [new SecurityMasterAccountingPosition("BOND2", securityId, "acct-1", 100_000m)]);
 
@@ -316,7 +318,9 @@ public sealed class ReconciliationRunServiceTests
         var request = new SecurityMasterAccountingEventRequest(
             RunId: "run-sm-mismatch",
             PeriodStart: new DateOnly(2026, 1, 1),
-            PeriodEnd: new DateOnly(2026, 1, 31),
+            // Period end is EXCLUSIVE (the adapter supplies the next month's first day), so the
+            // 2026-01-31 coupon below is IN this period.
+            PeriodEnd: new DateOnly(2026, 2, 1),
             Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND3", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
             Positions: [new SecurityMasterAccountingPosition("BOND3", securityId, "acct-1", 100_000m)],
             ActualActivity: [new SecurityActualCashActivity("custodian", "coupon-row-mismatch", "acct-1", securityId, "BOND3", 1m, 0m, 1m, new DateOnly(2026, 1, 31), "Income")]);
@@ -333,6 +337,51 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "ACCRUAL_AMOUNT_MISMATCH");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithMissingEconomicDefinition_ShouldSurfaceRuleMissingBreak()
+    {
+        // A held security whose Security Master definition lookup MISSES must still reach the
+        // event service so it records a High-severity SECURITY_ACCOUNTING_RULE_MISSING
+        // completeness break. Filtering the position out (or suppressing the whole accounting
+        // result when every lookup misses) would report a clean reconciliation with no expected
+        // events and no break for a position the Security Master cannot account for.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-missing-definition"));
+
+        var securityId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL fixed income test security",
+            "Bond",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "CorporateBond"));
+
+        // No economic definition is registered: every lookup for the held security misses.
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-missing-definition"));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.HasSecurityMasterAccountingIssues.Should().BeTrue();
+        (detail.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Should().Contain(issue =>
+                issue.Code == "SECURITY_ACCOUNTING_RULE_MISSING" &&
+                issue.Severity == ReconciliationBreakSeverity.High);
     }
 
     [Fact]

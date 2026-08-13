@@ -53,18 +53,14 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             }
         }
 
-        if (definitions.Count == 0)
-        {
-            return null;
-        }
-
+        // Positions whose definition lookup MISSED are deliberately retained: the request still
+        // carries them (with no matching security) so the event service records a High-severity
+        // SECURITY_ACCOUNTING_RULE_MISSING completeness issue for each. Returning null here — or
+        // filtering them out below — would silently suppress expected events AND the break for a
+        // held security whose Security Master definition is unavailable.
         var securities = definitions.Values
             .Select(ToAccountingSecurity)
             .ToArray();
-        if (securities.Length == 0)
-        {
-            return null;
-        }
 
         var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
         if (factorSchedule.Count > 0)
@@ -74,7 +70,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         }
 
         var resolvedPositions = positions
-            .Where(position => position.SecurityId is Guid securityId && definitions.ContainsKey(securityId))
+            .Where(static position => position.SecurityId is not null)
             .GroupBy(
                 static position => $"{position.SecurityId!.Value:N}|{position.AccountId}|{position.Symbol}|{position.PositionId:N}",
                 StringComparer.OrdinalIgnoreCase)

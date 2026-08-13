@@ -449,6 +449,37 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_CouponOnExclusivePeriodEnd_BelongsToTheNextPeriod()
+    {
+        // The period end is EXCLUSIVE (the adapter supplies the next month's first day): a coupon
+        // dated exactly on the boundary is the NEXT period's event, where the same date is that
+        // run's PeriodStart. Emitting it here too would duplicate the expected cash event and
+        // journal preview for every security paying on the first of a month.
+        var service = new SecurityMasterAccountingEventService();
+        var result = service.Generate(CreateRequest(security: new SecurityMasterAccountingSecurity(
+            BondSecurityId,
+            "BOND1",
+            "Bond",
+            "USD",
+            new SecurityFixedIncomeTerms(
+                CouponRate: 0.06m,
+                CouponType: "Fixed",
+                DayCountConvention: "ACT/365",
+                PaymentFrequencyPerYear: 2,
+                IssueDate: new DateOnly(2025, 1, 1),
+                NextCouponDate: new DateOnly(2026, 2, 1),
+                MaturityDate: new DateOnly(2030, 1, 1),
+                AccrualStartDate: new DateOnly(2026, 1, 1),
+                CurrentFactor: 1m),
+            new SecurityAccountingRule("AvailableForSale", "GAAP"))));
+
+        result.ExpectedEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        result.ExpectedEvents.Should().NotContain(
+            item => item.EventKind == ExpectedAccountingEventKindDto.ReceiveCashInterest,
+            "a coupon dated on the exclusive period end is emitted by the next period's run, not this one");
+    }
+
+    [Fact]
     public void Generate_UnchangedFactorObservation_IsCoverageNotAPaydown()
     {
         // An observation whose factor equals its prior is the period's factor COVERAGE — no
