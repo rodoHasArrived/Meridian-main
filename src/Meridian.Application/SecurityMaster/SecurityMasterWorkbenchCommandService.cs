@@ -237,13 +237,16 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     request.FundProfileId, ct)
                     .ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex)
             {
                 // COMPENSATE the committed patch: without a draft revision there is no approval
                 // workflow that can ever govern the staged value, so leaving it would block governed
                 // runs behind SM_OVERRIDE_APPROVAL_REQUIRED until an operator happens to restage it.
                 // The overlay is reverted to the field's prior state (previous override restored, or
                 // the key removed when none existed) and the edit reports failure for a clean retry.
+                // Cancellation is a post-patch failure like any other — the patch is already durable
+                // — so the revert runs on CancellationToken.None: the canceled request token that
+                // aborted the draft creation must not also abort the compensation.
                 try
                 {
                     var compensation = new OperatorOverridesPatchRequest(
@@ -254,7 +257,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     {
                         ReasonCode = "field-edit draft creation failed; compensating overlay revert",
                     };
-                    await _overrides.PatchAsync(request.SecurityId, compensation, request.Actor, ct).ConfigureAwait(false);
+                    await _overrides.PatchAsync(request.SecurityId, compensation, request.Actor, CancellationToken.None).ConfigureAwait(false);
 
                     // The compensating patch reset the surviving values to Pending; when the prior
                     // overlay carried a recorded decision, re-record it so already-reviewed values do
@@ -270,15 +273,20 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                                 priorApprovalStatus,
                                 priorReviewer!,
                                 "Prior decision restored after a failed field-edit draft creation reverted the overlay."),
-                            ct).ConfigureAwait(false);
+                            CancellationToken.None).ConfigureAwait(false);
                     }
                 }
-                catch (Exception revertEx) when (revertEx is not OperationCanceledException)
+                catch (Exception revertEx)
                 {
                     _logger.LogError(
                         revertEx,
                         "Compensating overlay revert failed for {SecurityId} field {FieldPath}: a Pending override remains without a governing draft revision until the edit is retried or the value cleared.",
                         request.SecurityId, SanitizeForLog(fieldPath));
+                }
+
+                if (ex is OperationCanceledException)
+                {
+                    throw;
                 }
 
                 throw new InvalidOperationException(
@@ -633,11 +641,13 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     /// is safe: the override is Pending and no OTHER revision for this security is still staged
     /// (Draft/Submitted), since the decision approves the entire staged Values dictionary and
     /// would otherwise co-approve economics no reviewer has seen; the overlay deliberately stays
-    /// Pending until the LAST staged revision is approved. Returns true when a decision was
-    /// recorded. Callers choose the failure posture: the approve seam logs and defers (publish
-    /// converges), the publish seam propagates the failure while still retryable.
+    /// Pending until the LAST staged revision is approved. Callers choose the posture per outcome:
+    /// the approve seam accepts every outcome (publish converges), while the publish seam treats
+    /// <see cref="OverrideDecisionOutcome.Deferred"/> as a retryable publish failure — publishing
+    /// through a deferral would mark the revision Published while SM_OVERRIDE_APPROVAL_REQUIRED
+    /// still blocks its economics.
     /// </summary>
-    private async Task<bool> TryRecordOverrideApprovalDecisionAsync(
+    private async Task<OverrideDecisionOutcome> TryRecordOverrideApprovalDecisionAsync(
         Guid securityId, Guid revisionId, string reviewer, string? rationale, CancellationToken ct)
     {
         // The staged-revision check and the override decision run under the SAME per-security gate
@@ -655,25 +665,35 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 _logger.LogInformation(
                     "Operator-override approval for {SecurityId} deferred: other staged revisions are not yet approved, and the security-level decision would co-approve their unreviewed values.",
                     securityId);
-                return false;
+                return OverrideDecisionOutcome.Deferred;
             }
 
             var stagedOverride = await _overrides.GetAsync(securityId, ct).ConfigureAwait(false);
             if (stagedOverride is not { ApprovalStatus: SecurityOverrideApprovalStatusDto.Pending })
             {
-                return false;
+                return OverrideDecisionOutcome.NotPending;
             }
 
             await _overrides.RecordApprovalDecisionAsync(
                 securityId,
                 new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, reviewer, rationale),
                 ct).ConfigureAwait(false);
-            return true;
+            return OverrideDecisionOutcome.Recorded;
         }
         finally
         {
             fieldEditGate.Release();
         }
+    }
+
+    private enum OverrideDecisionOutcome
+    {
+        /// <summary>The Pending overlay's decision was recorded.</summary>
+        Recorded,
+        /// <summary>No Pending overlay exists to decide (none staged, or already decided).</summary>
+        NotPending,
+        /// <summary>Other revisions for the security are still staged; deciding now would co-approve their unreviewed values.</summary>
+        Deferred
     }
 
     public async Task<SecurityMasterPublishResultDto> PublishRevisionAsync(
@@ -758,12 +778,25 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // failure HERE fails closed while the revision is still Approved — the publish retry
         // re-runs everything, so a published edit can never leave its override stuck Pending
         // behind SM_OVERRIDE_APPROVAL_REQUIRED.
-        await TryRecordOverrideApprovalDecisionAsync(
+        var decisionOutcome = await TryRecordOverrideApprovalDecisionAsync(
             request.SecurityId,
             request.RevisionId,
             string.IsNullOrWhiteSpace(request.ApproverActor) ? request.Actor : request.ApproverActor,
             rationale: null,
             ct).ConfigureAwait(false);
+        if (decisionOutcome == OverrideDecisionOutcome.Deferred)
+        {
+            // A DEFERRED decision is a retryable publish failure, not a pass-through: other
+            // revisions for this security are still staged, so the overlay must stay Pending —
+            // publishing now would mark the revision Published while SM_OVERRIDE_APPROVAL_REQUIRED
+            // still blocks its economics. The revision stays Approved; handlers are idempotent, so
+            // the retry (after the other staged revisions are decided) re-runs the full fan-out.
+            throw new InvalidOperationException(
+                $"Revision '{request.RevisionId:D}' for security '{request.SecurityId:D}' cannot be published while " +
+                "other revisions for the security are still staged: the security-level override decision would " +
+                "co-approve their unreviewed values. Approve or discard the other staged revisions and retry; the " +
+                "revision remains Approved.");
+        }
 
         // Period-aware propagation resolves BEFORE the revision is marked Published: the
         // closed-period restatement decision is a REQUIRED publish side effect, and resolving it
@@ -1255,9 +1288,11 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     {
         var isWholeObject = string.Equals(canonicalFieldPath, ProfileFieldsRootPath, StringComparison.Ordinal);
         var isNestedField = canonicalFieldPath.StartsWith(ProfileFieldsNestedPrefix, StringComparison.Ordinal);
-        // Clears skip VALUE validation but still need key canonicalization: clearing
-        // profileFields.CurrentFactor must remove the canonical currentFactor override, not a
-        // casing-variant key that leaves the asserted value and its provenance active.
+        // Clears skip the asserted-VALUE type check (there is no asserted value) but still need
+        // key canonicalization — clearing profileFields.CurrentFactor must remove the canonical
+        // currentFactor override, not a casing-variant key — AND post-clear revalidation: the
+        // overlay that remains after removing the override must still satisfy the profile's date
+        // ordering and the resolved kind's invariants.
         var isClear = string.IsNullOrWhiteSpace(request.NewValue);
         if ((!isWholeObject && !isNestedField) || (isWholeObject && isClear))
         {
@@ -1453,13 +1488,16 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             // satisfy the resolved class's domain invariants before the edit stages. Undeclared
             // keys on CustomAsset records stay dynamic pass-through (the check no-ops there), and
             // clears revert toward the already-validated canonical value.
-            if (!isClear)
-            {
-                var undeclaredStagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
-                EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
-                    currentProjection!, profile, undeclaredStagedOverrides,
-                    editedFieldKey: nestedRemainder, proposedValue: request.NewValue, proposedReplacementRoot: null);
-            }
+            // The check runs for CLEARS too: removing one staged override reveals the base-layer
+            // value while every OTHER staged override stays applied, and that combination must
+            // still satisfy the resolved kind's invariants before it becomes the approvable
+            // overlay (proposedValue: null models exactly the post-clear layering).
+            var undeclaredStagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
+            EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
+                currentProjection!, profile, undeclaredStagedOverrides,
+                editedFieldKey: nestedRemainder,
+                proposedValue: isClear ? null : request.NewValue,
+                proposedReplacementRoot: null);
 
             return canonicalFieldPath;
         }
@@ -1489,6 +1527,56 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
                 currentProjection!, profile, stagedOverrides,
                 editedFieldKey: declared.Key, proposedValue: request.NewValue, proposedReplacementRoot: null);
+        }
+        else
+        {
+            // A CLEAR is an edit to the effective overlay too: removing this field's staged
+            // override reveals its base-layer value (a staged whole-object replacement, else the
+            // canonical projection) while every OTHER staged override stays applied — and that
+            // post-clear combination must still satisfy the profile's date ordering and the
+            // resolved kind's invariants. Otherwise stage an end date, stage a start date after
+            // the canonical end, then clear the end override: each asserted edit validates, but
+            // the clear leaves an approvable start-after-end overlay.
+            var stagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
+            IReadOnlyDictionary<string, string>? postClearOverrides = stagedOverrides;
+            if (stagedOverrides is not null)
+            {
+                var clearedPath = ProfileFieldsNestedPrefix + declared.Key;
+                var filtered = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (var (path, value) in stagedOverrides)
+                {
+                    if (!string.Equals(path, clearedPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        filtered[path] = value;
+                    }
+                }
+
+                postClearOverrides = filtered;
+            }
+
+            if (declared.FieldType == SecurityAssetProfileFieldTypeDto.Date)
+            {
+                foreach (var rule in profile.DateOrderRules)
+                {
+                    var involvesClearedField =
+                        string.Equals(rule.StartFieldKey, declared.Key, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(rule.EndFieldKey, declared.Key, StringComparison.OrdinalIgnoreCase);
+                    if (involvesClearedField
+                        && TryResolveEffectiveProfileDate(rule.StartFieldKey, currentProfileFields, postClearOverrides, out var start)
+                        && TryResolveEffectiveProfileDate(rule.EndFieldKey, currentProfileFields, postClearOverrides, out var end)
+                        && start > end)
+                    {
+                        throw new ArgumentException(
+                            $"Clearing profile field '{declared.Key}' leaves the effective overlay violating the " +
+                            $"pinned profile's date ordering [{rule.Code}]: {rule.Message}",
+                            nameof(request));
+                    }
+                }
+            }
+
+            EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
+                currentProjection!, profile, postClearOverrides,
+                editedFieldKey: declared.Key, proposedValue: null, proposedReplacementRoot: null);
         }
 
         // Persist under the pinned definition's key spelling — the case-insensitive lookup above

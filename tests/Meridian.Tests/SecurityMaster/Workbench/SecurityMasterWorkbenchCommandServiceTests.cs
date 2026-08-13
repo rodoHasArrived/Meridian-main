@@ -390,6 +390,70 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ClearingDateOverride_RevalidatesThePostClearOverlay()
+    {
+        // A CLEAR is an edit to the effective overlay too: with canonical endDate in March, a
+        // staged endDate override in December, and a staged November startDate (valid against the
+        // staged December end), clearing the endDate override reveals the canonical March end —
+        // the retained November start would then violate the profile's date ordering, so the
+        // clear must be refused instead of leaving an approvable start-after-end overlay.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope(
+            "dated-profile", profileVersion: 1,
+            profileFields: new { startDate = "2026-01-01", endDate = "2026-03-01" });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.profileFields.endDate"] = "2026-12-01",
+                    ["assetSpecificTerms.profileFields.startDate"] = "2026-11-01"
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.endDate",
+            NewValue: null,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Remove endDate override.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>(
+                "clearing the December endDate override reveals the canonical March end, behind the staged November start")
+            .WithMessage("*PF_DATE_ORDER*");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_StagedOverlayUnreadable_RejectsTheEditInsteadOfCanonicalFallback()
     {
         // FAIL-CLOSED: when the staged overlay cannot be LOADED, validating against canonical
@@ -937,15 +1001,57 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             Times.Once);
     }
 
-    private sealed class ThrowingRevisionStore : ISecurityMasterRevisionStore
+    [Fact]
+    public async Task UpdateSecurityField_DraftCreationCanceled_StillCompensatesTheStagedOverride()
     {
+        // Cancellation after the committed patch is a post-patch failure like any other: the
+        // canceled request token must not leave a Pending override with no governing revision, so
+        // the compensating revert runs on a non-canceled token before the cancellation propagates.
+        var harness = new Harness(
+            currentVersion: 3,
+            revisions: new ThrowingRevisionStore(new OperationCanceledException("request aborted")));
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturity = "2030-01-01",
+            par = 100m
+        });
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: "80",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<OperationCanceledException>();
+
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(),
+                It.Is<OperatorOverridesPatchRequest>(patch =>
+                    patch.RemoveKeys != null && patch.RemoveKeys.Contains("assetSpecificTerms.par")),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once);
+    }
+
+    private sealed class ThrowingRevisionStore(Exception? toThrow = null) : ISecurityMasterRevisionStore
+    {
+        private Exception Failure => toThrow ?? new InvalidOperationException("revision store down");
+
         public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
-            => throw new InvalidOperationException("revision store down");
+            => throw Failure;
 
         public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
             Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom,
             string fieldJustification, string? fundProfileId = null, CancellationToken ct = default)
-            => throw new InvalidOperationException("revision store down");
+            => throw Failure;
 
         public Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default)
             => Task.FromResult<SecurityMasterRevisionRecord?>(null);
@@ -2340,6 +2446,59 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             .ReturnsAsync(new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []));
         await harness.Service.PublishRevisionAsync(request);
         (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
+    }
+
+    [Fact]
+    public async Task Publish_OtherRevisionsStillStaged_FailsRetryablyInsteadOfPublishingThroughTheDeferral()
+    {
+        // A DEFERRED override decision must stop the publish: other revisions for the security are
+        // still staged, so the overlay stays Pending — transitioning to Published anyway would
+        // report a completed publish while SM_OVERRIDE_APPROVAL_REQUIRED still blocks the
+        // economics. The revision stays Approved; once the other staged revision is decided, the
+        // same publish retries to completion.
+        var harness = new Harness(currentVersion: 4, handlers: [new RecordingHandler(order: 10)]);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
+        var stagedDraftId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft);
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["EconomicDefinition.Coupon"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        var request = new PublishSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            ApproverActor: "ops.reviewer");
+
+        await harness.Service.Invoking(s => s.PublishRevisionAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*still staged*");
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved,
+            "a deferred override decision must leave the publish retryable");
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        // The other staged revision is decided (approved through its own gate) and the SAME
+        // publish retries to completion, recording the override decision on the way.
+        await harness.Revisions.TransitionAsync(
+            stagedDraftId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        await harness.Revisions.TransitionAsync(
+            stagedDraftId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        await harness.Service.PublishRevisionAsync(request);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision => decision.Decision == SecurityOverrideApprovalStatusDto.Approved),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]

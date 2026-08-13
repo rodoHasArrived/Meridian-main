@@ -234,9 +234,13 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         IReadOnlyDictionary<Guid, SecurityMasterAccountingSecurity> securities,
         IReadOnlyDictionary<string, SecurityMasterAccountingSecurity> securitiesBySymbol)
     {
-        if (position.SecurityId is Guid securityId && securities.TryGetValue(securityId, out var securityById))
+        if (position.SecurityId is Guid securityId)
         {
-            return securityById;
+            // An IDENTIFIED position resolves by id or not at all: falling back to the symbol map
+            // when the id has no accounting record would borrow ANOTHER security's terms and
+            // accounting rule whenever two listings share a ticker — generating incorrect accruals
+            // instead of the SECURITY_ACCOUNTING_RULE_MISSING completeness break the caller records.
+            return securities.TryGetValue(securityId, out var securityById) ? securityById : null;
         }
 
         return securitiesBySymbol.TryGetValue(position.Symbol, out var securityBySymbol) ? securityBySymbol : null;

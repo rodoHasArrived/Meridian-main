@@ -449,6 +449,31 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_IdentifiedPositionWithUnknownSecurityId_DoesNotBorrowAnotherListingsTerms()
+    {
+        // An IDENTIFIED position resolves by id or not at all: when its id has no accounting
+        // record but another security shares the ticker, falling back to the symbol map would
+        // generate accruals from the OTHER security's terms and accounting rule. The position must
+        // surface the SECURITY_ACCOUNTING_RULE_MISSING completeness break instead.
+        var service = new SecurityMasterAccountingEventService();
+        var unknownSecurityId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+        var result = service.Generate(CreateRequest(
+            position: new SecurityMasterAccountingPosition(
+                Symbol: "BOND1",
+                SecurityId: unknownSecurityId,
+                AccountId: "acct-1",
+                ParAmount: 100_000m,
+                CarryingPrice: 0.94m,
+                PositionId: BondPositionId)));
+
+        result.ExpectedEvents.Should().BeEmpty(
+            "an identified position with no matching accounting record must not borrow the same-ticker security's terms");
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "SECURITY_ACCOUNTING_RULE_MISSING" &&
+            issue.Severity == ReconciliationBreakSeverity.High);
+    }
+
+    [Fact]
     public void Generate_CouponOnExclusivePeriodEnd_BelongsToTheNextPeriod()
     {
         // The period end is EXCLUSIVE (the adapter supplies the next month's first day): a coupon

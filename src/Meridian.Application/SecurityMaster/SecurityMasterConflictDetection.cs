@@ -187,11 +187,28 @@ internal static class SecurityMasterConflictDetection
         => ReadComparableFieldValue(SecurityMasterMapping.ToDetail(projection), fieldPath);
 
     /// <summary>
+    /// The governed field paths whose values ARE numbers, and therefore the only paths where
+    /// numeric equality is meaningful. Everywhere else — Text, Enum, and code-valued fields —
+    /// numeric-looking strings keep their textual identity: a text pool ID of "001" and "1" are
+    /// DIFFERENT values, and comparing them numerically would let a resolution close a conflict
+    /// (and record a winning provenance) for a value that was never applied. ProfileFields.* stays
+    /// textual too: both sides of a profile-field comparison flow through
+    /// <see cref="ReadComparableProfileFieldValue"/>, whose G29 normalization already makes equal
+    /// numbers textually identical, while an undeclared or Text-typed field keeps its spelling.
+    /// </summary>
+    private static readonly HashSet<string> NumericComparableFieldPaths = new(StringComparer.Ordinal)
+    {
+        "EconomicTerms.couponRate",
+        "EconomicTerms.principalFace",
+    };
+
+    /// <summary>
     /// Whether a persisted field value and a recorded candidate value assert the same economics:
-    /// day counts compare through the canonical convention parser, numerics compare numerically
-    /// ("6.00" and "6.0" are the same coupon), and everything else falls back to trimmed
-    /// case-insensitive text. A blank persisted value matches nothing — absence is incompleteness,
-    /// not agreement.
+    /// day counts compare through the canonical convention parser, KNOWN NUMERIC term paths
+    /// compare numerically ("6.00" and "6.0" are the same coupon), and everything else compares as
+    /// trimmed case-insensitive text — numeric-looking strings on Text/Enum/code fields keep their
+    /// textual identity. A blank persisted value matches nothing — absence is incompleteness, not
+    /// agreement.
     /// </summary>
     internal static bool FieldValuesMatch(string fieldPath, string? persisted, string candidate)
     {
@@ -210,7 +227,8 @@ internal static class SecurityMasterConflictDetection
             }
         }
 
-        if (decimal.TryParse(persisted.Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var persistedNumber)
+        if (NumericComparableFieldPaths.Contains(fieldPath)
+            && decimal.TryParse(persisted.Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var persistedNumber)
             && decimal.TryParse(candidate.Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var candidateNumber))
         {
             return persistedNumber == candidateNumber;

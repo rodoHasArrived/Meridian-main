@@ -566,4 +566,22 @@ public sealed class SecurityMasterFieldConflictDetectionTests
             .ToArray();
         openForField.Should().ContainSingle("one live disagreement must surface exactly one resolvable queue entry");
     }
+
+    [Theory]
+    [InlineData("ProfileFields.poolId", "001", "1", false)]
+    [InlineData("ProfileFields.poolId", "001", "001", true)]
+    [InlineData("CommonTerms.countryOfRisk", "051", "51", false)]
+    [InlineData("EconomicTerms.paymentFrequency", "02", "2", false)]
+    [InlineData("EconomicTerms.couponRate", "6.00", "6.0", true)]
+    [InlineData("EconomicTerms.principalFace", "1000000", "1000000.00", true)]
+    public void FieldValuesMatch_RestrictsNumericEqualityToNumericTermPaths(
+        string fieldPath, string persisted, string candidate, bool expected)
+    {
+        // Numeric equality is meaningful only on the known numeric term paths: on Text, Enum, and
+        // code-valued fields a numeric-looking string keeps its textual identity — a text pool ID
+        // of "001" and "1" are DIFFERENT values, and matching them numerically would let a
+        // resolution close a conflict for a value that was never applied.
+        SecurityMasterConflictDetection.FieldValuesMatch(fieldPath, persisted, candidate)
+            .Should().Be(expected);
+    }
 }
