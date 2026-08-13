@@ -489,6 +489,216 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ProfileFieldsReplacement_ValidatesDateOrderAgainstStagedScalarOverrides()
+    {
+        // A staged PER-FIELD override outranks a whole-object replacement in the effective
+        // overlay: with endDate staged to February, replacing the object with an internally valid
+        // March→December pair still reads back as March-after-February after approval. The
+        // replacement must be judged against the effective overlay, not its own pair alone.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope(
+            "dated-profile", profileVersion: 1,
+            profileFields: new { startDate = "2026-01-01", endDate = "2026-12-01" });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.profileFields.endDate"] = "2026-02-01"
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields",
+            NewValue: """{"startDate":"2026-03-01","endDate":"2026-12-01"}""",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Date correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>(
+                "the staged February endDate override outranks the replacement's December value in the effective overlay")
+            .WithMessage("*PF_DATE_ORDER*");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileFieldEditOnResolvedClass_EnforcesResolvedKindInvariants()
+    {
+        // The seeded private-fund-interest profile permits commitment = 0 at the profile level,
+        // but a record RESOLVED to PrivateFundInterest is bound by the canonical kind invariant
+        // requiring a strictly positive commitment. A profile-valid edit that violates the
+        // resolved class's invariants must not stage an overlay the canonical amend seam rejects.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("PrivateFundInterest");
+        harness.SetProjectionProfileEnvelope(
+            "private-fund-interest", profileVersion: 1,
+            profileFields: new
+            {
+                gpSponsor = "Apex GP",
+                strategy = "Buyout",
+                vintage = 2024,
+                commitment = 1_000_000m,
+                fundedAmount = 250_000m,
+                unfundedAmount = 750_000m,
+                navDate = "2026-06-30"
+            },
+            assetClass: "PrivateFundInterest");
+
+        UpdateSecurityFieldRequest EditWith(string value) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.commitment",
+            NewValue: value,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Commitment correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(EditWith("0")))
+            .Should().ThrowAsync<ArgumentException>(
+                "the profile permits zero but the resolved PrivateFundInterest kind requires a positive commitment")
+            .WithMessage("*private_fund_commitment_invalid*");
+
+        var staged = await harness.Service.UpdateSecurityFieldAsync(EditWith("500000"));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a positive commitment satisfies both the profile and the resolved kind invariants");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileFieldsReplacementOnResolvedClass_EnforcesResolvedKindInvariants()
+    {
+        // A whole-object replacement is bound by the resolved class's invariants too: a
+        // replacement that satisfies every declared profile field but zeroes the commitment must
+        // be rejected before staging, not at the later canonical amend.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("PrivateFundInterest");
+        harness.SetProjectionProfileEnvelope(
+            "private-fund-interest", profileVersion: 1,
+            profileFields: new
+            {
+                gpSponsor = "Apex GP",
+                strategy = "Buyout",
+                vintage = 2024,
+                commitment = 1_000_000m,
+                fundedAmount = 250_000m,
+                unfundedAmount = 750_000m,
+                navDate = "2026-06-30"
+            },
+            assetClass: "PrivateFundInterest");
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields",
+            NewValue:
+                """{"gpSponsor":"Apex GP","strategy":"Buyout","vintage":2024,"commitment":0,"fundedAmount":0,"unfundedAmount":0,"navDate":"2026-06-30"}""",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Profile fields replacement.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*private_fund_commitment_invalid*");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_PrincipalScheduleReplacement_ValidatesAgainstRetainedBondTerms()
+    {
+        // Row-local shape validation alone lets a positive instalment after maturity, or
+        // instalments totaling more than par, stage cleanly and only fail at the later canonical
+        // amend. The replacement must be validated against the record's RETAINED issue/maturity
+        // window and principal face before staging.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturityDate = "2030-01-01",
+            par = 100m
+        });
+
+        UpdateSecurityFieldRequest ReplaceWith(string json) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.principalSchedule",
+            NewValue: json,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Schedule correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(ReplaceWith(
+                """[{"paymentDate":"2031-06-15","amount":10}]""")))
+            .Should().ThrowAsync<ArgumentException>("an instalment after the retained maturity cannot stage")
+            .WithMessage("*retained maturity date*");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(ReplaceWith(
+                """[{"paymentDate":"2025-06-15","amount":10}]""")))
+            .Should().ThrowAsync<ArgumentException>("an instalment before the retained issue date cannot stage")
+            .WithMessage("*retained issue date*");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(ReplaceWith(
+                """[{"paymentDate":"2027-06-15","amount":60},{"paymentDate":"2028-06-15","amount":50}]""")))
+            .Should().ThrowAsync<ArgumentException>("instalments summing past the retained principal face cannot stage")
+            .WithMessage("*principal face*");
+
+        var staged = await harness.Service.UpdateSecurityFieldAsync(ReplaceWith(
+            """[{"paymentDate":"2027-06-15","amount":60},{"paymentDate":"2028-06-15","amount":40}]"""));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a schedule inside the retained window and within par stages normally");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_PrincipalScheduleReplacement_FailsClosedWithoutRetainedTerms()
+    {
+        // When the projection cannot be loaded the replacement cannot be validated against the
+        // retained window and par — the reserved namespace only accepts validated writes.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        // No SetProjectionAssetTerms: the projection store resolves nothing.
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.principalSchedule",
+            NewValue: """[{"paymentDate":"2027-06-15","amount":10}]""",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Schedule correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*retained terms*");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ProfileFieldCasingVariant_PersistsUnderThePinnedProfileKey()
     {
         // The pinned-profile lookup is case-insensitive, so the persisted path must be rebuilt from
@@ -1495,24 +1705,41 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         /// Makes the projection store resolve the security with a pinned profile envelope so
         /// profileFields edits are validated against that profile's declared field types.
         /// </summary>
-        public void SetProjectionProfileEnvelope(string customProfileId, int profileVersion, object? profileFields = null)
+        public void SetProjectionProfileEnvelope(
+            string customProfileId, int profileVersion, object? profileFields = null, string assetClass = "CustomAsset")
+        {
+            SetProjectionAssetTerms(assetClass, new
+            {
+                customProfileId,
+                profileVersion,
+                profileFields = profileFields ?? new { }
+            });
+        }
+
+        /// <summary>
+        /// Makes the projection store resolve the security with the given asset class and
+        /// asset-specific terms so contextual retained-term validation (schedule windows, resolved
+        /// kind invariants) can bind against them. The common terms and provenance carry the
+        /// fields the canonical record mapping requires so kind reconstruction succeeds.
+        /// </summary>
+        public void SetProjectionAssetTerms(string assetClass, object assetSpecificTerms)
         {
             var projection = new SecurityProjectionRecord(
                 SecurityId: SecurityId,
-                AssetClass: "CustomAsset",
+                AssetClass: assetClass,
                 Status: SecurityStatusDto.Active,
                 DisplayName: "Profile-backed asset",
                 Currency: "USD",
                 PrimaryIdentifierKind: "InternalCode",
                 PrimaryIdentifierValue: "CUST-1",
-                CommonTerms: JsonSerializer.SerializeToElement(new { currency = "USD" }),
-                AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+                CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Profile-backed asset", currency = "USD" }),
+                AssetSpecificTerms: JsonSerializer.SerializeToElement(assetSpecificTerms),
+                Provenance: JsonSerializer.SerializeToElement(new
                 {
-                    customProfileId,
-                    profileVersion,
-                    profileFields = profileFields ?? new { }
+                    sourceSystem = "test",
+                    asOf = "2026-01-01T00:00:00+00:00",
+                    updatedBy = "test"
                 }),
-                Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
                 Version: 3,
                 EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-30),
                 EffectiveTo: null,

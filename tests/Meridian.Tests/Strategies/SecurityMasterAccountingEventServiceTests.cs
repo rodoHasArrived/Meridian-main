@@ -207,6 +207,51 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_CouponCoverageGap_ShouldStillGenerateFactorPaydowns()
+    {
+        // A canonical StructuredCredit legitimately carries no coupon rate, day count, or payment
+        // frequency: those coverage gaps gate COUPON accrual generation only. Factor paydowns are
+        // principal events driven by the retained factor evidence alone — skipping them for
+        // missing accrual inputs would silently drop principal events the schedule fully supports.
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            security: new SecurityMasterAccountingSecurity(
+                BondSecurityId,
+                "SCIO1",
+                "MortgageBackedSecurity",
+                "USD",
+                new SecurityFixedIncomeTerms(
+                    CouponRate: null,
+                    CouponType: null,
+                    DayCountConvention: null,
+                    PaymentFrequencyPerYear: null,
+                    CurrentFactor: 0.97m,
+                    OriginalFace: 100_000m,
+                    CurrentFace: 97_000m),
+                new SecurityAccountingRule("AvailableForSale", "GAAP")),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "trustee-report",
+                    EvidenceLink: "evidence://factor/scio-2026-01",
+                    SourceContentHash: "sha256:scio-factor-2026-01")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().Contain(issue => issue.Code == "SM_COUPON_TERMS_MISSING");
+        result.ExpectedEvents.Should().Contain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 3_000m);
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+    }
+
+    [Fact]
     public void Generate_MissingTerms_ShouldReturnStructuredPostureIssues()
     {
         var service = new SecurityMasterAccountingEventService();

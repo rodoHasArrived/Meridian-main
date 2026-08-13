@@ -275,15 +275,18 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
                     .Sum(static entry => entry.Amount);
                 outstanding = RoundCash(decimal.Max(0m, outstanding - paidBeforeAsOf));
             }
-            else if (appliedFactorEntry is not null)
+            else if ((appliedFactorEntry?.AsOfDate
+                ?? SecurityTermReader.ReadDate([security.AssetSpecificTerms], ["factorDate", "currentFactorDate"]))
+                is DateOnly factorEvidenceDate)
             {
                 // A DATED factor reflects principal events only up to its as-of date: a January
                 // factor of 0.8 does not know about February's contractual payment, so completed
                 // payments dated after the factor and before today still reduce the opening
                 // balance — otherwise later interest, maturity principal, and ledger postings are
-                // overstated. An undated scalar factor keeps the assumed-current fallback below.
+                // overstated. A scalar currentFactor with a retained factorDate is dated evidence
+                // too; only a genuinely undated scalar keeps the assumed-current fallback below.
                 var paidAfterFactor = contractualPrincipal
-                    .Where(entry => entry.PaymentDate > appliedFactorEntry.AsOfDate && entry.PaymentDate < asOfDate)
+                    .Where(entry => entry.PaymentDate > factorEvidenceDate && entry.PaymentDate < asOfDate)
                     .Sum(static entry => entry.Amount);
                 outstanding = RoundCash(decimal.Max(0m, outstanding - paidAfterFactor));
             }

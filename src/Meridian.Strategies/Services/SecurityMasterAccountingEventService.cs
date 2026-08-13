@@ -189,14 +189,19 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                     ReconciliationBreakSeverity.High));
             }
 
+            // Coupon-coverage completeness gates COUPON accrual generation only. Factor paydowns
+            // are principal events driven by the factor schedule alone: a canonical
+            // StructuredCredit legitimately carries no coupon rate, day count, or payment
+            // frequency in its economic terms, and skipping its paydowns for missing accrual
+            // inputs would silently drop principal events (and posting candidates) the record's
+            // retained factor evidence fully supports. The coverage issues still surface.
             var coverageIssues = ValidateFixedIncomeCoverage(security, position.AccountId);
             issues.AddRange(coverageIssues);
-            if (coverageIssues.Any(static issue => issue.Severity >= ReconciliationBreakSeverity.High))
+            if (!coverageIssues.Any(static issue => issue.Severity >= ReconciliationBreakSeverity.High))
             {
-                continue;
+                GenerateFixedCouponEvents(request, security, position, events, accruals, previews);
             }
 
-            GenerateFixedCouponEvents(request, security, position, events, accruals, previews);
             if (RequiresFactorSchedule(security) &&
                 GetFactorScheduleCoverageStatus(request, security.SecurityId) is { } factorScheduleStatus)
             {

@@ -329,7 +329,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             // StructuredCredit serializer carry no per-row priorFactor: the prior is the ORDERED
             // preceding entry's factor, derived over the whole array so an in-period row whose
             // predecessor falls outside the period still pairs correctly. The first observation
-            // has nothing to pay down FROM and produces no row. Dates already asserted by an
+            // pairs against the original-face baseline of 1.0. Dates already asserted by an
             // explicit legacy row are skipped — the explicit prior is authoritative.
             // The typed rows carry no per-row evidence link; the canonical StructuredCredit record
             // retains its trustee-report pointer as the free-text factorSchedule field, which is
@@ -362,9 +362,20 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 }
 
                 var ordered = typedRows.OrderBy(static row => row.AsOfDate).ToArray();
-                for (var i = 1; i < ordered.Length; i++)
+                for (var i = 0; i < ordered.Length; i++)
                 {
                     var row = ordered[i];
+                    // The FIRST observation's prior is the original-face baseline of 1.0: factors
+                    // are relative to original face, so a schedule opening below one records a
+                    // real first paydown (canonical validation does not require an explicit 1.00
+                    // baseline row). An explicit 1.00 opening pairs against itself and emits
+                    // nothing.
+                    var priorFactor = i == 0 ? 1.00m : ordered[i - 1].Factor;
+                    if (i == 0 && row.Factor == priorFactor)
+                    {
+                        continue;
+                    }
+
                     if (row.AsOfDate < periodStart ||
                         row.AsOfDate > periodEnd ||
                         !coveredDates.Add(row.AsOfDate))
@@ -375,7 +386,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     entries.Add(new SecurityFactorScheduleEntry(
                         definition.SecurityId,
                         row.AsOfDate,
-                        ordered[i - 1].Factor,
+                        priorFactor,
                         row.Factor,
                         ReadString(row.Item, "source") ?? ReadString(definition.Provenance, "source") ?? "security-master",
                         ReadString(row.Item, "evidenceLink") ?? typedRowEvidence,
@@ -415,17 +426,21 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     /// </summary>
     private static IEnumerable<JsonElement> EnumerateTypedFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
     {
-        if (TryGetArray(definition.LegacyAssetSpecificTerms, "factorScheduleEntries", out var rootEntries))
-        {
-            yield return rootEntries;
-        }
-
+        // Governed profileFields rows outrank outer duplicates, mirroring the term resolver's
+        // precedence: profileFields values are schema- and profile-validated on write, while an
+        // extra outer array on an envelope is ungoverned pass-through. Yielding the outer array
+        // first would let its dates claim coveredDates and suppress the governed rows.
         var profileFields = definition.LegacyAssetSpecificTerms is JsonElement legacyTerms
             ? GetObject(legacyTerms, "profileFields")
             : null;
         if (TryGetArray(profileFields, "factorScheduleEntries", out var nestedEntries))
         {
             yield return nestedEntries;
+        }
+
+        if (TryGetArray(definition.LegacyAssetSpecificTerms, "factorScheduleEntries", out var rootEntries))
+        {
+            yield return rootEntries;
         }
     }
 

@@ -506,6 +506,124 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPairFirstTypedFactorObservationAgainstParBaseline()
+    {
+        // A typed schedule whose FIRST retained observation is already below one records a real
+        // first paydown: factors are relative to original face, so the 0.97 opening pairs against
+        // the implicit 1.00 baseline (canonical validation does not require an explicit 1.00 row).
+        // Before the fix the first observation was skipped outright and the paydown never posted.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-first-typed-factor"));
+
+        var securityId = Guid.Parse("77777777-7777-4777-8777-777777777777");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL mortgage-backed first-observation security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("77777777-7777-4777-8777-777777777778");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule: null,
+            typedFactorEntries:
+            [
+                (new DateOnly(2026, 3, 21), 0.97m)
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-first-typed-factor"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 0.30m &&
+            item.EconomicEvent!.BookPositionId == positionId);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPreferGovernedProfileFieldsFactorEntries()
+    {
+        // A profile-backed record persists its governed typed schedule beneath
+        // profileFields; an extra outer factorScheduleEntries array on the same envelope is
+        // ungoverned pass-through. The governed rows must claim the paydown dates first — here
+        // the profileFields 1.00→0.97 pair produces the 0.30 paydown, and the contradictory
+        // outer 0.50 row for the same date is suppressed rather than tripling the paydown.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-governed-factor-entries"));
+
+        var securityId = Guid.Parse("88888888-8888-4888-8888-888888888888");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL profile-backed structured security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("88888888-8888-4888-8888-888888888889");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule: null,
+            typedFactorEntries:
+            [
+                (new DateOnly(2026, 3, 21), 0.50m)
+            ],
+            profileFieldsFactorEntries:
+            [
+                (new DateOnly(2026, 2, 21), 1.00m),
+                (new DateOnly(2026, 3, 21), 0.97m)
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-governed-factor-entries"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 0.30m);
+        detail.ExpectedAccountingEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount != 0.30m);
+    }
+
+    [Fact]
     public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPreserveMortgageBackedAssetClassForFactorPaydown()
     {
         var store = new StrategyRunStore();
@@ -1270,7 +1388,8 @@ public sealed class ReconciliationRunServiceTests
         string assetFamily = "FixedIncome",
         string subType = "CorporateBond",
         string typeName = "CorporateBond",
-        IReadOnlyList<(DateOnly AsOfDate, decimal Factor)>? typedFactorEntries = null)
+        IReadOnlyList<(DateOnly AsOfDate, decimal Factor)>? typedFactorEntries = null,
+        IReadOnlyList<(DateOnly AsOfDate, decimal Factor)>? profileFieldsFactorEntries = null)
     {
         var commonTerms = JsonSerializer.SerializeToElement(new
         {
@@ -1348,16 +1467,26 @@ public sealed class ReconciliationRunServiceTests
                     new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero))
             ],
             LegacyAssetClass: null,
-            LegacyAssetSpecificTerms: typedFactorEntries is null
+            LegacyAssetSpecificTerms: typedFactorEntries is null && profileFieldsFactorEntries is null
                 ? null
                 : JsonSerializer.SerializeToElement(new
                 {
                     factorSchedule = "trustee-report-2026-03",
-                    factorScheduleEntries = typedFactorEntries.Select(static entry => new
+                    factorScheduleEntries = typedFactorEntries?.Select(static entry => new
                     {
                         asOfDate = entry.AsOfDate.ToString("yyyy-MM-dd"),
                         factor = entry.Factor
-                    }).ToArray()
+                    }).ToArray(),
+                    profileFields = profileFieldsFactorEntries is null
+                        ? null
+                        : new
+                        {
+                            factorScheduleEntries = profileFieldsFactorEntries.Select(static entry => new
+                            {
+                                asOfDate = entry.AsOfDate.ToString("yyyy-MM-dd"),
+                                factor = entry.Factor
+                            }).ToArray()
+                        }
                 }));
     }
 

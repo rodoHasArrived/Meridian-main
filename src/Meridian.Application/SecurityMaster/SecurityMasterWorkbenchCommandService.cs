@@ -658,11 +658,137 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             throw new ArgumentException(error, nameof(request));
         }
 
+        await EnsurePrincipalScheduleReplacementFitsRetainedTermsAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
+
         return await EnsureProfileFieldEditMatchesPinnedProfileAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
     }
 
     private const string ProfileFieldsRootPath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "profileFields";
     private const string ProfileFieldsNestedPrefix = ProfileFieldsRootPath + ".";
+    private const string PrincipalSchedulePath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "principalSchedule";
+
+    /// <summary>
+    /// A whole principalSchedule replacement passes the static schema validator on ROW-LOCAL shape
+    /// alone (parseable payment dates, positive amounts), but the canonical Bond contract also
+    /// binds the schedule to the record it overlays: instalments must fall inside the retained
+    /// issue/maturity window and must not sum past the retained principal face. Without this check
+    /// an operator can stage — and approve — a schedule paying principal after maturity or
+    /// overpaying par, and only the later canonical amend surfaces the contradiction. Validates
+    /// the replacement against the record's retained structured terms when the projection store is
+    /// wired; the edit fails CLOSED when the retained terms cannot be loaded, matching the
+    /// reserved namespace's validated-writes-only contract.
+    /// </summary>
+    private async Task EnsurePrincipalScheduleReplacementFitsRetainedTermsAsync(
+        UpdateSecurityFieldRequest request, string canonicalFieldPath, CancellationToken ct)
+    {
+        if (_projectionStore is null
+            || !string.Equals(canonicalFieldPath, PrincipalSchedulePath, StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(request.NewValue))
+        {
+            return;
+        }
+
+        SecurityProjectionRecord? projection = null;
+        try
+        {
+            projection = await _projectionStore.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Loading the projection for {SecurityId} failed while validating a principalSchedule replacement.",
+                request.SecurityId);
+        }
+
+        if (projection is null)
+        {
+            throw new InvalidOperationException(
+                $"The retained terms for security '{request.SecurityId:D}' could not be loaded, so the " +
+                "principalSchedule replacement cannot be validated against the record's issue/maturity window and " +
+                "principal face. Retry once the projection is available; the namespace only accepts validated writes.");
+        }
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(SecurityMasterMapping.ToDetail(projection));
+        using var document = JsonDocument.Parse(request.NewValue);
+        var scheduledTotal = 0m;
+        foreach (var row in document.RootElement.EnumerateArray())
+        {
+            // Row shape (object, parseable date, positive amount) was already enforced by the
+            // schema validator; unreadable rows here would only be duplicated diagnostics.
+            if (!TryReadScheduleRowDate(row, out var paymentDate) || !TryReadScheduleRowAmount(row, out var amount))
+            {
+                continue;
+            }
+
+            scheduledTotal += amount;
+            if (terms.IssueDate is DateOnly issueDate && paymentDate < issueDate)
+            {
+                throw new ArgumentException(
+                    $"principalSchedule replacement pays principal on {paymentDate:yyyy-MM-dd}, before the record's " +
+                    $"retained issue date {issueDate:yyyy-MM-dd}.",
+                    nameof(request));
+            }
+
+            if (terms.MaturityDate is DateOnly maturityDate && paymentDate > maturityDate)
+            {
+                throw new ArgumentException(
+                    $"principalSchedule replacement pays principal on {paymentDate:yyyy-MM-dd}, after the record's " +
+                    $"retained maturity date {maturityDate:yyyy-MM-dd}.",
+                    nameof(request));
+            }
+        }
+
+        if (terms.PrincipalFace is > 0m && scheduledTotal > terms.PrincipalFace.Value)
+        {
+            throw new ArgumentException(
+                $"principalSchedule replacement instalments total {scheduledTotal} and exceed the record's retained " +
+                $"principal face {terms.PrincipalFace.Value}.",
+                nameof(request));
+        }
+    }
+
+    private static bool TryReadScheduleRowDate(JsonElement row, out DateOnly value)
+    {
+        value = default;
+        if (row.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (var property in row.EnumerateObject())
+        {
+            if (string.Equals(property.Name, "paymentDate", StringComparison.OrdinalIgnoreCase)
+                && property.Value.ValueKind == JsonValueKind.String
+                && DateOnly.TryParse(property.Value.GetString(), System.Globalization.CultureInfo.InvariantCulture, out value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryReadScheduleRowAmount(JsonElement row, out decimal value)
+    {
+        value = default;
+        if (row.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (var property in row.EnumerateObject())
+        {
+            if (string.Equals(property.Name, "amount", StringComparison.OrdinalIgnoreCase)
+                && property.Value.ValueKind == JsonValueKind.Number
+                && property.Value.TryGetDecimal(out value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// The static asset-terms schema cannot type dynamic profile-governed fields — their contract
@@ -697,6 +823,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto? profile = null;
         JsonElement? currentProfileFields = null;
+        SecurityProjectionRecord? currentProjection = null;
         if (_projectionStore is not null && _assetProfileCatalog is not null)
         {
             try
@@ -712,6 +839,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                     && _assetProfileCatalog.TryGetProfile(profileId.GetString()!, profileVersion, out var resolved))
                 {
                     profile = resolved;
+                    currentProjection = projection;
                     if (terms.Value.TryGetProperty("profileFields", out var persistedFields)
                         && persistedFields.ValueKind == JsonValueKind.Object)
                     {
@@ -796,19 +924,28 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
             // The complete profile rule set includes cross-field date ordering, not just per-field
             // shape: individually valid start/end dates in reverse order violate the pinned
-            // profile just as a mistyped value does.
+            // profile just as a mistyped value does. Each rule date resolves from the EFFECTIVE
+            // overlay, not the replacement alone — a staged PER-FIELD override outranks a
+            // whole-object replacement when the record is read after approval, so checking only
+            // the replacement's own pair would stage an object that reads back as start-after-end
+            // once the retained scalar override is applied on top of it.
+            var wholeObjectStagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
             foreach (var rule in profile.DateOrderRules)
             {
-                if (TryReadProfileDate(document.RootElement, rule.StartFieldKey, out var start)
-                    && TryReadProfileDate(document.RootElement, rule.EndFieldKey, out var end)
+                if (TryResolveEffectiveReplacementDate(rule.StartFieldKey, document.RootElement, wholeObjectStagedOverrides, out var start)
+                    && TryResolveEffectiveReplacementDate(rule.EndFieldKey, document.RootElement, wholeObjectStagedOverrides, out var end)
                     && start > end)
                 {
                     throw new ArgumentException(
                         $"profileFields replacement violates the pinned profile's date ordering " +
-                        $"[{rule.Code}]: {rule.Message}",
+                        $"against the effective overlay [{rule.Code}]: {rule.Message}",
                         nameof(request));
                 }
             }
+
+            EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
+                currentProjection!, profile, wholeObjectStagedOverrides,
+                editedFieldKey: null, proposedValue: null, proposedReplacementRoot: document.RootElement);
 
             return canonicalFieldPath;
         }
@@ -857,15 +994,22 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // a whole-object replacement does: moving startDate after the RETAINED endDate violates
         // the pinned profile even though the value is individually valid, and staging it would put
         // a draft and provenance row behind a contract the equivalent object replacement rejects.
-        if (!isClear && declared.FieldType == SecurityAssetProfileFieldTypeDto.Date)
+        if (!isClear)
         {
-            // The counterpart date must come from the EFFECTIVE overlay, not just the canonical
-            // projection: an already staged override of the other date is what the record will
-            // read after approval, so validating against the superseded canonical value would let
-            // two individually plausible edits stage a start-after-end overlay.
+            // The counterpart values must come from the EFFECTIVE overlay, not just the canonical
+            // projection: an already staged override is what the record will read after approval,
+            // so validating against superseded canonical values would let two individually
+            // plausible edits stage an overlay that violates the profile or the resolved kind.
             var stagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
-            EnsureScalarDateEditSatisfiesDateOrderRules(
-                profile, declared.Key, request.NewValue!, currentProfileFields, stagedOverrides);
+            if (declared.FieldType == SecurityAssetProfileFieldTypeDto.Date)
+            {
+                EnsureScalarDateEditSatisfiesDateOrderRules(
+                    profile, declared.Key, request.NewValue!, currentProfileFields, stagedOverrides);
+            }
+
+            EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
+                currentProjection!, profile, stagedOverrides,
+                editedFieldKey: declared.Key, proposedValue: request.NewValue, proposedReplacementRoot: null);
         }
 
         // Persist under the pinned definition's key spelling — the case-insensitive lookup above
@@ -1004,6 +1148,227 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// The EFFECTIVE date a whole-object profileFields replacement stages for
+    /// <paramref name="fieldKey"/>: a staged per-field override outranks the replacement (the
+    /// override layer is applied on top of the object layer when the record is read), so date-order
+    /// rules must bind against it — only in its absence does the replacement's own value apply. A
+    /// previously staged whole-object replacement is NOT consulted: the replacement being validated
+    /// supersedes it.
+    /// </summary>
+    private static bool TryResolveEffectiveReplacementDate(
+        string fieldKey,
+        JsonElement replacementRoot,
+        IReadOnlyDictionary<string, string>? stagedOverrides,
+        out DateOnly value)
+    {
+        value = default;
+        if (stagedOverrides is not null)
+        {
+            var overridePath = ProfileFieldsNestedPrefix + fieldKey;
+            foreach (var (path, overrideValue) in stagedOverrides)
+            {
+                if (string.Equals(path, overridePath, StringComparison.OrdinalIgnoreCase)
+                    && DateOnly.TryParse(overrideValue.Trim(), System.Globalization.CultureInfo.InvariantCulture, out value))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return TryReadProfileDate(replacementRoot, fieldKey, out value);
+    }
+
+    /// <summary>
+    /// A profile-governed field edit on a record whose asset class RESOLVED past CustomAsset
+    /// (e.g. a private-fund-interest envelope reclassified to PrivateFundInterest) must satisfy
+    /// the resolved class's domain invariants, not just the pinned profile's field rules: the
+    /// seeded profile permits <c>commitment = 0</c> while the PrivateFundInterest kind requires a
+    /// strictly positive commitment, so a profile-valid edit could stage — and approve — an
+    /// overlay the canonical amend seam rejects. Reconstructs the record's EFFECTIVE profileFields
+    /// (base object layer, staged per-field overrides, then the proposed edit), parses the
+    /// resolved kind from the effective envelope, and runs the canonical kind invariants. Fails
+    /// CLOSED when the effective terms cannot be reconstructed or parsed — a reserved-namespace
+    /// edit whose effective outcome cannot be validated must not stage.
+    /// </summary>
+    private static void EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
+        SecurityProjectionRecord projection,
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto profile,
+        IReadOnlyDictionary<string, string>? stagedOverrides,
+        string? editedFieldKey,
+        string? proposedValue,
+        JsonElement? proposedReplacementRoot)
+    {
+        if (string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(projection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+        {
+            // A CustomAsset overlay is governed by the pinned profile alone; there is no resolved
+            // kind whose invariants could tighten the profile's declared field rules.
+            return;
+        }
+
+        try
+        {
+            var effectiveFields = BuildEffectiveProfileFields(
+                projection, profile, stagedOverrides, editedFieldKey, proposedValue, proposedReplacementRoot);
+            var envelope = System.Text.Json.Nodes.JsonNode.Parse(projection.AssetSpecificTerms.GetRawText())?.AsObject()
+                ?? throw new InvalidOperationException("The record's assetSpecificTerms envelope is not a JSON object.");
+            foreach (var variantKey in envelope
+                .Where(static property => string.Equals(property.Key, "profileFields", StringComparison.OrdinalIgnoreCase))
+                .Select(static property => property.Key)
+                .ToArray())
+            {
+                envelope.Remove(variantKey);
+            }
+
+            envelope["profileFields"] = effectiveFields;
+            var effectiveTerms = JsonSerializer.SerializeToElement(envelope);
+            var kind = SecurityMasterMapping.ToRecord(projection with { AssetSpecificTerms = effectiveTerms }).Kind;
+            var invariantErrors = Meridian.FSharp.SecurityMasterInterop.SecurityMasterCommandFacade.ValidateKindInvariants(kind);
+            if (invariantErrors.Length > 0)
+            {
+                var summary = string.Join("; ", invariantErrors.Select(static e => $"[{e.Code}] {e.Message}"));
+                throw new ArgumentException(
+                    $"The effective profileFields overlay violates the resolved asset class " +
+                    $"'{projection.AssetClass}' domain invariants: {summary}");
+            }
+        }
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            throw new ArgumentException(
+                $"The effective profileFields overlay for security '{projection.SecurityId:D}' could not be " +
+                $"reconstructed and validated against the resolved asset class '{projection.AssetClass}' " +
+                $"({ex.Message}); the namespace only accepts validated writes.", ex);
+        }
+    }
+
+    /// <summary>
+    /// Layers the record's effective profileFields the way the post-approval read applies them:
+    /// the base object layer (the proposed whole-object replacement when this edit IS one, else a
+    /// previously staged whole-object replacement, else the canonical profileFields), then staged
+    /// per-field overrides on top, then the proposed scalar edit (which supersedes any staged
+    /// override of the same field).
+    /// </summary>
+    private static System.Text.Json.Nodes.JsonObject BuildEffectiveProfileFields(
+        SecurityProjectionRecord projection,
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto profile,
+        IReadOnlyDictionary<string, string>? stagedOverrides,
+        string? editedFieldKey,
+        string? proposedValue,
+        JsonElement? proposedReplacementRoot)
+    {
+        System.Text.Json.Nodes.JsonObject baseFields;
+        if (proposedReplacementRoot is JsonElement replacementRoot)
+        {
+            baseFields = System.Text.Json.Nodes.JsonNode.Parse(replacementRoot.GetRawText())!.AsObject();
+        }
+        else
+        {
+            string? stagedRootReplacement = null;
+            if (stagedOverrides is not null)
+            {
+                foreach (var (path, overrideValue) in stagedOverrides)
+                {
+                    if (string.Equals(path, ProfileFieldsRootPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        stagedRootReplacement = overrideValue;
+                        break;
+                    }
+                }
+            }
+
+            if (stagedRootReplacement is not null)
+            {
+                baseFields = System.Text.Json.Nodes.JsonNode.Parse(stagedRootReplacement)!.AsObject();
+            }
+            else if (projection.AssetSpecificTerms is { ValueKind: JsonValueKind.Object } terms
+                && terms.TryGetProperty("profileFields", out var persisted)
+                && persisted.ValueKind == JsonValueKind.Object)
+            {
+                baseFields = System.Text.Json.Nodes.JsonNode.Parse(persisted.GetRawText())!.AsObject();
+            }
+            else
+            {
+                baseFields = new System.Text.Json.Nodes.JsonObject();
+            }
+        }
+
+        if (stagedOverrides is not null)
+        {
+            foreach (var (path, overrideValue) in stagedOverrides)
+            {
+                if (!path.StartsWith(ProfileFieldsNestedPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var overriddenKey = path[ProfileFieldsNestedPrefix.Length..];
+                if (overriddenKey.Length == 0
+                    || overriddenKey.Contains('.', StringComparison.Ordinal)
+                    || (editedFieldKey is not null
+                        && string.Equals(overriddenKey, editedFieldKey, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Deeper subpaths are rejected as edits for declared fields and stay dynamic
+                    // junk for undeclared ones; the edited field's old override is superseded by
+                    // the proposed value below.
+                    continue;
+                }
+
+                SetEffectiveProfileField(baseFields, profile, overriddenKey, overrideValue);
+            }
+        }
+
+        if (editedFieldKey is not null && proposedValue is not null)
+        {
+            SetEffectiveProfileField(baseFields, profile, editedFieldKey, proposedValue);
+        }
+
+        return baseFields;
+    }
+
+    /// <summary>
+    /// Writes a string-staged override into the effective profileFields object coerced to the
+    /// declared field type (overrides are stored as strings while the kind parser reads typed
+    /// JSON), replacing any case-variant spelling of the key so the layered value cannot fork
+    /// from the canonical one.
+    /// </summary>
+    private static void SetEffectiveProfileField(
+        System.Text.Json.Nodes.JsonObject fields,
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto profile,
+        string key,
+        string value)
+    {
+        var declared = profile.Fields.FirstOrDefault(
+            field => string.Equals(field.Key, key, StringComparison.OrdinalIgnoreCase));
+        var canonicalKey = declared?.Key ?? key;
+        foreach (var variantKey in fields
+            .Where(property => string.Equals(property.Key, canonicalKey, StringComparison.OrdinalIgnoreCase))
+            .Select(static property => property.Key)
+            .ToArray())
+        {
+            fields.Remove(variantKey);
+        }
+
+        var trimmed = value.Trim();
+        System.Text.Json.Nodes.JsonNode? node = declared?.FieldType switch
+        {
+            SecurityAssetProfileFieldTypeDto.Decimal when decimal.TryParse(
+                trimmed, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var decimalValue)
+                => System.Text.Json.Nodes.JsonValue.Create(decimalValue),
+            SecurityAssetProfileFieldTypeDto.Integer when int.TryParse(
+                trimmed, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var integerValue)
+                => System.Text.Json.Nodes.JsonValue.Create(integerValue),
+            SecurityAssetProfileFieldTypeDto.Boolean when bool.TryParse(trimmed, out var booleanValue)
+                => System.Text.Json.Nodes.JsonValue.Create(booleanValue),
+            _ => System.Text.Json.Nodes.JsonValue.Create(value)
+        };
+        fields[canonicalKey] = node;
     }
 
     private static bool ProfileFieldStringIsValid(

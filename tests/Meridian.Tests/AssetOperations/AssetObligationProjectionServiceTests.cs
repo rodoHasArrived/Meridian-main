@@ -174,6 +174,43 @@ public sealed class AssetObligationProjectionServiceTests
     }
 
     [Fact]
+    public void ProjectFromSecurityMaster_DatedScalarFactor_CompletedPaymentsAfterItReduceOpeningPrincipal()
+    {
+        // The scalar 0.8 currentFactor carries a retained factorDate of 2026-01-01: it is DATED
+        // evidence, reflecting principal only through that date exactly like a schedule entry.
+        // The completed 2026-03-01 instalment postdates it, so the opening principal must absorb
+        // it (80 - 10); treating the dated scalar as current would leave the January balance
+        // standing across February's completed payment and overstate the maturity flow.
+        var security = MakeStructuredCredit(assetTerms: new
+        {
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 100m,
+            couponOrIndex = "SOFR+250",
+            maturity = "2031-06-15",
+            currentFactor = 0.8m,
+            factorDate = "2026-01-01",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2026-03-01", amount = 10m },
+                new { paymentDate = "2030-06-15", amount = 10m },
+            }
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        var repayment = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "PrincipalRepayment").Subject;
+        repayment.DueDate.Should().Be(new DateOnly(2030, 6, 15),
+            "the completed 2026-03-01 instalment must not re-project as newly due");
+        repayment.Amount.Should().Be(10m);
+        var maturityFlow = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "Maturity").Subject;
+        maturityFlow.Amount.Should().Be(60m,
+            "opening principal absorbs the completed payment dated after the scalar factor's date (80 - 10) before the future 10 amortizes");
+    }
+
+    [Fact]
     public void ProjectFromSecurityMaster_StructuredCredit_ZeroFactorProjectsNoPrincipal()
     {
         // Zero is a real factor — a fully amortized pool. Conflating it with a MISSING factor

@@ -326,8 +326,17 @@ public sealed class AssetObligationProjectionService
         // still reduce the opening balance (via a synthesized full-face factor) and only current or
         // future instalments project.
         var appliedFactorEntry = ResolveAppliedFactorEntry(terms, projectionAsOf);
+        // A scalar currentFactor with a retained factorDate is DATED evidence: it reflects
+        // principal only through that date, exactly like a schedule entry, so treating it as
+        // current would leave a January balance standing across February's completed payment.
+        // Only a genuinely undated scalar is assumed current (reflects everything before today).
+        DateOnly? scalarFactorDate = TryReadDate(payload, out var retainedFactorDate, "factorDate", "currentFactorDate")
+            ? retainedFactorDate
+            : null;
         DateOnly? factorReflectsThrough = appliedFactorEntry?.AsOfDate
-            ?? (terms.CurrentFactor is not null ? projectionAsOf.AddDays(-1) : null);
+            ?? (terms.CurrentFactor is not null
+                ? (scalarFactorDate ?? projectionAsOf.AddDays(-1))
+                : null);
 
         // Contractual payments before the projection as-of have already OCCURRED — the run is as of
         // today, so projecting them again would report a completed instalment as newly due (and
