@@ -690,7 +690,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // failure here never strands the flow: it is logged and PUBLISH — which fails closed and
         // is fully retryable before its own transition — converges the decision. The decision is
         // also deferred while OTHER revisions for this security are still staged: the override
-        // decision is security-level and would co-approve their unreviewed values.
+        // decision is security-level and would co-approve their unreviewed values. Everything past
+        // the transition runs on CancellationToken.None with a catch-all: the approval is already
+        // durable, so a caller's canceled token must neither skip the best-effort convergence nor
+        // surface the committed approval as a canceled request.
         try
         {
             await TryRecordOverrideApprovalDecisionAsync(
@@ -698,9 +701,9 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 request.RevisionId,
                 decisionReviewer,
                 request.Rationale,
-                ct).ConfigureAwait(false);
+                CancellationToken.None).ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex)
         {
             _logger.LogError(
                 ex,
@@ -708,7 +711,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 request.RevisionId, request.SecurityId);
         }
 
-        var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+        var currentVersion = await GetCurrentVersionAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Security Master revision {RevisionId} for {SecurityId} approved through gate workflow {WorkflowId} by {Actor}",
@@ -741,59 +744,75 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
-            if (revisions.Any(revision => revision.RevisionId != revisionId
-                && revision.State is SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted))
-            {
-                _logger.LogInformation(
-                    "Operator-override approval for {SecurityId} deferred: other staged revisions are not yet approved, and the security-level decision would co-approve their unreviewed values.",
-                    securityId);
-                return OverrideDecisionOutcome.Deferred;
-            }
-
-            var stagedOverride = await _overrides.GetAsync(securityId, ct).ConfigureAwait(false);
-            if (stagedOverride is not { ApprovalStatus: SecurityOverrideApprovalStatusDto.Pending })
-            {
-                return OverrideDecisionOutcome.NotPending;
-            }
-
-            // The security-level decision approves the ENTIRE Values dictionary, and the generic
-            // operator-overrides PATCH endpoint can add free-form keys to it without creating a
-            // revision or acquiring this gate. A key no revision governs carries a value no
-            // reviewer's workflow ever saw — recording Approved would silently approve it on the
-            // back of an unrelated revision's gate approval. Defer until every overlay key has
-            // revision evidence: the ungoverned value must be withdrawn (or re-staged through the
-            // governed field-edit route) before any security-level decision can land. A
-            // WHOLE-RECORD revision (no field path) reviews the record and its overlay as one
-            // unit — the legacy pre-field-edit posture — so its presence governs every key.
-            var wholeRecordRevisionGoverns = revisions.Any(static revision =>
-                string.IsNullOrWhiteSpace(revision.FieldPath)
-                && revision.State is not SecurityMasterRevisionStateDto.Rejected);
-            if (!wholeRecordRevisionGoverns)
-            {
-                var ungovernedKeys = stagedOverride.Values.Keys
-                    .Where(key => !revisions.Any(revision =>
-                        string.Equals(revision.FieldPath, key, StringComparison.OrdinalIgnoreCase)))
-                    .ToArray();
-                if (ungovernedKeys.Length > 0)
-                {
-                    _logger.LogWarning(
-                        "Operator-override approval for {SecurityId} deferred: overlay key(s) {UngovernedKeys} have no governing revision (staged through the generic overrides route); withdraw them or re-stage them through the governed field-edit route.",
-                        securityId, SanitizeForLog(string.Join(",", ungovernedKeys)));
-                    return OverrideDecisionOutcome.Deferred;
-                }
-            }
-
-            await _overrides.RecordApprovalDecisionAsync(
-                securityId,
-                new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, reviewer, rationale),
-                ct).ConfigureAwait(false);
-            return OverrideDecisionOutcome.Recorded;
+            return await RecordOverrideApprovalDecisionUnderGateAsync(
+                securityId, revisionId, reviewer, rationale, ct).ConfigureAwait(false);
         }
         finally
         {
             fieldEditGate.Release();
         }
+    }
+
+    /// <summary>
+    /// Gate-free core of <see cref="TryRecordOverrideApprovalDecisionAsync"/> for callers that
+    /// ALREADY hold this security's field-edit gate — the discard flow converges a published
+    /// restore owner's decision from inside its own gate-held region, and the gate is a
+    /// non-reentrant semaphore, so re-entering through the gated wrapper would deadlock the
+    /// discard. Callers MUST hold the gate; everyone else goes through the wrapper.
+    /// </summary>
+    private async Task<OverrideDecisionOutcome> RecordOverrideApprovalDecisionUnderGateAsync(
+        Guid securityId, Guid revisionId, string reviewer, string? rationale, CancellationToken ct)
+    {
+        var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
+        if (revisions.Any(revision => revision.RevisionId != revisionId
+            && revision.State is SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted))
+        {
+            _logger.LogInformation(
+                "Operator-override approval for {SecurityId} deferred: other staged revisions are not yet approved, and the security-level decision would co-approve their unreviewed values.",
+                securityId);
+            return OverrideDecisionOutcome.Deferred;
+        }
+
+        var stagedOverride = await _overrides.GetAsync(securityId, ct).ConfigureAwait(false);
+        if (stagedOverride is not { ApprovalStatus: SecurityOverrideApprovalStatusDto.Pending })
+        {
+            return OverrideDecisionOutcome.NotPending;
+        }
+
+        // The security-level decision approves the ENTIRE Values dictionary, and the generic
+        // operator-overrides PATCH endpoint can add free-form keys to it without creating a
+        // revision. A key no revision governs carries a value no reviewer's workflow ever saw —
+        // recording Approved would silently approve it on the back of an unrelated revision's
+        // gate approval. Defer until every overlay key has revision evidence: the ungoverned
+        // value must be withdrawn (or re-staged through the governed field-edit route) before any
+        // security-level decision can land. Only the decision's OWN revision being WHOLE-RECORD
+        // (no field path) exempts the scan: that revision's reviewer reviewed the record and its
+        // overlay as one unit — the legacy pre-field-edit posture. A historical whole-record
+        // revision exempts nothing: its reviewer never saw keys patched in after it was decided,
+        // and one old Published whole-record row would otherwise waive the scan forever.
+        var decidedRevision = revisions.FirstOrDefault(revision => revision.RevisionId == revisionId);
+        var wholeRecordRevisionGoverns = decidedRevision is not null
+            && string.IsNullOrWhiteSpace(decidedRevision.FieldPath);
+        if (!wholeRecordRevisionGoverns)
+        {
+            var ungovernedKeys = stagedOverride.Values.Keys
+                .Where(key => !revisions.Any(revision =>
+                    string.Equals(revision.FieldPath, key, StringComparison.OrdinalIgnoreCase)))
+                .ToArray();
+            if (ungovernedKeys.Length > 0)
+            {
+                _logger.LogWarning(
+                    "Operator-override approval for {SecurityId} deferred: overlay key(s) {UngovernedKeys} have no governing revision (staged through the generic overrides route); withdraw them or re-stage them through the governed field-edit route.",
+                    securityId, SanitizeForLog(string.Join(",", ungovernedKeys)));
+                return OverrideDecisionOutcome.Deferred;
+            }
+        }
+
+        await _overrides.RecordApprovalDecisionAsync(
+            securityId,
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, reviewer, rationale),
+            ct).ConfigureAwait(false);
+        return OverrideDecisionOutcome.Recorded;
     }
 
     private enum OverrideDecisionOutcome
@@ -804,6 +823,28 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         NotPending,
         /// <summary>Other revisions for the security are still staged; deciding now would co-approve their unreviewed values.</summary>
         Deferred
+    }
+
+    public async Task<OperatorOverridesDto> PatchOperatorOverridesAsync(
+        Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        // The generic overrides route adds or removes free-form overlay keys without staging a
+        // revision. It must hold the same per-security gate the field-edit, approve, submit, and
+        // discard routes serialize under: without it, a raw patch can land between an approval's
+        // ungoverned-key scan and its recorded decision, and the security-level Approved would
+        // silently co-approve a value no reviewer ever saw.
+        var fieldEditGate = FieldEditGates.GetOrAdd(securityId, static _ => new SemaphoreSlim(1, 1));
+        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await _overrides.PatchAsync(securityId, request, updatedBy, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            fieldEditGate.Release();
+        }
     }
 
     public async Task<SecurityMasterPublishResultDto> PublishRevisionAsync(

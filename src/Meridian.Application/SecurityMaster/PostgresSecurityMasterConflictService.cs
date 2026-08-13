@@ -130,6 +130,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         }
 
         var fieldConflict = IsFieldLevelConflict(openConflict.ConflictKind);
+        long? persistedVersion = null;
         var resolvingField = newStatus == "Resolved" && fieldConflict;
         var selectedSource = resolvingField
             ? ResolveSelectedSource(openConflict, request.ChosenWinnerSource, request.Resolution)
@@ -147,11 +148,12 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             // a live disagreement that post-write reconciliation then skips (it ignores closed
             // rows). The obsolete handling below refreshes a self-revising candidate or
             // supersedes a third-party replacement instead.
-            var (persistedValue, recordSourceSystem) = await ReadPersistedFieldValueAsync(
+            var (persistedValue, recordSourceSystem, lockedVersion) = await ReadPersistedFieldValueAsync(
                 connection,
                 transaction,
                 openConflict,
                 ct).ConfigureAwait(false);
+            persistedVersion = lockedVersion;
             var persistedContradictsDecision = resolvingField
                 ? !FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue)
                 : SecurityMasterConflictDetection.FieldConflictIsObsolete(openConflict, persistedValue);
@@ -270,7 +272,13 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                     Confidence: null,
                     Origin: SecurityFieldProvenanceOrigins.ConflictResolution,
                     OriginReference: updated.ConflictId.ToString("D"),
-                    RecordedAt: resolutionTime),
+                    RecordedAt: resolutionTime,
+                    // The row is ordered by the projection version the resolution validated
+                    // against: the persisted-value check above ran on the securities row locked at
+                    // this version in this same transaction. Without it (null), the version-bounded
+                    // invalidation an OLDER amendment's retry issues would treat the row as
+                    // always-eligible and delete a resolution recorded against a newer version.
+                    SourceVersion: persistedVersion),
                 ct).ConfigureAwait(false);
         }
 
@@ -342,7 +350,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             $"Conflict '{conflict.ConflictId:D}' can only resolve to '{conflict.ProviderA}' or '{conflict.ProviderB}'.");
     }
 
-    private async Task<(string? Value, string RecordSourceSystem)> ReadPersistedFieldValueAsync(
+    private async Task<(string? Value, string RecordSourceSystem, long? Version)> ReadPersistedFieldValueAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityMasterConflict conflict,
@@ -352,7 +360,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            select currency, common_terms::text, asset_specific_terms::text, effective_from, provenance::text
+            select currency, common_terms::text, asset_specific_terms::text, effective_from, provenance::text, version
             from {Qualified("securities")}
             where security_id = @security_id
             for update;
@@ -362,7 +370,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            return (null, SecurityMasterProvenanceReader.UnknownSource);
+            return (null, SecurityMasterProvenanceReader.UnknownSource, null);
         }
 
         var recordSourceSystem = SecurityMasterProvenanceReader
@@ -391,7 +399,10 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             0,
             new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
             null);
-        return (SecurityMasterConflictDetection.ReadComparableFieldValue(detail, conflict.FieldPath, _assetProfileCatalog), recordSourceSystem);
+        return (
+            SecurityMasterConflictDetection.ReadComparableFieldValue(detail, conflict.FieldPath, _assetProfileCatalog),
+            recordSourceSystem,
+            reader.GetInt64(5));
     }
 
     /// <summary>

@@ -979,6 +979,7 @@ public static class SecurityMasterEndpoints
             OperatorOverridesPatchRequest request,
             HttpContext context,
             [FromServices] IOperatorOverridesStore store,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
             // The assetSpecificTerms.* namespace is reserved for the governed workbench edit route,
@@ -1004,7 +1005,14 @@ public static class SecurityMasterEndpoints
             }
 
             var actor = ResolveActor(context);
-            var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
+            // The workbench decision seam scans overlay keys for revision evidence under a
+            // per-security gate before recording the security-level Approved; a bare store patch
+            // can land between that scan and the decision and be silently co-approved. When the
+            // host wires the workbench service, the patch goes through its gate-held seam so the
+            // write serializes with that scan.
+            var updated = workbenchService is null
+                ? await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false)
+                : await workbenchService.PatchOperatorOverridesAsync(securityId, request, actor, ct).ConfigureAwait(false);
             return Results.Json(updated, jsonOptions);
         })
         .WithName("PatchSecurityMasterOperatorOverrides")

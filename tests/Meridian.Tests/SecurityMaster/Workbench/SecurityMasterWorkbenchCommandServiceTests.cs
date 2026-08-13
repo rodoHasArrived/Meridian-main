@@ -3335,6 +3335,235 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             "removing the last deferring draft must converge the published owner's decision");
     }
 
+    [Fact]
+    public async Task Discard_LatestDraft_ConvergesThePublishedRestoreOwnersDecision()
+    {
+        // The published restore owner's decision re-converges INSIDE the discard's gate-held
+        // region, and the decision seam acquires the SAME non-reentrant per-security gate — the
+        // discard must route through the seam's under-gate core, because re-entering the gated
+        // wrapper would deadlock the discard right after it restored the published value.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 3);
+        var published = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-20), "Winning edit (100).",
+            fieldValue: new SecurityMasterRevisionFieldValue("100"));
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst",
+            workflowIdForSubmit: workflowId);
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
+        await Task.Delay(10);
+        var latest = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Abandoned edit (200).",
+            fieldValue: new SecurityMasterRevisionFieldValue("200"));
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Approved, reviewer: "gate.reviewer"));
+        var decided = false;
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.par"] = decided ? "100" : "200" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = decided
+                    ? SecurityOverrideApprovalStatusDto.Approved
+                    : SecurityOverrideApprovalStatusDto.Pending
+            });
+        harness.Overrides
+            .Setup(o => o.RecordApprovalDecisionAsync(SecurityId, It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()))
+            .Callback(() => decided = true)
+            .ReturnsAsync((OperatorOverridesDto)null!);
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+                SecurityId, latest.RevisionId, "ops.analyst", "Second edit abandoned."))
+            .WaitAsync(TimeSpan.FromSeconds(10));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision =>
+                    decision.Decision == SecurityOverrideApprovalStatusDto.Approved
+                    && decision.Reviewer == "gate.reviewer"),
+                It.IsAny<CancellationToken>()),
+            Times.Once,
+            "restoring a published owner's value must re-record its decision without re-acquiring the held gate");
+    }
+
+    [Fact]
+    public async Task Discard_LastDeferringDraft_UngovernedKey_LeavesTheOverlayPending()
+    {
+        // Convergence records Approved for the ENTIRE surviving overlay, so it enforces the same
+        // per-key governance rule as the decision seam: a free-form key patched in through the
+        // generic overrides route has no revision evidence, and converging past it would approve
+        // a value no published reviewer ever saw. The overlay stays Pending instead.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 3);
+        var published = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-20), "Winning edit (100).",
+            fieldValue: new SecurityMasterRevisionFieldValue("100"));
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst",
+            workflowIdForSubmit: workflowId);
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
+        await Task.Delay(10);
+        var deferring = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.couponRate", DateTimeOffset.UtcNow, "Abandoned edit.",
+            fieldValue: new SecurityMasterRevisionFieldValue("5"));
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Approved, reviewer: "gate.reviewer"));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.par"] = "100",
+                    ["annotations.freeform"] = "patched outside any revision"
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, deferring.RevisionId, "ops.analyst", "Abandoned."));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never,
+            "an overlay key with no governing revision must keep the convergence deferred");
+    }
+
+    [Fact]
+    public async Task Approve_HistoricalWholeRecordRevision_DoesNotWaiveTheUngovernedKeyScan()
+    {
+        // Only the decision's OWN revision being whole-record exempts the ungoverned-key scan:
+        // that reviewer reviewed the record and its overlay as one unit. A HISTORICAL Published
+        // whole-record revision reviewed the overlay as it was THEN — its reviewer never saw keys
+        // patched in afterwards, so one old row must not waive the scan for every later
+        // field-level decision.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var legacy = await harness.Revisions.CreateDraftAsync(SecurityId, "ops.analyst");
+        await harness.Revisions.TransitionAsync(
+            legacy.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        await harness.Revisions.TransitionAsync(
+            legacy.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        await harness.Revisions.TransitionAsync(
+            legacy.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
+        await Task.Delay(10);
+        var revision = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.",
+            fieldValue: new SecurityMasterRevisionFieldValue("80"));
+        await harness.Revisions.TransitionAsync(
+            revision.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst",
+            workflowIdForSubmit: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.par"] = "80",
+                    ["annotations.freeform"] = "patched outside any revision"
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revision.RevisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never,
+            "a historical whole-record revision must not waive the ungoverned-key scan for a field-level decision");
+    }
+
+    [Fact]
+    public async Task Approve_DecisionConvergenceCanceled_StillReportsTheApprovedRevision()
+    {
+        // The gate approval and the Submitted→Approved transition are irreversible by the time
+        // the override decision converges, so everything past the transition runs on
+        // CancellationToken.None with a catch-all: a canceled convergence must not surface the
+        // committed approval as a canceled request — publish converges the decision later,
+        // fail-closed.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        var result = await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Approved,
+            "the durable approval must be reported even when the best-effort decision convergence is canceled");
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+    }
+
+    [Fact]
+    public async Task PatchOperatorOverrides_WhileFieldEditIsMidFlight_WaitsForTheGate()
+    {
+        // The generic overrides patch seam holds the same per-security gate as the field-edit,
+        // approve, submit, and discard routes: a free-form key must not land between an in-flight
+        // edit's committed patch and its draft creation (nor between an approval's ungoverned-key
+        // scan and its recorded decision).
+        var revisions = new GatedRevisionStore();
+        var harness = new Harness(currentVersion: 2, revisions: revisions);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturity = "2030-01-01",
+            par = 100m
+        });
+
+        revisions.GateFieldEditDrafts = true;
+        var editTask = harness.Service.UpdateSecurityFieldAsync(new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 2,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: "80",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction."));
+        await revisions.DraftEntered.Task;
+
+        var patchTask = harness.Service.PatchOperatorOverridesAsync(
+            SecurityId,
+            new OperatorOverridesPatchRequest(
+                SetValues: new Dictionary<string, string> { ["annotations.freeform"] = "raw patch" },
+                RemoveKeys: null),
+            "ops.analyst");
+        await Task.Delay(100);
+        patchTask.IsCompleted.Should().BeFalse(
+            "the raw patch must wait for the per-security gate the in-flight edit holds");
+
+        revisions.ReleaseDrafts.TrySetResult();
+        await Task.WhenAll(editTask, patchTask);
+    }
+
     private sealed class GatedRevisionStore : ISecurityMasterRevisionStore
     {
         private readonly InMemorySecurityMasterRevisionStore _inner = new();

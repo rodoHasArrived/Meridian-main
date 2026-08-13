@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Application.SecurityMaster;
@@ -50,6 +51,17 @@ public interface ISecurityMasterWorkbenchCommandService
     /// </summary>
     Task<SecurityMasterEditResultDto> DiscardRevisionAsync(
         DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Applies a raw operator-overrides patch (the generic overrides route's free-form sets and
+    /// removals) under the SAME per-security serialization the field-edit, approve, submit, and
+    /// discard routes hold. Hosts that wire the workbench must route the generic PATCH endpoint
+    /// through this seam instead of the bare store: an ungated patch can land between an
+    /// approval's ungoverned-key scan and its recorded security-level decision, silently
+    /// co-approving a value no reviewer ever saw.
+    /// </summary>
+    Task<OperatorOverridesDto> PatchOperatorOverridesAsync(
+        Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default);
 
     /// <summary>Approves a submitted revision through the operations-continuity approval gate.</summary>
     Task<SecurityMasterEditResultDto> ApproveRevisionAsync(

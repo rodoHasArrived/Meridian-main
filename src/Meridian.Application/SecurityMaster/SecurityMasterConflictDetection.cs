@@ -276,12 +276,20 @@ internal static class SecurityMasterConflictDetection
     /// a later canonical write that matches NEITHER recorded candidate replaced both sources'
     /// asserted values, so the conflict can never resolve to either candidate and only blocks the
     /// queue. A null/blank persisted value is NOT obsolescence — absence of a readable value must
-    /// not silently retire a real disagreement.
+    /// not silently retire a real disagreement — with one exception mirroring
+    /// <see cref="FieldValuesMatch"/>: the principal schedule's normalized EMPTY form is the empty
+    /// string, an ASSERTED bullet structure rather than absence (readers return null for genuine
+    /// absence), so an asserted-empty canonical write can supersede nonempty candidates.
     /// </summary>
     internal static bool FieldConflictIsObsolete(SecurityMasterConflict conflict, string? persistedValue)
-        => !string.IsNullOrWhiteSpace(persistedValue)
-           && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueA)
-           && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueB);
+    {
+        var persistedAsserted = !string.IsNullOrWhiteSpace(persistedValue)
+            || (persistedValue is { Length: 0 }
+                && string.Equals(conflict.FieldPath, "EconomicTerms.principalSchedule", StringComparison.Ordinal));
+        return persistedAsserted
+            && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueA)
+            && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueB);
+    }
 
     /// <summary>
     /// Whether <paramref name="source"/> is one of the conflict's own candidate providers, and

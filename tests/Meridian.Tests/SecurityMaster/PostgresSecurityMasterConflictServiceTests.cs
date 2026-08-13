@@ -275,6 +275,52 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_ResolutionProvenance_CarriesTheLockedVersionPastOlderInvalidations()
+    {
+        // The resolution's persisted-value check runs against the securities row locked at a
+        // specific version in the close transaction, and the provenance row it writes is ordered
+        // by THAT version. A null version would make the row always-eligible under the
+        // version-bounded invalidation an OLDER amendment's retry issues — v2's fallback could
+        // delete the attribution a resolution recorded against v3.
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US4581401001", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US4581401001", "provB") with
+        {
+            Currency = "EUR",
+            Version = 3,
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        await canonicalStore.UpsertProjectionAsync(incoming, CancellationToken.None);
+        var service = NewService(canonicalStore);
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var open = await service.GetOpenConflictsAsync(CancellationToken.None);
+        var conflict = open.Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+
+        await service.ResolveAsync(
+            new ResolveConflictRequest(conflict.ConflictId, "AcceptB", "operator@meridian.test", "provB confirmed."),
+            CancellationToken.None);
+
+        var provenanceStore = new PostgresSecurityFieldProvenanceStore(_fixture.Options);
+        var row = (await provenanceStore.GetAsync(securityId, CancellationToken.None)).Should().ContainSingle().Subject;
+        row.SourceVersion.Should().Be(3, "the resolution row is ordered by the projection version its close transaction locked");
+
+        await provenanceStore.RemoveAsync(
+            securityId, conflict.FieldPath, SecurityFieldProvenanceOrigins.ConflictResolution,
+            clearedAt: DateTimeOffset.UtcNow.AddMinutes(1), maxSourceVersion: 2, CancellationToken.None);
+        (await provenanceStore.GetAsync(securityId, CancellationToken.None)).Should().ContainSingle(
+            "an invalidation bounded at version 2 must not delete a resolution recorded against version 3");
+
+        await provenanceStore.RemoveAsync(
+            securityId, conflict.FieldPath, SecurityFieldProvenanceOrigins.ConflictResolution,
+            clearedAt: DateTimeOffset.UtcNow.AddMinutes(1), maxSourceVersion: 3, CancellationToken.None);
+        (await provenanceStore.GetAsync(securityId, CancellationToken.None)).Should().BeEmpty(
+            "an invalidation at or past the resolution's own version legitimately retires it");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task ResolveAsync_FieldConflict_PersistedValueMatchingNeitherCandidate_SupersedesTheConflict()
     {
         // provA (USD) vs provB (EUR) opened the conflict; a provC amendment persisted GBP — a

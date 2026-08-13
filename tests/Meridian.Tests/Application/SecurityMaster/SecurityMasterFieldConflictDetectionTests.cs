@@ -251,6 +251,30 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public void FieldConflictIsObsolete_AssertedEmptySchedule_SupersedesBothNonEmptyCandidates()
+    {
+        // The asserted-empty schedule is a READABLE third value, not absence: a canonical write
+        // that persists the bullet structure replaced BOTH sources' instalment claims, so the open
+        // sinker-versus-sinker conflict is obsolete — treating the normalized "" as a blank would
+        // pin the conflict open forever against a value neither candidate can ever match again.
+        var conflict = new SecurityMasterConflict(
+            Guid.NewGuid(), Guid.NewGuid(), SecurityMasterConflictKinds.EconomicTermMismatch,
+            "EconomicTerms.principalSchedule",
+            "Bloomberg", "2028-06-15:30|2029-06-15:20",
+            "Reuters", "2028-06-15:25|2029-06-15:25",
+            DetectedAt, "Open");
+
+        SecurityMasterConflictDetection.FieldConflictIsObsolete(conflict, string.Empty)
+            .Should().BeTrue("an asserted-empty canonical schedule matches neither instalment candidate");
+        SecurityMasterConflictDetection.FieldConflictIsObsolete(conflict, null)
+            .Should().BeFalse("a genuinely absent schedule is incompleteness, not obsolescence");
+
+        var coupon = conflict with { FieldPath = "EconomicTerms.couponRate", ValueA = "5", ValueB = "6" };
+        SecurityMasterConflictDetection.FieldConflictIsObsolete(coupon, string.Empty)
+            .Should().BeFalse("blank values on other paths keep the absence-is-incompleteness rule");
+    }
+
+    [Fact]
     public void DetectFieldConflicts_OmittedScheduleAgainstInstalments_DoesNotConflict()
     {
         // ABSENCE is not an assertion: a sparse provider that simply omits the principalSchedule

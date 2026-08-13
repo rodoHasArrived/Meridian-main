@@ -268,7 +268,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                 }
                             }
 
-                            await TryRecordOverrideApprovalDecisionAsync(
+                            // The discard already holds this security's field-edit gate, and the
+                            // gate is non-reentrant — the gated wrapper would deadlock here, so
+                            // the decision goes through its under-gate core directly.
+                            await RecordOverrideApprovalDecisionUnderGateAsync(
                                 request.SecurityId,
                                 restoreOwner.RevisionId,
                                 decisionReviewer,
@@ -483,6 +486,28 @@ public sealed partial class SecurityMasterWorkbenchCommandService
             {
                 // No published evidence to converge from; the Pending values await a new edit.
                 return;
+            }
+
+            // The same per-key governance rule the decision seam enforces applies here: converging
+            // records Approved for the ENTIRE surviving Values dictionary, and a key patched in
+            // through the generic overrides route has no revision evidence — no published
+            // reviewer ever saw its value. Only a WHOLE-RECORD published owner (the legacy
+            // pre-field-edit posture, whose reviewer reviewed the record and overlay as one unit)
+            // waives the scan; otherwise every surviving key needs a governing revision, and an
+            // ungoverned key leaves the overlay Pending until it is withdrawn or re-staged.
+            if (!string.IsNullOrWhiteSpace(latestPublished.FieldPath))
+            {
+                var ungovernedKeys = overlay.Values.Keys
+                    .Where(key => !revisions.Any(revision =>
+                        string.Equals(revision.FieldPath, key, StringComparison.OrdinalIgnoreCase)))
+                    .ToArray();
+                if (ungovernedKeys.Length > 0)
+                {
+                    _logger.LogWarning(
+                        "Re-converging the published overlay decision for {SecurityId} after discarding revision {RevisionId} deferred: overlay key(s) {UngovernedKeys} have no governing revision; withdraw them or re-stage them through the governed field-edit route.",
+                        request.SecurityId, request.RevisionId, SanitizeForLog(string.Join(",", ungovernedKeys)));
+                    return;
+                }
             }
 
             var reviewer = request.Actor;
