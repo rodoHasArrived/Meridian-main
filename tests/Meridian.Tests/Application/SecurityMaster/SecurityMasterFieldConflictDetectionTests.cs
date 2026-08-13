@@ -236,6 +236,90 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public void DetectFieldConflicts_OmittedScheduleAgainstInstalments_DoesNotConflict()
+    {
+        // ABSENCE is not an assertion: a sparse provider that simply omits the principalSchedule
+        // property said nothing about the structure, so no bullet-versus-sinker conflict may open
+        // against a provider that supplied instalments — only an explicitly asserted empty array
+        // (the resolver keeps that distinct from a missing property) is a bullet claim.
+        var current = Record("Bloomberg", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-15", amount = 30m }
+            }
+        });
+        var incoming = Record("Reuters", new
+        {
+            maturityDate = "2031-01-15"
+        });
+
+        var conflicts = SecurityMasterConflictDetection.DetectFieldConflicts(current, incoming, DetectedAt);
+
+        conflicts.Should().NotContain(conflict => conflict.FieldPath == "EconomicTerms.principalSchedule",
+            "an omitted schedule property is absence, not an asserted bullet structure");
+    }
+
+    [Fact]
+    public async Task RecordFieldConflictsAsync_DeclaredCurrencyProfileField_OpensConflict()
+    {
+        // Profile governance does not reserve 'currency': a profile may declare it, and the
+        // record-level currency comparison reads projection.Currency — never the nested
+        // profileFields value — so excluding the name from the dynamic comparison would leave the
+        // declared field with no comparator at all.
+        var currencyProfile = new SecurityAssetProfileDefinitionDto(
+            "currency-profile",
+            1,
+            "Currency Profile",
+            "PrivateDebt",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "currency", "Settlement currency", SecurityAssetProfileFieldTypeDto.Text, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "currency profile");
+        var catalog = new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog(
+            Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault()
+                .GetProfiles()
+                .Append(currencyProfile)
+                .ToArray());
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance, catalog);
+
+        var current = Record("Bloomberg", new
+        {
+            customProfileId = "currency-profile",
+            profileVersion = 1,
+            profileFields = new { currency = "USD" }
+        });
+        var incoming = Record("Reuters", new
+        {
+            customProfileId = "currency-profile",
+            profileVersion = 1,
+            profileFields = new { currency = "EUR" }
+        });
+
+        await service.RecordFieldConflictsAsync(current, incoming, CancellationToken.None);
+
+        (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Should().Contain(c => c.FieldPath == "ProfileFields.currency",
+                "the declared currency profile field has no other comparator covering its nested value");
+    }
+
+    [Fact]
     public void DetectFieldConflicts_SameDayInstalmentsSplitAcrossRows_DoNotConflict()
     {
         // A source splitting a payment date's amount across rows asserts the same economics as one

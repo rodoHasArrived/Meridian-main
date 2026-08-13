@@ -384,6 +384,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             changeEntry);
     }
 
+    public async Task<SecurityMasterConflictResolutionDto> ResolveSourceConflictAtCurrentVersionAsync(
+        ResolveSourceConflictRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+        return await ResolveSourceConflictAsync(request with { ExpectedVersion = currentVersion }, ct).ConfigureAwait(false);
+    }
+
     public async Task<SecurityMasterConflictResolutionDto> ResolveSourceConflictAsync(
         ResolveSourceConflictRequest request, CancellationToken ct = default)
     {
@@ -478,6 +486,27 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // The ENTIRE submission — preflight, gate-workflow mutation, and revision transition —
+        // runs under the same per-security gate the field-edit, approval, and discard routes
+        // hold. Without it, a discard can transition the revision to Rejected and withdraw its
+        // overlay while this method awaits the external workflow submission: the submission then
+        // commits a Submitted workflow before the Draft→Submitted CAS fails, leaving an unbound,
+        // still-approvable workflow the discard never retired (it observed a plain Draft).
+        var fieldEditGate = FieldEditGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
+        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await SubmitForApprovalUnderGateAsync(request, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            fieldEditGate.Release();
+        }
+    }
+
+    private async Task<SecurityMasterEditResultDto> SubmitForApprovalUnderGateAsync(
+        SubmitSecurityMasterRevisionRequest request, CancellationToken ct)
+    {
         // Preflight the revision BEFORE mutating the approval gate: a stale/mistyped revision id must
         // not leave an orphaned submitted workflow that can never be published. The TransitionAsync
         // CAS below remains the authority against concurrent advancement.

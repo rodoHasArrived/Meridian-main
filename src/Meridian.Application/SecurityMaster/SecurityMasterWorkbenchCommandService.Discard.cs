@@ -420,6 +420,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                     }
                 }
             }
+
+            // This discard may have removed the LAST staged revision that was deferring the
+            // security-level decision for values whose governing revisions are all PUBLISHED
+            // (e.g. a published owner's restored value stayed Pending because an unrelated draft
+            // deferred it, and that draft is what was just discarded). No approval or publish
+            // operation remains to converge such an overlay — every live revision is gone — so
+            // the discard converges it here, best-effort.
+            await TryConvergePublishedOverlayDecisionAsync(request).ConfigureAwait(false);
         }
         finally
         {
@@ -435,5 +443,79 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         return BuildLifecycleResult(request.SecurityId, request.RevisionId, currentVersion,
             SecurityMasterRevisionStateDto.Rejected, request.Actor, request.Reason, "operator-field-edit-discarded",
             "Staged revision discarded; the staged override value was withdrawn.");
+    }
+
+    /// <summary>
+    /// Converges a Pending overlay whose surviving values are governed ONLY by Published revisions
+    /// — the state left when discards remove every staged revision that was deferring a published
+    /// owner's restored decision. No approval or publish operation remains that could record the
+    /// decision (published revisions never re-enter the lifecycle), so the discard that removed
+    /// the last deferring revision records Approved with the reviewer retained by the latest
+    /// published revision's bound workflow. Best-effort: a failure leaves the overlay Pending and
+    /// is logged; any live (Draft/Submitted/Approved) revision, or the absence of published
+    /// evidence, leaves the decision to the normal approval/publish seams.
+    /// </summary>
+    private async Task TryConvergePublishedOverlayDecisionAsync(DiscardSecurityMasterRevisionRequest request)
+    {
+        try
+        {
+            var overlay = await _overrides.GetAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
+            if (overlay is not { Values.Count: > 0 }
+                || overlay.ApprovalStatus != SecurityOverrideApprovalStatusDto.Pending)
+            {
+                return;
+            }
+
+            var revisions = await _revisions.ListBySecurityAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
+            if (revisions.Any(static other => other.State is SecurityMasterRevisionStateDto.Draft
+                or SecurityMasterRevisionStateDto.Submitted
+                or SecurityMasterRevisionStateDto.Approved))
+            {
+                // A live revision still governs (or defers) the security-level decision.
+                return;
+            }
+
+            var latestPublished = revisions
+                .Where(static other => other.State == SecurityMasterRevisionStateDto.Published)
+                .OrderByDescending(static other => other.CreatedAt)
+                .FirstOrDefault();
+            if (latestPublished is null)
+            {
+                // No published evidence to converge from; the Pending values await a new edit.
+                return;
+            }
+
+            var reviewer = request.Actor;
+            if (latestPublished.WorkflowId is Guid workflowId)
+            {
+                var workflow = await _approvalWorkflow.GetAsync(workflowId, CancellationToken.None).ConfigureAwait(false);
+                var workflowReviewer = workflow?.Approvals
+                    .Select(static approval => approval.Reviewer)
+                    .LastOrDefault(static candidate => !string.IsNullOrWhiteSpace(candidate));
+                if (!string.IsNullOrWhiteSpace(workflowReviewer))
+                {
+                    reviewer = workflowReviewer!;
+                }
+            }
+
+            await _overrides.RecordApprovalDecisionAsync(
+                request.SecurityId,
+                new OperatorOverrideDecision(
+                    SecurityOverrideApprovalStatusDto.Approved,
+                    reviewer,
+                    "Published revisions' decision re-converged after discards removed the deferring staged revisions."),
+                CancellationToken.None).ConfigureAwait(false);
+
+            _logger.LogInformation(
+                "Discarding revision {RevisionId} for {SecurityId} removed the last staged revision; the published overlay decision was re-converged from revision {PublishedRevisionId}.",
+                request.RevisionId, request.SecurityId, latestPublished.RevisionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Re-converging the published overlay decision for {SecurityId} failed after discarding revision {RevisionId}; the overlay stays Pending until reconciled.",
+                request.SecurityId, request.RevisionId);
+        }
     }
 }

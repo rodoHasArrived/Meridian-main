@@ -26,6 +26,17 @@ public interface ISecurityMasterWorkbenchCommandService
         ResolveSourceConflictRequest request, CancellationToken ct = default);
 
     /// <summary>
+    /// Governed conflict resolution for LEGACY callers that carry no record version (the shared
+    /// conflict queue's browser and WPF actions): resolves the record's CURRENT version and runs
+    /// the full governed path — authority policy, rationale requirement, candidate guard, and the
+    /// transactional persisted-value check — with that version. The optimistic freshness guard is
+    /// vacuous by construction here; correctness against concurrent amendments is carried by the
+    /// conflict store's locked persisted-value revalidation.
+    /// </summary>
+    Task<SecurityMasterConflictResolutionDto> ResolveSourceConflictAtCurrentVersionAsync(
+        ResolveSourceConflictRequest request, CancellationToken ct = default);
+
+    /// <summary>
     /// Transitions a draft revision into the governed approval gate. When the request carries a
     /// workflow id, submission is routed through <c>IOperationsContinuityWorkflowService</c>.
     /// </summary>

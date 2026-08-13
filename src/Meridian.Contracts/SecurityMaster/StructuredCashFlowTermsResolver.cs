@@ -68,7 +68,7 @@ public static class StructuredCashFlowTermsResolver
             PrincipalSchedule: ReadPrincipalSchedule(sources));
     }
 
-    private static IReadOnlyList<StructuredPrincipalScheduleEntry> ReadPrincipalSchedule(
+    private static IReadOnlyList<StructuredPrincipalScheduleEntry>? ReadPrincipalSchedule(
         IReadOnlyList<JsonElement> sources)
     {
         foreach (var source in sources)
@@ -116,7 +116,12 @@ public static class StructuredCashFlowTermsResolver
             }
         }
 
-        return Array.Empty<StructuredPrincipalScheduleEntry>();
+        // No source asserted a schedule PROPERTY at all: that is ABSENCE (null), distinct from the
+        // empty array returned above for an asserted principalSchedule: []. Conflict detection
+        // keys presence on this distinction — collapsing absence into an empty list would treat a
+        // sparse provider that simply omitted the schedule as asserting a bullet structure and
+        // open a false economic conflict against a provider that supplied instalments.
+        return null;
     }
 
     private static IReadOnlyList<StructuredCashFlowLeg>? ReadLegs(IReadOnlyList<JsonElement> sources)

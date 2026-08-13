@@ -3184,6 +3184,111 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
     }
 
+    [Fact]
+    public async Task Submit_WhileFieldEditIsMidFlight_WaitsForTheGate()
+    {
+        // The ENTIRE submission — preflight, workflow mutation, revision transition — runs under
+        // the same per-security gate the field-edit and discard routes hold. Without it, a discard
+        // could reject the revision and withdraw its overlay while the submission awaits the
+        // external workflow gate, committing a Submitted workflow the discard never retired.
+        var workflowId = Guid.NewGuid();
+        var revisions = new GatedRevisionStore();
+        var harness = new Harness(currentVersion: 2, revisions: revisions);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturity = "2030-01-01",
+            par = 100m
+        });
+        var draft = await harness.Revisions.CreateDraftAsync(SecurityId, "ops.analyst");
+        harness.Workflow
+            .Setup(w => w.SubmitForApprovalAsync(workflowId, It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 3));
+
+        revisions.GateFieldEditDrafts = true;
+        var editTask = harness.Service.UpdateSecurityFieldAsync(new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 2,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: "80",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction."));
+        await revisions.DraftEntered.Task;
+
+        var submitTask = harness.Service.SubmitForApprovalAsync(new SubmitSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: draft.RevisionId,
+            Actor: "ops.analyst",
+            Note: "Submit while an edit is mid-flight.",
+            FundProfileId: null,
+            WorkflowId: workflowId,
+            ExpectedWorkflowVersion: 2,
+            Reviewer: "ops.reviewer",
+            ReportPackId: "rp-1"));
+        await Task.Delay(100);
+        submitTask.IsCompleted.Should().BeFalse(
+            "the submission must wait for the per-security gate the in-flight edit holds");
+
+        revisions.ReleaseDrafts.TrySetResult();
+        await Task.WhenAll(editTask, submitTask);
+
+        (await harness.Revisions.GetAsync(draft.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+    }
+
+    [Fact]
+    public async Task Discard_LastDeferringDraft_ConvergesThePublishedOwnersDecision()
+    {
+        // A published owner's restored value can sit Pending because an UNRELATED draft defers
+        // the security-level decision. Discarding that last deferring draft leaves no approval or
+        // publish operation that could ever converge the overlay (published revisions never
+        // re-enter the lifecycle), so the discard itself converges it — recording Approved with
+        // the reviewer retained by the published revision's bound workflow.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 3);
+        var published = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-20), "Winning edit (100).",
+            fieldValue: new SecurityMasterRevisionFieldValue("100"));
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst",
+            workflowIdForSubmit: workflowId);
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
+        await Task.Delay(10);
+        var deferring = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.couponRate", DateTimeOffset.UtcNow, "Abandoned edit.",
+            fieldValue: new SecurityMasterRevisionFieldValue("5"));
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Approved, reviewer: "gate.reviewer"));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.par"] = "100" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, deferring.RevisionId, "ops.analyst", "Abandoned."));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision =>
+                    decision.Decision == SecurityOverrideApprovalStatusDto.Approved
+                    && decision.Reviewer == "gate.reviewer"),
+                It.IsAny<CancellationToken>()),
+            Times.Once,
+            "removing the last deferring draft must converge the published owner's decision");
+    }
+
     private sealed class GatedRevisionStore : ISecurityMasterRevisionStore
     {
         private readonly InMemorySecurityMasterRevisionStore _inner = new();

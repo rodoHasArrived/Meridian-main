@@ -777,6 +777,7 @@ public static class SecurityMasterEndpoints
             ResolveConflictRequest request,
             HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
             if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
@@ -793,32 +794,74 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest(ErrorResponse.Validation(
                     "ConflictId in body must match the route parameter."));
 
-            // Field-level conflicts (economic/common term mismatches) are governed: the workbench
-            // resolve-conflict route evaluates the authority policy, requires a rationale, and
-            // guards the expected version before any close — including dismissals. Letting this
-            // legacy route close them would hand every ModifySecurityMaster caller a policy bypass.
             var existing = await conflictService.GetConflictAsync(conflictId, ct).ConfigureAwait(false);
             if (existing is null)
             {
                 return Results.NotFound();
             }
 
+            var resolvedBy = context.Items[LoginSessionMiddleware.CurrentUserKey] as string ?? "unknown";
+
+            // Field-level conflicts (economic/common term mismatches) are GOVERNED: the authority
+            // policy, rationale requirement, candidate guard, and transactional persisted-value
+            // revalidation must run before any close — including dismissals. The shared conflict
+            // queue's browser and WPF actions still post here (they carry no record version), so
+            // instead of rejecting them the legacy route DELEGATES to the governed workbench
+            // service at the record's current version — closing a field conflict through this
+            // route runs exactly the same policy path as the workbench route.
             var isFieldConflict =
                 string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
                 || string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal);
             if (isFieldConflict)
             {
-                return Results.Problem(
-                    title: "Governed field conflict",
-                    detail:
-                        $"Conflict '{conflictId:D}' is a {existing.ConflictKind} field conflict. Field conflicts — " +
-                        "including dismissals — must go through the workbench resolve-conflict route " +
-                        $"(POST {UiApiRoutes.SecurityMasterWorkbenchResolveConflict}), which evaluates the " +
-                        "authority policy, requires a rationale, and guards the expected record version.",
-                    statusCode: StatusCodes.Status400BadRequest);
+                if (workbenchService is null)
+                {
+                    return Results.Problem(
+                        title: "Governed field conflict",
+                        detail:
+                            $"Conflict '{conflictId:D}' is a {existing.ConflictKind} field conflict and the governed " +
+                            "workbench command service is not wired in this host; use the workbench resolve-conflict " +
+                            $"route (POST {UiApiRoutes.SecurityMasterWorkbenchResolveConflict}).",
+                        statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                try
+                {
+                    await workbenchService.ResolveSourceConflictAtCurrentVersionAsync(
+                        new ResolveSourceConflictRequest(
+                            existing.SecurityId,
+                            conflictId,
+                            ExpectedVersion: 0,
+                            ChosenWinnerSource: request.ChosenWinnerSource ?? string.Empty,
+                            Actor: resolvedBy,
+                            Reason: request.Reason ?? string.Empty),
+                        ct).ConfigureAwait(false);
+                }
+                catch (ArgumentException ex)
+                {
+                    // Policy deviation without acknowledgment, blank rationale, or a non-candidate
+                    // winner — the governed preconditions the queue actions must satisfy.
+                    return Results.Problem(
+                        title: "Governed field conflict", detail: ex.Message,
+                        statusCode: StatusCodes.Status400BadRequest);
+                }
+                catch (AppSecurityMaster.SecurityMasterConcurrencyException)
+                {
+                    return Results.Conflict(ErrorResponse.Validation(
+                        "The conflict was resolved concurrently by another operator."));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // The transactional persisted-value guard superseded or refreshed the row.
+                    return Results.Problem(
+                        title: "Conflict assessment changed", detail: ex.Message,
+                        statusCode: StatusCodes.Status409Conflict);
+                }
+
+                var closed = await conflictService.GetConflictAsync(conflictId, ct).ConfigureAwait(false);
+                return closed is null ? Results.NotFound() : Results.Json(closed, jsonOptions);
             }
 
-            var resolvedBy = context.Items[LoginSessionMiddleware.CurrentUserKey] as string ?? "unknown";
             var serverRequest = request with { ResolvedBy = resolvedBy };
 
             var updated = await conflictService.ResolveAsync(serverRequest, ct).ConfigureAwait(false);

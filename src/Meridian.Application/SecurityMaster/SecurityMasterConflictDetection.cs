@@ -609,9 +609,14 @@ internal static class SecurityMasterConflictDetection
 
     /// <summary>
     /// Governed profile-field keys EXCLUDED from the dynamic comparison: terms the typed
-    /// fixed-income comparisons already read through the shared resolver (comparing the raw nested
-    /// copy too would double-report one disagreement under two paths), plus pool-factor evidence,
-    /// which sources legitimately snapshot at different dates.
+    /// fixed-income comparisons already read through the shared resolver — which probes the
+    /// nested profileFields object too, so comparing the raw nested copy again would
+    /// double-report one disagreement under two paths — plus pool-factor evidence, which sources
+    /// legitimately snapshot at different dates. Names covered only by RECORD-LEVEL comparators
+    /// (currency reads projection.Currency, countryOfRisk reads CommonTerms.countryOfRisk — never
+    /// the nested profileFields values) must NOT appear here: excluding them would leave a
+    /// profile-declared currency/countryOfRisk field with no comparator at all, letting two
+    /// providers disagree on a governed field without ever opening a conflict.
     /// </summary>
     private static readonly HashSet<string> ProfileFieldComparisonExclusions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -619,7 +624,6 @@ internal static class SecurityMasterConflictDetection
         "paymentFrequency", "dayCount", "dayCountConvention",
         "principalSchedule", "sinkingFundSchedule", "amortizationSchedule",
         "currentFactor", "factor", "factorDate", "factorSchedule", "factorScheduleEntries",
-        "currency", "countryOfRisk",
     };
 
     private static JsonElement? GetProfileFields(JsonElement assetSpecificTerms)

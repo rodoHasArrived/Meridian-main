@@ -272,7 +272,8 @@ public sealed class StructuredCashFlowTermsResolverTests
         terms.HasFactorSchedule.Should().BeFalse();
         terms.FactorSchedule.Should().BeEmpty();
         terms.HasPrincipalSchedule.Should().BeFalse();
-        terms.PrincipalSchedule.Should().BeEmpty();
+        terms.PrincipalSchedule.Should().BeNull(
+            "no source asserted a schedule property — absence must stay distinct from an asserted-empty bullet");
     }
 
     [Fact]

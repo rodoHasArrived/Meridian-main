@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **238**
+Total items: **239**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -226,6 +226,7 @@ Total items: **238**
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2170 | `NOTE` | ❌ | Note: "Submit.", |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2195 | `NOTE` | ❌ | Note: "Submit.", |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2219 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 3224 | `NOTE` | ❌ | Note: "Submit while an edit is mid-flight.", |
 | `tests/Meridian.Tests/Storage/StorageChecksumServiceTests.cs` | 99 | `NOTE` | ❌ | // NOTE: File.WriteAllTextAsync uses UTF-8 with BOM by default on some platforms, |
 | `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 868 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
 | `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 5504 | `NOTE` | ❌ | Note: "Delivered after approval.", |
