@@ -91,6 +91,57 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public void ChangedGovernedFieldPaths_ClearedDayCount_CountsAsChanged()
+    {
+        // Day count follows the same absence-transition rule as every other governed comparator:
+        // an amendment that removes the convention changed the field's hands, so its old
+        // ConflictResolution attribution must retire like a replaced value's would.
+        var current = Record("providerA", new { maturityDate = "2030-01-15", dayCountConvention = "30/360" });
+        var incoming = Record("providerA", new { maturityDate = "2030-01-15" });
+
+        var changed = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(current, incoming);
+
+        changed.Should().Contain("EconomicTerms.dayCountConvention");
+
+        // Conflict creation keeps the both-present rule for day count too.
+        var incomingOtherSource = Record("providerB", new { maturityDate = "2030-01-15" });
+        SecurityMasterConflictDetection.DetectFieldConflicts(current, incomingOtherSource, DetectedAt)
+            .Should().NotContain(conflict => conflict.FieldPath == "EconomicTerms.dayCountConvention");
+    }
+
+    [Fact]
+    public void DetectFieldConflicts_SameRecordSource_StillConflictsAgainstFieldIncumbent()
+    {
+        // Provider A supplied countryOfRisk; provider B amended only the coupon (record provenance
+        // on the stored copy now reads B) and NOW changes A's country too. Record-level sources
+        // match on both sides, but the field's incumbent is A — the disagreement to open is
+        // A-versus-B, and B revising its own coupon stays versioning.
+        var current = Record("providerB", new { maturityDate = "2030-01-15", couponRate = 4.25m },
+            commonTerms: new { currency = "USD", countryOfRisk = "US" });
+        var incoming = Record("providerB", new { maturityDate = "2030-01-15", couponRate = 4.50m },
+            commonTerms: new { currency = "USD", countryOfRisk = "CA" });
+
+        var conflicts = SecurityMasterConflictDetection.DetectFieldConflicts(
+            current, incoming, DetectedAt,
+            new Dictionary<string, string>
+            {
+                ["CommonTerms.countryOfRisk"] = "providerA",
+                ["EconomicTerms.couponRate"] = "providerB"
+            });
+
+        var country = conflicts.Should().ContainSingle(conflict =>
+            conflict.FieldPath == "CommonTerms.countryOfRisk").Subject;
+        country.ProviderA.Should().Be("providerA");
+        country.ProviderB.Should().Be("providerB");
+        conflicts.Should().NotContain(conflict => conflict.FieldPath == "EconomicTerms.couponRate",
+            "the incumbent revising its own field is versioning, not a cross-source conflict");
+
+        // Without per-field attribution the record-level short-circuit still applies.
+        SecurityMasterConflictDetection.DetectFieldConflicts(current, incoming, DetectedAt)
+            .Should().BeEmpty();
+    }
+
+    [Fact]
     public void DetectFieldConflicts_DifferingPrincipalSchedules_ProduceEconomicTermConflict()
     {
         // The contractual principal schedule drives calculated cash flows and ledger support, so a

@@ -261,6 +261,62 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ScalarDateEdit_EnforcesDateOrderAgainstRetainedDates()
+    {
+        // A scalar date edit participates in the pinned profile's cross-field ordering exactly as
+        // a whole-object replacement does: moving startDate after the RETAINED endDate must not
+        // stage a draft and provenance row behind a contract the object replacement rejects.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope(
+            "dated-profile", profileVersion: 1,
+            profileFields: new { startDate = "2026-01-01", endDate = "2026-03-01" });
+
+        UpdateSecurityFieldRequest EditWith(string fieldPath, string value) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: fieldPath,
+            NewValue: value,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Date correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(
+                EditWith("assetSpecificTerms.profileFields.startDate", "2026-06-01")))
+            .Should().ThrowAsync<ArgumentException>("startDate would land after the retained endDate")
+            .WithMessage("*PF_DATE_ORDER*");
+
+        var staged = await harness.Service.UpdateSecurityFieldAsync(
+            EditWith("assetSpecificTerms.profileFields.endDate", "2026-06-01"));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "moving endDate after the retained startDate satisfies the ordering");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ProfileFieldCasingVariant_PersistsUnderThePinnedProfileKey()
     {
         // The pinned-profile lookup is case-insensitive, so the persisted path must be rebuilt from
@@ -1267,7 +1323,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         /// Makes the projection store resolve the security with a pinned profile envelope so
         /// profileFields edits are validated against that profile's declared field types.
         /// </summary>
-        public void SetProjectionProfileEnvelope(string customProfileId, int profileVersion)
+        public void SetProjectionProfileEnvelope(string customProfileId, int profileVersion, object? profileFields = null)
         {
             var projection = new SecurityProjectionRecord(
                 SecurityId: SecurityId,
@@ -1282,7 +1338,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 {
                     customProfileId,
                     profileVersion,
-                    profileFields = new { }
+                    profileFields = profileFields ?? new { }
                 }),
                 Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
                 Version: 3,

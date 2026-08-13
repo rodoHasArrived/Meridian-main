@@ -102,6 +102,44 @@ public sealed class AssetObligationProjectionServiceTests
     }
 
     [Fact]
+    public void ProjectFromSecurityMaster_CompletedPaymentsAfterTheFactor_ReduceOpeningPrincipalInsteadOfProjecting()
+    {
+        // The 0.8 factor (as of 2026-01-01) predates the 2026-03-01 payment, but that payment has
+        // ALREADY OCCURRED relative to the projection as-of (today). Projecting it again would
+        // report a completed instalment as newly due and open a MissingEvidence variance against
+        // it; instead it reduces the opening principal, and only the future payment projects.
+        var security = MakeStructuredCredit(assetTerms: new
+        {
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 100m,
+            couponOrIndex = "SOFR+250",
+            maturity = "2031-06-15",
+            factorScheduleEntries = new[]
+            {
+                new { asOfDate = "2026-01-01", factor = 0.8m },
+            },
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2026-03-01", amount = 10m },
+                new { paymentDate = "2030-06-15", amount = 10m },
+            }
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        var repayment = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "PrincipalRepayment").Subject;
+        repayment.DueDate.Should().Be(new DateOnly(2030, 6, 15),
+            "the completed 2026-03-01 instalment must not re-project as newly due");
+        repayment.Amount.Should().Be(10m);
+        var maturityFlow = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "Maturity").Subject;
+        maturityFlow.Amount.Should().Be(60m,
+            "opening principal absorbs the completed post-factor payment (80 - 10) before the future 10 amortizes");
+    }
+
+    [Fact]
     public void ProjectFromSecurityMaster_StructuredCredit_ZeroFactorProjectsNoPrincipal()
     {
         // Zero is a real factor — a fully amortized pool. Conflating it with a MISSING factor

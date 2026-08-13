@@ -328,6 +328,22 @@ public sealed class AssetObligationProjectionService
         DateOnly? factorReflectsThrough = appliedFactorEntry?.AsOfDate
             ?? (terms.CurrentFactor is not null ? projectionAsOf.AddDays(-1) : null);
 
+        // Contractual payments dated after the factor's as-of but before the projection as-of have
+        // already OCCURRED — the run is as of today, so projecting them again would report a
+        // completed instalment as newly due (and open a MissingEvidence variance against it). They
+        // are excluded from the projected schedule below and instead reduce the opening principal,
+        // since the (older) factor does not reflect them yet.
+        var completedPostFactorPrincipal = 0m;
+        if (factorReflectsThrough is DateOnly reflectedCutoff && terms.HasPrincipalSchedule)
+        {
+            completedPostFactorPrincipal = terms.PrincipalSchedule!
+                .Where(entry => entry.PaymentDate >= issueDate
+                    && entry.PaymentDate <= maturity
+                    && entry.PaymentDate > reflectedCutoff
+                    && entry.PaymentDate < projectionAsOf)
+                .Sum(static entry => entry.Amount);
+        }
+
         return new BondReferenceDto(
             security.SecurityId,
             security.DisplayName,
@@ -365,14 +381,15 @@ public sealed class AssetObligationProjectionService
                         .Where(entry => entry.PaymentDate >= issueDate
                             && entry.PaymentDate <= maturity
                             && (factorReflectsThrough is not DateOnly reflectedThrough
-                                || entry.PaymentDate > reflectedThrough))
+                                || (entry.PaymentDate > reflectedThrough
+                                    && entry.PaymentDate >= projectionAsOf)))
                         .Select(static entry => new BondSinkingFundEntryDto(entry.PaymentDate, entry.Amount))
                         .ToArray(),
                     SinkFrequency: null,
                     IsProRata: false,
                     Version: security.Version)
                 : null,
-            InflationLinked: BuildFactorReference(security, terms, payload, appliedFactorEntry));
+            InflationLinked: BuildFactorReference(security, terms, payload, appliedFactorEntry, completedPostFactorPrincipal));
     }
 
     /// <summary>
@@ -404,12 +421,24 @@ public sealed class AssetObligationProjectionService
         SecurityDetailDto security,
         StructuredCashFlowTerms terms,
         JsonElement payload,
-        StructuredFactorScheduleEntry? scheduled)
+        StructuredFactorScheduleEntry? scheduled,
+        decimal completedPostFactorPrincipal)
     {
         var effectiveFactor = scheduled?.Factor ?? terms.CurrentFactor;
         if (effectiveFactor is null)
         {
             return null;
+        }
+
+        // The applied factor reflects principal only THROUGH its as-of date. Contractual payments
+        // completed between that date and the projection as-of are excluded from the projected
+        // schedule, so the opening principal must absorb them here — otherwise the projection
+        // starts from a balance those payments already reduced.
+        if (completedPostFactorPrincipal > 0m
+            && terms.PrincipalFace is decimal face
+            && face > 0m)
+        {
+            effectiveFactor = Math.Max(0m, effectiveFactor.Value - (completedPostFactorPrincipal / face));
         }
 
         var effectiveFactorDate = scheduled?.AsOfDate

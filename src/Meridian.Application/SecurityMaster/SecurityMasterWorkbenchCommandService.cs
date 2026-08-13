@@ -694,6 +694,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         }
 
         Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto? profile = null;
+        JsonElement? currentProfileFields = null;
         if (_projectionStore is not null && _assetProfileCatalog is not null)
         {
             try
@@ -709,6 +710,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                     && _assetProfileCatalog.TryGetProfile(profileId.GetString()!, profileVersion, out var resolved))
                 {
                     profile = resolved;
+                    if (terms.Value.TryGetProperty("profileFields", out var persistedFields)
+                        && persistedFields.ValueKind == JsonValueKind.Object)
+                    {
+                        currentProfileFields = persistedFields.Clone();
+                    }
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -827,9 +833,58 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             throw new ArgumentException(fieldError, nameof(request));
         }
 
+        // A scalar date edit participates in the profile's cross-field date-order rules exactly as
+        // a whole-object replacement does: moving startDate after the RETAINED endDate violates
+        // the pinned profile even though the value is individually valid, and staging it would put
+        // a draft and provenance row behind a contract the equivalent object replacement rejects.
+        if (!isClear && declared.FieldType == SecurityAssetProfileFieldTypeDto.Date)
+        {
+            EnsureScalarDateEditSatisfiesDateOrderRules(profile, declared.Key, request.NewValue!, currentProfileFields);
+        }
+
         // Persist under the pinned definition's key spelling — the case-insensitive lookup above
         // must not let casing variants fork the same profile field into separate overrides.
         return ProfileFieldsNestedPrefix + declared.Key;
+    }
+
+    private static void EnsureScalarDateEditSatisfiesDateOrderRules(
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto profile,
+        string editedKey,
+        string newValue,
+        JsonElement? currentProfileFields)
+    {
+        if (!DateOnly.TryParse(newValue.Trim(), System.Globalization.CultureInfo.InvariantCulture, out var proposed))
+        {
+            return;
+        }
+
+        foreach (var rule in profile.DateOrderRules)
+        {
+            var editsStart = string.Equals(rule.StartFieldKey, editedKey, StringComparison.OrdinalIgnoreCase);
+            var editsEnd = string.Equals(rule.EndFieldKey, editedKey, StringComparison.OrdinalIgnoreCase);
+            if (!editsStart && !editsEnd)
+            {
+                continue;
+            }
+
+            var counterpartKey = editsStart ? rule.EndFieldKey : rule.StartFieldKey;
+            if (currentProfileFields is not JsonElement retainedFields
+                || !TryReadProfileDate(retainedFields, counterpartKey, out var counterpart))
+            {
+                // No retained counterpart date — there is nothing for the proposed value to
+                // violate; the rule binds once both dates exist.
+                continue;
+            }
+
+            var start = editsStart ? proposed : counterpart;
+            var end = editsStart ? counterpart : proposed;
+            if (start > end)
+            {
+                throw new ArgumentException(
+                    $"Value '{newValue}' violates the pinned profile's date ordering against retained " +
+                    $"field '{counterpartKey}' [{rule.Code}]: {rule.Message}");
+            }
+        }
     }
 
     private static bool TryReadProfileDate(JsonElement profileFields, string key, out DateOnly value)

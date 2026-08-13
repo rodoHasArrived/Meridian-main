@@ -285,13 +285,17 @@ public static class StructuredCashFlowTermsResolver
 
     private static IEnumerable<JsonElement> EnumerateTermSources(SecurityDetailDto security)
     {
-        yield return security.AssetSpecificTerms;
+        // Governed profile fields outrank outer duplicates: profileFields values are schema- and
+        // profile-validated on write, while extra outer keys on an envelope are ungoverned
+        // pass-through. Probing the outer object first would let an unvalidated outer `maturity`
+        // silently shadow the governed one in every projection and conflict comparison.
         if (SecurityTermReader.TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields) &&
             profileFields.ValueKind == JsonValueKind.Object)
         {
             yield return profileFields;
         }
 
+        yield return security.AssetSpecificTerms;
         yield return security.CommonTerms;
     }
 }

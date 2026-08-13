@@ -75,7 +75,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var projection = CreateProjectionFromResult(
             result,
             currentProjection.Aliases,
-            GetProfileBackedAssetClassOverride(currentProjection),
+            GetProfileBackedAssetClassOverride(currentProjection, request.AssetSpecificTermsPatch),
             GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
 
@@ -101,15 +101,19 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
-        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
         // A governed field that just changed invalidates any prior conflict-resolution attribution
         // for that path: the recorded winner no longer supplied the current value. Changed paths
         // are computed independently of cross-source conflict creation — the previous winner
         // amending its OWN value opens no conflict, yet still makes the old attribution stale.
+        // Attribution runs IMMEDIATELY after the projection write (before snapshots and identifier
+        // conflict detection) to minimize the window in which a concurrent reader sees the new
+        // value with the old field attribution; true atomicity needs the shared-transaction seam
+        // tracked as follow-up work.
         var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(currentProjection, projection);
         await TryRetireStaleFieldResolutionProvenanceAsync(changedGovernedFields, request.SecurityId, ct).ConfigureAwait(false);
         await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
+        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
+        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
@@ -252,15 +256,16 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
-
-        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
         // Creation is the first canonical write of every governed field the record supplies, so it
         // seeds the per-field attribution the same way an amend does — diffed against an empty
-        // baseline instead of a previous revision.
+        // baseline instead of a previous revision, and immediately after the projection write to
+        // minimize the unattributed window.
         var seededGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
             CreateEmptyGovernedBaseline(projection), projection);
         await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, ct).ConfigureAwait(false);
+        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
+
+        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action backfill for the newly-created security so
         // that historical corp action data is available immediately for backtesting.
@@ -342,11 +347,52 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         if (_conflictService is null)
             return;
 
-        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
+        // The pre-check gate needs the same per-field attribution the durable store consults:
+        // without it, record-level sources on both sides read the record's LAST writer, so source B
+        // changing a field source A supplied would be filtered out here as same-source versioning
+        // and never reach the conflict store at all.
+        var incumbentFieldSources = await TryLoadIncumbentFieldSourcesAsync(previous.SecurityId, ct).ConfigureAwait(false);
+        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
+            previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources);
         if (candidates.Count == 0)
             return;
 
         await _conflictService.RecordFieldConflictsAsync(previous, incoming, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Per-field incumbent attribution (field path → source system) from the durable provenance
+    /// rows: canonical-write and conflict-resolution origins, newest recorded row winning per
+    /// field. Best-effort — when the store is unwired or the read fails, detection falls back to
+    /// record-level provenance, which is correct for the common distinct-source case.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, string>?> TryLoadIncumbentFieldSourcesAsync(
+        Guid securityId,
+        CancellationToken ct)
+    {
+        if (_fieldProvenance is null)
+            return null;
+
+        try
+        {
+            var rows = await _fieldProvenance.GetAsync(securityId, ct).ConfigureAwait(false);
+            return rows
+                .Where(static row => row.Origin is SecurityFieldProvenanceOrigins.ConflictResolution
+                    or SecurityFieldProvenanceOrigins.CanonicalWrite)
+                .GroupBy(static row => row.FieldPath, StringComparer.Ordinal)
+                .ToDictionary(
+                    static group => group.Key,
+                    static group => group.OrderByDescending(static row => row.RecordedAt).First().SourceSystem,
+                    StringComparer.Ordinal);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Loading per-field incumbent attribution for {SecurityId} failed; conflict pre-check falls back to record-level provenance.",
+                securityId);
+            return null;
+        }
     }
 
     /// <summary>
@@ -513,7 +559,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var validator = new Validation.SecurityAssetProfileAssetClassValidator(
             projection.AssetClass,
             _assetProfileCatalog,
-            requireProfileReference: isCustomAsset);
+            requireProfileReference: isCustomAsset,
+            enforceWriteTimeGovernance: true);
         var issues = validator.Validate(new Validation.SecurityValidationContext(projection, effectiveAt));
         var errors = issues
             .Where(static issue => issue.Severity == SecurityValidationSeverityDto.Error)
@@ -634,6 +681,22 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         => IsProfileBackedCustomAsset(projection.AssetClass, projection.AssetSpecificTerms)
             ? GetProfileBackedAssetClassOverride(projection.AssetClass, projection.AssetSpecificTerms)
             : null;
+
+    /// <summary>
+    /// The SUBMITTED envelope decides an amendment's resolved class: repinning a record to a
+    /// registered reclassifying profile must resolve exactly as the identical create would.
+    /// Deriving only from the stored projection would persist the new envelope while silently
+    /// keeping the old class — the record then skips the resolved class's validators and Asset
+    /// Operations routing that a fresh create with the same payload receives. A patch without a
+    /// profile envelope falls back to the stored projection's resolution.
+    /// </summary>
+    private static string? GetProfileBackedAssetClassOverride(
+        SecurityProjectionRecord currentProjection,
+        JsonElement? assetSpecificTermsPatch)
+        => assetSpecificTermsPatch is JsonElement patch
+            && IsProfileBackedCustomAsset(currentProjection.AssetClass, patch)
+                ? GetProfileBackedAssetClassOverride(currentProjection.AssetClass, patch)
+                : GetProfileBackedAssetClassOverride(currentProjection);
 
     private static string? GetProfileBackedAssetClassOverride(string assetClass, JsonElement assetSpecificTerms)
     {

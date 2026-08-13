@@ -208,6 +208,32 @@ public sealed class StructuredCashFlowTermsResolverTests
     }
 
     [Fact]
+    public void Resolve_ShouldPreferGovernedProfileFieldsOverOuterDuplicates()
+    {
+        // profileFields values are schema- and profile-validated on write; extra outer keys on an
+        // envelope are ungoverned pass-through. An unvalidated outer maturity must not shadow the
+        // governed one in projections and conflict comparisons.
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            customProfileId = "structured-credit-io-po",
+            profileVersion = 1,
+            maturity = "2040-01-01",
+            couponRate = 9.99m,
+            profileFields = new
+            {
+                maturity = "2030-01-01",
+                couponRate = 4.5m
+            }
+        }));
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.MaturityDate.Should().Be(new DateOnly(2030, 1, 1),
+            "the governed profile field outranks the ungoverned outer duplicate");
+        terms.CouponRate.Should().Be(4.5m);
+    }
+
+    [Fact]
     public void Resolve_WithNoStructuredTerms_ShouldReturnNullsAndEmptySchedule()
     {
         var security = Build(JsonSerializer.SerializeToElement(new { }));

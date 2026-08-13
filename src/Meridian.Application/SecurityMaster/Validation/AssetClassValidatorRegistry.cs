@@ -338,15 +338,18 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
 
     private readonly ISecurityAssetProfileCatalog _assetProfileCatalog;
     private readonly bool _requireProfileReference;
+    private readonly bool _enforceWriteTimeGovernance;
 
     public SecurityAssetProfileAssetClassValidator(
         string assetClass,
         ISecurityAssetProfileCatalog assetProfileCatalog,
-        bool requireProfileReference)
+        bool requireProfileReference,
+        bool enforceWriteTimeGovernance = false)
     {
         AssetClass = assetClass;
         _assetProfileCatalog = assetProfileCatalog;
         _requireProfileReference = requireProfileReference;
+        _enforceWriteTimeGovernance = enforceWriteTimeGovernance;
     }
 
     public string AssetClass { get; }
@@ -408,6 +411,30 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
                 "Route the profile version through approval before using it for Security Master create or amend workflows."));
         }
 
+        // Status alone is not enough at WRITE time: an Approved version may not be effective yet,
+        // and a Superseded version carries the window in which it WAS the governing definition. A
+        // write evaluated outside [EffectiveFrom, EffectiveTo] pins a version that never governed
+        // the record's effective date — a current write to an expired version, or a backdated
+        // write to one not yet in force. Read-path validation deliberately skips this: a record
+        // legitimately keeps its pinned (now-superseded) version so history stays interpretable.
+        if (_enforceWriteTimeGovernance)
+        {
+            var evaluatedDate = DateOnly.FromDateTime(context.EvaluatedAtUtc.UtcDateTime.Date);
+            if (evaluatedDate < profile.EffectiveFrom
+                || (profile.EffectiveTo is DateOnly effectiveTo && evaluatedDate > effectiveTo))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE",
+                    "Custom asset profile version is outside its effective window",
+                    $"Profile '{profile.Name}' version '{profile.Version}' is effective " +
+                    $"{profile.EffectiveFrom:yyyy-MM-dd}–{profile.EffectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "open"}, " +
+                    $"which does not cover the evaluated date {evaluatedDate:yyyy-MM-dd}.",
+                    ["assetSpecificTerms.customProfileId", "assetSpecificTerms.profileVersion"],
+                    "Pin the profile version whose effective window covers the write's effective date."));
+            }
+        }
+
         if (!JsonValidationReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields)
             || profileFields.ValueKind != JsonValueKind.Object)
         {
@@ -432,7 +459,7 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
         }
 
         issues.AddRange(ValidateIdentifierCoverage(profile, context.Record, context.EvaluatedAtUtc));
-        issues.AddRange(ValidateProfileApprovalMetadata(assetSpecificTerms));
+        issues.AddRange(ValidateProfileApprovalMetadata(assetSpecificTerms, profile, _enforceWriteTimeGovernance));
 
         return issues;
     }
@@ -586,27 +613,52 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
         return issues;
     }
 
-    private static IReadOnlyList<SecurityValidationIssueDto> ValidateProfileApprovalMetadata(JsonElement assetSpecificTerms)
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateProfileApprovalMetadata(
+        JsonElement assetSpecificTerms,
+        SecurityAssetProfileDefinitionDto profile,
+        bool enforceWriteTimeGovernance)
     {
-        if (JsonValidationReader.TryGetProperty(assetSpecificTerms, "profileApproval", out var approval)
+        if (!(JsonValidationReader.TryGetProperty(assetSpecificTerms, "profileApproval", out var approval)
             && approval.ValueKind == JsonValueKind.Object
-            && JsonValidationReader.TryGetString(approval, "approvedBy", out _)
-            && JsonValidationReader.TryGetDateTimeOffset(approval, "approvedAtUtc", out _)
-            && JsonValidationReader.TryGetString(approval, "approvalReference", out _))
+            && JsonValidationReader.TryGetString(approval, "approvedBy", out var approvedBy)
+            && JsonValidationReader.TryGetDateTimeOffset(approval, "approvedAtUtc", out var approvedAtUtc)
+            && JsonValidationReader.TryGetString(approval, "approvalReference", out _)))
         {
-            return [];
+            return
+            [
+                SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_CUSTOM_PROFILE_APPROVAL_METADATA_REQUIRED",
+                    "Custom asset profile approval metadata is missing",
+                    "Profile-backed securities must retain immutable profile approval metadata with the pinned profile version.",
+                    ["assetSpecificTerms.profileApproval"],
+                    "Persist profileApproval.approvedBy, approvedAtUtc, and approvalReference from the governed profile approval event.")
+            ];
         }
 
-        return
-        [
-            SecurityValidationIssueFactory.Create(
-                SecurityValidationSeverityDto.Error,
-                "SM_CUSTOM_PROFILE_APPROVAL_METADATA_REQUIRED",
-                "Custom asset profile approval metadata is missing",
-                "Profile-backed securities must retain immutable profile approval metadata with the pinned profile version.",
-                ["assetSpecificTerms.profileApproval"],
-                "Persist profileApproval.approvedBy, approvedAtUtc, and approvalReference from the governed profile approval event.")
-        ];
+        // At WRITE time the approval metadata is evidence, not free text: it persists as the
+        // record's immutable audit trail, so values contradicting the governed catalog's approval
+        // facts would corrupt that trail from the first write. Read-path validation skips the
+        // comparison — a historical record's metadata reflects the approval event as it stood
+        // when written, which a later catalog re-approval must not retroactively invalidate.
+        if (enforceWriteTimeGovernance
+            && (!string.Equals(approvedBy.Trim(), profile.ApprovedBy.Trim(), StringComparison.OrdinalIgnoreCase)
+                || approvedAtUtc != profile.ApprovedAtUtc))
+        {
+            return
+            [
+                SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_CUSTOM_PROFILE_APPROVAL_METADATA_MISMATCH",
+                    "Custom asset profile approval metadata contradicts the governed catalog",
+                    $"profileApproval names approvedBy '{approvedBy}' at '{approvedAtUtc:O}', but profile '{profile.Name}' " +
+                    $"version '{profile.Version}' was approved by '{profile.ApprovedBy}' at '{profile.ApprovedAtUtc:O}'.",
+                    ["assetSpecificTerms.profileApproval"],
+                    "Copy the approval metadata from the governed profile approval event instead of supplying free text.")
+            ];
+        }
+
+        return [];
     }
 
     private static bool IsCurrencyCode(JsonElement value)

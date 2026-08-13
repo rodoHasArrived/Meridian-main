@@ -214,7 +214,14 @@ internal static class SecurityMasterConflictDetection
 
         var sourceA = SecurityMasterProvenanceReader.Read(current.Provenance).SourceSystem;
         var sourceB = SecurityMasterProvenanceReader.Read(incoming.Provenance).SourceSystem;
-        if (requireDistinctSources && string.Equals(sourceA, sourceB, StringComparison.OrdinalIgnoreCase))
+        // The record-level same-source short-circuit is only sound when no per-field attribution is
+        // available: record-level provenance names the record's LAST writer, so when source B
+        // amended an unrelated field and now changes a field source A supplied, both sides read B
+        // even though the true disagreement is A-versus-B. With an incumbent map the distinct-source
+        // test moves into Add, per field, against that field's actual incumbent.
+        var hasFieldAttribution = incumbentFieldSources is { Count: > 0 };
+        if (requireDistinctSources && !hasFieldAttribution
+            && string.Equals(sourceA, sourceB, StringComparison.OrdinalIgnoreCase))
         {
             return [];
         }
@@ -254,6 +261,14 @@ internal static class SecurityMasterConflictDetection
                 && !string.IsNullOrWhiteSpace(fieldSource)
                     ? fieldSource
                     : sourceA;
+            // Per-field distinct-source test: a source revising ITS OWN field is versioning, not a
+            // cross-source conflict — judged against the field's incumbent, not the record's last
+            // writer, so B changing A's field still opens the A-versus-B disagreement.
+            if (requireDistinctSources && string.Equals(incumbent, sourceB, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             conflicts.Add(new SecurityMasterConflict(
                 ConflictId: DeterministicFieldConflictId(current.SecurityId, fieldPath, incumbent, valueA, sourceB, valueB),
                 SecurityId: current.SecurityId,
@@ -344,6 +359,15 @@ internal static class SecurityMasterConflictDetection
         {
             if (string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b))
             {
+                // A cleared day count changed hands like any other governed field: attribution for
+                // the removed value is stale, so absence transitions count for retirement consumers
+                // even though conflict creation still requires both values present.
+                if (includeAbsenceTransitions && string.IsNullOrWhiteSpace(a) != string.IsNullOrWhiteSpace(b))
+                {
+                    Add("EconomicTerms.dayCountConvention", SecurityMasterConflictKinds.EconomicTermMismatch,
+                        a?.Trim() ?? string.Empty, b?.Trim() ?? string.Empty);
+                }
+
                 return;
             }
 

@@ -414,7 +414,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 },
                 profileApproval = new
                 {
-                    approvedBy = "governance.lead",
+                    approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
                     approvalReference = "PFI-APPROVAL-1"
                 }
@@ -815,7 +815,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 },
                 profileApproval = new
                 {
-                    approvedBy = "governance.lead",
+                    approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
                     approvalReference = "SPV-APPROVAL-1"
                 }
@@ -880,7 +880,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     },
                     profileApproval = new
                     {
-                        approvedBy = "governance.lead",
+                        approvedBy = "Meridian",
                         approvedAtUtc = "2026-05-29T00:00:00Z",
                         approvalReference = "PFI-APPROVAL-2"
                     }
@@ -950,7 +950,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 },
                 profileApproval = new
                 {
-                    approvedBy = "governance.lead",
+                    approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
                     approvalReference = "PFI-APPROVAL-3"
                 }
@@ -969,6 +969,244 @@ public sealed class SecurityMasterServiceSnapshotTests
         await eventStore.Received(1).AppendAsync(
             securityId,
             0,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_BackdatedWriteOutsideProfileEffectiveWindow_RefusesTheWrite()
+    {
+        // Approved status alone is not enough: the pinned version's effective window must cover
+        // the write's effective date, or a backdated write pins a version that was not yet in
+        // force (and a current write could pin an expired one).
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        // The seeded profiles become effective 2026-05-29; this write is dated before that.
+        var effectiveFrom = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                securityId,
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new { displayName = "Backdated Fund Interest", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "private-fund-interest",
+                    profileVersion = 1,
+                    profileFields = new
+                    {
+                        gpSponsor = "Meridian Growth Partners",
+                        strategy = "Buyout",
+                        vintage = 2024,
+                        commitment = 5_000_000m,
+                        fundedAmount = 0m,
+                        unfundedAmount = 5_000_000m,
+                        navDate = "2026-06-30"
+                    },
+                    profileApproval = new
+                    {
+                        approvedBy = "Meridian",
+                        approvedAtUtc = "2026-05-29T00:00:00Z",
+                        approvalReference = "PFI-APPROVAL-4"
+                    }
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-BACK", true, effectiveFrom, null, null)
+                },
+                effectiveFrom,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_ApprovalMetadataContradictingCatalog_RefusesTheWrite()
+    {
+        // profileApproval persists as the record's immutable audit trail: caller-supplied values
+        // contradicting the governed catalog's approval facts would corrupt that trail from the
+        // first write.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                securityId,
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new { displayName = "Forged Approval Fund", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "private-fund-interest",
+                    profileVersion = 1,
+                    profileFields = new
+                    {
+                        gpSponsor = "Meridian Growth Partners",
+                        strategy = "Buyout",
+                        vintage = 2024,
+                        commitment = 5_000_000m,
+                        fundedAmount = 0m,
+                        unfundedAmount = 5_000_000m,
+                        navDate = "2026-06-30"
+                    },
+                    profileApproval = new
+                    {
+                        approvedBy = "rogue-actor",
+                        approvedAtUtc = "2026-05-29T00:00:00Z",
+                        approvalReference = "PFI-APPROVAL-5"
+                    }
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-FORGE", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*SM_CUSTOM_PROFILE_APPROVAL_METADATA_MISMATCH*");
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_EnvelopeRepinnedToReclassifyingProfile_ResolvesTheSubmittedClass()
+    {
+        // The SUBMITTED envelope decides an amendment's resolved class: repinning an unmapped
+        // CustomAsset (co-invest-spv) to private-fund-interest must resolve to PrivateFundInterest
+        // exactly as the identical create would — persisting the new envelope while silently
+        // keeping CustomAsset would skip the resolved class's validators and routing.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var previous = CreateProjection(securityId, "CustomAsset", SecurityStatusDto.Active, "SPV becoming fund interest", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "co-invest-spv",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    vehicle = "Meridian Co-Invest I",
+                    underlyingCompanyOrSecurity = "Acme Holdings",
+                    sponsor = "Meridian Growth Partners",
+                    commitment = 1_000_000m,
+                    economics = "1/10 over 8",
+                    reportingCadence = "Quarterly"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "Meridian",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "SPV-APPROVAL-2"
+                }
+            }),
+            Provenance = JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "provA",
+                asOf = DateTimeOffset.UtcNow.AddDays(-1),
+                updatedBy = "feed"
+            }),
+            Identifiers = new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "SPV-REPIN", true, DateTimeOffset.UtcNow.AddDays(-30), null, null)
+            }
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(previous);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        var detail = await service.AmendTermsAsync(new AmendSecurityTermsRequest(
+            securityId,
+            2,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "private-fund-interest",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    gpSponsor = "Meridian Growth Partners",
+                    strategy = "Buyout",
+                    vintage = 2024,
+                    commitment = 5_000_000m,
+                    fundedAmount = 0m,
+                    unfundedAmount = 5_000_000m,
+                    navDate = "2026-06-30"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "Meridian",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "PFI-APPROVAL-6"
+                }
+            }),
+            IdentifiersToAdd: [],
+            IdentifiersToExpire: [],
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "provA",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "repin to fund interest"));
+
+        detail.AssetClass.Should().Be("PrivateFundInterest",
+            "the submitted envelope resolves the class exactly as the identical create would");
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
             Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
             Arg.Any<CancellationToken>());
     }
