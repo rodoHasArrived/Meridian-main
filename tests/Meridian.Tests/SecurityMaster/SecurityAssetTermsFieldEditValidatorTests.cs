@@ -18,6 +18,21 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     }
 
     [Theory]
+    [InlineData("assetSpecificTerms")]
+    [InlineData(" assetSpecificTerms ")]
+    [InlineData("ASSETSPECIFICTERMS")]
+    public void ExactAssetTermsRoot_IsReservedAndRejected(string fieldPath)
+    {
+        // The bare root names no schema field, but it must still classify as RESERVED: treating it
+        // as a free annotation would let a root-level asset-terms value stage past the schema,
+        // pinned-profile validation, and the overrides endpoint's reserved-namespace rejection.
+        SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(fieldPath).Should().BeTrue();
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", fieldPath, "{\"maturity\":\"2031-06-15\"}", out _, out var error)
+            .Should().BeFalse();
+        error.Should().Contain("reserved");
+    }
+
+    [Theory]
     [InlineData("Bond", "assetSpecificTerms.maturity", "2031-06-15")]
     [InlineData("Bond", "assetSpecificTerms.couponRate", "4.25")]
     [InlineData("Bond", "assetSpecificTerms.isCallable", "true")]

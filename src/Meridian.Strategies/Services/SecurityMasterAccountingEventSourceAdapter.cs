@@ -176,7 +176,15 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 if (candidates.Length != 1 ||
                     (resolved is not null && resolved.PositionId != candidates[0].PositionId))
                 {
-                    return position;
+                    // Resolution RAN and could not confirm one active owner for every observation
+                    // date — the supplied identity (e.g. a ledger dimension PositionId inactive on
+                    // an observation date, or ownership split across observations) must not pass
+                    // through, or every paydown and posting candidate would carry the exact stale
+                    // position this resolver exists to prevent. The position returns explicitly
+                    // UNRESOLVED; the paydown generator then fails closed with its
+                    // FACTOR_PAYDOWN_POSITION_REQUIRED issue instead of posting against the wrong
+                    // owner, and the operator resolves the ownership question.
+                    return position with { PositionId = null, PositionVersion = 1 };
                 }
 
                 resolved = candidates[0];
@@ -377,10 +385,13 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             // retains its trustee-report pointer as the free-text factorSchedule field, which is
             // the retained evidence the paydown projector requires. Rows with no resolvable
             // evidence still surface — the projector fails them closed with its evidence-required
-            // issue rather than this adapter fabricating a link.
+            // issue rather than this adapter fabricating a link. The GOVERNED nested pointer wins
+            // over an outer pass-through copy, matching the nested-first precedence of the typed
+            // schedule itself and the shared term-source walk — an ungoverned outer value must not
+            // supply the trustee-report lineage the expected event records.
             var typedRowEvidence = definition.LegacyAssetSpecificTerms is JsonElement legacyTermsForEvidence
-                ? ReadString(legacyTermsForEvidence, "factorSchedule")
-                    ?? ReadString(GetObject(legacyTermsForEvidence, "profileFields"), "factorSchedule")
+                ? ReadString(GetObject(legacyTermsForEvidence, "profileFields"), "factorSchedule")
+                    ?? ReadString(legacyTermsForEvidence, "factorSchedule")
                 : null;
             foreach (var schedule in EnumerateTypedFactorScheduleArrays(definition))
             {
@@ -580,6 +591,21 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return "AmortizingLoan";
         }
 
+        // Canonical StructuredCredit records classify as class/subtype "StructuredCredit" and
+        // family "StructuredCash" — securitized tranches whose factor-driven paydown accounting
+        // this fixed-income slice exists to cover. Mortgage-collateral flavors already resolved
+        // above via the MortgageBacked tokens; the rest account as asset-backed securitizations.
+        // Without this mapping the raw class reaches the event service, fails its fixed-income
+        // gate as SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT, and the typed-schedule coverage never runs
+        // for the very records that carry typed schedules.
+        if (IsStructuredCredit(definition.AssetClass) ||
+            IsStructuredCredit(definition.AssetFamily) ||
+            IsStructuredCredit(definition.SubType) ||
+            IsStructuredCredit(definition.TypeName))
+        {
+            return "AssetBackedSecurity";
+        }
+
         if (IsFixedIncome(definition.AssetClass) ||
             IsFixedIncome(definition.AssetFamily) ||
             ContainsToken(definition.SubType, "Bond") ||
@@ -620,6 +646,10 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         string.Equals(value, "AmortizingLoan", StringComparison.OrdinalIgnoreCase) ||
         ContainsToken(value, "AmortizingLoan") ||
         ContainsToken(value, "Amortizing Loan");
+
+    private static bool IsStructuredCredit(string? value) =>
+        string.Equals(value, "StructuredCash", StringComparison.OrdinalIgnoreCase) ||
+        ContainsToken(value, "StructuredCredit");
 
     private static bool ContainsToken(string? value, string token) =>
         !string.IsNullOrWhiteSpace(value) &&

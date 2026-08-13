@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { isWriteSelectableAssetProfile } from "./settings-profile-backed-security";
-import type { SecurityAssetProfileDefinition, SecurityAssetProfileStatus } from "@/types";
+import { buildProfileFieldPayload, isWriteSelectableAssetProfile } from "./settings-profile-backed-security";
+import type {
+  SecurityAssetProfileDefinition,
+  SecurityAssetProfileFieldDefinition,
+  SecurityAssetProfileStatus
+} from "@/types";
 
 function profileWith(
   status: SecurityAssetProfileStatus,
@@ -62,5 +66,71 @@ describe("isWriteSelectableAssetProfile", () => {
   it("hides Draft and Retired versions", () => {
     expect(isWriteSelectableAssetProfile(profileWith("Draft", "2026-05-29", null), today)).toBe(false);
     expect(isWriteSelectableAssetProfile(profileWith("Retired", "2026-05-29", null), today)).toBe(false);
+  });
+});
+
+function numericField(
+  key: string,
+  fieldType: "Decimal" | "Integer"
+): SecurityAssetProfileFieldDefinition {
+  return {
+    key,
+    label: key,
+    fieldType,
+    isRequired: true,
+    allowedValues: [],
+    description: null,
+    minValue: null,
+    maxValue: null,
+    isProjected: false,
+    isSearchable: false
+  };
+}
+
+describe("buildProfileFieldPayload numeric precision", () => {
+  it("accepts values that round-trip exactly through Number", () => {
+    const fields = [numericField("commitment", "Decimal"), numericField("vintage", "Integer")];
+    const { payload, invalidFields } = buildProfileFieldPayload(fields, {
+      commitment: "1000000.50",
+      vintage: "2024"
+    });
+
+    expect(invalidFields).toEqual([]);
+    expect(payload.commitment).toBe(1000000.5);
+    expect(payload.vintage).toBe(2024);
+  });
+
+  it("rejects a decimal the IEEE double would silently round", () => {
+    // The server contract is .NET decimal: submitting 123456789.123456789 through a JS Number
+    // would persist 123456789.12345679 - different economics than the operator entered.
+    const fields = [numericField("commitment", "Decimal")];
+    const { payload, invalidFields } = buildProfileFieldPayload(fields, {
+      commitment: "123456789.123456789"
+    });
+
+    expect(payload).not.toHaveProperty("commitment");
+    expect(invalidFields).toHaveLength(1);
+    expect(invalidFields[0]).toContain("commitment");
+  });
+
+  it("rejects an integer beyond exact double precision", () => {
+    // 9007199254740993 parses to 9007199254740992 - still an integer, silently off by one.
+    const fields = [numericField("originalFace", "Integer")];
+    const { payload, invalidFields } = buildProfileFieldPayload(fields, {
+      originalFace: "9007199254740993"
+    });
+
+    expect(payload).not.toHaveProperty("originalFace");
+    expect(invalidFields).toHaveLength(1);
+  });
+
+  it("accepts harmless textual normalization like trailing fractional zeros", () => {
+    const fields = [numericField("ownershipPercent", "Decimal")];
+    const { payload, invalidFields } = buildProfileFieldPayload(fields, {
+      ownershipPercent: "12.50"
+    });
+
+    expect(invalidFields).toEqual([]);
+    expect(payload.ownershipPercent).toBe(12.5);
   });
 });

@@ -16,10 +16,24 @@ public static class SecurityAssetTermsFieldEditValidator
 {
     public const string AssetSpecificTermsPrefix = "assetSpecificTerms.";
 
-    /// <summary>True when the field path addresses the asset-specific-terms namespace.</summary>
+    /// <summary>
+    /// True when the field path addresses the asset-specific-terms namespace — including the EXACT
+    /// root <c>assetSpecificTerms</c> (no trailing dot). The bare root never validates (it names
+    /// no schema field), but it must still classify as reserved: treating it as a free annotation
+    /// would let a root-level asset-terms value stage past the schema, pinned-profile validation,
+    /// and the overrides endpoint's reserved-namespace rejection.
+    /// </summary>
     public static bool TargetsAssetSpecificTerms(string? fieldPath)
-        => fieldPath is not null
-           && fieldPath.TrimStart().StartsWith(AssetSpecificTermsPrefix, StringComparison.OrdinalIgnoreCase);
+    {
+        if (fieldPath is null)
+        {
+            return false;
+        }
+
+        var trimmed = fieldPath.Trim();
+        return trimmed.StartsWith(AssetSpecificTermsPrefix, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(trimmed, "assetSpecificTerms", StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>
     /// Validates an asset-terms field edit against the declared schema for
@@ -44,7 +58,15 @@ public static class SecurityAssetTermsFieldEditValidator
             return true;
         }
 
-        var remainder = fieldPath.Trim()[AssetSpecificTermsPrefix.Length..];
+        var trimmedPath = fieldPath.Trim();
+        if (!trimmedPath.StartsWith(AssetSpecificTermsPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            error = "Field path 'assetSpecificTerms' is the reserved asset-terms namespace root, not a schema field; " +
+                "edit a specific term such as 'assetSpecificTerms.maturity'.";
+            return false;
+        }
+
+        var remainder = trimmedPath[AssetSpecificTermsPrefix.Length..];
         var separatorIndex = remainder.IndexOf('.', StringComparison.Ordinal);
         var key = separatorIndex < 0 ? remainder : remainder[..separatorIndex];
         var nestedPath = separatorIndex < 0 ? string.Empty : remainder[(separatorIndex + 1)..];

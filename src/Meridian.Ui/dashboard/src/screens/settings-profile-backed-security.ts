@@ -80,9 +80,30 @@ function defaultProfileFieldValue(field: SecurityAssetProfileFieldDefinition): s
 }
 
 /**
+ * Canonical text form of a plain decimal input ("+" stripped, leading integer zeros collapsed,
+ * trailing fractional zeros and a bare "." dropped), or null when the input is not plain decimal
+ * notation. Used to detect binary rounding: JavaScript Number is an IEEE double, so an input whose
+ * canonical form differs from String(Number(input)) was silently altered by the conversion.
+ */
+function canonicalDecimalText(raw: string): string | null {
+  const match = /^([+-]?)(\d*)(?:\.(\d*))?$/.exec(raw);
+  if (!match || (match[2] === "" && (match[3] ?? "") === "")) return null;
+  const sign = match[1] === "-" ? "-" : "";
+  let intPart = (match[2] ?? "").replace(/^0+(?=\d)/, "");
+  const fracPart = (match[3] ?? "").replace(/0+$/, "");
+  if (intPart === "") intPart = "0";
+  if (intPart === "0" && fracPart === "") return "0";
+  return fracPart ? `${sign}${intPart}.${fracPart}` : `${sign}${intPart}`;
+}
+
+/**
  * Builds the profile field payload for security creation. Values that fail to parse are reported
  * in invalidFields instead of being emitted - Number.parseFloat("") is NaN, which JSON.stringify
  * would silently serialize as null, and prefix-parsers would truncate values like "12,5" to 12.
+ * Numeric values must additionally round-trip EXACTLY through the JavaScript Number used to
+ * serialize them: the server contract is .NET decimal, so an input the IEEE double silently
+ * rounds (9007199254740993, long fractional commitments) would persist different economics than
+ * the operator entered - such values are rejected rather than altered.
  */
 export function buildProfileFieldPayload(
   fields: SecurityAssetProfileFieldDefinition[],
@@ -106,6 +127,11 @@ export function buildProfileFieldPayload(
           invalidFields.push(`${field.label}: enter a valid number.`);
           break;
         }
+        const canonical = canonicalDecimalText(raw);
+        if (canonical === null || String(parsed) !== canonical) {
+          invalidFields.push(`${field.label}: this value cannot be submitted exactly (the browser would round it); enter fewer significant digits.`);
+          break;
+        }
         payload[field.key] = parsed;
         break;
       }
@@ -113,6 +139,11 @@ export function buildProfileFieldPayload(
         const parsed = Number(raw);
         if (!Number.isInteger(parsed)) {
           invalidFields.push(`${field.label}: enter a whole number.`);
+          break;
+        }
+        const canonical = canonicalDecimalText(raw);
+        if (canonical === null || String(parsed) !== canonical) {
+          invalidFields.push(`${field.label}: this value cannot be submitted exactly (the browser would round it); enter a smaller whole number.`);
           break;
         }
         payload[field.key] = parsed;
