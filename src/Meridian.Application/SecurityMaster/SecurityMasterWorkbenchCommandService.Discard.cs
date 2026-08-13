@@ -209,7 +209,45 @@ public sealed partial class SecurityMasterWorkbenchCommandService
             // here still fails, re-discarding the Rejected revision reconciles it).
             if (!string.IsNullOrWhiteSpace(revision.FieldPath))
             {
-                if (laterSiblingOwnsPath)
+                // Ownership is verified against the overlay's CURRENT value, not only revision
+                // siblings: a generic-route patch can replace the key after this revision staged
+                // it (e.g. while it sat Rejected awaiting a re-discard, when nothing blocks
+                // patches), and withdrawing or restoring over that replacement would silently
+                // delete a value this revision never staged. Only a PRESENT key carrying a
+                // DIFFERENT value blocks — an absent key is the normal completed-withdrawal /
+                // sparse-overlay state, and legacy revisions without recorded values have nothing
+                // to verify against.
+                var revisionOwnsCurrentValue = true;
+                if (!laterSiblingOwnsPath && revision.FieldValueRecorded)
+                {
+                    var currentOverlay = await _overrides.GetAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
+                    string? currentValue = null;
+                    var keyPresent = false;
+                    if (currentOverlay is not null)
+                    {
+                        foreach (var (path, value) in currentOverlay.Values)
+                        {
+                            if (string.Equals(path, revision.FieldPath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                currentValue = value;
+                                keyPresent = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    revisionOwnsCurrentValue = !keyPresent
+                        || (revision.FieldValue is not null
+                            && string.Equals(currentValue, revision.FieldValue, StringComparison.Ordinal));
+                }
+
+                if (!revisionOwnsCurrentValue)
+                {
+                    _logger.LogWarning(
+                        "Discarded revision {RevisionId} for {SecurityId} left the override at {FieldPath} untouched: the overlay's current value is not the value this revision staged (a later generic-route patch replaced it), so the discard must not withdraw or restore over it.",
+                        request.RevisionId, request.SecurityId, SanitizeForLog(revision.FieldPath));
+                }
+                else if (laterSiblingOwnsPath)
                 {
                     _logger.LogInformation(
                         "Discarded revision {RevisionId} for {SecurityId} left the staged override at {FieldPath} in place: a later staged revision owns the current value.",

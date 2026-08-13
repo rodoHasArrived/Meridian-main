@@ -9,6 +9,16 @@ namespace Meridian.Application.SecurityMaster;
 
 public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
 {
+    /// <summary>
+    /// Per-security amendment serialization from the conflict pre-check (which reads per-field
+    /// incumbent attribution) through the post-persist attribution write. Without it, amendment C
+    /// can commit its projection and pause before its attribution lands, while amendment B reads
+    /// the PREVIOUS incumbent's field row and records a conflict pairing the old source with C's
+    /// value — a mispairing source-version ordering cannot repair once persisted. In-process only;
+    /// the shared-transaction seam tracked as follow-up work is the durable multi-node answer.
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> AmendmentGates = new();
+
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterSnapshotStore _snapshotStore;
     private readonly ISecurityMasterStore _store;
@@ -111,32 +121,46 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // governed resolution workflow. Conflict ids are deterministic, so a retried amendment
         // reuses the same rows, and a conflict recorded for an amendment that subsequently fails
         // still describes a real cross-source disagreement.
-        await RecordFieldConflictsBeforePersistAsync(currentProjection, projection, ct).ConfigureAwait(false);
-
+        // The stretch from the conflict pre-check to the attribution write serializes per
+        // security: the pre-check reads per-field incumbent attribution, and a concurrent
+        // amendment must not read incumbents while this one sits between its committed projection
+        // and its not-yet-written attribution — it would pair the previous source with this
+        // amendment's value in a durably recorded conflict.
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
-        var envelope = SecurityMasterMapping.ToEventEnvelope(
-            economic,
-            eventType,
-            request.UpdatedBy,
-            request.SourceSystem,
-            request.Reason,
-            projection.Version);
+        var amendmentGate = AmendmentGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
+        await amendmentGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await RecordFieldConflictsBeforePersistAsync(currentProjection, projection, ct).ConfigureAwait(false);
 
-        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
-        await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-        // A governed field that just changed invalidates any prior conflict-resolution attribution
-        // for that path: the recorded winner no longer supplied the current value. Changed paths
-        // are computed independently of cross-source conflict creation — the previous winner
-        // amending its OWN value opens no conflict, yet still makes the old attribution stale.
-        // Attribution runs IMMEDIATELY after the projection write (before snapshots and identifier
-        // conflict detection) to minimize the window in which a concurrent reader sees the new
-        // value with the old field attribution; true atomicity needs the shared-transaction seam
-        // tracked as follow-up work.
-        var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
-            currentProjection, projection, _assetProfileCatalog);
-        await TryRetireStaleFieldResolutionProvenanceAsync(
-            changedGovernedFields, request.SecurityId, projection.Version, ct).ConfigureAwait(false);
-        await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
+            var envelope = SecurityMasterMapping.ToEventEnvelope(
+                economic,
+                eventType,
+                request.UpdatedBy,
+                request.SourceSystem,
+                request.Reason,
+                projection.Version);
+
+            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
+            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+            // A governed field that just changed invalidates any prior conflict-resolution attribution
+            // for that path: the recorded winner no longer supplied the current value. Changed paths
+            // are computed independently of cross-source conflict creation — the previous winner
+            // amending its OWN value opens no conflict, yet still makes the old attribution stale.
+            // Attribution runs IMMEDIATELY after the projection write (before snapshots and identifier
+            // conflict detection) to minimize the window in which a concurrent reader sees the new
+            // value with the old field attribution; true atomicity needs the shared-transaction seam
+            // tracked as follow-up work.
+            var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
+                currentProjection, projection, _assetProfileCatalog);
+            await TryRetireStaleFieldResolutionProvenanceAsync(
+                changedGovernedFields, request.SecurityId, projection.Version, ct).ConfigureAwait(false);
+            await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            amendmentGate.Release();
+        }
         // Open conflicts reconcile against the DURABLY persisted value only: superseding or
         // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed
         // conflict queue for an amendment the event store then rejects. Best-effort — a failed

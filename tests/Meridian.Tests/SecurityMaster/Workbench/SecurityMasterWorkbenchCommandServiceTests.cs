@@ -3538,12 +3538,14 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task PatchOperatorOverrides_WhileFieldEditIsMidFlight_WaitsForTheGate()
+    public async Task PatchOperatorOverrides_WhileFieldEditIsMidFlight_WaitsForTheGateThenRefuses()
     {
         // The generic overrides patch seam holds the same per-security gate as the field-edit,
         // approve, submit, and discard routes: a free-form key must not land between an in-flight
-        // edit's committed patch and its draft creation (nor between an approval's ungoverned-key
-        // scan and its recorded decision).
+        // edit's committed patch and its draft creation. And once the gate is released, the seam
+        // observes the edit's freshly staged Draft and refuses the patch outright — the overlay is
+        // mid-review, and a free-form mutation would change what the draft's reviewer decides
+        // over.
         var revisions = new GatedRevisionStore();
         var harness = new Harness(currentVersion: 2, revisions: revisions);
         harness.SetPassportAssetClass("Bond");
@@ -3576,7 +3578,66 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             "the raw patch must wait for the per-security gate the in-flight edit holds");
 
         revisions.ReleaseDrafts.TrySetResult();
-        await Task.WhenAll(editTask, patchTask);
+        await editTask;
+        await FluentActions.Awaiting(() => patchTask)
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*governed revision workflow*");
+    }
+
+    [Fact]
+    public async Task PatchOperatorOverrides_NothingStaged_AppliesThePatch()
+    {
+        // With no staged revisions, the generic route remains the free annotation surface — the
+        // seam only adds gate serialization, not a new gate on legacy usage.
+        var harness = new Harness(currentVersion: 2);
+
+        await harness.Service.PatchOperatorOverridesAsync(
+            SecurityId,
+            new OperatorOverridesPatchRequest(
+                SetValues: new Dictionary<string, string> { ["annotations.freeform"] = "raw patch" },
+                RemoveKeys: null),
+            "ops.analyst");
+
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId, It.IsAny<OperatorOverridesPatchRequest>(), "ops.analyst",
+                It.IsAny<CancellationToken>(), It.IsAny<long?>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Discard_GenericReplacementAfterStaging_LeavesTheReplacementInPlace()
+    {
+        // A generic-route patch replaced the key AFTER the revision staged its value (possible
+        // while the revision sat Rejected awaiting a re-discard, when nothing blocks patches).
+        // The discarded revision no longer owns the key's current value, so the discard must not
+        // withdraw or restore over the newer replacement it never staged.
+        var harness = new Harness(currentVersion: 3);
+        var rejected = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Abandoned edit (100).",
+            fieldValue: new SecurityMasterRevisionFieldValue("100"));
+        await harness.Revisions.TransitionAsync(
+            rejected.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Rejected, "ops.analyst");
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.par"] = "999" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, rejected.RevisionId, "ops.analyst", "Reconcile the incomplete discard."));
+
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>(), It.IsAny<long?>()),
+            Times.Never,
+            "the discard must not delete or overwrite the newer generic replacement it never staged");
     }
 
     [Fact]

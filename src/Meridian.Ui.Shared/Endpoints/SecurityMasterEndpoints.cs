@@ -1009,17 +1009,28 @@ public static class SecurityMasterEndpoints
             // per-security gate before recording the security-level Approved; a bare store patch
             // can land between that scan and the decision and be silently co-approved. When the
             // host wires the workbench service, the patch goes through its gate-held seam so the
-            // write serializes with that scan.
-            var updated = workbenchService is null
-                ? await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false)
-                : await workbenchService.PatchOperatorOverridesAsync(securityId, request, actor, ct).ConfigureAwait(false);
-            return Results.Json(updated, jsonOptions);
+            // write serializes with that scan — and is refused while staged revisions are pending,
+            // since a free-form patch would change the overlay their reviewers decide over.
+            try
+            {
+                var updated = workbenchService is null
+                    ? await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false)
+                    : await workbenchService.PatchOperatorOverridesAsync(securityId, request, actor, ct).ConfigureAwait(false);
+                return Results.Json(updated, jsonOptions);
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
+            {
+                // Staged revisions are mid-review — a conflicting-state condition, not a client
+                // formatting error.
+                return Results.Conflict(new { error = exception.Message });
+            }
         })
         .WithName("PatchSecurityMasterOperatorOverrides")
         .Accepts<OperatorOverridesPatchRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);

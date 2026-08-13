@@ -819,6 +819,41 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task AmendTermsAsync_ConcurrentAmendment_WaitsForThePriorAttributionWrite()
+    {
+        // Amendment C committing its projection and pausing before its attribution write must not
+        // let amendment B read the PREVIOUS incumbent's field row: B would durably record a
+        // conflict pairing the old source with C's value — a mispairing source-version ordering
+        // cannot repair once persisted. Same-security amendments serialize from the conflict
+        // pre-check through the attribution write.
+        var (securityId, _, service, _, fieldProvenance) = BuildAmendHarness(conflictRecordingFails: false);
+        var attributionEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseAttribution = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstAttribution = true;
+        fieldProvenance.UpsertAsync(Arg.Any<SecurityFieldProvenanceRecord>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                if (firstAttribution)
+                {
+                    firstAttribution = false;
+                    attributionEntered.TrySetResult();
+                    await releaseAttribution.Task;
+                }
+            });
+
+        var firstAmend = service.AmendTermsAsync(BuildConflictingAmend(securityId));
+        await attributionEntered.Task;
+
+        var secondAmend = service.AmendTermsAsync(BuildConflictingAmend(securityId));
+        await Task.Delay(100);
+        secondAmend.IsCompleted.Should().BeFalse(
+            "a concurrent same-security amendment must wait until the prior amendment's attribution write lands");
+
+        releaseAttribution.TrySetResult();
+        await Task.WhenAll(firstAmend, secondAmend);
+    }
+
+    [Fact]
     public async Task AmendTermsAsync_AttributionReadFails_StillInvokesDurableConflictRecording()
     {
         // When the per-field attribution read FAILS, the pre-check's same-source shortcut is not
