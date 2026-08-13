@@ -167,11 +167,13 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task UpdateSecurityField_UnresolvedPinnedProfile_FailsClosedForProfileFieldValues()
+    public async Task UpdateSecurityField_UnresolvedPinnedProfile_FailsClosed()
     {
         // profileFields values are governed by the pinned profile; when the projection carries no
         // envelope (lag, legacy drift, catalog mismatch) a value edit must be rejected, not staged
-        // unvalidated with a draft revision and provenance row.
+        // unvalidated with a draft revision and provenance row. Clears fail closed too: without
+        // the pinned definition the path cannot be canonicalized, so clearing a casing variant
+        // would remove the wrong key while the stored override and its provenance stay active.
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("CustomAsset");
         // No SetProjectionProfileEnvelope: the pinned profile cannot resolve.
@@ -187,6 +189,12 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
             .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*pinned asset profile*");
+
+        var clear = request with { NewValue = null, Justification = "Withdraw the factor override." };
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(clear))
+            .Should().ThrowAsync<InvalidOperationException>(
+                "an uncanonicalized clear could remove the wrong casing's key and leave the asserted value active")
             .WithMessage("*pinned asset profile*");
     }
 
@@ -314,6 +322,68 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             EditWith("assetSpecificTerms.profileFields.endDate", "2026-06-01"));
         staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
             "moving endDate after the retained startDate satisfies the ordering");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ScalarDateEdit_ValidatesAgainstStagedOverrides()
+    {
+        // The counterpart date must come from the EFFECTIVE overlay: with canonical endDate in
+        // December but a STAGED override moving it to February, an edit of startDate to March must
+        // be judged against February — validating against the superseded canonical value would let
+        // two individually plausible edits stage a start-after-end overlay.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope(
+            "dated-profile", profileVersion: 1,
+            profileFields: new { startDate = "2026-01-01", endDate = "2026-12-01" });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.profileFields.endDate"] = "2026-02-01"
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.startDate",
+            NewValue: "2026-03-01",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Date correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>(
+                "the staged February endDate override is the effective counterpart, not canonical December")
+            .WithMessage("*PF_DATE_ORDER*");
     }
 
     [Fact]

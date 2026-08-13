@@ -71,7 +71,24 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
         EnsureAssetClassRoundTripsSafely(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
-        var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, currentProjection));
+        // The SUBMITTED envelope's profile decides which kind parses the patch: a record already
+        // reclassified to a first-class kind can be repinned to a different profile, and parsing
+        // the new envelope through the OLD class would demand the old class's fields (repinning
+        // PrivateFundInterest to structured-credit-io-po must not require gpSponsor) — or, for an
+        // unmapped profile, make the return to CustomAsset unreachable.
+        var kindSourceProjection = currentProjection;
+        if (request.AssetSpecificTermsPatch is JsonElement patchEnvelope
+            && IsProfileBackedCustomAsset(currentProjection.AssetClass, patchEnvelope))
+        {
+            kindSourceProjection = currentProjection with
+            {
+                AssetClass = TryResolveProfileBackedAlternativeAssetClass(patchEnvelope, out var submittedClass)
+                    ? submittedClass
+                    : "CustomAsset"
+            };
+        }
+
+        var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, kindSourceProjection));
         var projection = CreateProjectionFromResult(
             result,
             currentProjection.Aliases,
@@ -695,7 +712,12 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         JsonElement? assetSpecificTermsPatch)
         => assetSpecificTermsPatch is JsonElement patch
             && IsProfileBackedCustomAsset(currentProjection.AssetClass, patch)
-                ? GetProfileBackedAssetClassOverride(currentProjection.AssetClass, patch)
+                ? (TryResolveProfileBackedAlternativeAssetClass(patch, out var submittedClass)
+                    ? submittedClass
+                    // An unmapped registered profile resolves to CustomAsset — explicitly, so a
+                    // first-class record repinned to e.g. co-invest-spv RETURNS to CustomAsset
+                    // instead of keeping the old class via the stored projection's resolution.
+                    : "CustomAsset")
                 : GetProfileBackedAssetClassOverride(currentProjection);
 
     private static string? GetProfileBackedAssetClassOverride(string assetClass, JsonElement assetSpecificTerms)

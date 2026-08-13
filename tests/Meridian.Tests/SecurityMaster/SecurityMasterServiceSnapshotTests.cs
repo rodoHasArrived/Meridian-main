@@ -1211,6 +1211,205 @@ public sealed class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task AmendTermsAsync_FirstClassRecordRepinnedToDifferentProfile_ParsesThePatchUnderTheSubmittedClass()
+    {
+        // The submitted envelope's profile decides which kind parses the patch: repinning a
+        // PrivateFundInterest record to structured-credit-io-po must parse the new envelope as
+        // StructuredCredit — parsing it through the OLD class would demand gpSponsor and the other
+        // fund fields from a structured-credit envelope and refuse a legitimate repin.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var previous = CreateProjection(securityId, "PrivateFundInterest", SecurityStatusDto.Active, "Fund becoming strip", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "private-fund-interest",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    gpSponsor = "Meridian Growth Partners",
+                    strategy = "Buyout",
+                    vintage = 2024,
+                    commitment = 5_000_000m,
+                    fundedAmount = 0m,
+                    unfundedAmount = 5_000_000m,
+                    navDate = "2026-06-30"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "Meridian",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "PFI-APPROVAL-7"
+                }
+            }),
+            Provenance = JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "provA",
+                asOf = DateTimeOffset.UtcNow.AddDays(-1),
+                updatedBy = "feed"
+            }),
+            Identifiers = new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "88160R1014", true, DateTimeOffset.UtcNow.AddDays(-30), null, null),
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-TO-SC", false, DateTimeOffset.UtcNow.AddDays(-30), null, null)
+            }
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(previous);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        var detail = await service.AmendTermsAsync(new AmendSecurityTermsRequest(
+            securityId,
+            2,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "structured-credit-io-po",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    tranche = "A-1",
+                    poolId = "POOL-1",
+                    currentFactor = 0.8m,
+                    originalFace = 1_000_000m,
+                    couponOrIndex = "SOFR+250",
+                    factorSchedule = "trustee-report",
+                    collateralType = "CLO"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "Meridian",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "SC-APPROVAL-1"
+                }
+            }),
+            IdentifiersToAdd: [],
+            IdentifiersToExpire: [],
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "provA",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "repin to structured credit"));
+
+        detail.AssetClass.Should().Be("StructuredCredit",
+            "the submitted envelope's profile decides the class and the kind that parses the patch");
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_FirstClassRecordRepinnedToUnmappedProfile_ReturnsToCustomAsset()
+    {
+        // An unmapped registered profile resolves to CustomAsset: repinning a PrivateFundInterest
+        // record to co-invest-spv must return it to CustomAsset instead of keeping the old class
+        // via the stored projection's resolution.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var previous = CreateProjection(securityId, "PrivateFundInterest", SecurityStatusDto.Active, "Fund becoming SPV", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "private-fund-interest",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    gpSponsor = "Meridian Growth Partners",
+                    strategy = "Buyout",
+                    vintage = 2024,
+                    commitment = 5_000_000m,
+                    fundedAmount = 0m,
+                    unfundedAmount = 5_000_000m,
+                    navDate = "2026-06-30"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "Meridian",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "PFI-APPROVAL-8"
+                }
+            }),
+            Provenance = JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "provA",
+                asOf = DateTimeOffset.UtcNow.AddDays(-1),
+                updatedBy = "feed"
+            }),
+            Identifiers = new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-TO-SPV", true, DateTimeOffset.UtcNow.AddDays(-30), null, null)
+            }
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(previous);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        var detail = await service.AmendTermsAsync(new AmendSecurityTermsRequest(
+            securityId,
+            2,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "co-invest-spv",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    vehicle = "Meridian Co-Invest II",
+                    underlyingCompanyOrSecurity = "Acme Holdings",
+                    sponsor = "Meridian Growth Partners",
+                    commitment = 1_000_000m,
+                    economics = "1/10 over 8",
+                    reportingCadence = "Quarterly"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "Meridian",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "SPV-APPROVAL-3"
+                }
+            }),
+            IdentifiersToAdd: [],
+            IdentifiersToExpire: [],
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "provA",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "repin to co-invest SPV"));
+
+        detail.AssetClass.Should().Be("CustomAsset",
+            "an unmapped registered profile returns the record to CustomAsset");
+    }
+
     private static (Guid SecurityId,
         ISecurityMasterEventStore EventStore,
         SecurityMasterService Service,

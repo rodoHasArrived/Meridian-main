@@ -670,10 +670,12 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     /// <c>profileFields.currentFactor = "garbage"</c> stages an invalid overlay (with a draft
     /// revision and provenance row) that only a later validation read exposes. Resolves the pinned
     /// profile from the persisted envelope and validates the edited field's declared type, range,
-    /// and enum constraints. Value edits fail CLOSED when the pinned profile cannot be resolved
-    /// (projection lag, missing envelope, catalog mismatch, unwired stores) — the reserved
-    /// namespace only accepts validated writes; undeclared keys still pass through, since the
-    /// profile owns only its declared fields.
+    /// and enum constraints. Edits — value-asserting and clears alike — fail CLOSED when the
+    /// pinned profile cannot be resolved (projection lag, missing envelope, catalog mismatch,
+    /// unwired stores): the reserved namespace only accepts validated writes, and an
+    /// uncanonicalized clear would remove the wrong casing's key while the stored override stays
+    /// active. Undeclared keys still pass through once the profile resolves, since the profile
+    /// owns only its declared fields.
     /// <para>Returns the canonical path: a declared profile field's key is normalized to the
     /// pinned definition's spelling, so <c>profileFields.currentFactor</c> and
     /// <c>profileFields.CurrentFactor</c> address ONE override key, revision lineage, and
@@ -728,22 +730,16 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         if (profile is null)
         {
-            if (isClear)
-            {
-                // A clear asserts nothing and only removes an overlay key; it stays available
-                // while the pinned profile cannot be resolved, at the cost of removing the
-                // caller's spelling rather than the canonical key.
-                return canonicalFieldPath;
-            }
-
-            // Fail closed: profileFields values are governed by the pinned profile, so a value that
-            // cannot be validated against it must not stage — projection lag, a missing envelope,
-            // or a catalog mismatch would otherwise be exactly the window in which "garbage" slips
-            // into a governed field with a draft revision and provenance row.
+            // Fail closed for values AND clears: profileFields values are governed by the pinned
+            // profile, so a value that cannot be validated against it must not stage — and without
+            // the pinned definition a clear's path cannot be canonicalized either, so clearing
+            // profileFields.CurrentFactor would remove that noncanonical key while the stored
+            // currentFactor override and its provenance stay active, a clear that reports success
+            // and changes nothing.
             throw new InvalidOperationException(
                 $"The pinned asset profile for security '{request.SecurityId:D}' could not be resolved, so the " +
-                "profileFields edit cannot be validated. Ensure the record carries a profile envelope pinned to a " +
-                "registered profile version and retry; the namespace only accepts validated writes.");
+                "profileFields edit cannot be validated or path-canonicalized. Ensure the record carries a profile " +
+                "envelope pinned to a registered profile version and retry; the namespace only accepts validated writes.");
         }
 
         if (isWholeObject)
@@ -839,7 +835,13 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // a draft and provenance row behind a contract the equivalent object replacement rejects.
         if (!isClear && declared.FieldType == SecurityAssetProfileFieldTypeDto.Date)
         {
-            EnsureScalarDateEditSatisfiesDateOrderRules(profile, declared.Key, request.NewValue!, currentProfileFields);
+            // The counterpart date must come from the EFFECTIVE overlay, not just the canonical
+            // projection: an already staged override of the other date is what the record will
+            // read after approval, so validating against the superseded canonical value would let
+            // two individually plausible edits stage a start-after-end overlay.
+            var stagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
+            EnsureScalarDateEditSatisfiesDateOrderRules(
+                profile, declared.Key, request.NewValue!, currentProfileFields, stagedOverrides);
         }
 
         // Persist under the pinned definition's key spelling — the case-insensitive lookup above
@@ -847,11 +849,35 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         return ProfileFieldsNestedPrefix + declared.Key;
     }
 
+    /// <summary>
+    /// The current staged operator override values, best-effort: a read failure falls back to
+    /// canonical-only counterpart resolution (the pre-existing behavior) rather than blocking the
+    /// edit, and is logged.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, string>?> TryGetStagedOverrideValuesAsync(
+        Guid securityId, CancellationToken ct)
+    {
+        try
+        {
+            var overrides = await _overrides.GetAsync(securityId, ct).ConfigureAwait(false);
+            return overrides?.Values;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Loading staged overrides for {SecurityId} failed; scalar date-order validation falls back to canonical profile fields.",
+                securityId);
+            return null;
+        }
+    }
+
     private static void EnsureScalarDateEditSatisfiesDateOrderRules(
         Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto profile,
         string editedKey,
         string newValue,
-        JsonElement? currentProfileFields)
+        JsonElement? currentProfileFields,
+        IReadOnlyDictionary<string, string>? stagedOverrides)
     {
         if (!DateOnly.TryParse(newValue.Trim(), System.Globalization.CultureInfo.InvariantCulture, out var proposed))
         {
@@ -868,10 +894,9 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             }
 
             var counterpartKey = editsStart ? rule.EndFieldKey : rule.StartFieldKey;
-            if (currentProfileFields is not JsonElement retainedFields
-                || !TryReadProfileDate(retainedFields, counterpartKey, out var counterpart))
+            if (!TryResolveEffectiveProfileDate(counterpartKey, currentProfileFields, stagedOverrides, out var counterpart))
             {
-                // No retained counterpart date — there is nothing for the proposed value to
+                // No effective counterpart date — there is nothing for the proposed value to
                 // violate; the rule binds once both dates exist.
                 continue;
             }
@@ -881,10 +906,38 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             if (start > end)
             {
                 throw new ArgumentException(
-                    $"Value '{newValue}' violates the pinned profile's date ordering against retained " +
-                    $"field '{counterpartKey}' [{rule.Code}]: {rule.Message}");
+                    $"Value '{newValue}' violates the pinned profile's date ordering against the effective " +
+                    $"value of field '{counterpartKey}' [{rule.Code}]: {rule.Message}");
             }
         }
+    }
+
+    /// <summary>
+    /// A profile field's EFFECTIVE date: the staged operator override when one exists (that is
+    /// what the record reads after approval), otherwise the canonical projection value.
+    /// </summary>
+    private static bool TryResolveEffectiveProfileDate(
+        string fieldKey,
+        JsonElement? currentProfileFields,
+        IReadOnlyDictionary<string, string>? stagedOverrides,
+        out DateOnly value)
+    {
+        value = default;
+        if (stagedOverrides is not null)
+        {
+            var overridePath = ProfileFieldsNestedPrefix + fieldKey;
+            foreach (var (path, overrideValue) in stagedOverrides)
+            {
+                if (string.Equals(path, overridePath, StringComparison.OrdinalIgnoreCase)
+                    && DateOnly.TryParse(overrideValue.Trim(), System.Globalization.CultureInfo.InvariantCulture, out value))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return currentProfileFields is JsonElement retainedFields
+            && TryReadProfileDate(retainedFields, fieldKey, out value);
     }
 
     private static bool TryReadProfileDate(JsonElement profileFields, string key, out DateOnly value)
