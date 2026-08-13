@@ -895,6 +895,64 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public async Task RecordFieldConflictsAsync_DeclaredSinkingFundScheduleField_OpensConflict()
+    {
+        // The resolver consumes only principalSchedule for contractual principal, so a profile
+        // declaring the sinkingFundSchedule alias has NO typed comparator covering it — excluding
+        // the alias from the dynamic comparison would let two providers disagree on a governed
+        // schedule field with no conflict opened and no attribution update.
+        var scheduleProfile = new SecurityAssetProfileDefinitionDto(
+            "schedule-profile",
+            1,
+            "Schedule Profile",
+            "PrivateDebt",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "sinkingFundSchedule", "Sinking fund schedule", SecurityAssetProfileFieldTypeDto.Text, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "schedule profile");
+        var catalog = new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog(
+            Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault()
+                .GetProfiles()
+                .Append(scheduleProfile)
+                .ToArray());
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance, catalog);
+
+        var current = Record("Bloomberg", new
+        {
+            customProfileId = "schedule-profile",
+            profileVersion = 1,
+            profileFields = new { sinkingFundSchedule = "2028-06-15:30|2029-06-15:20" }
+        });
+        var incoming = Record("Reuters", new
+        {
+            customProfileId = "schedule-profile",
+            profileVersion = 1,
+            profileFields = new { sinkingFundSchedule = "2028-06-15:25|2029-06-15:25" }
+        });
+
+        await service.RecordFieldConflictsAsync(current, incoming, CancellationToken.None);
+
+        (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Should().Contain(c => c.FieldPath == "ProfileFields.sinkingFundSchedule",
+                "a declared schedule alias the resolver does not consume has no other comparator");
+    }
+
+    [Fact]
     public void FieldValuesMatch_DeclaredProfileFieldTypes_UseTheirEqualityContract()
     {
         // Declared-type-aware equality at resolution time mirrors detection: Text codes are

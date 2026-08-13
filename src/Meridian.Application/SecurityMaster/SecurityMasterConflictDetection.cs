@@ -697,7 +697,12 @@ internal static class SecurityMasterConflictDetection
     {
         "maturity", "maturityDate", "issueDate", "couponRate", "par", "principalFace",
         "paymentFrequency", "dayCount", "dayCountConvention",
-        "principalSchedule", "sinkingFundSchedule", "amortizationSchedule",
+        // Only the resolver-consumed principalSchedule key stays excluded (its typed comparator
+        // above owns it). The legacy sinkingFundSchedule/amortizationSchedule aliases are NOT
+        // read by StructuredCashFlowTermsResolver, so a profile declaring one of them has no
+        // other comparator — excluding them would let providers disagree on a governed schedule
+        // with no conflict opened and no attribution update.
+        "principalSchedule",
         "currentFactor", "factor", "factorDate", "factorSchedule", "factorScheduleEntries",
     };
 

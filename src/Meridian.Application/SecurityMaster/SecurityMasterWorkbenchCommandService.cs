@@ -1026,13 +1026,13 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                         continue;
                     }
 
-                    ApplyFirstClassTermOverlay(envelope, overridePath, overrideValue);
+                    ApplyFirstClassTermOverlay(envelope, projection.AssetClass, overridePath, overrideValue);
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(request.NewValue))
             {
-                ApplyFirstClassTermOverlay(envelope, canonicalFieldPath, request.NewValue!);
+                ApplyFirstClassTermOverlay(envelope, projection.AssetClass, canonicalFieldPath, request.NewValue!);
             }
 
             var effectiveTerms = JsonSerializer.SerializeToElement(envelope);
@@ -1067,7 +1067,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
 
     /// <summary>Overlays one staged/proposed TOP-LEVEL asset-term value onto the envelope; nested paths are not modeled here.</summary>
     private static void ApplyFirstClassTermOverlay(
-        System.Text.Json.Nodes.JsonObject envelope, string overridePath, string overrideValue)
+        System.Text.Json.Nodes.JsonObject envelope, string assetClass, string overridePath, string overrideValue)
     {
         if (!overridePath.StartsWith(SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix, StringComparison.OrdinalIgnoreCase)
             || string.IsNullOrWhiteSpace(overrideValue))
@@ -1082,8 +1082,21 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         }
 
         RemoveEnvelopeKeyVariants(envelope, key);
+        // The DECLARED schema type decides the node's JSON shape: a string-valued field (String,
+        // Date, Guid) whose text happens to parse as a JSON literal must STAY a string —
+        // re-typing "123" to a number or "true" to a boolean before the strict kind mapping would
+        // reject a schema-accepted edit (a required string field read as the wrong type) or
+        // silently validate an optional field as absent instead of with the proposed value. Only
+        // declared non-string shapes (numbers, booleans, arrays, objects) parse; an undeclared
+        // key keeps the parse-then-string fallback.
         var trimmed = overrideValue.Trim();
-        envelope[key] = TryParseJsonNode(trimmed) ?? System.Text.Json.Nodes.JsonValue.Create(overrideValue);
+        var declaredType = SecurityAssetTermsSchema.Field(assetClass, key)?.Type;
+        envelope[key] = declaredType
+            is SecurityAssetTermFieldType.String
+            or SecurityAssetTermFieldType.Date
+            or SecurityAssetTermFieldType.Guid
+            ? System.Text.Json.Nodes.JsonValue.Create(overrideValue)
+            : TryParseJsonNode(trimmed) ?? System.Text.Json.Nodes.JsonValue.Create(overrideValue);
     }
 
     private static void RemoveEnvelopeKeyVariants(System.Text.Json.Nodes.JsonObject envelope, string key)

@@ -961,6 +961,75 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_StringTermWithJsonLookingText_StagesAsString()
+    {
+        // A declared String field's text can also be a valid JSON literal — tranche "123" — and
+        // the invariant-validation overlay must keep it a STRING: re-typing it to a number before
+        // the strict kind mapping would reject a schema-accepted edit (a required string read as
+        // the wrong type) or validate an optional field as absent instead of with the value.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("StructuredCredit");
+        harness.SetProjectionAssetTerms("StructuredCredit", new
+        {
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 100m,
+            couponOrIndex = "SOFR+250",
+            currentFactor = 0.9m
+        });
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.tranche",
+            NewValue: "123",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Tranche correction.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a schema-accepted string value must not be re-typed into a JSON number before invariant validation");
+    }
+
+    [Fact]
+    public async Task RecordOperatorOverrideDecision_ApprovedWholeRecordRevisionAwaitingPublish_Refuses()
+    {
+        // An APPROVED whole-record revision is invisible to the per-key scan (its null FieldPath
+        // matches no overlay key) but it is still mid-lifecycle: publish converges the overlay
+        // decision itself, and a direct decision in that window could approve the overlay under
+        // an unrelated actor (or reject it outright) and have publish treat the non-Pending
+        // status as already converged — leaving published economics rejected and blocked.
+        var harness = new Harness(currentVersion: 3);
+        var revision = await harness.Revisions.CreateDraftAsync(SecurityId, "ops.analyst");
+        await harness.Revisions.TransitionAsync(
+            revision.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        await harness.Revisions.TransitionAsync(
+            revision.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["annotations.freeform"] = "legacy note" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.Invoking(s => s.RecordOperatorOverrideDecisionAsync(
+                SecurityId,
+                new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Rejected, "ops.other", "Reject it.")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*governed revision workflow*");
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_KindInvariantProjectionReadFails_RejectsTheEdit()
     {
         // A transient projection-store failure must not skip the resolved-kind invariant check:

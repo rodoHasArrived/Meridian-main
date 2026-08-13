@@ -188,14 +188,20 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         var fieldEditGate = await FieldEditGates.AcquireAsync(securityId, ct).ConfigureAwait(false);
         try
         {
+            // APPROVED revisions count too — especially whole-record ones, whose null FieldPath
+            // can never match an overlay key in the scan below: they await publish, which
+            // converges the overlay decision itself, and a direct decision in that window could
+            // approve the overlay under an unrelated actor (or reject it outright) and have the
+            // publish treat the non-Pending status as already converged.
             var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
             if (revisions.Any(static revision => revision.State is SecurityMasterRevisionStateDto.Draft
-                or SecurityMasterRevisionStateDto.Submitted))
+                or SecurityMasterRevisionStateDto.Submitted
+                or SecurityMasterRevisionStateDto.Approved))
             {
                 throw new InvalidOperationException(
                     $"Operator-override decisions for security '{securityId:D}' must go through the governed revision " +
-                    "workflow: staged (Draft/Submitted) revisions are pending, and a direct decision would decide their " +
-                    "staged values without the bound workflow's review.");
+                    "workflow: revisions are staged or awaiting publish (Draft/Submitted/Approved), and a direct " +
+                    "decision would decide their values without the bound workflow's review.");
             }
 
             var overlay = await _overrides.GetAsync(securityId, ct).ConfigureAwait(false);

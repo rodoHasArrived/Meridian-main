@@ -246,16 +246,21 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // (DirectLoan carries none) the 100-unit fallback above would cap a real 1,000,000
         // instalment at 100 and feed that distortion to the ledger bridge — so basis-less records
         // keep the calculated bullet/sinker walk instead of treating the rows as contractual.
-        // Schedule PRESENCE is retained separately from row count: the resolver keeps an asserted
-        // principalSchedule: [] (a contractual bullet claim) distinct from a missing property, and
-        // collapsing both to an empty array would let a bullet record misclassified as
-        // CalculatedSinker amortize principal its schedule says is not contractually paid.
-        var hasAssertedPrincipalSchedule = terms.PrincipalFace is > 0m && terms.PrincipalSchedule is not null;
-        var contractualPrincipal = hasAssertedPrincipalSchedule
+        // Schedule PRESENCE is retained separately from row count AND from the principal basis:
+        // the resolver keeps an asserted principalSchedule: [] (a contractual bullet claim)
+        // distinct from a missing property, and collapsing both to an empty array would let a
+        // bullet record misclassified as CalculatedSinker amortize principal its schedule says is
+        // not contractually paid. Presence must not require par/face either — DirectLoan requires
+        // the schedule but exposes no face amount, and only NONEMPTY contractual amounts need a
+        // resolvable basis (without one, the 100-unit fallback would cap real instalments, so
+        // basis-less rows keep the calculated walk).
+        var hasAssertedPrincipalSchedule = terms.PrincipalSchedule is not null;
+        var inWindowContractual = hasAssertedPrincipalSchedule
             ? terms.PrincipalSchedule!
                 .Where(entry => entry.PaymentDate >= issueDate && entry.PaymentDate <= maturity)
                 .ToArray()
             : [];
+        var contractualPrincipal = terms.PrincipalFace is > 0m ? inWindowContractual : [];
         StructuredFactorScheduleEntry? appliedFactorEntry = null;
         for (var i = terms.FactorSchedule.Count - 1; i >= 0; i--)
         {
@@ -341,7 +346,9 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // the schedule property) is a contractual bullet structure: whatever the assigned source
         // kind says, the record's own terms assert no instalments, so principal pays at maturity —
         // a CalculatedSinker assignment must not synthesize amortization the schedule contradicts.
-        var assertedBulletSchedule = hasAssertedPrincipalSchedule && contractualPrincipal.Length == 0;
+        // Keyed on the raw in-window rows, not the basis-gated contractual set, so a basis-less
+        // record's NONEMPTY schedule (unprojectable rows) still keeps the calculated walk.
+        var assertedBulletSchedule = hasAssertedPrincipalSchedule && inWindowContractual.Length == 0;
         var entries = new List<StructuredCashFlowScheduleEntry>(periods.Length);
         var sinkerPrincipal = sourceKind == StructuredCashFlowSourceKind.CalculatedSinker && !assertedBulletSchedule
             ? RoundCash(outstanding / periods.Length)
