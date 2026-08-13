@@ -215,7 +215,8 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
             }
 
             var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(persisted, existing.FieldPath, _assetProfileCatalog);
-            if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(existing, persistedValue))
+            var declaredFieldType = SecurityMasterConflictDetection.ResolveDeclaredFieldTypeForPath(persisted, existing.FieldPath, _assetProfileCatalog);
+            if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(existing, persistedValue, declaredFieldType))
             {
                 continue;
             }

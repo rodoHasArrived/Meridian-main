@@ -148,15 +148,15 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             // a live disagreement that post-write reconciliation then skips (it ignores closed
             // rows). The obsolete handling below refreshes a self-revising candidate or
             // supersedes a third-party replacement instead.
-            var (persistedValue, recordSourceSystem, lockedVersion) = await ReadPersistedFieldValueAsync(
+            var (persistedValue, recordSourceSystem, lockedVersion, declaredFieldType) = await ReadPersistedFieldValueAsync(
                 connection,
                 transaction,
                 openConflict,
                 ct).ConfigureAwait(false);
             persistedVersion = lockedVersion;
             var persistedContradictsDecision = resolvingField
-                ? !FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue)
-                : SecurityMasterConflictDetection.FieldConflictIsObsolete(openConflict, persistedValue);
+                ? !FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue, declaredFieldType)
+                : SecurityMasterConflictDetection.FieldConflictIsObsolete(openConflict, persistedValue, declaredFieldType);
             if (persistedContradictsDecision)
             {
                 // When the persisted value matches NEITHER candidate, a later canonical write has
@@ -167,7 +167,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 // value — the disagreement is still live, so its candidate refreshes and the
                 // conflict stays open; a third-party author replaced both candidates, so the
                 // conflict closes as Superseded in the same governed transaction.
-                if (SecurityMasterConflictDetection.FieldConflictIsObsolete(openConflict, persistedValue))
+                if (SecurityMasterConflictDetection.FieldConflictIsObsolete(openConflict, persistedValue, declaredFieldType))
                 {
                     var fieldSources = await LoadConflictResolutionFieldSourcesAsync(
                         connection, openConflict.SecurityId, ct).ConfigureAwait(false);
@@ -350,7 +350,10 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             $"Conflict '{conflict.ConflictId:D}' can only resolve to '{conflict.ProviderA}' or '{conflict.ProviderB}'.");
     }
 
-    private async Task<(string? Value, string RecordSourceSystem, long? Version)> ReadPersistedFieldValueAsync(
+    private async Task<(string? Value,
+        string RecordSourceSystem,
+        long? Version,
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? DeclaredFieldType)> ReadPersistedFieldValueAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityMasterConflict conflict,
@@ -370,7 +373,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            return (null, SecurityMasterProvenanceReader.UnknownSource, null);
+            return (null, SecurityMasterProvenanceReader.UnknownSource, null, null);
         }
 
         var recordSourceSystem = SecurityMasterProvenanceReader
@@ -402,7 +405,10 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         return (
             SecurityMasterConflictDetection.ReadComparableFieldValue(detail, conflict.FieldPath, _assetProfileCatalog),
             recordSourceSystem,
-            reader.GetInt64(5));
+            reader.GetInt64(5),
+            // The declared type drives the value guards' equality contract (a Text profile field
+            // is a case-sensitive code), resolved against the same locked row the value came from.
+            SecurityMasterConflictDetection.ResolveDeclaredFieldTypeForPath(detail, conflict.FieldPath, _assetProfileCatalog));
     }
 
     /// <summary>
@@ -473,8 +479,12 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         return sources;
     }
 
-    private static bool FieldValuesMatch(string fieldPath, string? persisted, string selected)
-        => SecurityMasterConflictDetection.FieldValuesMatch(fieldPath, persisted, selected);
+    private static bool FieldValuesMatch(
+        string fieldPath,
+        string? persisted,
+        string selected,
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? declaredProfileFieldType = null)
+        => SecurityMasterConflictDetection.FieldValuesMatch(fieldPath, persisted, selected, declaredProfileFieldType);
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
     {
@@ -607,7 +617,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         foreach (var conflict in openConflicts)
         {
             var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(incoming, conflict.FieldPath, _assetProfileCatalog);
-            if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(conflict, persistedValue))
+            var declaredFieldType = SecurityMasterConflictDetection.ResolveDeclaredFieldTypeForPath(incoming, conflict.FieldPath, _assetProfileCatalog);
+            if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(conflict, persistedValue, declaredFieldType))
             {
                 continue;
             }

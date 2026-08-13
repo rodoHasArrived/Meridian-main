@@ -825,6 +825,8 @@ public static class SecurityMasterEndpoints
                         statusCode: StatusCodes.Status400BadRequest);
                 }
 
+                var (chosenWinnerSource, reason) = TranslateLegacyConflictAction(request, existing, resolvedBy);
+
                 try
                 {
                     await workbenchService.ResolveSourceConflictAtCurrentVersionAsync(
@@ -832,9 +834,9 @@ public static class SecurityMasterEndpoints
                             existing.SecurityId,
                             conflictId,
                             ExpectedVersion: 0,
-                            ChosenWinnerSource: request.ChosenWinnerSource ?? string.Empty,
+                            ChosenWinnerSource: chosenWinnerSource,
                             Actor: resolvedBy,
-                            Reason: request.Reason ?? string.Empty),
+                            Reason: reason),
                         ct).ConfigureAwait(false);
                 }
                 catch (ArgumentException ex)
@@ -1193,6 +1195,39 @@ public static class SecurityMasterEndpoints
            || request.ProfileVersion.HasValue
            || !string.IsNullOrWhiteSpace(request.ProfileFieldKey)
            || !string.IsNullOrWhiteSpace(request.ProfileFieldValue);
+
+    /// <summary>
+    /// Translates a LEGACY conflict-queue action into the governed resolve contract. The queue
+    /// clients (browser + WPF) send Resolution AcceptA/AcceptB/Dismiss with no
+    /// ChosenWinnerSource and an optional reason, while the governed path demands a concrete
+    /// candidate and a nonblank rationale — without translation every field-conflict action from
+    /// those queues dies on the candidate or rationale guard with a 400. AcceptA/AcceptB name the
+    /// conflict's recorded providers; a Dismiss acknowledges provider A's value as the equivalent
+    /// candidate (the DismissAsEquivalent flow needs a candidate, and the authority policy still
+    /// challenges a dismissal it scores as a real disagreement). An absent reason records the
+    /// operator's queue action itself — honest, attributable audit text for a queue surface that
+    /// collects no free-form rationale.
+    /// </summary>
+    internal static (string ChosenWinnerSource, string Reason) TranslateLegacyConflictAction(
+        ResolveConflictRequest request, SecurityMasterConflict existing, string resolvedBy)
+    {
+        var chosenWinnerSource = !string.IsNullOrWhiteSpace(request.ChosenWinnerSource)
+            ? request.ChosenWinnerSource.Trim()
+            : request.Resolution switch
+            {
+                not null when request.Resolution.Equals("AcceptA", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderA,
+                not null when request.Resolution.Equals("AcceptB", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderB,
+                not null when request.Resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderA,
+                _ => string.Empty,
+            };
+        var reason = !string.IsNullOrWhiteSpace(request.Reason)
+            ? request.Reason
+            : $"'{request.Resolution}' action from the shared conflict queue by {resolvedBy}.";
+        return (chosenWinnerSource, reason);
+    }
 
     private static string ResolveActor(HttpContext context)
     {

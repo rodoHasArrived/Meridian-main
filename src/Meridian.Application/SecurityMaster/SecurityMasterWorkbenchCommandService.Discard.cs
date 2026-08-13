@@ -106,8 +106,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         // The transition and the override withdrawal run under the same per-security gate the
         // field-edit and approval routes use, so a discard cannot interleave with an in-flight
         // edit's patch→draft window or an approval's staged-revision check.
-        var fieldEditGate = FieldEditGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
-        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        var fieldEditGate = await FieldEditGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         try
         {
             // Overlay ownership resolves BEFORE any transition so sibling preconditions can fail
@@ -472,7 +471,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         }
         finally
         {
-            fieldEditGate.Release();
+            fieldEditGate.Dispose();
         }
 
         // The transition and withdrawal are durable by now — the discard has succeeded. The final

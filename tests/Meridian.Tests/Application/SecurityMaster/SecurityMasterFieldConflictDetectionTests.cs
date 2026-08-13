@@ -836,6 +836,84 @@ public sealed class SecurityMasterFieldConflictDetectionTests
             "both spellings canonicalize to the same 2026-07-01 date");
     }
 
+    [Fact]
+    public async Task RecordFieldConflictsAsync_DeclaredTextFieldCaseDifference_OpensConflict()
+    {
+        // A declared Text field's value is a case-SENSITIVE code: Pool-A and pool-a are different
+        // governed values, and the case-insensitive default used for enum/code spellings must not
+        // swallow the disagreement — attribution could otherwise change hands with no conflict
+        // opened for the governed raw values.
+        var poolProfile = new SecurityAssetProfileDefinitionDto(
+            "pool-profile",
+            1,
+            "Pool Profile",
+            "PrivateDebt",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "poolId", "Pool ID", SecurityAssetProfileFieldTypeDto.Text, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "pool profile");
+        var catalog = new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog(
+            Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault()
+                .GetProfiles()
+                .Append(poolProfile)
+                .ToArray());
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance, catalog);
+
+        var current = Record("Bloomberg", new
+        {
+            customProfileId = "pool-profile",
+            profileVersion = 1,
+            profileFields = new { poolId = "Pool-A" }
+        });
+        var incoming = Record("Reuters", new
+        {
+            customProfileId = "pool-profile",
+            profileVersion = 1,
+            profileFields = new { poolId = "pool-a" }
+        });
+
+        await service.RecordFieldConflictsAsync(current, incoming, CancellationToken.None);
+
+        (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Should().Contain(c => c.FieldPath == "ProfileFields.poolId",
+                "differing-case Text codes are a real governed disagreement");
+    }
+
+    [Fact]
+    public void FieldValuesMatch_DeclaredProfileFieldTypes_UseTheirEqualityContract()
+    {
+        // Declared-type-aware equality at resolution time mirrors detection: Text codes are
+        // case-sensitive, enum options keep their case-insensitive contract, and non-profile text
+        // paths keep the historical trimmed case-insensitive comparison.
+        SecurityMasterConflictDetection.FieldValuesMatch(
+                "ProfileFields.poolId", "Pool-A", "pool-a", SecurityAssetProfileFieldTypeDto.Text)
+            .Should().BeFalse("a Text field's value is a case-sensitive code");
+        SecurityMasterConflictDetection.FieldValuesMatch(
+                "ProfileFields.poolId", "Pool-A", "Pool-A", SecurityAssetProfileFieldTypeDto.Text)
+            .Should().BeTrue();
+        SecurityMasterConflictDetection.FieldValuesMatch(
+                "ProfileFields.status", "ACTIVE", "active", SecurityAssetProfileFieldTypeDto.Enum)
+            .Should().BeTrue("enum options keep their case-insensitive contract");
+        SecurityMasterConflictDetection.FieldValuesMatch(
+                "EconomicTerms.paymentFrequency", "Monthly", "MONTHLY")
+            .Should().BeTrue("non-profile text paths keep the historical case-insensitive comparison");
+    }
+
     [Theory]
     [InlineData("ProfileFields.poolId", "001", "1", false)]
     [InlineData("ProfileFields.poolId", "001", "001", true)]

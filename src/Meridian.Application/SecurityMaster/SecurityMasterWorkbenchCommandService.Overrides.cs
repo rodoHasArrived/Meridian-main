@@ -31,8 +31,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         // the field-edit route holds across its patch + draft creation. Without it, an edit could
         // commit its Pending value after the revision query below but before the decision, and the
         // security-level approval would silently co-approve the concurrent unreviewed value.
-        var fieldEditGate = FieldEditGates.GetOrAdd(securityId, static _ => new SemaphoreSlim(1, 1));
-        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        var fieldEditGate = await FieldEditGates.AcquireAsync(securityId, ct).ConfigureAwait(false);
         try
         {
             return await RecordOverrideApprovalDecisionUnderGateAsync(
@@ -40,7 +39,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         }
         finally
         {
-            fieldEditGate.Release();
+            fieldEditGate.Dispose();
         }
     }
 
@@ -144,8 +143,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         // discard routes serialize under: without it, a raw patch can land between an approval's
         // ungoverned-key scan and its recorded decision, and the security-level Approved would
         // silently co-approve a value no reviewer ever saw.
-        var fieldEditGate = FieldEditGates.GetOrAdd(securityId, static _ => new SemaphoreSlim(1, 1));
-        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        var fieldEditGate = await FieldEditGates.AcquireAsync(securityId, ct).ConfigureAwait(false);
         try
         {
             // While ANY revision is mid-lifecycle, the overlay is under review and free-form
@@ -171,7 +169,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         }
         finally
         {
-            fieldEditGate.Release();
+            fieldEditGate.Dispose();
         }
     }
 
@@ -187,8 +185,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         // submit → approve → publish/discard seams, or any ModifySecurityMaster actor (including
         // the editor) could directly approve a value whose revision is still Draft and have
         // governed runs treat it as usable.
-        var fieldEditGate = FieldEditGates.GetOrAdd(securityId, static _ => new SemaphoreSlim(1, 1));
-        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        var fieldEditGate = await FieldEditGates.AcquireAsync(securityId, ct).ConfigureAwait(false);
         try
         {
             var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
@@ -218,7 +215,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         }
         finally
         {
-            fieldEditGate.Release();
+            fieldEditGate.Dispose();
         }
     }
 }

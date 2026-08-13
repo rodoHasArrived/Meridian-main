@@ -47,7 +47,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     // UpdateSecurityFieldAsync). STATIC so the guarantee holds process-wide regardless of the
     // service's DI lifetime; entries are one SemaphoreSlim per edited security and are never
     // removed — the population is bounded by securities actually edited in-process.
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> FieldEditGates = new();
+    private static readonly KeyedGatePool<Guid> FieldEditGates = new();
 
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly IOperatorOverridesStore _overrides;
@@ -139,8 +139,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // its draft creation and silently co-approve the unreviewed value. Serializing in-process
         // closes those races for this single write route; a store-level overlay-revision
         // compare-and-set remains the durable answer for multi-node deployments.
-        var fieldEditGate = FieldEditGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
-        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        var fieldEditGate = await FieldEditGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         string fieldPath;
         OperatorOverridesDto stagedOverride;
         SecurityMasterRevisionRecord revision;
@@ -301,7 +300,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         }
         finally
         {
-            fieldEditGate.Release();
+            fieldEditGate.Dispose();
         }
 
         // FieldPath and Actor are operator-supplied text; strip control characters so they cannot
@@ -492,15 +491,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // overlay while this method awaits the external workflow submission: the submission then
         // commits a Submitted workflow before the Draft→Submitted CAS fails, leaving an unbound,
         // still-approvable workflow the discard never retired (it observed a plain Draft).
-        var fieldEditGate = FieldEditGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
-        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        var fieldEditGate = await FieldEditGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         try
         {
             return await SubmitForApprovalUnderGateAsync(request, ct).ConfigureAwait(false);
         }
         finally
         {
-            fieldEditGate.Release();
+            fieldEditGate.Dispose();
         }
     }
 
@@ -838,8 +836,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // transition — the revision would be marked Published while SM_OVERRIDE_APPROVAL_REQUIRED
         // still blocks its economics, unretryably, since the Approved precondition rejects any
         // republish.
-        var fieldEditGate = FieldEditGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
-        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        var fieldEditGate = await FieldEditGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         try
         {
             var decisionOutcome = await RecordOverrideApprovalDecisionUnderGateAsync(
@@ -871,7 +868,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         }
         finally
         {
-            fieldEditGate.Release();
+            fieldEditGate.Dispose();
         }
 
         _logger.LogInformation(

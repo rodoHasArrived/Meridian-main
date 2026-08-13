@@ -16,8 +16,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// the PREVIOUS incumbent's field row and records a conflict pairing the old source with C's
     /// value — a mispairing source-version ordering cannot repair once persisted. In-process only;
     /// the shared-transaction seam tracked as follow-up work is the durable multi-node answer.
+    /// Entries are reference-counted and reclaimed on last release, so the pool does not grow
+    /// with the security universe.
     /// </summary>
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> AmendmentGates = new();
+    private static readonly KeyedGatePool<Guid> AmendmentGates = new();
 
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterSnapshotStore _snapshotStore;
@@ -127,8 +129,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // and its not-yet-written attribution — it would pair the previous source with this
         // amendment's value in a durably recorded conflict.
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
-        var amendmentGate = AmendmentGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
-        await amendmentGate.WaitAsync(ct).ConfigureAwait(false);
+        var amendmentGate = await AmendmentGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         try
         {
             await RecordFieldConflictsBeforePersistAsync(currentProjection, projection, ct).ConfigureAwait(false);
@@ -159,7 +160,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }
         finally
         {
-            amendmentGate.Release();
+            amendmentGate.Dispose();
         }
         // Open conflicts reconcile against the DURABLY persisted value only: superseding or
         // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed

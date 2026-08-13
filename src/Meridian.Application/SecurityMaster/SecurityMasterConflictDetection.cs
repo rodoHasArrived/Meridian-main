@@ -236,7 +236,11 @@ internal static class SecurityMasterConflictDetection
     /// textual identity. A blank persisted value matches nothing — absence is incompleteness, not
     /// agreement.
     /// </summary>
-    internal static bool FieldValuesMatch(string fieldPath, string? persisted, string candidate)
+    internal static bool FieldValuesMatch(
+        string fieldPath,
+        string? persisted,
+        string candidate,
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? declaredProfileFieldType = null)
     {
         if (string.IsNullOrWhiteSpace(persisted))
         {
@@ -268,8 +272,52 @@ internal static class SecurityMasterConflictDetection
             return persistedNumber == candidateNumber;
         }
 
-        return string.Equals(persisted.Trim(), candidate.Trim(), StringComparison.OrdinalIgnoreCase);
+        // Governed profile fields compare under their DECLARED type's equality contract: a Text
+        // field carries a case-sensitive code (Pool-A and pool-a are different governed values),
+        // while numeric/date/boolean/enum values reach here in normalized spellings whose
+        // contracts tolerate case. Non-profile paths keep the historical trimmed
+        // case-insensitive comparison.
+        var comparison = fieldPath.StartsWith(ProfileFieldPathPrefix, StringComparison.Ordinal)
+            ? ProfileFieldValueComparison(declaredProfileFieldType)
+            : StringComparison.OrdinalIgnoreCase;
+        return string.Equals(persisted.Trim(), candidate.Trim(), comparison);
     }
+
+    /// <summary>
+    /// Equality contract for one declared profile field's comparable values: Text (and
+    /// undeclared) fields are case-SENSITIVE codes — a poolId of "Pool-A" and "pool-a" are
+    /// different governed values, matching <see cref="ReadComparableProfileFieldValue"/>'s
+    /// raw-identity posture — while the remaining declared types compare through normalized
+    /// spellings whose contracts are case-insensitive (currency codes, enum options, booleans).
+    /// </summary>
+    internal static StringComparison ProfileFieldValueComparison(
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? fieldType)
+        => fieldType is null or Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto.Text
+            or Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto.SecurityLink
+            ? StringComparison.Ordinal
+            : StringComparison.OrdinalIgnoreCase;
+
+    /// <summary>
+    /// The declared type governing <paramref name="fieldPath"/> when it addresses a pinned
+    /// profile's field, or null for non-profile paths and unresolvable pins — the value guards
+    /// then fall back to the raw-identity (case-sensitive) posture for profile paths.
+    /// </summary>
+    internal static Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? ResolveDeclaredFieldTypeForPath(
+        SecurityDetailDto detail,
+        string fieldPath,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog)
+        => fieldPath.StartsWith(ProfileFieldPathPrefix, StringComparison.Ordinal)
+            ? ResolveDeclaredProfileFieldType(assetProfileCatalog, detail.AssetSpecificTerms, fieldPath[ProfileFieldPathPrefix.Length..])
+            : null;
+
+    /// <inheritdoc cref="ResolveDeclaredFieldTypeForPath(SecurityDetailDto, string, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog?)"/>
+    internal static Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? ResolveDeclaredFieldTypeForPath(
+        SecurityProjectionRecord projection,
+        string fieldPath,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog)
+        => fieldPath.StartsWith(ProfileFieldPathPrefix, StringComparison.Ordinal)
+            ? ResolveDeclaredProfileFieldType(assetProfileCatalog, projection.AssetSpecificTerms, fieldPath[ProfileFieldPathPrefix.Length..])
+            : null;
 
     /// <summary>
     /// Whether an OPEN field conflict has been made obsolete by <paramref name="persistedValue"/>:
@@ -281,14 +329,17 @@ internal static class SecurityMasterConflictDetection
     /// string, an ASSERTED bullet structure rather than absence (readers return null for genuine
     /// absence), so an asserted-empty canonical write can supersede nonempty candidates.
     /// </summary>
-    internal static bool FieldConflictIsObsolete(SecurityMasterConflict conflict, string? persistedValue)
+    internal static bool FieldConflictIsObsolete(
+        SecurityMasterConflict conflict,
+        string? persistedValue,
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? declaredProfileFieldType = null)
     {
         var persistedAsserted = !string.IsNullOrWhiteSpace(persistedValue)
             || (persistedValue is { Length: 0 }
                 && string.Equals(conflict.FieldPath, "EconomicTerms.principalSchedule", StringComparison.Ordinal));
         return persistedAsserted
-            && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueA)
-            && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueB);
+            && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueA, declaredProfileFieldType)
+            && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueB, declaredProfileFieldType);
     }
 
     /// <summary>
@@ -468,11 +519,15 @@ internal static class SecurityMasterConflictDetection
                     continue;
                 }
 
+                // Declared-type-aware equality: a Text field's value is a case-sensitive code
+                // (poolId "Pool-A" vs "pool-a" is a real governed disagreement), so it must not
+                // slip through the case-insensitive default used for enum/code spellings.
                 CompareText(
                     ProfileFieldPathPrefix + field.Key,
                     SecurityMasterConflictKinds.EconomicTermMismatch,
                     ReadComparableProfileFieldValue(fieldsA, field.Key, field.FieldType),
-                    ReadComparableProfileFieldValue(fieldsB, field.Key, field.FieldType));
+                    ReadComparableProfileFieldValue(fieldsB, field.Key, field.FieldType),
+                    ProfileFieldValueComparison(field.FieldType));
             }
         }
 
@@ -575,10 +630,11 @@ internal static class SecurityMasterConflictDetection
             }
         }
 
-        void CompareText(string fieldPath, string kind, string? a, string? b)
+        void CompareText(string fieldPath, string kind, string? a, string? b,
+            StringComparison comparison = StringComparison.OrdinalIgnoreCase)
         {
             if (!string.IsNullOrWhiteSpace(a) && !string.IsNullOrWhiteSpace(b)
-                && !string.Equals(a.Trim(), b.Trim(), StringComparison.OrdinalIgnoreCase))
+                && !string.Equals(a.Trim(), b.Trim(), comparison))
             {
                 Add(fieldPath, kind, a.Trim(), b.Trim());
             }

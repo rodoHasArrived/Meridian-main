@@ -246,10 +246,15 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // (DirectLoan carries none) the 100-unit fallback above would cap a real 1,000,000
         // instalment at 100 and feed that distortion to the ledger bridge — so basis-less records
         // keep the calculated bullet/sinker walk instead of treating the rows as contractual.
-        var contractualPrincipal = terms.PrincipalFace is > 0m
-            ? terms.PrincipalSchedule?
+        // Schedule PRESENCE is retained separately from row count: the resolver keeps an asserted
+        // principalSchedule: [] (a contractual bullet claim) distinct from a missing property, and
+        // collapsing both to an empty array would let a bullet record misclassified as
+        // CalculatedSinker amortize principal its schedule says is not contractually paid.
+        var hasAssertedPrincipalSchedule = terms.PrincipalFace is > 0m && terms.PrincipalSchedule is not null;
+        var contractualPrincipal = hasAssertedPrincipalSchedule
+            ? terms.PrincipalSchedule!
                 .Where(entry => entry.PaymentDate >= issueDate && entry.PaymentDate <= maturity)
-                .ToArray() ?? []
+                .ToArray()
             : [];
         StructuredFactorScheduleEntry? appliedFactorEntry = null;
         for (var i = terms.FactorSchedule.Count - 1; i >= 0; i--)
@@ -332,8 +337,13 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
                 sourceLastUpdatedUtc, factorSchedule, terms);
         }
 
+        // An ASSERTED empty schedule (zero in-window contractual rows on a record that retains
+        // the schedule property) is a contractual bullet structure: whatever the assigned source
+        // kind says, the record's own terms assert no instalments, so principal pays at maturity —
+        // a CalculatedSinker assignment must not synthesize amortization the schedule contradicts.
+        var assertedBulletSchedule = hasAssertedPrincipalSchedule && contractualPrincipal.Length == 0;
         var entries = new List<StructuredCashFlowScheduleEntry>(periods.Length);
-        var sinkerPrincipal = sourceKind == StructuredCashFlowSourceKind.CalculatedSinker
+        var sinkerPrincipal = sourceKind == StructuredCashFlowSourceKind.CalculatedSinker && !assertedBulletSchedule
             ? RoundCash(outstanding / periods.Length)
             : 0m;
         for (var i = 0; i < periods.Length; i++)
@@ -344,11 +354,11 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
                 : 0m;
             var principal = 0m;
             var isLast = i == periods.Length - 1;
-            if (sourceKind == StructuredCashFlowSourceKind.CalculatedBullet && isLast)
+            if ((sourceKind == StructuredCashFlowSourceKind.CalculatedBullet || assertedBulletSchedule) && isLast)
             {
                 principal = outstanding;
             }
-            else if (sourceKind == StructuredCashFlowSourceKind.CalculatedSinker)
+            else if (sourceKind == StructuredCashFlowSourceKind.CalculatedSinker && !assertedBulletSchedule)
             {
                 principal = isLast ? outstanding : decimal.Min(outstanding, sinkerPrincipal);
             }

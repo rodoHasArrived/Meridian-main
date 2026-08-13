@@ -103,6 +103,54 @@ public sealed class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
+    public async Task GetProjectionAsync_AssertedEmptyScheduleOnSinker_PaysPrincipalAtMaturity()
+    {
+        // principalSchedule: [] is an ASSERTED contractual bullet structure, not absence: a bullet
+        // record misassigned CalculatedSinker must not synthesize equal instalments its own
+        // schedule contradicts — principal pays at maturity, and projected interest accrues on
+        // the full balance until then.
+        var securityId = Guid.Parse("44444444-dddd-dddd-dddd-444444444444");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedSinker,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    principalSchedule = Array.Empty<object>()
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().HaveCount(2);
+        projection.Schedule[0].PrincipalAmount.Should().Be(0m,
+            "the asserted-empty schedule contractually pays no interim principal");
+        projection.Schedule.Last().PrincipalAmount.Should().Be(100m,
+            "the asserted bullet structure pays all principal at maturity");
+    }
+
+    [Fact]
     public async Task GetProjectionAsync_CalculatedSinker_ShouldAmortizePrincipalAcrossScheduleDates()
     {
         var securityId = Guid.Parse("22222222-bbbb-bbbb-bbbb-222222222222");
