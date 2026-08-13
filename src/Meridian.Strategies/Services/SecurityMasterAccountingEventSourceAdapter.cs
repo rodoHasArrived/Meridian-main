@@ -426,16 +426,20 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     /// </summary>
     private static IEnumerable<JsonElement> EnumerateTypedFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
     {
-        // Governed profileFields rows outrank outer duplicates, mirroring the term resolver's
-        // precedence: profileFields values are schema- and profile-validated on write, while an
-        // extra outer array on an envelope is ungoverned pass-through. Yielding the outer array
-        // first would let its dates claim coveredDates and suppress the governed rows.
+        // Governed profileFields rows OWN the typed schedule when they exist, mirroring the term
+        // resolver's precedence: profileFields values are schema- and profile-validated on write,
+        // while an extra outer array on an envelope is ungoverned pass-through. The outer array is
+        // not merely deprioritized but EXCLUDED — each enumerated array derives its own priors
+        // (first observation against the 1.0 baseline), so an outer row on a date the governed
+        // schedule does not cover would synthesize a paydown from a prior the governed history
+        // contradicts, and coveredDates only suppresses exact date matches.
         var profileFields = definition.LegacyAssetSpecificTerms is JsonElement legacyTerms
             ? GetObject(legacyTerms, "profileFields")
             : null;
         if (TryGetArray(profileFields, "factorScheduleEntries", out var nestedEntries))
         {
             yield return nestedEntries;
+            yield break;
         }
 
         if (TryGetArray(definition.LegacyAssetSpecificTerms, "factorScheduleEntries", out var rootEntries))

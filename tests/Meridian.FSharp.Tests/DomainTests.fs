@@ -1324,6 +1324,28 @@ let ``Structured credit factors above one are rejected`` () =
                                                                   { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m } ] })
     |> should not' (contain "structured_credit_factor_schedule_duplicate_date")
 
+    // A factor decline dated AFTER the legal final maturity would emit principal paydowns for a
+    // tranche that has already reached term; observations must fall on or before the retained
+    // maturity, and a record with no retained maturity keeps the unconstrained behavior.
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            Maturity = Some (DateOnly(2026, 6, 15))
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 6, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.7m } ] })
+    |> should contain "structured_credit_factor_after_maturity"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            Maturity = Some (DateOnly(2026, 6, 15))
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 6, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 6, 15); Factor = 0.7m } ] })
+    |> should not' (contain "structured_credit_factor_after_maturity")
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2030, 1, 1); Factor = 0.7m } ] })
+    |> should not' (contain "structured_credit_factor_after_maturity")
+
 [<Fact>]
 let ``CustomAsset writes require the declared profile envelope in the document`` () =
     let kindWith termsJson =

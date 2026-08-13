@@ -292,6 +292,65 @@ public sealed class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
+    public async Task GetProjectionAsync_ProfileNestedScalarFactorDate_ReducesTheOpeningBalance()
+    {
+        // A profile-backed record persists its governed scalar terms beneath profileFields, where
+        // the term resolver reads the factor and schedule from. The factor-date lookup must walk
+        // the SAME nested-first sources: probing only the envelope root would miss the retained
+        // date, treat the dated 0.8 factor as current, and skip the completed-payment deduction.
+        var securityId = Guid.Parse("77777777-eeee-eeee-eeee-777777777777");
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueDate = new DateOnly(today.Year, today.Month, 1).AddMonths(-6);
+        var factorDate = issueDate.AddMonths(1);
+        var completedPaymentDate = issueDate.AddMonths(2);
+        var maturity = issueDate.AddMonths(24);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "structured-credit-io-po",
+                    profileVersion = 1,
+                    profileFields = new
+                    {
+                        issueDate,
+                        maturityDate = maturity,
+                        par = 100m,
+                        couponRate = 6m,
+                        paymentFrequency = "SemiAnnual",
+                        dayCountConvention = "30/360",
+                        currentFactor = 0.8m,
+                        factorDate,
+                        principalSchedule = new object[]
+                        {
+                            new { paymentDate = completedPaymentDate, amount = 10m }
+                        }
+                    }
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(70m,
+            "the profile-nested factor date is dated evidence exactly as a root-level one is");
+    }
+
+    [Fact]
     public async Task GetProjectionAsync_MonthEndIssueDate_ShouldAnchorScheduleWithoutStubPeriod()
     {
         // Regression: payment dates used to compound AddMonths from the previous payment date.

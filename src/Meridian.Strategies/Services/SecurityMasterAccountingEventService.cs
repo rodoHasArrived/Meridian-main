@@ -523,7 +523,15 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                 EvidenceLinks = economicEvent.EvidenceLinks
             };
             events.Add(expectedEvent);
-            previews.Add(CreatePrincipalPaydownPreview(security, position, expectedEvent));
+            // The journal preview needs the security's accounting rule for its ledger accounts;
+            // without one the EXPECTED paydown event still surfaces (the retained factor evidence
+            // fully supports the principal event itself) alongside the already-recorded
+            // SECURITY_ACCOUNTING_RULE_MISSING issue, but no preview is fabricated from a missing
+            // classification — previously this dereferenced the absent rule and crashed the run.
+            if (security.AccountingRule is not null)
+            {
+                previews.Add(CreatePrincipalPaydownPreview(security, position, expectedEvent));
+            }
         }
     }
 

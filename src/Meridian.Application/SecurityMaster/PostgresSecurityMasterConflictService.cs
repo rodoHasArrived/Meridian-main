@@ -493,15 +493,12 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
             previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources);
 
-        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        if (candidates.Count == 0)
+        {
+            return;
+        }
 
-        // This canonical write is the moment existing OPEN conflicts can go stale: when the newly
-        // persisted value matches NEITHER recorded candidate (a third source replaced both), the
-        // conflict can never resolve to either source — the resolution guard would reject both
-        // choices — so it is closed as Superseded here instead of surfacing an actionable-looking
-        // queue row whose resolution flow cannot complete. This sweep runs even when the write
-        // opens no NEW conflicts (a same-source or third-source amend detects none).
-        await SupersedeObsoleteFieldConflictsAsync(connection, transaction, incoming, ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
         int newConflicts = 0;
         foreach (var conflict in candidates)
@@ -525,6 +522,17 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 "Recorded {Count} new field conflict(s) for security {SecurityId}",
                 newConflicts, incoming.SecurityId);
         }
+    }
+
+    public async Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+    {
+        // Runs strictly AFTER the canonical write commits: retiring or refreshing conflicts from
+        // a value the event store might still reject (a stale ExpectedVersion) would mutate the
+        // governed conflict queue for an amendment that never happened.
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await SupersedeObsoleteFieldConflictsAsync(connection, transaction, persisted, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>

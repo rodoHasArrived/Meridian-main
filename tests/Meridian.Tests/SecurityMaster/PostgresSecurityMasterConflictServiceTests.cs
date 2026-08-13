@@ -311,6 +311,8 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         };
         await canonicalStore.UpsertProjectionAsync(thirdSource, CancellationToken.None);
         await service.RecordFieldConflictsAsync(incoming, thirdSource, CancellationToken.None);
+        // The obsolete-conflict sweep runs only AFTER the canonical write durably persists.
+        await service.ReconcileOpenFieldConflictsAsync(thirdSource, CancellationToken.None);
 
         var retained = await service.GetConflictAsync(conflict.ConflictId, CancellationToken.None);
         retained!.Status.Should().Be("Superseded",
@@ -343,6 +345,8 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         var revision = incoming with { Currency = "GBP", Version = 2 };
         await canonicalStore.UpsertProjectionAsync(revision, CancellationToken.None);
         await service.RecordFieldConflictsAsync(incoming, revision, CancellationToken.None);
+        // The obsolete-conflict sweep runs only AFTER the canonical write durably persists.
+        await service.ReconcileOpenFieldConflictsAsync(revision, CancellationToken.None);
 
         var refreshed = await service.GetConflictAsync(conflict.ConflictId, CancellationToken.None);
         refreshed!.Status.Should().Be("Open",

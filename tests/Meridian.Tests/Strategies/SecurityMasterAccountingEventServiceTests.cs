@@ -252,6 +252,55 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_MissingAccountingRule_ShouldKeepFactorPaydownEventWithoutPreview()
+    {
+        // Valid factor evidence with NO accounting rule: the expected principal event still
+        // surfaces (the retained evidence supports it) alongside the high-severity missing-rule
+        // issue, but no journal preview is fabricated from an absent classification — previously
+        // this dereferenced the null rule and crashed the reconciliation run.
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            security: new SecurityMasterAccountingSecurity(
+                BondSecurityId,
+                "BOND1",
+                "Bond",
+                "USD",
+                new SecurityFixedIncomeTerms(
+                    CouponRate: 0.06m,
+                    CouponType: "Fixed",
+                    DayCountConvention: "ACT/365",
+                    PaymentFrequencyPerYear: 2,
+                    IssueDate: new DateOnly(2025, 1, 1),
+                    NextCouponDate: new DateOnly(2026, 1, 31),
+                    MaturityDate: new DateOnly(2030, 1, 1),
+                    AccrualStartDate: new DateOnly(2026, 1, 1),
+                    CurrentFactor: 0.97m,
+                    OriginalFace: 100_000m,
+                    CurrentFace: 97_000m),
+                AccountingRule: null),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "evidence://factor/bond-2026-01",
+                    SourceContentHash: "sha256:bond-factor-2026-01")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().Contain(issue => issue.Code == "SECURITY_ACCOUNTING_RULE_MISSING");
+        var factorEvent = result.ExpectedEvents.Should().ContainSingle(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown).Subject;
+        factorEvent.PrincipalAmount.Should().Be(3_000m);
+        result.JournalPreviews.Should().NotContain(preview => preview.ExpectedEventId == factorEvent.EventId,
+            "a journal preview needs the accounting rule's ledger classification");
+    }
+
+    [Fact]
     public void Generate_MissingTerms_ShouldReturnStructuredPostureIssues()
     {
         var service = new SecurityMasterAccountingEventService();

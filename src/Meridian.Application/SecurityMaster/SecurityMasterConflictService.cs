@@ -33,6 +33,16 @@ public interface ISecurityMasterConflictService
     /// same-source revisions record nothing. Conflicts an operator already resolved are preserved.
     /// </summary>
     Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct);
+
+    /// <summary>
+    /// Reconciles OPEN field conflicts against a projection that has just been DURABLY persisted:
+    /// a conflict whose both candidate values the persisted record no longer matches is closed as
+    /// Superseded (third-party author) or has its candidate refreshed (a candidate revising its
+    /// own value). This runs strictly AFTER the canonical write commits — retiring or refreshing
+    /// conflicts from a value the event store might still reject (a stale ExpectedVersion) would
+    /// mutate the governed conflict queue for an amendment that never happened.
+    /// </summary>
+    Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct);
 }
 
 /// <summary>
@@ -153,18 +163,45 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
     {
         var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
 
-        // A canonical write that replaces BOTH recorded candidate values makes an open field
-        // conflict obsolete: it can never resolve to either source (the durable store's resolution
-        // guard rejects a winner whose value the record no longer carries), so leaving it Open
-        // surfaces an actionable-looking queue row whose resolution flow cannot complete. WHO
-        // authored the write decides the outcome: a CANDIDATE author is revising its own value —
-        // the disagreement is still live, so its recorded candidate refreshes and the conflict
-        // stays open — while a third-party author replaced both candidates and the conflict closes
-        // as Superseded, recording why, without fabricating a winner or field provenance.
-        var incomingSource = SecurityMasterProvenanceReader.Read(incoming.Provenance).SourceSystem;
+        int newConflicts = 0;
+        foreach (var conflict in candidates)
+        {
+            // Only record if not already tracked with a non-Open status (operator resolutions win).
+            if (_conflicts.TryGetValue(conflict.ConflictId, out var existing) && existing.Status != "Open")
+                continue;
+
+            _conflicts[conflict.ConflictId] = conflict;
+            newConflicts++;
+
+            _logger.LogWarning(
+                "Cross-source field conflict on {FieldPath} for security {SecurityId}: {SourceA}='{ValueA}' vs {SourceB}='{ValueB}'",
+                conflict.FieldPath, conflict.SecurityId, conflict.ProviderA, conflict.ValueA, conflict.ProviderB, conflict.ValueB);
+        }
+
+        if (newConflicts > 0)
+            _logger.LogInformation(
+                "Recorded {Count} new field conflict(s) for security {SecurityId}",
+                newConflicts, incoming.SecurityId);
+
+        return Task.CompletedTask;
+    }
+
+    public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+    {
+        // A DURABLY persisted write that replaces BOTH recorded candidate values makes an open
+        // field conflict obsolete: it can never resolve to either source (the durable store's
+        // resolution guard rejects a winner whose value the record no longer carries), so leaving
+        // it Open surfaces an actionable-looking queue row whose resolution flow cannot complete.
+        // WHO authored the write decides the outcome: a CANDIDATE author is revising its own
+        // value — the disagreement is still live, so its recorded candidate refreshes and the
+        // conflict stays open — while a third-party author replaced both candidates and the
+        // conflict closes as Superseded, recording why, without fabricating a winner or field
+        // provenance. This runs only AFTER the canonical write commits, never against a value the
+        // event store might still reject.
+        var persistedSource = SecurityMasterProvenanceReader.Read(persisted.Provenance).SourceSystem;
         foreach (var (conflictId, existing) in _conflicts)
         {
-            if (existing.SecurityId != incoming.SecurityId
+            if (existing.SecurityId != persisted.SecurityId
                 || !string.Equals(existing.Status, "Open", StringComparison.OrdinalIgnoreCase)
                 || (!string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
                     && !string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal)))
@@ -172,13 +209,13 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
                 continue;
             }
 
-            var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(incoming, existing.FieldPath);
+            var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(persisted, existing.FieldPath);
             if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(existing, persistedValue))
             {
                 continue;
             }
 
-            if (SecurityMasterConflictDetection.TryMatchCandidateProvider(existing, incomingSource, out var revisesProviderA))
+            if (SecurityMasterConflictDetection.TryMatchCandidateProvider(existing, persistedSource, out var revisesProviderA))
             {
                 var refreshed = revisesProviderA
                     ? existing with { ValueA = persistedValue! }
@@ -195,7 +232,7 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
             }
 
             // An UNKNOWN author must never retire a real disagreement on guesswork.
-            if (string.Equals(incomingSource, SecurityMasterProvenanceReader.UnknownSource, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(persistedSource, SecurityMasterProvenanceReader.UnknownSource, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -216,26 +253,6 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
                     conflictId, existing.FieldPath, existing.SecurityId);
             }
         }
-
-        int newConflicts = 0;
-        foreach (var conflict in candidates)
-        {
-            // Only record if not already tracked with a non-Open status (operator resolutions win).
-            if (_conflicts.TryGetValue(conflict.ConflictId, out var existing) && existing.Status != "Open")
-                continue;
-
-            _conflicts[conflict.ConflictId] = conflict;
-            newConflicts++;
-
-            _logger.LogWarning(
-                "Cross-source field conflict on {FieldPath} for security {SecurityId}: {SourceA}='{ValueA}' vs {SourceB}='{ValueB}'",
-                conflict.FieldPath, conflict.SecurityId, conflict.ProviderA, conflict.ValueA, conflict.ProviderB, conflict.ValueB);
-        }
-
-        if (newConflicts > 0)
-            _logger.LogInformation(
-                "Recorded {Count} new field conflict(s) for security {SecurityId}",
-                newConflicts, incoming.SecurityId);
 
         return Task.CompletedTask;
     }

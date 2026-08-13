@@ -197,6 +197,13 @@ module SecurityMaster =
                 (error
                     "structured_credit_factor_schedule_not_monotonic"
                     "StructuredCredit factor schedule must be non-increasing in date order — a rising factor would grow outstanding principal, which the factor-paydown workflow treats as invalid retained evidence.")
+            @ require
+                (match terms.Maturity with
+                 | Some maturity -> terms.FactorScheduleEntries |> List.forall (fun entry -> entry.AsOfDate <= maturity)
+                 | None -> true)
+                (error
+                    "structured_credit_factor_after_maturity"
+                    "StructuredCredit factor schedule observations must fall on or before the retained maturity — a factor decline after the legal final date would emit principal paydowns for a tranche that has already reached term.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor

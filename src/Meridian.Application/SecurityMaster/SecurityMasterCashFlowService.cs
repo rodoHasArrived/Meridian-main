@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
@@ -276,7 +277,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
                 outstanding = RoundCash(decimal.Max(0m, outstanding - paidBeforeAsOf));
             }
             else if ((appliedFactorEntry?.AsOfDate
-                ?? SecurityTermReader.ReadDate([security.AssetSpecificTerms], ["factorDate", "currentFactorDate"]))
+                ?? SecurityTermReader.ReadDate(EnumerateFactorDateSources(security.AssetSpecificTerms), ["factorDate", "currentFactorDate"]))
                 is DateOnly factorEvidenceDate)
             {
                 // A DATED factor reflects principal events only up to its as-of date: a January
@@ -664,6 +665,29 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
 
     private static DateTimeOffset ToUtcDateTimeOffset(DateOnly date)
         => new(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+    /// <summary>
+    /// Term sources for the scalar factor-date lookup, in the SAME nested-first precedence
+    /// <see cref="StructuredCashFlowTermsResolver"/> uses for the factor and schedule themselves:
+    /// a profile-backed record persists its governed scalar terms beneath
+    /// <c>profileFields</c>, so probing only the envelope root would miss the retained date and
+    /// misread a dated factor as current.
+    /// </summary>
+    private static IEnumerable<JsonElement> EnumerateFactorDateSources(JsonElement assetSpecificTerms)
+    {
+        if (assetSpecificTerms.ValueKind != JsonValueKind.Object)
+        {
+            yield break;
+        }
+
+        if (SecurityTermReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields)
+            && profileFields.ValueKind == JsonValueKind.Object)
+        {
+            yield return profileFields;
+        }
+
+        yield return assetSpecificTerms;
+    }
 
     private static decimal RoundCash(decimal amount)
         => decimal.Round(amount, 4, MidpointRounding.AwayFromZero);

@@ -129,6 +129,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(currentProjection, projection);
         await TryRetireStaleFieldResolutionProvenanceAsync(changedGovernedFields, request.SecurityId, ct).ConfigureAwait(false);
         await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
+        // Open conflicts reconcile against the DURABLY persisted value only: superseding or
+        // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed
+        // conflict queue for an amendment the event store then rejects. Best-effort — a failed
+        // sweep leaves conflicts Open, where the resolve-time guard reconciles them lazily.
+        await TryReconcileOpenFieldConflictsAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
         await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
 
@@ -375,6 +380,31 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
 
         await _conflictService.RecordFieldConflictsAsync(previous, incoming, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Post-persist reconciliation of OPEN field conflicts against the durably written projection
+    /// (supersede when a third source replaced both candidates, refresh a candidate revising its
+    /// own value). Best-effort: a failed sweep leaves conflicts Open — recoverable lazily at
+    /// resolve time — whereas failing the amendment AFTER it durably persisted would report an
+    /// error for a write that succeeded.
+    /// </summary>
+    private async Task TryReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+    {
+        if (_conflictService is null)
+            return;
+
+        try
+        {
+            await _conflictService.ReconcileOpenFieldConflictsAsync(persisted, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Reconciling open field conflicts after the amendment persisted failed for {SecurityId}; obsolete conflicts stay open until resolution or the next successful write.",
+                persisted.SecurityId);
+        }
     }
 
     /// <summary>

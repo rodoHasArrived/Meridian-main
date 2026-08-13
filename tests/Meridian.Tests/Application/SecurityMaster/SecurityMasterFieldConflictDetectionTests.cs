@@ -389,6 +389,8 @@ public sealed class SecurityMasterFieldConflictDetectionTests
 
         var thirdSource = Record("IceData", new { couponRate = 5.00m });
         await service.RecordFieldConflictsAsync(reuters, thirdSource, CancellationToken.None);
+        // The obsolete-conflict sweep runs only AFTER the canonical write durably persists.
+        await service.ReconcileOpenFieldConflictsAsync(thirdSource, CancellationToken.None);
 
         var superseded = await service.GetConflictAsync(opened.ConflictId, CancellationToken.None);
         superseded!.Status.Should().Be("Superseded",
@@ -417,6 +419,8 @@ public sealed class SecurityMasterFieldConflictDetectionTests
         // Precision differs but the economics match Bloomberg's candidate exactly.
         var reassertion = Record("IceData", new { couponRate = 4.2500m });
         await service.RecordFieldConflictsAsync(reuters, reassertion, CancellationToken.None);
+        // The obsolete-conflict sweep runs only AFTER the canonical write durably persists.
+        await service.ReconcileOpenFieldConflictsAsync(reassertion, CancellationToken.None);
 
         var stillOpen = await service.GetConflictAsync(opened.ConflictId, CancellationToken.None);
         stillOpen!.Status.Should().Be("Open",
@@ -443,6 +447,8 @@ public sealed class SecurityMasterFieldConflictDetectionTests
 
         var reutersRevision = Record("Reuters", new { couponRate = 4.75m });
         await service.RecordFieldConflictsAsync(reuters, reutersRevision, CancellationToken.None);
+        // The obsolete-conflict sweep runs only AFTER the canonical write durably persists.
+        await service.ReconcileOpenFieldConflictsAsync(reutersRevision, CancellationToken.None);
 
         var refreshed = await service.GetConflictAsync(opened.ConflictId, CancellationToken.None);
         refreshed!.Status.Should().Be("Open",

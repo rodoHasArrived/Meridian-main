@@ -624,6 +624,69 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldIgnoreOuterFactorRowsWhenGovernedRowsExist()
+    {
+        // Once the governed profileFields schedule exists, the ungoverned OUTER array is excluded
+        // entirely — not merely deduplicated by date. Each enumerated array derives its own priors
+        // (first observation against the 1.0 baseline), so an outer 0.50 row on a date the
+        // governed schedule does not cover would otherwise synthesize a 5.00 paydown the governed
+        // 0.97 history contradicts, and that false amount could become a posting candidate.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-outer-rows-ignored"));
+
+        var securityId = Guid.Parse("99999999-9999-4999-8999-999999999999");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL profile-backed structured security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("99999999-9999-4999-8999-99999999999a");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule: null,
+            typedFactorEntries:
+            [
+                (new DateOnly(2026, 3, 25), 0.50m)
+            ],
+            profileFieldsFactorEntries:
+            [
+                (new DateOnly(2026, 2, 21), 1.00m),
+                (new DateOnly(2026, 3, 21), 0.97m)
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-outer-rows-ignored"));
+
+        detail.Should().NotBeNull();
+        var paydowns = detail!.ExpectedAccountingEvents
+            .Where(item => item.SecurityId == securityId
+                && item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown)
+            .ToArray();
+        paydowns.Should().ContainSingle(
+            "only the governed schedule's in-period observation may produce a paydown").Subject
+            .PrincipalAmount.Should().Be(0.30m);
+    }
+
+    [Fact]
     public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPreserveMortgageBackedAssetClassForFactorPaydown()
     {
         var store = new StrategyRunStore();

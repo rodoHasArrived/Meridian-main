@@ -173,6 +173,9 @@ internal sealed class NullSecurityMasterConflictService : ISecurityMasterConflic
 
     public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
         => Task.CompletedTask;
+
+    public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+        => Task.CompletedTask;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
