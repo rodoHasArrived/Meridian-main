@@ -67,7 +67,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         harness.SetPassportAssetClass("Bond");
         // Window terms (maturity/issueDate/par) validate against the record's effective principal
         // schedule, so the retained terms must resolve for the edit to stage.
-        harness.SetProjectionAssetTerms("Bond", new { issueDate = "2026-01-01", maturityDate = "2030-01-01", par = 100m });
+        harness.SetProjectionAssetTerms("Bond", new { issueDate = "2026-01-01", maturity = "2030-01-01", par = 100m });
 
         var request = new UpdateSecurityFieldRequest(
             SecurityId: SecurityId,
@@ -707,7 +707,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         harness.SetProjectionAssetTerms("Bond", new
         {
             issueDate = "2026-01-01",
-            maturityDate = "2030-01-01",
+            maturity = "2030-01-01",
             par = 100m
         });
 
@@ -775,7 +775,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         harness.SetProjectionAssetTerms("Bond", new
         {
             issueDate = "2026-01-01",
-            maturityDate = "2030-01-01",
+            maturity = "2030-01-01",
             par = 100m
         });
         harness.Overrides
@@ -867,6 +867,99 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_LegacyShapedFirstClassRecord_FailsClosedOnReconstruction()
+    {
+        // A record whose retained terms cannot round-trip the strict kind mapping (Bond maturity
+        // stored only under the maturityDate alias) cannot have its invariants verified - legacy
+        // shape is not permission to skip validation, so the edit is rejected until the record is
+        // migrated to the canonical shape.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturityDate = "2030-01-01",
+            par = 100m
+        });
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: "80",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*could not be reconstructed*");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_DraftCreationFails_CompensatesTheStagedOverride()
+    {
+        // If the draft revision cannot be created after the patch commits, no approval workflow
+        // can ever govern the staged value - the overlay must revert so governed runs are not
+        // blocked behind SM_OVERRIDE_APPROVAL_REQUIRED by an ungoverned Pending value.
+        var harness = new Harness(currentVersion: 3, revisions: new ThrowingRevisionStore());
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturity = "2030-01-01",
+            par = 100m
+        });
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: "80",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*staged override was reverted*");
+
+        // The original staging patch plus the compensating revert (removing the key, since no
+        // prior override existed for the field).
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(),
+                It.Is<OperatorOverridesPatchRequest>(patch =>
+                    patch.RemoveKeys != null && patch.RemoveKeys.Contains("assetSpecificTerms.par")),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once);
+    }
+
+    private sealed class ThrowingRevisionStore : ISecurityMasterRevisionStore
+    {
+        public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
+            => throw new InvalidOperationException("revision store down");
+
+        public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+            Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom,
+            string fieldJustification, string? fundProfileId = null, CancellationToken ct = default)
+            => throw new InvalidOperationException("revision store down");
+
+        public Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default)
+            => Task.FromResult<SecurityMasterRevisionRecord?>(null);
+
+        public Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecurityMasterRevisionRecord>>([]);
+
+        public Task<SecurityMasterRevisionRecord> TransitionAsync(
+            Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next,
+            string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default)
+            => throw new InvalidOperationException("revision store down");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ClearingBoundTermOverride_RevalidatesEffectiveSchedule()
     {
         // Clearing a bound term is an edit to the effective overlay too: with par staged UP to 100
@@ -878,7 +971,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         harness.SetProjectionAssetTerms("Bond", new
         {
             issueDate = "2026-01-01",
-            maturityDate = "2030-01-01",
+            maturity = "2030-01-01",
             par = 50m
         });
         harness.Overrides
@@ -920,7 +1013,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         harness.SetProjectionAssetTerms("Bond", new
         {
             issueDate = "2026-01-01",
-            maturityDate = "2030-01-01",
+            maturity = "2030-01-01",
             par = 100m
         });
 
@@ -994,7 +1087,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         harness.SetProjectionAssetTerms("Bond", new
         {
             issueDate = "2026-01-01",
-            maturityDate = "2030-01-01",
+            maturity = "2030-01-01",
             par = 100m,
             principalSchedule = new object[]
             {
@@ -1878,6 +1971,88 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Approve_OverrideDecisionFails_ApprovalStillSucceedsAndPublishConverges()
+    {
+        // A post-gate override-decision failure must not strand the flow: the gate approval is
+        // irreversible, so the revision advances to Approved and PUBLISH - fail-closed and
+        // retryable before its own transition - records the decision.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4, handlers: [new RecordingHandler(order: 10)]);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["EconomicDefinition.Coupon"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+        harness.Overrides
+            .Setup(o => o.RecordApprovalDecisionAsync(SecurityId, It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("overlay store down"));
+
+        // Approval succeeds despite the decision failure.
+        await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+
+        // The overlay store recovers; publish converges the decision before transitioning.
+        harness.Overrides
+            .Setup(o => o.RecordApprovalDecisionAsync(SecurityId, It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(SecurityId, new Dictionary<string, string>(), "ops.reviewer", DateTimeOffset.UtcNow));
+        await harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
+            SecurityId, revisionId, "ops.analyst", "ops.reviewer"));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision => decision.Decision == SecurityOverrideApprovalStatusDto.Approved),
+                It.IsAny<CancellationToken>()),
+            Times.Exactly(2));
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
+    }
+
+    [Fact]
+    public async Task Approve_OtherRevisionsStillStaged_DefersTheOverrideDecision()
+    {
+        // The override decision is SECURITY-level: with another revision still staged for the
+        // same security, recording it would co-approve values no reviewer has seen, so the
+        // overlay deliberately stays Pending.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
+        await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["EconomicDefinition.Coupon"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+    }
+
+    [Fact]
     public async Task Approve_WhenGateBlocks_Throws()
     {
         var workflowId = Guid.NewGuid();
@@ -2145,10 +2320,16 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public Harness(
             long currentVersion,
             IEnumerable<ISecurityMasterRevisionPublishedHandler>? handlers = null,
-            Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
+            Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
+            ISecurityMasterRevisionStore? revisions = null)
         {
             _assetProfileCatalog = assetProfileCatalog
                 ?? Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault();
+            if (revisions is not null)
+            {
+                Revisions = revisions;
+            }
+
             EventStore = new FakeEventStore(currentVersion);
 
             Overrides

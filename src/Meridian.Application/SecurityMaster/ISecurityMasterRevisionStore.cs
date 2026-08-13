@@ -33,6 +33,13 @@ public interface ISecurityMasterRevisionStore
     Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default);
 
     /// <summary>
+    /// All revisions recorded for one security, in no guaranteed order. Used by the approval seam
+    /// to decide whether a security-level override decision would co-approve values staged by
+    /// OTHER, not-yet-approved revisions.
+    /// </summary>
+    Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>
     /// Atomically transitions a revision from <paramref name="expected"/> to <paramref name="next"/>.
     /// Throws <see cref="SecurityMasterRevisionStateException"/> when the revision is missing or its
     /// current state is not <paramref name="expected"/> (a concurrent or out-of-order transition).
@@ -129,6 +136,10 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         _revisions.TryGetValue(revisionId, out var record);
         return Task.FromResult(record);
     }
+
+    public Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<SecurityMasterRevisionRecord>>(
+            _revisions.Values.Where(record => record.SecurityId == securityId).ToArray());
 
     public Task<SecurityMasterRevisionRecord> TransitionAsync(
         Guid revisionId,

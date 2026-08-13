@@ -471,8 +471,12 @@ public sealed class AssetObligationProjectionService
             effectiveFactor = Math.Max(0m, effectiveFactor.Value - (completedPostFactorPrincipal / face));
         }
 
+        // The retained factor date must be the SAME governed nested-first date the opening-balance
+        // calculation resolved: re-reading outer-first here would stamp Asset Operations lineage
+        // with a pass-through date inconsistent with the factor actually applied.
         var effectiveFactorDate = scheduled?.AsOfDate
-            ?? (TryReadDate(payload, out var factorDate, "factorDate", "currentFactorDate") ? factorDate : (DateOnly?)null);
+            ?? SecurityTermReader.ReadDate(
+                EnumerateNestedFirstTermSources(payload), "factorDate", "currentFactorDate");
         return new BondInflationLinkedDto(
             security.SecurityId,
             null,

@@ -80,16 +80,20 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
     // EffectiveFrom is still in the future is NOT selectable yet — exposing it would advertise a
     // create/amend that validation rejects with SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE.
     public IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles()
-    {
-        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.Date);
-        return GetAllProfiles()
+        => GetProfiles(DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.Date));
+
+    // Selectability is evaluated against the WRITE's effective date: write-time governance pins
+    // the version whose window covers that date, so a backdated amendment must be able to
+    // discover the historical (now superseded) version governing its effective date — filtering
+    // only against today would hide exactly the version such a write needs.
+    public IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles(DateOnly effectiveAt)
+        => GetAllProfiles()
             .Where(profile => profile.Status is SecurityAssetProfileStatusDto.Approved or SecurityAssetProfileStatusDto.Superseded
-                && profile.EffectiveFrom <= today
-                && (profile.EffectiveTo is not DateOnly effectiveTo || today <= effectiveTo))
+                && profile.EffectiveFrom <= effectiveAt
+                && (profile.EffectiveTo is not DateOnly effectiveTo || effectiveAt <= effectiveTo))
             .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static profile => profile.Version)
             .ToArray();
-    }
 
     public IReadOnlyList<SecurityAssetProfileDefinitionDto> GetAllProfiles()
         => MergeProfiles(ReadSnapshot().Profiles);

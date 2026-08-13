@@ -99,18 +99,20 @@ public static class StructuredCashFlowTermsResolver
                     entries.Add(new StructuredPrincipalScheduleEntry(paymentDate.Value, amount.Value));
                 }
 
-                if (entries.Count > 0)
-                {
-                    // The ledger bridge derives one principal journal id per security/date, so
-                    // combine same-day contractual rows before they reach projection consumers.
-                    return entries
-                        .GroupBy(static entry => entry.PaymentDate)
-                        .Select(static group => new StructuredPrincipalScheduleEntry(
-                            group.Key,
-                            group.Sum(static entry => entry.Amount)))
-                        .OrderBy(static entry => entry.PaymentDate)
-                        .ToArray();
-                }
+                // The array's PRESENCE claims ownership, mirroring the factor schedule: a bullet
+                // bond's canonical serializer emits principalSchedule: [] to assert "no contractual
+                // instalments", so the result returns even when zero rows parse — probing
+                // lower-priority sources (including commonTerms) could resurrect a stale
+                // pass-through schedule and turn the bullet into a sinker.
+                // The ledger bridge derives one principal journal id per security/date, so
+                // same-day contractual rows combine before they reach projection consumers.
+                return entries
+                    .GroupBy(static entry => entry.PaymentDate)
+                    .Select(static group => new StructuredPrincipalScheduleEntry(
+                        group.Key,
+                        group.Sum(static entry => entry.Amount)))
+                    .OrderBy(static entry => entry.PaymentDate)
+                    .ToArray();
             }
         }
 

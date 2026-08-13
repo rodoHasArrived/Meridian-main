@@ -73,11 +73,16 @@ public static class SecurityMasterEndpoints
 
         /// <summary>
         /// Lists approved custom asset profile definitions available to profile-backed Security Master create/amend workflows.
+        /// An optional <c>asOf</c> date scopes selectability to a write EFFECTIVE AT that date, so
+        /// backdated amendments can discover the historical version governing their effective date.
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterAssetProfiles, (
+            [FromQuery] DateOnly? asOf,
             [FromServices] ISecurityAssetProfileCatalog profileCatalog) =>
         {
-            var profiles = profileCatalog.GetProfiles()
+            var profiles = (asOf is DateOnly effectiveAt
+                    ? profileCatalog.GetProfiles(effectiveAt)
+                    : profileCatalog.GetProfiles())
                 .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static profile => profile.Version)
                 .ToArray();

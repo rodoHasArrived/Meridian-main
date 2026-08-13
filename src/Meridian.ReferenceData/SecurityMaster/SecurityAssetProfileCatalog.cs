@@ -7,6 +7,20 @@ public interface ISecurityAssetProfileCatalog
     IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles();
     bool TryGetProfile(string profileId, int version, out SecurityAssetProfileDefinitionDto profile);
     bool TryGetLatestApprovedProfile(string profileId, out SecurityAssetProfileDefinitionDto profile);
+
+    /// <summary>
+    /// The profile versions selectable for a write EFFECTIVE AT <paramref name="effectiveAt"/> —
+    /// write-time governance evaluates against the request's effective date, not today, so a
+    /// legitimately backdated create/amend must be able to discover the historical (now
+    /// superseded) version whose window covered that date. The default filters the current
+    /// selectable set by window; catalogs holding full lineage should override to expose eligible
+    /// historical versions too.
+    /// </summary>
+    IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles(DateOnly effectiveAt)
+        => GetProfiles()
+            .Where(profile => profile.EffectiveFrom <= effectiveAt
+                && (profile.EffectiveTo is not DateOnly effectiveTo || effectiveAt <= effectiveTo))
+            .ToArray();
 }
 
 public sealed class StaticSecurityAssetProfileCatalog : ISecurityAssetProfileCatalog

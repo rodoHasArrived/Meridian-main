@@ -5182,13 +5182,33 @@ function AssetProfileFieldInput({
   onChange: (value: string) => void;
 }) {
   if (field.fieldType === "Boolean") {
+    if (!field.isRequired) {
+      // TRI-STATE for optional Booleans: blank means "not asserted" and stays omitted from the
+      // payload, so an operator who touched the control can still return the field to absence -
+      // a two-state checkbox renders blank and false identically and would trap the field in a
+      // meaningful negative assertion once toggled.
+      return (
+        <FilterSelect
+          label={field.label}
+          value={value}
+          onChange={onChange}
+          options={[
+            { value: "", label: "Not asserted" },
+            { value: "true", label: "Yes" },
+            { value: "false", label: "No" }
+          ]}
+          disabled={disabled}
+        />
+      );
+    }
+
     return (
       <Checkbox
         checked={value === "true"}
         onCheckedChange={(checked) => onChange(checked ? "true" : "false")}
         className="min-h-16 rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-xs"
         disabled={disabled}
-        label={`${field.label}${field.isRequired ? " *" : ""}`}
+        label={`${field.label} *`}
       />
     );
   }

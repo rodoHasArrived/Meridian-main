@@ -106,6 +106,29 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         return await reader.ReadAsync(ct).ConfigureAwait(false) ? MapRevision(reader) : null;
     }
 
+    public async Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(
+        Guid securityId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select {RevisionColumns}
+            from {Qualified(RevisionsTable)}
+            where security_id = @security_id;
+            """;
+        command.Parameters.AddWithValue("security_id", securityId);
+
+        var revisions = new List<SecurityMasterRevisionRecord>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            revisions.Add(MapRevision(reader));
+        }
+
+        return revisions;
+    }
+
     public async Task<SecurityMasterRevisionRecord> TransitionAsync(
         Guid revisionId,
         SecurityMasterRevisionStateDto expected,

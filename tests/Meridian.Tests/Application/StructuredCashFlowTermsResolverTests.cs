@@ -275,6 +275,44 @@ public sealed class StructuredCashFlowTermsResolverTests
         terms.PrincipalSchedule.Should().BeEmpty();
     }
 
+    [Fact]
+    public void Resolve_EmptyPrincipalSchedule_IsAuthoritativeOverLowerPrioritySources()
+    {
+        // A bullet bond's canonical serializer emits principalSchedule: [] - an explicit "no
+        // contractual instalments". The array's PRESENCE claims ownership, so a stale
+        // pass-through schedule on a lower-priority source (commonTerms) must not resurrect
+        // instalments and turn the bullet into a sinker.
+        var security = new SecurityDetailDto(
+            Guid.NewGuid(),
+            "Bond",
+            SecurityStatusDto.Active,
+            "Bullet bond",
+            "USD",
+            JsonSerializer.SerializeToElement(new
+            {
+                principalSchedule = new object[]
+                {
+                    new { paymentDate = "2027-06-30", amount = 25m }
+                }
+            }),
+            JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2030-06-30",
+                par = 100m,
+                principalSchedule = Array.Empty<object>()
+            }),
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456789", true, DateTimeOffset.UtcNow)],
+            [],
+            1,
+            DateTimeOffset.UtcNow,
+            null);
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.HasPrincipalSchedule.Should().BeFalse(
+            "the asset terms explicitly assert an empty contractual schedule, and the commonTerms pass-through must not fill it");
+    }
+
     private static SecurityDetailDto Build(JsonElement assetSpecificTerms)
         => new(
             Guid.NewGuid(),

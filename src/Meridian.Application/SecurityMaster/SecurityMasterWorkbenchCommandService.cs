@@ -140,6 +140,8 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
         string fieldPath;
         OperatorOverridesDto stagedOverride;
+        string? priorOverrideValue = null;
+        var hadPriorOverride = false;
         var isClear = string.IsNullOrWhiteSpace(request.NewValue);
         try
         {
@@ -156,6 +158,23 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             // version, so the returned NewVersion is the unchanged canonical version. A blank value is
             // a CLEAR: it removes the overlay key rather than persisting an empty-string override that
             // would bypass type validation and read as an asserted value downstream.
+            // Capture the field's PRIOR staged value for compensation: if the draft revision
+            // cannot be created after the patch commits, the overlay is reverted so no ungoverned
+            // Pending value outlives the failed edit.
+            var priorOverlay = await _overrides.GetAsync(request.SecurityId, ct).ConfigureAwait(false);
+            if (priorOverlay is not null)
+            {
+                foreach (var (priorPath, priorValue) in priorOverlay.Values)
+                {
+                    if (string.Equals(priorPath, fieldPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priorOverrideValue = priorValue;
+                        hadPriorOverride = true;
+                        break;
+                    }
+                }
+            }
+
             var patch = new OperatorOverridesPatchRequest(
                 SetValues: isClear
                     ? null
@@ -199,10 +218,45 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // downstream impact (and therefore real affected ledger books + restatement candidates). Without
         // it, publish falls back to an unscoped impact whose empty affected-book set short-circuits the
         // period-aware restatement path to "no restatement".
-        var revision = await _revisions.CreateDraftAsync(
-            request.SecurityId, request.Actor, fieldPath, request.EffectiveFrom, request.Justification,
-            request.FundProfileId, ct)
-            .ConfigureAwait(false);
+        SecurityMasterRevisionRecord revision;
+        try
+        {
+            revision = await _revisions.CreateDraftAsync(
+                request.SecurityId, request.Actor, fieldPath, request.EffectiveFrom, request.Justification,
+                request.FundProfileId, ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // COMPENSATE the committed patch: without a draft revision there is no approval
+            // workflow that can ever govern the staged value, so leaving it would block governed
+            // runs behind SM_OVERRIDE_APPROVAL_REQUIRED until an operator happens to restage it.
+            // The overlay is reverted to the field's prior state (previous override restored, or
+            // the key removed when none existed) and the edit reports failure for a clean retry.
+            try
+            {
+                var compensation = new OperatorOverridesPatchRequest(
+                    SetValues: hadPriorOverride
+                        ? new Dictionary<string, string>(StringComparer.Ordinal) { [fieldPath] = priorOverrideValue! }
+                        : null,
+                    RemoveKeys: hadPriorOverride ? null : [fieldPath])
+                {
+                    ReasonCode = "field-edit draft creation failed; compensating overlay revert",
+                };
+                await _overrides.PatchAsync(request.SecurityId, compensation, request.Actor, ct).ConfigureAwait(false);
+            }
+            catch (Exception revertEx) when (revertEx is not OperationCanceledException)
+            {
+                _logger.LogError(
+                    revertEx,
+                    "Compensating overlay revert failed for {SecurityId} field {FieldPath}: a Pending override remains without a governing draft revision until the edit is retried or the value cleared.",
+                    request.SecurityId, SanitizeForLog(fieldPath));
+            }
+
+            throw new InvalidOperationException(
+                $"The draft revision for the field edit on security '{request.SecurityId:D}' could not be created; " +
+                "the staged override was reverted. Retry the edit once the revision store is reachable.", ex);
+        }
 
         // FieldPath and Actor are operator-supplied text; strip control characters so they cannot
         // forge log entries.
@@ -502,34 +556,6 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 $"Revision approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
         }
 
-        // The browser workflow exposes ONE approval step: approving the revision IS approving the
-        // staged override carrying its value. PatchAsync marked the override Pending, and the
-        // validation read model keeps emitting SM_OVERRIDE_APPROVAL_REQUIRED — blocking governed
-        // runs, ledger, reconciliation, and report-pack use — until the override itself records a
-        // decision, so the override approval lands with the same gate approval. Idempotent on
-        // retries: an override already past Pending is left as-is.
-        try
-        {
-            var stagedOverride = await _overrides.GetAsync(request.SecurityId, ct).ConfigureAwait(false);
-            if (stagedOverride is { ApprovalStatus: SecurityOverrideApprovalStatusDto.Pending })
-            {
-                await _overrides.RecordApprovalDecisionAsync(
-                    request.SecurityId,
-                    new OperatorOverrideDecision(
-                        SecurityOverrideApprovalStatusDto.Approved,
-                        string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer,
-                        request.Rationale),
-                    ct).ConfigureAwait(false);
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            throw new InvalidOperationException(
-                $"The gate approved revision '{request.RevisionId:D}' but the staged operator override for " +
-                $"security '{request.SecurityId:D}' could not record the approval decision; the revision remains " +
-                "Submitted — retry the approval once the overlay store is reachable.", ex);
-        }
-
         // Advance the durable revision lifecycle only after the gate records the approval.
         await _revisions.TransitionAsync(
             request.RevisionId,
@@ -537,6 +563,30 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             SecurityMasterRevisionStateDto.Approved,
             request.Actor,
             ct: ct).ConfigureAwait(false);
+
+        // The browser workflow exposes ONE approval step: approving the revision IS approving the
+        // staged override carrying its value, so the override decision lands with the same gate
+        // approval. This runs AFTER the (irreversible) gate approval and revision transition, so a
+        // failure here never strands the flow: it is logged and PUBLISH — which fails closed and
+        // is fully retryable before its own transition — converges the decision. The decision is
+        // also deferred while OTHER revisions for this security are still staged: the override
+        // decision is security-level and would co-approve their unreviewed values.
+        try
+        {
+            await TryRecordOverrideApprovalDecisionAsync(
+                request.SecurityId,
+                request.RevisionId,
+                string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer,
+                request.Rationale,
+                ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(
+                ex,
+                "Revision {RevisionId} for {SecurityId} approved, but recording the operator-override approval decision failed; publish records the decision (fail-closed) before the revision transitions to Published.",
+                request.RevisionId, request.SecurityId);
+        }
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
 
@@ -547,6 +597,41 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         return BuildLifecycleResult(request.SecurityId, request.RevisionId, result.NewVersion ?? currentVersion,
             SecurityMasterRevisionStateDto.Approved, request.Actor, request.Rationale, "security-master-field-edit-approved",
             "Revision approved through the operations-continuity gate.");
+    }
+
+    /// <summary>
+    /// Records the SECURITY-LEVEL operator-override approval decision when — and only when — it
+    /// is safe: the override is Pending and no OTHER revision for this security is still staged
+    /// (Draft/Submitted), since the decision approves the entire staged Values dictionary and
+    /// would otherwise co-approve economics no reviewer has seen; the overlay deliberately stays
+    /// Pending until the LAST staged revision is approved. Returns true when a decision was
+    /// recorded. Callers choose the failure posture: the approve seam logs and defers (publish
+    /// converges), the publish seam propagates the failure while still retryable.
+    /// </summary>
+    private async Task<bool> TryRecordOverrideApprovalDecisionAsync(
+        Guid securityId, Guid revisionId, string reviewer, string? rationale, CancellationToken ct)
+    {
+        var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
+        if (revisions.Any(revision => revision.RevisionId != revisionId
+            && revision.State is SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted))
+        {
+            _logger.LogInformation(
+                "Operator-override approval for {SecurityId} deferred: other staged revisions are not yet approved, and the security-level decision would co-approve their unreviewed values.",
+                securityId);
+            return false;
+        }
+
+        var stagedOverride = await _overrides.GetAsync(securityId, ct).ConfigureAwait(false);
+        if (stagedOverride is not { ApprovalStatus: SecurityOverrideApprovalStatusDto.Pending })
+        {
+            return false;
+        }
+
+        await _overrides.RecordApprovalDecisionAsync(
+            securityId,
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, reviewer, rationale),
+            ct).ConfigureAwait(false);
+        return true;
     }
 
     public async Task<SecurityMasterPublishResultDto> PublishRevisionAsync(
@@ -625,6 +710,18 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             throw new SecurityMasterPublishFailedException(request.SecurityId, request.RevisionId, failedHandlers);
         }
+
+        // Converge the operator-override approval decision BEFORE the Published transition: the
+        // approve seam records it best-effort (a failure there logs and defers here), and a
+        // failure HERE fails closed while the revision is still Approved — the publish retry
+        // re-runs everything, so a published edit can never leave its override stuck Pending
+        // behind SM_OVERRIDE_APPROVAL_REQUIRED.
+        await TryRecordOverrideApprovalDecisionAsync(
+            request.SecurityId,
+            request.RevisionId,
+            string.IsNullOrWhiteSpace(request.ApproverActor) ? request.Actor : request.ApproverActor,
+            rationale: null,
+            ct).ConfigureAwait(false);
 
         // Period-aware propagation resolves BEFORE the revision is marked Published: the
         // closed-period restatement decision is a REQUIRED publish side effect, and resolving it
@@ -726,11 +823,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     /// canonical document with staged overrides applied and the proposed value overlaid) and runs
     /// the resolved kind's invariants. profileFields paths are owned by the pinned-profile route,
     /// and CustomAsset/OtherSecurity records have no first-class kind to reconstruct.
-    /// <para>Reconstruction is BEST-EFFORT: legacy rows can store terms under aliases the strict
-    /// canonical mapping does not read (e.g. <c>maturityDate</c> for a Bond's <c>maturity</c>), so
-    /// a document that cannot round-trip through the kind mapping skips the check with a logged
-    /// warning rather than bricking edits on legitimately stored records — but a kind that DOES
-    /// reconstruct and violates its invariants always rejects the edit.</para>
+    /// <para>Reconstruction FAILS CLOSED: a document that cannot round-trip through the strict
+    /// kind mapping (e.g. a legacy row storing a Bond's maturity under the <c>maturityDate</c>
+    /// alias) cannot have its invariants verified, so the edit is rejected until the record's
+    /// terms are migrated to the canonical shape through a governed amendment — legacy shape is
+    /// not permission to skip validation.</para>
     /// </summary>
     private async Task EnsureFirstClassTermEditSatisfiesKindInvariantsAsync(
         UpdateSecurityFieldRequest request, string canonicalFieldPath, CancellationToken ct)
@@ -812,11 +909,18 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(
-                ex,
-                "Reconstructing the effective resolved kind for {SecurityId} failed while validating field edit {FieldPath}; the kind-invariant check is skipped for this legacy-shaped document.",
-                request.SecurityId, SanitizeForLog(canonicalFieldPath));
-            return;
+            // FAIL CLOSED: a first-class record whose effective terms cannot be reconstructed
+            // through the strict kind mapping cannot have its invariants verified, and a legacy
+            // document shape is not permission to skip validation — an invariant-violating value
+            // (StructuredCredit currentFactor = 2) would otherwise stage unvalidated on exactly
+            // those records. The remedy is migrating the record's terms to the canonical shape
+            // through a governed amendment, then retrying the edit.
+            throw new ArgumentException(
+                $"The effective asset terms for security '{request.SecurityId:D}' could not be reconstructed as the " +
+                $"resolved asset class '{projection.AssetClass}' ({ex.Message}), so the edit cannot be validated " +
+                "against the class's domain invariants. Migrate the record's retained terms to the canonical shape " +
+                "through a governed amendment and retry; the namespace only accepts validated writes.",
+                nameof(request));
         }
 
         var invariantErrors = Meridian.FSharp.SecurityMasterInterop.SecurityMasterCommandFacade.ValidateKindInvariants(kind);

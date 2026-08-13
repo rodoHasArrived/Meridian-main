@@ -240,6 +240,13 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
         service.GetProfiles()
             .Where(static profile => profile.ProfileId == "custom-expired-window")
             .Should().NotContain(profile => profile.Version == firstApproved.Profile.Version);
+
+        // A BACKDATED write effective inside the superseded version's historical window must
+        // still discover it: write-time governance evaluates against the write's effective date,
+        // and the as-of catalog seam exposes the version whose window covered that date.
+        service.GetProfiles(today.AddDays(-30))
+            .Where(static profile => profile.ProfileId == "custom-expired-window")
+            .Should().ContainSingle(profile => profile.Version == firstApproved.Profile.Version);
     }
 
     [Fact]
