@@ -2259,6 +2259,108 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Discard_DraftRevision_TransitionsToRejectedAndWithdrawsTheOverride()
+    {
+        // Discard is the terminal path for an abandoned draft: the revision transitions to
+        // Rejected and its staged override value is withdrawn, so it stops deferring the
+        // security-level override decision for every later revision.
+        var harness = new Harness(currentVersion: 3);
+        var draft = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.");
+
+        var result = await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, draft.RevisionId, "ops.analyst", "Abandoned draft."));
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Rejected);
+        (await harness.Revisions.GetAsync(draft.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Rejected);
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(patch =>
+                    patch.RemoveKeys != null && patch.RemoveKeys.Contains("assetSpecificTerms.par")),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Discard_OtherStagedRevisionGovernsTheSameField_LeavesTheOverrideInPlace()
+    {
+        // When another staged revision governs the same field path, the overlay key carries THAT
+        // revision's value — withdrawing it would destroy a value still under review.
+        var harness = new Harness(currentVersion: 3);
+        var abandoned = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit.");
+        await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Second edit.");
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, abandoned.RevisionId, "ops.analyst"));
+
+        (await harness.Revisions.GetAsync(abandoned.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Rejected);
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>(), It.IsAny<long?>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Discard_StagedSibling_UnblocksTheDeferredOverrideDecision()
+    {
+        // The scenario the terminal path exists for: an approved revision's override decision was
+        // deferred by a staged sibling. Discarding the sibling ends the deferral — the next
+        // approval (or publish retry) records the security-level decision.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
+        var sibling = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.couponRate", DateTimeOffset.UtcNow, "Abandoned edit.");
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["EconomicDefinition.Coupon"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, sibling.RevisionId, "ops.analyst", "Abandoned."));
+        await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision =>
+                    decision.Decision == SecurityOverrideApprovalStatusDto.Approved),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Discard_PublishedRevision_IsRejected()
+    {
+        // Only staged (Draft/Submitted) revisions can be discarded: a decided revision's value is
+        // already governed, and rejecting it out of band would fork the recorded lifecycle.
+        var harness = new Harness(currentVersion: 3);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Published);
+
+        await harness.Service.Invoking(s => s.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+                SecurityId, revisionId, "ops.analyst")))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>()
+            .WithMessage("*only Draft or Submitted revisions can be discarded*");
+    }
+
+    [Fact]
     public async Task Approve_WorkflowAlreadyApproved_ReconcilesTheStrandedRevision()
     {
         // The gate approval is irreversible: if a prior attempt approved the workflow but crashed

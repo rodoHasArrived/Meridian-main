@@ -559,6 +559,116 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             nameof(request));
     }
 
+    public async Task<SecurityMasterEditResultDto> DiscardRevisionAsync(
+        DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        // Discard is the TERMINAL path for a staged revision an operator abandons (Draft) or the
+        // bound workflow rejects (Submitted). Without it, any staged sibling defers the
+        // security-level override decision forever — the overlay stays Pending and no later
+        // approved revision can ever converge it, blocking governed runs indefinitely.
+        var revision = await _revisions.GetAsync(request.RevisionId, ct).ConfigureAwait(false);
+        if (revision is null)
+        {
+            throw new SecurityMasterRevisionStateException(request.RevisionId, "no such revision.");
+        }
+        if (revision.SecurityId != request.SecurityId)
+        {
+            throw new SecurityMasterRevisionStateException(
+                request.RevisionId, $"belongs to security '{revision.SecurityId:D}', not '{request.SecurityId:D}'.");
+        }
+        if (revision.State is not (SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted))
+        {
+            throw new SecurityMasterRevisionStateException(
+                request.RevisionId, $"only Draft or Submitted revisions can be discarded; the revision is {revision.State}.");
+        }
+
+        // The transition and the override withdrawal run under the same per-security gate the
+        // field-edit and approval routes use, so a discard cannot interleave with an in-flight
+        // edit's patch→draft window or an approval's staged-revision check.
+        var fieldEditGate = FieldEditGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
+        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await _revisions.TransitionAsync(
+                request.RevisionId,
+                revision.State,
+                SecurityMasterRevisionStateDto.Rejected,
+                request.Actor,
+                ct: ct).ConfigureAwait(false);
+
+            // Withdraw the revision's staged override value — unless ANOTHER staged revision
+            // governs the same field path, in which case the overlay key now carries THAT
+            // revision's value and removing it would destroy a value still under review.
+            if (!string.IsNullOrWhiteSpace(revision.FieldPath))
+            {
+                var revisions = await _revisions.ListBySecurityAsync(request.SecurityId, ct).ConfigureAwait(false);
+                var anotherStagedRevisionGovernsPath = revisions.Any(other =>
+                    other.RevisionId != request.RevisionId
+                    && other.State is SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted
+                    && string.Equals(other.FieldPath, revision.FieldPath, StringComparison.OrdinalIgnoreCase));
+                if (anotherStagedRevisionGovernsPath)
+                {
+                    _logger.LogInformation(
+                        "Discarded revision {RevisionId} for {SecurityId} left the staged override at {FieldPath} in place: another staged revision governs the same field.",
+                        request.RevisionId, request.SecurityId, SanitizeForLog(revision.FieldPath));
+                }
+                else
+                {
+                    var withdrawal = new OperatorOverridesPatchRequest(
+                        SetValues: null,
+                        RemoveKeys: [revision.FieldPath!])
+                    {
+                        ReasonCode = string.IsNullOrWhiteSpace(request.Reason)
+                            ? "staged revision discarded; override withdrawn"
+                            : request.Reason,
+                    };
+                    var withdrawn = await _overrides
+                        .PatchAsync(request.SecurityId, withdrawal, request.Actor, ct)
+                        .ConfigureAwait(false);
+
+                    // Lineage follows the withdrawn value best-effort, mirroring a CLEAR: the
+                    // operator attribution row must not keep reporting an asserted value the
+                    // discard removed.
+                    if (_fieldProvenance is not null)
+                    {
+                        try
+                        {
+                            await _fieldProvenance.RemoveAsync(
+                                request.SecurityId,
+                                revision.FieldPath!,
+                                SecurityFieldProvenanceOrigins.OperatorFieldEdit,
+                                clearedAt: withdrawn.UpdatedAt,
+                                ct).ConfigureAwait(false);
+                        }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        {
+                            _logger.LogWarning(
+                                ex,
+                                "Removing operator field-edit lineage for {SecurityId} field {FieldPath} failed after discarding revision {RevisionId}.",
+                                request.SecurityId, SanitizeForLog(revision.FieldPath), request.RevisionId);
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            fieldEditGate.Release();
+        }
+
+        var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+
+        _logger.LogInformation(
+            "Security Master revision {RevisionId} for {SecurityId} discarded (Rejected) by {Actor}",
+            request.RevisionId, request.SecurityId, SanitizeForLog(request.Actor));
+
+        return BuildLifecycleResult(request.SecurityId, request.RevisionId, currentVersion,
+            SecurityMasterRevisionStateDto.Rejected, request.Actor, request.Reason, "operator-field-edit-discarded",
+            "Staged revision discarded; the staged override value was withdrawn.");
+    }
+
     public async Task<SecurityMasterEditResultDto> ApproveRevisionAsync(
         ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default)
     {

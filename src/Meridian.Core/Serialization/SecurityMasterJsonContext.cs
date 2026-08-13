@@ -191,6 +191,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(UpdateSecurityFieldRequest))]
 [JsonSerializable(typeof(ResolveSourceConflictRequest))]
 [JsonSerializable(typeof(SubmitSecurityMasterRevisionRequest))]
+[JsonSerializable(typeof(DiscardSecurityMasterRevisionRequest))]
 [JsonSerializable(typeof(ApproveSecurityMasterRevisionRequest))]
 [JsonSerializable(typeof(PublishSecurityMasterRevisionRequest))]
 [JsonSerializable(typeof(SecurityMasterEditResultDto))]

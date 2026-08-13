@@ -32,6 +32,14 @@ public interface ISecurityMasterWorkbenchCommandService
     Task<SecurityMasterEditResultDto> SubmitForApprovalAsync(
         SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);
 
+    /// <summary>
+    /// Discards a staged (Draft or Submitted) revision: transitions it to Rejected and withdraws
+    /// the staged override value it governs, so an abandoned draft or gate-rejected submission
+    /// stops deferring the security-level override decision for every later revision.
+    /// </summary>
+    Task<SecurityMasterEditResultDto> DiscardRevisionAsync(
+        DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default);
+
     /// <summary>Approves a submitted revision through the operations-continuity approval gate.</summary>
     Task<SecurityMasterEditResultDto> ApproveRevisionAsync(
         ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);

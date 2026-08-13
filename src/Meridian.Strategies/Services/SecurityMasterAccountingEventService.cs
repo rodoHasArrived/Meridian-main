@@ -69,7 +69,16 @@ public sealed record SecurityMasterAccountingPosition(
     decimal ParAmount,
     decimal? CarryingPrice = null,
     Guid? PositionId = null,
-    long PositionVersion = 1);
+    long PositionVersion = 1)
+{
+    /// <summary>
+    /// The durable book position's ORIGINAL face, when it differs from the current outstanding
+    /// balance. Factor paydowns are computed against original face (factors are relative to it),
+    /// while coupon accruals bill the current balance in <see cref="ParAmount"/> — folding the
+    /// original face into ParAmount would overstate expected interest by the paid-down portion.
+    /// </summary>
+    public decimal? OriginalFaceAmount { get; init; }
+}
 
 public sealed record SecurityFactorScheduleEntry(
     Guid SecurityId,
@@ -491,7 +500,9 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                 positionId,
                 projectedPositionVersion,
                 projectedPositionVersion,
-                position.ParAmount,
+                // Paydowns are relative to ORIGINAL face; ParAmount carries the current
+                // outstanding balance that coupon accruals bill.
+                position.OriginalFaceAmount ?? position.ParAmount,
                 factor.PriorFactor,
                 factor.CurrentFactor,
                 security.Currency,

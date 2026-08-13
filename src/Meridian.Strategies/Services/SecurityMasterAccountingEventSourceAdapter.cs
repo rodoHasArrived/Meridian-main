@@ -83,7 +83,12 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                      first.AccountId,
                      group.Sum(static position => position.ParAmount),
                      PositionId: first.PositionId,
-                     PositionVersion: first.PositionVersion);
+                     PositionVersion: first.PositionVersion)
+                {
+                    // The durable position's original face is identity-scoped (every row in the
+                    // group shares the position id), so it carries through unsummed.
+                    OriginalFaceAmount = first.OriginalFaceAmount
+                };
             })
             .Where(static position => position.ParAmount != 0m)
             .ToArray();
@@ -205,15 +210,17 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             // Factor paydowns are computed against ORIGINAL face (factors are relative to it):
             // the run position's quantity may already be the factor-adjusted current face, so
             // when the durable book position retains its original/par face, that value — not the
-            // run quantity — is the held face the paydown math must use. The run quantity stays
-            // the deliberate fallback when the durable state records neither.
+            // run quantity — is the held face the paydown math must use. It rides a SEPARATE
+            // paydown basis: ParAmount keeps the CURRENT outstanding balance (the run quantity),
+            // which is what coupon accruals bill — replacing it with original face would
+            // overstate expected interest and journal previews by the already-paid-down portion.
+            // The generator falls back to ParAmount when the durable state records no face.
             return position with
             {
                 PositionId = durable.PositionId,
                 PositionVersion = durable.Version,
-                ParAmount = durable.CurrentEconomicState?.OriginalFaceAmount
+                OriginalFaceAmount = durable.CurrentEconomicState?.OriginalFaceAmount
                     ?? durable.CurrentEconomicState?.ParAmount
-                    ?? position.ParAmount
             };
         }).ToList();
     }

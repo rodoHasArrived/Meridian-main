@@ -1067,6 +1067,13 @@ public sealed class ReconciliationRunServiceTests
             item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
             item.PrincipalAmount == 0.60m &&
             item.EconomicEvent!.BookPositionId == positionId);
+        // The original face is a PAYDOWN basis only: coupon accruals bill the CURRENT outstanding
+        // balance (the run quantity of 10) — folding the original face of 20 into the shared par
+        // would double the expected interest and its journal previews.
+        detail.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome &&
+            item.InputSnapshot!.ParAmount == 10m);
     }
 
     [Fact]

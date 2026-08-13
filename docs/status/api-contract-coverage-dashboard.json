@@ -9,9 +9,9 @@
     "endpoint_count": 621,
     "documented_endpoint_count": 249,
     "undocumented_endpoint_count": 372,
-    "workstation_contract_count": 916,
+    "workstation_contract_count": 917,
     "documented_workstation_contract_count": 117,
-    "undocumented_workstation_contract_count": 799
+    "undocumented_workstation_contract_count": 800
   },
   "endpoints": [
     {
@@ -6908,43 +6908,48 @@
       "documented": true
     },
     {
+      "name": "DiscardSecurityMasterRevisionRequest",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:91",
+      "documented": false
+    },
+    {
       "name": "ApproveSecurityMasterRevisionRequest",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:85",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:98",
       "documented": true
     },
     {
       "name": "PublishSecurityMasterRevisionRequest",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:103",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:116",
       "documented": true
     },
     {
       "name": "SecurityMasterEditResultDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:111",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:124",
       "documented": true
     },
     {
       "name": "SecurityMasterConflictResolutionDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:119",
-      "documented": true
-    },
-    {
-      "name": "SecurityMasterPublishResultDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:132",
       "documented": true
     },
     {
+      "name": "SecurityMasterPublishResultDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:145",
+      "documented": true
+    },
+    {
       "name": "RestatementCandidateDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:144",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:157",
       "documented": true
     },
     {
       "name": "SecurityMasterConflictAuthorityDecision",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:155",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168",
       "documented": true
     },
     {
       "name": "SecurityMasterRevisionPublishedEvent",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:165",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:178",
       "documented": true
     },
     {
