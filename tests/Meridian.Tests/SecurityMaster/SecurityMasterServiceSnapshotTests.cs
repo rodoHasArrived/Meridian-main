@@ -829,6 +829,25 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task AmendTermsAsync_AttributionCanceled_StillReturnsTheAmendedRecord()
+    {
+        // By the time attribution runs, the canonical event append and projection upsert have
+        // COMMITTED — the amend has succeeded. A request token canceled during the best-effort
+        // lineage write must not surface as a canceled amend: the caller would retry with the
+        // original expected version, fail concurrency, and be unable to repair lineage the
+        // invalidation fallback already handles.
+        var (securityId, _, service, _, fieldProvenance) = BuildAmendHarness(
+            conflictRecordingFails: false);
+        fieldProvenance.UpsertAsync(Arg.Any<SecurityFieldProvenanceRecord>(), Arg.Any<CancellationToken>())
+            .Returns<Task>(static _ => throw new OperationCanceledException("request aborted"));
+
+        var amended = await service.AmendTermsAsync(BuildConflictingAmend(securityId));
+
+        amended.Should().NotBeNull(
+            "cancellation during the best-effort attribution write must not hide the committed amendment");
+    }
+
+    [Fact]
     public async Task CreateAsync_GovernedFields_SeedCanonicalWriteAttribution()
     {
         // Creation is the first canonical write of every governed field the record supplies, so

@@ -284,6 +284,53 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_DismissalAfterThirdPartyReplacement_SupersedesInsteadOfClosing()
+    {
+        // A DISMISSAL revalidates the persisted value like a resolution does: dismissing asserts
+        // the recorded candidates are equivalent, which is only meaningful while the persisted
+        // value still matches one of them. Here a provC amendment slipped in before the dismissal
+        // acquired the conflict lock and persisted GBP — a value matching neither candidate — so
+        // closing the stale assessment as Dismissed would erase a live disagreement that
+        // post-write reconciliation then skips (it ignores closed rows). The dismissal instead
+        // supersedes the obsolete row in the same governed transaction.
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US64110L1061", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US64110L1061", "provB") with
+        {
+            Currency = "EUR",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        await canonicalStore.UpsertProjectionAsync(incoming, CancellationToken.None);
+        var service = NewService(canonicalStore);
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var conflict = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+
+        await canonicalStore.UpsertProjectionAsync(incoming with
+        {
+            Currency = "GBP",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provC" }),
+            Version = 2
+        }, CancellationToken.None);
+
+        var act = () => service.ResolveAsync(
+            new ResolveConflictRequest(
+                conflict.ConflictId,
+                "Dismiss",
+                "operator@meridian.test",
+                "Values are equivalent.",
+                ChosenWinnerSource: "provB"),
+            CancellationToken.None);
+
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*superseded*");
+        (await service.GetConflictAsync(conflict.ConflictId, CancellationToken.None))!
+            .Status.Should().Be("Superseded",
+                "the dismissal targeted a stale assessment whose candidates were both replaced by a third source");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task RecordFieldConflictsAsync_CanonicalWriteReplacingBothCandidates_SupersedesOnWrite()
     {
         // The proactive half of the same rule: the canonical write that obsoletes both candidates

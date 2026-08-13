@@ -525,6 +525,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             {
                 try
                 {
+                    // The canonical event append and projection upsert have already COMMITTED by
+                    // the time attribution runs, so this best-effort lineage step uses a detached
+                    // token and absorbs cancellation like any other post-persist failure: a
+                    // canceled request token must not surface a canceled create/amend whose
+                    // canonical version durably advanced — the caller would retry with the
+                    // original expected version, fail concurrency, and be unable to repair the
+                    // lineage that the invalidation fallback below already handles.
                     await _fieldProvenance.UpsertAsync(
                         new SecurityFieldProvenanceRecord(
                             projection.SecurityId,
@@ -540,10 +547,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                             // callback's wall-clock time: a delayed v2 write arriving after v3's
                             // must not overwrite the newer incumbent.
                             SourceVersion: projection.Version),
-                        ct).ConfigureAwait(false);
+                        CancellationToken.None).ConfigureAwait(false);
                     recorded = true;
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException)
+                catch (Exception ex)
                 {
                     if (attempt == 0)
                     {
@@ -575,12 +582,12 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 var clearedAt = DateTimeOffset.UtcNow;
                 await _fieldProvenance.RemoveAsync(
                     projection.SecurityId, fieldPath,
-                    SecurityFieldProvenanceOrigins.CanonicalWrite, clearedAt, ct).ConfigureAwait(false);
+                    SecurityFieldProvenanceOrigins.CanonicalWrite, clearedAt, CancellationToken.None).ConfigureAwait(false);
                 await _fieldProvenance.RemoveAsync(
                     projection.SecurityId, fieldPath,
-                    SecurityFieldProvenanceOrigins.ConflictResolution, clearedAt, ct).ConfigureAwait(false);
+                    SecurityFieldProvenanceOrigins.ConflictResolution, clearedAt, CancellationToken.None).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex)
             {
                 _logger.LogError(
                     ex,

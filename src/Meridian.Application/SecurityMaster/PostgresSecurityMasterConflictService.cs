@@ -129,21 +129,33 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             return null;
         }
 
-        var resolvingField = newStatus == "Resolved" && IsFieldLevelConflict(openConflict.ConflictKind);
+        var fieldConflict = IsFieldLevelConflict(openConflict.ConflictKind);
+        var resolvingField = newStatus == "Resolved" && fieldConflict;
         var selectedSource = resolvingField
             ? ResolveSelectedSource(openConflict, request.ChosenWinnerSource, request.Resolution)
             : request.ChosenWinnerSource?.Trim();
         var selectedValue = resolvingField
             ? ResolveSelectedValue(openConflict, selectedSource!)
             : string.Empty;
-        if (resolvingField)
+        if (fieldConflict)
         {
+            // DISMISSALS revalidate the persisted value too, not only resolutions: a dismissal
+            // asserts the recorded candidates are equivalent, which is only meaningful while the
+            // persisted value still matches one of them. If an amendment slipped in between the
+            // workbench's version check and this transaction's conflict lock, the persisted value
+            // may match NEITHER candidate — closing the stale assessment as Dismissed would erase
+            // a live disagreement that post-write reconciliation then skips (it ignores closed
+            // rows). The obsolete handling below refreshes a self-revising candidate or
+            // supersedes a third-party replacement instead.
             var (persistedValue, recordSourceSystem) = await ReadPersistedFieldValueAsync(
                 connection,
                 transaction,
                 openConflict,
                 ct).ConfigureAwait(false);
-            if (!FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue))
+            var persistedContradictsDecision = resolvingField
+                ? !FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue)
+                : SecurityMasterConflictDetection.FieldConflictIsObsolete(openConflict, persistedValue);
+            if (persistedContradictsDecision)
             {
                 // When the persisted value matches NEITHER candidate, a later canonical write has
                 // replaced both sources' asserted values and this guard would reject either

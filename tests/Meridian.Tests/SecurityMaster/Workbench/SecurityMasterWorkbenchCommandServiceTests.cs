@@ -2617,7 +2617,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         await harness.Service.Invoking(s => s.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
                 SecurityId, latest.RevisionId, "ops.analyst", "Second edit abandoned.")))
             .Should().ThrowAsync<SecurityMasterRevisionStateException>()
-            .WithMessage("*already Submitted or Approved*");
+            .WithMessage("*already Submitted, Approved, or Published*");
 
         (await harness.Revisions.GetAsync(latest.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
             "the refused discard must leave the revision untouched");
@@ -2698,6 +2698,98 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 It.IsAny<long?>()),
             Times.Once,
             "the predecessor's recorded clear restores by removing the key");
+    }
+
+    [Fact]
+    public async Task Discard_RediscardedAfterSiblingPublished_LeavesThePublishedValueInPlace()
+    {
+        // A re-discard retried after a later same-path sibling PUBLISHED (the original discard's
+        // response was lost with its withdrawal incomplete) must find the published sibling
+        // owning the key: withdrawing it would silently erase the value the sibling already
+        // published through the full governed lifecycle.
+        var harness = new Harness(currentVersion: 3);
+        var rejected = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "Abandoned edit (100).",
+            fieldValue: new SecurityMasterRevisionFieldValue("100"));
+        await harness.Revisions.TransitionAsync(
+            rejected.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Rejected, "ops.analyst");
+        await Task.Delay(10);
+        var published = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Winning edit (200).",
+            fieldValue: new SecurityMasterRevisionFieldValue("200"));
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, rejected.RevisionId, "ops.analyst", "Reconcile the incomplete discard."));
+
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>(), It.IsAny<long?>()),
+            Times.Never,
+            "the published sibling owns the overlay key; the re-discard must not touch it");
+    }
+
+    [Fact]
+    public async Task Discard_RediscardWithDecidedSurvivors_RestoresThePriorApprovalDecision()
+    {
+        // Re-discarding a stale key out of an overlay whose REMAINING values were already decided
+        // (a later different-path revision approved and published while this revision sat
+        // Rejected with its withdrawal incomplete) must not leave those published values re-gated
+        // behind SM_OVERRIDE_APPROVAL_REQUIRED: the withdrawal patch resets the overlay to
+        // Pending, so the prior decision is restored for the surviving dictionary — mirroring the
+        // draft-creation compensation path.
+        var harness = new Harness(currentVersion: 3);
+        var rejected = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "Abandoned edit.",
+            fieldValue: new SecurityMasterRevisionFieldValue("100"));
+        await harness.Revisions.TransitionAsync(
+            rejected.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Rejected, "ops.analyst");
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.par"] = "100",
+                    ["assetSpecificTerms.couponRate"] = "4.5"
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5))
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Approved,
+                ReviewedBy = "risk.reviewer"
+            });
+        harness.Overrides
+            .Setup(o => o.PatchAsync(
+                It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>(), It.IsAny<long?>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.couponRate"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, rejected.RevisionId, "ops.analyst", "Reconcile the incomplete discard."));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision =>
+                    decision.Decision == SecurityOverrideApprovalStatusDto.Approved
+                    && decision.Reviewer == "risk.reviewer"),
+                It.IsAny<CancellationToken>()),
+            Times.Once,
+            "the surviving decided overlay must not be re-gated Pending by the stale key's withdrawal");
     }
 
     [Fact]

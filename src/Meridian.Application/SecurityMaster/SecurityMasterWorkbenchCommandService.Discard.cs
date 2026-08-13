@@ -135,10 +135,15 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                     .Where(other => other.RevisionId != request.RevisionId
                         && string.Equals(other.FieldPath, revision.FieldPath, StringComparison.OrdinalIgnoreCase))
                     .ToArray();
+                // PUBLISHED siblings are owners too: a re-discard retried after a later sibling
+                // published (the original response was lost) must find that sibling owning the
+                // key and leave it in place — withdrawing would silently erase the value the
+                // sibling already published.
                 laterSiblingOwnsPath = samePathSiblings.Any(other =>
                     other.State is SecurityMasterRevisionStateDto.Draft
                         or SecurityMasterRevisionStateDto.Submitted
                         or SecurityMasterRevisionStateDto.Approved
+                        or SecurityMasterRevisionStateDto.Published
                     && other.CreatedAt > revision.CreatedAt);
                 if (!laterSiblingOwnsPath)
                 {
@@ -146,13 +151,15 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                     // staged value was durably recorded on the revision, the discard RESTORES that
                     // value instead of withdrawing the key — the sibling keeps governing precisely
                     // what its reviewer sees (an approved predecessor publishes its reviewed
-                    // value; a draft/submitted one continues review over its own). Only legacy
-                    // siblings predating value persistence fall back to the fail-closed handling
-                    // below, because their values are genuinely unrecoverable.
+                    // value; a draft/submitted one continues review over its own; a published one
+                    // gets its already-decided value and decision back). Only legacy siblings
+                    // predating value persistence fall back to the fail-closed handling below,
+                    // because their values are genuinely unrecoverable.
                     var liveSiblings = samePathSiblings
                         .Where(static other => other.State is SecurityMasterRevisionStateDto.Draft
                             or SecurityMasterRevisionStateDto.Submitted
-                            or SecurityMasterRevisionStateDto.Approved)
+                            or SecurityMasterRevisionStateDto.Approved
+                            or SecurityMasterRevisionStateDto.Published)
                         .ToArray();
                     var latestLive = liveSiblings
                         .OrderByDescending(static other => other.CreatedAt)
@@ -165,7 +172,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                     {
                         var blockingSiblings = liveSiblings
                             .Where(static other => other.State is SecurityMasterRevisionStateDto.Submitted
-                                or SecurityMasterRevisionStateDto.Approved)
+                                or SecurityMasterRevisionStateDto.Approved
+                                or SecurityMasterRevisionStateDto.Published)
                             .Select(static other => other.RevisionId)
                             .ToArray();
                         if (blockingSiblings.Length > 0)
@@ -174,8 +182,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                 request.RevisionId,
                                 $"withdrawing its staged override value at '{revision.FieldPath}' would invalidate older " +
                                 $"revision(s) {string.Join(", ", blockingSiblings.Select(static id => $"'{id:D}'"))} that are " +
-                                "already Submitted or Approved for the same field with values superseded at staging time. " +
-                                "Decide or discard those revisions first.");
+                                "already Submitted, Approved, or Published for the same field with values superseded at " +
+                                "staging time. Decide or discard those revisions first.");
                         }
 
                         supersededDraftSiblings = liveSiblings
@@ -235,6 +243,47 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                         "Discarded revision {RevisionId} for {SecurityId} restored the staged override at {FieldPath} to the value governed by revision {OwnerRevisionId}.",
                         request.RevisionId, request.SecurityId, SanitizeForLog(revision.FieldPath), restoreOwner.RevisionId);
 
+                    // A PUBLISHED restore owner already carried its decision through the governed
+                    // lifecycle — its restored value must not sit Pending behind
+                    // SM_OVERRIDE_APPROVAL_REQUIRED with no revision left to approve it. The
+                    // decision re-converges through the same deferral-aware seam publish uses
+                    // (other staged revisions still defer it), naming the workflow's recorded
+                    // reviewer; a draft/submitted/approved owner correctly stays Pending until its
+                    // own approval or publish converges.
+                    if (restoreOwner.State == SecurityMasterRevisionStateDto.Published)
+                    {
+                        try
+                        {
+                            var decisionReviewer = request.Actor;
+                            if (restoreOwner.WorkflowId is Guid ownerWorkflowId)
+                            {
+                                var ownerWorkflow = await _approvalWorkflow
+                                    .GetAsync(ownerWorkflowId, CancellationToken.None).ConfigureAwait(false);
+                                var workflowReviewer = ownerWorkflow?.Approvals
+                                    .Select(static approval => approval.Reviewer)
+                                    .LastOrDefault(static reviewer => !string.IsNullOrWhiteSpace(reviewer));
+                                if (!string.IsNullOrWhiteSpace(workflowReviewer))
+                                {
+                                    decisionReviewer = workflowReviewer!;
+                                }
+                            }
+
+                            await TryRecordOverrideApprovalDecisionAsync(
+                                request.SecurityId,
+                                restoreOwner.RevisionId,
+                                decisionReviewer,
+                                rationale: "Published revision's decision restored after a discard re-staged its value.",
+                                CancellationToken.None).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(
+                                ex,
+                                "Re-recording the published revision {OwnerRevisionId}'s override decision for {SecurityId} failed after discarding revision {RevisionId}; the overlay stays Pending until reconciled.",
+                                restoreOwner.RevisionId, request.SecurityId, request.RevisionId);
+                        }
+                    }
+
                     // Lineage follows the restored value best-effort: the operator attribution row
                     // re-points to the owning revision (or is removed when the owner staged a clear).
                     if (_fieldProvenance is not null)
@@ -292,6 +341,18 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                             ct: CancellationToken.None).ConfigureAwait(false);
                     }
 
+                    // The prior APPROVAL state is part of what the withdrawal must preserve for the
+                    // SURVIVING overlay, mirroring the draft-creation compensation path: PatchAsync
+                    // resets any nonempty overlay to Pending, so re-discarding a stale key out of
+                    // an overlay whose remaining values were already decided (e.g. a later
+                    // different-path revision approved and published while this revision sat
+                    // Rejected with its withdrawal incomplete) would re-gate those published
+                    // values behind SM_OVERRIDE_APPROVAL_REQUIRED with no revision left to
+                    // re-approve them.
+                    var priorOverlay = await _overrides.GetAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
+                    var priorApprovalStatus = priorOverlay?.ApprovalStatus ?? SecurityOverrideApprovalStatusDto.NotRequested;
+                    var priorReviewer = priorOverlay?.ReviewedBy;
+
                     var withdrawal = new OperatorOverridesPatchRequest(
                         SetValues: null,
                         RemoveKeys: [revision.FieldPath!])
@@ -303,6 +364,29 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                     var withdrawn = await _overrides
                         .PatchAsync(request.SecurityId, withdrawal, request.Actor, CancellationToken.None)
                         .ConfigureAwait(false);
+
+                    if (withdrawn.Values.Count > 0
+                        && priorApprovalStatus is SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected
+                        && !string.IsNullOrWhiteSpace(priorReviewer))
+                    {
+                        try
+                        {
+                            await _overrides.RecordApprovalDecisionAsync(
+                                request.SecurityId,
+                                new OperatorOverrideDecision(
+                                    priorApprovalStatus,
+                                    priorReviewer!,
+                                    "Prior decision restored after a discard withdrew a stale override key."),
+                                CancellationToken.None).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(
+                                ex,
+                                "Restoring the prior override decision for {SecurityId} failed after discarding revision {RevisionId}; the surviving overlay stays Pending until reconciled.",
+                                request.SecurityId, request.RevisionId);
+                        }
+                    }
 
                     if (supersededDraftSiblings.Length > 0)
                     {
