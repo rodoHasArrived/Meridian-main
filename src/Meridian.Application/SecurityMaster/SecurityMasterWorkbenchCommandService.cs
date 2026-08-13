@@ -43,6 +43,12 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     private static string SanitizeForLog(string? value) =>
         string.IsNullOrEmpty(value) ? string.Empty : LogUnsafeControlChars.Replace(value, " ").Trim();
 
+    // Per-security gates serializing the field-edit validate→patch window (see
+    // UpdateSecurityFieldAsync). STATIC so the guarantee holds process-wide regardless of the
+    // service's DI lifetime; entries are one SemaphoreSlim per edited security and are never
+    // removed — the population is bounded by securities actually edited in-process.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> FieldEditGates = new();
+
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly IOperatorOverridesStore _overrides;
     private readonly ISecurityMasterConflictAuthorityPolicy _conflictPolicy;
@@ -123,49 +129,66 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
         }
 
-        // Edits addressing the assetSpecificTerms namespace are anchored to the declared
-        // per-asset-class schema: the key must be a declared term field and the value must coerce
-        // to its declared type. Paths outside that namespace remain the free annotation surface.
-        // The returned path is the schema-canonical spelling — persisting the caller's raw alias or
-        // casing variant would fork the same term into separate override keys, revisions, and
-        // provenance rows, so every write below uses the canonical path.
-        var fieldPath = await EnsureFieldEditIsSchemaValidAsync(request, ct).ConfigureAwait(false);
-
-        // Stage the operator value as an override read-model annotation. The override store applies
-        // the patch under a serializable, row-locked transaction; it does not advance the economic
-        // version, so the returned NewVersion is the unchanged canonical version. A blank value is
-        // a CLEAR: it removes the overlay key rather than persisting an empty-string override that
-        // would bypass type validation and read as an asserted value downstream.
-        var isClear = string.IsNullOrWhiteSpace(request.NewValue);
-        var patch = new OperatorOverridesPatchRequest(
-            SetValues: isClear
-                ? null
-                : new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    [fieldPath] = request.NewValue!,
-                },
-            RemoveKeys: isClear ? [fieldPath] : null)
-        {
-            ReasonCode = request.Justification,
-        };
+        // The validate→patch window runs under a PER-SECURITY gate: validation reads the effective
+        // overlay and the patch writes it as separate store calls, so two concurrent edits to the
+        // same security could otherwise both validate against the same pre-edit overlay and
+        // serialize individually valid values that combine into an overlay violating a cross-field
+        // invariant (a start and end date, par and principal schedule). Serializing the window
+        // in-process closes that race for this single write route; a store-level overlay-revision
+        // compare-and-set remains the durable answer for multi-node deployments.
+        var fieldEditGate = FieldEditGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
+        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        string fieldPath;
         OperatorOverridesDto stagedOverride;
+        var isClear = string.IsNullOrWhiteSpace(request.NewValue);
         try
         {
-            stagedOverride = await _overrides
-                .PatchAsync(
+            // Edits addressing the assetSpecificTerms namespace are anchored to the declared
+            // per-asset-class schema: the key must be a declared term field and the value must coerce
+            // to its declared type. Paths outside that namespace remain the free annotation surface.
+            // The returned path is the schema-canonical spelling — persisting the caller's raw alias or
+            // casing variant would fork the same term into separate override keys, revisions, and
+            // provenance rows, so every write below uses the canonical path.
+            fieldPath = await EnsureFieldEditIsSchemaValidAsync(request, ct).ConfigureAwait(false);
+
+            // Stage the operator value as an override read-model annotation. The override store applies
+            // the patch under a serializable, row-locked transaction; it does not advance the economic
+            // version, so the returned NewVersion is the unchanged canonical version. A blank value is
+            // a CLEAR: it removes the overlay key rather than persisting an empty-string override that
+            // would bypass type validation and read as an asserted value downstream.
+            var patch = new OperatorOverridesPatchRequest(
+                SetValues: isClear
+                    ? null
+                    : new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        [fieldPath] = request.NewValue!,
+                    },
+                RemoveKeys: isClear ? [fieldPath] : null)
+            {
+                ReasonCode = request.Justification,
+            };
+            try
+            {
+                stagedOverride = await _overrides
+                    .PatchAsync(
+                        request.SecurityId,
+                        patch,
+                        request.Actor,
+                        ct,
+                        expectedCanonicalVersion: currentVersion)
+                    .ConfigureAwait(false);
+            }
+            catch (OperatorOverrideCanonicalVersionConflictException ex)
+            {
+                throw new SecurityMasterConcurrencyException(
                     request.SecurityId,
-                    patch,
-                    request.Actor,
-                    ct,
-                    expectedCanonicalVersion: currentVersion)
-                .ConfigureAwait(false);
+                    request.ExpectedVersion,
+                    ex.CurrentVersion);
+            }
         }
-        catch (OperatorOverrideCanonicalVersionConflictException ex)
+        finally
         {
-            throw new SecurityMasterConcurrencyException(
-                request.SecurityId,
-                request.ExpectedVersion,
-                ex.CurrentVersion);
+            fieldEditGate.Release();
         }
 
         // Open a durable Draft revision carrying the field-edit metadata so the governed lifecycle
@@ -691,11 +714,18 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         var editsIssueDate = string.Equals(canonicalFieldPath, IssueDateTermPath, StringComparison.OrdinalIgnoreCase);
         var editsMaturity = string.Equals(canonicalFieldPath, MaturityTermPath, StringComparison.OrdinalIgnoreCase);
         if (_projectionStore is null
-            || (!editsSchedule && !editsPar && !editsIssueDate && !editsMaturity)
-            || string.IsNullOrWhiteSpace(request.NewValue))
+            || (!editsSchedule && !editsPar && !editsIssueDate && !editsMaturity))
         {
             return;
         }
+
+        // A CLEAR of a bound term participates too: removing a staged par/issueDate/maturity (or
+        // the schedule itself) reverts that term to the remaining staged/canonical layering, and
+        // the effective schedule must still fit the reverted value — otherwise staging par=100,
+        // staging a schedule totaling 80, then clearing the par override leaves an approvable
+        // overlay whose schedule exceeds the canonical par it now reads against. For a clear the
+        // edited term resolves by SKIPPING both the proposed value and its staged override.
+        var isClear = string.IsNullOrWhiteSpace(request.NewValue);
 
         SecurityProjectionRecord? projection = null;
         try
@@ -725,7 +755,9 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // schedule override, else the canonical schedule. Same layering for each window term —
         // the proposed value wins for the term being edited.
         var rows = new List<(DateOnly PaymentDate, decimal Amount)>();
-        var scheduleJson = editsSchedule ? request.NewValue : TryGetStagedOverrideValue(stagedOverrides, PrincipalSchedulePath);
+        var scheduleJson = editsSchedule
+            ? (isClear ? null : request.NewValue)
+            : TryGetStagedOverrideValue(stagedOverrides, PrincipalSchedulePath);
         if (scheduleJson is not null)
         {
             try
@@ -763,18 +795,20 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         }
 
         var effectivePar = editsPar
-            ? ParseInvariantDecimal(request.NewValue)
+            ? (isClear ? terms.PrincipalFace : ParseInvariantDecimal(request.NewValue))
             : ParseInvariantDecimal(TryGetStagedOverrideValue(stagedOverrides, ParTermPath)) ?? terms.PrincipalFace;
         var effectiveIssueDate = editsIssueDate
-            ? ParseInvariantDate(request.NewValue)
+            ? (isClear ? terms.IssueDate : ParseInvariantDate(request.NewValue))
             : ParseInvariantDate(TryGetStagedOverrideValue(stagedOverrides, IssueDateTermPath)) ?? terms.IssueDate;
         var effectiveMaturity = editsMaturity
-            ? ParseInvariantDate(request.NewValue)
+            ? (isClear ? terms.MaturityDate : ParseInvariantDate(request.NewValue))
             : ParseInvariantDate(TryGetStagedOverrideValue(stagedOverrides, MaturityTermPath)) ?? terms.MaturityDate;
 
-        var subject = editsSchedule
+        var subject = editsSchedule && !isClear
             ? "principalSchedule replacement"
-            : "the effective principal schedule after this edit";
+            : isClear
+                ? "the effective principal schedule after clearing this override"
+                : "the effective principal schedule after this edit";
         var scheduledTotal = 0m;
         foreach (var (paymentDate, amount) in rows)
         {

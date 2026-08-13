@@ -802,6 +802,114 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ClearingBoundTermOverride_RevalidatesEffectiveSchedule()
+    {
+        // Clearing a bound term is an edit to the effective overlay too: with par staged UP to 100
+        // and a staged schedule totaling 80, clearing the par override reverts the effective par
+        // to the canonical 50 — the staged schedule then exceeds it, so the clear must be refused
+        // instead of leaving an approvable overlay that violates the principal cap.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturityDate = "2030-01-01",
+            par = 50m
+        });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.par"] = "100",
+                    ["assetSpecificTerms.principalSchedule"] =
+                        """[{"paymentDate":"2027-06-15","amount":50},{"paymentDate":"2028-06-15","amount":30}]"""
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: null,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Remove par override.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>(
+                "clearing the par override reverts the effective par to the canonical 50, below the staged schedule total of 80")
+            .WithMessage("*principal face*");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ConcurrentEditsOnSameSecurity_SerializeTheValidatePatchWindow()
+    {
+        // Two concurrent edits to the same security must not both validate against the same
+        // pre-edit overlay and then both patch: the validate→patch window is serialized per
+        // security, so the store never observes overlapping windows.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturityDate = "2030-01-01",
+            par = 100m
+        });
+
+        var concurrentWindows = 0;
+        var maxConcurrentWindows = 0;
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                var now = Interlocked.Increment(ref concurrentWindows);
+                InterlockedMax(ref maxConcurrentWindows, now);
+                await Task.Delay(30);
+                return (OperatorOverridesDto?)null;
+            });
+        harness.Overrides
+            .Setup(o => o.PatchAsync(
+                It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<long?>()))
+            .Returns(async (Guid id, OperatorOverridesPatchRequest _, string actor, CancellationToken _, long? _) =>
+            {
+                await Task.Delay(30);
+                Interlocked.Decrement(ref concurrentWindows);
+                return new OperatorOverridesDto(id, new Dictionary<string, string>(), actor, DateTimeOffset.UtcNow);
+            });
+
+        UpdateSecurityFieldRequest EditWith(string value) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: value,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction.");
+
+        await Task.WhenAll(
+            harness.Service.UpdateSecurityFieldAsync(EditWith("60")),
+            harness.Service.UpdateSecurityFieldAsync(EditWith("70")));
+
+        maxConcurrentWindows.Should().Be(1,
+            "the second edit's overlay read must not begin until the first edit's patch completed");
+    }
+
+    private static void InterlockedMax(ref int target, int candidate)
+    {
+        int snapshot;
+        while (candidate > (snapshot = Volatile.Read(ref target)))
+        {
+            if (Interlocked.CompareExchange(ref target, candidate, snapshot) == snapshot)
+            {
+                return;
+            }
+        }
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_WindowTermEdit_ValidatesAgainstEffectivePrincipalSchedule()
     {
         // The reciprocal direction: with a contractual schedule retained on the record, moving
