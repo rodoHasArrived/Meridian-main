@@ -227,6 +227,26 @@ internal static class SecurityMasterConflictDetection
            && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueB);
 
     /// <summary>
+    /// Whether <paramref name="source"/> is one of the conflict's own candidate providers, and
+    /// which one. A canonical write AUTHORED by a candidate is that candidate revising its own
+    /// value — the disagreement with the other provider is still live, so obsolescence handling
+    /// must refresh the candidate rather than retire the conflict as a third-source replacement.
+    /// </summary>
+    internal static bool TryMatchCandidateProvider(
+        SecurityMasterConflict conflict, string? source, out bool matchesProviderA)
+    {
+        matchesProviderA = false;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            return false;
+        }
+
+        matchesProviderA = string.Equals(source.Trim(), conflict.ProviderA.Trim(), StringComparison.OrdinalIgnoreCase);
+        return matchesProviderA
+            || string.Equals(source.Trim(), conflict.ProviderB.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// The governed field paths whose values differ between <paramref name="current"/> and
     /// <paramref name="incoming"/>, regardless of source. Cross-source disagreement is what OPENS a
     /// conflict, but per-field attribution goes stale whenever a governed field changes hands —

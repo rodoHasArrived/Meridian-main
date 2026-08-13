@@ -156,8 +156,12 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
         // A canonical write that replaces BOTH recorded candidate values makes an open field
         // conflict obsolete: it can never resolve to either source (the durable store's resolution
         // guard rejects a winner whose value the record no longer carries), so leaving it Open
-        // surfaces an actionable-looking queue row whose resolution flow cannot complete. Close it
+        // surfaces an actionable-looking queue row whose resolution flow cannot complete. WHO
+        // authored the write decides the outcome: a CANDIDATE author is revising its own value —
+        // the disagreement is still live, so its recorded candidate refreshes and the conflict
+        // stays open — while a third-party author replaced both candidates and the conflict closes
         // as Superseded, recording why, without fabricating a winner or field provenance.
+        var incomingSource = SecurityMasterProvenanceReader.Read(incoming.Provenance).SourceSystem;
         foreach (var (conflictId, existing) in _conflicts)
         {
             if (existing.SecurityId != incoming.SecurityId
@@ -170,6 +174,28 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
             var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(incoming, existing.FieldPath);
             if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(existing, persistedValue))
+            {
+                continue;
+            }
+
+            if (SecurityMasterConflictDetection.TryMatchCandidateProvider(existing, incomingSource, out var revisesProviderA))
+            {
+                var refreshed = revisesProviderA
+                    ? existing with { ValueA = persistedValue! }
+                    : existing with { ValueB = persistedValue! };
+                if (_conflicts.TryUpdate(conflictId, refreshed, existing))
+                {
+                    _logger.LogInformation(
+                        "Refreshed candidate {Provider} on open field conflict {ConflictId} ({FieldPath}) for security {SecurityId}: the candidate revised its own value.",
+                        revisesProviderA ? existing.ProviderA : existing.ProviderB,
+                        conflictId, existing.FieldPath, existing.SecurityId);
+                }
+
+                continue;
+            }
+
+            // An UNKNOWN author must never retire a real disagreement on guesswork.
+            if (string.Equals(incomingSource, SecurityMasterProvenanceReader.UnknownSource, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }

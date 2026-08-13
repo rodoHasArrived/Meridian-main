@@ -1053,6 +1053,26 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 field => string.Equals(field.Key, rootSegment, StringComparison.OrdinalIgnoreCase));
             if (declaredRoot is null)
             {
+                // A root the profile does not declare may still be OWNED by the resolved kind on a
+                // record resolved past CustomAsset (factorScheduleEntries on StructuredCredit): a
+                // nested VALUE edit beneath it (…factorScheduleEntries.0.factor = 2) cannot be
+                // validated against the kind's schedule-wide invariants, while the equivalent
+                // whole-value replacement runs them — so nested value edits are rejected there,
+                // mirroring the schema validator's replace-the-whole-array rule for declared
+                // schedules. Clears still pass (they remove overlay junk), and genuine CustomAsset
+                // records keep dynamic pass-through.
+                if (!isClear
+                    && !string.Equals(currentProjection!.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(currentProjection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException(
+                        $"Path '{canonicalFieldPath}' edits beneath '{rootSegment}', which the pinned profile does not " +
+                        $"declare but the resolved asset class '{currentProjection.AssetClass}' may govern; a nested " +
+                        "value cannot be validated against the resolved kind's structural invariants — replace the " +
+                        $"whole '{ProfileFieldsNestedPrefix}{rootSegment}' value instead.",
+                        nameof(request));
+                }
+
                 return canonicalFieldPath;
             }
 

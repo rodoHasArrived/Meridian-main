@@ -320,6 +320,48 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task RecordFieldConflictsAsync_CandidateRevisingItsOwnValue_RefreshesTheCandidateAndStaysResolvable()
+    {
+        // provA (USD) vs provB (EUR) disagree; provB then revises ITS OWN value to GBP. The
+        // disagreement is still live, so the sweep refreshes provB's candidate to GBP instead of
+        // retiring the conflict as a third-source replacement — and resolving to provB then
+        // succeeds because the persisted value matches the refreshed candidate.
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US67066G1040", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US67066G1040", "provB") with
+        {
+            Currency = "EUR",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        await canonicalStore.UpsertProjectionAsync(incoming, CancellationToken.None);
+        var service = NewService(canonicalStore);
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var conflict = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+
+        var revision = incoming with { Currency = "GBP", Version = 2 };
+        await canonicalStore.UpsertProjectionAsync(revision, CancellationToken.None);
+        await service.RecordFieldConflictsAsync(incoming, revision, CancellationToken.None);
+
+        var refreshed = await service.GetConflictAsync(conflict.ConflictId, CancellationToken.None);
+        refreshed!.Status.Should().Be("Open",
+            "a candidate revising its own value leaves the cross-source disagreement live");
+        refreshed.ValueB.Should().Be("GBP", "the revising candidate's recorded value tracks its live assertion");
+
+        var resolved = await service.ResolveAsync(
+            new ResolveConflictRequest(
+                conflict.ConflictId,
+                "Resolve",
+                "operator@meridian.test",
+                "provB's live value wins.",
+                ChosenWinnerSource: "provB"),
+            CancellationToken.None);
+        resolved!.Status.Should().Be("Resolved",
+            "the refreshed candidate matches the persisted value, so the resolution completes");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task ResolveAsync_FieldConflict_ThirdSourceAmendedUnrelatedField_StillResolvesWhenValueMatches()
     {
         // Record-level provenance flips on EVERY amendment, including one from an unrelated third

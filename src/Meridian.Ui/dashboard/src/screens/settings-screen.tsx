@@ -295,6 +295,8 @@ interface ProfileBackedSecurityState {
   displayName: string;
   internalCode: string;
   currency: string;
+  /** Values for the profile's ADDITIONAL required identifier kinds (beyond InternalCode), keyed by kind. */
+  identifierValues: Record<string, string>;
   fieldValues: Record<string, string>;
   rationale: string;
   busy: boolean;
@@ -2325,6 +2327,12 @@ export function SettingsScreen({
     firstApprovedAssetProfile;
   const selectedProfileBackedSecurityProfile = approvedAssetProfiles.find((profile) => profile.profileId === profileBackedSecurity.profileId) ??
     firstApprovedAssetProfile;
+  // The write seam enforces the profile's REQUIRED identifier preferences at creation, so the form
+  // must collect every required kind — an InternalCode-only form makes a profile requiring CUSIP
+  // fail SM_CUSTOM_PROFILE_IDENTIFIER_COVERAGE_MISSING on every submission. InternalCode keeps its
+  // dedicated primary-identifier input; the remaining required kinds render below.
+  const additionalRequiredIdentifierPreferences = (selectedProfileBackedSecurityProfile?.identifierPreferences ?? [])
+    .filter((preference) => preference.isRequiredForClose && preference.kind !== "InternalCode");
 
   const selectAssetProfileStarter = (profileId: string) => {
     const selected = approvedAssetProfiles.find((profile) => profile.profileId === profileId);
@@ -2569,11 +2577,19 @@ export function SettingsScreen({
     const missingFields = selected.fields
       .filter((field) => field.isRequired && !profileBackedSecurity.fieldValues[field.key]?.trim())
       .map((field) => field.label);
-    if (!profileBackedSecurity.displayName.trim() || !profileBackedSecurity.internalCode.trim() || missingFields.length > 0) {
+    const requiredIdentifierPreferences = selected.identifierPreferences
+      .filter((preference) => preference.isRequiredForClose && preference.kind !== "InternalCode");
+    const missingIdentifiers = requiredIdentifierPreferences
+      .filter((preference) => !profileBackedSecurity.identifierValues[preference.kind]?.trim())
+      .map((preference) => `${preference.kind} identifier`);
+    if (!profileBackedSecurity.displayName.trim()
+      || !profileBackedSecurity.internalCode.trim()
+      || missingFields.length > 0
+      || missingIdentifiers.length > 0) {
       setProfileBackedSecurity((current) => ({
         ...current,
-        message: "Display name, internal code, and required profile fields are required.",
-        details: missingFields,
+        message: "Display name, internal code, required identifiers, and required profile fields are required.",
+        details: [...missingIdentifiers, ...missingFields],
         tone: "warning"
       }));
       return;
@@ -2611,7 +2627,11 @@ export function SettingsScreen({
           profileApproval: {
             approvedBy: selected.approvedBy,
             approvedAtUtc: selected.approvedAtUtc,
-            approvalReference: `profile:${selected.profileId}:v${selected.version}`
+            // The write seam verifies this reference against the catalog's own recorded approval
+            // reference when one exists, so the governed value must be copied verbatim; the
+            // legacy fabricated form remains only for catalog versions predating the field
+            // (where the seam has no fact to compare).
+            approvalReference: selected.approvalReference ?? `profile:${selected.profileId}:v${selected.version}`
           },
           evidenceLinks: []
         },
@@ -2621,7 +2641,13 @@ export function SettingsScreen({
             value: profileBackedSecurity.internalCode.trim(),
             isPrimary: true,
             validFrom: effectiveFrom
-          }
+          },
+          ...requiredIdentifierPreferences.map((preference) => ({
+            kind: preference.kind,
+            value: profileBackedSecurity.identifierValues[preference.kind]!.trim(),
+            isPrimary: false,
+            validFrom: effectiveFrom
+          }))
         ],
         effectiveFrom,
         sourceSystem: "Meridian.Settings.AssetProfiles",
@@ -3956,6 +3982,25 @@ export function SettingsScreen({
                 />
               </label>
             </div>
+            {additionalRequiredIdentifierPreferences.length > 0 ? (
+              <div className="grid gap-3 lg:grid-cols-3">
+                {additionalRequiredIdentifierPreferences.map((preference) => (
+                  <label key={preference.kind} className="grid gap-1 text-xs font-medium text-muted-foreground">
+                    {`${preference.kind} identifier`}
+                    <Input
+                      value={profileBackedSecurity.identifierValues[preference.kind] ?? ""}
+                      onChange={(event) => setProfileBackedSecurity((current) => ({
+                        ...current,
+                        identifierValues: { ...current.identifierValues, [preference.kind]: event.target.value },
+                        message: null
+                      }))}
+                      disabled={profileBackedSecurity.busy}
+                      aria-label={`Profile-backed security ${preference.kind} identifier`}
+                    />
+                  </label>
+                ))}
+              </div>
+            ) : null}
             {selectedProfileBackedSecurityProfile ? (
               <div className="grid gap-3 lg:grid-cols-3">
                 {selectedProfileBackedSecurityProfile.fields.map((field) => (
@@ -5218,6 +5263,7 @@ function createProfileBackedSecurityState(profile: SecurityAssetProfileDefinitio
     displayName: "",
     internalCode: "",
     currency: "USD",
+    identifierValues: {},
     fieldValues: profile ? buildProfileFieldValueState(profile, {}) : {},
     rationale: "Create profile-backed custom asset with approved Security Master profile version.",
     busy: false,

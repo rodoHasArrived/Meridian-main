@@ -422,4 +422,33 @@ public sealed class SecurityMasterFieldConflictDetectionTests
         stillOpen!.Status.Should().Be("Open",
             "a persisted value matching a recorded candidate keeps that candidate resolvable");
     }
+
+    [Fact]
+    public async Task RecordFieldConflictsAsync_CandidateRevisingItsOwnValue_RefreshesTheCandidateInsteadOfSuperseding()
+    {
+        // Bloomberg (4.25) and Reuters (4.50) disagree; Reuters then revises ITS OWN value to
+        // 4.75. Same-source detection records no replacement candidate for that write, and 4.75
+        // matches neither recorded value — but Bloomberg and Reuters still disagree. The sweep
+        // must refresh Reuters' candidate to the live 4.75, not retire the dispute as if a third
+        // source had replaced both.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var bloomberg = Record("Bloomberg", new { couponRate = 4.25m });
+        var reuters = Record("Reuters", new { couponRate = 4.50m });
+        await service.RecordFieldConflictsAsync(bloomberg, reuters, CancellationToken.None);
+        var opened = (await service.GetOpenConflictsAsync(CancellationToken.None)).Should().ContainSingle().Subject;
+
+        var reutersRevision = Record("Reuters", new { couponRate = 4.75m });
+        await service.RecordFieldConflictsAsync(reuters, reutersRevision, CancellationToken.None);
+
+        var refreshed = await service.GetConflictAsync(opened.ConflictId, CancellationToken.None);
+        refreshed!.Status.Should().Be("Open",
+            "a candidate revising its own value leaves the cross-source disagreement live");
+        refreshed.ValueB.Should().Be("4.75",
+            "the revising candidate's recorded value must track its live assertion so it stays a resolvable winner");
+        refreshed.ValueA.Should().Be(opened.ValueA, "the other candidate's assertion is untouched");
+    }
 }

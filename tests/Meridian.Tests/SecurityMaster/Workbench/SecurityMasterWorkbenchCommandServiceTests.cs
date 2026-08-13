@@ -832,6 +832,48 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_NestedEditBeneathUndeclaredResolvedKindField_IsRejected()
+    {
+        // A nested value edit beneath an undeclared structured field the RESOLVED kind owns
+        // (profileFields.factorScheduleEntries.0.factor = 2 on StructuredCredit) cannot be
+        // validated against the kind's schedule-wide invariants, while the equivalent whole-array
+        // replacement runs them — the nested route must not stay an unvalidated side door.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("StructuredCredit");
+        harness.SetProjectionProfileEnvelope(
+            "structured-credit-io-po", profileVersion: 1,
+            profileFields: new
+            {
+                tranche = "A-1",
+                poolId = "POOL-1",
+                currentFactor = 0.5m,
+                originalFace = 1_000_000m,
+                couponOrIndex = "SOFR+250",
+                factorSchedule = "trustee",
+                collateralType = "CLO"
+            },
+            assetClass: "StructuredCredit");
+
+        var valueEdit = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.factorScheduleEntries.0.factor",
+            NewValue: "2",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Factor row correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(valueEdit))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*replace the whole*");
+
+        var clear = valueEdit with { NewValue = null, Justification = "Remove junk subpath override." };
+        var cleared = await harness.Service.UpdateSecurityFieldAsync(clear);
+        cleared.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a clear removes overlay junk rather than asserting an unvalidatable value");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ProfileFieldCasingVariant_PersistsUnderThePinnedProfileKey()
     {
         // The pinned-profile lookup is case-insensitive, so the persisted path must be rebuilt from

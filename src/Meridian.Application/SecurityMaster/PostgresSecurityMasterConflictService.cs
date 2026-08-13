@@ -134,7 +134,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             : string.Empty;
         if (resolvingField)
         {
-            var persistedValue = await ReadPersistedFieldValueAsync(
+            var (persistedValue, recordSourceSystem) = await ReadPersistedFieldValueAsync(
                 connection,
                 transaction,
                 openConflict,
@@ -142,13 +142,32 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             if (!FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue))
             {
                 // When the persisted value matches NEITHER candidate, a later canonical write has
-                // replaced both sources' asserted values: the conflict can never legally resolve
-                // (this guard would reject either choice), so leaving it Open turns the queue row
-                // into a dead end an operator could only escape by rewriting the security back to
-                // stale candidate data. Close it as Superseded in the same governed transaction
-                // and say so, instead of instructing a pointless retry.
+                // replaced both sources' asserted values and this guard would reject either
+                // choice, turning the queue row into a dead end. WHO wrote that value decides the
+                // outcome: the field's provenance-attributed source when recorded, else the
+                // record-level source of the persisted row. A CANDIDATE author is revising its own
+                // value — the disagreement is still live, so its candidate refreshes and the
+                // conflict stays open; a third-party author replaced both candidates, so the
+                // conflict closes as Superseded in the same governed transaction.
                 if (SecurityMasterConflictDetection.FieldConflictIsObsolete(openConflict, persistedValue))
                 {
+                    var fieldSources = await LoadConflictResolutionFieldSourcesAsync(
+                        connection, openConflict.SecurityId, ct).ConfigureAwait(false);
+                    var authoringSource = fieldSources.TryGetValue(openConflict.FieldPath, out var attributed)
+                        ? attributed
+                        : recordSourceSystem;
+                    if (SecurityMasterConflictDetection.TryMatchCandidateProvider(openConflict, authoringSource, out var revisesProviderA))
+                    {
+                        await RefreshConflictCandidateValueAsync(
+                            connection, transaction, openConflict, revisesProviderA, persistedValue!, ct).ConfigureAwait(false);
+                        await transaction.CommitAsync(ct).ConfigureAwait(false);
+                        throw new InvalidOperationException(
+                            $"Conflict '{openConflict.ConflictId:D}' cannot resolve yet: source '{authoringSource}' has " +
+                            $"revised its value for '{openConflict.FieldPath}' since the conflict was recorded. Its " +
+                            "candidate has been refreshed to the persisted value — review the updated disagreement and " +
+                            "retry the resolution.");
+                    }
+
                     await SupersedeConflictAsync(connection, transaction, openConflict, persistedValue, ct).ConfigureAwait(false);
                     await transaction.CommitAsync(ct).ConfigureAwait(false);
                     throw new InvalidOperationException(
@@ -305,7 +324,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             $"Conflict '{conflict.ConflictId:D}' can only resolve to '{conflict.ProviderA}' or '{conflict.ProviderB}'.");
     }
 
-    private async Task<string?> ReadPersistedFieldValueAsync(
+    private async Task<(string? Value, string RecordSourceSystem)> ReadPersistedFieldValueAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityMasterConflict conflict,
@@ -315,7 +334,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            select currency, common_terms::text, asset_specific_terms::text, effective_from
+            select currency, common_terms::text, asset_specific_terms::text, effective_from, provenance::text
             from {Qualified("securities")}
             where security_id = @security_id
             for update;
@@ -325,8 +344,12 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            return null;
+            return (null, SecurityMasterProvenanceReader.UnknownSource);
         }
+
+        var recordSourceSystem = SecurityMasterProvenanceReader
+            .Read(JsonDocument.Parse(reader.GetString(4)).RootElement)
+            .SourceSystem;
 
         using var commonTerms = JsonDocument.Parse(reader.GetString(1));
         using var assetTerms = JsonDocument.Parse(reader.GetString(2));
@@ -350,7 +373,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             0,
             new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
             null);
-        return SecurityMasterConflictDetection.ReadComparableFieldValue(detail, conflict.FieldPath);
+        return (SecurityMasterConflictDetection.ReadComparableFieldValue(detail, conflict.FieldPath), recordSourceSystem);
     }
 
     /// <summary>
@@ -540,10 +563,36 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             }
         }
 
+        var incomingSource = SecurityMasterProvenanceReader.Read(incoming.Provenance).SourceSystem;
         foreach (var conflict in openConflicts)
         {
             var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(incoming, conflict.FieldPath);
             if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(conflict, persistedValue))
+            {
+                continue;
+            }
+
+            // A write AUTHORED BY one of the conflict's own candidates is not a third-source
+            // replacement: the providers still disagree — the author simply asserts a new value
+            // now (same-source detection records no replacement candidate for it). Refresh that
+            // candidate's recorded value so the row shows the LIVE disagreement and the author
+            // stays a legally resolvable winner, instead of retiring a dispute that is still real.
+            if (SecurityMasterConflictDetection.TryMatchCandidateProvider(conflict, incomingSource, out var revisesProviderA))
+            {
+                if (await RefreshConflictCandidateValueAsync(
+                        connection, transaction, conflict, revisesProviderA, persistedValue!, ct).ConfigureAwait(false))
+                {
+                    _logger.LogInformation(
+                        "Refreshed candidate {Provider} on open field conflict {ConflictId} ({FieldPath}) for security {SecurityId}: the candidate revised its own value.",
+                        revisesProviderA ? conflict.ProviderA : conflict.ProviderB,
+                        conflict.ConflictId, conflict.FieldPath, conflict.SecurityId);
+                }
+
+                continue;
+            }
+
+            // An UNKNOWN author must never retire a real disagreement on guesswork.
+            if (string.Equals(incomingSource, SecurityMasterProvenanceReader.UnknownSource, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -555,6 +604,34 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                     conflict.ConflictId, conflict.FieldPath, conflict.SecurityId);
             }
         }
+    }
+
+    /// <summary>
+    /// Replaces one candidate's recorded value on an OPEN conflict with the value that candidate's
+    /// own later canonical write persisted, keeping the conflict open: the disagreement with the
+    /// other provider is unchanged, and the refreshed value is what the resolution guard will
+    /// accept if an operator picks this candidate.
+    /// </summary>
+    private async Task<bool> RefreshConflictCandidateValueAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityMasterConflict conflict,
+        bool refreshProviderA,
+        string persistedValue,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        var column = refreshProviderA ? "value_a" : "value_b";
+        command.CommandText =
+            $"""
+            update {Qualified(ConflictsTable)}
+            set {column} = @value
+            where conflict_id = @conflict_id and status = 'Open';
+            """;
+        command.Parameters.AddWithValue("value", persistedValue);
+        command.Parameters.AddWithValue("conflict_id", conflict.ConflictId);
+        return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) > 0;
     }
 
     private async Task<bool> InsertIfAbsentAsync(
