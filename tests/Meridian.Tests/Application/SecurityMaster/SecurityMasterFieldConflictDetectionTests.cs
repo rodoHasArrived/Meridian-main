@@ -368,4 +368,58 @@ public sealed class SecurityMasterFieldConflictDetectionTests
         conflict.ProviderA.Should().Be("Bloomberg");
         conflict.ProviderB.Should().Be("Reuters");
     }
+
+    [Fact]
+    public async Task RecordFieldConflictsAsync_CanonicalWriteReplacingBothCandidates_SupersedesTheObsoleteConflict()
+    {
+        // Bloomberg (4.25) and Reuters (4.50) opened a coupon conflict; a later amendment from a
+        // THIRD source persists 5.00. The old conflict can never resolve — the durable store's
+        // value guard rejects a winner whose value the record no longer carries — so it must close
+        // as Superseded instead of surfacing an actionable-looking queue row whose resolution flow
+        // cannot complete.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var bloomberg = Record("Bloomberg", new { couponRate = 4.25m });
+        var reuters = Record("Reuters", new { couponRate = 4.50m });
+        await service.RecordFieldConflictsAsync(bloomberg, reuters, CancellationToken.None);
+        var opened = (await service.GetOpenConflictsAsync(CancellationToken.None)).Should().ContainSingle().Subject;
+
+        var thirdSource = Record("IceData", new { couponRate = 5.00m });
+        await service.RecordFieldConflictsAsync(reuters, thirdSource, CancellationToken.None);
+
+        var superseded = await service.GetConflictAsync(opened.ConflictId, CancellationToken.None);
+        superseded!.Status.Should().Be("Superseded",
+            "the canonical 5.00 write matches neither 4.25 nor 4.50, so the old conflict is obsolete");
+        superseded.ResolvedWinnerSource.Should().BeNull("no source supplied the persisted value; a winner would be fabricated attribution");
+        superseded.ResolvedReason.Should().Contain("matches neither");
+        (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Should().NotContain(conflict => conflict.ConflictId == opened.ConflictId);
+    }
+
+    [Fact]
+    public async Task RecordFieldConflictsAsync_CanonicalWriteMatchingOneCandidate_KeepsTheConflictOpen()
+    {
+        // A write that re-asserts one CANDIDATE's value is not obsolescence: that candidate
+        // remains a legal resolution, and the disagreement still needs an operator's decision.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var bloomberg = Record("Bloomberg", new { couponRate = 4.25m });
+        var reuters = Record("Reuters", new { couponRate = 4.50m });
+        await service.RecordFieldConflictsAsync(bloomberg, reuters, CancellationToken.None);
+        var opened = (await service.GetOpenConflictsAsync(CancellationToken.None)).Should().ContainSingle().Subject;
+
+        // Precision differs but the economics match Bloomberg's candidate exactly.
+        var reassertion = Record("IceData", new { couponRate = 4.2500m });
+        await service.RecordFieldConflictsAsync(reuters, reassertion, CancellationToken.None);
+
+        var stillOpen = await service.GetConflictAsync(opened.ConflictId, CancellationToken.None);
+        stillOpen!.Status.Should().Be("Open",
+            "a persisted value matching a recorded candidate keeps that candidate resolvable");
+    }
 }

@@ -236,8 +236,12 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
-    public async Task ResolveAsync_FieldConflict_StaleChallengerWinner_ShouldRemainOpen()
+    public async Task ResolveAsync_FieldConflict_PersistedValueMatchingNeitherCandidate_SupersedesTheConflict()
     {
+        // provA (USD) vs provB (EUR) opened the conflict; a provC amendment persisted GBP — a
+        // value matching NEITHER candidate. Resolving to either source is impossible (the value
+        // guard rejects both), so instead of leaving a dead-end Open row the resolution attempt
+        // closes it as Superseded, writes no winner and no field provenance, and says so.
         var securityId = Guid.NewGuid();
         var previous = MakeProjection(securityId, "Isin", "US02079K3059", "provA");
         var incoming = MakeProjection(securityId, "Isin", "US02079K3059", "provB") with
@@ -268,12 +272,51 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
                 ChosenWinnerSource: "provB"),
             CancellationToken.None);
 
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*superseded*");
         var retained = await service.GetConflictAsync(conflict.ConflictId, CancellationToken.None);
-        retained!.Status.Should().Be("Open");
+        retained!.Status.Should().Be("Superseded",
+            "a persisted value matching neither candidate makes the conflict permanently unresolvable");
+        retained.ResolvedWinnerSource.Should().BeNull("neither source supplied the persisted value");
         var lineage = await new PostgresSecurityFieldProvenanceStore(_fixture.Options)
             .GetAsync(securityId, CancellationToken.None);
-        lineage.Should().BeEmpty();
+        lineage.Should().BeEmpty("no field provenance may be fabricated for a superseded conflict");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task RecordFieldConflictsAsync_CanonicalWriteReplacingBothCandidates_SupersedesOnWrite()
+    {
+        // The proactive half of the same rule: the canonical write that obsoletes both candidates
+        // retires the open conflict immediately, so the queue never surfaces an actionable-looking
+        // row whose resolution flow cannot complete.
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US02079K1045", "provA");
+        var incoming = MakeProjection(securityId, "Isin", "US02079K1045", "provB") with
+        {
+            Currency = "EUR",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        await canonicalStore.UpsertProjectionAsync(incoming, CancellationToken.None);
+        var service = NewService(canonicalStore);
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var conflict = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(c =>
+            c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
+
+        var thirdSource = incoming with
+        {
+            Currency = "GBP",
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provC" }),
+            Version = 2
+        };
+        await canonicalStore.UpsertProjectionAsync(thirdSource, CancellationToken.None);
+        await service.RecordFieldConflictsAsync(incoming, thirdSource, CancellationToken.None);
+
+        var retained = await service.GetConflictAsync(conflict.ConflictId, CancellationToken.None);
+        retained!.Status.Should().Be("Superseded",
+            "the GBP write matches neither USD nor EUR, so the write itself retires the stale conflict");
+        (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Should().NotContain(c => c.ConflictId == conflict.ConflictId);
     }
 
     [SecurityMasterDatabaseFact]

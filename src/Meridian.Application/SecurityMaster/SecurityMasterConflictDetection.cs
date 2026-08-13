@@ -152,6 +152,81 @@ internal static class SecurityMasterConflictDetection
                 group.Sum(static entry => entry.Amount).ToString("G29", System.Globalization.CultureInfo.InvariantCulture)));
 
     /// <summary>
+    /// The comparable persisted value a record carries for a conflicted field path, in the SAME
+    /// canonical normalization the conflict candidates were recorded with (typed term readers,
+    /// normalized principal schedule) — the only representation against which a recorded candidate
+    /// value can be meaningfully compared. Returns null for paths this detection does not compare.
+    /// </summary>
+    internal static string? ReadComparableFieldValue(SecurityDetailDto detail, string fieldPath)
+    {
+        var terms = StructuredCashFlowTermsResolver.Resolve(detail);
+        return fieldPath switch
+        {
+            "EconomicTerms.maturityDate" => terms.MaturityDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            "EconomicTerms.issueDate" => terms.IssueDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            "EconomicTerms.couponRate" => terms.CouponRate?.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            "EconomicTerms.principalFace" => terms.PrincipalFace?.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            "EconomicTerms.paymentFrequency" => terms.PaymentFrequency,
+            "EconomicTerms.dayCountConvention" => terms.DayCountConvention,
+            "EconomicTerms.principalSchedule" => terms.HasPrincipalSchedule
+                ? NormalizePrincipalSchedule(terms.PrincipalSchedule!)
+                : null,
+            "CommonTerms.currency" => detail.Currency,
+            "CommonTerms.countryOfRisk" => SecurityTermReader.ReadString(detail.CommonTerms, "countryOfRisk"),
+            _ => null,
+        };
+    }
+
+    /// <inheritdoc cref="ReadComparableFieldValue(SecurityDetailDto, string)"/>
+    internal static string? ReadComparableFieldValue(SecurityProjectionRecord projection, string fieldPath)
+        => ReadComparableFieldValue(SecurityMasterMapping.ToDetail(projection), fieldPath);
+
+    /// <summary>
+    /// Whether a persisted field value and a recorded candidate value assert the same economics:
+    /// day counts compare through the canonical convention parser, numerics compare numerically
+    /// ("6.00" and "6.0" are the same coupon), and everything else falls back to trimmed
+    /// case-insensitive text. A blank persisted value matches nothing — absence is incompleteness,
+    /// not agreement.
+    /// </summary>
+    internal static bool FieldValuesMatch(string fieldPath, string? persisted, string candidate)
+    {
+        if (string.IsNullOrWhiteSpace(persisted))
+        {
+            return false;
+        }
+
+        if (string.Equals(fieldPath, "EconomicTerms.dayCountConvention", StringComparison.Ordinal))
+        {
+            var persistedConvention = DayCountConventions.Parse(persisted);
+            var candidateConvention = DayCountConventions.Parse(candidate);
+            if (persistedConvention != DayCountConvention.Unknown || candidateConvention != DayCountConvention.Unknown)
+            {
+                return persistedConvention == candidateConvention;
+            }
+        }
+
+        if (decimal.TryParse(persisted.Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var persistedNumber)
+            && decimal.TryParse(candidate.Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var candidateNumber))
+        {
+            return persistedNumber == candidateNumber;
+        }
+
+        return string.Equals(persisted.Trim(), candidate.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Whether an OPEN field conflict has been made obsolete by <paramref name="persistedValue"/>:
+    /// a later canonical write that matches NEITHER recorded candidate replaced both sources'
+    /// asserted values, so the conflict can never resolve to either candidate and only blocks the
+    /// queue. A null/blank persisted value is NOT obsolescence — absence of a readable value must
+    /// not silently retire a real disagreement.
+    /// </summary>
+    internal static bool FieldConflictIsObsolete(SecurityMasterConflict conflict, string? persistedValue)
+        => !string.IsNullOrWhiteSpace(persistedValue)
+           && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueA)
+           && !FieldValuesMatch(conflict.FieldPath, persistedValue, conflict.ValueB);
+
+    /// <summary>
     /// The governed field paths whose values differ between <paramref name="current"/> and
     /// <paramref name="incoming"/>, regardless of source. Cross-source disagreement is what OPENS a
     /// conflict, but per-field attribution goes stale whenever a governed field changes hands —

@@ -141,6 +141,22 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 ct).ConfigureAwait(false);
             if (!FieldValuesMatch(openConflict.FieldPath, persistedValue, selectedValue))
             {
+                // When the persisted value matches NEITHER candidate, a later canonical write has
+                // replaced both sources' asserted values: the conflict can never legally resolve
+                // (this guard would reject either choice), so leaving it Open turns the queue row
+                // into a dead end an operator could only escape by rewriting the security back to
+                // stale candidate data. Close it as Superseded in the same governed transaction
+                // and say so, instead of instructing a pointless retry.
+                if (SecurityMasterConflictDetection.FieldConflictIsObsolete(openConflict, persistedValue))
+                {
+                    await SupersedeConflictAsync(connection, transaction, openConflict, persistedValue, ct).ConfigureAwait(false);
+                    await transaction.CommitAsync(ct).ConfigureAwait(false);
+                    throw new InvalidOperationException(
+                        $"Conflict '{openConflict.ConflictId:D}' was superseded: a later canonical write persisted a value " +
+                        $"for '{openConflict.FieldPath}' that matches neither recorded candidate, so no resolution to " +
+                        "either source can apply. The conflict has been closed as Superseded; no operator action is required.");
+                }
+
                 throw new InvalidOperationException(
                     $"Conflict '{openConflict.ConflictId:D}' cannot resolve to source '{selectedSource}' because " +
                     $"the persisted value for '{openConflict.FieldPath}' does not match that source's selected value. " +
@@ -334,22 +350,41 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             0,
             new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
             null);
-        var terms = StructuredCashFlowTermsResolver.Resolve(detail);
-        return conflict.FieldPath switch
-        {
-            "EconomicTerms.maturityDate" => terms.MaturityDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            "EconomicTerms.issueDate" => terms.IssueDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            "EconomicTerms.couponRate" => terms.CouponRate?.ToString(CultureInfo.InvariantCulture),
-            "EconomicTerms.principalFace" => terms.PrincipalFace?.ToString(CultureInfo.InvariantCulture),
-            "EconomicTerms.paymentFrequency" => terms.PaymentFrequency,
-            "EconomicTerms.dayCountConvention" => terms.DayCountConvention,
-            "EconomicTerms.principalSchedule" => terms.HasPrincipalSchedule
-                ? SecurityMasterConflictDetection.NormalizePrincipalSchedule(terms.PrincipalSchedule!)
-                : null,
-            "CommonTerms.currency" => detail.Currency,
-            "CommonTerms.countryOfRisk" => SecurityTermReader.ReadString(detail.CommonTerms, "countryOfRisk"),
-            _ => null,
-        };
+        return SecurityMasterConflictDetection.ReadComparableFieldValue(detail, conflict.FieldPath);
+    }
+
+    /// <summary>
+    /// Closes an OPEN conflict as <c>Superseded</c> with the compare-and-set pattern every other
+    /// transition uses: a later canonical write replaced both candidate values, so the row records
+    /// WHY it closed (the persisted value that obsoleted it) without fabricating a winner — no
+    /// field provenance is written, because neither source supplied the persisted value.
+    /// </summary>
+    private async Task<bool> SupersedeConflictAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityMasterConflict conflict,
+        string? persistedValue,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            update {Qualified(ConflictsTable)}
+            set status = 'Superseded',
+                resolved_by = @resolved_by,
+                resolved_reason = @resolved_reason,
+                resolved_at = @resolved_at
+            where conflict_id = @conflict_id and status = 'Open';
+            """;
+        command.Parameters.AddWithValue("resolved_by", "system:canonical-write");
+        command.Parameters.AddWithValue(
+            "resolved_reason",
+            $"A later canonical write persisted '{persistedValue}' for '{conflict.FieldPath}', which matches neither " +
+            $"recorded candidate ('{conflict.ProviderA}'='{conflict.ValueA}', '{conflict.ProviderB}'='{conflict.ValueB}').");
+        command.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
+        command.Parameters.AddWithValue("conflict_id", conflict.ConflictId);
+        return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) > 0;
     }
 
     private async Task<IReadOnlyDictionary<string, string>> LoadConflictResolutionFieldSourcesAsync(
@@ -384,34 +419,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
     }
 
     private static bool FieldValuesMatch(string fieldPath, string? persisted, string selected)
-    {
-        if (string.IsNullOrWhiteSpace(persisted))
-        {
-            return false;
-        }
-
-        if (string.Equals(fieldPath, "EconomicTerms.dayCountConvention", StringComparison.Ordinal))
-        {
-            var persistedConvention = DayCountConventions.Parse(persisted);
-            var selectedConvention = DayCountConventions.Parse(selected);
-            if (persistedConvention != DayCountConvention.Unknown || selectedConvention != DayCountConvention.Unknown)
-            {
-                return persistedConvention == selectedConvention;
-            }
-        }
-
-        // Decimal fields must compare numerically: "6.00" and "6.0" are the same coupon, but an
-        // ordinal comparison would leave the conflict permanently open after a governed amendment
-        // re-serialized the value with different precision. Dates ("yyyy-MM-dd") and enum-like
-        // strings do not parse as invariant decimals, so they fall through to the textual path.
-        if (decimal.TryParse(persisted.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var persistedNumber)
-            && decimal.TryParse(selected.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var selectedNumber))
-        {
-            return persistedNumber == selectedNumber;
-        }
-
-        return string.Equals(persisted.Trim(), selected.Trim(), StringComparison.OrdinalIgnoreCase);
-    }
+        => SecurityMasterConflictDetection.FieldValuesMatch(fieldPath, persisted, selected);
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
     {
@@ -461,12 +469,16 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             connection, previous.SecurityId, ct).ConfigureAwait(false);
         var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
             previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources);
-        if (candidates.Count == 0)
-        {
-            return;
-        }
 
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+
+        // This canonical write is the moment existing OPEN conflicts can go stale: when the newly
+        // persisted value matches NEITHER recorded candidate (a third source replaced both), the
+        // conflict can never resolve to either source — the resolution guard would reject both
+        // choices — so it is closed as Superseded here instead of surfacing an actionable-looking
+        // queue row whose resolution flow cannot complete. This sweep runs even when the write
+        // opens no NEW conflicts (a same-source or third-source amend detects none).
+        await SupersedeObsoleteFieldConflictsAsync(connection, transaction, incoming, ct).ConfigureAwait(false);
 
         int newConflicts = 0;
         foreach (var conflict in candidates)
@@ -489,6 +501,59 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             _logger.LogInformation(
                 "Recorded {Count} new field conflict(s) for security {SecurityId}",
                 newConflicts, incoming.SecurityId);
+        }
+    }
+
+    /// <summary>
+    /// Closes every OPEN field-level conflict on <paramref name="incoming"/>'s security whose BOTH
+    /// candidate values the newly persisted record no longer matches. Rows are locked before the
+    /// comparison so a concurrent resolution and this sweep serialize; conflicts whose persisted
+    /// value still matches a candidate stay open (that candidate remains a legal resolution), and
+    /// an unreadable persisted value retires nothing.
+    /// </summary>
+    private async Task SupersedeObsoleteFieldConflictsAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord incoming,
+        CancellationToken ct)
+    {
+        var openConflicts = new List<SecurityMasterConflict>();
+        await using (var select = connection.CreateCommand())
+        {
+            select.Transaction = transaction;
+            select.CommandText =
+                $"""
+                select {ConflictColumns}
+                from {Qualified(ConflictsTable)}
+                where security_id = @security_id
+                  and status = 'Open'
+                  and conflict_kind in (@economic_kind, @common_kind)
+                for update;
+                """;
+            select.Parameters.AddWithValue("security_id", incoming.SecurityId);
+            select.Parameters.AddWithValue("economic_kind", SecurityMasterConflictKinds.EconomicTermMismatch);
+            select.Parameters.AddWithValue("common_kind", SecurityMasterConflictKinds.CommonTermMismatch);
+            await using var reader = await select.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                openConflicts.Add(MapConflict(reader));
+            }
+        }
+
+        foreach (var conflict in openConflicts)
+        {
+            var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(incoming, conflict.FieldPath);
+            if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(conflict, persistedValue))
+            {
+                continue;
+            }
+
+            if (await SupersedeConflictAsync(connection, transaction, conflict, persistedValue, ct).ConfigureAwait(false))
+            {
+                _logger.LogInformation(
+                    "Superseded obsolete field conflict {ConflictId} on {FieldPath} for security {SecurityId}: canonical write replaced both candidates.",
+                    conflict.ConflictId, conflict.FieldPath, conflict.SecurityId);
+            }
         }
     }
 

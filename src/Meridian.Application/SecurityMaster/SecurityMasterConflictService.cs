@@ -153,6 +153,44 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
     {
         var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
 
+        // A canonical write that replaces BOTH recorded candidate values makes an open field
+        // conflict obsolete: it can never resolve to either source (the durable store's resolution
+        // guard rejects a winner whose value the record no longer carries), so leaving it Open
+        // surfaces an actionable-looking queue row whose resolution flow cannot complete. Close it
+        // as Superseded, recording why, without fabricating a winner or field provenance.
+        foreach (var (conflictId, existing) in _conflicts)
+        {
+            if (existing.SecurityId != incoming.SecurityId
+                || !string.Equals(existing.Status, "Open", StringComparison.OrdinalIgnoreCase)
+                || (!string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
+                    && !string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(incoming, existing.FieldPath);
+            if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(existing, persistedValue))
+            {
+                continue;
+            }
+
+            var superseded = existing with
+            {
+                Status = "Superseded",
+                ResolvedBy = "system:canonical-write",
+                ResolvedReason =
+                    $"A later canonical write persisted '{persistedValue}' for '{existing.FieldPath}', which matches " +
+                    $"neither recorded candidate ('{existing.ProviderA}'='{existing.ValueA}', '{existing.ProviderB}'='{existing.ValueB}').",
+                ResolvedAt = DateTimeOffset.UtcNow,
+            };
+            if (_conflicts.TryUpdate(conflictId, superseded, existing))
+            {
+                _logger.LogInformation(
+                    "Superseded obsolete field conflict {ConflictId} on {FieldPath} for security {SecurityId}: canonical write replaced both candidates.",
+                    conflictId, existing.FieldPath, existing.SecurityId);
+            }
+        }
+
         int newConflicts = 0;
         foreach (var conflict in candidates)
         {

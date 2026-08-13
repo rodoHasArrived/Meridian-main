@@ -658,7 +658,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             throw new ArgumentException(error, nameof(request));
         }
 
-        await EnsurePrincipalScheduleReplacementFitsRetainedTermsAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
+        await EnsurePrincipalScheduleFitsEffectiveTermsAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
 
         return await EnsureProfileFieldEditMatchesPinnedProfileAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
     }
@@ -666,23 +666,32 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     private const string ProfileFieldsRootPath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "profileFields";
     private const string ProfileFieldsNestedPrefix = ProfileFieldsRootPath + ".";
     private const string PrincipalSchedulePath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "principalSchedule";
+    private const string ParTermPath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "par";
+    private const string IssueDateTermPath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "issueDate";
+    private const string MaturityTermPath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "maturity";
 
     /// <summary>
     /// A whole principalSchedule replacement passes the static schema validator on ROW-LOCAL shape
     /// alone (parseable payment dates, positive amounts), but the canonical Bond contract also
-    /// binds the schedule to the record it overlays: instalments must fall inside the retained
-    /// issue/maturity window and must not sum past the retained principal face. Without this check
-    /// an operator can stage — and approve — a schedule paying principal after maturity or
-    /// overpaying par, and only the later canonical amend surfaces the contradiction. Validates
-    /// the replacement against the record's retained structured terms when the projection store is
-    /// wired; the edit fails CLOSED when the retained terms cannot be loaded, matching the
-    /// reserved namespace's validated-writes-only contract.
+    /// binds the schedule to the record it overlays: instalments must fall inside the issue/maturity
+    /// window and must not sum past the principal face. The window and par are resolved from the
+    /// EFFECTIVE overlay — a staged override of par/issueDate/maturity is what the record reads
+    /// after approval, so validating against superseded canonical values would let a staged
+    /// <c>par=50</c> coexist with a schedule totaling 80. The check is RECIPROCAL: editing par,
+    /// issueDate, or maturity revalidates the effective principal schedule against the proposed
+    /// value, so neither staging order slips an inconsistent overlay through. Fails CLOSED when
+    /// the retained terms cannot be loaded, matching the reserved namespace's
+    /// validated-writes-only contract.
     /// </summary>
-    private async Task EnsurePrincipalScheduleReplacementFitsRetainedTermsAsync(
+    private async Task EnsurePrincipalScheduleFitsEffectiveTermsAsync(
         UpdateSecurityFieldRequest request, string canonicalFieldPath, CancellationToken ct)
     {
+        var editsSchedule = string.Equals(canonicalFieldPath, PrincipalSchedulePath, StringComparison.OrdinalIgnoreCase);
+        var editsPar = string.Equals(canonicalFieldPath, ParTermPath, StringComparison.OrdinalIgnoreCase);
+        var editsIssueDate = string.Equals(canonicalFieldPath, IssueDateTermPath, StringComparison.OrdinalIgnoreCase);
+        var editsMaturity = string.Equals(canonicalFieldPath, MaturityTermPath, StringComparison.OrdinalIgnoreCase);
         if (_projectionStore is null
-            || !string.Equals(canonicalFieldPath, PrincipalSchedulePath, StringComparison.OrdinalIgnoreCase)
+            || (!editsSchedule && !editsPar && !editsIssueDate && !editsMaturity)
             || string.IsNullOrWhiteSpace(request.NewValue))
         {
             return;
@@ -697,56 +706,136 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             _logger.LogWarning(
                 ex,
-                "Loading the projection for {SecurityId} failed while validating a principalSchedule replacement.",
-                request.SecurityId);
+                "Loading the projection for {SecurityId} failed while validating field edit {FieldPath} against the principal schedule.",
+                request.SecurityId, SanitizeForLog(canonicalFieldPath));
         }
 
         if (projection is null)
         {
             throw new InvalidOperationException(
-                $"The retained terms for security '{request.SecurityId:D}' could not be loaded, so the " +
-                "principalSchedule replacement cannot be validated against the record's issue/maturity window and " +
-                "principal face. Retry once the projection is available; the namespace only accepts validated writes.");
+                $"The retained terms for security '{request.SecurityId:D}' could not be loaded, so the edit cannot be " +
+                "validated against the record's principal schedule, issue/maturity window, and principal face. Retry " +
+                "once the projection is available; the namespace only accepts validated writes.");
         }
 
         var terms = StructuredCashFlowTermsResolver.Resolve(SecurityMasterMapping.ToDetail(projection));
-        using var document = JsonDocument.Parse(request.NewValue);
-        var scheduledTotal = 0m;
-        foreach (var row in document.RootElement.EnumerateArray())
-        {
-            // Row shape (object, parseable date, positive amount) was already enforced by the
-            // schema validator; unreadable rows here would only be duplicated diagnostics.
-            if (!TryReadScheduleRowDate(row, out var paymentDate) || !TryReadScheduleRowAmount(row, out var amount))
-            {
-                continue;
-            }
+        var stagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
 
+        // The EFFECTIVE schedule: the proposed replacement when this edit IS one, else a staged
+        // schedule override, else the canonical schedule. Same layering for each window term —
+        // the proposed value wins for the term being edited.
+        var rows = new List<(DateOnly PaymentDate, decimal Amount)>();
+        var scheduleJson = editsSchedule ? request.NewValue : TryGetStagedOverrideValue(stagedOverrides, PrincipalSchedulePath);
+        if (scheduleJson is not null)
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(scheduleJson);
+                if (document.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var row in document.RootElement.EnumerateArray())
+                    {
+                        if (TryReadScheduleRowDate(row, out var paymentDate) && TryReadScheduleRowAmount(row, out var amount))
+                        {
+                            rows.Add((paymentDate, amount));
+                        }
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                // The proposed replacement was already shape-validated; a malformed STAGED
+                // override cannot supply the effective schedule and is left to its own guards.
+            }
+        }
+        else if (terms.HasPrincipalSchedule)
+        {
+            foreach (var entry in terms.PrincipalSchedule!)
+            {
+                rows.Add((entry.PaymentDate, entry.Amount));
+            }
+        }
+
+        if (rows.Count == 0)
+        {
+            // No effective contractual schedule — there is nothing for the window or par to bind.
+            return;
+        }
+
+        var effectivePar = editsPar
+            ? ParseInvariantDecimal(request.NewValue)
+            : ParseInvariantDecimal(TryGetStagedOverrideValue(stagedOverrides, ParTermPath)) ?? terms.PrincipalFace;
+        var effectiveIssueDate = editsIssueDate
+            ? ParseInvariantDate(request.NewValue)
+            : ParseInvariantDate(TryGetStagedOverrideValue(stagedOverrides, IssueDateTermPath)) ?? terms.IssueDate;
+        var effectiveMaturity = editsMaturity
+            ? ParseInvariantDate(request.NewValue)
+            : ParseInvariantDate(TryGetStagedOverrideValue(stagedOverrides, MaturityTermPath)) ?? terms.MaturityDate;
+
+        var subject = editsSchedule
+            ? "principalSchedule replacement"
+            : "the effective principal schedule after this edit";
+        var scheduledTotal = 0m;
+        foreach (var (paymentDate, amount) in rows)
+        {
             scheduledTotal += amount;
-            if (terms.IssueDate is DateOnly issueDate && paymentDate < issueDate)
+            if (effectiveIssueDate is DateOnly issueDate && paymentDate < issueDate)
             {
                 throw new ArgumentException(
-                    $"principalSchedule replacement pays principal on {paymentDate:yyyy-MM-dd}, before the record's " +
+                    $"{subject} pays principal on {paymentDate:yyyy-MM-dd}, before the record's effective " +
                     $"retained issue date {issueDate:yyyy-MM-dd}.",
                     nameof(request));
             }
 
-            if (terms.MaturityDate is DateOnly maturityDate && paymentDate > maturityDate)
+            if (effectiveMaturity is DateOnly maturityDate && paymentDate > maturityDate)
             {
                 throw new ArgumentException(
-                    $"principalSchedule replacement pays principal on {paymentDate:yyyy-MM-dd}, after the record's " +
+                    $"{subject} pays principal on {paymentDate:yyyy-MM-dd}, after the record's effective " +
                     $"retained maturity date {maturityDate:yyyy-MM-dd}.",
                     nameof(request));
             }
         }
 
-        if (terms.PrincipalFace is > 0m && scheduledTotal > terms.PrincipalFace.Value)
+        if (effectivePar is > 0m && scheduledTotal > effectivePar.Value)
         {
             throw new ArgumentException(
-                $"principalSchedule replacement instalments total {scheduledTotal} and exceed the record's retained " +
-                $"principal face {terms.PrincipalFace.Value}.",
+                $"{subject} instalments total {scheduledTotal} and exceed the record's effective retained " +
+                $"principal face {effectivePar.Value}.",
                 nameof(request));
         }
     }
+
+    /// <summary>The staged override value at <paramref name="path"/>, matched case-insensitively; null when absent or blank.</summary>
+    private static string? TryGetStagedOverrideValue(IReadOnlyDictionary<string, string>? stagedOverrides, string path)
+    {
+        if (stagedOverrides is null)
+        {
+            return null;
+        }
+
+        foreach (var (overridePath, overrideValue) in stagedOverrides)
+        {
+            if (string.Equals(overridePath, path, StringComparison.OrdinalIgnoreCase)
+                && !string.IsNullOrWhiteSpace(overrideValue))
+            {
+                return overrideValue;
+            }
+        }
+
+        return null;
+    }
+
+    private static decimal? ParseInvariantDecimal(string? value)
+        => value is not null
+           && decimal.TryParse(value.Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
+
+    private static DateOnly? ParseInvariantDate(string? value)
+        => value is not null
+           && DateOnly.TryParse(value.Trim(), System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
 
     private static bool TryReadScheduleRowDate(JsonElement row, out DateOnly value)
     {
@@ -982,6 +1071,22 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             field => string.Equals(field.Key, nestedRemainder, StringComparison.OrdinalIgnoreCase));
         if (declared is null)
         {
+            // A key the pinned profile does not declare is NOT unrestricted on a record whose
+            // asset class resolved past CustomAsset: the resolved kind may read it — the seeded
+            // structured-credit-io-po profile does not declare factorScheduleEntries while the
+            // StructuredCredit kind enforces factors within [0, 1], unique dates, and
+            // non-increasing order over exactly that key — so the effective overlay must still
+            // satisfy the resolved class's domain invariants before the edit stages. Undeclared
+            // keys on CustomAsset records stay dynamic pass-through (the check no-ops there), and
+            // clears revert toward the already-validated canonical value.
+            if (!isClear)
+            {
+                var undeclaredStagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
+                EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
+                    currentProjection!, profile, undeclaredStagedOverrides,
+                    editedFieldKey: nestedRemainder, proposedValue: request.NewValue, proposedReplacementRoot: null);
+            }
+
             return canonicalFieldPath;
         }
 
@@ -1366,9 +1471,26 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 => System.Text.Json.Nodes.JsonValue.Create(integerValue),
             SecurityAssetProfileFieldTypeDto.Boolean when bool.TryParse(trimmed, out var booleanValue)
                 => System.Text.Json.Nodes.JsonValue.Create(booleanValue),
+            // An UNDECLARED key has no profile type to coerce through, but the resolved kind's
+            // parser reads typed JSON: a structured value edited as its JSON text (an array of
+            // factor rows, a number) must land as that structure, not as a quoted string the
+            // parser cannot read. Values that do not parse as JSON stay plain strings.
+            null => TryParseJsonNode(trimmed) ?? System.Text.Json.Nodes.JsonValue.Create(value),
             _ => System.Text.Json.Nodes.JsonValue.Create(value)
         };
         fields[canonicalKey] = node;
+    }
+
+    private static System.Text.Json.Nodes.JsonNode? TryParseJsonNode(string value)
+    {
+        try
+        {
+            return System.Text.Json.Nodes.JsonNode.Parse(value);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     private static bool ProfileFieldStringIsValid(

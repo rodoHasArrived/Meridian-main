@@ -65,6 +65,9 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     {
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("Bond");
+        // Window terms (maturity/issueDate/par) validate against the record's effective principal
+        // schedule, so the retained terms must resolve for the edit to stage.
+        harness.SetProjectionAssetTerms("Bond", new { issueDate = "2026-01-01", maturityDate = "2030-01-01", par = 100m });
 
         var request = new UpdateSecurityFieldRequest(
             SecurityId: SecurityId,
@@ -696,6 +699,136 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
             .Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*retained terms*");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_PrincipalScheduleReplacement_ValidatesAgainstStagedTermOverrides()
+    {
+        // The window and par bind from the EFFECTIVE overlay: with par staged down to 50, a
+        // replacement totaling 80 violates the Bond invariant even though canonical par is 100 —
+        // validating against the superseded canonical value would let the overlay overpay par.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturityDate = "2030-01-01",
+            par = 100m
+        });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.par"] = "50" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.principalSchedule",
+            NewValue: """[{"paymentDate":"2027-06-15","amount":50},{"paymentDate":"2028-06-15","amount":30}]""",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Schedule correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>(
+                "the staged par override of 50 is the effective principal face, not the canonical 100")
+            .WithMessage("*principal face*");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_WindowTermEdit_ValidatesAgainstEffectivePrincipalSchedule()
+    {
+        // The reciprocal direction: with a contractual schedule retained on the record, moving
+        // maturity before a scheduled instalment (or par below the scheduled total) stages an
+        // overlay whose schedule violates the Bond window/par — the same inconsistency the
+        // schedule replacement route rejects, reachable in the other staging order.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturityDate = "2030-01-01",
+            par = 100m,
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2027-06-15", amount = 60m },
+                new { paymentDate = "2028-06-15", amount = 40m }
+            }
+        });
+
+        UpdateSecurityFieldRequest EditWith(string fieldPath, string value) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: fieldPath,
+            NewValue: value,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Term correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(
+                EditWith("assetSpecificTerms.maturity", "2028-01-01")))
+            .Should().ThrowAsync<ArgumentException>("the retained 2028-06-15 instalment would fall after the proposed maturity")
+            .WithMessage("*retained maturity date*");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(
+                EditWith("assetSpecificTerms.par", "80")))
+            .Should().ThrowAsync<ArgumentException>("the retained schedule totals 100, above the proposed par of 80")
+            .WithMessage("*principal face*");
+
+        var staged = await harness.Service.UpdateSecurityFieldAsync(
+            EditWith("assetSpecificTerms.maturity", "2031-06-15"));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "extending maturity keeps every retained instalment inside the window");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_UndeclaredProfileFieldOnResolvedClass_EnforcesResolvedKindInvariants()
+    {
+        // The seeded structured-credit-io-po profile does not declare factorScheduleEntries, but
+        // the resolved StructuredCredit kind reads exactly that key and enforces factors within
+        // [0, 1], unique dates, and non-increasing order. An undeclared key must not be an
+        // unrestricted side door around the invariants the canonical command enforces.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("StructuredCredit");
+        harness.SetProjectionProfileEnvelope(
+            "structured-credit-io-po", profileVersion: 1,
+            profileFields: new
+            {
+                tranche = "A-1",
+                poolId = "POOL-1",
+                currentFactor = 0.5m,
+                originalFace = 1_000_000m,
+                couponOrIndex = "SOFR+250",
+                factorSchedule = "trustee",
+                collateralType = "CLO"
+            },
+            assetClass: "StructuredCredit");
+
+        UpdateSecurityFieldRequest EditWith(string value) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.factorScheduleEntries",
+            NewValue: value,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Factor schedule correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(EditWith(
+                """[{"asOfDate":"2026-01-01","factor":0.5},{"asOfDate":"2026-02-01","factor":0.8}]""")))
+            .Should().ThrowAsync<ArgumentException>("a rising factor schedule violates the StructuredCredit invariants")
+            .WithMessage("*structured_credit_factor_schedule_not_monotonic*");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(EditWith("garbage")))
+            .Should().ThrowAsync<ArgumentException>("a non-array value cannot reconstruct into the resolved kind and fails closed")
+            .WithMessage("*only accepts validated writes*");
+
+        var staged = await harness.Service.UpdateSecurityFieldAsync(EditWith(
+            """[{"asOfDate":"2026-01-01","factor":0.8},{"asOfDate":"2026-02-01","factor":0.5}]"""));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a non-increasing in-range schedule satisfies the resolved kind's invariants");
     }
 
     [Fact]
