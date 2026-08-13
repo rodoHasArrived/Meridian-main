@@ -88,12 +88,18 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             };
         }
 
+        // The override guards are computed BEFORE the command mapping so a profile-backed record
+        // amended without its envelope is refused with the envelope-specific guidance (submit the
+        // pinned envelope or use the workbench field-edit route) rather than the generic
+        // strict-mapping error the write-mode kind mapping would raise first.
+        var assetClassOverride = GetProfileBackedAssetClassOverride(currentProjection, request.AssetSpecificTermsPatch);
+        var assetTermsOverride = GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch);
         var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, kindSourceProjection));
         var projection = CreateProjectionFromResult(
             result,
             currentProjection.Aliases,
-            GetProfileBackedAssetClassOverride(currentProjection, request.AssetSpecificTermsPatch),
-            GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch));
+            assetClassOverride,
+            assetTermsOverride);
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
 
         // The amend seam is the one place the pre-write golden copy and the incoming revision are

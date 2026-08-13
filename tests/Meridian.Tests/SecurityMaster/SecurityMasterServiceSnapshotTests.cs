@@ -475,6 +475,60 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task CreateAsync_CustomAssetWithoutProfileEnvelope_RefusesTheWriteInsteadOfSalvaging()
+    {
+        // The OtherSecurity salvage in the kind mapping is READ tolerance for legacy rows. A
+        // create request naming CustomAsset without a customProfileId must fail the command:
+        // silently re-typing it to OtherSecurity would skip every CustomAsset profile invariant
+        // and persist a record the operator never asked for.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                securityId,
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new { displayName = "Envelope-less Custom Asset", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    category = "Litigation Finance",
+                    subType = "Case Portfolio"
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "CUST-NO-ENVELOPE", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*customProfileId*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task CreateAsync_ReclassifiedProfileBackedRecord_ValidatesProfileWithoutOtherSecurityRules()
     {
         // A recognized profile reclassifies the projection to its resolved asset class

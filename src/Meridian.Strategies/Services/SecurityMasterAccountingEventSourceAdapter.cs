@@ -69,9 +69,13 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
         if (factorSchedule.Count > 0)
         {
+            // The period end is EXCLUSIVE (the next month's first day), so durable positions
+            // resolve as of the LAST in-period day: resolving at the boundary itself would ignore
+            // a position ending on the period's final day and could select its next-period
+            // successor for this period's paydowns.
             positions = await ResolveDurablePositionsAsync(
                     positions,
-                    periodEnd,
+                    periodEnd.AddDays(-1),
                     factorSchedule.Select(static factor => factor.SecurityId).ToHashSet(),
                     ct)
                 .ConfigureAwait(false);
@@ -161,13 +165,25 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 .Where(candidate => string.Equals(candidate.Status?.Trim(), "Active", StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
-            return candidates.Length == 1
-                ? position with
-                {
-                    PositionId = candidates[0].PositionId,
-                    PositionVersion = candidates[0].Version
-                }
-                : position;
+            if (candidates.Length != 1)
+            {
+                return position;
+            }
+
+            var durable = candidates[0];
+            // Factor paydowns are computed against ORIGINAL face (factors are relative to it):
+            // the run position's quantity may already be the factor-adjusted current face, so
+            // when the durable book position retains its original/par face, that value — not the
+            // run quantity — is the held face the paydown math must use. The run quantity stays
+            // the deliberate fallback when the durable state records neither.
+            return position with
+            {
+                PositionId = durable.PositionId,
+                PositionVersion = durable.Version,
+                ParAmount = durable.CurrentEconomicState?.OriginalFaceAmount
+                    ?? durable.CurrentEconomicState?.ParAmount
+                    ?? position.ParAmount
+            };
         }).ToList();
     }
 
@@ -377,15 +393,13 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     // The FIRST observation's prior is the original-face baseline of 1.0: factors
                     // are relative to original face, so a schedule opening below one records a
                     // real first paydown (canonical validation does not require an explicit 1.00
-                    // baseline row). An explicit 1.00 opening pairs against itself and emits
-                    // nothing. LATER unchanged observations still emit — they are the period's
-                    // factor COVERAGE evidence — and the paydown generator skips them as
-                    // no-principal-moved rows instead of projecting a zero-change candidate.
+                    // baseline row). EVERY in-period observation emits — including unchanged ones
+                    // and an explicit 1.00 opening — because each is the period's factor COVERAGE
+                    // evidence; dropping one whose factor equals its prior would raise a false
+                    // missing-coverage issue when it is the period's only observation. The
+                    // paydown generator skips no-principal-moved rows instead of projecting a
+                    // zero-change candidate.
                     var priorFactor = i == 0 ? 1.00m : ordered[i - 1].Factor;
-                    if (i == 0 && row.Factor == priorFactor)
-                    {
-                        continue;
-                    }
 
                     // The period end is EXCLUSIVE: ResolvePeriod supplies the first day of the
                     // NEXT month, so an inclusive comparison would surface a month-boundary

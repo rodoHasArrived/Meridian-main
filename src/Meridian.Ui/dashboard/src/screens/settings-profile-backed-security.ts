@@ -41,6 +41,24 @@ export function createProfileBackedSecurityState(
   };
 }
 
+/**
+ * A profile version is selectable for NEW writes when it is Approved, or when it is Superseded but
+ * its effective window still covers today. Governance marks the predecessor Superseded the moment
+ * a replacement is approved, even when that replacement carries a FUTURE effectiveFrom; until the
+ * replacement activates, the superseded predecessor is the only version write-time validation
+ * accepts, so hiding it would leave the creation form with no usable version for the profile.
+ */
+export function isWriteSelectableAssetProfile(
+  profile: SecurityAssetProfileDefinition,
+  today: Date = new Date()
+): boolean {
+  if (profile.status === "Approved") return true;
+  if (profile.status !== "Superseded") return false;
+  const isoToday = today.toISOString().slice(0, 10);
+  return profile.effectiveFrom <= isoToday
+    && (profile.effectiveTo == null || isoToday <= profile.effectiveTo);
+}
+
 export function buildProfileFieldValueState(
   profile: SecurityAssetProfileDefinition,
   previous: Record<string, string>

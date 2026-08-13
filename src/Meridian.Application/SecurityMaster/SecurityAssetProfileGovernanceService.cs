@@ -72,12 +72,24 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         _persistencePath = Path.Combine(storageOptions.RootPath, "governance", "security-asset-profiles.json");
     }
 
+    // The selectable catalog must stay aligned with write-time governance: approving a
+    // replacement with a FUTURE EffectiveFrom immediately marks the predecessor Superseded, yet
+    // that predecessor remains the only version whose effective window covers writes until the
+    // replacement activates. Exposing only Approved versions here would leave operators with no
+    // selectable version that write-time validation accepts during that gap, so Superseded
+    // versions stay selectable while their effective window still covers the current date.
     public IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles()
-        => GetAllProfiles()
-            .Where(static profile => profile.Status == SecurityAssetProfileStatusDto.Approved)
+    {
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.Date);
+        return GetAllProfiles()
+            .Where(profile => profile.Status == SecurityAssetProfileStatusDto.Approved
+                || (profile.Status == SecurityAssetProfileStatusDto.Superseded
+                    && profile.EffectiveFrom <= today
+                    && (profile.EffectiveTo is not DateOnly effectiveTo || today <= effectiveTo)))
             .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static profile => profile.Version)
             .ToArray();
+    }
 
     public IReadOnlyList<SecurityAssetProfileDefinitionDto> GetAllProfiles()
         => MergeProfiles(ReadSnapshot().Profiles);
@@ -92,8 +104,9 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
 
     public bool TryGetLatestApprovedProfile(string profileId, out SecurityAssetProfileDefinitionDto profile)
     {
-        profile = GetProfiles()
-            .Where(candidate => string.Equals(candidate.ProfileId, profileId, StringComparison.OrdinalIgnoreCase))
+        profile = GetAllProfiles()
+            .Where(candidate => candidate.Status == SecurityAssetProfileStatusDto.Approved
+                && string.Equals(candidate.ProfileId, profileId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(static candidate => candidate.Version)
             .FirstOrDefault()!;
         return profile is not null;
@@ -116,7 +129,8 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
     }
 
     public IReadOnlyList<SecurityAssetProfilePromotionCandidateDto> GetPromotionCandidates()
-        => GetProfiles()
+        => GetAllProfiles()
+            .Where(static profile => profile.Status == SecurityAssetProfileStatusDto.Approved)
             .Select(BuildPromotionCandidate)
             .OrderByDescending(static candidate => candidate.Score)
             .ThenBy(static candidate => candidate.Name, StringComparer.OrdinalIgnoreCase)

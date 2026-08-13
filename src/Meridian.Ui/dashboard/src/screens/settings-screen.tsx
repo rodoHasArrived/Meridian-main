@@ -62,6 +62,7 @@ import {
   buildProfileFieldPayload,
   buildProfileFieldValueState,
   createProfileBackedSecurityState,
+  isWriteSelectableAssetProfile,
   type ProfileBackedSecurityState
 } from "./settings-profile-backed-security";
 import {
@@ -779,7 +780,7 @@ export function SettingsScreen({
     [operationsCloseCalendar]
   );
   const approvedAssetProfiles = useMemo(
-    () => (securityAssetProfiles ?? []).filter((profile) => profile.status === "Approved"),
+    () => (securityAssetProfiles ?? []).filter((profile) => isWriteSelectableAssetProfile(profile)),
     [securityAssetProfiles]
   );
   const firstApprovedAssetProfile = approvedAssetProfiles[0] ?? null;

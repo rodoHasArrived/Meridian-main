@@ -506,6 +506,185 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldResolvePositionEndingOnLastInPeriodDay()
+    {
+        // The accounting period end is EXCLUSIVE (April 1 for a March run), so durable positions
+        // must resolve as of the LAST in-period day (March 31). A position whose EffectiveTo is
+        // March 31 held the paydown through the whole period; resolving at the exclusive boundary
+        // itself would filter it out and drop the durable-position linkage from the event.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-period-final-day"));
+
+        var securityId = Guid.Parse("77777777-7777-4777-8777-777777777771");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL period-final-day security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("77777777-7777-4777-8777-777777777772");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-03")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(
+                    securityId,
+                    positionId,
+                    positionEffectiveTo: new DateOnly(2026, 3, 31))));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-period-final-day"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.EconomicEvent!.BookPositionId == positionId);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldComputePaydownFromDurableOriginalFace()
+    {
+        // Factor paydowns are relative to ORIGINAL face. The run position's quantity (10) may
+        // already be the factor-adjusted current face, so when the durable book position records
+        // its original face (20), the paydown must be 20 x 0.03 = 0.60 - not 10 x 0.03 = 0.30.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-original-face"));
+
+        var securityId = Guid.Parse("77777777-7777-4777-8777-777777777773");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL original-face security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("77777777-7777-4777-8777-777777777774");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-03")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(
+                    securityId,
+                    positionId,
+                    originalFaceAmount: 20m)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-original-face"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 0.60m &&
+            item.EconomicEvent!.BookPositionId == positionId);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldTreatUnchangedOpeningObservationAsCoverage()
+    {
+        // A period whose only typed observation is the unchanged 1.00 opening still constitutes
+        // factor COVERAGE evidence: the trustee reported, the factor just did not move. The
+        // adapter must emit the observation (no FACTOR_SCHEDULE_MISSING) while the event
+        // generator skips the zero-change row (no paydown event).
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-unchanged-opening"));
+
+        var securityId = Guid.Parse("77777777-7777-4777-8777-777777777775");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL unchanged-opening security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("77777777-7777-4777-8777-777777777776");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 1.00m,
+            factorSchedule: null,
+            typedFactorEntries:
+            [
+                (new DateOnly(2026, 3, 21), 1.00m)
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-unchanged-opening"));
+
+        detail.Should().NotBeNull();
+        (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(static issue => issue.Code)
+            .Should().NotContain("FACTOR_SCHEDULE_MISSING");
+        (detail.ExpectedAccountingEvents ?? Array.Empty<ExpectedAccountingEventDto>())
+            .Should().NotContain(item =>
+                item.SecurityId == securityId &&
+                item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
     public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPairFirstTypedFactorObservationAgainstParBaseline()
     {
         // A typed schedule whose FIRST retained observation is already below one records a real
@@ -1795,7 +1974,9 @@ public sealed class ReconciliationRunServiceTests
 
     private static IAssetOperationsQueryService CreateAssetOperationsQueryService(
         Guid securityId,
-        Guid positionId)
+        Guid positionId,
+        DateOnly? positionEffectiveTo = null,
+        decimal? originalFaceAmount = null)
     {
         var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
         var ownerNodeId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
@@ -1834,8 +2015,18 @@ public sealed class ReconciliationRunServiceTests
             BookPositionSides.Long,
             "Active",
             new DateOnly(2026, 1, 1),
+            EffectiveTo: positionEffectiveTo,
             Version: 7,
-            PrimaryAccountId: "unscoped-account");
+            PrimaryAccountId: "unscoped-account",
+            CurrentEconomicState: originalFaceAmount is decimal originalFace
+                ? new PositionEconomicStateDto(
+                    Guid.Parse("dddddddd-dddd-4ddd-8ddd-dddddddddddd"),
+                    positionId,
+                    new DateOnly(2026, 3, 1),
+                    "USD",
+                    Version: 1,
+                    OriginalFaceAmount: originalFace)
+                : null);
         var detail = new AssetOperationsDetailDto(subject, [], [], [], [], [], [], [], [], readiness, [])
         {
             BookPositions = [position]

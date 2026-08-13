@@ -16,7 +16,7 @@ internal static class SecurityMasterMapping
             SecurityId.NewSecurityId(request.SecurityId),
             ToCommonTerms(request.CommonTerms),
             ToFSharpList(request.Identifiers.Select(ToIdentifier)),
-            ToSecurityKind(request.AssetClass, request.AssetSpecificTerms),
+            ToSecurityKind(request.AssetClass, request.AssetSpecificTerms, SecurityKindMappingMode.Write),
             request.EffectiveFrom,
             ToProvenance(request.SourceSystem, request.UpdatedBy, request.SourceRecordId, request.Reason, request.EffectiveFrom));
 
@@ -26,7 +26,7 @@ internal static class SecurityMasterMapping
             request.ExpectedVersion,
             request.CommonTerms is JsonElement common ? FSharpOption<CommonTerms>.Some(ToCommonTerms(common)) : FSharpOption<CommonTerms>.None,
             request.AssetSpecificTermsPatch is JsonElement assetSpecific
-                ? FSharpOption<SecurityKind>.Some(ToSecurityKind(current.AssetClass, assetSpecific))
+                ? FSharpOption<SecurityKind>.Some(ToSecurityKind(current.AssetClass, assetSpecific, SecurityKindMappingMode.Write))
                 : FSharpOption<SecurityKind>.None,
             ToFSharpList(request.IdentifiersToAdd.Select(ToIdentifier)),
             ToFSharpList(request.IdentifiersToExpire.Select(ToIdentifier)),
@@ -225,7 +225,18 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalInt(json, "settlementCycleDays")),
             ToOption(GetOptionalString(json, "holidayCalendarId")));
 
-    private static SecurityKind ToSecurityKind(string assetClass, JsonElement json)
+    /// <summary>
+    /// Distinguishes command mapping (create/amend requests) from record reconstruction. Write
+    /// mapping is strict: a malformed payload must fail the command instead of being coerced into
+    /// a different kind. Read mapping stays tolerant so legacy rows remain loadable.
+    /// </summary>
+    private enum SecurityKindMappingMode
+    {
+        Read,
+        Write
+    }
+
+    private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
     {
         EnsureSupportedAssetSchemaVersion(assetClass, json);
         var terms = ResolveAssetTermsJson(json);
@@ -311,7 +322,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDateOnly(json, "maturity")),
                 ToOption(GetOptionalString(json, "issuerName")),
                 ToOption(GetOptionalString(json, "settlementType")))),
-            "CustomAsset" => ToCustomAssetKind(json),
+            "CustomAsset" => ToCustomAssetKind(json, mode),
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
@@ -413,13 +424,15 @@ internal static class SecurityMasterMapping
     /// Maps a CustomAsset payload to the first-class <see cref="SecurityKind.CustomAsset"/> case,
     /// carrying the document verbatim so the profile envelope and dynamic profile fields survive
     /// amend round-trips. A legacy CustomAsset row without a profile envelope degrades to the
-    /// pre-existing OtherSecurity salvage instead of failing the read.
+    /// pre-existing OtherSecurity salvage on READS only; create/amend commands that name
+    /// CustomAsset without a profile envelope fail here instead of being silently re-typed, so the
+    /// F# CustomAsset invariants (profile envelope, profileFields object) always run for writes.
     /// <para>The <c>profileVersion ?? 1</c> default is READ tolerance only: the F# write-path
     /// validation (<c>validateKind</c>) parses the document and rejects create/amend commands whose
     /// envelope lacks a numeric <c>profileVersion</c> or an object-valued <c>profileFields</c>, so
     /// the default can never mint a canonical record with an incomplete envelope.</para>
     /// </summary>
-    private static SecurityKind ToCustomAssetKind(JsonElement json)
+    private static SecurityKind ToCustomAssetKind(JsonElement json, SecurityKindMappingMode mode)
     {
         if (json.ValueKind == JsonValueKind.Object
             && json.TryGetProperty("customProfileId", out var customProfileId)
@@ -430,6 +443,13 @@ internal static class SecurityMasterMapping
                 customProfileId.GetString()!,
                 GetOptionalInt(json, "profileVersion") ?? 1,
                 json.GetRawText()));
+        }
+
+        if (mode == SecurityKindMappingMode.Write)
+        {
+            throw new InvalidOperationException(
+                "CustomAsset terms must include a non-empty 'customProfileId' referencing an approved asset profile. " +
+                "Select an approved profile (or use asset class 'OtherSecurity' for unprofiled instruments) instead of submitting an envelope-less CustomAsset.");
         }
 
         return SecurityKind.NewOtherSecurity(new OtherSecurityTerms(

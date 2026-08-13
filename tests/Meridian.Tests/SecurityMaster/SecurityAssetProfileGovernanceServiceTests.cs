@@ -126,6 +126,93 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
     }
 
     [Fact]
+    public async Task GetProfiles_KeepsCurrentlyEffectiveSupersededVersionSelectableUntilReplacementActivates()
+    {
+        // Approving a replacement with a FUTURE EffectiveFrom immediately marks the predecessor
+        // Superseded, yet write-time governance keeps accepting the predecessor until the
+        // replacement activates. The selectable catalog must keep exposing it during that gap;
+        // otherwise the creation form offers only a version write-time validation rejects.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var service = new SecurityAssetProfileGovernanceService();
+        var firstDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-private-credit", fieldLabel: "NAV date"),
+            "settings-admin");
+        var firstApproved = await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-private-credit",
+                firstDraft.Profile.Version,
+                today.AddDays(-30),
+                "AP-001",
+                null,
+                "Approve first governed version.",
+                null),
+            "controller");
+        var secondDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-private-credit", fieldLabel: "Latest NAV date"),
+            "settings-admin");
+        var secondApproved = await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-private-credit",
+                secondDraft.Profile.Version,
+                today.AddDays(30),
+                "AP-002",
+                null,
+                "Approve future-dated replacement.",
+                null),
+            "controller");
+
+        var selectable = service.GetProfiles()
+            .Where(static profile => profile.ProfileId == "custom-private-credit")
+            .ToArray();
+
+        selectable.Should().Contain(profile =>
+            profile.Version == firstApproved.Profile.Version
+            && profile.Status == SecurityAssetProfileStatusDto.Superseded);
+        selectable.Should().Contain(profile =>
+            profile.Version == secondApproved.Profile.Version
+            && profile.Status == SecurityAssetProfileStatusDto.Approved);
+    }
+
+    [Fact]
+    public async Task GetProfiles_HidesSupersededVersionWhoseEffectiveWindowHasClosed()
+    {
+        // Once the replacement's effective window has actually opened, the superseded
+        // predecessor's window is closed and it must drop out of the selectable catalog again.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var service = new SecurityAssetProfileGovernanceService();
+        var firstDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-expired-window", fieldLabel: "NAV date"),
+            "settings-admin");
+        var firstApproved = await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-expired-window",
+                firstDraft.Profile.Version,
+                today.AddDays(-60),
+                "AP-001",
+                null,
+                "Approve first governed version.",
+                null),
+            "controller");
+        var secondDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-expired-window", fieldLabel: "Latest NAV date"),
+            "settings-admin");
+        await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-expired-window",
+                secondDraft.Profile.Version,
+                today.AddDays(-10),
+                "AP-002",
+                null,
+                "Approve already-active replacement.",
+                null),
+            "controller");
+
+        service.GetProfiles()
+            .Where(static profile => profile.ProfileId == "custom-expired-window")
+            .Should().NotContain(profile => profile.Version == firstApproved.Profile.Version);
+    }
+
+    [Fact]
     public void GetPromotionCandidates_FlagsStructuredCreditForFirstClassFixedIncomePackage()
     {
         var service = new SecurityAssetProfileGovernanceService();
