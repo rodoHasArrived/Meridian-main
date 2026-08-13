@@ -153,6 +153,35 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public void DetectFieldConflicts_SameDayInstalmentsSplitAcrossRows_DoNotConflict()
+    {
+        // A source splitting a payment date's amount across rows asserts the same economics as one
+        // that records it whole: normalization sums same-day instalments before comparing, so
+        // 30+20 on one date agrees with a single 50.
+        var current = Record("Bloomberg", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-15", amount = 30m },
+                new { paymentDate = "2028-06-15", amount = 20m }
+            }
+        });
+        var incoming = Record("Reuters", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-15", amount = 50m }
+            }
+        });
+
+        var conflicts = SecurityMasterConflictDetection.DetectFieldConflicts(current, incoming, DetectedAt);
+
+        conflicts.Should().NotContain(conflict => conflict.FieldPath == "EconomicTerms.principalSchedule");
+    }
+
+    [Fact]
     public void DetectFieldConflicts_DisagreeingSources_ProduceTypedFieldConflicts()
     {
         // Bloomberg's copy says maturity 2030 / coupon 4.25 / risk country US; the Reuters revision

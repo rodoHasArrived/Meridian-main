@@ -358,14 +358,20 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        // Both canonical attribution origins name a field's true incumbent: ConflictResolution rows
+        // record a resolved winner, CanonicalWrite rows record which source supplied the field
+        // through an ordinary create/amend. The newest row per field wins — a canonical write after
+        // a resolution means the field changed hands again, and vice versa.
         command.CommandText =
             $"""
-            select field_path, source_system
+            select distinct on (field_path) field_path, source_system
             from {Qualified(PostgresSecurityFieldProvenanceSql.Table)}
-            where security_id = @security_id and origin = @origin;
+            where security_id = @security_id and origin in (@resolution_origin, @canonical_origin)
+            order by field_path, recorded_at desc;
             """;
         command.Parameters.AddWithValue("security_id", securityId);
-        command.Parameters.AddWithValue("origin", SecurityFieldProvenanceOrigins.ConflictResolution);
+        command.Parameters.AddWithValue("resolution_origin", SecurityFieldProvenanceOrigins.ConflictResolution);
+        command.Parameters.AddWithValue("canonical_origin", SecurityFieldProvenanceOrigins.CanonicalWrite);
 
         var sources = new Dictionary<string, string>(StringComparer.Ordinal);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);

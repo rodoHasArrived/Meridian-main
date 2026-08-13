@@ -136,17 +136,20 @@ internal static class SecurityMasterConflictDetection
 
     /// <summary>
     /// Canonical text form of a contractual principal schedule for conflict comparison and the
-    /// resolution-time persisted-value guard: date-sorted <c>yyyy-MM-dd:amount</c> pairs with
-    /// scale-normalized amounts (G29 drops trailing zeros), joined with <c>|</c>. Both sides of a
-    /// comparison MUST use this same normalization or textually different but economically equal
-    /// schedules would conflict forever.
+    /// resolution-time persisted-value guard: same-day instalments summed into one entry per payment
+    /// date (a source splitting a date's amount across rows asserts the same economics as one that
+    /// records it whole), then date-sorted <c>yyyy-MM-dd:amount</c> pairs with scale-normalized
+    /// amounts (G29 drops trailing zeros), joined with <c>|</c>. Both sides of a comparison MUST use
+    /// this same normalization or textually different but economically equal schedules would
+    /// conflict forever.
     /// </summary>
     internal static string NormalizePrincipalSchedule(IReadOnlyList<StructuredPrincipalScheduleEntry> schedule)
         => string.Join("|", schedule
-            .OrderBy(static entry => entry.PaymentDate)
-            .Select(static entry =>
-                $"{entry.PaymentDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}:" +
-                entry.Amount.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)));
+            .GroupBy(static entry => entry.PaymentDate)
+            .OrderBy(static group => group.Key)
+            .Select(static group =>
+                $"{group.Key.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}:" +
+                group.Sum(static entry => entry.Amount).ToString("G29", System.Globalization.CultureInfo.InvariantCulture)));
 
     /// <summary>
     /// The governed field paths whose values differ between <paramref name="current"/> and

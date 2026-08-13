@@ -77,7 +77,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             currentProjection.Aliases,
             GetProfileBackedAssetClassOverride(currentProjection),
             GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch));
-        EnsureProfileBackedTermsAreCatalogValid(projection);
+        EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
 
         // The amend seam is the one place the pre-write golden copy and the incoming revision are
         // both in hand: record field-level cross-source conflicts (a different source disagreeing
@@ -109,6 +109,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // amending its OWN value opens no conflict, yet still makes the old attribution stale.
         var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(currentProjection, projection);
         await TryRetireStaleFieldResolutionProvenanceAsync(changedGovernedFields, request.SecurityId, ct).ConfigureAwait(false);
+        await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
@@ -239,7 +240,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             aliases: null,
             GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms),
             GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
-        EnsureProfileBackedTermsAreCatalogValid(projection);
+        EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
@@ -254,6 +255,12 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
 
         await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
+        // Creation is the first canonical write of every governed field the record supplies, so it
+        // seeds the per-field attribution the same way an amend does — diffed against an empty
+        // baseline instead of a previous revision.
+        var seededGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
+            CreateEmptyGovernedBaseline(projection), projection);
+        await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action backfill for the newly-created security so
         // that historical corp action data is available immediately for backtesting.
@@ -378,6 +385,66 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }
     }
 
+    /// <summary>
+    /// Records per-field CanonicalWrite attribution for the governed fields a persisted
+    /// create/amend supplied. Record-level provenance flips on every amendment, so without these
+    /// rows conflict detection can only name the record's LAST writer as a field's incumbent —
+    /// which, when providers amend different fields in sequence, attributes a conflicted field to a
+    /// source that never supplied it. Best-effort: the canonical projection is the durable
+    /// artifact; a failed row falls back to record-level provenance until the next write.
+    /// </summary>
+    private async Task TryRecordCanonicalFieldAttributionAsync(
+        IReadOnlyList<string> changedFieldPaths,
+        SecurityProjectionRecord projection,
+        CancellationToken ct)
+    {
+        if (_fieldProvenance is null || changedFieldPaths.Count == 0)
+            return;
+
+        var provenance = SecurityMasterProvenanceReader.Read(projection.Provenance);
+        var recordedAt = DateTimeOffset.UtcNow;
+        foreach (var fieldPath in changedFieldPaths)
+        {
+            try
+            {
+                await _fieldProvenance.UpsertAsync(
+                    new SecurityFieldProvenanceRecord(
+                        projection.SecurityId,
+                        fieldPath,
+                        provenance.SourceSystem,
+                        provenance.AsOf,
+                        provenance.UpdatedBy,
+                        Confidence: null,
+                        SecurityFieldProvenanceOrigins.CanonicalWrite,
+                        OriginReference: $"version:{projection.Version}",
+                        recordedAt),
+                    ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Recording canonical field attribution for {SecurityId} field {FieldPath} failed; conflict detection falls back to record-level provenance for this field.",
+                    projection.SecurityId, fieldPath);
+            }
+        }
+    }
+
+    private static readonly JsonElement EmptyJsonObject = JsonDocument.Parse("{}").RootElement.Clone();
+
+    /// <summary>
+    /// A baseline with no governed term values, so <see
+    /// cref="SecurityMasterConflictDetection.ChangedGovernedFieldPaths"/> reports every governed
+    /// field a freshly created projection supplies (creation is the first canonical write of each).
+    /// </summary>
+    private static SecurityProjectionRecord CreateEmptyGovernedBaseline(SecurityProjectionRecord projection)
+        => projection with
+        {
+            Currency = string.Empty,
+            CommonTerms = EmptyJsonObject,
+            AssetSpecificTerms = EmptyJsonObject,
+        };
+
     public void Dispose()
     {
         _serviceCts.Cancel();
@@ -414,10 +481,18 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// Error-severity issues. Deliberately not the per-asset-class composite validators: a
     /// profile-backed record reclassified to its resolved asset class (e.g. PrivateFundInterest)
     /// must not be rejected by unrelated OtherSecurity field rules such as a required outer
-    /// <c>category</c>. Skipped when no catalog was supplied (harnesses that exercise storage
-    /// mechanics without reference data).
+    /// <c>category</c>. Validation runs at the WRITE'S effective time, not the wall clock: a
+    /// future-dated create's identifiers are valid as of its EffectiveFrom, and evaluating them at
+    /// "now" would refuse a legitimate forward-dated record (or accept one whose coverage lapses by
+    /// its own effective date). Skipped when no catalog was supplied (harnesses that exercise
+    /// storage mechanics without reference data).
+    /// <para>Reclassified records (profile-backed but no longer CustomAsset) additionally re-run
+    /// the resolved first-class kind's domain invariants: the F# create/amend validated the
+    /// pre-override CustomAsset shape, so without this step a payload that violates the resolved
+    /// kind's stricter rules (e.g. a non-positive PrivateFundInterest commitment) would persist
+    /// under a class whose invariants it never satisfied.</para>
     /// </summary>
-    private void EnsureProfileBackedTermsAreCatalogValid(SecurityProjectionRecord projection)
+    private void EnsureProfileBackedTermsAreCatalogValid(SecurityProjectionRecord projection, DateTimeOffset effectiveAt)
     {
         if (_assetProfileCatalog is null)
         {
@@ -439,7 +514,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             projection.AssetClass,
             _assetProfileCatalog,
             requireProfileReference: isCustomAsset);
-        var issues = validator.Validate(new Validation.SecurityValidationContext(projection, DateTimeOffset.UtcNow));
+        var issues = validator.Validate(new Validation.SecurityValidationContext(projection, effectiveAt));
         var errors = issues
             .Where(static issue => issue.Severity == SecurityValidationSeverityDto.Error)
             .ToArray();
@@ -449,6 +524,19 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             throw new InvalidOperationException(
                 $"Security '{projection.SecurityId:D}' references an asset profile that fails catalog validation, " +
                 $"so the write is refused: {summary}");
+        }
+
+        if (!isCustomAsset)
+        {
+            var kind = SecurityMasterMapping.ToRecord(projection).Kind;
+            var invariantErrors = SecurityMasterCommandFacade.ValidateKindInvariants(kind);
+            if (invariantErrors.Length > 0)
+            {
+                var summary = string.Join("; ", invariantErrors.Select(static e => $"[{e.Code}] {e.Message}"));
+                throw new InvalidOperationException(
+                    $"Security '{projection.SecurityId:D}' resolved to asset class '{projection.AssetClass}' but its " +
+                    $"terms violate that class's domain invariants, so the write is refused: {summary}");
+            }
         }
     }
 
@@ -613,6 +701,33 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
            && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
            && !string.IsNullOrWhiteSpace(customProfileId.GetString());
 
+    /// <summary>
+    /// The asset class a known profile id resolves to. The PROFILE is the identity of a
+    /// profile-backed record, so reclassification derives from this map alone — caller-supplied
+    /// category/subType/accountingClassification metadata may corroborate but never decide, or a
+    /// mislabeled envelope would route a record into the wrong class's validators and projections.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string> KnownProfileAssetClasses =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["structured-credit-io-po"] = "StructuredCredit",
+            ["private-fund-interest"] = "PrivateFundInterest",
+            ["private-company-equity"] = "PrivateCompanyEquity",
+            ["real-estate-holding"] = "RealEstateHolding",
+            ["commitment-guarantee"] = "CommitmentGuarantee",
+        };
+
+    /// <summary>Classification keywords each resolved class accepts in envelope metadata.</summary>
+    private static readonly IReadOnlyDictionary<string, string[]> AssetClassMetadataKeywords =
+        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["StructuredCredit"] = ["StructuredCredit", "MBS", "ABS", "CLO", "CMBS"],
+            ["PrivateFundInterest"] = ["PrivateFunds", "PartnershipInterest", "PrivateFund", "PrivateFundInterest"],
+            ["PrivateCompanyEquity"] = ["PrivateEquity", "PrivateCompanyEquity"],
+            ["RealEstateHolding"] = ["RealEstate", "RealEstateInterest", "RealEstateHolding"],
+            ["CommitmentGuarantee"] = ["CommitmentGuarantee", "UnfundedCommitment", "Guarantee"],
+        };
+
     private static bool TryResolveProfileBackedAlternativeAssetClass(JsonElement assetSpecificTerms, out string assetClass)
     {
         var profileId = GetString(assetSpecificTerms, "customProfileId");
@@ -620,36 +735,69 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var subType = GetString(assetSpecificTerms, "subType");
         var accountingClassification = GetString(assetSpecificTerms, "accountingClassification");
 
+        // A registered profile id decides the class by itself. Envelope metadata that names a
+        // DIFFERENT class's keyword is refused rather than resolved: honoring either signal would
+        // let a mislabeled record pick its validators, and silently preferring the profile would
+        // hide the contradiction from the caller who asserted it.
+        if (profileId is not null && KnownProfileAssetClasses.TryGetValue(profileId, out var resolvedClass))
+        {
+            foreach (var (candidateClass, keywords) in AssetClassMetadataKeywords)
+            {
+                if (string.Equals(candidateClass, resolvedClass, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var conflicting = keywords.FirstOrDefault(keyword =>
+                    string.Equals(category, keyword, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(subType, keyword, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(accountingClassification, keyword, StringComparison.OrdinalIgnoreCase));
+                if (conflicting is not null)
+                {
+                    throw new InvalidOperationException(
+                        $"Profile '{profileId}' resolves to asset class '{resolvedClass}', but the envelope's " +
+                        $"classification metadata ('{conflicting}') belongs to '{candidateClass}'. The profile is " +
+                        "the identity of a profile-backed record — correct the category/subType/accountingClassification " +
+                        "metadata (or the profile reference) so they agree before the write can proceed.");
+                }
+            }
+
+            assetClass = resolvedClass;
+            return true;
+        }
+
+        // Unregistered profile ids fall back to the legacy heuristics: a recognizable field shape
+        // corroborated by classification metadata.
         if (ProfileFieldsContain(assetSpecificTerms, "tranche", "collateralType", "originalFace", "couponOrIndex")
-            && MatchesAny(profileId, category, subType, accountingClassification, "structured-credit-io-po", "StructuredCredit", "MBS", "ABS", "CLO", "CMBS"))
+            && MatchesAny(category, subType, accountingClassification, "StructuredCredit", "MBS", "ABS", "CLO", "CMBS"))
         {
             assetClass = "StructuredCredit";
             return true;
         }
 
         if (ProfileFieldsContain(assetSpecificTerms, "gpSponsor", "strategy", "vintage", "commitment", "navDate")
-            && MatchesAny(profileId, category, subType, accountingClassification, "private-fund-interest", "PrivateFunds", "PartnershipInterest", "PrivateFund"))
+            && MatchesAny(category, subType, accountingClassification, "PrivateFunds", "PartnershipInterest", "PrivateFund"))
         {
             assetClass = "PrivateFundInterest";
             return true;
         }
 
         if (ProfileFieldsContain(assetSpecificTerms, "issuer", "shareClass", "round", "costBasis")
-            && MatchesAny(profileId, category, subType, accountingClassification, "private-company-equity", "PrivateEquity", "PrivateCompanyEquity"))
+            && MatchesAny(category, subType, accountingClassification, "PrivateEquity", "PrivateCompanyEquity"))
         {
             assetClass = "PrivateCompanyEquity";
             return true;
         }
 
         if (ProfileFieldsContain(assetSpecificTerms, "propertyType", "addressOrMarket", "ownershipPercent", "appraisalValue", "valuationDate")
-            && MatchesAny(profileId, category, subType, accountingClassification, "real-estate-holding", "RealEstate", "RealEstateInterest", "RealEstateHolding"))
+            && MatchesAny(category, subType, accountingClassification, "RealEstate", "RealEstateInterest", "RealEstateHolding"))
         {
             assetClass = "RealEstateHolding";
             return true;
         }
 
         if (ProfileFieldsContain(assetSpecificTerms, "counterparty", "committedAmount", "effectiveDate")
-            && MatchesAny(profileId, category, subType, accountingClassification, "commitment-guarantee", "CommitmentGuarantee", "UnfundedCommitment", "Guarantee"))
+            && MatchesAny(category, subType, accountingClassification, "CommitmentGuarantee", "UnfundedCommitment", "Guarantee"))
         {
             assetClass = "CommitmentGuarantee";
             return true;
@@ -664,9 +812,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             ? value.GetString()
             : null;
 
-    private static bool MatchesAny(string? profileId, string? category, string? subType, string? accountingClassification, params string[] expected)
+    private static bool MatchesAny(string? category, string? subType, string? accountingClassification, params string[] expected)
         => expected.Any(value =>
-            string.Equals(profileId, value, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(category, value, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(subType, value, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(accountingClassification, value, StringComparison.OrdinalIgnoreCase));

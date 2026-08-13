@@ -295,11 +295,12 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task UpdateSecurityField_UnresolvableAssetClass_FailsClosedForValueEdits()
+    public async Task UpdateSecurityField_UnresolvableAssetClass_FailsClosed()
     {
         // The assetSpecificTerms namespace only accepts validated writes; a read-model outage must
-        // not become the window in which unvalidated values slip through. Clears stay fail-open —
-        // they assert nothing.
+        // not become the window in which unvalidated values slip through. Clears fail closed too:
+        // without the schema the path cannot be canonicalized, so clearing an alias spelling would
+        // remove the wrong key while the canonical override stays active.
         var harness = new Harness(currentVersion: 3);
         // No SetPassportAssetClass: the passport read model resolves nothing.
 
@@ -317,9 +318,10 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             .WithMessage("*could not be resolved*");
 
         var clear = valueEdit with { NewValue = null, Justification = "Withdraw the coupon override." };
-        var staged = await harness.Service.UpdateSecurityFieldAsync(clear);
-        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
-            "a clear asserts nothing and stays available during a read-model outage");
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(clear))
+            .Should().ThrowAsync<InvalidOperationException>(
+                "an uncanonicalized clear could remove the wrong overlay key and leave the asserted value active")
+            .WithMessage("*could not be resolved*");
     }
 
     [Fact]
@@ -357,6 +359,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         // A blank edit is a CLEAR: persisting an empty-string override would bypass type
         // validation and read as an asserted value downstream.
         var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
 
         var request = new UpdateSecurityFieldRequest(
             SecurityId: SecurityId,
@@ -390,6 +393,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         // A clear withdraws the asserted operator value, so lineage must not keep (or newly record)
         // an OperatorFieldEdit attribution claiming an asserted value that no longer exists.
         var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
         var overrideRecordedAt = new DateTimeOffset(2026, 3, 14, 23, 59, 0, TimeSpan.Zero);
         harness.Overrides
             .Setup(o => o.PatchAsync(

@@ -183,6 +183,14 @@ module SecurityMaster =
                 (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be between zero and one — factors above one project cash flows exceeding the original principal.")
             @ require
                 (terms.FactorScheduleEntries
+                 |> List.map (fun entry -> entry.AsOfDate)
+                 |> List.distinct
+                 |> List.length = List.length terms.FactorScheduleEntries)
+                (error
+                    "structured_credit_factor_schedule_duplicate_date"
+                    "StructuredCredit factor schedule dates must be unique — two factors on the same date make the effective outstanding principal depend on input ordering, and readers keep only one of them.")
+            @ require
+                (terms.FactorScheduleEntries
                  |> List.sortBy (fun entry -> entry.AsOfDate)
                  |> List.pairwise
                  |> List.forall (fun (earlier, later) -> later.Factor <= earlier.Factor))
@@ -399,6 +407,12 @@ module SecurityMaster =
                 { identifier with ValidTo = Some effectiveFrom }
             else
                 identifier)
+
+    /// Standalone kind-invariant validation for the C# write path: a profile-backed record
+    /// reclassified to its resolved first-class kind must satisfy that kind's rule set too, which
+    /// can be stricter than the pinned profile's (e.g. PrivateFundInterest requires a strictly
+    /// positive commitment while the profile's field range starts at zero).
+    let validateKindInvariants (kind: SecurityKind) = validateKind kind
 
     let create (command: CreateSecurity) =
         match validateCreate command with

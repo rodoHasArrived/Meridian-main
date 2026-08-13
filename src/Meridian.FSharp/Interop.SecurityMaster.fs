@@ -513,3 +513,9 @@ type SecurityMasterCommandFacade private () =
 
     static member Deactivate(current: SecurityMasterRecord, command: DeactivateSecurity) =
         SecurityMasterCommandFacade.ToResult(Some current, SecurityMaster.deactivate current command)
+
+    /// Standalone kind-invariant validation for the C# write path: a profile-backed record
+    /// reclassified to its resolved first-class kind must also satisfy that kind's rule set,
+    /// which can be stricter than the pinned profile's.
+    static member ValidateKindInvariants(kind: SecurityKind) =
+        SecurityMaster.validateKindInvariants kind |> List.toArray

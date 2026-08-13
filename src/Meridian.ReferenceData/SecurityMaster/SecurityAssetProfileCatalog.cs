@@ -68,7 +68,8 @@ internal static class SecurityAssetProfileSeeds
                     RequiredDecimal("originalFace", "Original face", 0.01m, null, projected: true),
                     RequiredText("couponOrIndex", "Coupon/index", projected: true, searchable: true),
                     RequiredText("factorSchedule", "Factor schedule", projected: true, searchable: true),
-                    RequiredEnum("collateralType", "Collateral type", Taxonomy(SecurityReferenceTaxonomyKeys.CollateralType), projected: true, searchable: true)
+                    RequiredEnum("collateralType", "Collateral type", Taxonomy(SecurityReferenceTaxonomyKeys.CollateralType), projected: true, searchable: true),
+                    OptionalDate("maturity", "Maturity", projected: true)
                 ],
                 [
                     new(SecurityIdentifierKind.Cusip, true, "Structured-credit strips should carry CUSIP coverage when available."),
@@ -187,6 +188,9 @@ internal static class SecurityAssetProfileSeeds
 
     private static SecurityAssetProfileFieldDefinitionDto RequiredDate(string key, string label, bool projected)
         => Field(key, label, SecurityAssetProfileFieldTypeDto.Date, true, [], null, null, projected, searchable: false);
+
+    private static SecurityAssetProfileFieldDefinitionDto OptionalDate(string key, string label, bool projected)
+        => Field(key, label, SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, projected, searchable: false);
 
     private static SecurityAssetProfileFieldDefinitionDto RequiredInteger(string key, string label, decimal? minValue, decimal? maxValue, bool projected)
         => Field(key, label, SecurityAssetProfileFieldTypeDto.Integer, true, [], minValue, maxValue, projected, searchable: false);

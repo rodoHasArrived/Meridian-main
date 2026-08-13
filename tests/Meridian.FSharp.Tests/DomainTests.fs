@@ -1279,6 +1279,21 @@ let ``Structured credit factors above one are rejected`` () =
                                                                   { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m } ] })
     |> should not' (contain "structured_credit_factor_schedule_not_monotonic")
 
+    // Two factors on the SAME date make the effective outstanding principal depend on input
+    // ordering — readers keep only one of them — so duplicates are rejected even when each
+    // individual factor is valid and the pair happens to be non-increasing.
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.7m } ] })
+    |> should contain "structured_credit_factor_schedule_duplicate_date"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m } ] })
+    |> should not' (contain "structured_credit_factor_schedule_duplicate_date")
+
 [<Fact>]
 let ``CustomAsset writes require the declared profile envelope in the document`` () =
     let kindWith termsJson =

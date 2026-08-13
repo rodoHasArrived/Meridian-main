@@ -3516,7 +3516,7 @@
       ]
     }
   ],
-  "fingerprint": "cedb2625fcc066ef5c94cf0e59291a7f75c357ddd4e19ae0df5541d9bcc7e4db",
+  "fingerprint": "951105c40d282d44f02eb6138eb26e97bedab6e4b95b66948d63408c887113b3",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5344,7 +5344,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "99df89f8b28a976ae5d3837d95de963c25a0467631b49f1eb300bb23fcb318c8",
+      "fingerprint": "1c092edf67c62212d2ec89c1bcee45318c1e2e33aeaa21ebc62a1dbcd25e7ceb",
       "mapped_schemas": [
         "security_master"
       ],
@@ -209765,7 +209765,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "7cd865977071fbe08b99b8d427bb3d649574e70cf80a2ea22191724212e0f549",
+      "fingerprint": "d78039cea6552faaaab5fe4423f237888dbe210f2d4b4b0d2adaa2fc02cb26e4",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
       "id": "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
       "kind": "record",
@@ -209784,7 +209784,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 77,
+          "source_line": 85,
           "type": "DateTimeOffset?"
         },
         {
@@ -209798,7 +209798,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 79,
+          "source_line": 87,
           "type": "decimal?"
         },
         {
@@ -209812,7 +209812,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 75,
+          "source_line": 83,
           "type": "string"
         },
         {
@@ -209826,7 +209826,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 80,
+          "source_line": 88,
           "type": "string"
         },
         {
@@ -209840,7 +209840,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 81,
+          "source_line": 89,
           "type": "string?"
         },
         {
@@ -209854,7 +209854,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 82,
+          "source_line": 90,
           "type": "DateTimeOffset"
         },
         {
@@ -209868,7 +209868,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 74,
+          "source_line": 82,
           "type": "Guid"
         },
         {
@@ -209882,7 +209882,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 76,
+          "source_line": 84,
           "type": "string"
         },
         {
@@ -209896,7 +209896,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 78,
+          "source_line": 86,
           "type": "string?"
         }
       ],
@@ -209906,12 +209906,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord",
       "references": [],
       "source": {
-        "line": 73,
+        "line": 81,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs"
       },
       "sources": [
         {
-          "line": 73,
+          "line": 81,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs"
         }
       ],
@@ -211505,7 +211505,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "cc2b9626dd79e1f884bd634e1f33bfe1cac734ed067b8d547ac0de3bed16c925",
+      "fingerprint": "0166432a00bfaf80616bee309b28f44793d439d7cee29c52146dd3a523fc7890",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterProvenanceReader",
       "id": "Meridian.Contracts.SecurityMaster.SecurityMasterProvenanceReader",
       "kind": "class",
@@ -211519,12 +211519,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityMasterProvenanceReader",
       "references": [],
       "source": {
-        "line": 95,
+        "line": 103,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs"
       },
       "sources": [
         {
-          "line": 95,
+          "line": 103,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs"
         }
       ],

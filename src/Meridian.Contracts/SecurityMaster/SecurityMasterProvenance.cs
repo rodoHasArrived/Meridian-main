@@ -62,6 +62,14 @@ public static class SecurityFieldProvenanceOrigins
 
     /// <summary>The attribution written when an operator stages an overlay field edit.</summary>
     public const string OperatorFieldEdit = "OperatorFieldEdit";
+
+    /// <summary>
+    /// The attribution written when an ordinary canonical create/amend changes a governed field —
+    /// the per-field record of WHICH source supplied the current value, kept so conflict detection
+    /// can name the true incumbent even when the field was never conflicted (record-level
+    /// provenance flips on every amendment and cannot answer that question).
+    /// </summary>
+    public const string CanonicalWrite = "CanonicalWrite";
 }
 
 /// <summary>

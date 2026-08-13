@@ -622,6 +622,287 @@ public sealed class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task AmendTermsAsync_ChangedGovernedField_RecordsCanonicalWriteAttribution()
+    {
+        // Record-level provenance flips on every amendment; the per-field CanonicalWrite row is
+        // what lets conflict detection name the source that actually supplied the changed field.
+        var (securityId, _, service, _, fieldProvenance) = BuildAmendHarness(
+            conflictRecordingFails: false);
+
+        await service.AmendTermsAsync(BuildConflictingAmend(securityId));
+
+        await fieldProvenance.Received(1).UpsertAsync(
+            Arg.Is<SecurityFieldProvenanceRecord>(record =>
+                record.SecurityId == securityId
+                && record.FieldPath == "EconomicTerms.couponRate"
+                && record.SourceSystem == "provB"
+                && record.Origin == SecurityFieldProvenanceOrigins.CanonicalWrite),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_GovernedFields_SeedCanonicalWriteAttribution()
+    {
+        // Creation is the first canonical write of every governed field the record supplies, so
+        // per-field attribution must exist from version 1 — not only after the first amendment.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var fieldProvenance = Substitute.For<ISecurityFieldProvenanceStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            fieldProvenance: fieldProvenance);
+
+        await service.CreateAsync(new CreateSecurityRequest(
+            securityId,
+            "Bond",
+            JsonSerializer.SerializeToElement(new { displayName = "Attributed Bond", currency = "USD" }),
+            JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2031-06-15",
+                couponRate = 4.25m,
+                par = 1000m
+            }),
+            new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "BOND-ATTR", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+            },
+            DateTimeOffset.UtcNow,
+            "provA",
+            "codex",
+            null,
+            "create"));
+
+        await fieldProvenance.Received(1).UpsertAsync(
+            Arg.Is<SecurityFieldProvenanceRecord>(record =>
+                record.SecurityId == securityId
+                && record.FieldPath == "EconomicTerms.couponRate"
+                && record.SourceSystem == "provA"
+                && record.Origin == SecurityFieldProvenanceOrigins.CanonicalWrite),
+            Arg.Any<CancellationToken>());
+        await fieldProvenance.Received(1).UpsertAsync(
+            Arg.Is<SecurityFieldProvenanceRecord>(record =>
+                record.FieldPath == "CommonTerms.currency"
+                && record.Origin == SecurityFieldProvenanceOrigins.CanonicalWrite),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_ProfileMetadataContradictsResolvedClass_RefusesTheWrite()
+    {
+        // The profile is the identity of a profile-backed record: a registered profile id decides
+        // the resolved class by itself, and envelope metadata naming a DIFFERENT class's keyword is
+        // a contradiction to surface, not a signal to honor.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                securityId,
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new { displayName = "Mislabeled Fund Interest", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "private-fund-interest",
+                    profileVersion = 1,
+                    category = "MBS",
+                    profileFields = new
+                    {
+                        gpSponsor = "Meridian Growth Partners",
+                        strategy = "Buyout",
+                        vintage = 2024,
+                        commitment = 5_000_000m,
+                        fundedAmount = 2_000_000m,
+                        unfundedAmount = 3_000_000m,
+                        navDate = "2026-06-30"
+                    }
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-MIS", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*belongs to 'StructuredCredit'*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_ReclassifiedRecordViolatingKindInvariants_RefusesTheWrite()
+    {
+        // The pinned profile's field ranges can be LOOSER than the resolved first-class kind's
+        // domain rules (the profile allows commitment >= 0; PrivateFundInterest requires > 0).
+        // Reclassification must re-run the resolved kind's invariants or the payload persists
+        // under a class whose rules it never satisfied.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                securityId,
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new { displayName = "Zero Commitment Fund", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "private-fund-interest",
+                    profileVersion = 1,
+                    profileFields = new
+                    {
+                        gpSponsor = "Meridian Growth Partners",
+                        strategy = "Buyout",
+                        vintage = 2024,
+                        commitment = 0m,
+                        fundedAmount = 0m,
+                        unfundedAmount = 0m,
+                        navDate = "2026-06-30"
+                    },
+                    profileApproval = new
+                    {
+                        approvedBy = "governance.lead",
+                        approvedAtUtc = "2026-05-29T00:00:00Z",
+                        approvalReference = "PFI-APPROVAL-2"
+                    }
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-ZERO", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*domain invariants*private_fund_commitment_invalid*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_FutureDatedProfileBackedRecord_ValidatesIdentifiersAtEffectiveTime()
+    {
+        // Catalog validation runs at the write's effective time, not the wall clock: a forward-dated
+        // create whose required identifier becomes valid ON its EffectiveFrom is legitimate, and
+        // evaluating coverage at "now" would refuse it.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(30);
+        var detail = await service.CreateAsync(new CreateSecurityRequest(
+            securityId,
+            "CustomAsset",
+            JsonSerializer.SerializeToElement(new { displayName = "Forward-Dated Fund Interest", currency = "USD" }),
+            JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "private-fund-interest",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    gpSponsor = "Meridian Growth Partners",
+                    strategy = "Buyout",
+                    vintage = 2026,
+                    commitment = 5_000_000m,
+                    fundedAmount = 0m,
+                    unfundedAmount = 5_000_000m,
+                    navDate = "2026-06-30"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "governance.lead",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "PFI-APPROVAL-3"
+                }
+            }),
+            new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-FWD", true, effectiveFrom, null, null)
+            },
+            effectiveFrom,
+            "test",
+            "codex",
+            null,
+            "create"));
+
+        detail.SecurityId.Should().Be(securityId);
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            0,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
     private static (Guid SecurityId,
         ISecurityMasterEventStore EventStore,
         SecurityMasterService Service,

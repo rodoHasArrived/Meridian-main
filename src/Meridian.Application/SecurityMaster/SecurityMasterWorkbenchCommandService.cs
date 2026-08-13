@@ -606,8 +606,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     /// an alias like <c>dayCount</c> and its declared key <c>dayCountConvention</c> share one
     /// override key, revision lineage, and provenance row), or the caller's path unchanged for the
     /// free annotation surface. When the asset class cannot be resolved (passport read model
-    /// degraded or unavailable), a value-asserting edit fails CLOSED — the namespace only accepts
-    /// validated writes — while a blank clear stays fail-open, since it asserts nothing.
+    /// degraded or unavailable), the edit fails CLOSED — value edits because the namespace only
+    /// accepts validated writes, and clears because without the schema the path cannot be
+    /// canonicalized, so an alias-spelled clear would remove the wrong key and leave the asserted
+    /// value active.
     /// </summary>
     private async Task<string> EnsureFieldEditIsSchemaValidAsync(UpdateSecurityFieldRequest request, CancellationToken ct)
     {
@@ -638,22 +640,16 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         if (string.IsNullOrWhiteSpace(assetClass))
         {
             // The assetSpecificTerms namespace is RESERVED for schema-validated writes (the generic
-            // override route hard-rejects it on that basis), so an unresolvable asset class must
-            // fail a value-asserting edit closed — otherwise a read-model outage is exactly the
-            // window in which undeclared paths and malformed values slip through unvalidated. A
-            // blank edit stays fail-open: a clear asserts nothing and only removes an overlay key.
-            if (!string.IsNullOrWhiteSpace(request.NewValue))
-            {
-                throw new InvalidOperationException(
-                    $"The asset class for security '{request.SecurityId:D}' could not be resolved, so the " +
-                    "assetSpecificTerms edit cannot be schema-validated. Retry once the passport read model " +
-                    "is available; the namespace only accepts validated writes.");
-            }
-
-            _logger.LogWarning(
-                "Asset class for {SecurityId} could not be resolved; staging blank (clear) field edit {FieldPath} without schema validation.",
-                request.SecurityId, safeFieldPathForLog);
-            return request.FieldPath;
+            // override route hard-rejects it on that basis), so an unresolvable asset class fails
+            // the edit closed — otherwise a read-model outage is exactly the window in which
+            // undeclared paths and malformed values slip through unvalidated. Clears fail closed
+            // too: without the schema the path cannot be canonicalized, so clearing an alias
+            // spelling (e.g. dayCount) would remove a nonexistent key while the canonical override
+            // (dayCountConvention) and its provenance stay active — a clear that silently no-ops.
+            throw new InvalidOperationException(
+                $"The asset class for security '{request.SecurityId:D}' could not be resolved, so the " +
+                "assetSpecificTerms edit cannot be schema-validated or path-canonicalized. Retry once the " +
+                "passport read model is available; the namespace only accepts validated writes.");
         }
 
         if (!SecurityAssetTermsFieldEditValidator.TryValidate(
