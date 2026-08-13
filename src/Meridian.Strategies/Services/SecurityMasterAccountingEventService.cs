@@ -469,6 +469,15 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         var projectedPositionVersion = position.PositionVersion;
         foreach (var factor in factors)
         {
+            // An UNCHANGED observation (prior == current) is factor coverage, not a paydown: no
+            // principal moved, so there is nothing to project or post. Handing it to the projector
+            // would fail closed on the evidence requirement — a high-severity issue for a period
+            // in which nothing happened — when the schedule carries no optional evidence pointer.
+            if (factor.CurrentFactor == factor.PriorFactor)
+            {
+                continue;
+            }
+
             var projection = _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
                 security.SecurityId,
                 positionId,

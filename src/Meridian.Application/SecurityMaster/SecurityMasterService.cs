@@ -483,8 +483,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// create/amend supplied. Record-level provenance flips on every amendment, so without these
     /// rows conflict detection can only name the record's LAST writer as a field's incumbent —
     /// which, when providers amend different fields in sequence, attributes a conflicted field to a
-    /// source that never supplied it. Best-effort: the canonical projection is the durable
-    /// artifact; a failed row falls back to record-level provenance until the next write.
+    /// source that never supplied it. The canonical projection stays the durable artifact, but a
+    /// swallowed failure here does NOT degrade to the record-level fallback: any OLDER attribution
+    /// row keeps naming a stale incumbent, which can open false cross-source conflicts against the
+    /// writer's own later revisions. Each row is therefore retried once, and on final failure the
+    /// stale attribution rows for that path are explicitly invalidated so the record-level
+    /// fallback genuinely applies; only when THAT also fails does a stale incumbent remain,
+    /// logged as an error.
     /// </summary>
     private async Task TryRecordCanonicalFieldAttributionAsync(
         IReadOnlyList<string> changedFieldPaths,
@@ -498,26 +503,67 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var recordedAt = DateTimeOffset.UtcNow;
         foreach (var fieldPath in changedFieldPaths)
         {
+            var recorded = false;
+            for (var attempt = 0; attempt < 2 && !recorded; attempt++)
+            {
+                try
+                {
+                    await _fieldProvenance.UpsertAsync(
+                        new SecurityFieldProvenanceRecord(
+                            projection.SecurityId,
+                            fieldPath,
+                            provenance.SourceSystem,
+                            provenance.AsOf,
+                            provenance.UpdatedBy,
+                            Confidence: null,
+                            SecurityFieldProvenanceOrigins.CanonicalWrite,
+                            OriginReference: $"version:{projection.Version}",
+                            recordedAt),
+                        ct).ConfigureAwait(false);
+                    recorded = true;
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    if (attempt == 0)
+                    {
+                        _logger.LogWarning(
+                            ex,
+                            "Recording canonical field attribution for {SecurityId} field {FieldPath} failed; retrying once.",
+                            projection.SecurityId, fieldPath);
+                        continue;
+                    }
+
+                    _logger.LogWarning(
+                        ex,
+                        "Recording canonical field attribution for {SecurityId} field {FieldPath} failed after retry; invalidating stale attribution so record-level provenance applies.",
+                        projection.SecurityId, fieldPath);
+                }
+            }
+
+            if (recorded)
+            {
+                continue;
+            }
+
+            // The durable record changed hands but its new attribution could not be written. An
+            // older CanonicalWrite/ConflictResolution row would keep naming the PREVIOUS incumbent,
+            // so the claimed record-level fallback would never engage — invalidate the stale rows
+            // explicitly so absence (and therefore the record-level source) is what loaders see.
             try
             {
-                await _fieldProvenance.UpsertAsync(
-                    new SecurityFieldProvenanceRecord(
-                        projection.SecurityId,
-                        fieldPath,
-                        provenance.SourceSystem,
-                        provenance.AsOf,
-                        provenance.UpdatedBy,
-                        Confidence: null,
-                        SecurityFieldProvenanceOrigins.CanonicalWrite,
-                        OriginReference: $"version:{projection.Version}",
-                        recordedAt),
-                    ct).ConfigureAwait(false);
+                var clearedAt = DateTimeOffset.UtcNow;
+                await _fieldProvenance.RemoveAsync(
+                    projection.SecurityId, fieldPath,
+                    SecurityFieldProvenanceOrigins.CanonicalWrite, clearedAt, ct).ConfigureAwait(false);
+                await _fieldProvenance.RemoveAsync(
+                    projection.SecurityId, fieldPath,
+                    SecurityFieldProvenanceOrigins.ConflictResolution, clearedAt, ct).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogWarning(
+                _logger.LogError(
                     ex,
-                    "Recording canonical field attribution for {SecurityId} field {FieldPath} failed; conflict detection falls back to record-level provenance for this field.",
+                    "Invalidating stale field attribution for {SecurityId} field {FieldPath} also failed; a stale incumbent may misattribute this field until the next successful write or resolution.",
                     projection.SecurityId, fieldPath);
             }
         }

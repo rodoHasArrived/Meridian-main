@@ -457,4 +457,40 @@ public sealed class SecurityMasterFieldConflictDetectionTests
             "the revising candidate's recorded value must track its live assertion so it stays a resolvable winner");
         refreshed.ValueA.Should().Be(opened.ValueA, "the other candidate's assertion is untouched");
     }
+
+    [Fact]
+    public async Task ReconcileOpenFieldConflictsAsync_RefreshedRowMatchingANewerConflict_CoalescesIntoIt()
+    {
+        // A=4.25 vs B=4.50 opens a conflict; B revises to 4.75 (candidate refresh keeps the row
+        // open); A then revises to 5.10 — pre-persist detection opens a NEW conflict for the same
+        // provider pair under a different deterministic id. Refreshing the OLD row too would leave
+        // two independently resolvable queue entries describing one live disagreement, so the
+        // older row coalesces into the newer one.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var bloomberg = Record("Bloomberg", new { couponRate = 4.25m });
+        var reuters = Record("Reuters", new { couponRate = 4.50m });
+        await service.RecordFieldConflictsAsync(bloomberg, reuters, CancellationToken.None);
+        var original = (await service.GetOpenConflictsAsync(CancellationToken.None)).Should().ContainSingle().Subject;
+
+        var reutersRevised = Record("Reuters", new { couponRate = 4.75m });
+        await service.RecordFieldConflictsAsync(reuters, reutersRevised, CancellationToken.None);
+        await service.ReconcileOpenFieldConflictsAsync(reutersRevised, CancellationToken.None);
+
+        var bloombergRevised = Record("Bloomberg", new { couponRate = 5.10m });
+        await service.RecordFieldConflictsAsync(reutersRevised, bloombergRevised, CancellationToken.None);
+        await service.ReconcileOpenFieldConflictsAsync(bloombergRevised, CancellationToken.None);
+
+        var coalesced = await service.GetConflictAsync(original.ConflictId, CancellationToken.None);
+        coalesced!.Status.Should().Be("Superseded",
+            "the newer detection row carries the live values for the same provider pair");
+        coalesced.ResolvedReason.Should().Contain("Coalesced");
+        var openForField = (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Where(conflict => conflict.FieldPath == "EconomicTerms.couponRate")
+            .ToArray();
+        openForField.Should().ContainSingle("one live disagreement must surface exactly one resolvable queue entry");
+    }
 }

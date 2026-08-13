@@ -449,6 +449,33 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_UnchangedFactorObservation_IsCoverageNotAPaydown()
+    {
+        // An observation whose factor equals its prior is the period's factor COVERAGE — no
+        // principal moved. It must neither project a paydown nor fail closed on the evidence
+        // requirement (this entry carries no evidence link, which for a REAL paydown is a
+        // high-severity issue).
+        var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 0.80m,
+                    CurrentFactor: 0.80m,
+                    Source: "trustee-report",
+                    SourceContentHash: "sha256:unchanged-factor")
+            ]));
+
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+        result.Issues.Should().NotContain(issue => issue.Code == "FACTOR_PAYDOWN_EVIDENCE_REQUIRED",
+            "a no-change observation has nothing to evidence");
+        result.Issues.Should().NotContain(issue => issue.Code == "FACTOR_SCHEDULE_MISSING",
+            "the unchanged observation still counts as the period's factor coverage");
+    }
+
+    [Fact]
     public void Generate_FactorPaydownWithoutEvidence_ShouldFailClosed()
     {
         var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(

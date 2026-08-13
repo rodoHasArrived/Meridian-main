@@ -254,7 +254,14 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 CurrentFactor: currentFactor,
                 OriginalFace: originalFace,
                 CurrentFace: currentFace,
-                RequiresFactorSchedule: currentFactor is < 1m || ReadBool(redemption, "isAmortizing") == true),
+                // A retained TYPED factor schedule marks the security as factor-driven even when
+                // no scalar factor or amortizing flag is present: a canonical StructuredCredit may
+                // carry its whole factor history in factorScheduleEntries, and a later month with
+                // no in-period observation must still gate on missing/stale factor coverage
+                // instead of silently skipping the amortizing security.
+                RequiresFactorSchedule: currentFactor is < 1m
+                    || ReadBool(redemption, "isAmortizing") == true
+                    || HasTypedFactorSchedule(definition)),
             ToAccountingRule(definition));
     }
 
@@ -296,9 +303,11 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         ReadDecimal(item, "previousFactor");
                     var currentFactor = ReadDecimal(item, "currentFactor") ??
                         ReadDecimal(item, "factor");
+                    // Period end is EXCLUSIVE (ResolvePeriod supplies the next month's first day),
+                    // so a month-boundary row surfaces in exactly one reconciliation.
                     if (asOfDate is null ||
                         asOfDate < periodStart ||
-                        asOfDate > periodEnd ||
+                        asOfDate >= periodEnd ||
                         priorFactor is null ||
                         currentFactor is null)
                     {
@@ -369,26 +378,37 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     // are relative to original face, so a schedule opening below one records a
                     // real first paydown (canonical validation does not require an explicit 1.00
                     // baseline row). An explicit 1.00 opening pairs against itself and emits
-                    // nothing.
+                    // nothing. LATER unchanged observations still emit — they are the period's
+                    // factor COVERAGE evidence — and the paydown generator skips them as
+                    // no-principal-moved rows instead of projecting a zero-change candidate.
                     var priorFactor = i == 0 ? 1.00m : ordered[i - 1].Factor;
                     if (i == 0 && row.Factor == priorFactor)
                     {
                         continue;
                     }
 
+                    // The period end is EXCLUSIVE: ResolvePeriod supplies the first day of the
+                    // NEXT month, so an inclusive comparison would surface a month-boundary
+                    // observation in two adjacent reconciliations as duplicate paydown evidence.
                     if (row.AsOfDate < periodStart ||
-                        row.AsOfDate > periodEnd ||
+                        row.AsOfDate >= periodEnd ||
                         !coveredDates.Add(row.AsOfDate))
                     {
                         continue;
                     }
 
+                    // Typed rows carry no per-row source; the canonical F# provenance serializes
+                    // the asserting provider under sourceSystem, so that vendor identity — not the
+                    // generic security-master fallback — is the factor-source lineage the expected
+                    // event must record.
                     entries.Add(new SecurityFactorScheduleEntry(
                         definition.SecurityId,
                         row.AsOfDate,
                         priorFactor,
                         row.Factor,
-                        ReadString(row.Item, "source") ?? ReadString(definition.Provenance, "source") ?? "security-master",
+                        ReadString(row.Item, "source")
+                            ?? ResolveProvenanceSourceSystem(definition)
+                            ?? "security-master",
                         ReadString(row.Item, "evidenceLink") ?? typedRowEvidence,
                         ReadString(definition.Provenance, "sourceContentHash") ?? HashFactorRow(row.Item)));
                 }
@@ -399,6 +419,43 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             .OrderBy(static entry => entry.SecurityId)
             .ThenBy(static entry => entry.AsOfDate)
             .ToArray();
+    }
+
+    /// <summary>
+    /// True when the record retains a nonempty typed factor schedule (governed profileFields or
+    /// envelope root) — the presence signal that makes the security factor-driven for coverage
+    /// gating regardless of scalar terms.
+    /// </summary>
+    private static bool HasTypedFactorSchedule(SecurityEconomicDefinitionRecord definition)
+    {
+        foreach (var schedule in EnumerateTypedFactorScheduleArrays(definition))
+        {
+            foreach (var item in schedule.EnumerateArray())
+            {
+                if (item.ValueKind == JsonValueKind.Object)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// The record-level asserting provider: the canonical <c>sourceSystem</c> when present, then
+    /// the legacy free-text <c>source</c> key; null when neither names a provider, so callers can
+    /// apply their own terminal fallback.
+    /// </summary>
+    private static string? ResolveProvenanceSourceSystem(SecurityEconomicDefinitionRecord definition)
+    {
+        var sourceSystem = SecurityMasterProvenanceReader.Read(definition.Provenance).SourceSystem;
+        if (!string.Equals(sourceSystem, SecurityMasterProvenanceReader.UnknownSource, StringComparison.OrdinalIgnoreCase))
+        {
+            return sourceSystem;
+        }
+
+        return ReadString(definition.Provenance, "source");
     }
 
     private static string HashFactorRow(JsonElement item)

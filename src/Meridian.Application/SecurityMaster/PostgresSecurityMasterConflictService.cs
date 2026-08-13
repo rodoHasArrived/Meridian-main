@@ -168,7 +168,9 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                             "retry the resolution.");
                     }
 
-                    await SupersedeConflictAsync(connection, transaction, openConflict, persistedValue, ct).ConfigureAwait(false);
+                    await SupersedeConflictAsync(
+                        connection, transaction, openConflict,
+                        BuildReplacedBothCandidatesReason(openConflict, persistedValue), ct).ConfigureAwait(false);
                     await transaction.CommitAsync(ct).ConfigureAwait(false);
                     throw new InvalidOperationException(
                         $"Conflict '{openConflict.ConflictId:D}' was superseded: a later canonical write persisted a value " +
@@ -386,7 +388,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityMasterConflict conflict,
-        string? persistedValue,
+        string reason,
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
@@ -401,14 +403,15 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             where conflict_id = @conflict_id and status = 'Open';
             """;
         command.Parameters.AddWithValue("resolved_by", "system:canonical-write");
-        command.Parameters.AddWithValue(
-            "resolved_reason",
-            $"A later canonical write persisted '{persistedValue}' for '{conflict.FieldPath}', which matches neither " +
-            $"recorded candidate ('{conflict.ProviderA}'='{conflict.ValueA}', '{conflict.ProviderB}'='{conflict.ValueB}').");
+        command.Parameters.AddWithValue("resolved_reason", reason);
         command.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
         command.Parameters.AddWithValue("conflict_id", conflict.ConflictId);
         return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) > 0;
     }
+
+    private static string BuildReplacedBothCandidatesReason(SecurityMasterConflict conflict, string? persistedValue)
+        => $"A later canonical write persisted '{persistedValue}' for '{conflict.FieldPath}', which matches neither " +
+           $"recorded candidate ('{conflict.ProviderA}'='{conflict.ValueA}', '{conflict.ProviderB}'='{conflict.ValueB}').";
 
     private async Task<IReadOnlyDictionary<string, string>> LoadConflictResolutionFieldSourcesAsync(
         NpgsqlConnection connection,
@@ -587,6 +590,31 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             // stays a legally resolvable winner, instead of retiring a dispute that is still real.
             if (SecurityMasterConflictDetection.TryMatchCandidateProvider(conflict, incomingSource, out var revisesProviderA))
             {
+                // COALESCE before refreshing: pre-persist detection may already have opened a
+                // newer conflict for this field and provider pair carrying the live values (its
+                // deterministic id hashes the current values; this row's id still hashes the
+                // originals). Refreshing this row too would surface TWO independently resolvable
+                // queue entries for one disagreement — so the older row closes into the newer one.
+                var newerDuplicate = openConflicts.FirstOrDefault(other =>
+                    other.ConflictId != conflict.ConflictId
+                    && string.Equals(other.FieldPath, conflict.FieldPath, StringComparison.Ordinal)
+                    && SecurityMasterConflictDetection.SameProviderPair(other, conflict));
+                if (newerDuplicate is not null)
+                {
+                    if (await SupersedeConflictAsync(
+                            connection, transaction, conflict,
+                            $"Coalesced into conflict '{newerDuplicate.ConflictId:D}': the same providers dispute " +
+                            $"'{conflict.FieldPath}' with refreshed candidate values recorded there.",
+                            ct).ConfigureAwait(false))
+                    {
+                        _logger.LogInformation(
+                            "Coalesced open field conflict {ConflictId} into {DuplicateId} ({FieldPath}) for security {SecurityId}.",
+                            conflict.ConflictId, newerDuplicate.ConflictId, conflict.FieldPath, conflict.SecurityId);
+                    }
+
+                    continue;
+                }
+
                 if (await RefreshConflictCandidateValueAsync(
                         connection, transaction, conflict, revisesProviderA, persistedValue!, ct).ConfigureAwait(false))
                 {
@@ -605,7 +633,9 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 continue;
             }
 
-            if (await SupersedeConflictAsync(connection, transaction, conflict, persistedValue, ct).ConfigureAwait(false))
+            if (await SupersedeConflictAsync(
+                    connection, transaction, conflict,
+                    BuildReplacedBothCandidatesReason(conflict, persistedValue), ct).ConfigureAwait(false))
             {
                 _logger.LogInformation(
                     "Superseded obsolete field conflict {ConflictId} on {FieldPath} for security {SecurityId}: canonical write replaced both candidates.",

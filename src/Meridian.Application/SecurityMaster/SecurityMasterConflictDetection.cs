@@ -247,6 +247,21 @@ internal static class SecurityMasterConflictDetection
     }
 
     /// <summary>
+    /// Whether two field conflicts dispute between the SAME pair of providers (order-insensitive):
+    /// a refreshed older row and a newly detected row with this property describe one live
+    /// disagreement, and keeping both open would surface two independently resolvable queue
+    /// entries for it.
+    /// </summary>
+    internal static bool SameProviderPair(SecurityMasterConflict left, SecurityMasterConflict right)
+    {
+        static bool ProviderEquals(string a, string b)
+            => string.Equals(a.Trim(), b.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        return (ProviderEquals(left.ProviderA, right.ProviderA) && ProviderEquals(left.ProviderB, right.ProviderB))
+            || (ProviderEquals(left.ProviderA, right.ProviderB) && ProviderEquals(left.ProviderB, right.ProviderA));
+    }
+
+    /// <summary>
     /// The governed field paths whose values differ between <paramref name="current"/> and
     /// <paramref name="incoming"/>, regardless of source. Cross-source disagreement is what OPENS a
     /// conflict, but per-field attribution goes stale whenever a governed field changes hands —

@@ -557,7 +557,122 @@ public sealed class ReconciliationRunServiceTests
             item.SecurityId == securityId &&
             item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
             item.PrincipalAmount == 0.30m &&
+            // Typed rows carry no per-row source: the canonical provenance's sourceSystem — the
+            // vendor that asserted the schedule — is the factor-source lineage, not the generic
+            // security-master fallback.
+            item.Provenance.Contains("factor-source:vendor-trustee", StringComparison.Ordinal) &&
             item.EconomicEvent!.BookPositionId == positionId);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldGateFactorCoverageFromTypedSchedulePresence()
+    {
+        // A canonical StructuredCredit may carry its whole factor history in typed
+        // factorScheduleEntries with NO scalar factor. In a later month with no in-period
+        // observation the request contains no factor rows — the typed schedule's PRESENCE must
+        // still mark the security factor-driven so the missing-coverage gate fires instead of
+        // silently skipping the amortizing security.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-typed-presence-coverage"));
+
+        var securityId = Guid.Parse("aaaaaaaa-9999-4999-8999-aaaaaaaaaaaa");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL typed-history security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("aaaaaaaa-9999-4999-8999-aaaaaaaaaaab");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: null,
+            factorSchedule: null,
+            typedFactorEntries:
+            [
+                (new DateOnly(2026, 1, 15), 0.97m)
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-typed-presence-coverage"));
+
+        detail.Should().NotBeNull();
+        (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Should().Contain(issue => issue.Code == "FACTOR_SCHEDULE_MISSING",
+                "the typed schedule's presence marks the security factor-driven even without a scalar factor");
+        detail.ExpectedAccountingEvents.Should().NotContain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldExcludeNextPeriodBoundaryObservations()
+    {
+        // ResolvePeriod supplies the FIRST DAY of the next month as the period end; that boundary
+        // is exclusive, or an April 1 observation would surface identical paydown evidence in both
+        // the March and April reconciliations.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-boundary-exclusive"));
+
+        var securityId = Guid.Parse("bbbbbbbb-9999-4999-8999-bbbbbbbbbbbb");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL boundary security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("bbbbbbbb-9999-4999-8999-bbbbbbbbbbbc");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule: null,
+            typedFactorEntries:
+            [
+                (new DateOnly(2026, 2, 21), 1.00m),
+                (new DateOnly(2026, 4, 1), 0.97m)
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-boundary-exclusive"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().NotContain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown,
+            "the April 1 observation belongs to the April reconciliation only");
     }
 
     [Fact]
@@ -1517,7 +1632,7 @@ public sealed class ReconciliationRunServiceTests
             classification,
             commonTerms,
             economicTerms,
-            JsonSerializer.SerializeToElement(new { source = "test" }),
+            JsonSerializer.SerializeToElement(new { source = "test", sourceSystem = "vendor-trustee" }),
             Version: 1,
             EffectiveFrom: new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero),
             EffectiveTo: null,

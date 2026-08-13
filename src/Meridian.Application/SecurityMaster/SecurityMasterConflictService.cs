@@ -217,6 +217,37 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
             if (SecurityMasterConflictDetection.TryMatchCandidateProvider(existing, persistedSource, out var revisesProviderA))
             {
+                // COALESCE before refreshing: pre-persist detection may already have opened a
+                // newer conflict for this field and provider pair carrying the live values.
+                // Refreshing this row too would surface TWO independently resolvable queue
+                // entries for one disagreement — the older row closes into the newer one.
+                var newerDuplicate = _conflicts.Values.FirstOrDefault(other =>
+                    other.ConflictId != existing.ConflictId
+                    && other.SecurityId == existing.SecurityId
+                    && string.Equals(other.Status, "Open", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(other.FieldPath, existing.FieldPath, StringComparison.Ordinal)
+                    && SecurityMasterConflictDetection.SameProviderPair(other, existing));
+                if (newerDuplicate is not null)
+                {
+                    var coalesced = existing with
+                    {
+                        Status = "Superseded",
+                        ResolvedBy = "system:canonical-write",
+                        ResolvedReason =
+                            $"Coalesced into conflict '{newerDuplicate.ConflictId:D}': the same providers dispute " +
+                            $"'{existing.FieldPath}' with refreshed candidate values recorded there.",
+                        ResolvedAt = DateTimeOffset.UtcNow,
+                    };
+                    if (_conflicts.TryUpdate(conflictId, coalesced, existing))
+                    {
+                        _logger.LogInformation(
+                            "Coalesced open field conflict {ConflictId} into {DuplicateId} ({FieldPath}) for security {SecurityId}.",
+                            conflictId, newerDuplicate.ConflictId, existing.FieldPath, existing.SecurityId);
+                    }
+
+                    continue;
+                }
+
                 var refreshed = revisesProviderA
                     ? existing with { ValueA = persistedValue! }
                     : existing with { ValueB = persistedValue! };

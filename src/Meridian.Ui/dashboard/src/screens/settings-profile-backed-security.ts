@@ -52,7 +52,10 @@ export function buildProfileFieldValueState(
 }
 
 function defaultProfileFieldValue(field: SecurityAssetProfileFieldDefinition): string {
-  if (field.fieldType === "Boolean") return "false";
+  // Only a REQUIRED Boolean defaults to an asserted false: an optional Boolean the operator never
+  // touched must stay absent from the payload (buildProfileFieldPayload skips blanks), not assert
+  // a potentially meaningful negative value.
+  if (field.fieldType === "Boolean" && field.isRequired) return "false";
   return "";
 }
 
