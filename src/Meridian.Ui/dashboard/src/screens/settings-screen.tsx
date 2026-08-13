@@ -63,6 +63,7 @@ import {
   buildProfileFieldValueState,
   createProfileBackedSecurityState,
   isWriteSelectableAssetProfile,
+  missingRequiredIdentifierDetails,
   type ProfileBackedSecurityState
 } from "./settings-profile-backed-security";
 import {
@@ -2571,9 +2572,9 @@ export function SettingsScreen({
       .map((field) => field.label);
     const requiredIdentifierPreferences = selected.identifierPreferences
       .filter((preference) => preference.isRequiredForClose && preference.kind !== "InternalCode");
-    const missingIdentifiers = requiredIdentifierPreferences
-      .filter((preference) => !profileBackedSecurity.identifierValues[preference.kind]?.trim())
-      .map((preference) => `${preference.kind} identifier`);
+    // Includes the ProviderSymbol provider namespace: the write-side command validation rejects
+    // that kind with a blank provider, so the form must catch it up front.
+    const missingIdentifiers = missingRequiredIdentifierDetails(requiredIdentifierPreferences, profileBackedSecurity);
     if (!profileBackedSecurity.displayName.trim()
       || !profileBackedSecurity.internalCode.trim()
       || missingFields.length > 0
@@ -2638,7 +2639,10 @@ export function SettingsScreen({
             kind: preference.kind,
             value: profileBackedSecurity.identifierValues[preference.kind]!.trim(),
             isPrimary: false,
-            validFrom: effectiveFrom
+            validFrom: effectiveFrom,
+            ...(preference.kind === "ProviderSymbol"
+              ? { provider: profileBackedSecurity.identifierProviders[preference.kind]!.trim() }
+              : {})
           }))
         ],
         effectiveFrom,
@@ -3989,6 +3993,19 @@ export function SettingsScreen({
                       disabled={profileBackedSecurity.busy}
                       aria-label={`Profile-backed security ${preference.kind} identifier`}
                     />
+                    {preference.kind === "ProviderSymbol" ? (
+                      <Input
+                        value={profileBackedSecurity.identifierProviders[preference.kind] ?? ""}
+                        onChange={(event) => setProfileBackedSecurity((current) => ({
+                          ...current,
+                          identifierProviders: { ...current.identifierProviders, [preference.kind]: event.target.value },
+                          message: null
+                        }))}
+                        placeholder="Provider namespace (e.g. bloomberg)"
+                        disabled={profileBackedSecurity.busy}
+                        aria-label={`Profile-backed security ${preference.kind} provider namespace`}
+                      />
+                    ) : null}
                   </label>
                 ))}
               </div>

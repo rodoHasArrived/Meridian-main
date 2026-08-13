@@ -5619,7 +5619,8 @@ Meridian-main
 │   │   │   │   ├── 024_security_master_schema_version_column.sql
 │   │   │   │   ├── 025_security_master_audit_stores.sql
 │   │   │   │   ├── 026_security_master_operator_override_approvals.sql
-│   │   │   │   └── 027_security_master_field_provenance.sql
+│   │   │   │   ├── 027_security_master_field_provenance.sql
+│   │   │   │   └── 028_security_master_revision_values_and_versioned_provenance.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs

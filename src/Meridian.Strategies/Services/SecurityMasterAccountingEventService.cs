@@ -329,9 +329,12 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             return FactorScheduleCoverageIssue.Missing;
         }
 
+        // Period end is EXCLUSIVE (the production adapter supplies the next month's first day,
+        // matching the coupon window), so a month-boundary observation counts toward exactly one
+        // period's coverage.
         var hasPeriodFactor = entries.Any(entry =>
             entry.AsOfDate >= request.PeriodStart &&
-            entry.AsOfDate <= request.PeriodEnd);
+            entry.AsOfDate < request.PeriodEnd);
         if (hasPeriodFactor)
         {
             return null;
@@ -497,8 +500,11 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         // FACTOR_PAYDOWN_POSITION_REQUIRED for an event that does not exist. (Handing an unchanged
         // row to the projector would also fail closed on the evidence requirement when the
         // schedule carries no optional evidence pointer.)
+        // Period end is EXCLUSIVE, matching the coupon window and the production adapter's
+        // schedule trim: an adapter that supplies the full retained schedule must not have a
+        // next-month-first-day row generate the same paydown in both adjacent runs.
         var factors = (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
-            .Where(entry => entry.SecurityId == security.SecurityId && entry.AsOfDate >= request.PeriodStart && entry.AsOfDate <= request.PeriodEnd)
+            .Where(entry => entry.SecurityId == security.SecurityId && entry.AsOfDate >= request.PeriodStart && entry.AsOfDate < request.PeriodEnd)
             .Where(static entry => entry.CurrentFactor != entry.PriorFactor)
             .OrderBy(static entry => entry.AsOfDate)
             .ToArray();

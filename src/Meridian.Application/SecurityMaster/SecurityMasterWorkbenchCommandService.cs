@@ -232,9 +232,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             // and co-approves it unreviewed.
             try
             {
+                // The draft durably records the exact overlay VALUE it governs (null models a
+                // CLEAR): without it, discarding a later same-path revision could never restore
+                // this revision's value — an approved predecessor would deadlock unpublishable.
                 revision = await _revisions.CreateDraftAsync(
                     request.SecurityId, request.Actor, fieldPath, request.EffectiveFrom, request.Justification,
-                    request.FundProfileId, ct)
+                    request.FundProfileId,
+                    new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue),
+                    ct)
                     .ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -1359,9 +1364,13 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // key canonicalization — clearing profileFields.CurrentFactor must remove the canonical
         // currentFactor override, not a casing-variant key — AND post-clear revalidation: the
         // overlay that remains after removing the override must still satisfy the profile's date
-        // ordering and the resolved kind's invariants.
+        // ordering and the resolved kind's invariants. That applies to the WHOLE-OBJECT clear too,
+        // so it no longer short-circuits here: removing a staged replacement reveals the canonical
+        // profileFields object beneath the RETAINED scalar overrides, and that combination can
+        // violate rules the replacement satisfied (a scalar start override that ordered correctly
+        // against the replacement's end date may read start-after-end against the canonical one).
         var isClear = string.IsNullOrWhiteSpace(request.NewValue);
-        if ((!isWholeObject && !isNestedField) || (isWholeObject && isClear))
+        if (!isWholeObject && !isNestedField)
         {
             return canonicalFieldPath;
         }
@@ -1413,6 +1422,51 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 $"The pinned asset profile for security '{request.SecurityId:D}' could not be resolved, so the " +
                 "profileFields edit cannot be validated or path-canonicalized. Ensure the record carries a profile " +
                 "envelope pinned to a registered profile version and retry; the namespace only accepts validated writes.");
+        }
+
+        if (isWholeObject && isClear)
+        {
+            // Clearing the staged whole-object replacement is an edit to the effective overlay:
+            // the canonical profileFields object is revealed beneath every RETAINED scalar
+            // override, and that post-clear combination must still satisfy the profile's date
+            // ordering and the resolved kind's invariants — otherwise stage a valid replacement,
+            // stage a scalar date override that orders correctly against it, then clear the
+            // replacement: each edit validates individually, but the clear leaves an approvable
+            // overlay violating the pinned profile against the canonical object.
+            var replacementClearOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
+            IReadOnlyDictionary<string, string>? postClearOverrides = replacementClearOverrides;
+            if (replacementClearOverrides is not null)
+            {
+                var filtered = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (var (path, value) in replacementClearOverrides)
+                {
+                    if (!string.Equals(path, ProfileFieldsRootPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        filtered[path] = value;
+                    }
+                }
+
+                postClearOverrides = filtered;
+            }
+
+            foreach (var rule in profile.DateOrderRules)
+            {
+                if (TryResolveEffectiveProfileDate(rule.StartFieldKey, currentProfileFields, postClearOverrides, out var start)
+                    && TryResolveEffectiveProfileDate(rule.EndFieldKey, currentProfileFields, postClearOverrides, out var end)
+                    && start > end)
+                {
+                    throw new ArgumentException(
+                        $"Clearing the profileFields replacement leaves the effective overlay violating the " +
+                        $"pinned profile's date ordering [{rule.Code}]: {rule.Message}",
+                        nameof(request));
+                }
+            }
+
+            EnsureEffectiveOverlaySatisfiesResolvedKindInvariants(
+                currentProjection!, profile, postClearOverrides,
+                editedFieldKey: null, proposedValue: null, proposedReplacementRoot: null);
+
+            return canonicalFieldPath;
         }
 
         if (isWholeObject)

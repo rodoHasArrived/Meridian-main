@@ -18,7 +18,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
 
     private const string RevisionColumns =
         "revision_id, security_id, state, actor, created_at, updated_at, workflow_id, " +
-        "field_path, field_effective_from, field_justification, fund_profile_id";
+        "field_path, field_effective_from, field_justification, fund_profile_id, " +
+        "field_value, field_value_recorded";
 
     private readonly SecurityMasterOptions _options;
 
@@ -28,7 +29,7 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
     }
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
-        => CreateDraftCoreAsync(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null, fundProfileId: null, ct);
+        => CreateDraftCoreAsync(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null, fundProfileId: null, fieldValue: null, ct);
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
         Guid securityId,
@@ -37,8 +38,9 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         DateTimeOffset fieldEffectiveFrom,
         string fieldJustification,
         string? fundProfileId = null,
+        SecurityMasterRevisionFieldValue? fieldValue = null,
         CancellationToken ct = default)
-        => CreateDraftCoreAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, ct);
+        => CreateDraftCoreAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct);
 
     private async Task<SecurityMasterRevisionRecord> CreateDraftCoreAsync(
         Guid securityId,
@@ -47,6 +49,7 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         DateTimeOffset? fieldEffectiveFrom,
         string? fieldJustification,
         string? fundProfileId,
+        SecurityMasterRevisionFieldValue? fieldValue,
         CancellationToken ct)
     {
         var now = DateTimeOffset.UtcNow;
@@ -61,7 +64,9 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
             FieldPath: fieldPath,
             FieldEffectiveFrom: fieldEffectiveFrom,
             FieldJustification: fieldJustification,
-            FundProfileId: string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim());
+            FundProfileId: string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim(),
+            FieldValue: fieldValue?.Value,
+            FieldValueRecorded: fieldValue is not null);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
@@ -69,10 +74,12 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
             $"""
             insert into {Qualified(RevisionsTable)} (
                 revision_id, security_id, state, actor, created_at, updated_at, workflow_id,
-                field_path, field_effective_from, field_justification, fund_profile_id)
+                field_path, field_effective_from, field_justification, fund_profile_id,
+                field_value, field_value_recorded)
             values (
                 @revision_id, @security_id, @state, @actor, @created_at, @updated_at, @workflow_id,
-                @field_path, @field_effective_from, @field_justification, @fund_profile_id);
+                @field_path, @field_effective_from, @field_justification, @fund_profile_id,
+                @field_value, @field_value_recorded);
             """;
         command.Parameters.AddWithValue("revision_id", record.RevisionId);
         command.Parameters.AddWithValue("security_id", record.SecurityId);
@@ -85,6 +92,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         command.Parameters.AddWithValue("field_effective_from", (object?)record.FieldEffectiveFrom?.UtcDateTime ?? DBNull.Value);
         command.Parameters.AddWithValue("field_justification", (object?)record.FieldJustification ?? DBNull.Value);
         command.Parameters.AddWithValue("fund_profile_id", (object?)record.FundProfileId ?? DBNull.Value);
+        command.Parameters.AddWithValue("field_value", (object?)record.FieldValue ?? DBNull.Value);
+        command.Parameters.AddWithValue("field_value_recorded", record.FieldValueRecorded);
 
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         return record;
@@ -190,7 +199,9 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         FieldPath: reader.IsDBNull(7) ? null : reader.GetString(7),
         FieldEffectiveFrom: reader.IsDBNull(8) ? null : new DateTimeOffset(reader.GetDateTime(8), TimeSpan.Zero),
         FieldJustification: reader.IsDBNull(9) ? null : reader.GetString(9),
-        FundProfileId: reader.IsDBNull(10) ? null : reader.GetString(10));
+        FundProfileId: reader.IsDBNull(10) ? null : reader.GetString(10),
+        FieldValue: reader.IsDBNull(11) ? null : reader.GetString(11),
+        FieldValueRecorded: !reader.IsDBNull(12) && reader.GetBoolean(12));
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
     {

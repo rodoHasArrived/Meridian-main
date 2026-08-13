@@ -510,16 +510,22 @@ internal static class SecurityMasterConflictDetection
             IReadOnlyList<StructuredPrincipalScheduleEntry>? a,
             IReadOnlyList<StructuredPrincipalScheduleEntry>? b)
         {
-            // Both sources must assert a schedule for a disagreement to exist, mirroring the
-            // both-present rule the scalar comparators use for sparse providers. A schedule that
-            // was REMOVED is still a change for absence-transition consumers.
-            if (a is not { Count: > 0 } || b is not { Count: > 0 })
+            // Both sources must ASSERT a schedule for a disagreement to exist, mirroring the
+            // both-present rule the scalar comparators use for sparse providers — but presence is
+            // the schedule PROPERTY, not its row count: the Bond codec emits principalSchedule: []
+            // to assert "no contractual instalments" (the resolver keeps that as an empty array,
+            // distinct from null for a source that said nothing). An asserted empty schedule
+            // against another source's asserted instalments is therefore a genuine bullet-versus-
+            // sinker disagreement that must open a conflict — equating empty with missing would
+            // let the empty assertion silently replace the sinker's economics. A schedule that
+            // was REMOVED entirely is still a change for absence-transition consumers.
+            if (a is null || b is null)
             {
-                if (includeAbsenceTransitions && (a is { Count: > 0 }) != (b is { Count: > 0 }))
+                if (includeAbsenceTransitions && (a is null) != (b is null))
                 {
                     Add("EconomicTerms.principalSchedule", SecurityMasterConflictKinds.EconomicTermMismatch,
-                        a is { Count: > 0 } ? NormalizePrincipalSchedule(a) : string.Empty,
-                        b is { Count: > 0 } ? NormalizePrincipalSchedule(b) : string.Empty);
+                        a is null ? string.Empty : NormalizePrincipalSchedule(a),
+                        b is null ? string.Empty : NormalizePrincipalSchedule(b));
                 }
 
                 return;

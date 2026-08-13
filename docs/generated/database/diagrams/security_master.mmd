@@ -628,6 +628,7 @@ erDiagram
         numeric confidence
         text origin_reference
         timestamp_with_time_zone recorded_at
+        bigint source_version
     }
     security_master_security_identifiers {
         uuid security_id PK,FK
@@ -679,6 +680,8 @@ erDiagram
         timestamp_with_time_zone field_effective_from
         text field_justification
         text fund_profile_id
+        text field_value
+        boolean field_value_recorded
     }
     security_master_security_operator_overrides {
         uuid security_id PK,FK

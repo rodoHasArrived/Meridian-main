@@ -115,15 +115,18 @@ public sealed partial class SecurityMasterWorkbenchCommandService
             // ORDER: the overlay key holds the value of the LATEST-staged live revision for the
             // path. A LATER sibling that is Draft, Submitted, OR Approved means the discarded
             // revision's value was already replaced — the key carries the sibling's value and
-            // stays. Otherwise the discarded revision owns the key and it is removed; OLDER
-            // same-path siblings had their values superseded at staging time and are
-            // UNRECOVERABLE, so they cannot be left approvable: a sibling that later reached
-            // Approved would publish through a NotPending override decision with its approved
-            // value present nowhere. Older DRAFT siblings are terminalized to Rejected alongside
-            // the withdrawal; an older SUBMITTED or APPROVED sibling refuses the discard outright
-            // — its value is under active review (or already decided) and silently invalidating
-            // it is not this actor's call.
+            // stays. Otherwise the discarded revision owns the key; OLDER same-path siblings had
+            // their values superseded at staging time. When the latest remaining sibling durably RECORDED its
+            // staged value, the discard restores that exact value to the overlay so the sibling
+            // keeps governing what its reviewer sees. Only legacy siblings without recorded
+            // values are unrecoverable — they cannot be left approvable (a sibling that later
+            // reached Approved would publish through a NotPending override decision with its
+            // approved value present nowhere): older DRAFT siblings are terminalized to Rejected
+            // alongside the withdrawal, and an older SUBMITTED or APPROVED sibling refuses the
+            // discard outright — its value is under active review (or already decided) and
+            // silently invalidating it is not this actor's call.
             var laterSiblingOwnsPath = false;
+            SecurityMasterRevisionRecord? restoreOwner = null;
             SecurityMasterRevisionRecord[] supersededDraftSiblings = [];
             if (!string.IsNullOrWhiteSpace(revision.FieldPath))
             {
@@ -139,24 +142,46 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                     && other.CreatedAt > revision.CreatedAt);
                 if (!laterSiblingOwnsPath)
                 {
-                    var blockingSiblings = samePathSiblings
-                        .Where(static other => other.State is SecurityMasterRevisionStateDto.Submitted
+                    // The LATEST remaining live sibling becomes the key's owner. When its exact
+                    // staged value was durably recorded on the revision, the discard RESTORES that
+                    // value instead of withdrawing the key — the sibling keeps governing precisely
+                    // what its reviewer sees (an approved predecessor publishes its reviewed
+                    // value; a draft/submitted one continues review over its own). Only legacy
+                    // siblings predating value persistence fall back to the fail-closed handling
+                    // below, because their values are genuinely unrecoverable.
+                    var liveSiblings = samePathSiblings
+                        .Where(static other => other.State is SecurityMasterRevisionStateDto.Draft
+                            or SecurityMasterRevisionStateDto.Submitted
                             or SecurityMasterRevisionStateDto.Approved)
-                        .Select(static other => other.RevisionId)
                         .ToArray();
-                    if (blockingSiblings.Length > 0)
+                    var latestLive = liveSiblings
+                        .OrderByDescending(static other => other.CreatedAt)
+                        .FirstOrDefault();
+                    if (latestLive is { FieldValueRecorded: true })
                     {
-                        throw new SecurityMasterRevisionStateException(
-                            request.RevisionId,
-                            $"withdrawing its staged override value at '{revision.FieldPath}' would invalidate older " +
-                            $"revision(s) {string.Join(", ", blockingSiblings.Select(static id => $"'{id:D}'"))} that are " +
-                            "already Submitted or Approved for the same field with values superseded at staging time. " +
-                            "Decide or discard those revisions first.");
+                        restoreOwner = latestLive;
                     }
+                    else
+                    {
+                        var blockingSiblings = liveSiblings
+                            .Where(static other => other.State is SecurityMasterRevisionStateDto.Submitted
+                                or SecurityMasterRevisionStateDto.Approved)
+                            .Select(static other => other.RevisionId)
+                            .ToArray();
+                        if (blockingSiblings.Length > 0)
+                        {
+                            throw new SecurityMasterRevisionStateException(
+                                request.RevisionId,
+                                $"withdrawing its staged override value at '{revision.FieldPath}' would invalidate older " +
+                                $"revision(s) {string.Join(", ", blockingSiblings.Select(static id => $"'{id:D}'"))} that are " +
+                                "already Submitted or Approved for the same field with values superseded at staging time. " +
+                                "Decide or discard those revisions first.");
+                        }
 
-                    supersededDraftSiblings = samePathSiblings
-                        .Where(static other => other.State == SecurityMasterRevisionStateDto.Draft)
-                        .ToArray();
+                        supersededDraftSiblings = liveSiblings
+                            .Where(static other => other.State == SecurityMasterRevisionStateDto.Draft)
+                            .ToArray();
+                    }
                 }
             }
 
@@ -181,6 +206,74 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                     _logger.LogInformation(
                         "Discarded revision {RevisionId} for {SecurityId} left the staged override at {FieldPath} in place: a later staged revision owns the current value.",
                         request.RevisionId, request.SecurityId, SanitizeForLog(revision.FieldPath));
+                }
+                else if (restoreOwner is not null)
+                {
+                    // RESTORE the exact value the latest remaining sibling governs (its recorded
+                    // clear removes the key). The patch resets the overlay to Pending, which is
+                    // the correct approval posture for every owner state: a draft/submitted owner
+                    // was Pending anyway, and an approved owner's decision re-records at publish
+                    // over precisely the value its reviewer approved.
+                    var restoration = new OperatorOverridesPatchRequest(
+                        SetValues: restoreOwner.FieldValue is null
+                            ? null
+                            : new Dictionary<string, string>(StringComparer.Ordinal)
+                            {
+                                [revision.FieldPath!] = restoreOwner.FieldValue,
+                            },
+                        RemoveKeys: restoreOwner.FieldValue is null ? [revision.FieldPath!] : null)
+                    {
+                        ReasonCode = string.IsNullOrWhiteSpace(request.Reason)
+                            ? "staged revision discarded; predecessor revision's staged value restored"
+                            : request.Reason,
+                    };
+                    var restored = await _overrides
+                        .PatchAsync(request.SecurityId, restoration, request.Actor, CancellationToken.None)
+                        .ConfigureAwait(false);
+
+                    _logger.LogInformation(
+                        "Discarded revision {RevisionId} for {SecurityId} restored the staged override at {FieldPath} to the value governed by revision {OwnerRevisionId}.",
+                        request.RevisionId, request.SecurityId, SanitizeForLog(revision.FieldPath), restoreOwner.RevisionId);
+
+                    // Lineage follows the restored value best-effort: the operator attribution row
+                    // re-points to the owning revision (or is removed when the owner staged a clear).
+                    if (_fieldProvenance is not null)
+                    {
+                        try
+                        {
+                            if (restoreOwner.FieldValue is null)
+                            {
+                                await _fieldProvenance.RemoveAsync(
+                                    request.SecurityId,
+                                    revision.FieldPath!,
+                                    SecurityFieldProvenanceOrigins.OperatorFieldEdit,
+                                    clearedAt: restored.UpdatedAt,
+                                    CancellationToken.None).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                await _fieldProvenance.UpsertAsync(
+                                    new SecurityFieldProvenanceRecord(
+                                        request.SecurityId,
+                                        revision.FieldPath!,
+                                        OperatorSourceSystem,
+                                        AsOf: restoreOwner.FieldEffectiveFrom,
+                                        UpdatedBy: restoreOwner.Actor,
+                                        Confidence: null,
+                                        Origin: SecurityFieldProvenanceOrigins.OperatorFieldEdit,
+                                        OriginReference: restoreOwner.RevisionId.ToString("D"),
+                                        RecordedAt: restored.UpdatedAt),
+                                    CancellationToken.None).ConfigureAwait(false);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(
+                                ex,
+                                "Re-pointing operator field-edit lineage for {SecurityId} field {FieldPath} to revision {OwnerRevisionId} failed after discarding revision {RevisionId}.",
+                                request.SecurityId, SanitizeForLog(revision.FieldPath), restoreOwner.RevisionId, request.RevisionId);
+                        }
+                    }
                 }
                 else
                 {

@@ -640,6 +640,7 @@ erDiagram
         numeric confidence
         text origin_reference
         timestamp_with_time_zone recorded_at
+        bigint source_version
     }
     security_master_security_identifiers {
         uuid security_id PK,FK
@@ -691,6 +692,8 @@ erDiagram
         timestamp_with_time_zone field_effective_from
         text field_justification
         text fund_profile_id
+        text field_value
+        boolean field_value_recorded
     }
     security_master_security_operator_overrides {
         uuid security_id PK,FK
@@ -997,12 +1000,12 @@ erDiagram
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_events` | table | 10 | `global_sequence` | 0 | 3 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
-| `security_field_provenance` | table | 9 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
+| `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
-| `security_master_revisions` | table | 11 | `revision_id` | 0 | 2 | - |
+| `security_master_revisions` | table | 13 | `revision_id` | 0 | 2 | - |
 | `security_operator_overrides` | table | 9 | `security_id` | 1 | 1 | - |
 | `security_pricing_hierarchy` | table | 5 | `security_id`, `account_id` | 1 | 2 | - |
 | `security_raw_prices` | table | 6 | `security_id`, `source_id` | 1 | 2 | - |

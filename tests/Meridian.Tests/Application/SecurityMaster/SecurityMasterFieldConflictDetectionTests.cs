@@ -204,6 +204,38 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public void DetectFieldConflicts_AssertedEmptyScheduleAgainstInstalments_OpensConflict()
+    {
+        // Presence is the schedule PROPERTY, not its row count: the Bond codec emits
+        // principalSchedule: [] to assert "no contractual instalments" (a bullet structure). A
+        // source submitting that asserted-empty schedule against another source's instalments is
+        // a genuine bullet-versus-sinker disagreement — equating empty with missing would let the
+        // empty assertion silently replace the sinker's economics without a conflict.
+        var current = Record("Bloomberg", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-15", amount = 30m },
+                new { paymentDate = "2029-06-15", amount = 20m }
+            }
+        });
+        var incoming = Record("Reuters", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = Array.Empty<object>()
+        });
+
+        var conflicts = SecurityMasterConflictDetection.DetectFieldConflicts(current, incoming, DetectedAt);
+
+        var schedule = conflicts.Should().ContainSingle(conflict =>
+            conflict.FieldPath == "EconomicTerms.principalSchedule").Subject;
+        schedule.ConflictKind.Should().Be(SecurityMasterConflictKinds.EconomicTermMismatch);
+        schedule.ValueA.Should().Be("2028-06-15:30|2029-06-15:20");
+        schedule.ValueB.Should().Be(string.Empty, "the empty schedule is an asserted bullet structure");
+    }
+
+    [Fact]
     public void DetectFieldConflicts_SameDayInstalmentsSplitAcrossRows_DoNotConflict()
     {
         // A source splitting a payment date's amount across rows asserts the same economics as one

@@ -535,7 +535,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                             Confidence: null,
                             SecurityFieldProvenanceOrigins.CanonicalWrite,
                             OriginReference: $"version:{projection.Version}",
-                            recordedAt),
+                            recordedAt,
+                            // Attribution is ordered by the amendment's COMMIT ORDER, not this
+                            // callback's wall-clock time: a delayed v2 write arriving after v3's
+                            // must not overwrite the newer incumbent.
+                            SourceVersion: projection.Version),
                         ct).ConfigureAwait(false);
                     recorded = true;
                 }

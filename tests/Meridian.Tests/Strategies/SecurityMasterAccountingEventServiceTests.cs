@@ -74,6 +74,34 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_FactorRowOnExclusivePeriodEnd_BelongsToTheNextPeriod()
+    {
+        // PeriodEnd is EXCLUSIVE (the production adapter supplies the next month's first day,
+        // matching the coupon window). An adapter that supplies the full retained schedule must
+        // not have a next-month-first-day observation generate the same paydown in two adjacent
+        // runs — the row belongs to the NEXT period only.
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 2, 1),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "evidence://factor/bond-2026-02",
+                    SourceContentHash: "sha256:bond-factor-2026-02")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown,
+            "a factor row dated on the exclusive period end belongs to the next period's run");
+    }
+
+    [Fact]
     public void Generate_ShortPosition_FailsClosedWithUnsupportedBreak()
     {
         // Position magnitudes are absolute, so a short run through the long-side generators would

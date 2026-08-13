@@ -282,6 +282,7 @@ classDiagram
         +DateTimeOffset RecordedAt
         +Guid SecurityId
         +string SourceSystem
+        +long? SourceVersion
         +string? UpdatedBy
     }
     class Meridian_Contracts_SecurityMaster_SecurityHistoryRequest["SecurityHistoryRequest"] {

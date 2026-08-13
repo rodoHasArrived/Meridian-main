@@ -87,7 +87,13 @@ public sealed record SecurityFieldProvenanceRecord(
     decimal? Confidence,
     string Origin,
     string? OriginReference,
-    DateTimeOffset RecordedAt)
+    DateTimeOffset RecordedAt,
+    // The COMMIT ORDER of the attributed write, when the origin has one (the Security Master
+    // projection version for CanonicalWrite rows). Attribution stores order same-key upserts by
+    // this version when both rows carry one — asynchronous callback wall-clock time alone cannot
+    // order them, since amendment v2's delayed attribution can arrive after v3's and would
+    // otherwise overwrite it with the stale incumbent.
+    long? SourceVersion = null)
 {
     /// <summary>Projects the durable row onto the display-level field-provenance shape.</summary>
     public SecurityFieldProvenance ToFieldProvenance()

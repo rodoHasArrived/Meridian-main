@@ -15,6 +15,12 @@ export interface ProfileBackedSecurityState {
   currency: string;
   /** Values for the profile's ADDITIONAL required identifier kinds (beyond InternalCode), keyed by kind. */
   identifierValues: Record<string, string>;
+  /**
+   * Provider namespaces for identifier kinds that require one (ProviderSymbol), keyed by kind. A
+   * ProviderSymbol submitted without its provider constructs an identifier the write-side command
+   * validation rejects (the kind requires a nonblank namespace), so the form must collect it.
+   */
+  identifierProviders: Record<string, string>;
   fieldValues: Record<string, string>;
   rationale: string;
   busy: boolean;
@@ -32,6 +38,7 @@ export function createProfileBackedSecurityState(
     internalCode: "",
     currency: "USD",
     identifierValues: {},
+    identifierProviders: {},
     fieldValues: profile ? buildProfileFieldValueState(profile, {}) : {},
     rationale: "Create profile-backed custom asset with approved Security Master profile version.",
     busy: false,
@@ -59,6 +66,26 @@ export function isWriteSelectableAssetProfile(
   const isoToday = today.toISOString().slice(0, 10);
   return profile.effectiveFrom <= isoToday
     && (profile.effectiveTo == null || isoToday <= profile.effectiveTo);
+}
+
+/**
+ * Details for the profile's required identifier inputs that are still missing: the identifier
+ * value itself, and — for ProviderSymbol — the provider namespace, since the write-side command
+ * validation rejects that kind with a blank provider and the form must catch it up front.
+ */
+export function missingRequiredIdentifierDetails(
+  preferences: { kind: string }[],
+  state: ProfileBackedSecurityState
+): string[] {
+  const missingValues = preferences
+    .filter((preference) => !state.identifierValues[preference.kind]?.trim())
+    .map((preference) => `${preference.kind} identifier`);
+  const missingProviders = preferences
+    .filter((preference) => preference.kind === "ProviderSymbol"
+      && !!state.identifierValues[preference.kind]?.trim()
+      && !state.identifierProviders[preference.kind]?.trim())
+    .map((preference) => `${preference.kind} provider namespace`);
+  return [...missingValues, ...missingProviders];
 }
 
 export function buildProfileFieldValueState(

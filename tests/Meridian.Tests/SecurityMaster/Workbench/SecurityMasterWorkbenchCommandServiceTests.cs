@@ -454,6 +454,70 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ClearingProfileFieldsReplacement_RevalidatesThePostClearOverlay()
+    {
+        // Clearing the WHOLE-OBJECT replacement is an edit to the effective overlay too: with a
+        // canonical January–March window, a staged November–December replacement, and a staged
+        // scalar November startDate (valid against the replacement's December end), clearing the
+        // replacement reveals the canonical March end beneath the retained November start — the
+        // clear must be refused instead of leaving an approvable start-after-end overlay.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope(
+            "dated-profile", profileVersion: 1,
+            profileFields: new { startDate = "2026-01-01", endDate = "2026-03-01" });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.profileFields"] = """{"startDate":"2026-11-01","endDate":"2026-12-01"}""",
+                    ["assetSpecificTerms.profileFields.startDate"] = "2026-11-01"
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields",
+            NewValue: null,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Remove profileFields replacement.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>(
+                "clearing the November–December replacement reveals the canonical March end behind the staged November start")
+            .WithMessage("*PF_DATE_ORDER*");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_StagedOverlayUnreadable_RejectsTheEditInsteadOfCanonicalFallback()
     {
         // FAIL-CLOSED: when the staged overlay cannot be LOADED, validating against canonical
@@ -1050,7 +1114,8 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
             Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom,
-            string fieldJustification, string? fundProfileId = null, CancellationToken ct = default)
+            string fieldJustification, string? fundProfileId = null,
+            SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default)
             => throw Failure;
 
         public Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default)
@@ -2564,6 +2629,78 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Discard_LatestDraft_RestoresTheApprovedPredecessorsRecordedValue()
+    {
+        // The A-Approved / B-Draft deadlock: A's override decision is deferred while B is staged,
+        // and B could not be discarded while A (older, Approved) shared the path — approving B was
+        // the only escape, after which A would publish against B's value instead of the value A's
+        // reviewer approved. With the staged value durably recorded on each revision, discarding B
+        // RESTORES A's exact reviewed value to the overlay: A stays Approved, publishes its own
+        // economics, and no sibling is invalidated.
+        var harness = new Harness(currentVersion: 3);
+        var approved = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "Reviewed edit (100).",
+            fieldValue: new SecurityMasterRevisionFieldValue("100"));
+        await harness.Revisions.TransitionAsync(
+            approved.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        await harness.Revisions.TransitionAsync(
+            approved.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        await Task.Delay(10);
+        var latest = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Abandoned edit (200).",
+            fieldValue: new SecurityMasterRevisionFieldValue("200"));
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, latest.RevisionId, "ops.analyst", "Second edit abandoned."));
+
+        (await harness.Revisions.GetAsync(latest.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Rejected);
+        (await harness.Revisions.GetAsync(approved.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved,
+            "the approved predecessor keeps its decision — its exact value is restored, not invalidated");
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(patch =>
+                    patch.SetValues != null
+                    && patch.SetValues.ContainsKey("assetSpecificTerms.par")
+                    && patch.SetValues["assetSpecificTerms.par"] == "100"),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once,
+            "the discard must restore the approved predecessor's exact recorded value");
+    }
+
+    [Fact]
+    public async Task Discard_PredecessorRecordedAClear_RemovesTheKey()
+    {
+        // The latest remaining sibling's RECORDED intent can be a clear: restoring it means
+        // removing the key, not resurrecting an older value.
+        var harness = new Harness(currentVersion: 3);
+        await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "Clear par.",
+            fieldValue: new SecurityMasterRevisionFieldValue(null));
+        await Task.Delay(10);
+        var latest = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Assert par (200).",
+            fieldValue: new SecurityMasterRevisionFieldValue("200"));
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, latest.RevisionId, "ops.analyst"));
+
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(patch =>
+                    patch.SetValues == null
+                    && patch.RemoveKeys != null && patch.RemoveKeys.Contains("assetSpecificTerms.par")),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once,
+            "the predecessor's recorded clear restores by removing the key");
+    }
+
+    [Fact]
     public async Task Discard_RejectedRevision_ReconcilesAnIncompleteWithdrawal()
     {
         // A prior discard's transition committed but its withdrawal failed or was canceled:
@@ -2968,7 +3105,8 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         public async Task<SecurityMasterRevisionRecord> CreateDraftAsync(
             Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom,
-            string fieldJustification, string? fundProfileId = null, CancellationToken ct = default)
+            string fieldJustification, string? fundProfileId = null,
+            SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default)
         {
             if (GateFieldEditDrafts)
             {
@@ -2976,7 +3114,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 await ReleaseDrafts.Task;
             }
 
-            return await _inner.CreateDraftAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, ct);
+            return await _inner.CreateDraftAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct);
         }
 
         public Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default)
