@@ -315,6 +315,112 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task AmendTermsAsync_LegacyCustomAssetWithFullEnvelopePatch_MigratesOntoTheProfile()
+    {
+        // The envelope-less guard's refusal message instructs a governed migration — this IS that
+        // migration: an amendment whose patch carries a complete profile envelope replaces the
+        // terms wholesale, so the lossy OtherSecurity fallback is never persisted and the legacy
+        // record is not permanently unamendable.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var previous = CreateProjection(securityId, "CustomAsset", SecurityStatusDto.Active, "Legacy Custom", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                category = "Litigation Finance",
+                bespokeField = "unmodeled"
+            }),
+            Provenance = JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "provA",
+                asOf = DateTimeOffset.UtcNow.AddDays(-1),
+                updatedBy = "feed"
+            }),
+            Identifiers = new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "LEGACY-MIG", true, DateTimeOffset.UtcNow.AddDays(-30), null, null)
+            }
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(previous);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        // A patch WITHOUT an envelope stays refused — the record still reads through the salvage path.
+        await service.Invoking(s => s.AmendTermsAsync(new AmendSecurityTermsRequest(
+                securityId,
+                2,
+                CommonTerms: null,
+                AssetSpecificTermsPatch: JsonSerializer.SerializeToElement(new { category = "Litigation Finance" }),
+                IdentifiersToAdd: [],
+                IdentifiersToExpire: [],
+                EffectiveFrom: DateTimeOffset.UtcNow,
+                SourceSystem: "provA",
+                UpdatedBy: "codex",
+                SourceRecordId: null,
+                Reason: "amend")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*without a profile envelope*");
+
+        // The full-envelope migration amendment persists and reclassifies.
+        var detail = await service.AmendTermsAsync(new AmendSecurityTermsRequest(
+            securityId,
+            2,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "private-fund-interest",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    gpSponsor = "Meridian Growth Partners",
+                    strategy = "Buyout",
+                    vintage = 2024,
+                    commitment = 5_000_000m,
+                    fundedAmount = 0m,
+                    unfundedAmount = 5_000_000m,
+                    navDate = "2026-06-30"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "Meridian",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "PFI-APPROVAL-9"
+                }
+            }),
+            IdentifiersToAdd: [],
+            IdentifiersToExpire: [],
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "provA",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "migrate legacy custom asset onto a profile"));
+
+        detail.AssetClass.Should().Be("PrivateFundInterest",
+            "the migration amendment resolves exactly as the identical create would");
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task CreateAsync_CustomAssetWithUnknownProfile_RefusesTheCanonicalWrite()
     {
         // The F# domain command validates the envelope's shape but cannot see the profile catalog;

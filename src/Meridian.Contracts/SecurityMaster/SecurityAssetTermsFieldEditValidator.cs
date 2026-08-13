@@ -121,8 +121,152 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
+        // A syntactically valid array is not enough for the KNOWN contractual schedules: their
+        // rows carry the same domain invariants the canonical F# command enforces (positive
+        // instalments, factors within [0, 1], unique non-increasing factor dates), and staging a
+        // row set the domain would reject puts a draft and provenance row behind a contract that
+        // can never persist canonically.
+        if (field.Type == SecurityAssetTermFieldType.Array
+            && !ScheduleRowsSatisfyDomainInvariants(field.Key, newValue, out var scheduleError))
+        {
+            error = scheduleError;
+            return false;
+        }
+
         canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
         return true;
+    }
+
+    private static bool ScheduleRowsSatisfyDomainInvariants(string fieldKey, string newValue, out string? error)
+    {
+        error = null;
+        if (string.Equals(fieldKey, "principalSchedule", StringComparison.OrdinalIgnoreCase))
+        {
+            return PrincipalScheduleRowsAreValid(newValue, out error);
+        }
+
+        if (string.Equals(fieldKey, "factorScheduleEntries", StringComparison.OrdinalIgnoreCase))
+        {
+            return FactorScheduleRowsAreValid(newValue, out error);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Mirrors the canonical F# Bond rules a whole-schedule replacement must satisfy row-locally:
+    /// each row is an object with a parseable payment date and a strictly positive amount.
+    /// Record-contextual rules (dates within issue/maturity, the schedule-versus-par cap) stay at
+    /// the canonical amend seam, which re-validates the published overlay.
+    /// </summary>
+    private static bool PrincipalScheduleRowsAreValid(string newValue, out string? error)
+    {
+        error = null;
+        using var document = JsonDocument.Parse(newValue);
+        foreach (var row in document.RootElement.EnumerateArray())
+        {
+            if (row.ValueKind != JsonValueKind.Object
+                || !TryReadRowDate(row, out _, "paymentDate")
+                || !TryReadRowDecimal(row, out var amount, "amount"))
+            {
+                error = "Each principalSchedule row must be an object with a parseable 'paymentDate' and numeric 'amount'.";
+                return false;
+            }
+
+            if (amount <= 0m)
+            {
+                error = "principalSchedule amounts must be greater than zero — non-positive instalments are rejected by the canonical Bond contract.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Mirrors the canonical F# StructuredCredit factor-schedule rules: every factor within
+    /// [0, 1], unique as-of dates, and non-increasing factors in date order — the same invariants
+    /// that make the effective outstanding principal well defined.
+    /// </summary>
+    private static bool FactorScheduleRowsAreValid(string newValue, out string? error)
+    {
+        error = null;
+        var entries = new List<(DateOnly AsOfDate, decimal Factor)>();
+        using var document = JsonDocument.Parse(newValue);
+        foreach (var row in document.RootElement.EnumerateArray())
+        {
+            if (row.ValueKind != JsonValueKind.Object
+                || !TryReadRowDate(row, out var asOfDate, "asOfDate", "factorDate", "effectiveDate", "date")
+                || !TryReadRowDecimal(row, out var factor, "factor", "currentFactor"))
+            {
+                error = "Each factorScheduleEntries row must be an object with a parseable as-of date and numeric factor.";
+                return false;
+            }
+
+            if (factor < 0m || factor > 1m)
+            {
+                error = "factorScheduleEntries factors must be between zero and one — factors above one project cash flows exceeding the original principal.";
+                return false;
+            }
+
+            entries.Add((asOfDate, factor));
+        }
+
+        if (entries.Select(static entry => entry.AsOfDate).Distinct().Count() != entries.Count)
+        {
+            error = "factorScheduleEntries dates must be unique — two factors on the same date make the outstanding principal depend on input ordering.";
+            return false;
+        }
+
+        var ordered = entries.OrderBy(static entry => entry.AsOfDate).ToArray();
+        for (var i = 1; i < ordered.Length; i++)
+        {
+            if (ordered[i].Factor > ordered[i - 1].Factor)
+            {
+                error = "factorScheduleEntries must be non-increasing in date order — a rising factor would grow outstanding principal.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryReadRowDate(JsonElement row, out DateOnly value, params string[] propertyNames)
+    {
+        value = default;
+        foreach (var property in row.EnumerateObject())
+        {
+            foreach (var name in propertyNames)
+            {
+                if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)
+                    && property.Value.ValueKind == JsonValueKind.String
+                    && DateOnly.TryParse(property.Value.GetString(), CultureInfo.InvariantCulture, out value))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryReadRowDecimal(JsonElement row, out decimal value, params string[] propertyNames)
+    {
+        value = default;
+        foreach (var property in row.EnumerateObject())
+        {
+            foreach (var name in propertyNames)
+            {
+                if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)
+                    && property.Value.ValueKind == JsonValueKind.Number
+                    && property.Value.TryGetDecimal(out value))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static string BuildCanonicalPath(string fieldKey, string nestedPath)

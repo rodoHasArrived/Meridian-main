@@ -322,25 +322,27 @@ public sealed class AssetObligationProjectionService
         // up to its as-of, so passing those entries to the projector as well would subtract them a
         // second time (a 0.8 factor reflecting a prior 20 payment must not project 60 at maturity
         // on a 100 face). An undated scalar factor is assumed current, so completed payments before
-        // the projection as-of are likewise excluded; with no factor at all, the schedule alone
-        // drives amortization from full face and passes through unfiltered.
+        // the projection as-of are likewise excluded; with no factor at all, completed payments
+        // still reduce the opening balance (via a synthesized full-face factor) and only current or
+        // future instalments project.
         var appliedFactorEntry = ResolveAppliedFactorEntry(terms, projectionAsOf);
         DateOnly? factorReflectsThrough = appliedFactorEntry?.AsOfDate
             ?? (terms.CurrentFactor is not null ? projectionAsOf.AddDays(-1) : null);
 
-        // Contractual payments dated after the factor's as-of but before the projection as-of have
-        // already OCCURRED — the run is as of today, so projecting them again would report a
-        // completed instalment as newly due (and open a MissingEvidence variance against it). They
-        // are excluded from the projected schedule below and instead reduce the opening principal,
-        // since the (older) factor does not reflect them yet.
+        // Contractual payments before the projection as-of have already OCCURRED — the run is as of
+        // today, so projecting them again would report a completed instalment as newly due (and
+        // open a MissingEvidence variance against it). Completed payments the factor does not
+        // already reflect (all of them when no factor exists, those after its as-of otherwise) are
+        // excluded from the projected schedule below and reduce the opening principal instead.
         var completedPostFactorPrincipal = 0m;
-        if (factorReflectsThrough is DateOnly reflectedCutoff && terms.HasPrincipalSchedule)
+        if (terms.HasPrincipalSchedule)
         {
             completedPostFactorPrincipal = terms.PrincipalSchedule!
                 .Where(entry => entry.PaymentDate >= issueDate
                     && entry.PaymentDate <= maturity
-                    && entry.PaymentDate > reflectedCutoff
-                    && entry.PaymentDate < projectionAsOf)
+                    && entry.PaymentDate < projectionAsOf
+                    && (factorReflectsThrough is not DateOnly reflectedCutoff
+                        || entry.PaymentDate > reflectedCutoff))
                 .Sum(static entry => entry.Amount);
         }
 
@@ -380,9 +382,9 @@ public sealed class AssetObligationProjectionService
                     terms.PrincipalSchedule!
                         .Where(entry => entry.PaymentDate >= issueDate
                             && entry.PaymentDate <= maturity
+                            && entry.PaymentDate >= projectionAsOf
                             && (factorReflectsThrough is not DateOnly reflectedThrough
-                                || (entry.PaymentDate > reflectedThrough
-                                    && entry.PaymentDate >= projectionAsOf)))
+                                || entry.PaymentDate > reflectedThrough))
                         .Select(static entry => new BondSinkingFundEntryDto(entry.PaymentDate, entry.Amount))
                         .ToArray(),
                     SinkFrequency: null,
@@ -425,15 +427,27 @@ public sealed class AssetObligationProjectionService
         decimal completedPostFactorPrincipal)
     {
         var effectiveFactor = scheduled?.Factor ?? terms.CurrentFactor;
+        if (effectiveFactor is null
+            && completedPostFactorPrincipal > 0m
+            && terms.PrincipalFace is decimal fullFace
+            && fullFace > 0m)
+        {
+            // No factor asserts the balance, but completed contractual payments have still
+            // occurred: seed the full-face factor so the reduction below absorbs them — otherwise
+            // a factor-less sinker projects completed instalments as newly due from full face.
+            effectiveFactor = 1m;
+        }
+
         if (effectiveFactor is null)
         {
             return null;
         }
 
-        // The applied factor reflects principal only THROUGH its as-of date. Contractual payments
-        // completed between that date and the projection as-of are excluded from the projected
-        // schedule, so the opening principal must absorb them here — otherwise the projection
-        // starts from a balance those payments already reduced.
+        // The applied factor reflects principal only THROUGH its as-of date (full face when no
+        // factor exists). Contractual payments completed before the projection as-of and not yet
+        // inside the factor are excluded from the projected schedule, so the opening principal
+        // must absorb them here — otherwise the projection starts from a balance those payments
+        // already reduced.
         if (completedPostFactorPrincipal > 0m
             && terms.PrincipalFace is decimal face
             && face > 0m)

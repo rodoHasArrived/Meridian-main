@@ -140,6 +140,40 @@ public sealed class AssetObligationProjectionServiceTests
     }
 
     [Fact]
+    public void ProjectFromSecurityMaster_NoFactor_CompletedPaymentsReduceOpeningPrincipal()
+    {
+        // With NO factor at all the balance starts at full face, but completed contractual
+        // payments have still occurred: the 2026-03-01 instalment must reduce the opening
+        // principal instead of re-projecting as newly due (which would also open a false
+        // MissingEvidence variance), and only the future instalment projects.
+        var security = MakeStructuredCredit(assetTerms: new
+        {
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 100m,
+            couponOrIndex = "SOFR+250",
+            maturity = "2031-06-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2026-03-01", amount = 20m },
+                new { paymentDate = "2030-06-15", amount = 10m },
+            }
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        var repayment = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "PrincipalRepayment").Subject;
+        repayment.DueDate.Should().Be(new DateOnly(2030, 6, 15),
+            "the completed 2026-03-01 instalment must not re-project as newly due");
+        repayment.Amount.Should().Be(10m);
+        var maturityFlow = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "Maturity").Subject;
+        maturityFlow.Amount.Should().Be(70m,
+            "opening principal absorbs the completed 20 (100 - 20) before the future 10 amortizes");
+    }
+
+    [Fact]
     public void ProjectFromSecurityMaster_StructuredCredit_ZeroFactorProjectsNoPrincipal()
     {
         // Zero is a real factor — a fully amortized pool. Conflating it with a MISSING factor

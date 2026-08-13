@@ -167,6 +167,45 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         canonicalPath.Should().Be("operatorNote");
     }
 
+    [Theory]
+    [InlineData("Bond", "assetSpecificTerms.principalSchedule",
+        "[{\"paymentDate\":\"2028-06-15\",\"amount\":-500}]",
+        "*greater than zero*")]
+    [InlineData("Bond", "assetSpecificTerms.principalSchedule",
+        "[{\"paymentDate\":\"not-a-date\",\"amount\":500}]",
+        "*parseable 'paymentDate'*")]
+    [InlineData("StructuredCredit", "assetSpecificTerms.factorScheduleEntries",
+        "[{\"asOfDate\":\"2026-01-01\",\"factor\":1.5}]",
+        "*between zero and one*")]
+    [InlineData("StructuredCredit", "assetSpecificTerms.factorScheduleEntries",
+        "[{\"asOfDate\":\"2026-01-01\",\"factor\":0.8},{\"asOfDate\":\"2026-01-01\",\"factor\":0.7}]",
+        "*unique*")]
+    [InlineData("StructuredCredit", "assetSpecificTerms.factorScheduleEntries",
+        "[{\"asOfDate\":\"2026-01-01\",\"factor\":0.7},{\"asOfDate\":\"2026-02-01\",\"factor\":0.9}]",
+        "*non-increasing*")]
+    public void ScheduleReplacements_ViolatingDomainInvariants_AreRejected(
+        string assetClass, string fieldPath, string value, string expectedError)
+    {
+        // A syntactically valid array is not enough: rows that the canonical F# command would
+        // reject (negative instalments, factors above one, duplicate or rising factor dates) must
+        // not stage an overlay with a draft revision and provenance row.
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
+            .Should().BeFalse();
+        error.Should().Match(expectedError);
+    }
+
+    [Theory]
+    [InlineData("Bond", "assetSpecificTerms.principalSchedule",
+        "[{\"paymentDate\":\"2028-06-15\",\"amount\":500},{\"paymentDate\":\"2029-06-15\",\"amount\":250}]")]
+    [InlineData("StructuredCredit", "assetSpecificTerms.factorScheduleEntries",
+        "[{\"asOfDate\":\"2026-01-01\",\"factor\":0.9},{\"asOfDate\":\"2026-02-01\",\"factor\":0.8}]")]
+    public void ScheduleReplacements_SatisfyingDomainInvariants_AreAccepted(
+        string assetClass, string fieldPath, string value)
+    {
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
+            .Should().BeTrue(error);
+    }
+
     [Fact]
     public void EveryDeclaredAssetClass_AcceptsItsOwnDeclaredKeys()
     {

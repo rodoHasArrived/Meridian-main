@@ -69,7 +69,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
 
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        EnsureAssetClassRoundTripsSafely(currentProjection);
+        EnsureAssetClassRoundTripsSafely(currentProjection, request.AssetSpecificTermsPatch);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         // The SUBMITTED envelope's profile decides which kind parses the patch: a record already
         // reclassified to a first-class kind can be repinned to a different profile, and parsing
@@ -521,7 +521,9 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// write instead — the record stays readable, and the change must come from a node that
     /// supports the class.
     /// </summary>
-    private static void EnsureAssetClassRoundTripsSafely(SecurityProjectionRecord projection)
+    private static void EnsureAssetClassRoundTripsSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch = null)
     {
         if (!SecurityAssetClassCatalog.AssetClasses.Contains(projection.AssetClass, StringComparer.OrdinalIgnoreCase))
         {
@@ -532,7 +534,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }
 
         EnsureEquityClassificationRoundTripsSafely(projection);
-        EnsureCustomAssetEnvelopeRoundTripsSafely(projection);
+        EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
     }
 
     /// <summary>
@@ -609,9 +611,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// deserializes through the OtherSecurity salvage path even though "CustomAsset" is a
     /// catalog-recognized class, so an amend or deactivate would re-serialize the fallback as
     /// OtherSecurity and drop the record's unmodeled custom fields. The envelope, not the catalog
-    /// name, is what makes the round-trip lossless — refuse the write when it is absent.
+    /// name, is what makes the round-trip lossless — refuse the write when it is absent, EXCEPT
+    /// for the one governed exit the refusal itself instructs: an amendment whose patch carries a
+    /// complete profile envelope replaces the terms wholesale (the envelope override persists the
+    /// submitted document verbatim), so the lossy fallback re-serialization is never written and
+    /// the record migrates onto a profile.
     /// </summary>
-    private static void EnsureCustomAssetEnvelopeRoundTripsSafely(SecurityProjectionRecord projection)
+    private static void EnsureCustomAssetEnvelopeRoundTripsSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch)
     {
         if (!string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
         {
@@ -623,14 +631,26 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             && terms.TryGetProperty("customProfileId", out var profileId)
             && profileId.ValueKind == JsonValueKind.String
             && !string.IsNullOrWhiteSpace(profileId.GetString());
-        if (!hasEnvelope)
+        if (hasEnvelope)
         {
-            throw new InvalidOperationException(
-                $"Security '{projection.SecurityId:D}' is a CustomAsset without a profile envelope (no customProfileId), " +
-                "so it reads through the OtherSecurity salvage path. Amending or deactivating it here would re-serialize " +
-                "that fallback and drop its custom fields, so the write is refused. Migrate the record to a profile-backed " +
-                "envelope through a governed amendment first.");
+            return;
         }
+
+        var patchCarriesEnvelope = assetSpecificTermsPatch is JsonElement patch
+            && patch.ValueKind == JsonValueKind.Object
+            && patch.TryGetProperty("customProfileId", out var patchProfileId)
+            && patchProfileId.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(patchProfileId.GetString());
+        if (patchCarriesEnvelope)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Security '{projection.SecurityId:D}' is a CustomAsset without a profile envelope (no customProfileId), " +
+            "so it reads through the OtherSecurity salvage path. Amending or deactivating it here would re-serialize " +
+            "that fallback and drop its custom fields, so the write is refused. Migrate the record by amending it with " +
+            "a complete profile envelope (customProfileId, profileVersion, profileFields).");
     }
 
     /// <summary>
