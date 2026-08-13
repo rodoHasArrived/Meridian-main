@@ -2292,6 +2292,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var harness = new Harness(currentVersion: 3);
         var abandoned = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit.");
+        await Task.Delay(10);
         await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Second edit.");
 
@@ -2359,6 +2360,162 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<SecurityMasterRevisionStateException>()
             .WithMessage("*only Draft or Submitted revisions can be discarded*");
     }
+
+    [Fact]
+    public async Task Discard_LatestRevisionForTheField_WithdrawsTheValueInsteadOfLeavingItApprovable()
+    {
+        // Overlay ownership follows staging ORDER: revision A stages a par value, revision B later
+        // replaces it. Discarding B must REMOVE the overlay key — leaving it in place would let
+        // A's approval approve B's discarded value — even though A remains staged (its superseded
+        // value is unrecoverable and must be re-staged).
+        var harness = new Harness(currentVersion: 3);
+        await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit (100).");
+        await Task.Delay(10);
+        var latest = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Second edit (200).");
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, latest.RevisionId, "ops.analyst", "Second edit abandoned."));
+
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(patch =>
+                    patch.RemoveKeys != null && patch.RemoveKeys.Contains("assetSpecificTerms.par")),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Discard_RejectedRevision_ReconcilesAnIncompleteWithdrawal()
+    {
+        // A prior discard's transition committed but its withdrawal failed or was canceled:
+        // re-discarding the Rejected revision skips the transition and completes the withdrawal
+        // instead of stranding the Pending overlay value behind an unretryable state precondition.
+        var harness = new Harness(currentVersion: 3);
+        var draft = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.");
+        await harness.Revisions.TransitionAsync(
+            draft.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Rejected, "ops.analyst");
+
+        var result = await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, draft.RevisionId, "ops.analyst", "Reconcile incomplete discard."));
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Rejected);
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(patch =>
+                    patch.RemoveKeys != null && patch.RemoveKeys.Contains("assetSpecificTerms.par")),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Discard_SubmittedRevision_RetiresTheBoundWorkflow()
+    {
+        // A discarded submission must not leave its bound workflow approvable: the generic
+        // operations-continuity approval endpoint does not consult the revision, so an orphaned
+        // Submitted workflow could later record approval evidence for the abandoned change. The
+        // rejection is recorded under the ASSIGNED reviewer.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 3);
+        var draft = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.");
+        await harness.Revisions.TransitionAsync(
+            draft.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted,
+            "ops.analyst", workflowIdForSubmit: workflowId);
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Submitted, reviewer: "ops.reviewer"));
+        harness.Workflow
+            .Setup(w => w.RejectWorkflowAsync(workflowId, It.IsAny<OperationsRejectWorkflowRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 6));
+
+        await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+            SecurityId, draft.RevisionId, "ops.analyst", "Submission abandoned."));
+
+        harness.Workflow.Verify(
+            w => w.RejectWorkflowAsync(
+                workflowId,
+                It.Is<OperationsRejectWorkflowRequestDto>(reject =>
+                    reject.Reviewer == "ops.reviewer" && reject.ReasonCode == "SecurityMasterRevisionDiscarded"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        (await harness.Revisions.GetAsync(draft.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Rejected);
+    }
+
+    [Fact]
+    public async Task Discard_BoundWorkflowAlreadyApproved_RefusesTheDiscard()
+    {
+        // An already-Approved bound workflow is the stranded half-approval: discarding the
+        // revision would orphan recorded approval evidence, so the discard is refused and the
+        // approve-side reconciliation is the remedy.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 3);
+        var draft = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.");
+        await harness.Revisions.TransitionAsync(
+            draft.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted,
+            "ops.analyst", workflowIdForSubmit: workflowId);
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Approved, reviewer: "ops.reviewer"));
+
+        await harness.Service.Invoking(s => s.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+                SecurityId, draft.RevisionId, "ops.analyst")))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>()
+            .WithMessage("*already Approved*");
+
+        (await harness.Revisions.GetAsync(draft.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+        harness.Workflow.Verify(
+            w => w.RejectWorkflowAsync(It.IsAny<Guid>(), It.IsAny<OperationsRejectWorkflowRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    private static OperationsContinuityWorkflowDto BuildWorkflowDto(
+        Guid workflowId, OperationsApprovalStateDto approvalState, string? reviewer = null)
+        => new(
+            workflowId,
+            Guid.NewGuid(),
+            "2026-06",
+            SecurityMasterSnapshotId: null,
+            BrokerSource: "custodian",
+            CreatedAtUtc: DateTimeOffset.UtcNow.AddDays(-1),
+            UpdatedAtUtc: DateTimeOffset.UtcNow,
+            Version: 5,
+            OperationsWorkflowStatusDto.ApprovalPending,
+            OperationsBrokerIntakeStateDto.Complete,
+            OperationsSecurityMasterStateDto.Complete,
+            OperationsLedgerPostingStateDto.Complete,
+            OperationsReconciliationStateDto.Complete,
+            approvalState,
+            Gates: [],
+            Timeline: [],
+            BreakCases: [],
+            LedgerPreview: null,
+            Approvals:
+            [
+                new OperationsApprovalDto(
+                    "approval-1",
+                    approvalState,
+                    "ops.analyst",
+                    reviewer,
+                    "Submitted for review.",
+                    DateTimeOffset.UtcNow.AddHours(-1),
+                    null,
+                    [])
+            ],
+            ReportPackReadiness: new OperationsReportPackReadinessDto(true, "rp-1", null, []),
+            CloseChecklist: [],
+            EvidenceLinks: [],
+            Blockers: [],
+            NextActions: []);
 
     [Fact]
     public async Task Approve_WorkflowAlreadyApproved_ReconcilesTheStrandedRevision()

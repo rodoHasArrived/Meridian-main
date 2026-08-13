@@ -495,6 +495,73 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithClosedHistoricalOwner_ShouldStillGenerateTheHistoricalPaydown()
+    {
+        // Activity is judged AS OF the observation date by the position's effective window, not by
+        // its CURRENT lifecycle status: a position that owned the security on the observation date
+        // but was closed afterwards still carries the historical paydown. Requiring today's
+        // Active status would clear the durable identity and fail month-end reconciliation closed
+        // on FACTOR_PAYDOWN_POSITION_REQUIRED for a perfectly attributable event.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-closed-owner"));
+
+        var securityId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL mortgage-backed test security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("44444444-4444-4444-8444-444444444448");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-03")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(
+                    securityId,
+                    positionId,
+                    positionEffectiveTo: new DateOnly(2026, 3, 31),
+                    positionStatus: "Closed")));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-closed-owner"));
+
+        detail.Should().NotBeNull();
+        (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(static issue => issue.Code)
+            .Should().NotContain("FACTOR_PAYDOWN_POSITION_REQUIRED",
+                "the closed position's effective window covered the observation date");
+        detail.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.EconomicEvent!.BookPositionId == positionId);
+    }
+
+    [Fact]
     public async Task RunAsync_WithOnlyPrePeriodFactorRows_ShouldReportFactorStaleInsteadOfMissing()
     {
         // A factor-driven security whose retained observations ALL predate the period has
@@ -2432,7 +2499,8 @@ public sealed class ReconciliationRunServiceTests
         Guid positionId,
         DateOnly? positionEffectiveTo = null,
         decimal? originalFaceAmount = null,
-        (Guid PositionId, DateOnly EffectiveFrom)? successorPosition = null)
+        (Guid PositionId, DateOnly EffectiveFrom)? successorPosition = null,
+        string positionStatus = "Active")
     {
         var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
         var ownerNodeId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
@@ -2469,7 +2537,7 @@ public sealed class ReconciliationRunServiceTests
             roleId,
             bookContext,
             BookPositionSides.Long,
-            "Active",
+            positionStatus,
             new DateOnly(2026, 1, 1),
             EffectiveTo: positionEffectiveTo,
             Version: 7,

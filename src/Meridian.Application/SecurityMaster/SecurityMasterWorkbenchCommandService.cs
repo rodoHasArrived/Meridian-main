@@ -578,10 +578,65 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             throw new SecurityMasterRevisionStateException(
                 request.RevisionId, $"belongs to security '{revision.SecurityId:D}', not '{request.SecurityId:D}'.");
         }
-        if (revision.State is not (SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted))
+        // A Rejected revision may be RE-discarded: if a prior discard's transition committed but
+        // its withdrawal failed or was canceled, the retry skips the transition and reconciles
+        // the withdrawal instead of stranding a Pending overlay value behind an unretryable
+        // state precondition.
+        if (revision.State is not (SecurityMasterRevisionStateDto.Draft
+            or SecurityMasterRevisionStateDto.Submitted
+            or SecurityMasterRevisionStateDto.Rejected))
         {
             throw new SecurityMasterRevisionStateException(
-                request.RevisionId, $"only Draft or Submitted revisions can be discarded; the revision is {revision.State}.");
+                request.RevisionId,
+                $"only Draft or Submitted revisions can be discarded (or Rejected ones re-discarded to reconcile " +
+                $"an incomplete withdrawal); the revision is {revision.State}.");
+        }
+
+        // Retire the BOUND approval workflow before the revision transition: a discarded
+        // submission must not leave its workflow approvable, or the generic operations-continuity
+        // approval endpoint (which does not consult the revision) could later record approval
+        // evidence for an abandoned change. Fail closed — a workflow that cannot be retired keeps
+        // the revision Submitted. An already-Approved workflow refuses the discard outright: that
+        // is the stranded half-approval, and its remedy is the approve-side reconciliation.
+        if (revision.State == SecurityMasterRevisionStateDto.Submitted && revision.WorkflowId is Guid boundWorkflowId)
+        {
+            var boundWorkflow = await _approvalWorkflow.GetAsync(boundWorkflowId, ct).ConfigureAwait(false);
+            if (boundWorkflow is { ApprovalState: OperationsApprovalStateDto.Approved })
+            {
+                throw new SecurityMasterRevisionStateException(
+                    request.RevisionId,
+                    "its bound approval workflow is already Approved; retry the approval to reconcile the revision " +
+                    "instead of discarding it.");
+            }
+
+            if (boundWorkflow is { ApprovalState: OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned })
+            {
+                // The gate's reject transition enforces reviewer identity when one is assigned, so
+                // the rejection is recorded under the ASSIGNED reviewer (the discarding actor
+                // otherwise), with the discard reason as the audited rationale.
+                var assignedReviewer = boundWorkflow.Approvals
+                    .Select(static approval => approval.Reviewer)
+                    .LastOrDefault(static reviewer => !string.IsNullOrWhiteSpace(reviewer))
+                    ?? request.Actor;
+                var rejectResult = await _approvalWorkflow.RejectWorkflowAsync(
+                    boundWorkflowId,
+                    new OperationsRejectWorkflowRequestDto(
+                        ExpectedVersion: boundWorkflow.Version,
+                        Actor: request.Actor,
+                        Reviewer: assignedReviewer,
+                        Rationale: string.IsNullOrWhiteSpace(request.Reason)
+                            ? "Security Master revision discarded."
+                            : request.Reason!,
+                        ReasonCode: "SecurityMasterRevisionDiscarded"),
+                    ct).ConfigureAwait(false);
+                if (!rejectResult.Success)
+                {
+                    throw new InvalidOperationException(
+                        $"The bound approval workflow for revision '{request.RevisionId:D}' could not be retired " +
+                        $"({rejectResult.ErrorCode}): {rejectResult.ErrorMessage}. The revision remains Submitted.");
+                }
+            }
+            // A missing or already-Rejected workflow needs no retirement.
         }
 
         // The transition and the override withdrawal run under the same per-security gate the
@@ -591,27 +646,41 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await _revisions.TransitionAsync(
-                request.RevisionId,
-                revision.State,
-                SecurityMasterRevisionStateDto.Rejected,
-                request.Actor,
-                ct: ct).ConfigureAwait(false);
+            if (revision.State is SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted)
+            {
+                await _revisions.TransitionAsync(
+                    request.RevisionId,
+                    revision.State,
+                    SecurityMasterRevisionStateDto.Rejected,
+                    request.Actor,
+                    ct: ct).ConfigureAwait(false);
+            }
 
-            // Withdraw the revision's staged override value — unless ANOTHER staged revision
-            // governs the same field path, in which case the overlay key now carries THAT
-            // revision's value and removing it would destroy a value still under review.
+            // Withdraw the revision's staged override value. Once the transition has committed,
+            // the withdrawal runs on CancellationToken.None — a canceled request must not strand
+            // a Rejected revision with its Pending value still in the overlay (and if anything
+            // here still fails, re-discarding the Rejected revision reconciles it).
             if (!string.IsNullOrWhiteSpace(revision.FieldPath))
             {
-                var revisions = await _revisions.ListBySecurityAsync(request.SecurityId, ct).ConfigureAwait(false);
-                var anotherStagedRevisionGovernsPath = revisions.Any(other =>
+                var revisions = await _revisions.ListBySecurityAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
+
+                // Overlay ownership follows staging ORDER: the overlay key holds the value of the
+                // LATEST staged revision for the path. A LATER staged sibling means the discarded
+                // revision's value was already replaced — the key carries the sibling's value,
+                // still under review through its own revision, and stays. Otherwise the discarded
+                // revision owns the key and it is removed — even when OLDER staged siblings share
+                // the path: their values were superseded at staging time and are unrecoverable, so
+                // removal fails SAFE (approving an older sibling can no longer approve the
+                // discarded value) and those siblings must re-stage their edits.
+                var laterStagedSiblingOwnsPath = revisions.Any(other =>
                     other.RevisionId != request.RevisionId
                     && other.State is SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted
-                    && string.Equals(other.FieldPath, revision.FieldPath, StringComparison.OrdinalIgnoreCase));
-                if (anotherStagedRevisionGovernsPath)
+                    && string.Equals(other.FieldPath, revision.FieldPath, StringComparison.OrdinalIgnoreCase)
+                    && other.CreatedAt > revision.CreatedAt);
+                if (laterStagedSiblingOwnsPath)
                 {
                     _logger.LogInformation(
-                        "Discarded revision {RevisionId} for {SecurityId} left the staged override at {FieldPath} in place: another staged revision governs the same field.",
+                        "Discarded revision {RevisionId} for {SecurityId} left the staged override at {FieldPath} in place: a later staged revision owns the current value.",
                         request.RevisionId, request.SecurityId, SanitizeForLog(revision.FieldPath));
                 }
                 else
@@ -625,8 +694,22 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                             : request.Reason,
                     };
                     var withdrawn = await _overrides
-                        .PatchAsync(request.SecurityId, withdrawal, request.Actor, ct)
+                        .PatchAsync(request.SecurityId, withdrawal, request.Actor, CancellationToken.None)
                         .ConfigureAwait(false);
+
+                    var supersededSiblings = revisions
+                        .Where(other => other.RevisionId != request.RevisionId
+                            && other.State is SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted
+                            && string.Equals(other.FieldPath, revision.FieldPath, StringComparison.OrdinalIgnoreCase))
+                        .Select(static other => other.RevisionId)
+                        .ToArray();
+                    if (supersededSiblings.Length > 0)
+                    {
+                        _logger.LogWarning(
+                            "Discarding revision {RevisionId} for {SecurityId} withdrew the overlay value at {FieldPath}; older staged revisions ({SupersededRevisionIds}) had their values superseded at staging time and must re-stage their edits.",
+                            request.RevisionId, request.SecurityId, SanitizeForLog(revision.FieldPath),
+                            string.Join(",", supersededSiblings.Select(static id => id.ToString("D"))));
+                    }
 
                     // Lineage follows the withdrawn value best-effort, mirroring a CLEAR: the
                     // operator attribution row must not keep reporting an asserted value the
@@ -640,9 +723,9 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                                 revision.FieldPath!,
                                 SecurityFieldProvenanceOrigins.OperatorFieldEdit,
                                 clearedAt: withdrawn.UpdatedAt,
-                                ct).ConfigureAwait(false);
+                                CancellationToken.None).ConfigureAwait(false);
                         }
-                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        catch (Exception ex)
                         {
                             _logger.LogWarning(
                                 ex,

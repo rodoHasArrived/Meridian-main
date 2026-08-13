@@ -179,9 +179,15 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     .Where(candidate => position.PositionId is Guid suppliedPositionId
                         ? candidate.PositionId == suppliedPositionId
                         : string.Equals(candidate.PrimaryAccountId?.Trim(), position.AccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+                    // Activity is judged AS OF the observation date by the effective window, not by
+                    // the position's CURRENT lifecycle status: Asset Operations returns closed
+                    // positions too, and a position that owned the security on the observation date
+                    // but was closed afterwards still carries the historical paydown — requiring
+                    // today's Active status would clear its identity and fail month-end
+                    // reconciliation closed on FACTOR_PAYDOWN_POSITION_REQUIRED. A position closed
+                    // BEFORE the observation date is already excluded by its EffectiveTo bound.
                     .Where(candidate => candidate.EffectiveFrom <= asOfDate &&
                         (candidate.EffectiveTo is null || candidate.EffectiveTo >= asOfDate))
-                    .Where(candidate => string.Equals(candidate.Status?.Trim(), "Active", StringComparison.OrdinalIgnoreCase))
                     .ToArray();
 
                 if (candidates.Length != 1 ||
