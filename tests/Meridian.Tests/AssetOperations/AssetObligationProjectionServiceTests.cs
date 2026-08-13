@@ -211,6 +211,42 @@ public sealed class AssetObligationProjectionServiceTests
     }
 
     [Fact]
+    public void ProjectFromSecurityMaster_ContradictoryOuterFactorDate_PrefersGovernedNestedDate()
+    {
+        // A profile-backed record carries the AUTHORITATIVE factorDate in its governed
+        // profileFields; the envelope root retains a contradictory later pass-through copy. The
+        // nested date must win: resolving the outer 2026-04-01 would make the completed
+        // 2026-03-01 instalment appear already reflected by the 0.8 factor, overstating the
+        // opening principal and the maturity flow (70 instead of 60).
+        var security = MakeStructuredCredit(assetTerms: new
+        {
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 100m,
+            couponOrIndex = "SOFR+250",
+            maturity = "2031-06-15",
+            currentFactor = 0.8m,
+            factorDate = "2026-04-01",
+            profileFields = new
+            {
+                factorDate = "2026-01-01"
+            },
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2026-03-01", amount = 10m },
+                new { paymentDate = "2030-06-15", amount = 10m },
+            }
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        var maturityFlow = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "Maturity").Subject;
+        maturityFlow.Amount.Should().Be(60m,
+            "the governed nested factorDate (2026-01-01) bounds the factor's evidence, so the completed 2026-03-01 payment reduces the opening principal");
+    }
+
+    [Fact]
     public void ProjectFromSecurityMaster_StructuredCredit_ZeroFactorProjectsNoPrincipal()
     {
         // Zero is a real factor — a fully amortized pool. Conflating it with a MISSING factor

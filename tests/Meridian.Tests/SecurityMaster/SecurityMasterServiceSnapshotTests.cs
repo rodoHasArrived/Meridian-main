@@ -783,6 +783,33 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task AmendTermsAsync_AttributionReadFails_StillInvokesDurableConflictRecording()
+    {
+        // When the per-field attribution read FAILS, the pre-check's same-source shortcut is not
+        // authoritative: the last record writer may be changing a field another provider supplied,
+        // and skipping the durable conflict service would silently omit that disagreement. The
+        // durable service performs its own attribution read, so it must always be invoked after a
+        // failed pre-check read.
+        var (securityId, eventStore, service, conflictService, fieldProvenance) = BuildAmendHarness(
+            conflictRecordingFails: false);
+        fieldProvenance.GetAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns<Task<IReadOnlyList<SecurityFieldProvenanceRecord>>>(
+                static _ => throw new InvalidOperationException("provenance store down"));
+
+        await service.AmendTermsAsync(BuildConflictingAmend(securityId) with { SourceSystem = "provA" });
+
+        await conflictService.Received(1).RecordFieldConflictsAsync(
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<CancellationToken>());
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task AmendTermsAsync_ChangedGovernedField_RecordsCanonicalWriteAttribution()
     {
         // Record-level provenance flips on every amendment; the per-field CanonicalWrite row is

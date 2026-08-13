@@ -168,9 +168,39 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
         selectable.Should().Contain(profile =>
             profile.Version == firstApproved.Profile.Version
             && profile.Status == SecurityAssetProfileStatusDto.Superseded);
-        selectable.Should().Contain(profile =>
-            profile.Version == secondApproved.Profile.Version
-            && profile.Status == SecurityAssetProfileStatusDto.Approved);
+        // The future-dated replacement is NOT selectable yet: its effective window has not
+        // opened, so write-time governance would reject any record pinned to it today.
+        selectable.Should().NotContain(profile =>
+            profile.Version == secondApproved.Profile.Version);
+    }
+
+    [Fact]
+    public async Task GetProfiles_HidesApprovedVersionWhoseEffectiveWindowHasNotOpened()
+    {
+        // The shared catalog seam backs /api/security-master/asset-profiles for create/amend
+        // workflows across ALL consumers, so a freshly approved profile with a future
+        // EffectiveFrom (and no predecessor) must not be exposed: write-time validation rejects
+        // it with SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE until its window opens.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var service = new SecurityAssetProfileGovernanceService();
+        var draft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-future-approval", fieldLabel: "NAV date"),
+            "settings-admin");
+        await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-future-approval",
+                draft.Profile.Version,
+                today.AddDays(30),
+                "AP-001",
+                null,
+                "Approve future-dated first version.",
+                null),
+            "controller");
+
+        service.GetProfiles()
+            .Should().NotContain(profile => profile.ProfileId == "custom-future-approval");
+        service.GetAllProfiles()
+            .Should().Contain(profile => profile.ProfileId == "custom-future-approval");
     }
 
     [Fact]

@@ -72,20 +72,20 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         _persistencePath = Path.Combine(storageOptions.RootPath, "governance", "security-asset-profiles.json");
     }
 
-    // The selectable catalog must stay aligned with write-time governance: approving a
-    // replacement with a FUTURE EffectiveFrom immediately marks the predecessor Superseded, yet
-    // that predecessor remains the only version whose effective window covers writes until the
-    // replacement activates. Exposing only Approved versions here would leave operators with no
-    // selectable version that write-time validation accepts during that gap, so Superseded
-    // versions stay selectable while their effective window still covers the current date.
+    // The selectable catalog must stay aligned with write-time governance, which accepts a
+    // version only when its status is Approved or Superseded AND its effective window covers the
+    // write date. Both halves of that predicate apply here: a Superseded predecessor stays
+    // selectable while a future-dated replacement waits to activate (it is the only version
+    // write-time validation accepts during that gap), and a freshly Approved version whose
+    // EffectiveFrom is still in the future is NOT selectable yet — exposing it would advertise a
+    // create/amend that validation rejects with SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE.
     public IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles()
     {
         var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.Date);
         return GetAllProfiles()
-            .Where(profile => profile.Status == SecurityAssetProfileStatusDto.Approved
-                || (profile.Status == SecurityAssetProfileStatusDto.Superseded
-                    && profile.EffectiveFrom <= today
-                    && (profile.EffectiveTo is not DateOnly effectiveTo || today <= effectiveTo)))
+            .Where(profile => profile.Status is SecurityAssetProfileStatusDto.Approved or SecurityAssetProfileStatusDto.Superseded
+                && profile.EffectiveFrom <= today
+                && (profile.EffectiveTo is not DateOnly effectiveTo || today <= effectiveTo))
             .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static profile => profile.Version)
             .ToArray();

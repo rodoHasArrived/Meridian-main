@@ -1143,9 +1143,12 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     }
 
     /// <summary>
-    /// The current staged operator override values, best-effort: a read failure falls back to
-    /// canonical-only counterpart resolution (the pre-existing behavior) rather than blocking the
-    /// edit, and is logged.
+    /// The current staged operator override values. FAIL-CLOSED: every caller validates the
+    /// proposed edit against the EFFECTIVE overlay, so treating an unreadable overlay as absent
+    /// would validate against canonical values only — an already staged counterpart (an end date,
+    /// a Bond term, a resolved-kind constraint) could be silently contradicted and the stored
+    /// overlay left violating the pinned profile. A <c>null</c> return means overrides genuinely
+    /// do not exist; a read failure rejects the edit instead.
     /// </summary>
     private async Task<IReadOnlyDictionary<string, string>?> TryGetStagedOverrideValuesAsync(
         Guid securityId, CancellationToken ct)
@@ -1157,11 +1160,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(
-                ex,
-                "Loading staged overrides for {SecurityId} failed; scalar date-order validation falls back to canonical profile fields.",
-                securityId);
-            return null;
+            throw new InvalidOperationException(
+                $"The staged operator overlay for security '{securityId:D}' could not be loaded, so the edit cannot be " +
+                "validated against the effective overlay values. Retry the edit once the overlay store is reachable.",
+                ex);
         }
     }
 

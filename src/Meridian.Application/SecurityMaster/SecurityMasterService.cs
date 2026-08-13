@@ -379,10 +379,17 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // without it, record-level sources on both sides read the record's LAST writer, so source B
         // changing a field source A supplied would be filtered out here as same-source versioning
         // and never reach the conflict store at all.
-        var incumbentFieldSources = await TryLoadIncumbentFieldSourcesAsync(previous.SecurityId, ct).ConfigureAwait(false);
+        var (incumbentFieldSources, attributionIsAuthoritative) =
+            await TryLoadIncumbentFieldSourcesAsync(previous.SecurityId, ct).ConfigureAwait(false);
         var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
             previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources);
-        if (candidates.Count == 0)
+        // The zero-candidate shortcut is only safe when the attribution read was AUTHORITATIVE
+        // (it succeeded, or no attribution store is wired so record-level provenance is all that
+        // exists). After a failed read, "no candidates" may just mean the same-source filter hid a
+        // real cross-source disagreement, so the durable conflict service — which performs its own
+        // attribution read — must still run; if that read also fails, the amendment fails BEFORE
+        // persisting, per this method's contract, instead of silently dropping the conflict.
+        if (candidates.Count == 0 && attributionIsAuthoritative)
             return;
 
         await _conflictService.RecordFieldConflictsAsync(previous, incoming, ct).ConfigureAwait(false);
@@ -416,20 +423,22 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// <summary>
     /// Per-field incumbent attribution (field path → source system) from the durable provenance
     /// rows: canonical-write and conflict-resolution origins, newest recorded row winning per
-    /// field. Best-effort — when the store is unwired or the read fails, detection falls back to
-    /// record-level provenance, which is correct for the common distinct-source case.
+    /// field. The <c>IsAuthoritative</c> flag distinguishes "record-level provenance is all that
+    /// exists" (store unwired, or read succeeded) from "the read FAILED": after a failure the
+    /// pre-check's same-source filter may hide a real cross-source disagreement, so callers must
+    /// not treat a zero-candidate result as proof there is no conflict.
     /// </summary>
-    private async Task<IReadOnlyDictionary<string, string>?> TryLoadIncumbentFieldSourcesAsync(
+    private async Task<(IReadOnlyDictionary<string, string>? Sources, bool IsAuthoritative)> TryLoadIncumbentFieldSourcesAsync(
         Guid securityId,
         CancellationToken ct)
     {
         if (_fieldProvenance is null)
-            return null;
+            return (null, true);
 
         try
         {
             var rows = await _fieldProvenance.GetAsync(securityId, ct).ConfigureAwait(false);
-            return rows
+            var sources = rows
                 .Where(static row => row.Origin is SecurityFieldProvenanceOrigins.ConflictResolution
                     or SecurityFieldProvenanceOrigins.CanonicalWrite)
                 .GroupBy(static row => row.FieldPath, StringComparer.Ordinal)
@@ -437,14 +446,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                     static group => group.Key,
                     static group => group.OrderByDescending(static row => row.RecordedAt).First().SourceSystem,
                     StringComparer.Ordinal);
+            return (sources, true);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogWarning(
                 ex,
-                "Loading per-field incumbent attribution for {SecurityId} failed; conflict pre-check falls back to record-level provenance.",
+                "Loading per-field incumbent attribution for {SecurityId} failed; conflict pre-check falls back to record-level provenance and defers to the durable conflict service.",
                 securityId);
-            return null;
+            return (null, false);
         }
     }
 

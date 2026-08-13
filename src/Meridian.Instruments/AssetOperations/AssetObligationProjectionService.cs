@@ -330,9 +330,12 @@ public sealed class AssetObligationProjectionService
         // principal only through that date, exactly like a schedule entry, so treating it as
         // current would leave a January balance standing across February's completed payment.
         // Only a genuinely undated scalar is assumed current (reflects everything before today).
-        DateOnly? scalarFactorDate = TryReadDate(payload, out var retainedFactorDate, "factorDate", "currentFactorDate")
-            ? retainedFactorDate
-            : null;
+        // The date resolves NESTED-FIRST (governed profileFields before the envelope root),
+        // matching StructuredCashFlowTermsResolver: for profile-backed records the governed
+        // nested factorDate is authoritative, and a contradictory outer pass-through date must
+        // not shift which completed payments the factor is deemed to reflect.
+        DateOnly? scalarFactorDate = SecurityTermReader.ReadDate(
+            EnumerateNestedFirstTermSources(payload), "factorDate", "currentFactorDate");
         DateOnly? factorReflectsThrough = appliedFactorEntry?.AsOfDate
             ?? (terms.CurrentFactor is not null
                 ? (scalarFactorDate ?? projectionAsOf.AddDays(-1))
@@ -970,6 +973,34 @@ public sealed class AssetObligationProjectionService
         {
             yield return commonTerms;
         }
+    }
+
+    /// <summary>
+    /// Term sources with the GOVERNED nested profile fields first: for profile-backed records the
+    /// values under <c>assetSpecificTerms.profileFields</c> are the authoritative typed evidence,
+    /// and an envelope-root pass-through copy must not shadow them. Mirrors the nested-first
+    /// precedence of <c>StructuredCashFlowTermsResolver</c>.
+    /// </summary>
+    private static IEnumerable<JsonElement> EnumerateNestedFirstTermSources(JsonElement payload)
+    {
+        if (payload.ValueKind != JsonValueKind.Object)
+        {
+            yield break;
+        }
+
+        if (SecurityTermReader.TryGetProperty(payload, "assetSpecificTerms", out var assetSpecificTerms) &&
+            assetSpecificTerms.ValueKind == JsonValueKind.Object)
+        {
+            if (SecurityTermReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields) &&
+                profileFields.ValueKind == JsonValueKind.Object)
+            {
+                yield return profileFields;
+            }
+
+            yield return assetSpecificTerms;
+        }
+
+        yield return payload;
     }
 
     private static string BuildVarianceSummary(AssetReconciliationResultDto result)

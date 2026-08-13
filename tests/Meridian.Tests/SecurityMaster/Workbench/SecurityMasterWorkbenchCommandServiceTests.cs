@@ -390,6 +390,69 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_StagedOverlayUnreadable_RejectsTheEditInsteadOfCanonicalFallback()
+    {
+        // FAIL-CLOSED: when the staged overlay cannot be LOADED, validating against canonical
+        // values only could contradict an already staged counterpart (e.g. a February endDate
+        // hidden by the read failure while a March startDate is accepted), leaving the stored
+        // overlay violating the pinned profile. The edit must be rejected, not silently validated
+        // against a partial view.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope(
+            "dated-profile", profileVersion: 1,
+            profileFields: new { startDate = "2026-01-01", endDate = "2026-12-01" });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("overlay store down"));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.startDate",
+            NewValue: "2026-03-01",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Date correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*could not be loaded*");
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<OperatorOverridesPatchRequest>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ScalarDateEdit_ValidatesAgainstStagedWholeObjectReplacement()
     {
         // A staged WHOLE-OBJECT profileFields replacement is the effective overlay too: after
