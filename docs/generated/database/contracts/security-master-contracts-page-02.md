@@ -78,6 +78,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto["SecurityAssetProfileDefinitionDto"] {
         +IReadOnlyList~SecurityAssetProfileAccountingImpactHintDto~ AccountingImpactHints
+        +string? ApprovalReference
         +DateTimeOffset ApprovedAtUtc
         +string ApprovedBy
         +string Category
@@ -88,7 +89,6 @@ classDiagram
         +IReadOnlyList~SecurityAssetProfileFieldDefinitionDto~ Fields
         +IReadOnlyList~SecurityAssetProfileIdentifierPreferenceDto~ IdentifierPreferences
         +IReadOnlyList~string~ LifecycleStates
-        +string Name
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto["SecurityAssetProfileDraftRequestDto"] {
         +IReadOnlyList~SecurityAssetProfileAccountingImpactHintDto~ AccountingImpactHints

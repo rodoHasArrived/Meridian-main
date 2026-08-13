@@ -61,6 +61,21 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
+        // The profile GOVERNANCE envelope is not operator-editable field by field: repinning
+        // customProfileId or profileVersion through a scalar override would change the record's
+        // profile identity while retaining the old profileFields and approval metadata, bypassing
+        // the complete-envelope catalog validation and reclassification the canonical amend seam
+        // performs — and profileApproval is immutable audit evidence, not an override target.
+        if (string.Equals(key, "customProfileId", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, "profileVersion", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, "profileApproval", StringComparison.OrdinalIgnoreCase))
+        {
+            error =
+                $"assetSpecificTerms.{key} is part of the governed profile envelope and cannot be edited " +
+                "field by field; submit a complete profile envelope through a governed amendment instead.";
+            return false;
+        }
+
         // Profile-backed classes carry dynamic, profile-governed fields beneath profileFields;
         // their inner shape is owned by the approved profile version, not this schema. A whole-root
         // replacement still has to be a JSON object, including for profile-backed asset classes
@@ -107,8 +122,23 @@ public static class SecurityAssetTermsFieldEditValidator
 
         if (nestedPath.Length > 0 || string.IsNullOrWhiteSpace(newValue))
         {
-            // Nested paths inside Object/Array fields are not enumerated by the schema, and a blank
-            // value clears the overlay entry instead of asserting a typed value.
+            // A VALUE edit beneath a known contractual schedule cannot be row-validated in
+            // isolation — principalSchedule.0.amount = -10 would stage an override the domain
+            // rejects wholesale — so those subpaths only accept clears; assert values by
+            // replacing the whole array, which runs the schedule invariants. Other nested paths
+            // inside Object/Array fields stay dynamic pass-through, and a blank value clears the
+            // overlay entry instead of asserting a typed one.
+            if (nestedPath.Length > 0
+                && !string.IsNullOrWhiteSpace(newValue)
+                && (string.Equals(field.Key, "principalSchedule", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(field.Key, "factorScheduleEntries", StringComparison.OrdinalIgnoreCase)))
+            {
+                error =
+                    $"'{field.Key}' rows carry schedule-wide domain invariants that a nested edit cannot " +
+                    "be validated against; replace the whole array instead.";
+                return false;
+            }
+
             canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
             return true;
         }

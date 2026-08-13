@@ -387,6 +387,68 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ScalarDateEdit_ValidatesAgainstStagedWholeObjectReplacement()
+    {
+        // A staged WHOLE-OBJECT profileFields replacement is the effective overlay too: after
+        // staging a replacement whose endDate is February, a scalar startDate=March edit must be
+        // judged against February — falling through to the canonical December end date would let
+        // the overlay serialize into start-after-end order.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope(
+            "dated-profile", profileVersion: 1,
+            profileFields: new { startDate = "2026-01-01", endDate = "2026-12-01" });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.profileFields"] = """{"startDate":"2026-01-01","endDate":"2026-02-01"}"""
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.startDate",
+            NewValue: "2026-03-01",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Date correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>(
+                "the staged whole-object replacement's February endDate is the effective counterpart")
+            .WithMessage("*PF_DATE_ORDER*");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ProfileFieldsReplacement_ResolvesDeclaredKeysCaseInsensitively()
     {
         // A whole-object replacement must match declared keys the way scalar edits and downstream

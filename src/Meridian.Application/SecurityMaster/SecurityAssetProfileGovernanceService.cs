@@ -227,7 +227,8 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 EffectiveTo = null,
                 ApprovedBy = resolvedActor,
                 ApprovedAtUtc = now,
-                ChangeReason = rationale
+                ChangeReason = rationale,
+                ApprovalReference = approvalReference
             };
             ValidateProfileDefinition(approved);
             SupersedeCurrentApproved(profiles, approved.ProfileId, approved.Version, request.EffectiveFrom);
@@ -293,7 +294,8 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 EffectiveTo = null,
                 ApprovedBy = resolvedActor,
                 ApprovedAtUtc = now,
-                ChangeReason = $"Rollback to version {request.TargetVersion}: {rationale}"
+                ChangeReason = $"Rollback to version {request.TargetVersion}: {rationale}",
+                ApprovalReference = approvalReference
             };
             ValidateProfileDefinition(rollback);
             SupersedeCurrentApproved(profiles, rollback.ProfileId, rollback.Version, request.EffectiveFrom);

@@ -622,7 +622,7 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
             && approval.ValueKind == JsonValueKind.Object
             && JsonValidationReader.TryGetString(approval, "approvedBy", out var approvedBy)
             && JsonValidationReader.TryGetDateTimeOffset(approval, "approvedAtUtc", out var approvedAtUtc)
-            && JsonValidationReader.TryGetString(approval, "approvalReference", out _)))
+            && JsonValidationReader.TryGetString(approval, "approvalReference", out var approvalReference)))
         {
             return
             [
@@ -641,9 +641,16 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
         // facts would corrupt that trail from the first write. Read-path validation skips the
         // comparison — a historical record's metadata reflects the approval event as it stood
         // when written, which a later catalog re-approval must not retroactively invalidate.
+        // The approval reference is verifiable only when the catalog carries one (definitions
+        // predating the ApprovalReference field have no fact to compare, and free-text acceptance
+        // is exactly what this check exists to prevent — not a reason to fail legacy profiles).
+        var referenceContradictsCatalog = profile.ApprovalReference is { } catalogReference
+            && !string.IsNullOrWhiteSpace(catalogReference)
+            && !string.Equals(approvalReference.Trim(), catalogReference.Trim(), StringComparison.OrdinalIgnoreCase);
         if (enforceWriteTimeGovernance
             && (!string.Equals(approvedBy.Trim(), profile.ApprovedBy.Trim(), StringComparison.OrdinalIgnoreCase)
-                || approvedAtUtc != profile.ApprovedAtUtc))
+                || approvedAtUtc != profile.ApprovedAtUtc
+                || referenceContradictsCatalog))
         {
             return
             [
@@ -651,8 +658,9 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
                     SecurityValidationSeverityDto.Error,
                     "SM_CUSTOM_PROFILE_APPROVAL_METADATA_MISMATCH",
                     "Custom asset profile approval metadata contradicts the governed catalog",
-                    $"profileApproval names approvedBy '{approvedBy}' at '{approvedAtUtc:O}', but profile '{profile.Name}' " +
-                    $"version '{profile.Version}' was approved by '{profile.ApprovedBy}' at '{profile.ApprovedAtUtc:O}'.",
+                    $"profileApproval names approvedBy '{approvedBy}' at '{approvedAtUtc:O}' (reference '{approvalReference}'), " +
+                    $"but profile '{profile.Name}' version '{profile.Version}' was approved by '{profile.ApprovedBy}' at " +
+                    $"'{profile.ApprovedAtUtc:O}'{(profile.ApprovalReference is null ? string.Empty : $" (reference '{profile.ApprovalReference}')")}.",
                     ["assetSpecificTerms.profileApproval"],
                     "Copy the approval metadata from the governed profile approval event instead of supplying free text.")
             ];

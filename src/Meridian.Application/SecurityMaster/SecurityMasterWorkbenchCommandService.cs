@@ -937,8 +937,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     }
 
     /// <summary>
-    /// A profile field's EFFECTIVE date: the staged operator override when one exists (that is
-    /// what the record reads after approval), otherwise the canonical projection value.
+    /// A profile field's EFFECTIVE date: the staged per-field operator override when one exists,
+    /// then a field inside a staged WHOLE-OBJECT profileFields replacement (a replacement is what
+    /// the record reads after approval, so falling through it to the superseded canonical value
+    /// would validate against dates the overlay has already replaced), and only then the canonical
+    /// projection value.
     /// </summary>
     private static bool TryResolveEffectiveProfileDate(
         string fieldKey,
@@ -956,6 +959,29 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                     && DateOnly.TryParse(overrideValue.Trim(), System.Globalization.CultureInfo.InvariantCulture, out value))
                 {
                     return true;
+                }
+            }
+
+            foreach (var (path, overrideValue) in stagedOverrides)
+            {
+                if (!string.Equals(path, ProfileFieldsRootPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    using var replacement = JsonDocument.Parse(overrideValue);
+                    if (replacement.RootElement.ValueKind == JsonValueKind.Object
+                        && TryReadProfileDate(replacement.RootElement, fieldKey, out value))
+                    {
+                        return true;
+                    }
+                }
+                catch (JsonException)
+                {
+                    // A malformed staged replacement cannot supply the counterpart; fall through
+                    // to the canonical value.
                 }
             }
         }

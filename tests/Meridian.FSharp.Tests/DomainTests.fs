@@ -659,6 +659,36 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     payload.GetProperty("maturity").GetString() |> should equal "2031-06-15"
 
 [<Fact>]
+let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Maturity module`` () =
+    // The persisted legal final maturity must reach the shared economic-terms document, not only
+    // the retained asset-specific terms: consumers of EconomicTerms (the accounting adapter among
+    // them) read maturity only from the Maturity module.
+    let terms = {
+        Tranche = "A-1"
+        PoolId = Some "POOL-2026-1"
+        CollateralType = "CLO"
+        OriginalFace = 1_000_000m
+        CurrentFactor = Some 0.9825m
+        CouponOrIndex = "SOFR+250"
+        FactorSchedule = Some "monthly-trustee"
+        FactorScheduleEntries = []
+        Maturity = Some (DateOnly(2031, 6, 15))
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let definition = SecurityMasterLegacyUpgrade.toEconomicDefinition record
+    let maturityModule =
+        definition.Terms.Maturity |> Option.defaultWith (fun () -> failwith "Expected Maturity term module")
+    maturityModule.MaturityDate |> should equal (Some (DateOnly(2031, 6, 15)))
+
+[<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
     let preferredTerms, _, classification = createConvertiblePreferredClassification ()
     let record = createSecurityRecord (Some classification)

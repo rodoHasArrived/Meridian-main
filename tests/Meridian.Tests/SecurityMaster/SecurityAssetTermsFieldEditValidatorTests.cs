@@ -209,14 +209,53 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [Fact]
     public void EveryDeclaredAssetClass_AcceptsItsOwnDeclaredKeys()
     {
+        // The profile governance envelope is declared for round-trip purposes but reserved from
+        // per-field operator edits: repinning identity or touching approval evidence bypasses the
+        // complete-envelope amendment route.
+        string[] reservedGovernanceKeys = ["customProfileId", "profileVersion", "profileApproval"];
         foreach (var assetClass in SecurityAssetTermsSchema.AssetClasses)
         {
             foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
             {
+                if (reservedGovernanceKeys.Contains(field.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 SecurityAssetTermsFieldEditValidator
                     .TryValidate(assetClass, $"assetSpecificTerms.{field.Key}", null, out _, out var error)
                     .Should().BeTrue($"'{assetClass}.{field.Key}' is declared, but was rejected: {error}");
             }
         }
+    }
+
+    [Theory]
+    [InlineData("assetSpecificTerms.customProfileId", "structured-credit-io-po")]
+    [InlineData("assetSpecificTerms.profileVersion", "2")]
+    [InlineData("assetSpecificTerms.profileApproval", "{\"approvedBy\":\"rogue\"}")]
+    public void GovernanceEnvelopeKeys_AreNotEditableFieldByField(string fieldPath, string value)
+    {
+        // A scalar repin of customProfileId/profileVersion would change the record's profile
+        // identity while keeping the old profileFields and approval metadata, bypassing the
+        // complete-envelope catalog validation and reclassification of the canonical amend seam.
+        SecurityAssetTermsFieldEditValidator.TryValidate("CustomAsset", fieldPath, value, out _, out var error)
+            .Should().BeFalse();
+        error.Should().Match("*governed profile envelope*");
+    }
+
+    [Theory]
+    [InlineData("Bond", "assetSpecificTerms.principalSchedule.0.amount", "-10")]
+    [InlineData("StructuredCredit", "assetSpecificTerms.factorScheduleEntries.0.factor", "2")]
+    public void NestedScheduleValueEdits_AreRejected(string assetClass, string fieldPath, string value)
+    {
+        // A row fragment cannot be validated against schedule-wide invariants; asserting values
+        // requires replacing the whole array (which runs them). Clears of such subpaths still
+        // pass — they remove junk overlay keys rather than asserting a value.
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
+            .Should().BeFalse();
+        error.Should().Match("*replace the whole array*");
+
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, null, out _, out _)
+            .Should().BeTrue("clears remove junk overlay keys rather than asserting a value");
     }
 }

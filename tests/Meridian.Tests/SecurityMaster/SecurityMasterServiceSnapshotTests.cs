@@ -400,7 +400,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "PFI-APPROVAL-9"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             IdentifiersToAdd: [],
@@ -522,7 +522,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "PFI-APPROVAL-1"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             new[]
@@ -923,7 +923,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "SPV-APPROVAL-1"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             new[]
@@ -988,7 +988,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     {
                         approvedBy = "Meridian",
                         approvedAtUtc = "2026-05-29T00:00:00Z",
-                        approvalReference = "PFI-APPROVAL-2"
+                        approvalReference = "MERIDIAN-SEED-APPROVAL"
                     }
                 }),
                 new[]
@@ -1058,7 +1058,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "PFI-APPROVAL-3"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             new[]
@@ -1128,7 +1128,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                     {
                         approvedBy = "Meridian",
                         approvedAtUtc = "2026-05-29T00:00:00Z",
-                        approvalReference = "PFI-APPROVAL-4"
+                        approvalReference = "MERIDIAN-SEED-APPROVAL"
                     }
                 }),
                 new[]
@@ -1197,12 +1197,52 @@ public sealed class SecurityMasterServiceSnapshotTests
                     {
                         approvedBy = "rogue-actor",
                         approvedAtUtc = "2026-05-29T00:00:00Z",
-                        approvalReference = "PFI-APPROVAL-5"
+                        approvalReference = "FORGED-REFERENCE"
                     }
                 }),
                 new[]
                 {
                     new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-FORGE", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*SM_CUSTOM_PROFILE_APPROVAL_METADATA_MISMATCH*");
+
+        // A forged approval REFERENCE alone — approver and timestamp copied from the catalog —
+        // must also refuse: the reference is part of the immutable approval evidence and the
+        // catalog now retains its own to compare.
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                Guid.NewGuid(),
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new { displayName = "Forged Reference Fund", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "private-fund-interest",
+                    profileVersion = 1,
+                    profileFields = new
+                    {
+                        gpSponsor = "Meridian Growth Partners",
+                        strategy = "Buyout",
+                        vintage = 2024,
+                        commitment = 5_000_000m,
+                        fundedAmount = 0m,
+                        unfundedAmount = 5_000_000m,
+                        navDate = "2026-06-30"
+                    },
+                    profileApproval = new
+                    {
+                        approvedBy = "Meridian",
+                        approvedAtUtc = "2026-05-29T00:00:00Z",
+                        approvalReference = "FORGED-REFERENCE"
+                    }
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-FORGE-REF", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
                 },
                 DateTimeOffset.UtcNow,
                 "test",
@@ -1250,7 +1290,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "SPV-APPROVAL-2"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             Provenance = JsonSerializer.SerializeToElement(new
@@ -1297,7 +1337,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "PFI-APPROVAL-6"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             IdentifiersToAdd: [],
@@ -1355,7 +1395,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "PFI-APPROVAL-7"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             Provenance = JsonSerializer.SerializeToElement(new
@@ -1403,7 +1443,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "SC-APPROVAL-1"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             IdentifiersToAdd: [],
@@ -1455,7 +1495,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "PFI-APPROVAL-8"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             Provenance = JsonSerializer.SerializeToElement(new
@@ -1501,7 +1541,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 {
                     approvedBy = "Meridian",
                     approvedAtUtc = "2026-05-29T00:00:00Z",
-                    approvalReference = "SPV-APPROVAL-3"
+                    approvalReference = "MERIDIAN-SEED-APPROVAL"
                 }
             }),
             IdentifiersToAdd: [],

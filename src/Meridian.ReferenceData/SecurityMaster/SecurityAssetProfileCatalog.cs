@@ -175,7 +175,8 @@ internal static class SecurityAssetProfileSeeds
             null,
             "Meridian",
             ApprovedAtUtc,
-            "Seeded starter template for governed custom asset profile validation.");
+            "Seeded starter template for governed custom asset profile validation.",
+            ApprovalReference: "MERIDIAN-SEED-APPROVAL");
 
     private static IReadOnlyList<string> Taxonomy(string taxonomyKey)
         => SecurityReferenceTaxonomyCatalog.Default.GetValues(taxonomyKey);
