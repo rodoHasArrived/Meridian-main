@@ -1,5 +1,6 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -62,6 +63,18 @@ public interface ISecurityMasterWorkbenchCommandService
     /// </summary>
     Task<OperatorOverridesDto> PatchOperatorOverridesAsync(
         Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default);
+
+    /// <summary>
+    /// Records a direct operator-override approval decision (the legacy decision route) under the
+    /// per-security gate, refusing with <see cref="InvalidOperationException"/> whenever the
+    /// decision belongs to the governed revision lifecycle instead: staged (Draft/Submitted)
+    /// revisions are pending, or the overlay carries revision-backed values. Hosts that wire the
+    /// workbench must route the legacy decision endpoint through this seam so a
+    /// ModifySecurityMaster actor cannot directly approve values whose revisions were never
+    /// reviewed.
+    /// </summary>
+    Task<OperatorOverridesDto> RecordOperatorOverrideDecisionAsync(
+        Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default);
 
     /// <summary>Approves a submitted revision through the operations-continuity approval gate.</summary>
     Task<SecurityMasterEditResultDto> ApproveRevisionAsync(

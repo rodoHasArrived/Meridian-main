@@ -134,7 +134,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // tracked as follow-up work.
         var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
             currentProjection, projection, _assetProfileCatalog);
-        await TryRetireStaleFieldResolutionProvenanceAsync(changedGovernedFields, request.SecurityId, ct).ConfigureAwait(false);
+        await TryRetireStaleFieldResolutionProvenanceAsync(
+            changedGovernedFields, request.SecurityId, projection.Version, ct).ConfigureAwait(false);
         await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
         // Open conflicts reconcile against the DURABLY persisted value only: superseding or
         // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed
@@ -444,13 +445,23 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         try
         {
             var rows = await _fieldProvenance.GetAsync(securityId, ct).ConfigureAwait(false);
+            // Cross-origin precedence follows the projection VERSION the row attributes, not the
+            // callback's wall-clock recording time: a delayed low-version canonical write can be
+            // recorded after a resolution that validated a higher version, and wall-clock order
+            // would resurrect the older incumbent — making that source's next amendment look like
+            // same-source versioning and suppressing the real cross-source conflict. Time orders
+            // only unversioned (legacy) and tied rows.
             var sources = rows
                 .Where(static row => row.Origin is SecurityFieldProvenanceOrigins.ConflictResolution
                     or SecurityFieldProvenanceOrigins.CanonicalWrite)
                 .GroupBy(static row => row.FieldPath, StringComparer.Ordinal)
                 .ToDictionary(
                     static group => group.Key,
-                    static group => group.OrderByDescending(static row => row.RecordedAt).First().SourceSystem,
+                    static group => group
+                        .OrderByDescending(static row => row.SourceVersion is not null)
+                        .ThenByDescending(static row => row.SourceVersion ?? long.MinValue)
+                        .ThenByDescending(static row => row.RecordedAt)
+                        .First().SourceSystem,
                     StringComparer.Ordinal);
             return (sources, true);
         }
@@ -474,6 +485,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private async Task TryRetireStaleFieldResolutionProvenanceAsync(
         IReadOnlyList<string> changedFieldPaths,
         Guid securityId,
+        long maxSourceVersion,
         CancellationToken ct)
     {
         if (_fieldProvenance is null || changedFieldPaths.Count == 0)
@@ -485,12 +497,16 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             {
                 // POST-COMMIT best-effort: detached token + catch-all, matching the other
                 // post-persist lineage steps — cancellation must not escape after the canonical
-                // write durably advanced.
+                // write durably advanced. The removal acts on behalf of THIS amendment, so it is
+                // bounded by this amendment's projection version: a resolution recorded against a
+                // NEWER version (a later amendment committed while this cleanup was delayed) is
+                // that version's incumbent evidence and must survive.
                 await _fieldProvenance.RemoveAsync(
                     securityId,
                     fieldPath,
                     SecurityFieldProvenanceOrigins.ConflictResolution,
                     clearedAt: DateTimeOffset.UtcNow,
+                    maxSourceVersion: maxSourceVersion,
                     ct: CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)

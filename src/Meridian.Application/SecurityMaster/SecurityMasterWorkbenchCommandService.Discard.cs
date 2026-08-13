@@ -437,7 +437,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService
             fieldEditGate.Release();
         }
 
-        var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+        // The transition and withdrawal are durable by now — the discard has succeeded. The final
+        // version read runs detached, matching the approve seam: a canceled request token must not
+        // surface the completed discard as canceled and prompt a needless reconciliation retry.
+        var currentVersion = await GetCurrentVersionAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Security Master revision {RevisionId} for {SecurityId} discarded (Rejected) by {Actor}",
@@ -493,13 +496,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService
             // through the generic overrides route has no revision evidence — no published
             // reviewer ever saw its value. Only a WHOLE-RECORD published owner (the legacy
             // pre-field-edit posture, whose reviewer reviewed the record and overlay as one unit)
-            // waives the scan; otherwise every surviving key needs a governing revision, and an
-            // ungoverned key leaves the overlay Pending until it is withdrawn or re-staged.
+            // waives the scan; otherwise every surviving key's CURRENT VALUE needs revision
+            // evidence, and an ungoverned key leaves the overlay Pending until it is withdrawn or
+            // re-staged.
             if (!string.IsNullOrWhiteSpace(latestPublished.FieldPath))
             {
-                var ungovernedKeys = overlay.Values.Keys
-                    .Where(key => !revisions.Any(revision =>
-                        string.Equals(revision.FieldPath, key, StringComparison.OrdinalIgnoreCase)))
+                var ungovernedKeys = overlay.Values
+                    .Where(entry => !OverlayKeyHasRevisionEvidence(revisions, entry.Key, entry.Value))
+                    .Select(static entry => entry.Key)
                     .ToArray();
                 if (ungovernedKeys.Length > 0)
                 {

@@ -1040,6 +1040,7 @@ public static class SecurityMasterEndpoints
             OperatorOverrideDecisionRequest request,
             HttpContext context,
             [FromServices] IOperatorOverridesStore store,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
             // The reviewer identity is server-derived from the authenticated principal, never taken
@@ -1047,14 +1048,26 @@ public static class SecurityMasterEndpoints
             var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
             try
             {
-                var updated = await store
-                    .RecordApprovalDecisionAsync(securityId, decision, ct)
-                    .ConfigureAwait(false);
+                // A direct decision bypasses the revision lifecycle's controls (bound workflow,
+                // independent reviewer, staged-value deferral). When the host wires the workbench
+                // service, the decision goes through its governed seam, which refuses while staged
+                // revisions or revision-backed overlay values exist — otherwise the editor could
+                // approve a Draft revision's staged value directly.
+                var updated = workbenchService is null
+                    ? await store.RecordApprovalDecisionAsync(securityId, decision, ct).ConfigureAwait(false)
+                    : await workbenchService.RecordOperatorOverrideDecisionAsync(securityId, decision, ct).ConfigureAwait(false);
                 return Results.Json(updated, jsonOptions);
             }
             catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
+            {
+                // The decision belongs to the revision lifecycle (staged revisions pending, or
+                // revision-backed values present) — a conflicting-state condition, not a client
+                // formatting error.
+                return Results.Conflict(new { error = exception.Message });
             }
             catch (InvalidOperationException exception) when (exception.Message.Contains("No operator overrides exist", StringComparison.Ordinal))
             {

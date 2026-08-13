@@ -785,6 +785,40 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task AmendTermsAsync_DelayedLowVersionAttribution_DoesNotSuppressTheRealConflict()
+    {
+        // Cross-origin incumbent precedence follows the attributed projection VERSION, not the
+        // callback's wall-clock recording time. A delayed v2 CanonicalWrite row (provA) recorded
+        // AFTER a conflict resolution that validated v3 (winner provB) must not resurrect provA as
+        // the incumbent: provA's next amendment would then look like same-source versioning and
+        // the pre-check would silently suppress the real provA-vs-provB disagreement.
+        var (securityId, _, service, conflictService, fieldProvenance) = BuildAmendHarness(
+            conflictRecordingFails: false);
+        fieldProvenance.GetAsync(securityId, Arg.Any<CancellationToken>()).Returns(
+        [
+            new SecurityFieldProvenanceRecord(
+                securityId, "EconomicTerms.couponRate", "provA",
+                AsOf: null, UpdatedBy: "feed", Confidence: null,
+                Origin: SecurityFieldProvenanceOrigins.CanonicalWrite,
+                OriginReference: "version:2", RecordedAt: DateTimeOffset.UtcNow,
+                SourceVersion: 2),
+            new SecurityFieldProvenanceRecord(
+                securityId, "EconomicTerms.couponRate", "provB",
+                AsOf: null, UpdatedBy: "operator", Confidence: null,
+                Origin: SecurityFieldProvenanceOrigins.ConflictResolution,
+                OriginReference: Guid.NewGuid().ToString("D"), RecordedAt: DateTimeOffset.UtcNow.AddHours(-1),
+                SourceVersion: 3),
+        ]);
+
+        await service.AmendTermsAsync(BuildConflictingAmend(securityId) with { SourceSystem = "provA" });
+
+        await conflictService.Received(1).RecordFieldConflictsAsync(
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task AmendTermsAsync_AttributionReadFails_StillInvokesDurableConflictRecording()
     {
         // When the per-field attribution read FAILS, the pre-check's same-source shortcut is not

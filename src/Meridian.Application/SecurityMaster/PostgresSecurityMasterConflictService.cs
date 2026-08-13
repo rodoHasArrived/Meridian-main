@@ -448,14 +448,16 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         await using var command = connection.CreateCommand();
         // Both canonical attribution origins name a field's true incumbent: ConflictResolution rows
         // record a resolved winner, CanonicalWrite rows record which source supplied the field
-        // through an ordinary create/amend. The newest row per field wins — a canonical write after
-        // a resolution means the field changed hands again, and vice versa.
+        // through an ordinary create/amend. Precedence follows the attributed projection VERSION,
+        // not recording wall-clock: a delayed low-version canonical row recorded after a resolution
+        // that validated a higher version must not resurrect the older incumbent. Recording time
+        // orders only unversioned (legacy) and tied rows.
         command.CommandText =
             $"""
             select distinct on (field_path) field_path, source_system
             from {Qualified(PostgresSecurityFieldProvenanceSql.Table)}
             where security_id = @security_id and origin in (@resolution_origin, @canonical_origin)
-            order by field_path, recorded_at desc;
+            order by field_path, (source_version is not null) desc, source_version desc nulls last, recorded_at desc;
             """;
         command.Parameters.AddWithValue("security_id", securityId);
         command.Parameters.AddWithValue("resolution_origin", SecurityFieldProvenanceOrigins.ConflictResolution);

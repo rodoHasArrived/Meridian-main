@@ -3361,12 +3361,27 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         harness.Workflow
             .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Approved, reviewer: "gate.reviewer"));
+        // The overlay tracks the restoration patch: at decision time it must carry the published
+        // owner's restored "100" (the value its reviewer approved), not the discarded draft's.
+        var overlayPar = "200";
         var decided = false;
+        harness.Overrides
+            .Setup(o => o.PatchAsync(
+                SecurityId, It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<long?>()))
+            .ReturnsAsync((Guid id, OperatorOverridesPatchRequest patch, string actor, CancellationToken _, long? _) =>
+            {
+                if (patch.SetValues is not null && patch.SetValues.TryGetValue("assetSpecificTerms.par", out var restoredValue))
+                {
+                    overlayPar = restoredValue;
+                }
+
+                return new OperatorOverridesDto(id, new Dictionary<string, string>(), actor, DateTimeOffset.UtcNow);
+            });
         harness.Overrides
             .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => new OperatorOverridesDto(
                 SecurityId,
-                new Dictionary<string, string> { ["assetSpecificTerms.par"] = decided ? "100" : "200" },
+                new Dictionary<string, string> { ["assetSpecificTerms.par"] = overlayPar },
                 "ops.analyst",
                 DateTimeOffset.UtcNow)
             {
@@ -3562,6 +3577,135 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         revisions.ReleaseDrafts.TrySetResult();
         await Task.WhenAll(editTask, patchTask);
+    }
+
+    [Fact]
+    public async Task Approve_ReplacedGovernedKeyValue_DefersTheDecision()
+    {
+        // Governance binds to the reviewed VALUE, not mere path existence: after a revision staged
+        // par=80, the generic overrides route can replace the key with 999 in place. The revision's
+        // approval must not co-approve that replacement on the strength of the old review — the
+        // decision defers until the value is withdrawn or re-staged.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revision = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.",
+            fieldValue: new SecurityMasterRevisionFieldValue("80"));
+        await harness.Revisions.TransitionAsync(
+            revision.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst",
+            workflowIdForSubmit: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.par"] = "999" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revision.RevisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never,
+            "an overlay value no revision staged must defer the security-level decision even when the path matches");
+    }
+
+    [Fact]
+    public async Task RecordOperatorOverrideDecision_StagedRevisionPending_Refuses()
+    {
+        // The legacy decision route has none of the revision lifecycle's controls. While a staged
+        // revision is pending, a direct decision would decide its staged value without the bound
+        // workflow's review — the editor could approve their own Draft.
+        var harness = new Harness(currentVersion: 3);
+        await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.",
+            fieldValue: new SecurityMasterRevisionFieldValue("80"));
+
+        await harness.Service.Invoking(s => s.RecordOperatorOverrideDecisionAsync(
+                SecurityId,
+                new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, "ops.analyst", "Looks right.")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*governed revision workflow*");
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task RecordOperatorOverrideDecision_RevisionBackedOverlay_Refuses()
+    {
+        // Even with nothing staged, an overlay carrying revision-backed values gets its decision
+        // from the approve/publish/discard seams — a direct decision would bypass the reviewer
+        // evidence those seams record.
+        var harness = new Harness(currentVersion: 3);
+        var published = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "Winning edit (100).",
+            fieldValue: new SecurityMasterRevisionFieldValue("100"));
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+        await harness.Revisions.TransitionAsync(
+            published.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["assetSpecificTerms.par"] = "100" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.Invoking(s => s.RecordOperatorOverrideDecisionAsync(
+                SecurityId,
+                new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, "ops.reviewer", "Confirmed.")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*governed revision workflow*");
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task RecordOperatorOverrideDecision_LegacyOverlay_RecordsTheDecision()
+    {
+        // A pure legacy overlay — free-form values, no revisions anywhere — is exactly what the
+        // legacy decision route exists for; the governed seam passes it through under the gate.
+        var harness = new Harness(currentVersion: 3);
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["annotations.freeform"] = "legacy note" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.RecordOperatorOverrideDecisionAsync(
+            SecurityId,
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, "ops.reviewer", "Reviewed."));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision =>
+                    decision.Decision == SecurityOverrideApprovalStatusDto.Approved
+                    && decision.Reviewer == "ops.reviewer"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     private sealed class GatedRevisionStore : ISecurityMasterRevisionStore
