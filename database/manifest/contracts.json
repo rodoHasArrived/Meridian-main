@@ -3516,7 +3516,7 @@
       ]
     }
   ],
-  "fingerprint": "1a7d3a18c6f6a50bfbec4ed9281681b49fe042458456973ed8abbf31a6930658",
+  "fingerprint": "cedb2625fcc066ef5c94cf0e59291a7f75c357ddd4e19ae0df5541d9bcc7e4db",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5344,7 +5344,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "bfd9f47d7381f356bde8e9690e6bd4fa0792a419c0b6a66ea36373e5f93cd884",
+      "fingerprint": "99df89f8b28a976ae5d3837d95de963c25a0467631b49f1eb300bb23fcb318c8",
       "mapped_schemas": [
         "security_master"
       ],
@@ -208659,7 +208659,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "774dac2985e05fa691949d159c04c48871637a88e922ef849dd6a48a78c3e93c",
+      "fingerprint": "22b4ef64776de47744e35b8db73ce508461afbc607e49e2ff23f982e90af5547",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "kind": "class",
@@ -208678,7 +208678,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyCollection<string>",
-          "source_line": 342,
+          "source_line": 345,
           "type": "IReadOnlyCollection<string>"
         }
       ],
