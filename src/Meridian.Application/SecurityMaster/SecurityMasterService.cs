@@ -166,8 +166,12 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // conflict queue for an amendment the event store then rejects. Best-effort — a failed
         // sweep leaves conflicts Open, where the resolve-time guard reconciles them lazily.
         await TryReconcileOpenFieldConflictsAsync(projection, ct).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
-        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
+        // The snapshot and identifier-conflict steps are post-commit too: the event append and
+        // projection upsert are durable, so a canceled request token must not surface a canceled
+        // amendment (the retry would fail concurrency on the advanced version) nor skip the
+        // cache/registry updates below.
+        await SaveSnapshotIfNeededAsync(economic, CancellationToken.None).ConfigureAwait(false);
+        await TryRecordConflictsAsync(projection, request.SecurityId, CancellationToken.None).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.

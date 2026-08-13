@@ -261,7 +261,16 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             }
         }
 
-        var scheduledFactor = appliedFactorEntry?.Factor ?? terms.CurrentFactor;
+        // A scalar current factor is DATED evidence when a factorDate is retained — and dated
+        // evidence from the FUTURE does not describe today's balance: a 0.8 factor effective next
+        // month would understate today's outstanding (and every projected interest and principal
+        // row) by 20%. Only an undated scalar, or one dated on or before the projection as-of,
+        // may seed the balance; a future-dated scalar leaves the latest eligible schedule point
+        // (already resolved above) or the unfactored walk in charge.
+        var scalarFactorDate = SecurityTermReader.ReadDate(
+            EnumerateFactorDateSources(security.AssetSpecificTerms), ["factorDate", "currentFactorDate"]);
+        var scalarFactorApplies = scalarFactorDate is not DateOnly scalarAsOf || scalarAsOf <= asOfDate;
+        var scheduledFactor = appliedFactorEntry?.Factor ?? (scalarFactorApplies ? terms.CurrentFactor : null);
         var hasAuthoritativeFactor = scheduledFactor is >= 0m;
         var factor = hasAuthoritativeFactor ? scheduledFactor.GetValueOrDefault() : 1m;
         var outstanding = RoundCash(principalBasis * factor);
@@ -276,9 +285,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
                     .Sum(static entry => entry.Amount);
                 outstanding = RoundCash(decimal.Max(0m, outstanding - paidBeforeAsOf));
             }
-            else if ((appliedFactorEntry?.AsOfDate
-                ?? SecurityTermReader.ReadDate(EnumerateFactorDateSources(security.AssetSpecificTerms), ["factorDate", "currentFactorDate"]))
-                is DateOnly factorEvidenceDate)
+            else if ((appliedFactorEntry?.AsOfDate ?? scalarFactorDate) is DateOnly factorEvidenceDate)
             {
                 // A DATED factor reflects principal events only up to its as-of date: a January
                 // factor of 0.8 does not know about February's contractual payment, so completed

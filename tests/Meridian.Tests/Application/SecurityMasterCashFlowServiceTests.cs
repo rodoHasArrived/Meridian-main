@@ -57,6 +57,52 @@ public sealed class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
+    public async Task GetProjectionAsync_FutureDatedScalarFactor_DoesNotReduceTodaysBalance()
+    {
+        // A scalar currentFactor dated NEXT MONTH does not describe today's balance: applying it
+        // would understate today's outstanding — and every projected interest row and the
+        // maturity principal — by the factor's paydown. Until the factor's date arrives, the
+        // unfactored balance (or the latest eligible schedule point) governs.
+        var securityId = Guid.Parse("33333333-cccc-cccc-cccc-333333333333");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    currentFactor = 0.8m,
+                    factorDate = asOf.AddMonths(1)
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Last().PrincipalAmount.Should().Be(100m,
+            "a factor dated after the projection as-of must not reduce today's outstanding");
+    }
+
+    [Fact]
     public async Task GetProjectionAsync_CalculatedSinker_ShouldAmortizePrincipalAcrossScheduleDates()
     {
         var securityId = Guid.Parse("22222222-bbbb-bbbb-bbbb-222222222222");

@@ -148,20 +148,23 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // While ANY revision is staged, the overlay is mid-review and free-form mutation is
-            // refused outright — the gate alone only serializes calls, it cannot stop a patch
-            // from landing BETWEEN a submission and its approval and changing the dictionary the
-            // reviewer decides over (a whole-record revision's approval covers the entire
-            // overlay, with no per-key scan to catch the insertion). The patch becomes legal
-            // again once the staged revisions are decided or discarded.
+            // While ANY revision is mid-lifecycle, the overlay is under review and free-form
+            // mutation is refused outright — the gate alone only serializes calls, it cannot stop
+            // a patch from landing BETWEEN a submission and its approval and changing the
+            // dictionary the reviewer decides over (a whole-record revision's approval covers the
+            // entire overlay, with no per-key scan to catch the insertion), nor from resetting an
+            // APPROVED revision's decided overlay to Pending while it awaits publish. The patch
+            // becomes legal again once the revisions are published or discarded.
             var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
             if (revisions.Any(static revision => revision.State is SecurityMasterRevisionStateDto.Draft
-                or SecurityMasterRevisionStateDto.Submitted))
+                or SecurityMasterRevisionStateDto.Submitted
+                or SecurityMasterRevisionStateDto.Approved))
             {
                 throw new InvalidOperationException(
                     $"Operator-override patches for security '{securityId:D}' must wait for the governed revision " +
-                    "workflow: staged (Draft/Submitted) revisions are pending, and a free-form patch would change the " +
-                    "overlay their reviewers are deciding over. Decide or discard the staged revisions first.");
+                    "workflow: revisions are staged or awaiting publish (Draft/Submitted/Approved), and a free-form " +
+                    "patch would change the overlay their reviewers decided over. Publish or discard those revisions " +
+                    "first.");
             }
 
             return await _overrides.PatchAsync(securityId, request, updatedBy, ct).ConfigureAwait(false);

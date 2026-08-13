@@ -822,40 +822,57 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             }
         }
 
-        var decisionOutcome = await TryRecordOverrideApprovalDecisionAsync(
-            request.SecurityId,
-            request.RevisionId,
-            decisionReviewer,
-            rationale: null,
-            ct).ConfigureAwait(false);
-        if (decisionOutcome == OverrideDecisionOutcome.Deferred)
-        {
-            // A DEFERRED decision is a retryable publish failure, not a pass-through: other
-            // revisions for this security are still staged, so the overlay must stay Pending —
-            // publishing now would mark the revision Published while SM_OVERRIDE_APPROVAL_REQUIRED
-            // still blocks its economics. The revision stays Approved; handlers are idempotent, so
-            // the retry (after the other staged revisions are decided) re-runs the full fan-out.
-            throw new InvalidOperationException(
-                $"Revision '{request.RevisionId:D}' for security '{request.SecurityId:D}' cannot be published while " +
-                "other revisions for the security are still staged (or overlay keys lack a governing revision): the " +
-                "security-level override decision would co-approve unreviewed values. Approve or discard the other " +
-                "staged revisions — or withdraw ungoverned overlay keys — and retry; the revision remains Approved.");
-        }
-
         // Period-aware propagation resolves BEFORE the revision is marked Published: the
         // closed-period restatement decision is a REQUIRED publish side effect, and resolving it
         // after the transition would make a transient period-lock or report-index outage
         // unretryable — the Approved-state precondition rejects the retry, permanently skipping
         // the restatement decision for a back-dated edit. Resolving here keeps the revision
-        // Approved on failure so the caller can retry the whole idempotent publish.
+        // Approved on failure so the caller can retry the whole idempotent publish. It also
+        // resolves before the gate below so an external resolver outage never extends the
+        // per-security serialization window.
         var restatement = await _restatementResolver.ResolveAsync(evt, ct).ConfigureAwait(false);
 
-        await _revisions.TransitionAsync(
-            request.RevisionId,
-            SecurityMasterRevisionStateDto.Approved,
-            SecurityMasterRevisionStateDto.Published,
-            request.Actor,
-            ct: ct).ConfigureAwait(false);
+        // The override decision and the Approved→Published transition hold the per-security
+        // field-edit gate as ONE step. With the gate released between them, a concurrent field
+        // edit could reset the overlay to Pending after the decision recorded but before the
+        // transition — the revision would be marked Published while SM_OVERRIDE_APPROVAL_REQUIRED
+        // still blocks its economics, unretryably, since the Approved precondition rejects any
+        // republish.
+        var fieldEditGate = FieldEditGates.GetOrAdd(request.SecurityId, static _ => new SemaphoreSlim(1, 1));
+        await fieldEditGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var decisionOutcome = await RecordOverrideApprovalDecisionUnderGateAsync(
+                request.SecurityId,
+                request.RevisionId,
+                decisionReviewer,
+                rationale: null,
+                ct).ConfigureAwait(false);
+            if (decisionOutcome == OverrideDecisionOutcome.Deferred)
+            {
+                // A DEFERRED decision is a retryable publish failure, not a pass-through: other
+                // revisions for this security are still staged, so the overlay must stay Pending —
+                // publishing now would mark the revision Published while SM_OVERRIDE_APPROVAL_REQUIRED
+                // still blocks its economics. The revision stays Approved; handlers are idempotent, so
+                // the retry (after the other staged revisions are decided) re-runs the full fan-out.
+                throw new InvalidOperationException(
+                    $"Revision '{request.RevisionId:D}' for security '{request.SecurityId:D}' cannot be published while " +
+                    "other revisions for the security are still staged (or overlay keys lack a governing revision): the " +
+                    "security-level override decision would co-approve unreviewed values. Approve or discard the other " +
+                    "staged revisions — or withdraw ungoverned overlay keys — and retry; the revision remains Approved.");
+            }
+
+            await _revisions.TransitionAsync(
+                request.RevisionId,
+                SecurityMasterRevisionStateDto.Approved,
+                SecurityMasterRevisionStateDto.Published,
+                request.Actor,
+                ct: ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            fieldEditGate.Release();
+        }
 
         _logger.LogInformation(
             "Published Security Master revision {RevisionId} for {SecurityId} by {Actor} ({HandlerCount} handlers, restatementRequired={RestatementRequired})",
@@ -1394,6 +1411,35 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 $"The pinned asset profile for security '{request.SecurityId:D}' could not be resolved, so the " +
                 "profileFields edit cannot be validated or path-canonicalized. Ensure the record carries a profile " +
                 "envelope pinned to a registered profile version and retry; the namespace only accepts validated writes.");
+        }
+
+        // The pinned profile's GOVERNANCE posture gates overlay writes exactly as it gates
+        // canonical create/amend (SM_CUSTOM_PROFILE_NOT_APPROVED / SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE):
+        // field shape alone is not enough. A Draft/Rejected version has no approved schema to
+        // govern the value, and a version whose effective window does not cover the edit's
+        // effective date pins new economics to a definition that never governed that date. The
+        // read-side validator deliberately accepts a HISTORICAL pin so records stay
+        // interpretable, which makes this write-time gate the only line keeping new overlay
+        // values from entering under an expired or unapproved schema.
+        if (profile.Status is not (Meridian.Contracts.SecurityMaster.SecurityAssetProfileStatusDto.Approved
+            or Meridian.Contracts.SecurityMaster.SecurityAssetProfileStatusDto.Superseded))
+        {
+            throw new InvalidOperationException(
+                $"The pinned asset profile '{profile.Name}' version '{profile.Version}' for security " +
+                $"'{request.SecurityId:D}' is '{profile.Status}' and cannot govern profileFields edits. Route the " +
+                "profile version through approval before staging overlay values against it.");
+        }
+
+        var editEffectiveDate = DateOnly.FromDateTime(request.EffectiveFrom.UtcDateTime.Date);
+        if (editEffectiveDate < profile.EffectiveFrom
+            || (profile.EffectiveTo is DateOnly profileEffectiveTo && editEffectiveDate > profileEffectiveTo))
+        {
+            throw new InvalidOperationException(
+                $"The pinned asset profile '{profile.Name}' version '{profile.Version}' for security " +
+                $"'{request.SecurityId:D}' is effective {profile.EffectiveFrom:yyyy-MM-dd}–" +
+                $"{profile.EffectiveTo?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "open"}, " +
+                $"which does not cover the edit's effective date {editEffectiveDate:yyyy-MM-dd}. Repin the record to " +
+                "the version whose window covers that date through a governed amendment before staging the edit.");
         }
 
         if (isWholeObject && isClear)

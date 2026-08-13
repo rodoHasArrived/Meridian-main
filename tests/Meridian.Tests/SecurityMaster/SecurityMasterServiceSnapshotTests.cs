@@ -919,6 +919,41 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task AmendTermsAsync_SnapshotCanceled_StillReturnsTheAmendedRecord()
+    {
+        // The snapshot write runs AFTER the event append and projection upsert have committed. A
+        // request token canceled mid-amend must not surface a canceled amendment (the retry would
+        // fail concurrency on the advanced version) nor skip the cache/registry updates that
+        // follow the snapshot.
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        snapshotStore.SaveAsync(Arg.Any<SecuritySnapshotRecord>(), Arg.Any<CancellationToken>())
+            .Returns(static call =>
+            {
+                call.Arg<CancellationToken>().ThrowIfCancellationRequested();
+                return Task.CompletedTask;
+            });
+        var (securityId, _, service, _, fieldProvenance) = BuildAmendHarness(
+            conflictRecordingFails: false, snapshotStore: snapshotStore, snapshotIntervalVersions: 1);
+
+        // Cancel at the stale-attribution retirement step: it runs immediately AFTER the durable
+        // projection upsert, so every later post-commit step observes a canceled request token.
+        using var cts = new CancellationTokenSource();
+        fieldProvenance.RemoveAsync(
+                Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<long?>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                cts.Cancel();
+                return Task.CompletedTask;
+            });
+
+        var amended = await service.AmendTermsAsync(BuildConflictingAmend(securityId), cts.Token);
+
+        amended.Should().NotBeNull(
+            "cancellation arriving after the canonical writes committed must not hide the amendment behind the snapshot write");
+    }
+
+    [Fact]
     public async Task AmendTermsAsync_ReconcileSweepCanceled_StillReturnsTheAmendedRecord()
     {
         // The post-persist open-conflict reconciliation sweep is best-effort and runs after the
@@ -1749,17 +1784,20 @@ public sealed class SecurityMasterServiceSnapshotTests
         ISecurityMasterEventStore EventStore,
         SecurityMasterService Service,
         ISecurityMasterConflictService ConflictService,
-        ISecurityFieldProvenanceStore FieldProvenance) BuildAmendHarness(bool conflictRecordingFails)
+        ISecurityFieldProvenanceStore FieldProvenance) BuildAmendHarness(
+        bool conflictRecordingFails,
+        ISecurityMasterSnapshotStore? snapshotStore = null,
+        int snapshotIntervalVersions = 50)
     {
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
-        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        snapshotStore ??= Substitute.For<ISecurityMasterSnapshotStore>();
         var store = Substitute.For<ISecurityMasterStore>();
         var conflictService = Substitute.For<ISecurityMasterConflictService>();
         var fieldProvenance = Substitute.For<ISecurityFieldProvenanceStore>();
         var options = new SecurityMasterOptions
         {
-            SnapshotIntervalVersions = 50,
+            SnapshotIntervalVersions = snapshotIntervalVersions,
             ResolveInactiveByDefault = true
         };
         var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);

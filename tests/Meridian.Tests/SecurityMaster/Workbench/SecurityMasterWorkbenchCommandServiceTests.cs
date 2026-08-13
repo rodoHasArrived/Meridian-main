@@ -3769,6 +3769,89 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             Times.Once);
     }
 
+    [Fact]
+    public async Task UpdateSecurityField_EditBeforeTheProfilesEffectiveWindow_IsRejected()
+    {
+        // The pinned profile's governance window gates overlay writes exactly as it gates
+        // canonical create/amend (SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE): an edit effective on
+        // a date the pinned version never governed must not stage. The read-side validator
+        // deliberately accepts historical pins so records stay interpretable, which makes this
+        // write-time gate the only line keeping new overlay economics from entering under a
+        // schema that did not govern the edit's effective date.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("structured-credit-io-po", profileVersion: 1);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.currentFactor",
+            NewValue: "0.5",
+            EffectiveFrom: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            Actor: "ops.analyst",
+            Justification: "Backdated factor correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*does not cover the edit's effective date*");
+    }
+
+    [Fact]
+    public async Task Publish_FieldEditDuringDecisionToTransitionWindow_WaitsForThePublishGate()
+    {
+        // The publish's override decision and Approved→Published transition hold the per-security
+        // field-edit gate as ONE step: with the gate released between them, a concurrent field
+        // edit could reset the overlay to Pending after the decision recorded, and the revision
+        // would be marked Published while SM_OVERRIDE_APPROVAL_REQUIRED still blocks its
+        // economics — unretryably, since the Approved precondition rejects any republish.
+        var revisions = new GatedRevisionStore { GatePublishTransitions = true };
+        var harness = new Harness(currentVersion: 3, revisions: revisions);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new
+        {
+            issueDate = "2026-01-01",
+            maturity = "2030-01-01",
+            par = 100m
+        });
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["EconomicDefinition.Coupon"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        var publishTask = harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            ApproverActor: "ops.reviewer"));
+        await revisions.PublishTransitionEntered.Task;
+
+        // The decision has recorded and the transition is parked — exactly the window an ungated
+        // edit would exploit to reset the overlay to Pending.
+        var editTask = harness.Service.UpdateSecurityFieldAsync(new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.par",
+            NewValue: "80",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Par correction."));
+        await Task.Delay(100);
+        editTask.IsCompleted.Should().BeFalse(
+            "the edit must wait until the publish's decision+transition step releases the gate");
+
+        revisions.ReleasePublishTransitions.TrySetResult();
+        await Task.WhenAll(publishTask, editTask);
+
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
+    }
+
     private sealed class GatedRevisionStore : ISecurityMasterRevisionStore
     {
         private readonly InMemorySecurityMasterRevisionStore _inner = new();
@@ -3776,6 +3859,9 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public bool GateFieldEditDrafts { get; set; }
         public TaskCompletionSource DraftEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource ReleaseDrafts { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool GatePublishTransitions { get; set; }
+        public TaskCompletionSource PublishTransitionEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleasePublishTransitions { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
             => _inner.CreateDraftAsync(securityId, actor, ct);
@@ -3800,10 +3886,18 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default)
             => _inner.ListBySecurityAsync(securityId, ct);
 
-        public Task<SecurityMasterRevisionRecord> TransitionAsync(
+        public async Task<SecurityMasterRevisionRecord> TransitionAsync(
             Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next,
             string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default)
-            => _inner.TransitionAsync(revisionId, expected, next, actor, workflowIdForSubmit, ct);
+        {
+            if (GatePublishTransitions && next == SecurityMasterRevisionStateDto.Published)
+            {
+                PublishTransitionEntered.TrySetResult();
+                await ReleasePublishTransitions.Task;
+            }
+
+            return await _inner.TransitionAsync(revisionId, expected, next, actor, workflowIdForSubmit, ct);
+        }
     }
 
     [Fact]

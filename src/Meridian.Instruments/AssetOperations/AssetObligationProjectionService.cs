@@ -336,8 +336,14 @@ public sealed class AssetObligationProjectionService
         // not shift which completed payments the factor is deemed to reflect.
         DateOnly? scalarFactorDate = SecurityTermReader.ReadDate(
             EnumerateNestedFirstTermSources(payload), "factorDate", "currentFactorDate");
+        // A FUTURE-dated scalar does not describe today's balance at all: a 0.8 factor effective
+        // next month must not reduce today's face by 20% (understating projected interest and
+        // maturity principal on ledger-support outputs). It is excluded here and below — the
+        // latest eligible schedule point or the unfactored balance governs instead.
+        var scalarFactorApplies = terms.CurrentFactor is not null
+            && (scalarFactorDate is not DateOnly scalarAsOf || scalarAsOf <= projectionAsOf);
         DateOnly? factorReflectsThrough = appliedFactorEntry?.AsOfDate
-            ?? (terms.CurrentFactor is not null
+            ?? (scalarFactorApplies
                 ? (scalarFactorDate ?? projectionAsOf.AddDays(-1))
                 : null);
 
@@ -407,7 +413,7 @@ public sealed class AssetObligationProjectionService
                     IsProRata: false,
                     Version: security.Version)
                 : null,
-            InflationLinked: BuildFactorReference(security, terms, payload, appliedFactorEntry, completedPostFactorPrincipal));
+            InflationLinked: BuildFactorReference(security, terms, payload, appliedFactorEntry, completedPostFactorPrincipal, scalarFactorApplies));
     }
 
     /// <summary>
@@ -440,9 +446,10 @@ public sealed class AssetObligationProjectionService
         StructuredCashFlowTerms terms,
         JsonElement payload,
         StructuredFactorScheduleEntry? scheduled,
-        decimal completedPostFactorPrincipal)
+        decimal completedPostFactorPrincipal,
+        bool scalarFactorApplies)
     {
-        var effectiveFactor = scheduled?.Factor ?? terms.CurrentFactor;
+        var effectiveFactor = scheduled?.Factor ?? (scalarFactorApplies ? terms.CurrentFactor : null);
         if (effectiveFactor is null
             && completedPostFactorPrincipal > 0m
             && terms.PrincipalFace is decimal fullFace
