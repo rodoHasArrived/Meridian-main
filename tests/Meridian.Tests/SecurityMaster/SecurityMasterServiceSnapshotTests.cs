@@ -484,6 +484,131 @@ public sealed class SecurityMasterServiceSnapshotTests
             .WithMessage("*'principalSchedule' must be a JSON array*");
     }
 
+    [Fact]
+    public async Task AmendTermsAsync_FieldConflictRecordingFails_RefusesTheAmendment()
+    {
+        // Once the event and projection persist, the previous source value is overwritten and the
+        // cross-source disagreement cannot be reconstructed — so a conflict-store failure must fail
+        // the amend BEFORE anything persists, not be swallowed after.
+        var (securityId, eventStore, service, conflictService, _) = BuildAmendHarness(
+            conflictRecordingFails: true);
+
+        await service.Invoking(s => s.AmendTermsAsync(BuildConflictingAmend(securityId)))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*conflict store down*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+        await conflictService.Received(1).RecordFieldConflictsAsync(
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_ConflictedField_RetiresStaleResolutionProvenance()
+    {
+        // A field that just changed hands invalidates the prior ConflictResolution attribution —
+        // the recorded winner no longer supplied the current value.
+        var (securityId, eventStore, service, _, fieldProvenance) = BuildAmendHarness(
+            conflictRecordingFails: false);
+
+        await service.AmendTermsAsync(BuildConflictingAmend(securityId));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+        await fieldProvenance.Received(1).RemoveAsync(
+            securityId,
+            "EconomicTerms.couponRate",
+            SecurityFieldProvenanceOrigins.ConflictResolution,
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    private static (Guid SecurityId,
+        ISecurityMasterEventStore EventStore,
+        SecurityMasterService Service,
+        ISecurityMasterConflictService ConflictService,
+        ISecurityFieldProvenanceStore FieldProvenance) BuildAmendHarness(bool conflictRecordingFails)
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var fieldProvenance = Substitute.For<ISecurityFieldProvenanceStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        // The current golden copy: provider A's bond with a 4.25 coupon.
+        var previous = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "Cross-source bond", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2031-06-15",
+                couponRate = 4.25m,
+                par = 1000m
+            }),
+            Provenance = JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "provA",
+                asOf = DateTimeOffset.UtcNow.AddDays(-1),
+                updatedBy = "feed"
+            })
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(previous);
+
+        if (conflictRecordingFails)
+        {
+            conflictService
+                .RecordFieldConflictsAsync(
+                    Arg.Any<SecurityProjectionRecord>(),
+                    Arg.Any<SecurityProjectionRecord>(),
+                    Arg.Any<CancellationToken>())
+                .Returns<Task>(static _ => throw new InvalidOperationException("conflict store down"));
+        }
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            conflictService,
+            fieldProvenance: fieldProvenance);
+        return (securityId, eventStore, service, conflictService, fieldProvenance);
+    }
+
+    private static AmendSecurityTermsRequest BuildConflictingAmend(Guid securityId)
+        => new(
+            securityId,
+            2,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2031-06-15",
+                couponRate = 4.50m,
+                par = 1000m
+            }),
+            IdentifiersToAdd: [],
+            IdentifiersToExpire: [],
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "provB",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "amend");
+
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,
         string assetClass,

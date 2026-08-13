@@ -146,6 +146,20 @@ internal static class SecurityMasterConflictDetection
     /// deliberately not compared: sources snapshot it at different dates, so mismatches are
     /// expected, not disagreements.
     /// </summary>
+    /// <summary>
+    /// Canonical text form of a contractual principal schedule for conflict comparison and the
+    /// resolution-time persisted-value guard: date-sorted <c>yyyy-MM-dd:amount</c> pairs with
+    /// scale-normalized amounts (G29 drops trailing zeros), joined with <c>|</c>. Both sides of a
+    /// comparison MUST use this same normalization or textually different but economically equal
+    /// schedules would conflict forever.
+    /// </summary>
+    internal static string NormalizePrincipalSchedule(IReadOnlyList<StructuredPrincipalScheduleEntry> schedule)
+        => string.Join("|", schedule
+            .OrderBy(static entry => entry.PaymentDate)
+            .Select(static entry =>
+                $"{entry.PaymentDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}:" +
+                entry.Amount.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)));
+
     public static IReadOnlyList<SecurityMasterConflict> DetectFieldConflicts(
         SecurityProjectionRecord current,
         SecurityProjectionRecord incoming,
@@ -174,6 +188,10 @@ internal static class SecurityMasterConflictDetection
         CompareText("EconomicTerms.paymentFrequency", SecurityMasterConflictKinds.EconomicTermMismatch,
             termsA.PaymentFrequency, termsB.PaymentFrequency);
         CompareDayCount(termsA.DayCountConvention, termsB.DayCountConvention);
+        // The contractual principal schedule is an authoritative economic term (it drives
+        // calculated cash flows and ledger support), so a source replacing another source's dated
+        // instalments must open a conflict like any other economic-term disagreement.
+        ComparePrincipalSchedule(termsA.PrincipalSchedule, termsB.PrincipalSchedule);
         CompareText("CommonTerms.currency", SecurityMasterConflictKinds.CommonTermMismatch,
             current.Currency, incoming.Currency);
         CompareText("CommonTerms.countryOfRisk", SecurityMasterConflictKinds.CommonTermMismatch,
@@ -202,6 +220,26 @@ internal static class SecurityMasterConflictDetection
                 Add(fieldPath, SecurityMasterConflictKinds.EconomicTermMismatch,
                     left.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
                     right.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+            }
+        }
+
+        void ComparePrincipalSchedule(
+            IReadOnlyList<StructuredPrincipalScheduleEntry>? a,
+            IReadOnlyList<StructuredPrincipalScheduleEntry>? b)
+        {
+            // Both sources must assert a schedule for a disagreement to exist, mirroring the
+            // both-present rule the scalar comparators use for sparse providers.
+            if (a is not { Count: > 0 } || b is not { Count: > 0 })
+            {
+                return;
+            }
+
+            var normalizedA = NormalizePrincipalSchedule(a);
+            var normalizedB = NormalizePrincipalSchedule(b);
+            if (!string.Equals(normalizedA, normalizedB, StringComparison.Ordinal))
+            {
+                Add("EconomicTerms.principalSchedule", SecurityMasterConflictKinds.EconomicTermMismatch,
+                    normalizedA, normalizedB);
             }
         }
 

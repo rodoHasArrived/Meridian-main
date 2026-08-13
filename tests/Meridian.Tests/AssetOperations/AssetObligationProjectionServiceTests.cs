@@ -66,6 +66,42 @@ public sealed class AssetObligationProjectionServiceTests
     }
 
     [Fact]
+    public void ProjectFromSecurityMaster_PaymentsReflectedByTheFactor_AreNotSubtractedAgain()
+    {
+        // The 0.8 factor (as of 2024-06-01) already reflects the 20 payment from 2024-03-01, so
+        // seeding principal at 80 AND passing that entry to the projector would double-count it
+        // (projecting 50 at maturity instead of 70). Only the 10 payment dated after the factor
+        // still reduces the balance.
+        var security = MakeStructuredCredit(assetTerms: new
+        {
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 100m,
+            couponOrIndex = "SOFR+250",
+            maturity = "2031-06-15",
+            factorScheduleEntries = new[]
+            {
+                new { asOfDate = "2024-06-01", factor = 0.8m },
+            },
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2024-03-01", amount = 20m },
+                new { paymentDate = "2030-06-15", amount = 10m },
+            }
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        var repayment = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "PrincipalRepayment").Subject;
+        repayment.Amount.Should().Be(10m, "only the payment dated after the factor's as-of still applies");
+        var maturityFlow = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "Maturity").Subject;
+        maturityFlow.Amount.Should().Be(70m,
+            "the pre-factor payment is already inside the 0.8 factor and must not be subtracted again");
+    }
+
+    [Fact]
     public void ProjectFromSecurityMaster_StructuredCredit_ZeroFactorProjectsNoPrincipal()
     {
         // Zero is a real factor — a fully amortized pool. Conflating it with a MISSING factor

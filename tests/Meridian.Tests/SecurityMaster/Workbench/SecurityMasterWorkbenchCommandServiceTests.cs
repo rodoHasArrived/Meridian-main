@@ -81,28 +81,6 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task UpdateSecurityField_AssetClassUnresolvable_SkipsSchemaValidationAndStages()
-    {
-        // The harness's passport mock returns null by default: the read model cannot resolve the
-        // record's asset class. Validation must degrade to a warning, not an edit outage — the
-        // existence/staleness guards already ran against the durable event stream.
-        var harness = new Harness(currentVersion: 3);
-
-        var request = new UpdateSecurityFieldRequest(
-            SecurityId: SecurityId,
-            ExpectedVersion: 3,
-            FieldPath: "assetSpecificTerms.someUnknownField",
-            NewValue: "value",
-            EffectiveFrom: DateTimeOffset.UtcNow,
-            Actor: "ops.analyst",
-            Justification: "Edit while read model is degraded.");
-
-        var result = await harness.Service.UpdateSecurityFieldAsync(request);
-
-        result.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
-    }
-
-    [Fact]
     public async Task UpdateSecurityField_ProfileFieldsPathOnCustomAsset_Stages()
     {
         var harness = new Harness(currentVersion: 3);
@@ -151,6 +129,68 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var accepted = await harness.Service.UpdateSecurityFieldAsync(EditWith("0.5"));
         accepted.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
             "a value satisfying the pinned profile's type and range must stage normally");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileFieldCasingVariant_PersistsUnderThePinnedProfileKey()
+    {
+        // The pinned-profile lookup is case-insensitive, so the persisted path must be rebuilt from
+        // the profile definition's key — otherwise CurrentFactor and currentFactor fork the same
+        // field into separate overrides, revisions, and provenance rows.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("structured-credit-io-po", profileVersion: 1);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.CurrentFactor",
+            NewValue: "0.5",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Factor correction.");
+
+        await harness.Service.UpdateSecurityFieldAsync(request);
+
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(p =>
+                    p.SetValues != null
+                    && p.SetValues.ContainsKey("assetSpecificTerms.profileFields.currentFactor")),
+                "ops.analyst",
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once,
+            "the override must persist under the pinned profile definition's key spelling");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_UnresolvableAssetClass_FailsClosedForValueEdits()
+    {
+        // The assetSpecificTerms namespace only accepts validated writes; a read-model outage must
+        // not become the window in which unvalidated values slip through. Clears stay fail-open —
+        // they assert nothing.
+        var harness = new Harness(currentVersion: 3);
+        // No SetPassportAssetClass: the passport read model resolves nothing.
+
+        var valueEdit = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.couponRate",
+            NewValue: "4.25",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Coupon correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(valueEdit))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*could not be resolved*");
+
+        var clear = valueEdit with { NewValue = null, Justification = "Withdraw the coupon override." };
+        var staged = await harness.Service.UpdateSecurityFieldAsync(clear);
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a clear asserts nothing and stays available during a read-model outage");
     }
 
     [Fact]

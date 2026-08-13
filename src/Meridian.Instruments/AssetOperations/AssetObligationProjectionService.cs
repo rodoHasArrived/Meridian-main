@@ -317,6 +317,17 @@ public sealed class AssetObligationProjectionService
         var payload = BuildSecurityMasterTermsPayload(security);
         _ = TryReadString(payload, out var issuerName, "issuerName", "issuer", "gpSponsor");
 
+        // The applied factor entry is resolved ONCE and shared: it seeds the principal basis AND
+        // bounds the sinking-fund schedule. A dated factor already reflects every principal event
+        // up to its as-of, so passing those entries to the projector as well would subtract them a
+        // second time (a 0.8 factor reflecting a prior 20 payment must not project 60 at maturity
+        // on a 100 face). An undated scalar factor is assumed current, so completed payments before
+        // the projection as-of are likewise excluded; with no factor at all, the schedule alone
+        // drives amortization from full face and passes through unfiltered.
+        var appliedFactorEntry = ResolveAppliedFactorEntry(terms, projectionAsOf);
+        DateOnly? factorReflectsThrough = appliedFactorEntry?.AsOfDate
+            ?? (terms.CurrentFactor is not null ? projectionAsOf.AddDays(-1) : null);
+
         return new BondReferenceDto(
             security.SecurityId,
             security.DisplayName,
@@ -351,20 +362,41 @@ public sealed class AssetObligationProjectionService
                 ? new BondSinkingFundDto(
                     security.SecurityId,
                     terms.PrincipalSchedule!
-                        .Where(entry => entry.PaymentDate >= issueDate && entry.PaymentDate <= maturity)
+                        .Where(entry => entry.PaymentDate >= issueDate
+                            && entry.PaymentDate <= maturity
+                            && (factorReflectsThrough is not DateOnly reflectedThrough
+                                || entry.PaymentDate > reflectedThrough))
                         .Select(static entry => new BondSinkingFundEntryDto(entry.PaymentDate, entry.Amount))
                         .ToArray(),
                     SinkFrequency: null,
                     IsProRata: false,
                     Version: security.Version)
                 : null,
-            InflationLinked: BuildFactorReference(security, terms, payload, projectionAsOf));
+            InflationLinked: BuildFactorReference(security, terms, payload, appliedFactorEntry));
+    }
+
+    /// <summary>
+    /// The typed factor entry in effect on <paramref name="projectionAsOf"/> — the latest schedule
+    /// point dated on or before that day — or <see langword="null"/> when no dated point applies.
+    /// </summary>
+    private static StructuredFactorScheduleEntry? ResolveAppliedFactorEntry(
+        StructuredCashFlowTerms terms, DateOnly projectionAsOf)
+    {
+        for (var i = terms.FactorSchedule.Count - 1; i >= 0; i--)
+        {
+            if (terms.FactorSchedule[i].AsOfDate <= projectionAsOf)
+            {
+                return terms.FactorSchedule[i];
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
     /// Resolves the pool/index factor for the reference from the typed factor schedule first — the
-    /// latest entry dated on or before the projection as-of — falling back to the scalar
-    /// <c>currentFactor</c>. Without this, a record whose newest factor lives only in
+    /// applied entry resolved by <see cref="ResolveAppliedFactorEntry"/> — falling back to the
+    /// scalar <c>currentFactor</c>. Without this, a record whose newest factor lives only in
     /// <c>factorScheduleEntries</c> reaches <c>ResolveBondPrincipalBasis</c> with no factor at all
     /// and is projected at full (factor 1) or stale principal.
     /// </summary>
@@ -372,18 +404,8 @@ public sealed class AssetObligationProjectionService
         SecurityDetailDto security,
         StructuredCashFlowTerms terms,
         JsonElement payload,
-        DateOnly projectionAsOf)
+        StructuredFactorScheduleEntry? scheduled)
     {
-        StructuredFactorScheduleEntry? scheduled = null;
-        for (var i = terms.FactorSchedule.Count - 1; i >= 0; i--)
-        {
-            if (terms.FactorSchedule[i].AsOfDate <= projectionAsOf)
-            {
-                scheduled = terms.FactorSchedule[i];
-                break;
-            }
-        }
-
         var effectiveFactor = scheduled?.Factor ?? terms.CurrentFactor;
         if (effectiveFactor is null)
         {

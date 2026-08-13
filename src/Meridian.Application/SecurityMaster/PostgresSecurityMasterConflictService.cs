@@ -335,6 +335,9 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             "EconomicTerms.principalFace" => terms.PrincipalFace?.ToString(CultureInfo.InvariantCulture),
             "EconomicTerms.paymentFrequency" => terms.PaymentFrequency,
             "EconomicTerms.dayCountConvention" => terms.DayCountConvention,
+            "EconomicTerms.principalSchedule" => terms.HasPrincipalSchedule
+                ? SecurityMasterConflictDetection.NormalizePrincipalSchedule(terms.PrincipalSchedule!)
+                : null,
             "CommonTerms.currency" => detail.Currency,
             "CommonTerms.countryOfRisk" => SecurityTermReader.ReadString(detail.CommonTerms, "countryOfRisk"),
             _ => null,

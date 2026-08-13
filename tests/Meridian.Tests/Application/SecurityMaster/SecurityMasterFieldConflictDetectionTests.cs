@@ -46,6 +46,68 @@ public sealed class SecurityMasterFieldConflictDetectionTests
             []);
 
     [Fact]
+    public void DetectFieldConflicts_DifferingPrincipalSchedules_ProduceEconomicTermConflict()
+    {
+        // The contractual principal schedule drives calculated cash flows and ledger support, so a
+        // source replacing another source's dated instalments is an economic-term disagreement.
+        var current = Record("Bloomberg", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-15", amount = 30m },
+                new { paymentDate = "2029-06-15", amount = 20m }
+            }
+        });
+        var incoming = Record("Reuters", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-15", amount = 40m },
+                new { paymentDate = "2030-06-15", amount = 20m }
+            }
+        });
+
+        var conflicts = SecurityMasterConflictDetection.DetectFieldConflicts(current, incoming, DetectedAt);
+
+        var schedule = conflicts.Should().ContainSingle(conflict =>
+            conflict.FieldPath == "EconomicTerms.principalSchedule").Subject;
+        schedule.ConflictKind.Should().Be(SecurityMasterConflictKinds.EconomicTermMismatch);
+        schedule.ValueA.Should().Be("2028-06-15:30|2029-06-15:20");
+        schedule.ValueB.Should().Be("2028-06-15:40|2030-06-15:20");
+    }
+
+    [Fact]
+    public void DetectFieldConflicts_EquivalentPrincipalSchedules_DoNotConflict()
+    {
+        // Ordering and decimal scale are presentation, not economics: the normalized comparison
+        // must not open a conflict for the same instalments spelled differently.
+        var current = Record("Bloomberg", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2029-06-15", amount = 20m },
+                new { paymentDate = "2028-06-15", amount = 30.00m }
+            }
+        });
+        var incoming = Record("Reuters", new
+        {
+            maturityDate = "2031-01-15",
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-15", amount = 30m },
+                new { paymentDate = "2029-06-15", amount = 20.0m }
+            }
+        });
+
+        var conflicts = SecurityMasterConflictDetection.DetectFieldConflicts(current, incoming, DetectedAt);
+
+        conflicts.Should().NotContain(conflict => conflict.FieldPath == "EconomicTerms.principalSchedule");
+    }
+
+    [Fact]
     public void DetectFieldConflicts_DisagreeingSources_ProduceTypedFieldConflicts()
     {
         // Bloomberg's copy says maturity 2030 / coupon 4.25 / risk country US; the Reuters revision

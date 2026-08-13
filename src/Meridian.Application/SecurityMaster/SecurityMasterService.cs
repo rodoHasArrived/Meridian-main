@@ -20,6 +20,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private readonly SecurityMasterProjectionCache? _projectionCache;
     private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
+    private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
 
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
@@ -35,7 +36,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         IPolygonCorporateActionFetcher? corporateActionFetcher = null,
         SecurityMasterProjectionCache? projectionCache = null,
         SecurityMasterCanonicalSymbolSeedService? seedService = null,
-        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
+        ISecurityFieldProvenanceStore? fieldProvenance = null)
     {
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
@@ -48,6 +50,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         _projectionCache = projectionCache;
         _seedService = seedService;
         _assetProfileCatalog = assetProfileCatalog;
+        _fieldProvenance = fieldProvenance;
     }
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
@@ -75,6 +78,19 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             GetProfileBackedAssetClassOverride(currentProjection),
             GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch));
         EnsureProfileBackedTermsAreCatalogValid(projection);
+
+        // The amend seam is the one place the pre-write golden copy and the incoming revision are
+        // both in hand: record field-level cross-source conflicts (a different source disagreeing
+        // on economic/common terms) BEFORE the amendment persists, and fail the amend if the
+        // recording fails. Once the event and projection are written the previous source value is
+        // overwritten and the disagreement cannot be reconstructed from current projections, so a
+        // swallowed conflict-store failure would permanently remove the challenger from the
+        // governed resolution workflow. Conflict ids are deterministic, so a retried amendment
+        // reuses the same rows, and a conflict recorded for an amendment that subsequently fails
+        // still describes a real cross-source disagreement.
+        var fieldConflicts = await RecordFieldConflictsBeforePersistAsync(currentProjection, projection, ct)
+            .ConfigureAwait(false);
+
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
@@ -88,10 +104,9 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
         await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
-        // The amend seam is the one place the pre-write golden copy and the incoming revision are
-        // both in hand: record field-level cross-source conflicts (a different source disagreeing
-        // on economic/common terms) so the authority policy has non-identifier conflicts to judge.
-        await TryRecordFieldConflictsAsync(currentProjection, projection, request.SecurityId, ct).ConfigureAwait(false);
+        // A field that just changed hands invalidates any prior conflict-resolution attribution
+        // for that path: the previous winner no longer supplied the current value.
+        await TryRetireStaleFieldResolutionProvenanceAsync(fieldConflicts, request.SecurityId, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
@@ -304,22 +319,62 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }
     }
 
-    private async Task TryRecordFieldConflictsAsync(
+    /// <summary>
+    /// Detects and durably records field-level cross-source conflicts BEFORE the amendment
+    /// persists. Failures propagate — accepting the amendment while losing the conflict would
+    /// silently drop the challenger from the governed resolution workflow, and the caller can
+    /// safely retry because the amendment has not yet been written. Returns the detected
+    /// candidates so post-persist steps can retire stale per-field attribution.
+    /// </summary>
+    private async Task<IReadOnlyList<SecurityMasterConflict>> RecordFieldConflictsBeforePersistAsync(
         SecurityProjectionRecord previous,
         SecurityProjectionRecord incoming,
-        Guid securityId,
         CancellationToken ct)
     {
         if (_conflictService is null)
+            return [];
+
+        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
+        if (candidates.Count == 0)
+            return candidates;
+
+        await _conflictService.RecordFieldConflictsAsync(previous, incoming, ct).ConfigureAwait(false);
+        return candidates;
+    }
+
+    /// <summary>
+    /// A persisted amendment that changed a conflicted field invalidates the field's prior
+    /// ConflictResolution attribution — the recorded winner no longer supplied the current value,
+    /// and if the new conflict is later dismissed the stale row would stay wrong indefinitely.
+    /// Best-effort: the open conflict is the durable governance artifact; a removal failure is
+    /// logged and the next resolution overwrites the row.
+    /// </summary>
+    private async Task TryRetireStaleFieldResolutionProvenanceAsync(
+        IReadOnlyList<SecurityMasterConflict> fieldConflicts,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        if (_fieldProvenance is null || fieldConflicts.Count == 0)
             return;
 
-        try
+        foreach (var fieldPath in fieldConflicts.Select(static conflict => conflict.FieldPath).Distinct(StringComparer.Ordinal))
         {
-            await _conflictService.RecordFieldConflictsAsync(previous, incoming, ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Field conflict detection failed for security {SecurityId}", securityId);
+            try
+            {
+                await _fieldProvenance.RemoveAsync(
+                    securityId,
+                    fieldPath,
+                    SecurityFieldProvenanceOrigins.ConflictResolution,
+                    clearedAt: DateTimeOffset.UtcNow,
+                    ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Retiring stale conflict-resolution provenance for {SecurityId} field {FieldPath} failed; the row will be overwritten by the next resolution.",
+                    securityId, fieldPath);
+            }
         }
     }
 

@@ -601,18 +601,13 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     }
 
     /// <summary>
-    /// Anchors <c>assetSpecificTerms.*</c> field edits to the declared per-asset-class schema. The
-    /// record's asset class comes from the passport read model; when it cannot be resolved (read
-    /// model degraded or unavailable), validation is skipped with a warning rather than turning a
-    /// read-model outage into an edit outage — the existence and staleness guards above have
-    /// already run against the durable event stream.
-    /// </summary>
-    /// <summary>
     /// Validates an asset-terms edit against the declared schema and returns the path the edit must
     /// be persisted under: the schema-canonical spelling for <c>assetSpecificTerms.*</c> paths (so
     /// an alias like <c>dayCount</c> and its declared key <c>dayCountConvention</c> share one
     /// override key, revision lineage, and provenance row), or the caller's path unchanged for the
-    /// free annotation surface and for the fail-open path where the asset class cannot be resolved.
+    /// free annotation surface. When the asset class cannot be resolved (passport read model
+    /// degraded or unavailable), a value-asserting edit fails CLOSED — the namespace only accepts
+    /// validated writes — while a blank clear stays fail-open, since it asserts nothing.
     /// </summary>
     private async Task<string> EnsureFieldEditIsSchemaValidAsync(UpdateSecurityFieldRequest request, CancellationToken ct)
     {
@@ -636,14 +631,27 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             _logger.LogWarning(
                 ex,
-                "Resolving the asset class for {SecurityId} failed; skipping schema validation for field edit {FieldPath}.",
+                "Resolving the asset class for {SecurityId} failed while validating field edit {FieldPath}.",
                 request.SecurityId, safeFieldPathForLog);
         }
 
         if (string.IsNullOrWhiteSpace(assetClass))
         {
+            // The assetSpecificTerms namespace is RESERVED for schema-validated writes (the generic
+            // override route hard-rejects it on that basis), so an unresolvable asset class must
+            // fail a value-asserting edit closed — otherwise a read-model outage is exactly the
+            // window in which undeclared paths and malformed values slip through unvalidated. A
+            // blank edit stays fail-open: a clear asserts nothing and only removes an overlay key.
+            if (!string.IsNullOrWhiteSpace(request.NewValue))
+            {
+                throw new InvalidOperationException(
+                    $"The asset class for security '{request.SecurityId:D}' could not be resolved, so the " +
+                    "assetSpecificTerms edit cannot be schema-validated. Retry once the passport read model " +
+                    "is available; the namespace only accepts validated writes.");
+            }
+
             _logger.LogWarning(
-                "Asset class for {SecurityId} could not be resolved; staging field edit {FieldPath} without schema validation.",
+                "Asset class for {SecurityId} could not be resolved; staging blank (clear) field edit {FieldPath} without schema validation.",
                 request.SecurityId, safeFieldPathForLog);
             return request.FieldPath;
         }
@@ -654,8 +662,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             throw new ArgumentException(error, nameof(request));
         }
 
-        await EnsureProfileFieldEditMatchesPinnedProfileAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
-        return canonicalFieldPath;
+        return await EnsureProfileFieldEditMatchesPinnedProfileAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
     }
 
     private const string ProfileFieldsRootPath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "profileFields";
@@ -670,8 +677,12 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     /// and enum constraints. Fail-open with a logged warning when the projection or profile cannot
     /// be resolved, matching the asset-class fail-open above; undeclared keys pass through, since
     /// the profile owns only its declared fields.
+    /// <para>Returns the canonical path: a declared profile field's key is normalized to the
+    /// pinned definition's spelling, so <c>profileFields.currentFactor</c> and
+    /// <c>profileFields.CurrentFactor</c> address ONE override key, revision lineage, and
+    /// provenance row instead of forking per casing.</para>
     /// </summary>
-    private async Task EnsureProfileFieldEditMatchesPinnedProfileAsync(
+    private async Task<string> EnsureProfileFieldEditMatchesPinnedProfileAsync(
         UpdateSecurityFieldRequest request, string canonicalFieldPath, CancellationToken ct)
     {
         var isWholeObject = string.Equals(canonicalFieldPath, ProfileFieldsRootPath, StringComparison.Ordinal);
@@ -681,7 +692,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             || _projectionStore is null
             || _assetProfileCatalog is null)
         {
-            return;
+            return canonicalFieldPath;
         }
 
         Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto? profile = null;
@@ -706,12 +717,12 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 ex,
                 "Resolving the pinned profile for {SecurityId} failed; staging profile-field edit {FieldPath} without profile validation.",
                 request.SecurityId, SanitizeForLog(canonicalFieldPath));
-            return;
+            return canonicalFieldPath;
         }
 
         if (profile is null)
         {
-            return;
+            return canonicalFieldPath;
         }
 
         if (isWholeObject)
@@ -742,7 +753,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 }
             }
 
-            return;
+            return canonicalFieldPath;
         }
 
         var nestedRemainder = canonicalFieldPath[ProfileFieldsNestedPrefix.Length..];
@@ -750,20 +761,24 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             // Deeper paths address structure inside a declared field's own value; the profile
             // declares only top-level field types.
-            return;
+            return canonicalFieldPath;
         }
 
         var declared = profile.Fields.FirstOrDefault(
             field => string.Equals(field.Key, nestedRemainder, StringComparison.OrdinalIgnoreCase));
         if (declared is null)
         {
-            return;
+            return canonicalFieldPath;
         }
 
         if (!ProfileFieldStringIsValid(declared, request.NewValue!, out var fieldError))
         {
             throw new ArgumentException(fieldError, nameof(request));
         }
+
+        // Persist under the pinned definition's key spelling — the case-insensitive lookup above
+        // must not let casing variants fork the same profile field into separate overrides.
+        return ProfileFieldsNestedPrefix + declared.Key;
     }
 
     private static bool ProfileFieldStringIsValid(
