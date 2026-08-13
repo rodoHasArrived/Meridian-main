@@ -682,8 +682,157 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         }
 
         await EnsurePrincipalScheduleFitsEffectiveTermsAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
+        await EnsureFirstClassTermEditSatisfiesKindInvariantsAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
 
         return await EnsureProfileFieldEditMatchesPinnedProfileAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// A FIRST-CLASS record's asset terms are bound by its resolved kind's F# domain invariants,
+    /// not only per-field type coercion: a StructuredCredit <c>currentFactor</c> must stay within
+    /// [0, 1] even though "2" is a perfectly typed decimal, so an edit the equivalent canonical
+    /// amendment rejects must not stage. Reconstructs the record's EFFECTIVE asset terms (the
+    /// canonical document with staged overrides applied and the proposed value overlaid) and runs
+    /// the resolved kind's invariants. profileFields paths are owned by the pinned-profile route,
+    /// and CustomAsset/OtherSecurity records have no first-class kind to reconstruct.
+    /// <para>Reconstruction is BEST-EFFORT: legacy rows can store terms under aliases the strict
+    /// canonical mapping does not read (e.g. <c>maturityDate</c> for a Bond's <c>maturity</c>), so
+    /// a document that cannot round-trip through the kind mapping skips the check with a logged
+    /// warning rather than bricking edits on legitimately stored records — but a kind that DOES
+    /// reconstruct and violates its invariants always rejects the edit.</para>
+    /// </summary>
+    private async Task EnsureFirstClassTermEditSatisfiesKindInvariantsAsync(
+        UpdateSecurityFieldRequest request, string canonicalFieldPath, CancellationToken ct)
+    {
+        if (_projectionStore is null
+            || string.Equals(canonicalFieldPath, ProfileFieldsRootPath, StringComparison.OrdinalIgnoreCase)
+            || canonicalFieldPath.StartsWith(ProfileFieldsNestedPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        SecurityProjectionRecord? projection = null;
+        try
+        {
+            projection = await _projectionStore.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Loading the projection for {SecurityId} failed while validating field edit {FieldPath} against the resolved kind's invariants.",
+                request.SecurityId, SanitizeForLog(canonicalFieldPath));
+        }
+
+        if (projection is null
+            || string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(projection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
+            || (projection.AssetSpecificTerms is { ValueKind: JsonValueKind.Object } profileProbe
+                && profileProbe.TryGetProperty("customProfileId", out var profileId)
+                && profileId.ValueKind == JsonValueKind.String
+                && !string.IsNullOrWhiteSpace(profileId.GetString())))
+        {
+            return;
+        }
+
+        var stagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
+        Meridian.FSharp.Domain.SecurityKind kind;
+        try
+        {
+            var envelope = System.Text.Json.Nodes.JsonNode.Parse(projection.AssetSpecificTerms.GetRawText())?.AsObject();
+            if (envelope is null)
+            {
+                return;
+            }
+
+            // Post-approval read layering: staged overrides first, the proposed edit last (it
+            // supersedes any staged override of the same term). A CLEAR removes the term so the
+            // reconstruction reads the canonical remainder.
+            if (stagedOverrides is not null)
+            {
+                foreach (var (overridePath, overrideValue) in stagedOverrides)
+                {
+                    if (string.Equals(overridePath, canonicalFieldPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    ApplyFirstClassTermOverlay(envelope, overridePath, overrideValue);
+                }
+            }
+
+            var isClear = string.IsNullOrWhiteSpace(request.NewValue);
+            if (isClear)
+            {
+                RemoveFirstClassTerm(envelope, canonicalFieldPath);
+            }
+            else
+            {
+                ApplyFirstClassTermOverlay(envelope, canonicalFieldPath, request.NewValue!);
+            }
+
+            var effectiveTerms = JsonSerializer.SerializeToElement(envelope);
+            kind = SecurityMasterMapping.ToRecord(projection with { AssetSpecificTerms = effectiveTerms }).Kind;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Reconstructing the effective resolved kind for {SecurityId} failed while validating field edit {FieldPath}; the kind-invariant check is skipped for this legacy-shaped document.",
+                request.SecurityId, SanitizeForLog(canonicalFieldPath));
+            return;
+        }
+
+        var invariantErrors = Meridian.FSharp.SecurityMasterInterop.SecurityMasterCommandFacade.ValidateKindInvariants(kind);
+        if (invariantErrors.Length > 0)
+        {
+            var summary = string.Join("; ", invariantErrors.Select(static e => $"[{e.Code}] {e.Message}"));
+            throw new ArgumentException(
+                $"The effective asset terms after this edit violate the resolved asset class " +
+                $"'{projection.AssetClass}' domain invariants: {summary}",
+                nameof(request));
+        }
+    }
+
+    /// <summary>Overlays one staged/proposed TOP-LEVEL asset-term value onto the envelope; nested paths are not modeled here.</summary>
+    private static void ApplyFirstClassTermOverlay(
+        System.Text.Json.Nodes.JsonObject envelope, string overridePath, string overrideValue)
+    {
+        if (!overridePath.StartsWith(SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix, StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(overrideValue))
+        {
+            return;
+        }
+
+        var key = overridePath[SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix.Length..];
+        if (key.Contains('.', StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        RemoveEnvelopeKeyVariants(envelope, key);
+        var trimmed = overrideValue.Trim();
+        envelope[key] = TryParseJsonNode(trimmed) ?? System.Text.Json.Nodes.JsonValue.Create(overrideValue);
+    }
+
+    private static void RemoveFirstClassTerm(System.Text.Json.Nodes.JsonObject envelope, string canonicalFieldPath)
+    {
+        var key = canonicalFieldPath[SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix.Length..];
+        if (!key.Contains('.', StringComparison.Ordinal))
+        {
+            RemoveEnvelopeKeyVariants(envelope, key);
+        }
+    }
+
+    private static void RemoveEnvelopeKeyVariants(System.Text.Json.Nodes.JsonObject envelope, string key)
+    {
+        foreach (var variantKey in envelope
+            .Where(property => string.Equals(property.Key, key, StringComparison.OrdinalIgnoreCase))
+            .Select(static property => property.Key)
+            .ToArray())
+        {
+            envelope.Remove(variantKey);
+        }
     }
 
     private const string ProfileFieldsRootPath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "profileFields";

@@ -238,7 +238,6 @@ public static class StructuredCashFlowTermsResolver
 
     private static IReadOnlyList<StructuredFactorScheduleEntry> ReadFactorSchedule(IReadOnlyList<JsonElement> sources)
     {
-        var entries = new List<StructuredFactorScheduleEntry>();
         foreach (var source in sources)
         {
             foreach (var alias in FactorScheduleAliases)
@@ -248,6 +247,12 @@ public static class StructuredCashFlowTermsResolver
                     continue;
                 }
 
+                // The array's PRESENCE claims ownership, and sources enumerate governed-first:
+                // a profile-backed record whose governed profileFields carry an EMPTY (or
+                // unusable) factorScheduleEntries deliberately asserts "no factor history", so
+                // the result returns even when zero rows parse — falling through would let an
+                // ungoverned outer pass-through array supply economics governance left empty.
+                var entries = new List<StructuredFactorScheduleEntry>();
                 foreach (var item in array.EnumerateArray())
                 {
                     if (item.ValueKind != JsonValueKind.Object)
@@ -265,11 +270,7 @@ public static class StructuredCashFlowTermsResolver
                     entries.Add(new StructuredFactorScheduleEntry(asOf.Value, factor.Value));
                 }
 
-                if (entries.Count > 0)
-                {
-                    // First container that yields usable rows wins, mirroring alias priority.
-                    return DedupeByDate(entries);
-                }
+                return DedupeByDate(entries);
             }
         }
 

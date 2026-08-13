@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
@@ -173,7 +174,11 @@ internal static class SecurityMasterConflictDetection
                 : null,
             "CommonTerms.currency" => detail.Currency,
             "CommonTerms.countryOfRisk" => SecurityTermReader.ReadString(detail.CommonTerms, "countryOfRisk"),
-            _ => null,
+            _ => fieldPath.StartsWith(ProfileFieldPathPrefix, StringComparison.Ordinal)
+                ? ReadComparableProfileFieldValue(
+                    GetProfileFields(detail.AssetSpecificTerms),
+                    fieldPath[ProfileFieldPathPrefix.Length..])
+                : null,
         };
     }
 
@@ -356,8 +361,53 @@ internal static class SecurityMasterConflictDetection
         CompareText("CommonTerms.countryOfRisk", SecurityMasterConflictKinds.CommonTermMismatch,
             SecurityTermReader.ReadString(current.CommonTerms, "countryOfRisk"),
             SecurityTermReader.ReadString(incoming.CommonTerms, "countryOfRisk"));
+        CompareProfileFields();
 
         return conflicts;
+
+        // Governed profile fields ARE the economics of a profile-backed record (commitment,
+        // fundedAmount, appraisalValue, latestValuation, ...), so a cross-source amendment
+        // replacing them must open a conflict — and per-field attribution must track them — just
+        // like the shared fixed-income terms. Keys the typed comparisons above already cover
+        // through the resolver (and pool-factor evidence, which sources legitimately snapshot at
+        // different dates) are excluded to avoid double-reporting one disagreement.
+        void CompareProfileFields()
+        {
+            var fieldsA = GetProfileFields(current.AssetSpecificTerms);
+            var fieldsB = GetProfileFields(incoming.AssetSpecificTerms);
+            if (fieldsA is null && fieldsB is null)
+            {
+                return;
+            }
+
+            var keys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var source in new[] { fieldsA, fieldsB })
+            {
+                if (source is not JsonElement fields)
+                {
+                    continue;
+                }
+
+                foreach (var property in fields.EnumerateObject())
+                {
+                    if (!ProfileFieldComparisonExclusions.Contains(property.Name))
+                    {
+                        // First-seen spelling wins (current record first), so the path is stable
+                        // across casing variants of the same governed key.
+                        keys.TryAdd(property.Name, property.Name);
+                    }
+                }
+            }
+
+            foreach (var key in keys.Values)
+            {
+                CompareText(
+                    ProfileFieldPathPrefix + key,
+                    SecurityMasterConflictKinds.EconomicTermMismatch,
+                    ReadComparableProfileFieldValue(fieldsA, key),
+                    ReadComparableProfileFieldValue(fieldsB, key));
+            }
+        }
 
         void Add(string fieldPath, string kind, string valueA, string valueB)
         {
@@ -499,6 +549,55 @@ internal static class SecurityMasterConflictDetection
 
             Add("EconomicTerms.dayCountConvention", SecurityMasterConflictKinds.EconomicTermMismatch, a.Trim(), b.Trim());
         }
+    }
+
+    internal const string ProfileFieldPathPrefix = "ProfileFields.";
+
+    /// <summary>
+    /// Governed profile-field keys EXCLUDED from the dynamic comparison: terms the typed
+    /// fixed-income comparisons already read through the shared resolver (comparing the raw nested
+    /// copy too would double-report one disagreement under two paths), plus pool-factor evidence,
+    /// which sources legitimately snapshot at different dates.
+    /// </summary>
+    private static readonly HashSet<string> ProfileFieldComparisonExclusions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "maturity", "maturityDate", "issueDate", "couponRate", "par", "principalFace",
+        "paymentFrequency", "dayCount", "dayCountConvention",
+        "principalSchedule", "sinkingFundSchedule", "amortizationSchedule",
+        "currentFactor", "factor", "factorDate", "factorSchedule", "factorScheduleEntries",
+        "currency", "countryOfRisk",
+    };
+
+    private static JsonElement? GetProfileFields(JsonElement assetSpecificTerms)
+        => SecurityTermReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields)
+           && profileFields.ValueKind == JsonValueKind.Object
+            ? profileFields
+            : null;
+
+    /// <summary>
+    /// Canonical comparable text for one governed profile-field value: numbers scale-normalized
+    /// (G29 drops trailing zeros), booleans lowercased, strings verbatim, structured values as raw
+    /// JSON. Null when the field is absent or JSON null — absence is incompleteness, not a value.
+    /// </summary>
+    private static string? ReadComparableProfileFieldValue(JsonElement? profileFields, string key)
+    {
+        if (profileFields is not JsonElement fields
+            || !SecurityTermReader.TryGetProperty(fields, key, out var value))
+        {
+            return null;
+        }
+
+        return value.ValueKind switch
+        {
+            JsonValueKind.String => value.GetString(),
+            JsonValueKind.Number => value.TryGetDecimal(out var number)
+                ? number.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)
+                : value.GetRawText(),
+            JsonValueKind.True => "true",
+            JsonValueKind.False => "false",
+            JsonValueKind.Null or JsonValueKind.Undefined => null,
+            _ => value.GetRawText(),
+        };
     }
 
     /// <summary>

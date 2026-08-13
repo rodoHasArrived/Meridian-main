@@ -154,10 +154,20 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         {
             if (position.SecurityId is not Guid securityId ||
                 !details.TryGetValue(securityId, out var detail) ||
-                detail is null ||
                 !observationDates.TryGetValue(securityId, out var securityObservationDates))
             {
                 return position;
+            }
+
+            if (detail is null)
+            {
+                // The security HAS in-period factor observations but the Asset Operations read
+                // failed (or returned nothing), so ownership could not be verified at all. A
+                // supplied identity (e.g. a ledger dimension PositionId) must not pass through as
+                // if resolved — factor generation would post against an unverified, possibly stale
+                // owner for the whole outage. Clearing the identity makes the paydown generator
+                // fail closed with FACTOR_PAYDOWN_POSITION_REQUIRED instead.
+                return position with { PositionId = null, PositionVersion = 1 };
             }
 
             BookPositionDto? resolved = null;

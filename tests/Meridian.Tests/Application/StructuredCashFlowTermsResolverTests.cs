@@ -41,6 +41,32 @@ public sealed class StructuredCashFlowTermsResolverTests
     }
 
     [Fact]
+    public void Resolve_EmptyGovernedFactorSchedule_IsAuthoritativeOverOuterRows()
+    {
+        // The governed nested schedule's PRESENCE claims ownership: profileFields carrying an
+        // EMPTY factorScheduleEntries deliberately asserts "no factor history", so the resolver
+        // must not fall through to the ungoverned outer pass-through rows.
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            customProfileId = "structured-credit-io-po",
+            profileVersion = 1,
+            profileFields = new
+            {
+                factorScheduleEntries = Array.Empty<object>()
+            },
+            factorScheduleEntries = new object[]
+            {
+                new { asOfDate = "2021-01-01", factor = 0.8m }
+            }
+        }));
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.HasFactorSchedule.Should().BeFalse(
+            "governance explicitly left the nested schedule empty, so the outer rows must not supply pass-through economics");
+    }
+
+    [Fact]
     public void Resolve_ShouldReadAndAggregateContractualPrincipalSchedule()
     {
         var security = Build(JsonSerializer.SerializeToElement(new

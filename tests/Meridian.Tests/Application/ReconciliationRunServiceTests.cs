@@ -830,6 +830,66 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldFailClosedWhenOwnershipLookupFails()
+    {
+        // The security HAS in-period factor observations but the Asset Operations read throws:
+        // ownership cannot be verified, so no paydown may be attributed to any position - the
+        // generator fails closed with FACTOR_PAYDOWN_POSITION_REQUIRED instead of posting against
+        // an unverified (possibly supplied and stale) identity during the outage.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-ownership-outage"));
+
+        var securityId = Guid.Parse("77777777-7777-4777-8777-777777777781");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL ownership-outage security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-03")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                new ThrowingAssetOperationsQueryService()));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-ownership-outage"));
+
+        detail.Should().NotBeNull();
+        (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(static issue => issue.Code)
+            .Should().Contain("FACTOR_PAYDOWN_POSITION_REQUIRED");
+        (detail.ExpectedAccountingEvents ?? Array.Empty<ExpectedAccountingEventDto>())
+            .Should().NotContain(item =>
+                item.SecurityId == securityId &&
+                item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
     public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldComputePaydownFromDurableOriginalFace()
     {
         // Factor paydowns are relative to ORIGINAL face. The run position's quantity (10) may
@@ -2313,6 +2373,15 @@ public sealed class ReconciliationRunServiceTests
             BookPositions = bookPositions
         };
         return new StaticAssetOperationsQueryService(detail);
+    }
+
+    private sealed class ThrowingAssetOperationsQueryService : IAssetOperationsQueryService
+    {
+        public Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
+            => throw new InvalidOperationException("asset operations unavailable");
+
+        public Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<AssetOperationsReadinessDto?>(null);
     }
 
     private sealed class StaticAssetOperationsQueryService(AssetOperationsDetailDto detail)

@@ -370,6 +370,42 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public async Task RecordFieldConflictsAsync_GovernedProfileFieldReplacedAcrossSources_OpensConflict()
+    {
+        // Governed profile fields ARE the economics of a profile-backed record: provider B
+        // replacing provider A's commitment must open a conflict exactly like a coupon
+        // disagreement would, instead of silently overwriting the golden record.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var current = Record("Bloomberg", new
+        {
+            customProfileId = "private-fund-interest",
+            profileVersion = 1,
+            profileFields = new { commitment = 1_000_000m, gpSponsor = "Meridian Growth Partners" }
+        });
+        var incoming = Record("Reuters", new
+        {
+            customProfileId = "private-fund-interest",
+            profileVersion = 1,
+            profileFields = new { commitment = 2_000_000m, gpSponsor = "Meridian Growth Partners" }
+        });
+
+        await service.RecordFieldConflictsAsync(current, incoming, CancellationToken.None);
+
+        var open = await service.GetOpenConflictsAsync(CancellationToken.None);
+        var conflict = open.Should().ContainSingle(c => c.FieldPath == "ProfileFields.commitment").Subject;
+        conflict.ProviderA.Should().Be("Bloomberg");
+        conflict.ProviderB.Should().Be("Reuters");
+        conflict.ValueA.Should().Be("1000000");
+        conflict.ValueB.Should().Be("2000000");
+        open.Should().NotContain(c => c.FieldPath == "ProfileFields.gpSponsor",
+            "an agreeing governed field is not a disagreement");
+    }
+
+    [Fact]
     public async Task RecordFieldConflictsAsync_CanonicalWriteReplacingBothCandidates_SupersedesTheObsoleteConflict()
     {
         // Bloomberg (4.25) and Reuters (4.50) opened a coupon conflict; a later amendment from a
