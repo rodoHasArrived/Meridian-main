@@ -96,6 +96,10 @@ module SecurityMaster =
                 (error
                     "bond_principal_schedule_exceeds_par"
                     "Bond principal schedule amounts must not sum to more than Par — projections cap instalments at the outstanding balance, so an over-committed schedule silently pays less than its persisted amounts.")
+            @ require (terms.PrincipalSchedule.IsEmpty || terms.Par.IsSome)
+                (error
+                    "bond_principal_schedule_requires_par"
+                    "Bond principal schedules require Par — without a face value, projections substitute a 100-unit basis and cap instalments against it, silently contradicting the persisted contractual amounts.")
         | SecurityKind.FxSpot terms ->
             []
             @ requireNotBlank "fx_base_currency_required" "BaseCurrency" terms.BaseCurrency

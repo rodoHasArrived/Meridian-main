@@ -46,6 +46,51 @@ public sealed class SecurityMasterFieldConflictDetectionTests
             []);
 
     [Fact]
+    public void DetectFieldConflicts_IncumbentFieldSource_OverridesRecordProvenance()
+    {
+        // Provider A supplied countryOfRisk, provider B later touched only the coupon (record
+        // provenance now names B), provider C asserts a different country. The conflict's
+        // incumbent must be A — the field's recorded source — not B.
+        var current = Record("providerB", new { maturityDate = "2030-01-15" },
+            commonTerms: new { currency = "USD", countryOfRisk = "US" });
+        var incoming = Record("providerC", new { maturityDate = "2030-01-15" },
+            commonTerms: new { currency = "USD", countryOfRisk = "CA" });
+
+        var conflicts = SecurityMasterConflictDetection.DetectFieldConflicts(
+            current, incoming, DetectedAt,
+            new Dictionary<string, string> { ["CommonTerms.countryOfRisk"] = "providerA" });
+
+        var country = conflicts.Should().ContainSingle(conflict =>
+            conflict.FieldPath == "CommonTerms.countryOfRisk").Subject;
+        country.ProviderA.Should().Be("providerA",
+            "per-field attribution names the incumbent; record provenance is only the fallback");
+        country.ProviderB.Should().Be("providerC");
+    }
+
+    [Fact]
+    public void ChangedGovernedFieldPaths_ClearedValue_CountsAsChanged()
+    {
+        // Attribution for a value that no longer exists is as stale as attribution for a replaced
+        // one — absence transitions count as changes for retirement, even though conflict creation
+        // keeps its both-values-present rule.
+        var current = Record("providerA", new { maturityDate = "2030-01-15", couponRate = 4.25m },
+            commonTerms: new { currency = "USD", countryOfRisk = "US" });
+        var incoming = Record("providerA", new { maturityDate = "2030-01-15" },
+            commonTerms: new { currency = "USD" });
+
+        var changed = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(current, incoming);
+
+        changed.Should().Contain("EconomicTerms.couponRate");
+        changed.Should().Contain("CommonTerms.countryOfRisk");
+
+        // Conflict creation stays both-present: a cleared field is incompleteness, not disagreement.
+        var incomingOtherSource = Record("providerB", new { maturityDate = "2030-01-15" },
+            commonTerms: new { currency = "USD" });
+        SecurityMasterConflictDetection.DetectFieldConflicts(current, incomingOtherSource, DetectedAt)
+            .Should().NotContain(conflict => conflict.FieldPath == "EconomicTerms.couponRate");
+    }
+
+    [Fact]
     public void DetectFieldConflicts_DifferingPrincipalSchedules_ProduceEconomicTermConflict()
     {
         // The contractual principal schedule drives calculated cash flows and ledger support, so a

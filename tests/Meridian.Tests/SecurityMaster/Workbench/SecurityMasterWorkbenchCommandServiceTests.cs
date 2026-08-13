@@ -133,6 +133,40 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ProfileFieldClearWithCasingVariant_RemovesTheCanonicalKey()
+    {
+        // A clear must remove the CANONICAL override key: clearing profileFields.CurrentFactor and
+        // removing a casing-variant key would leave the asserted currentFactor override and its
+        // provenance active while the draft claims it was cleared.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("structured-credit-io-po", profileVersion: 1);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.CurrentFactor",
+            NewValue: null,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Withdraw the factor override.");
+
+        await harness.Service.UpdateSecurityFieldAsync(request);
+
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(p =>
+                    p.RemoveKeys != null
+                    && p.RemoveKeys.Contains("assetSpecificTerms.profileFields.currentFactor")),
+                "ops.analyst",
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once,
+            "the clear must remove the pinned definition's canonical key, not the casing variant");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_UnresolvedPinnedProfile_FailsClosedForProfileFieldValues()
     {
         // profileFields values are governed by the pinned profile; when the projection carries no

@@ -532,6 +532,70 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task AmendTermsAsync_ProfileBackedRecordWithoutEnvelopeInPatch_RefusesTheAmendment()
+    {
+        // A profile-backed record's asset terms ARE the envelope. Restoring the previous envelope
+        // over an ordinary patch would append an event and advance the version while silently
+        // discarding every requested value — refuse instead.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var previous = CreateProjection(securityId, "CustomAsset", SecurityStatusDto.Active, "Profile-backed asset", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "structured-credit-io-po",
+                profileVersion = 1,
+                profileFields = new { }
+            }),
+            Provenance = JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "provA",
+                asOf = DateTimeOffset.UtcNow.AddDays(-1),
+                updatedBy = "feed"
+            })
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(previous);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        await service.Invoking(s => s.AmendTermsAsync(new AmendSecurityTermsRequest(
+                securityId,
+                2,
+                CommonTerms: null,
+                AssetSpecificTermsPatch: JsonSerializer.SerializeToElement(new { category = "Litigation Finance" }),
+                IdentifiersToAdd: [],
+                IdentifiersToExpire: [],
+                EffectiveFrom: DateTimeOffset.UtcNow,
+                SourceSystem: "provB",
+                UpdatedBy: "codex",
+                SourceRecordId: null,
+                Reason: "amend")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*profile-backed*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task AmendTermsAsync_WinningSourceAmendsItsOwnValue_StillRetiresStaleResolutionProvenance()
     {
         // The previous winner amending its OWN value opens no cross-source conflict, but the old

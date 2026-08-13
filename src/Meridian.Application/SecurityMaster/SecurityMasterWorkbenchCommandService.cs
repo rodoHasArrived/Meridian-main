@@ -688,7 +688,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     {
         var isWholeObject = string.Equals(canonicalFieldPath, ProfileFieldsRootPath, StringComparison.Ordinal);
         var isNestedField = canonicalFieldPath.StartsWith(ProfileFieldsNestedPrefix, StringComparison.Ordinal);
-        if ((!isWholeObject && !isNestedField) || string.IsNullOrWhiteSpace(request.NewValue))
+        // Clears skip VALUE validation but still need key canonicalization: clearing
+        // profileFields.CurrentFactor must remove the canonical currentFactor override, not a
+        // casing-variant key that leaves the asserted value and its provenance active.
+        var isClear = string.IsNullOrWhiteSpace(request.NewValue);
+        if ((!isWholeObject && !isNestedField) || (isWholeObject && isClear))
         {
             return canonicalFieldPath;
         }
@@ -722,6 +726,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         if (profile is null)
         {
+            if (isClear)
+            {
+                // A clear asserts nothing and only removes an overlay key; it stays available
+                // while the pinned profile cannot be resolved, at the cost of removing the
+                // caller's spelling rather than the canonical key.
+                return canonicalFieldPath;
+            }
+
             // Fail closed: profileFields values are governed by the pinned profile, so a value that
             // cannot be validated against it must not stage — projection lag, a missing envelope,
             // or a catalog mismatch would otherwise be exactly the window in which "garbage" slips
@@ -784,11 +796,19 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             // Profile field types describe SCALAR values; a deeper path beneath a declared field
             // (profileFields.currentFactor.unit) would bypass its type/range validation and stage
-            // an undeclared override. Undeclared roots stay dynamic pass-through.
-            var rootSegment = nestedRemainder[..nestedRemainder.IndexOf('.', StringComparison.Ordinal)];
+            // an undeclared override. Undeclared roots stay dynamic pass-through; a CLEAR of such
+            // a subpath removes junk rather than asserting a value, so it passes with the root
+            // segment canonicalized.
+            var separatorIndex = nestedRemainder.IndexOf('.', StringComparison.Ordinal);
+            var rootSegment = nestedRemainder[..separatorIndex];
             var declaredRoot = profile.Fields.FirstOrDefault(
                 field => string.Equals(field.Key, rootSegment, StringComparison.OrdinalIgnoreCase));
-            if (declaredRoot is not null)
+            if (declaredRoot is null)
+            {
+                return canonicalFieldPath;
+            }
+
+            if (!isClear)
             {
                 throw new ArgumentException(
                     $"Profile field '{declaredRoot.Key}' is declared as a scalar {declaredRoot.FieldType} by the " +
@@ -796,7 +816,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                     nameof(request));
             }
 
-            return canonicalFieldPath;
+            return ProfileFieldsNestedPrefix + declaredRoot.Key + nestedRemainder[separatorIndex..];
         }
 
         var declared = profile.Fields.FirstOrDefault(
@@ -806,7 +826,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             return canonicalFieldPath;
         }
 
-        if (!ProfileFieldStringIsValid(declared, request.NewValue!, out var fieldError))
+        if (!isClear && !ProfileFieldStringIsValid(declared, request.NewValue!, out var fieldError))
         {
             throw new ArgumentException(fieldError, nameof(request));
         }

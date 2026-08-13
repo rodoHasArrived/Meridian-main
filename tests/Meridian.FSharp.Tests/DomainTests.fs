@@ -1231,11 +1231,16 @@ let ``Bond principal schedules summing to more than Par are rejected`` () =
                                                       { PaymentDate = DateOnly(2029, 6, 15); Amount = 40m } ] })
     |> should not' (contain "bond_principal_schedule_exceeds_par")
 
-    // Without Par there is no face to compare against; the schedule stands as authored.
+    // Without Par there is no face to validate or project against: downstream substitutes a
+    // 100-unit basis and caps instalments, so a schedule without Par is rejected outright.
     validationErrorCodes (SecurityKind.Bond { baseTerms with
                                                 Par = None
                                                 PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 500m } ] })
-    |> should not' (contain "bond_principal_schedule_exceeds_par")
+    |> should contain "bond_principal_schedule_requires_par"
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with
+                                                PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 40m } ] })
+    |> should not' (contain "bond_principal_schedule_requires_par")
 
 [<Fact>]
 let ``Structured credit factors above one are rejected`` () =

@@ -135,18 +135,6 @@ internal static class SecurityMasterConflictDetection
     }
 
     /// <summary>
-    /// Detects field-level cross-source conflicts between the stored golden copy and an incoming
-    /// revision of the same security written by a different source system — the golden-copy case
-    /// "Bloomberg set the coupon, Reuters disagrees on country-of-risk". Fields are compared through
-    /// the canonical typed readers (<see cref="StructuredCashFlowTermsResolver"/>,
-    /// <see cref="DayCountConventions"/>), so vendor alias spellings and equivalent day-count
-    /// notations never produce false conflicts. A field missing on either side is never a conflict
-    /// (absence is incompleteness, not disagreement), and a revision from the same source system
-    /// produces nothing (that is versioning, not a cross-source conflict). Pool factor is
-    /// deliberately not compared: sources snapshot it at different dates, so mismatches are
-    /// expected, not disagreements.
-    /// </summary>
-    /// <summary>
     /// Canonical text form of a contractual principal schedule for conflict comparison and the
     /// resolution-time persisted-value guard: date-sorted <c>yyyy-MM-dd:amount</c> pairs with
     /// scale-normalized amounts (G29 drops trailing zeros), joined with <c>|</c>. Both sides of a
@@ -170,22 +158,51 @@ internal static class SecurityMasterConflictDetection
     internal static IReadOnlyList<string> ChangedGovernedFieldPaths(
         SecurityProjectionRecord current,
         SecurityProjectionRecord incoming)
-        => DetectFieldConflictsCore(current, incoming, DateTimeOffset.UtcNow, requireDistinctSources: false)
+        => DetectFieldConflictsCore(
+                current, incoming, DateTimeOffset.UtcNow,
+                requireDistinctSources: false,
+                // A CLEARED value changed hands too: attribution for a value that no longer exists
+                // is exactly as stale as attribution for a replaced one, so absence transitions
+                // count as changes here even though conflict creation needs both values present.
+                includeAbsenceTransitions: true)
             .Select(static conflict => conflict.FieldPath)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
+    /// <summary>
+    /// Detects field-level cross-source conflicts between the stored golden copy and an incoming
+    /// revision of the same security written by a different source system — the golden-copy case
+    /// "Bloomberg set the coupon, Reuters disagrees on country-of-risk". Fields are compared through
+    /// the canonical typed readers (<see cref="StructuredCashFlowTermsResolver"/>,
+    /// <see cref="DayCountConventions"/>), so vendor alias spellings and equivalent day-count
+    /// notations never produce false conflicts. A field missing on either side is never a conflict
+    /// (absence is incompleteness, not disagreement), and a revision from the same source system
+    /// produces nothing (that is versioning, not a cross-source conflict). Pool factor is
+    /// deliberately not compared: sources snapshot it at different dates, so mismatches are
+    /// expected, not disagreements.
+    /// <para><paramref name="incumbentFieldSources"/> supplies per-field attribution (field path →
+    /// source system) for the stored side; when a path has an entry, that source is named as the
+    /// conflict's incumbent instead of the record-level provenance, which flips on every amendment
+    /// and can otherwise name an unrelated source.</para>
+    /// </summary>
     public static IReadOnlyList<SecurityMasterConflict> DetectFieldConflicts(
         SecurityProjectionRecord current,
         SecurityProjectionRecord incoming,
-        DateTimeOffset detectedAt)
-        => DetectFieldConflictsCore(current, incoming, detectedAt, requireDistinctSources: true);
+        DateTimeOffset detectedAt,
+        IReadOnlyDictionary<string, string>? incumbentFieldSources = null)
+        => DetectFieldConflictsCore(
+            current, incoming, detectedAt,
+            requireDistinctSources: true,
+            includeAbsenceTransitions: false,
+            incumbentFieldSources);
 
     private static IReadOnlyList<SecurityMasterConflict> DetectFieldConflictsCore(
         SecurityProjectionRecord current,
         SecurityProjectionRecord incoming,
         DateTimeOffset detectedAt,
-        bool requireDistinctSources)
+        bool requireDistinctSources,
+        bool includeAbsenceTransitions,
+        IReadOnlyDictionary<string, string>? incumbentFieldSources = null)
     {
         if (current.SecurityId != incoming.SecurityId)
         {
@@ -223,17 +240,29 @@ internal static class SecurityMasterConflictDetection
         return conflicts;
 
         void Add(string fieldPath, string kind, string valueA, string valueB)
-            => conflicts.Add(new SecurityMasterConflict(
-                ConflictId: DeterministicFieldConflictId(current.SecurityId, fieldPath, sourceA, valueA, sourceB, valueB),
+        {
+            // The incumbent for a FIELD is whoever last supplied that field's value — per-field
+            // attribution when a resolution recorded one — not whichever source happened to touch
+            // the record most recently. Record-level provenance flips on every amendment, so using
+            // it unconditionally can name an unrelated source as the incumbent and let the
+            // authority policy persist false field provenance.
+            var incumbent = incumbentFieldSources is not null
+                && incumbentFieldSources.TryGetValue(fieldPath, out var fieldSource)
+                && !string.IsNullOrWhiteSpace(fieldSource)
+                    ? fieldSource
+                    : sourceA;
+            conflicts.Add(new SecurityMasterConflict(
+                ConflictId: DeterministicFieldConflictId(current.SecurityId, fieldPath, incumbent, valueA, sourceB, valueB),
                 SecurityId: current.SecurityId,
                 ConflictKind: kind,
                 FieldPath: fieldPath,
-                ProviderA: sourceA,
+                ProviderA: incumbent,
                 ValueA: valueA,
                 ProviderB: sourceB,
                 ValueB: valueB,
                 DetectedAt: detectedAt,
                 Status: "Open"));
+        }
 
         void CompareDate(string fieldPath, DateOnly? a, DateOnly? b)
         {
@@ -243,6 +272,12 @@ internal static class SecurityMasterConflictDetection
                     left.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
                     right.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
             }
+            else if (includeAbsenceTransitions && a.HasValue != b.HasValue)
+            {
+                Add(fieldPath, SecurityMasterConflictKinds.EconomicTermMismatch,
+                    a?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+                    b?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty);
+            }
         }
 
         void ComparePrincipalSchedule(
@@ -250,9 +285,17 @@ internal static class SecurityMasterConflictDetection
             IReadOnlyList<StructuredPrincipalScheduleEntry>? b)
         {
             // Both sources must assert a schedule for a disagreement to exist, mirroring the
-            // both-present rule the scalar comparators use for sparse providers.
+            // both-present rule the scalar comparators use for sparse providers. A schedule that
+            // was REMOVED is still a change for absence-transition consumers.
             if (a is not { Count: > 0 } || b is not { Count: > 0 })
             {
+                if (includeAbsenceTransitions && (a is { Count: > 0 }) != (b is { Count: > 0 }))
+                {
+                    Add("EconomicTerms.principalSchedule", SecurityMasterConflictKinds.EconomicTermMismatch,
+                        a is { Count: > 0 } ? NormalizePrincipalSchedule(a) : string.Empty,
+                        b is { Count: > 0 } ? NormalizePrincipalSchedule(b) : string.Empty);
+                }
+
                 return;
             }
 
@@ -273,6 +316,12 @@ internal static class SecurityMasterConflictDetection
                     left.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     right.ToString(System.Globalization.CultureInfo.InvariantCulture));
             }
+            else if (includeAbsenceTransitions && a.HasValue != b.HasValue)
+            {
+                Add(fieldPath, SecurityMasterConflictKinds.EconomicTermMismatch,
+                    a?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+                    b?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty);
+            }
         }
 
         void CompareText(string fieldPath, string kind, string? a, string? b)
@@ -281,6 +330,10 @@ internal static class SecurityMasterConflictDetection
                 && !string.Equals(a.Trim(), b.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 Add(fieldPath, kind, a.Trim(), b.Trim());
+            }
+            else if (includeAbsenceTransitions && string.IsNullOrWhiteSpace(a) != string.IsNullOrWhiteSpace(b))
+            {
+                Add(fieldPath, kind, a?.Trim() ?? string.Empty, b?.Trim() ?? string.Empty);
             }
         }
 

@@ -352,6 +352,31 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         };
     }
 
+    private async Task<IReadOnlyDictionary<string, string>> LoadConflictResolutionFieldSourcesAsync(
+        NpgsqlConnection connection,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select field_path, source_system
+            from {Qualified(PostgresSecurityFieldProvenanceSql.Table)}
+            where security_id = @security_id and origin = @origin;
+            """;
+        command.Parameters.AddWithValue("security_id", securityId);
+        command.Parameters.AddWithValue("origin", SecurityFieldProvenanceOrigins.ConflictResolution);
+
+        var sources = new Dictionary<string, string>(StringComparer.Ordinal);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            sources[reader.GetString(0)] = reader.GetString(1);
+        }
+
+        return sources;
+    }
+
     private static bool FieldValuesMatch(string fieldPath, string? persisted, string selected)
     {
         if (string.IsNullOrWhiteSpace(persisted))
@@ -419,13 +444,22 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
 
     public async Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
     {
-        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+
+        // Per-field attribution names the true incumbent: record-level provenance flips on every
+        // amendment, so when providers amend DIFFERENT fields in sequence it can name a source
+        // that never supplied the conflicted field, letting the authority policy persist false
+        // field provenance. Recorded conflict-resolution rows carry each field's real source; the
+        // record provenance stays the fallback for fields never resolved.
+        var incumbentFieldSources = await LoadConflictResolutionFieldSourcesAsync(
+            connection, previous.SecurityId, ct).ConfigureAwait(false);
+        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
+            previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources);
         if (candidates.Count == 0)
         {
             return;
         }
 
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
         int newConflicts = 0;

@@ -573,9 +573,25 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return patch.Clone();
         }
 
-        return IsProfileBackedCustomAsset(currentProjection.AssetClass, currentProjection.AssetSpecificTerms)
-            ? currentProjection.AssetSpecificTerms.Clone()
-            : null;
+        if (!IsProfileBackedCustomAsset(currentProjection.AssetClass, currentProjection.AssetSpecificTerms))
+        {
+            return null;
+        }
+
+        // A profile-backed record's asset terms ARE the profile envelope. A patch that does not
+        // carry the envelope cannot be applied here — restoring the previous envelope instead
+        // would append an event and advance the version while silently discarding every requested
+        // value. Refuse the write; the caller must include the pinned envelope (with the updated
+        // profileFields) or use the governed workbench field-edit route.
+        if (assetSpecificTermsPatch is not null)
+        {
+            throw new InvalidOperationException(
+                $"Security '{currentProjection.SecurityId:D}' is profile-backed: asset-specific term amendments must " +
+                "carry the pinned profile envelope (customProfileId, profileVersion, profileFields). Submit the full " +
+                "envelope with the updated profileFields, or edit individual fields through the workbench field-edit route.");
+        }
+
+        return currentProjection.AssetSpecificTerms.Clone();
     }
 
     private static JsonElement? GetProfileBackedAssetSpecificTermsOverride(JsonElement assetSpecificTerms)
