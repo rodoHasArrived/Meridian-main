@@ -119,7 +119,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // Edits addressing the assetSpecificTerms namespace are anchored to the declared
         // per-asset-class schema: the key must be a declared term field and the value must coerce
         // to its declared type. Paths outside that namespace remain the free annotation surface.
-        await EnsureFieldEditIsSchemaValidAsync(request, ct).ConfigureAwait(false);
+        // The returned path is the schema-canonical spelling — persisting the caller's raw alias or
+        // casing variant would fork the same term into separate override keys, revisions, and
+        // provenance rows, so every write below uses the canonical path.
+        var fieldPath = await EnsureFieldEditIsSchemaValidAsync(request, ct).ConfigureAwait(false);
 
         // Stage the operator value as an override read-model annotation. The override store applies
         // the patch under a serializable, row-locked transaction; it does not advance the economic
@@ -132,9 +135,9 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 ? null
                 : new Dictionary<string, string>(StringComparer.Ordinal)
                 {
-                    [request.FieldPath] = request.NewValue!,
+                    [fieldPath] = request.NewValue!,
                 },
-            RemoveKeys: isClear ? [request.FieldPath] : null)
+            RemoveKeys: isClear ? [fieldPath] : null)
         {
             ReasonCode = request.Justification,
         };
@@ -167,7 +170,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // it, publish falls back to an unscoped impact whose empty affected-book set short-circuits the
         // period-aware restatement path to "no restatement".
         var revision = await _revisions.CreateDraftAsync(
-            request.SecurityId, request.Actor, request.FieldPath, request.EffectiveFrom, request.Justification,
+            request.SecurityId, request.Actor, fieldPath, request.EffectiveFrom, request.Justification,
             request.FundProfileId, ct)
             .ConfigureAwait(false);
 
@@ -175,35 +178,52 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // forge log entries.
         _logger.LogInformation(
             "Security Master field edit staged for {SecurityId} field {FieldPath} as draft revision {RevisionId} at version {Version} by {Actor}",
-            request.SecurityId, SanitizeForLog(request.FieldPath), revision.RevisionId, currentVersion, SanitizeForLog(request.Actor));
+            request.SecurityId, SanitizeForLog(fieldPath), revision.RevisionId, currentVersion, SanitizeForLog(request.Actor));
 
         // Record the edit's field-level attribution (origin OperatorFieldEdit, referenced to the
         // draft revision) so overlay lineage is durable alongside canonical conflict-resolution
-        // lineage. Best-effort: the staged edit and draft revision are already the authoritative
-        // artifacts, so a lineage write failure is logged rather than failing the edit.
+        // lineage. A CLEAR withdraws the asserted value, so it removes the operator attribution row
+        // instead of upserting one — otherwise lineage would keep reporting an asserted operator
+        // value that no longer exists (and a clear after an overlay edit would even repoint that
+        // row's revision reference). Best-effort: the staged edit and draft revision are already the
+        // authoritative artifacts, so a lineage write failure is logged rather than failing the edit.
         if (_fieldProvenance is not null)
         {
             try
             {
-                await _fieldProvenance.UpsertAsync(
-                    new SecurityFieldProvenanceRecord(
+                if (isClear)
+                {
+                    // The recorded_at guard in the store keeps the ordering invariant: a delayed
+                    // clear cannot erase an attribution recorded after the clear's overlay write.
+                    await _fieldProvenance.RemoveAsync(
                         request.SecurityId,
-                        request.FieldPath,
-                        OperatorSourceSystem,
-                        AsOf: request.EffectiveFrom,
-                        UpdatedBy: request.Actor,
-                        Confidence: null,
-                        Origin: SecurityFieldProvenanceOrigins.OperatorFieldEdit,
-                        OriginReference: revision.RevisionId.ToString("D"),
-                        // PatchAsync returns the timestamp assigned while the serialized overlay
-                        // write holds its row lock. Ordering lineage by that authoritative write
-                        // time prevents a delayed older edit from replacing a newer attribution.
-                        RecordedAt: stagedOverride.UpdatedAt),
-                    ct).ConfigureAwait(false);
+                        fieldPath,
+                        SecurityFieldProvenanceOrigins.OperatorFieldEdit,
+                        clearedAt: stagedOverride.UpdatedAt,
+                        ct).ConfigureAwait(false);
+                }
+                else
+                {
+                    await _fieldProvenance.UpsertAsync(
+                        new SecurityFieldProvenanceRecord(
+                            request.SecurityId,
+                            fieldPath,
+                            OperatorSourceSystem,
+                            AsOf: request.EffectiveFrom,
+                            UpdatedBy: request.Actor,
+                            Confidence: null,
+                            Origin: SecurityFieldProvenanceOrigins.OperatorFieldEdit,
+                            OriginReference: revision.RevisionId.ToString("D"),
+                            // PatchAsync returns the timestamp assigned while the serialized overlay
+                            // write holds its row lock. Ordering lineage by that authoritative write
+                            // time prevents a delayed older edit from replacing a newer attribution.
+                            RecordedAt: stagedOverride.UpdatedAt),
+                        ct).ConfigureAwait(false);
+                }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                var safeFieldPathForLog = SanitizeForLog(request.FieldPath);
+                var safeFieldPathForLog = SanitizeForLog(fieldPath);
                 _logger.LogWarning(
                     ex,
                     "Field edit for {SecurityId} field {FieldPath} staged, but recording field provenance failed; the override and draft revision remain authoritative.",
@@ -218,8 +238,8 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             effectiveFrom: request.EffectiveFrom,
             sourceRecordId: request.SourceRecordId,
             reason: request.Justification,
-            summary: $"Operator edit to {request.FieldPath}.",
-            changedFields: [request.FieldPath]);
+            summary: $"Operator edit to {fieldPath}.",
+            changedFields: [fieldPath]);
 
         return new SecurityMasterEditResultDto(
             request.SecurityId,
@@ -580,11 +600,18 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     /// read-model outage into an edit outage — the existence and staleness guards above have
     /// already run against the durable event stream.
     /// </summary>
-    private async Task EnsureFieldEditIsSchemaValidAsync(UpdateSecurityFieldRequest request, CancellationToken ct)
+    /// <summary>
+    /// Validates an asset-terms edit against the declared schema and returns the path the edit must
+    /// be persisted under: the schema-canonical spelling for <c>assetSpecificTerms.*</c> paths (so
+    /// an alias like <c>dayCount</c> and its declared key <c>dayCountConvention</c> share one
+    /// override key, revision lineage, and provenance row), or the caller's path unchanged for the
+    /// free annotation surface and for the fail-open path where the asset class cannot be resolved.
+    /// </summary>
+    private async Task<string> EnsureFieldEditIsSchemaValidAsync(UpdateSecurityFieldRequest request, CancellationToken ct)
     {
         if (!SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(request.FieldPath))
         {
-            return;
+            return request.FieldPath;
         }
 
         // FieldPath is operator-supplied free text; strip control characters before logging so a
@@ -611,13 +638,16 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             _logger.LogWarning(
                 "Asset class for {SecurityId} could not be resolved; staging field edit {FieldPath} without schema validation.",
                 request.SecurityId, safeFieldPathForLog);
-            return;
+            return request.FieldPath;
         }
 
-        if (!SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, request.FieldPath, request.NewValue, out var error))
+        if (!SecurityAssetTermsFieldEditValidator.TryValidate(
+                assetClass, request.FieldPath, request.NewValue, out var canonicalFieldPath, out var error))
         {
             throw new ArgumentException(error, nameof(request));
         }
+
+        return canonicalFieldPath;
     }
 
     private async Task<long> GetCurrentVersionAsync(Guid securityId, CancellationToken ct)

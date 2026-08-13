@@ -208,6 +208,59 @@ public sealed class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task DeactivateAsync_UnknownEquityClassificationWithNestedTerms_RefusesTheWrite()
+    {
+        // Read tolerance degrades an unrecognized classification to Other(raw), which re-serializes
+        // WITHOUT the nested preferred/convertible blocks — so a write from this node would silently
+        // delete structure it did not understand. The guard must refuse before any event append.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var projection = CreateProjection(securityId, "Equity", SecurityStatusDto.Active, "Tracking Stock", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                classification = "TrackingStock",
+                preferredTerms = new { dividendType = "Cumulative" }
+            })
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(projection);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*classification 'TrackingStock'*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,
         string assetClass,

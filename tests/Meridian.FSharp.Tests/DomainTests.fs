@@ -1275,6 +1275,14 @@ let ``CustomAsset writes require the declared profile envelope in the document``
     validationErrorCodes (kindWith "not-json")
     |> should contain "custom_asset_terms_invalid"
 
+    // A JSON number is not enough: a fractional version would persist verbatim in the canonical
+    // document while the tolerant read defaults it to 1, so the write path requires an integer.
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":1.5,"profileFields":{}}""")
+    |> should contain "custom_asset_profile_version_invalid"
+
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":0,"profileFields":{}}""")
+    |> should contain "custom_asset_profile_version_invalid"
+
     validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":3,"profileFields":{}}""")
     |> List.isEmpty
     |> should equal true

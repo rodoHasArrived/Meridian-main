@@ -27,10 +27,18 @@ public static class SecurityAssetTermsFieldEditValidator
     /// otherwise <paramref name="error"/> carries an actionable rejection reason.
     /// A null or whitespace <paramref name="newValue"/> is always acceptable — it clears the
     /// overlay value rather than asserting a typed one.
+    /// <para><paramref name="canonicalFieldPath"/> is the schema-normalized path the edit must be
+    /// PERSISTED under: aliases resolve to the declared field key and casing/whitespace variants
+    /// collapse to one spelling, so <c>assetSpecificTerms.dayCount</c> and its alias
+    /// <c>assetSpecificTerms.dayCountConvention</c> address the same override key, revision lineage,
+    /// and provenance row instead of forking per spelling. Paths outside the asset-terms namespace
+    /// (and rejected edits) pass through unchanged.</para>
     /// </summary>
-    public static bool TryValidate(string assetClass, string fieldPath, string? newValue, out string? error)
+    public static bool TryValidate(
+        string assetClass, string fieldPath, string? newValue, out string canonicalFieldPath, out string? error)
     {
         error = null;
+        canonicalFieldPath = fieldPath;
         if (!TargetsAssetSpecificTerms(fieldPath))
         {
             return true;
@@ -62,6 +70,7 @@ public static class SecurityAssetTermsFieldEditValidator
         {
             if (nestedPath.Length > 0 || string.IsNullOrWhiteSpace(newValue))
             {
+                canonicalFieldPath = BuildCanonicalPath("profileFields", nestedPath);
                 return true;
             }
 
@@ -73,6 +82,7 @@ public static class SecurityAssetTermsFieldEditValidator
                 return false;
             }
 
+            canonicalFieldPath = BuildCanonicalPath("profileFields", nestedPath);
             return true;
         }
 
@@ -99,6 +109,7 @@ public static class SecurityAssetTermsFieldEditValidator
         {
             // Nested paths inside Object/Array fields are not enumerated by the schema, and a blank
             // value clears the overlay entry instead of asserting a typed value.
+            canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
             return true;
         }
 
@@ -110,8 +121,14 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
+        canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);
         return true;
     }
+
+    private static string BuildCanonicalPath(string fieldKey, string nestedPath)
+        => nestedPath.Length > 0
+            ? $"{AssetSpecificTermsPrefix}{fieldKey}.{nestedPath}"
+            : $"{AssetSpecificTermsPrefix}{fieldKey}";
 
     private static SecurityAssetTermField? FindDeclaredField(string assetClass, string key)
     {

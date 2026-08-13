@@ -264,7 +264,17 @@ module SecurityMaster =
                         else
                             []
                             @ (match root.TryGetProperty "profileVersion" with
-                               | true, value when value.ValueKind = JsonValueKind.Number -> []
+                               | true, value when value.ValueKind = JsonValueKind.Number ->
+                                   // A JSON number is not enough: a fractional value such as 1.5
+                                   // would pass here, persist verbatim in the canonical document,
+                                   // and then read back through the tolerant default as version 1.
+                                   // Require an actual positive integer on the write path.
+                                   (match value.TryGetInt32() with
+                                    | true, version when version > 0 -> []
+                                    | _ ->
+                                        [ error
+                                              "custom_asset_profile_version_invalid"
+                                              "CustomAsset terms profileVersion must be a positive integer." ])
                                | _ -> [ error "custom_asset_profile_version_missing" "CustomAsset terms must declare a numeric profileVersion." ])
                             @ (match root.TryGetProperty "profileFields" with
                                | true, value when value.ValueKind = JsonValueKind.Object -> []

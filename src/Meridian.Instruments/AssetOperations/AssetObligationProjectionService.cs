@@ -62,7 +62,7 @@ public sealed class AssetObligationProjectionService
             generatedAt,
             SecurityMasterSourceDomain,
             security.SecurityId.ToString("D"));
-        var flows = BuildProjectedCashFlowsFromSecurityTerms(security, projectionRunId).ToArray();
+        var flows = BuildProjectedCashFlowsFromSecurityTerms(security, projectionRunId, projectionAsOf).ToArray();
         var ledger = BuildLedgerSupport(security, projectionAsOf, flows).ToArray();
         var readyCapabilities = AssetOperationsProjectionBuilder.ReadyCapabilities(
             subject.OperationalProfile,
@@ -254,14 +254,15 @@ public sealed class AssetObligationProjectionService
 
     private static IEnumerable<AssetProjectedCashFlowDto> BuildProjectedCashFlowsFromSecurityTerms(
         SecurityDetailDto security,
-        Guid projectionRunId)
+        Guid projectionRunId,
+        DateOnly projectionAsOf)
     {
         if (!IsFixedIncome(security.AssetClass))
         {
             yield break;
         }
 
-        var reference = BuildFixedIncomeReference(security);
+        var reference = BuildFixedIncomeReference(security, projectionAsOf);
         if (reference is null)
         {
             yield break;
@@ -300,7 +301,7 @@ public sealed class AssetObligationProjectionService
             $"security-master:{security.SecurityId:D}");
     }
 
-    private static BondReferenceDto? BuildFixedIncomeReference(SecurityDetailDto security)
+    private static BondReferenceDto? BuildFixedIncomeReference(SecurityDetailDto security, DateOnly projectionAsOf)
     {
         // Fixed-income cash-flow terms (maturity, issue, par, coupon, day-count, frequency, factor)
         // are resolved once through the shared cash-flow terms resolver instead of re-probing here.
@@ -357,17 +358,49 @@ public sealed class AssetObligationProjectionService
                     IsProRata: false,
                     Version: security.Version)
                 : null,
-            InflationLinked: terms.CurrentFactor is null
-                ? null
-                : new BondInflationLinkedDto(
-                    security.SecurityId,
-                    null,
-                    null,
-                    null,
-                    terms.CurrentFactor,
-                    TryReadDate(payload, out var factorDate, "factorDate", "currentFactorDate") ? factorDate : null,
-                    null,
-                    security.Version));
+            InflationLinked: BuildFactorReference(security, terms, payload, projectionAsOf));
+    }
+
+    /// <summary>
+    /// Resolves the pool/index factor for the reference from the typed factor schedule first — the
+    /// latest entry dated on or before the projection as-of — falling back to the scalar
+    /// <c>currentFactor</c>. Without this, a record whose newest factor lives only in
+    /// <c>factorScheduleEntries</c> reaches <c>ResolveBondPrincipalBasis</c> with no factor at all
+    /// and is projected at full (factor 1) or stale principal.
+    /// </summary>
+    private static BondInflationLinkedDto? BuildFactorReference(
+        SecurityDetailDto security,
+        StructuredCashFlowTerms terms,
+        JsonElement payload,
+        DateOnly projectionAsOf)
+    {
+        StructuredFactorScheduleEntry? scheduled = null;
+        for (var i = terms.FactorSchedule.Count - 1; i >= 0; i--)
+        {
+            if (terms.FactorSchedule[i].AsOfDate <= projectionAsOf)
+            {
+                scheduled = terms.FactorSchedule[i];
+                break;
+            }
+        }
+
+        var effectiveFactor = scheduled?.Factor ?? terms.CurrentFactor;
+        if (effectiveFactor is null)
+        {
+            return null;
+        }
+
+        var effectiveFactorDate = scheduled?.AsOfDate
+            ?? (TryReadDate(payload, out var factorDate, "factorDate", "currentFactorDate") ? factorDate : (DateOnly?)null);
+        return new BondInflationLinkedDto(
+            security.SecurityId,
+            null,
+            null,
+            null,
+            effectiveFactor,
+            effectiveFactorDate,
+            null,
+            security.Version);
     }
 
     private static void AddFixedIncomeObligations(

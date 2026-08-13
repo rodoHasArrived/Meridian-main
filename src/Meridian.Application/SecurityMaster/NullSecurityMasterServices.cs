@@ -295,6 +295,9 @@ internal sealed class NullSecurityFieldProvenanceStore : ISecurityFieldProvenanc
     public Task UpsertAsync(SecurityFieldProvenanceRecord record, CancellationToken ct = default)
         => Task.CompletedTask;
 
+    public Task RemoveAsync(Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt, CancellationToken ct = default)
+        => Task.CompletedTask;
+
     public Task<IReadOnlyList<SecurityFieldProvenanceRecord>> GetAsync(Guid securityId, CancellationToken ct = default)
         => Task.FromResult(Empty);
 }

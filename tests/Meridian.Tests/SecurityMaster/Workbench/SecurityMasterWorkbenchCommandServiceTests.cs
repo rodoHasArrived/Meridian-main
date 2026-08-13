@@ -155,6 +155,93 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_BlankValue_RemovesOperatorProvenanceInsteadOfUpserting()
+    {
+        // A clear withdraws the asserted operator value, so lineage must not keep (or newly record)
+        // an OperatorFieldEdit attribution claiming an asserted value that no longer exists.
+        var harness = new Harness(currentVersion: 3);
+        var overrideRecordedAt = new DateTimeOffset(2026, 3, 14, 23, 59, 0, TimeSpan.Zero);
+        harness.Overrides
+            .Setup(o => o.PatchAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<OperatorOverridesPatchRequest>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>(),
+                "ops.analyst",
+                overrideRecordedAt));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.couponRate",
+            NewValue: null,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Withdraw the staged coupon override.");
+
+        await harness.Service.UpdateSecurityFieldAsync(request);
+
+        harness.FieldProvenance.Verify(
+            p => p.RemoveAsync(
+                SecurityId,
+                "assetSpecificTerms.couponRate",
+                SecurityFieldProvenanceOrigins.OperatorFieldEdit,
+                overrideRecordedAt,
+                It.IsAny<CancellationToken>()),
+            Times.Once,
+            "a clear must remove the operator attribution row, ordered by the overlay write time");
+        harness.FieldProvenance.Verify(
+            p => p.UpsertAsync(It.IsAny<SecurityFieldProvenanceRecord>(), It.IsAny<CancellationToken>()),
+            Times.Never,
+            "a clear must not record an OperatorFieldEdit attribution for a value that was withdrawn");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_AliasPath_PersistsUnderTheCanonicalFieldKey()
+    {
+        // "dayCountConvention" is a declared legacy alias of Bond "dayCount". Persisting the raw
+        // alias would fork the same term into separate override keys, revisions, and provenance
+        // rows, so the write path must normalize to the schema field key.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.dayCountConvention",
+            NewValue: "30/360",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Day-count correction.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.ChangeEntry.ChangedFields.Should().Equal(
+            new[] { "assetSpecificTerms.dayCount" },
+            "the audit trail must carry the canonical spelling, not the caller's alias");
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                SecurityId,
+                It.Is<OperatorOverridesPatchRequest>(p =>
+                    p.SetValues != null && p.SetValues.ContainsKey("assetSpecificTerms.dayCount")),
+                "ops.analyst",
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Once,
+            "the override must be stored under the canonical field key");
+        harness.FieldProvenance.Verify(
+            p => p.UpsertAsync(
+                It.Is<SecurityFieldProvenanceRecord>(r => r.FieldPath == "assetSpecificTerms.dayCount"),
+                It.IsAny<CancellationToken>()),
+            Times.Once,
+            "field lineage must be keyed by the canonical field path");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_RecordsOperatorFieldProvenance()
     {
         var harness = new Harness(currentVersion: 3);

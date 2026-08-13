@@ -340,6 +340,49 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 "Amending or deactivating it here would re-serialize the record through the OtherSecurity fallback and rewrite its " +
                 "asset class, so the write is refused. Apply the change from a node that supports this asset class.");
         }
+
+        EnsureEquityClassificationRoundTripsSafely(projection);
+    }
+
+    /// <summary>
+    /// Same read-tolerance-must-not-become-write-tolerance rule, one level down: an equity whose
+    /// stored classification discriminant this node does not recognize deserializes as
+    /// <c>EquityClassification.Other(raw)</c>, which re-serializes WITHOUT the record's
+    /// <c>preferredTerms</c>/<c>convertibleTerms</c> blocks. When those blocks are present the write
+    /// would silently delete structure this node did not understand, so it is refused; without them
+    /// the Other round-trip is lossless (the raw label survives as <c>otherClassification</c>).
+    /// </summary>
+    private static void EnsureEquityClassificationRoundTripsSafely(SecurityProjectionRecord projection)
+    {
+        if (!string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+            || projection.AssetSpecificTerms.ValueKind != JsonValueKind.Object
+            || !projection.AssetSpecificTerms.TryGetProperty("classification", out var classification)
+            || classification.ValueKind != JsonValueKind.String)
+        {
+            return;
+        }
+
+        // The serializer's discriminants are exact-case; anything else round-trips as Other.
+        var raw = classification.GetString();
+        var isKnownDiscriminant = raw is "Common" or "Preferred" or "Convertible" or "ConvertiblePreferred" or "Other";
+        if (isKnownDiscriminant)
+        {
+            return;
+        }
+
+        var carriesNestedTerms =
+            (projection.AssetSpecificTerms.TryGetProperty("preferredTerms", out var preferred)
+                && preferred.ValueKind == JsonValueKind.Object)
+            || (projection.AssetSpecificTerms.TryGetProperty("convertibleTerms", out var convertible)
+                && convertible.ValueKind == JsonValueKind.Object);
+        if (carriesNestedTerms)
+        {
+            throw new InvalidOperationException(
+                $"Security '{projection.SecurityId:D}' is an equity with classification '{raw}', which this node does not " +
+                "recognize, and it carries preferred/convertible term blocks tied to that classification. Re-serializing it " +
+                "here would degrade the classification to 'Other' and drop those blocks, so the write is refused. Apply the " +
+                "change from a node that supports this classification.");
+        }
     }
 
     private static SecurityProjectionRecord CreateProjectionFromResult(

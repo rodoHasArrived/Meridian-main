@@ -13,7 +13,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     public void PathsOutsideAssetTermsNamespace_AreAlwaysValid(string fieldPath)
     {
         SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(fieldPath).Should().BeFalse();
-        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", fieldPath, "anything", out var error).Should().BeTrue();
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", fieldPath, "anything", out _, out var error).Should().BeTrue();
         error.Should().BeNull();
     }
 
@@ -27,7 +27,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("Swap", "assetSpecificTerms.legs", "[{\"legType\":\"Fixed\"}]")]
     public void DeclaredFieldWithTypeConformingValue_IsValid(string assetClass, string fieldPath, string value)
     {
-        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out var error)
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
             .Should().BeTrue(error);
     }
 
@@ -40,7 +40,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("Swap", "assetSpecificTerms.legs", "{\"legType\":\"Fixed\"}")]
     public void DeclaredFieldWithTypeViolatingValue_IsRejected(string assetClass, string fieldPath, string value)
     {
-        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out var error)
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
             .Should().BeFalse();
         error.Should().Contain("does not parse as the declared type");
     }
@@ -48,7 +48,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [Fact]
     public void UndeclaredField_IsRejectedWithDeclaredFieldList()
     {
-        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.strike", "100", out var error)
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.strike", "100", out _, out var error)
             .Should().BeFalse();
         error.Should().Contain("'strike' is not a declared asset-specific term")
             .And.Contain("Bond")
@@ -58,7 +58,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [Fact]
     public void SchemaVersion_IsNeverOperatorEditable()
     {
-        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.schemaVersion", "3", out var error)
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.schemaVersion", "3", out _, out var error)
             .Should().BeFalse();
         error.Should().Contain("not operator-editable");
     }
@@ -67,14 +67,14 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     public void LegacyAlias_IsAcceptedAsTheDeclaredField()
     {
         // "dayCountConvention" is a declared legacy alias of Bond "dayCount".
-        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.dayCountConvention", "30/360", out var error)
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.dayCountConvention", "30/360", out _, out var error)
             .Should().BeTrue(error);
     }
 
     [Fact]
     public void NestedPathUnderScalarField_IsRejected()
     {
-        SecurityAssetTermsFieldEditValidator.TryValidate("Option", "assetSpecificTerms.strike.value", "100", out var error)
+        SecurityAssetTermsFieldEditValidator.TryValidate("Option", "assetSpecificTerms.strike.value", "100", out _, out var error)
             .Should().BeFalse();
         error.Should().Contain("has no nested path");
     }
@@ -83,7 +83,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     public void NestedPathUnderObjectField_IsAccepted()
     {
         SecurityAssetTermsFieldEditValidator.TryValidate(
-                "Equity", "assetSpecificTerms.preferredTerms.dividendRate", "6.25", out var error)
+                "Equity", "assetSpecificTerms.preferredTerms.dividendRate", "6.25", out _, out var error)
             .Should().BeTrue(error);
     }
 
@@ -91,7 +91,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     public void ProfileFieldsPath_OnProfileBackedClass_IsAccepted()
     {
         SecurityAssetTermsFieldEditValidator.TryValidate(
-                "CustomAsset", "assetSpecificTerms.profileFields.tranche", "A2", out var error)
+                "CustomAsset", "assetSpecificTerms.profileFields.tranche", "A2", out _, out var error)
             .Should().BeTrue(error);
     }
 
@@ -101,16 +101,16 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     public void ProfileFieldsRoot_OnProfileBackedClass_RequiresJsonObject(string assetClass)
     {
         SecurityAssetTermsFieldEditValidator.TryValidate(
-                assetClass, "assetSpecificTerms.profileFields", "{\"tranche\":\"A2\"}", out var validError)
+                assetClass, "assetSpecificTerms.profileFields", "{\"tranche\":\"A2\"}", out _, out var validError)
             .Should().BeTrue(validError);
 
         SecurityAssetTermsFieldEditValidator.TryValidate(
-                assetClass, "assetSpecificTerms.profileFields", "not-json", out var textError)
+                assetClass, "assetSpecificTerms.profileFields", "not-json", out _, out var textError)
             .Should().BeFalse();
         textError.Should().Contain("declared type Object");
 
         SecurityAssetTermsFieldEditValidator.TryValidate(
-                assetClass, "assetSpecificTerms.profileFields", "[]", out var arrayError)
+                assetClass, "assetSpecificTerms.profileFields", "[]", out _, out var arrayError)
             .Should().BeFalse();
         arrayError.Should().Contain("declared type Object");
     }
@@ -119,7 +119,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     public void ProfileFieldsPath_OnNonProfileBackedClass_IsRejected()
     {
         SecurityAssetTermsFieldEditValidator.TryValidate(
-                "Equity", "assetSpecificTerms.profileFields.custom", "x", out var error)
+                "Equity", "assetSpecificTerms.profileFields.custom", "x", out _, out var error)
             .Should().BeFalse();
         error.Should().Contain("not a declared asset-specific term");
     }
@@ -127,18 +127,44 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [Fact]
     public void BlankValue_ClearsTheOverlayAndIsAccepted()
     {
-        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.couponRate", "  ", out var error)
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.couponRate", "  ", out _, out var error)
             .Should().BeTrue(error);
-        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.couponRate", null, out error)
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.couponRate", null, out _, out error)
             .Should().BeTrue(error);
     }
 
     [Fact]
     public void BarePrefixWithoutKey_IsRejected()
     {
-        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.", "x", out var error)
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.", "x", out _, out var error)
             .Should().BeFalse();
         error.Should().Contain("must name a term field");
+    }
+
+    [Theory]
+    // An accepted legacy alias must normalize to the declared field key so both spellings share one
+    // override key, revision lineage, and provenance row.
+    [InlineData("Bond", "assetSpecificTerms.dayCountConvention", "30/360", "assetSpecificTerms.dayCount")]
+    // Casing variants of the prefix and key collapse to the canonical spelling.
+    [InlineData("Bond", "ASSETSPECIFICTERMS.CouponRate", "4.25", "assetSpecificTerms.couponRate")]
+    // Nested paths keep their remainder while the declared root key is normalized.
+    [InlineData("Equity", "assetSpecificTerms.PreferredTerms.dividendRate", "6.25", "assetSpecificTerms.preferredTerms.dividendRate")]
+    // profileFields paths normalize the envelope key on profile-backed classes.
+    [InlineData("CustomAsset", "assetSpecificTerms.ProfileFields.tranche", "A2", "assetSpecificTerms.profileFields.tranche")]
+    public void AcceptedAssetTermPaths_NormalizeToTheDeclaredFieldKey(
+        string assetClass, string fieldPath, string value, string expectedCanonicalPath)
+    {
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out var canonicalPath, out var error)
+            .Should().BeTrue(error);
+        canonicalPath.Should().Be(expectedCanonicalPath);
+    }
+
+    [Fact]
+    public void PathsOutsideAssetTermsNamespace_PassThroughUnchanged()
+    {
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "operatorNote", "context", out var canonicalPath, out _)
+            .Should().BeTrue();
+        canonicalPath.Should().Be("operatorNote");
     }
 
     [Fact]
@@ -149,7 +175,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
             foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
             {
                 SecurityAssetTermsFieldEditValidator
-                    .TryValidate(assetClass, $"assetSpecificTerms.{field.Key}", null, out var error)
+                    .TryValidate(assetClass, $"assetSpecificTerms.{field.Key}", null, out _, out var error)
                     .Should().BeTrue($"'{assetClass}.{field.Key}' is declared, but was rejected: {error}");
             }
         }

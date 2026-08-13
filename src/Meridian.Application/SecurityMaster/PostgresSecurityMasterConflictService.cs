@@ -358,6 +358,16 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             }
         }
 
+        // Decimal fields must compare numerically: "6.00" and "6.0" are the same coupon, but an
+        // ordinal comparison would leave the conflict permanently open after a governed amendment
+        // re-serialized the value with different precision. Dates ("yyyy-MM-dd") and enum-like
+        // strings do not parse as invariant decimals, so they fall through to the textual path.
+        if (decimal.TryParse(persisted.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var persistedNumber)
+            && decimal.TryParse(selected.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var selectedNumber))
+        {
+            return persistedNumber == selectedNumber;
+        }
+
         return string.Equals(persisted.Trim(), selected.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 

@@ -324,6 +324,49 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_FieldConflict_DecimalValueWithDifferentScale_StillResolves()
+    {
+        // The value guard must compare decimal fields numerically: the selected source asserted
+        // "6.00" while the canonical document carries the economically identical "6.0". An ordinal
+        // comparison would leave the conflict permanently open after any amendment re-serialized
+        // the value with different precision.
+        var securityId = Guid.NewGuid();
+        var previous = MakeProjection(securityId, "Isin", "US00206R1023", "provA") with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new { couponRate = 6.25m })
+        };
+        var incoming = MakeProjection(securityId, "Isin", "US00206R1023", "provB") with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new { couponRate = 6.00m }),
+            Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
+        };
+        var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
+        // The canonical document persists the same coupon at a different scale than the asserted text.
+        await canonicalStore.UpsertProjectionAsync(incoming with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new { couponRate = 6.0m })
+        }, CancellationToken.None);
+        var service = NewService(canonicalStore);
+        await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);
+        var conflict = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(c =>
+            c.SecurityId == securityId && c.FieldPath == "EconomicTerms.couponRate");
+
+        var resolved = await service.ResolveAsync(
+            new ResolveConflictRequest(
+                conflict.ConflictId,
+                "Resolve",
+                "operator@meridian.test",
+                "provB's coupon is the persisted golden value.",
+                ChosenWinnerSource: "provB"),
+            CancellationToken.None);
+
+        resolved.Should().NotBeNull();
+        resolved!.Status.Should().Be("Resolved",
+            "6.00 and 6.0 are the same coupon; precision must not block the close");
+        resolved.ResolvedWinnerSource.Should().Be("provB");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task ResolveAsync_DismissalOrIdentifierConflict_WritesNoFieldProvenance()
     {
         var securityId = Guid.NewGuid();

@@ -59,6 +59,38 @@ public static class PostgresSecurityFieldProvenanceSql
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
+    public static async Task RemoveAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        string schema,
+        Guid securityId,
+        string fieldPath,
+        string origin,
+        DateTimeOffset clearedAt,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        // The recorded_at guard mirrors the upsert's newest-write-wins clause: a delayed clear may
+        // not erase an attribution recorded after it.
+        command.CommandText =
+            $"""
+            delete from {schema}.{Table}
+            where security_id = @security_id
+              and field_path = @field_path
+              and origin = @origin
+              and recorded_at <= @cleared_at;
+            """;
+        command.Parameters.AddWithValue("security_id", securityId);
+        command.Parameters.AddWithValue("field_path", fieldPath);
+        command.Parameters.AddWithValue("origin", origin);
+        command.Parameters.AddWithValue("cleared_at", clearedAt.UtcDateTime);
+
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
     public static SecurityFieldProvenanceRecord Map(DbDataReader reader) => new(
         SecurityId: reader.GetGuid(0),
         FieldPath: reader.GetString(1),
@@ -90,6 +122,15 @@ public sealed class PostgresSecurityFieldProvenanceStore : ISecurityFieldProvena
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await PostgresSecurityFieldProvenanceSql
             .UpsertAsync(connection, transaction: null, _options.Schema, record, ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task RemoveAsync(
+        Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await PostgresSecurityFieldProvenanceSql
+            .RemoveAsync(connection, transaction: null, _options.Schema, securityId, fieldPath, origin, clearedAt, ct)
             .ConfigureAwait(false);
     }
 
