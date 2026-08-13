@@ -179,10 +179,10 @@ public sealed class SecurityMasterMappingInteropTests
         // "Commmon" would silently persist as Other("Commmon"), changing the security's economic
         // classification instead of surfacing the mistake to the caller.
         FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(EquityCreateRequest(new
-            {
-                shareClass = "A",
-                classification = "Commmon"
-            })))
+        {
+            shareClass = "A",
+            classification = "Commmon"
+        })))
             .Should().Throw<InvalidOperationException>()
             .WithMessage("*Unknown equity classification 'Commmon'*");
     }
@@ -193,10 +193,10 @@ public sealed class SecurityMasterMappingInteropTests
         // A write explicitly selecting "Other" must NAME the classification: defaulting to the
         // placeholder label would persist an economically meaningless classification.
         FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(EquityCreateRequest(new
-            {
-                shareClass = "A",
-                classification = "Other"
-            })))
+        {
+            shareClass = "A",
+            classification = "Other"
+        })))
             .Should().Throw<InvalidOperationException>()
             .WithMessage("*requires a non-empty 'otherClassification'*");
     }
