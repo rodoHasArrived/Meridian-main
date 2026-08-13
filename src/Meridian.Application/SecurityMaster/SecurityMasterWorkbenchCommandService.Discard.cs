@@ -297,7 +297,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                     revision.FieldPath!,
                                     SecurityFieldProvenanceOrigins.OperatorFieldEdit,
                                     clearedAt: restored.UpdatedAt,
-                                    CancellationToken.None).ConfigureAwait(false);
+                                    ct: CancellationToken.None).ConfigureAwait(false);
                             }
                             else
                             {
@@ -408,7 +408,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                 revision.FieldPath!,
                                 SecurityFieldProvenanceOrigins.OperatorFieldEdit,
                                 clearedAt: withdrawn.UpdatedAt,
-                                CancellationToken.None).ConfigureAwait(false);
+                                ct: CancellationToken.None).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {

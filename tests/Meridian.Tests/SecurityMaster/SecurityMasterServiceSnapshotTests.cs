@@ -688,6 +688,7 @@ public sealed class SecurityMasterServiceSnapshotTests
             "EconomicTerms.couponRate",
             SecurityFieldProvenanceOrigins.ConflictResolution,
             Arg.Any<DateTimeOffset>(),
+            Arg.Any<long?>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -779,6 +780,7 @@ public sealed class SecurityMasterServiceSnapshotTests
             "EconomicTerms.couponRate",
             SecurityFieldProvenanceOrigins.ConflictResolution,
             Arg.Any<DateTimeOffset>(),
+            Arg.Any<long?>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -845,6 +847,24 @@ public sealed class SecurityMasterServiceSnapshotTests
 
         amended.Should().NotBeNull(
             "cancellation during the best-effort attribution write must not hide the committed amendment");
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_ReconcileSweepCanceled_StillReturnsTheAmendedRecord()
+    {
+        // The post-persist open-conflict reconciliation sweep is best-effort and runs after the
+        // canonical writes committed: a request token canceled during the sweep must not surface
+        // as a canceled amendment (the retry would fail concurrency) nor skip the remaining
+        // post-commit steps.
+        var (securityId, _, service, conflictService, _) = BuildAmendHarness(
+            conflictRecordingFails: false);
+        conflictService.ReconcileOpenFieldConflictsAsync(Arg.Any<SecurityProjectionRecord>(), Arg.Any<CancellationToken>())
+            .Returns<Task>(static _ => throw new OperationCanceledException("request aborted"));
+
+        var amended = await service.AmendTermsAsync(BuildConflictingAmend(securityId));
+
+        amended.Should().NotBeNull(
+            "cancellation during the best-effort reconciliation sweep must not hide the committed amendment");
     }
 
     [Fact]

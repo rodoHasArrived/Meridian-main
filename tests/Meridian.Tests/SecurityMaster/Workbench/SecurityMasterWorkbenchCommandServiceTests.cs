@@ -1642,6 +1642,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 "assetSpecificTerms.couponRate",
                 SecurityFieldProvenanceOrigins.OperatorFieldEdit,
                 overrideRecordedAt,
+                It.IsAny<long?>(),
                 It.IsAny<CancellationToken>()),
             Times.Once,
             "a clear must remove the operator attribution row, ordered by the overlay write time");
@@ -3108,6 +3109,51 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 It.IsAny<CancellationToken>()),
             Times.Once,
             "the reconciled override decision must name the workflow's retained reviewer, not the retrying caller");
+    }
+
+    [Fact]
+    public async Task Approve_UngovernedOverlayKey_DefersTheDecision()
+    {
+        // The generic operator-overrides PATCH endpoint can add free-form keys to the same
+        // security-level Values dictionary without creating a revision. The security-level
+        // decision approves the ENTIRE dictionary, so approving a field revision while such a key
+        // exists would silently approve a value no reviewer's workflow ever saw — the decision
+        // defers until the ungoverned key is withdrawn or re-staged through the governed route.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revision = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.",
+            fieldValue: new SecurityMasterRevisionFieldValue("80"));
+        await harness.Revisions.TransitionAsync(
+            revision.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst",
+            workflowIdForSubmit: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.par"] = "80",
+                    ["annotations.freeform"] = "patched outside any revision"
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revision.RevisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverrideDecision>(), It.IsAny<CancellationToken>()),
+            Times.Never,
+            "an overlay key with no governing revision must defer the security-level decision");
+        (await harness.Revisions.GetAsync(revision.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved,
+            "the revision-side approval itself still completes; only the overlay decision defers");
     }
 
     [Fact]

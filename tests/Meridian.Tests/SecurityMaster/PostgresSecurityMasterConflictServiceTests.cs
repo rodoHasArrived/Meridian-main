@@ -236,6 +236,45 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task RemoveAsync_VersionGuard_PreservesNewerAmendmentAttribution()
+    {
+        // Amendment v2's attribution failed twice and reaches its invalidation fallback AFTER
+        // amendment v3 committed its newer CanonicalWrite row. The fallback deletes by wall-clock
+        // cleared_at, so without the source-version guard it would erase v3's row (recorded before
+        // the fallback's cleared_at) and leave conflict detection falling back to the wrong
+        // record-level provider. The guard preserves any row carrying a HIGHER source version.
+        var store = new PostgresSecurityFieldProvenanceStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var v3Row = new SecurityFieldProvenanceRecord(
+            securityId,
+            "EconomicTerms.couponRate",
+            "provC",
+            AsOf: null,
+            UpdatedBy: "v3-operator",
+            Confidence: null,
+            Origin: SecurityFieldProvenanceOrigins.CanonicalWrite,
+            OriginReference: "version:3",
+            RecordedAt: DateTimeOffset.UtcNow.AddSeconds(-1),
+            SourceVersion: 3);
+        await store.UpsertAsync(v3Row, CancellationToken.None);
+
+        await store.RemoveAsync(
+            securityId, "EconomicTerms.couponRate", SecurityFieldProvenanceOrigins.CanonicalWrite,
+            clearedAt: DateTimeOffset.UtcNow, maxSourceVersion: 2, CancellationToken.None);
+
+        (await store.GetAsync(securityId, CancellationToken.None))
+            .Should().ContainSingle(row => row.SourceVersion == 3,
+                "the failed v2 invalidation must not erase the attribution v3 already committed");
+
+        // Without the version bound (or at/above the row's version) the recorded_at guard applies
+        // as before and the stale row is removable.
+        await store.RemoveAsync(
+            securityId, "EconomicTerms.couponRate", SecurityFieldProvenanceOrigins.CanonicalWrite,
+            clearedAt: DateTimeOffset.UtcNow, maxSourceVersion: 3, CancellationToken.None);
+        (await store.GetAsync(securityId, CancellationToken.None)).Should().BeEmpty();
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task ResolveAsync_FieldConflict_PersistedValueMatchingNeitherCandidate_SupersedesTheConflict()
     {
         // provA (USD) vs provB (EUR) opened the conflict; a provC amendment persisted GBP — a

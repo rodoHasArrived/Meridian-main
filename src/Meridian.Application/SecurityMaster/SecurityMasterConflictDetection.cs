@@ -172,9 +172,12 @@ internal static class SecurityMasterConflictDetection
             "EconomicTerms.principalFace" => terms.PrincipalFace?.ToString(System.Globalization.CultureInfo.InvariantCulture),
             "EconomicTerms.paymentFrequency" => terms.PaymentFrequency,
             "EconomicTerms.dayCountConvention" => terms.DayCountConvention,
-            "EconomicTerms.principalSchedule" => terms.HasPrincipalSchedule
-                ? NormalizePrincipalSchedule(terms.PrincipalSchedule!)
-                : null,
+            // PRESENCE keys on the schedule PROPERTY, not row count: an asserted-empty
+            // principalSchedule normalizes to "" (a real bullet assertion the empty candidate must
+            // be able to match), while a missing property stays null (absence).
+            "EconomicTerms.principalSchedule" => terms.PrincipalSchedule is null
+                ? null
+                : NormalizePrincipalSchedule(terms.PrincipalSchedule),
             "CommonTerms.currency" => detail.Currency,
             "CommonTerms.countryOfRisk" => SecurityTermReader.ReadString(detail.CommonTerms, "countryOfRisk"),
             _ => fieldPath.StartsWith(ProfileFieldPathPrefix, StringComparison.Ordinal)
@@ -237,7 +240,15 @@ internal static class SecurityMasterConflictDetection
     {
         if (string.IsNullOrWhiteSpace(persisted))
         {
-            return false;
+            // One exception to absence-is-incompleteness: the principal schedule's NORMALIZED
+            // empty form is the empty string — an ASSERTED bullet structure, not a missing value
+            // (readers return null for genuine absence). An operator selecting the bullet-side
+            // provider persists that empty schedule, and its "" must match the candidate recorded
+            // as "" or no resolution could ever accept the bullet side.
+            return persisted is not null
+                && string.Equals(fieldPath, "EconomicTerms.principalSchedule", StringComparison.Ordinal)
+                && persisted.Length == 0
+                && candidate.Length == 0;
         }
 
         if (string.Equals(fieldPath, "EconomicTerms.dayCountConvention", StringComparison.Ordinal))

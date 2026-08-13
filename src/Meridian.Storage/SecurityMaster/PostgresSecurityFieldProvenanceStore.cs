@@ -81,26 +81,34 @@ public static class PostgresSecurityFieldProvenanceSql
         string fieldPath,
         string origin,
         DateTimeOffset clearedAt,
-        CancellationToken ct)
+        CancellationToken ct,
+        long? maxSourceVersion = null)
     {
         ArgumentNullException.ThrowIfNull(connection);
 
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         // The recorded_at guard mirrors the upsert's newest-write-wins clause: a delayed clear may
-        // not erase an attribution recorded after it.
+        // not erase an attribution recorded after it. The optional source-version guard protects
+        // version-ordered rows the same way: an invalidation issued for a FAILED amendment must
+        // not delete the attribution a newer amendment already committed, even when that newer
+        // row's recorded_at predates the invalidation's wall-clock cleared_at.
         command.CommandText =
             $"""
             delete from {schema}.{Table}
             where security_id = @security_id
               and field_path = @field_path
               and origin = @origin
-              and recorded_at <= @cleared_at;
+              and recorded_at <= @cleared_at
+              and (@max_source_version::bigint is null
+                   or source_version is null
+                   or source_version <= @max_source_version);
             """;
         command.Parameters.AddWithValue("security_id", securityId);
         command.Parameters.AddWithValue("field_path", fieldPath);
         command.Parameters.AddWithValue("origin", origin);
         command.Parameters.AddWithValue("cleared_at", clearedAt.UtcDateTime);
+        command.Parameters.AddWithValue("max_source_version", (object?)maxSourceVersion ?? DBNull.Value);
 
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
@@ -141,11 +149,12 @@ public sealed class PostgresSecurityFieldProvenanceStore : ISecurityFieldProvena
     }
 
     public async Task RemoveAsync(
-        Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt, CancellationToken ct = default)
+        Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt,
+        long? maxSourceVersion = null, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await PostgresSecurityFieldProvenanceSql
-            .RemoveAsync(connection, transaction: null, _options.Schema, securityId, fieldPath, origin, clearedAt, ct)
+            .RemoveAsync(connection, transaction: null, _options.Schema, securityId, fieldPath, origin, clearedAt, ct, maxSourceVersion)
             .ConfigureAwait(false);
     }
 

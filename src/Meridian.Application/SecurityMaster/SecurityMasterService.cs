@@ -410,9 +410,14 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         try
         {
-            await _conflictService.ReconcileOpenFieldConflictsAsync(persisted, ct).ConfigureAwait(false);
+            // POST-COMMIT: the event append and projection upsert are already durable, so this
+            // best-effort sweep runs on a detached token and absorbs cancellation like the other
+            // post-persist steps — a canceled request token must not surface a canceled amendment
+            // whose canonical version advanced (the retry would fail concurrency), nor skip the
+            // snapshot and identifier-conflict steps that follow.
+            await _conflictService.ReconcileOpenFieldConflictsAsync(persisted, CancellationToken.None).ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex)
         {
             _logger.LogWarning(
                 ex,
@@ -478,14 +483,17 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         {
             try
             {
+                // POST-COMMIT best-effort: detached token + catch-all, matching the other
+                // post-persist lineage steps — cancellation must not escape after the canonical
+                // write durably advanced.
                 await _fieldProvenance.RemoveAsync(
                     securityId,
                     fieldPath,
                     SecurityFieldProvenanceOrigins.ConflictResolution,
                     clearedAt: DateTimeOffset.UtcNow,
-                    ct).ConfigureAwait(false);
+                    ct: CancellationToken.None).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex)
             {
                 _logger.LogWarning(
                     ex,
@@ -582,10 +590,14 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 var clearedAt = DateTimeOffset.UtcNow;
                 await _fieldProvenance.RemoveAsync(
                     projection.SecurityId, fieldPath,
-                    SecurityFieldProvenanceOrigins.CanonicalWrite, clearedAt, CancellationToken.None).ConfigureAwait(false);
+                    SecurityFieldProvenanceOrigins.CanonicalWrite, clearedAt,
+                    // The invalidation acts on behalf of THIS amendment: attribution a newer
+                    // amendment already committed (higher source version) must survive it.
+                    maxSourceVersion: projection.Version, ct: CancellationToken.None).ConfigureAwait(false);
                 await _fieldProvenance.RemoveAsync(
                     projection.SecurityId, fieldPath,
-                    SecurityFieldProvenanceOrigins.ConflictResolution, clearedAt, CancellationToken.None).ConfigureAwait(false);
+                    SecurityFieldProvenanceOrigins.ConflictResolution, clearedAt,
+                    maxSourceVersion: projection.Version, ct: CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

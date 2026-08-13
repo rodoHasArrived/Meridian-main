@@ -236,6 +236,21 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public void FieldValuesMatch_AssertedEmptySchedule_MatchesEmptyCandidate()
+    {
+        // The principal schedule's NORMALIZED empty form is the empty string — an asserted bullet
+        // structure, not a missing value (readers return null for genuine absence). An operator
+        // resolving to the bullet-side provider persists that empty schedule, and its "" must
+        // match the candidate recorded as "" or the bullet side could never be accepted.
+        SecurityMasterConflictDetection.FieldValuesMatch("EconomicTerms.principalSchedule", string.Empty, string.Empty)
+            .Should().BeTrue("the asserted-empty schedule matches the empty candidate");
+        SecurityMasterConflictDetection.FieldValuesMatch("EconomicTerms.principalSchedule", null, string.Empty)
+            .Should().BeFalse("a genuinely absent schedule is incompleteness, not agreement");
+        SecurityMasterConflictDetection.FieldValuesMatch("EconomicTerms.couponRate", string.Empty, string.Empty)
+            .Should().BeFalse("blank values on other paths keep the absence-is-incompleteness rule");
+    }
+
+    [Fact]
     public void DetectFieldConflicts_OmittedScheduleAgainstInstalments_DoesNotConflict()
     {
         // ABSENCE is not an assertion: a sparse provider that simply omits the principalSchedule

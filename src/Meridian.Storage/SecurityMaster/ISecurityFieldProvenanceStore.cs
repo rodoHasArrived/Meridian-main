@@ -19,9 +19,15 @@ public interface ISecurityFieldProvenanceStore
     /// value itself is withdrawn (e.g. an operator clears an overlay field), so lineage no longer
     /// reports an assertion that no longer exists. The row is only removed when it was recorded at
     /// or before <paramref name="clearedAt"/>; a delayed clear must not erase a newer attribution,
-    /// mirroring the newest-write-wins guard on <see cref="UpsertAsync"/>.
+    /// mirroring the newest-write-wins guard on <see cref="UpsertAsync"/>. When
+    /// <paramref name="maxSourceVersion"/> is supplied, a row carrying a HIGHER source version is
+    /// also preserved regardless of wall-clock order: an invalidation issued on behalf of a failed
+    /// amendment must not delete the attribution a NEWER amendment already committed (its delayed
+    /// fallback can run after the newer row was written with a later recorded_at).
     /// </summary>
-    Task RemoveAsync(Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt, CancellationToken ct = default);
+    Task RemoveAsync(
+        Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt,
+        long? maxSourceVersion = null, CancellationToken ct = default);
 
     /// <summary>All attribution rows for a security, ordered by field path then origin.</summary>
     Task<IReadOnlyList<SecurityFieldProvenanceRecord>> GetAsync(Guid securityId, CancellationToken ct = default);

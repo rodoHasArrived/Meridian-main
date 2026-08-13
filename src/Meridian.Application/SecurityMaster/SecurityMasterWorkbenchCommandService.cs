@@ -330,7 +330,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                         fieldPath,
                         SecurityFieldProvenanceOrigins.OperatorFieldEdit,
                         clearedAt: stagedOverride.UpdatedAt,
-                        CancellationToken.None).ConfigureAwait(false);
+                        ct: CancellationToken.None).ConfigureAwait(false);
                 }
                 else
                 {
@@ -757,6 +757,33 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 return OverrideDecisionOutcome.NotPending;
             }
 
+            // The security-level decision approves the ENTIRE Values dictionary, and the generic
+            // operator-overrides PATCH endpoint can add free-form keys to it without creating a
+            // revision or acquiring this gate. A key no revision governs carries a value no
+            // reviewer's workflow ever saw — recording Approved would silently approve it on the
+            // back of an unrelated revision's gate approval. Defer until every overlay key has
+            // revision evidence: the ungoverned value must be withdrawn (or re-staged through the
+            // governed field-edit route) before any security-level decision can land. A
+            // WHOLE-RECORD revision (no field path) reviews the record and its overlay as one
+            // unit — the legacy pre-field-edit posture — so its presence governs every key.
+            var wholeRecordRevisionGoverns = revisions.Any(static revision =>
+                string.IsNullOrWhiteSpace(revision.FieldPath)
+                && revision.State is not SecurityMasterRevisionStateDto.Rejected);
+            if (!wholeRecordRevisionGoverns)
+            {
+                var ungovernedKeys = stagedOverride.Values.Keys
+                    .Where(key => !revisions.Any(revision =>
+                        string.Equals(revision.FieldPath, key, StringComparison.OrdinalIgnoreCase)))
+                    .ToArray();
+                if (ungovernedKeys.Length > 0)
+                {
+                    _logger.LogWarning(
+                        "Operator-override approval for {SecurityId} deferred: overlay key(s) {UngovernedKeys} have no governing revision (staged through the generic overrides route); withdraw them or re-stage them through the governed field-edit route.",
+                        securityId, SanitizeForLog(string.Join(",", ungovernedKeys)));
+                    return OverrideDecisionOutcome.Deferred;
+                }
+            }
+
             await _overrides.RecordApprovalDecisionAsync(
                 securityId,
                 new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, reviewer, rationale),
@@ -894,9 +921,9 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             // the retry (after the other staged revisions are decided) re-runs the full fan-out.
             throw new InvalidOperationException(
                 $"Revision '{request.RevisionId:D}' for security '{request.SecurityId:D}' cannot be published while " +
-                "other revisions for the security are still staged: the security-level override decision would " +
-                "co-approve their unreviewed values. Approve or discard the other staged revisions and retry; the " +
-                "revision remains Approved.");
+                "other revisions for the security are still staged (or overlay keys lack a governing revision): the " +
+                "security-level override decision would co-approve unreviewed values. Approve or discard the other " +
+                "staged revisions — or withdraw ungoverned overlay keys — and retry; the revision remains Approved.");
         }
 
         // Period-aware propagation resolves BEFORE the revision is marked Published: the
