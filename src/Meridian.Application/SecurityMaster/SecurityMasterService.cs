@@ -19,7 +19,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private readonly IPolygonCorporateActionFetcher? _corporateActionFetcher;
     private readonly SecurityMasterProjectionCache? _projectionCache;
     private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
-    private readonly Validation.AssetClassValidatorRegistry? _assetClassValidators;
+    private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
 
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
@@ -35,7 +35,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         IPolygonCorporateActionFetcher? corporateActionFetcher = null,
         SecurityMasterProjectionCache? projectionCache = null,
         SecurityMasterCanonicalSymbolSeedService? seedService = null,
-        Validation.AssetClassValidatorRegistry? assetClassValidators = null)
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
@@ -47,7 +47,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         _corporateActionFetcher = corporateActionFetcher;
         _projectionCache = projectionCache;
         _seedService = seedService;
-        _assetClassValidators = assetClassValidators;
+        _assetProfileCatalog = assetProfileCatalog;
     }
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
@@ -354,13 +354,17 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// Profile-backed records reference an approved profile that governs their dynamic fields, but
     /// the F# domain command cannot see the profile catalog — without this check an unknown, draft,
     /// or field-violating profile persists canonically and is only discovered by a later validation
-    /// read. Runs the registered profile validator BEFORE the create/amend/deactivate event is
-    /// appended and refuses the write on Error-severity issues. Skipped when no registry was
-    /// supplied (harnesses that exercise storage mechanics without reference data).
+    /// read. Runs the PROFILE validation only (existence, approval status, field conformance,
+    /// identifier coverage) BEFORE the create/amend event is appended and refuses the write on
+    /// Error-severity issues. Deliberately not the per-asset-class composite validators: a
+    /// profile-backed record reclassified to its resolved asset class (e.g. PrivateFundInterest)
+    /// must not be rejected by unrelated OtherSecurity field rules such as a required outer
+    /// <c>category</c>. Skipped when no catalog was supplied (harnesses that exercise storage
+    /// mechanics without reference data).
     /// </summary>
     private void EnsureProfileBackedTermsAreCatalogValid(SecurityProjectionRecord projection)
     {
-        if (_assetClassValidators is null)
+        if (_assetProfileCatalog is null)
         {
             return;
         }
@@ -376,14 +380,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
-        // The CustomAsset validator requires a profile reference; profile-backed records whose
-        // asset class resolved elsewhere validate the referenced profile through the optional
-        // OtherSecurity-keyed validator instead.
-        if (!_assetClassValidators.TryGetValidator(isCustomAsset ? "CustomAsset" : "OtherSecurity", out var validator))
-        {
-            return;
-        }
-
+        var validator = new Validation.SecurityAssetProfileAssetClassValidator(
+            projection.AssetClass,
+            _assetProfileCatalog,
+            requireProfileReference: isCustomAsset);
         var issues = validator.Validate(new Validation.SecurityValidationContext(projection, DateTimeOffset.UtcNow));
         var errors = issues
             .Where(static issue => issue.Severity == SecurityValidationSeverityDto.Error)

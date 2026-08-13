@@ -256,7 +256,10 @@ public static class SecurityAssetTermsSchema
                 // Typed, dated factor points ({asOfDate, factor}) consumed by the structured
                 // cash-flow resolver's FactorAsOf lookup; factorSchedule stays the free-text
                 // legacy reference.
-                Opt("factorScheduleEntries", SecurityAssetTermFieldType.Array)
+                Opt("factorScheduleEntries", SecurityAssetTermFieldType.Array),
+                // Legal final maturity of the tranche: the anchor date for calculated cash-flow
+                // projection — without it the factor schedule has no production effect.
+                Opt("maturity", SecurityAssetTermFieldType.Date)
             ],
             ["PrivateFundInterest"] =
             [

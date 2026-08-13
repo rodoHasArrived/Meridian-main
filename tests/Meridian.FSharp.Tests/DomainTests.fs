@@ -635,6 +635,7 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         CouponOrIndex = "SOFR+250"
         FactorSchedule = Some "monthly-trustee"
         FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.9825m } ]
+        Maturity = Some (DateOnly(2031, 6, 15))
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -655,6 +656,7 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     payload.GetProperty("collateralType").GetString() |> should equal "CLO"
     payload.GetProperty("originalFace").GetDecimal() |> should equal 1_000_000m
     payload.GetProperty("currentFactor").GetDecimal() |> should equal 0.9825m
+    payload.GetProperty("maturity").GetString() |> should equal "2031-06-15"
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
@@ -1246,6 +1248,7 @@ let ``Structured credit factors above one are rejected`` () =
         CouponOrIndex = "SOFR+250"
         FactorSchedule = None
         FactorScheduleEntries = []
+        Maturity = None
     }
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })

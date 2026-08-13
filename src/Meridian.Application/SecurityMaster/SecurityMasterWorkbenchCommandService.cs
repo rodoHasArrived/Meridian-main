@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
@@ -54,6 +55,8 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     private readonly IReadOnlyList<ISecurityMasterRevisionPublishedHandler> _handlers;
     private readonly ILogger<SecurityMasterWorkbenchCommandService> _logger;
     private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
+    private readonly ISecurityMasterStore? _projectionStore;
+    private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
 
     public SecurityMasterWorkbenchCommandService(
         ISecurityMasterEventStore eventStore,
@@ -67,7 +70,9 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         IAffectedLedgerBookResolver affectedLedgerBookResolver,
         IEnumerable<ISecurityMasterRevisionPublishedHandler> handlers,
         ILogger<SecurityMasterWorkbenchCommandService> logger,
-        ISecurityFieldProvenanceStore? fieldProvenance = null)
+        ISecurityFieldProvenanceStore? fieldProvenance = null,
+        ISecurityMasterStore? projectionStore = null,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _overrides = overrides ?? throw new ArgumentNullException(nameof(overrides));
@@ -83,6 +88,8 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             .ToArray();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _fieldProvenance = fieldProvenance;
+        _projectionStore = projectionStore;
+        _assetProfileCatalog = assetProfileCatalog;
     }
 
     public async Task<SecurityMasterEditResultDto> UpdateSecurityFieldAsync(
@@ -647,7 +654,204 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             throw new ArgumentException(error, nameof(request));
         }
 
+        await EnsureProfileFieldEditMatchesPinnedProfileAsync(request, canonicalFieldPath, ct).ConfigureAwait(false);
         return canonicalFieldPath;
+    }
+
+    private const string ProfileFieldsRootPath = SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "profileFields";
+    private const string ProfileFieldsNestedPrefix = ProfileFieldsRootPath + ".";
+
+    /// <summary>
+    /// The static asset-terms schema cannot type dynamic profile-governed fields — their contract
+    /// is the record's PINNED profile definition. Without this check an edit like
+    /// <c>profileFields.currentFactor = "garbage"</c> stages an invalid overlay (with a draft
+    /// revision and provenance row) that only a later validation read exposes. Resolves the pinned
+    /// profile from the persisted envelope and validates the edited field's declared type, range,
+    /// and enum constraints. Fail-open with a logged warning when the projection or profile cannot
+    /// be resolved, matching the asset-class fail-open above; undeclared keys pass through, since
+    /// the profile owns only its declared fields.
+    /// </summary>
+    private async Task EnsureProfileFieldEditMatchesPinnedProfileAsync(
+        UpdateSecurityFieldRequest request, string canonicalFieldPath, CancellationToken ct)
+    {
+        var isWholeObject = string.Equals(canonicalFieldPath, ProfileFieldsRootPath, StringComparison.Ordinal);
+        var isNestedField = canonicalFieldPath.StartsWith(ProfileFieldsNestedPrefix, StringComparison.Ordinal);
+        if ((!isWholeObject && !isNestedField)
+            || string.IsNullOrWhiteSpace(request.NewValue)
+            || _projectionStore is null
+            || _assetProfileCatalog is null)
+        {
+            return;
+        }
+
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto? profile = null;
+        try
+        {
+            var projection = await _projectionStore.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
+            var terms = projection?.AssetSpecificTerms;
+            if (terms is { ValueKind: JsonValueKind.Object }
+                && terms.Value.TryGetProperty("customProfileId", out var profileId)
+                && profileId.ValueKind == JsonValueKind.String
+                && !string.IsNullOrWhiteSpace(profileId.GetString())
+                && terms.Value.TryGetProperty("profileVersion", out var versionElement)
+                && versionElement.TryGetInt32(out var profileVersion)
+                && _assetProfileCatalog.TryGetProfile(profileId.GetString()!, profileVersion, out var resolved))
+            {
+                profile = resolved;
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Resolving the pinned profile for {SecurityId} failed; staging profile-field edit {FieldPath} without profile validation.",
+                request.SecurityId, SanitizeForLog(canonicalFieldPath));
+            return;
+        }
+
+        if (profile is null)
+        {
+            return;
+        }
+
+        if (isWholeObject)
+        {
+            // The validator already guaranteed the replacement parses as a JSON object; check every
+            // DECLARED field present in it against its profile definition.
+            using var document = JsonDocument.Parse(request.NewValue!);
+            foreach (var field in profile.Fields)
+            {
+                if (!document.RootElement.TryGetProperty(field.Key, out var value))
+                {
+                    continue;
+                }
+
+                if (!ProfileFieldElementIsValid(field, value, out var objectError))
+                {
+                    throw new ArgumentException(objectError, nameof(request));
+                }
+            }
+
+            return;
+        }
+
+        var nestedRemainder = canonicalFieldPath[ProfileFieldsNestedPrefix.Length..];
+        if (nestedRemainder.Contains('.', StringComparison.Ordinal))
+        {
+            // Deeper paths address structure inside a declared field's own value; the profile
+            // declares only top-level field types.
+            return;
+        }
+
+        var declared = profile.Fields.FirstOrDefault(
+            field => string.Equals(field.Key, nestedRemainder, StringComparison.OrdinalIgnoreCase));
+        if (declared is null)
+        {
+            return;
+        }
+
+        if (!ProfileFieldStringIsValid(declared, request.NewValue!, out var fieldError))
+        {
+            throw new ArgumentException(fieldError, nameof(request));
+        }
+    }
+
+    private static bool ProfileFieldStringIsValid(
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldDefinitionDto field,
+        string value,
+        out string? error)
+    {
+        error = null;
+        var trimmed = value.Trim();
+        var typeIsValid = field.FieldType switch
+        {
+            SecurityAssetProfileFieldTypeDto.Text => true,
+            SecurityAssetProfileFieldTypeDto.Decimal =>
+                decimal.TryParse(trimmed, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out _),
+            SecurityAssetProfileFieldTypeDto.Integer =>
+                int.TryParse(trimmed, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out _),
+            SecurityAssetProfileFieldTypeDto.Boolean => bool.TryParse(trimmed, out _),
+            SecurityAssetProfileFieldTypeDto.Date =>
+                DateOnly.TryParse(trimmed, System.Globalization.CultureInfo.InvariantCulture, out _),
+            SecurityAssetProfileFieldTypeDto.Enum =>
+                field.AllowedValues.Any(allowed => string.Equals(allowed, trimmed, StringComparison.OrdinalIgnoreCase)),
+            SecurityAssetProfileFieldTypeDto.CurrencyCode =>
+                trimmed.Length == 3 && trimmed.All(static character => character is >= 'A' and <= 'Z'),
+            SecurityAssetProfileFieldTypeDto.SecurityLink =>
+                Guid.TryParse(trimmed, out var link) && link != Guid.Empty,
+            _ => true
+        };
+        if (!typeIsValid)
+        {
+            error =
+                $"Value '{value}' does not satisfy the pinned profile's declared type {field.FieldType} " +
+                $"for profile field '{field.Key}'.";
+            return false;
+        }
+
+        if (field.FieldType is SecurityAssetProfileFieldTypeDto.Decimal or SecurityAssetProfileFieldTypeDto.Integer
+            && decimal.TryParse(trimmed, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var numeric)
+            && ((field.MinValue.HasValue && numeric < field.MinValue.Value)
+                || (field.MaxValue.HasValue && numeric > field.MaxValue.Value)))
+        {
+            error =
+                $"Value '{value}' is outside the pinned profile's allowed range for field '{field.Key}' " +
+                $"({field.MinValue?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "unbounded"}" +
+                $"–{field.MaxValue?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "unbounded"}).";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool ProfileFieldElementIsValid(
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldDefinitionDto field,
+        JsonElement value,
+        out string? error)
+    {
+        error = null;
+        var typeIsValid = field.FieldType switch
+        {
+            SecurityAssetProfileFieldTypeDto.Text => value.ValueKind == JsonValueKind.String,
+            SecurityAssetProfileFieldTypeDto.Decimal => value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out _),
+            SecurityAssetProfileFieldTypeDto.Integer => value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out _),
+            SecurityAssetProfileFieldTypeDto.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+            SecurityAssetProfileFieldTypeDto.Date =>
+                value.ValueKind == JsonValueKind.String
+                && DateOnly.TryParse(value.GetString(), System.Globalization.CultureInfo.InvariantCulture, out _),
+            SecurityAssetProfileFieldTypeDto.Enum =>
+                value.ValueKind == JsonValueKind.String
+                && field.AllowedValues.Any(allowed => string.Equals(allowed, value.GetString(), StringComparison.OrdinalIgnoreCase)),
+            SecurityAssetProfileFieldTypeDto.CurrencyCode =>
+                value.ValueKind == JsonValueKind.String
+                && value.GetString() is { Length: 3 } currency
+                && currency.All(static character => character is >= 'A' and <= 'Z'),
+            SecurityAssetProfileFieldTypeDto.SecurityLink =>
+                value.ValueKind == JsonValueKind.String
+                && Guid.TryParse(value.GetString(), out var link)
+                && link != Guid.Empty,
+            _ => true
+        };
+        if (!typeIsValid)
+        {
+            error =
+                $"profileFields.{field.Key} does not satisfy the pinned profile's declared type {field.FieldType}.";
+            return false;
+        }
+
+        if (field.FieldType is SecurityAssetProfileFieldTypeDto.Decimal or SecurityAssetProfileFieldTypeDto.Integer
+            && value.TryGetDecimal(out var numeric)
+            && ((field.MinValue.HasValue && numeric < field.MinValue.Value)
+                || (field.MaxValue.HasValue && numeric > field.MaxValue.Value)))
+        {
+            error =
+                $"profileFields.{field.Key} is outside the pinned profile's allowed range " +
+                $"({field.MinValue?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "unbounded"}" +
+                $"–{field.MaxValue?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "unbounded"}).";
+            return false;
+        }
+
+        return true;
     }
 
     private async Task<long> GetCurrentVersionAsync(Guid securityId, CancellationToken ct)

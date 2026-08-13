@@ -1,6 +1,8 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.SecurityMasterInterop;
 using Meridian.Instruments.AssetOperations;
 
 namespace Meridian.Tests.AssetOperations;
@@ -86,6 +88,73 @@ public sealed class AssetObligationProjectionServiceTests
 
         detail.ProjectedCashFlows.Should().BeEmpty(
             "a fully amortized pool (factor 0) has no outstanding principal to project");
+    }
+
+    [Fact]
+    public void ProjectFromSecurityMaster_CanonicalStructuredCreditRecord_ProjectsScheduledFactorPrincipal()
+    {
+        // The full stored path, not a hand-built DTO: the payload goes through the C# mapper into
+        // the F# domain (which now persists maturity), is re-serialized by the canonical F#
+        // serializer, and THAT document drives the projection. Before maturity became a persisted
+        // structured-credit term, this path produced no cash flows at all, so the factor schedule
+        // had no production effect for first-class records.
+        var request = new CreateSecurityRequest(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: "StructuredCredit",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "CLO 2024-1 A-1 canonical",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1_000_000m,
+                couponOrIndex = "SOFR+250",
+                maturity = "2031-06-15",
+                factorScheduleEntries = new[]
+                {
+                    new { asOfDate = "2024-01-01", factor = 0.5m },
+                }
+            }),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "CLO-CANON-1", true, new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero))
+            ],
+            EffectiveFrom: new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            SourceSystem: "asset-obligation-tests",
+            UpdatedBy: "asset-obligation-tests",
+            SourceRecordId: "clo-canonical",
+            Reason: "Canonical structured-credit projection coverage");
+
+        var result = SecurityMasterCommandFacade.Create(SecurityMasterMapping.ToCreateCommand(request));
+        result.IsSuccess.Should().BeTrue(
+            string.Join("; ", result.ErrorDetails.Select(error => $"[{error.Code}] {error.Message}")));
+        using var canonicalTerms = JsonDocument.Parse(result.Snapshot!.AssetSpecificTermsJson);
+
+        var security = new SecurityDetailDto(
+            request.SecurityId,
+            "StructuredCredit",
+            SecurityStatusDto.Active,
+            "CLO 2024-1 A-1 canonical",
+            "USD",
+            JsonSerializer.SerializeToElement(new { currency = "USD" }),
+            canonicalTerms.RootElement.Clone(),
+            [],
+            [],
+            1,
+            new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            null);
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        var maturityFlow = detail.ProjectedCashFlows.Should()
+            .ContainSingle(flow => flow.FlowType == "Maturity").Subject;
+        maturityFlow.DueDate.Should().Be(new DateOnly(2031, 6, 15),
+            "the persisted maturity term must anchor the canonical projection");
+        maturityFlow.Amount.Should().Be(500_000m,
+            "the scheduled factor must scale principal on the canonical stored path");
     }
 
     private static SecurityDetailDto MakeStructuredCredit(object assetTerms)

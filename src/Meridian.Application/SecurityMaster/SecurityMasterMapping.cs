@@ -334,7 +334,8 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(terms, "currentFactor")),
                 GetRequiredString(terms, "couponOrIndex"),
                 ToOption(GetOptionalString(terms, "factorSchedule")),
-                ToFSharpList(GetOptionalArrayItemsStrict(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)))),
+                ToFSharpList(GetOptionalArrayItemsStrict(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)),
+                ToOption(GetOptionalDateOnly(terms, "maturity")))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),

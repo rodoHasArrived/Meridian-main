@@ -788,6 +788,31 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest(ErrorResponse.Validation(
                     "ConflictId in body must match the route parameter."));
 
+            // Field-level conflicts (economic/common term mismatches) are governed: the workbench
+            // resolve-conflict route evaluates the authority policy, requires a rationale, and
+            // guards the expected version before any close — including dismissals. Letting this
+            // legacy route close them would hand every ModifySecurityMaster caller a policy bypass.
+            var existing = await conflictService.GetConflictAsync(conflictId, ct).ConfigureAwait(false);
+            if (existing is null)
+            {
+                return Results.NotFound();
+            }
+
+            var isFieldConflict =
+                string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
+                || string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal);
+            if (isFieldConflict)
+            {
+                return Results.Problem(
+                    title: "Governed field conflict",
+                    detail:
+                        $"Conflict '{conflictId:D}' is a {existing.ConflictKind} field conflict. Field conflicts — " +
+                        "including dismissals — must go through the workbench resolve-conflict route " +
+                        $"(POST {UiApiRoutes.SecurityMasterWorkbenchResolveConflict}), which evaluates the " +
+                        "authority policy, requires a rationale, and guards the expected record version.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var resolvedBy = context.Items[LoginSessionMiddleware.CurrentUserKey] as string ?? "unknown";
             var serverRequest = request with { ResolvedBy = resolvedBy };
 

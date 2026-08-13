@@ -337,7 +337,7 @@ public sealed class SecurityMasterServiceSnapshotTests
             rebuilder,
             options,
             NullLogger<SecurityMasterService>.Instance,
-            assetClassValidators: Meridian.Application.SecurityMaster.Validation.AssetClassValidatorRegistry.CreateDefault());
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
 
         await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
                 securityId,
@@ -364,6 +364,75 @@ public sealed class SecurityMasterServiceSnapshotTests
         await eventStore.DidNotReceive().AppendAsync(
             Arg.Any<Guid>(),
             Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_ReclassifiedProfileBackedRecord_ValidatesProfileWithoutOtherSecurityRules()
+    {
+        // A recognized profile reclassifies the projection to its resolved asset class
+        // (private-fund-interest → PrivateFundInterest). Profile validation must run on its own —
+        // applying the OtherSecurity composite would reject this valid payload solely because it
+        // omits the outer `category` field, which the CustomAsset schema declares OPTIONAL.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetProfileCatalog: Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        var detail = await service.CreateAsync(new CreateSecurityRequest(
+            securityId,
+            "CustomAsset",
+            JsonSerializer.SerializeToElement(new { displayName = "Meridian Growth Fund III LP", currency = "USD" }),
+            JsonSerializer.SerializeToElement(new
+            {
+                customProfileId = "private-fund-interest",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    gpSponsor = "Meridian Growth Partners",
+                    strategy = "Buyout",
+                    vintage = 2024,
+                    commitment = 5_000_000m,
+                    fundedAmount = 2_000_000m,
+                    unfundedAmount = 3_000_000m,
+                    navDate = "2026-06-30"
+                },
+                profileApproval = new
+                {
+                    approvedBy = "governance.lead",
+                    approvedAtUtc = "2026-05-29T00:00:00Z",
+                    approvalReference = "PFI-APPROVAL-1"
+                }
+            }),
+            new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "PFI-III", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+            },
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "create"));
+
+        detail.SecurityId.Should().Be(securityId);
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            0,
             Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
             Arg.Any<CancellationToken>());
     }

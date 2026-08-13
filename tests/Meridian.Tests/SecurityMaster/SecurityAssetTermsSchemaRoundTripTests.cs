@@ -244,7 +244,8 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             {
                 new { asOfDate = "2026-06-01", factor = 0.8412m },
                 new { asOfDate = "2026-07-01", factor = 0.8235m }
-            }
+            },
+            maturity = "2031-06-15"
         },
         ["PrivateFundInterest"] = new
         {

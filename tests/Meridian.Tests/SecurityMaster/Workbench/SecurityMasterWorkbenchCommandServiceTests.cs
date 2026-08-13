@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -119,6 +120,37 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var result = await harness.Service.UpdateSecurityFieldAsync(request);
 
         result.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileFieldEdit_ValidatesAgainstThePinnedProfile()
+    {
+        // The static schema cannot type dynamic profile-governed fields; the pinned profile can.
+        // structured-credit-io-po declares currentFactor as a Decimal bounded [0, 1].
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("structured-credit-io-po", profileVersion: 1);
+
+        UpdateSecurityFieldRequest EditWith(string value) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.currentFactor",
+            NewValue: value,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Factor correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(EditWith("garbage")))
+            .Should().ThrowAsync<ArgumentException>("a non-numeric value must not satisfy the profile's Decimal type")
+            .WithMessage("*declared type Decimal*");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(EditWith("1.5")))
+            .Should().ThrowAsync<ArgumentException>("the profile bounds currentFactor to [0, 1]")
+            .WithMessage("*allowed range*");
+
+        var accepted = await harness.Service.UpdateSecurityFieldAsync(EditWith("0.5"));
+        accepted.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a value satisfying the pinned profile's type and range must stage normally");
     }
 
     [Fact]
@@ -978,6 +1010,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public Mock<IPeriodAwareRestatementResolver> Restatement { get; } = new(MockBehavior.Loose);
         public Mock<IAffectedLedgerBookResolver> AffectedBooks { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityFieldProvenanceStore> FieldProvenance { get; } = new(MockBehavior.Loose);
+        public Mock<ISecurityMasterStore> ProjectionStore { get; } = new(MockBehavior.Loose);
         public ISecurityMasterRevisionStore Revisions { get; } = new InMemorySecurityMasterRevisionStore();
         public SecurityMasterWorkbenchCommandService Service { get; }
 
@@ -1016,7 +1049,44 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 AffectedBooks.Object,
                 handlers ?? Array.Empty<ISecurityMasterRevisionPublishedHandler>(),
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance,
-                FieldProvenance.Object);
+                FieldProvenance.Object,
+                ProjectionStore.Object,
+                Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+        }
+
+        /// <summary>
+        /// Makes the projection store resolve the security with a pinned profile envelope so
+        /// profileFields edits are validated against that profile's declared field types.
+        /// </summary>
+        public void SetProjectionProfileEnvelope(string customProfileId, int profileVersion)
+        {
+            var projection = new SecurityProjectionRecord(
+                SecurityId: SecurityId,
+                AssetClass: "CustomAsset",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Profile-backed asset",
+                Currency: "USD",
+                PrimaryIdentifierKind: "InternalCode",
+                PrimaryIdentifierValue: "CUST-1",
+                CommonTerms: JsonSerializer.SerializeToElement(new { currency = "USD" }),
+                AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId,
+                    profileVersion,
+                    profileFields = new { }
+                }),
+                Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
+                Version: 3,
+                EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-30),
+                EffectiveTo: null,
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "CUST-1", true, DateTimeOffset.UtcNow.AddDays(-30))
+                ],
+                Aliases: Array.Empty<SecurityAliasDto>());
+            ProjectionStore
+                .Setup(s => s.GetProjectionAsync(SecurityId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(projection);
         }
 
         /// <summary>

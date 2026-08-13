@@ -424,6 +424,10 @@ type StructuredCreditTerms = {
     /// Typed, dated factor schedule consumed by the structured cash-flow resolver's
     /// <c>FactorAsOf</c> lookup. Empty when no schedule has been supplied.
     FactorScheduleEntries: FactorScheduleEntry list
+    /// Legal final maturity of the tranche. Cash-flow projection anchors on this date — without a
+    /// persisted maturity the calculated projection paths produce nothing for the record, so the
+    /// factor schedule alone cannot drive amortization math.
+    Maturity: DateOnly option
 }
 
 type PrivateFundInterestTerms = {
