@@ -9856,6 +9856,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.EquityCurvePoint"
     },
     {
@@ -42586,7 +42592,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4db56e6beb8350471c4460d8f1374c2180a9ff575d85733bd86b5da4d687c9e0",
+  "fingerprint": "0def570c60839abd761d664124bd228511ecfe8c0bee78660bf2990716508dfa",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -52492,6 +52498,12 @@
       "label": "Meridian.Contracts.Workstation.DesktopLaunchTicketRedemptionDto"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.EquityCurvePoint",
       "kind": "contract-type",
@@ -62105,10 +62117,10 @@
   ],
   "summary": {
     "contract_references": 2932,
-    "contract_set_memberships": 3354,
-    "edges": 7079,
+    "contract_set_memberships": 3355,
+    "edges": 7080,
     "foreign_keys": 95,
     "logical_references": 6,
-    "nodes": 3360
+    "nodes": 3361
   }
 }
