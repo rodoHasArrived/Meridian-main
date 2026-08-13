@@ -716,13 +716,23 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         if (isWholeObject)
         {
-            // The validator already guaranteed the replacement parses as a JSON object; check every
-            // DECLARED field present in it against its profile definition.
+            // The validator already guaranteed the replacement parses as a JSON object. A whole
+            // replacement REPLACES the object, so it must satisfy the profile's complete field
+            // rules: a missing or blank REQUIRED field is as invalid as a mistyped one — otherwise
+            // "{}" stages an overlay that strips every required field and proceeds to approval.
             using var document = JsonDocument.Parse(request.NewValue!);
             foreach (var field in profile.Fields)
             {
                 if (!document.RootElement.TryGetProperty(field.Key, out var value))
                 {
+                    if (field.IsRequired)
+                    {
+                        throw new ArgumentException(
+                            $"profileFields replacement omits required profile field '{field.Key}' " +
+                            $"declared by the pinned profile.",
+                            nameof(request));
+                    }
+
                     continue;
                 }
 
@@ -812,7 +822,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         error = null;
         var typeIsValid = field.FieldType switch
         {
-            SecurityAssetProfileFieldTypeDto.Text => value.ValueKind == JsonValueKind.String,
+            // A required Text field must also be nonblank, mirroring the read-side profile
+            // validator: an empty required string strips the value while passing the kind check.
+            SecurityAssetProfileFieldTypeDto.Text =>
+                value.ValueKind == JsonValueKind.String
+                && (!field.IsRequired || !string.IsNullOrWhiteSpace(value.GetString())),
             SecurityAssetProfileFieldTypeDto.Decimal => value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out _),
             SecurityAssetProfileFieldTypeDto.Integer => value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out _),
             SecurityAssetProfileFieldTypeDto.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,

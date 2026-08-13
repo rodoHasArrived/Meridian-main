@@ -154,6 +154,35 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ProfileFieldsReplacement_EnforcesRequiredProfileFields()
+    {
+        // A whole-object replacement REPLACES profileFields, so it must satisfy the pinned
+        // profile's complete rules: "{}" would strip every required field yet stage cleanly, and a
+        // blank required text is as invalid as a missing one.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("structured-credit-io-po", profileVersion: 1);
+
+        UpdateSecurityFieldRequest ReplaceWith(string json) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields",
+            NewValue: json,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Profile fields replacement.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(ReplaceWith("{}")))
+            .Should().ThrowAsync<ArgumentException>("an empty replacement strips every required profile field")
+            .WithMessage("*omits required profile field*");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(ReplaceWith(
+                """{"tranche":"  ","poolId":"POOL-1","currentFactor":0.5,"originalFace":1000000,"couponOrIndex":"SOFR+250","factorSchedule":"trustee","collateralType":"CLO"}""")))
+            .Should().ThrowAsync<ArgumentException>("a blank required text field strips the value while passing the kind check")
+            .WithMessage("*tranche*");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_BlankValue_RemovesTheOverlayKeyInsteadOfStoringEmpty()
     {
         // A blank edit is a CLEAR: persisting an empty-string override would bypass type

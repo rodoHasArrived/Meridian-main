@@ -239,23 +239,50 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         var principalBasis = terms.PrincipalFace is > 0m ? terms.PrincipalFace.Value : 100m;
 
         // Seed the outstanding factor from the typed factor schedule as of today, falling back to the
-        // scalar current factor when no dated schedule point applies.
+        // scalar current factor when no dated schedule point applies. The applied ENTRY (not just its
+        // factor) is retained: a dated factor only reflects principal events up to its own as-of.
         var contractualPrincipal = terms.PrincipalSchedule?
             .Where(entry => entry.PaymentDate >= issueDate && entry.PaymentDate <= maturity)
             .ToArray() ?? [];
-        var scheduledFactor = terms.FactorAsOf(asOfDate);
+        StructuredFactorScheduleEntry? appliedFactorEntry = null;
+        for (var i = terms.FactorSchedule.Count - 1; i >= 0; i--)
+        {
+            if (terms.FactorSchedule[i].AsOfDate <= asOfDate)
+            {
+                appliedFactorEntry = terms.FactorSchedule[i];
+                break;
+            }
+        }
+
+        var scheduledFactor = appliedFactorEntry?.Factor ?? terms.CurrentFactor;
         var hasAuthoritativeFactor = scheduledFactor is >= 0m;
         var factor = hasAuthoritativeFactor ? scheduledFactor.GetValueOrDefault() : 1m;
         var outstanding = RoundCash(principalBasis * factor);
-        if (!hasAuthoritativeFactor && contractualPrincipal.Length > 0)
+        if (contractualPrincipal.Length > 0)
         {
-            // Without an as-of factor, completed contractual payments are the best retained
-            // evidence of today's outstanding. A factor already reflects those payments and must
-            // not be reduced a second time.
-            var paidBeforeAsOf = contractualPrincipal
-                .Where(entry => entry.PaymentDate < asOfDate)
-                .Sum(static entry => entry.Amount);
-            outstanding = RoundCash(decimal.Max(0m, outstanding - paidBeforeAsOf));
+            if (!hasAuthoritativeFactor)
+            {
+                // Without an as-of factor, completed contractual payments are the best retained
+                // evidence of today's outstanding.
+                var paidBeforeAsOf = contractualPrincipal
+                    .Where(entry => entry.PaymentDate < asOfDate)
+                    .Sum(static entry => entry.Amount);
+                outstanding = RoundCash(decimal.Max(0m, outstanding - paidBeforeAsOf));
+            }
+            else if (appliedFactorEntry is not null)
+            {
+                // A DATED factor reflects principal events only up to its as-of date: a January
+                // factor of 0.8 does not know about February's contractual payment, so completed
+                // payments dated after the factor and before today still reduce the opening
+                // balance — otherwise later interest, maturity principal, and ledger postings are
+                // overstated. An undated scalar factor keeps the assumed-current fallback below.
+                var paidAfterFactor = contractualPrincipal
+                    .Where(entry => entry.PaymentDate > appliedFactorEntry.AsOfDate && entry.PaymentDate < asOfDate)
+                    .Sum(static entry => entry.Amount);
+                outstanding = RoundCash(decimal.Max(0m, outstanding - paidAfterFactor));
+            }
+            // Undated scalar factor: assumed to already reflect every completed payment — reducing
+            // again would double-count.
         }
         var annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m) + ScenarioRateShift(scenario);
         if (annualRate < 0m)

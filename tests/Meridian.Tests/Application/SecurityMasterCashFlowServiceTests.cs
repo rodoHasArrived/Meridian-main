@@ -146,6 +146,62 @@ public sealed class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
+    public async Task GetProjectionAsync_PrincipalPaymentAfterFactorAsOf_ReducesTheOpeningBalance()
+    {
+        // A DATED factor reflects principal events only up to its own as-of date. Here the factor
+        // (0.8, as of five months ago) predates a completed contractual payment of 10 (four months
+        // ago): today's opening balance is 100 x 0.8 - 10 = 70, not 80 — treating the stale factor
+        // as current overstates later interest, maturity principal, and ledger postings.
+        var securityId = Guid.Parse("55555555-eeee-eeee-eeee-555555555555");
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueDate = new DateOnly(today.Year, today.Month, 1).AddMonths(-6);
+        var factorDate = issueDate.AddMonths(1);
+        var completedPaymentDate = issueDate.AddMonths(2);
+        var maturity = issueDate.AddMonths(24);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate,
+                    maturityDate = maturity,
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    factorScheduleEntries = new object[]
+                    {
+                        new { asOfDate = factorDate, factor = 0.8m }
+                    },
+                    principalSchedule = new object[]
+                    {
+                        new { paymentDate = completedPaymentDate, amount = 10m }
+                    }
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(70m,
+            "the completed contractual payment dated after the factor's as-of must reduce the opening balance");
+    }
+
+    [Fact]
     public async Task GetProjectionAsync_MonthEndIssueDate_ShouldAnchorScheduleWithoutStubPeriod()
     {
         // Regression: payment dates used to compound AddMonths from the previous payment date.
