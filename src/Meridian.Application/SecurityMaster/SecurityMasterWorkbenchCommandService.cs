@@ -325,7 +325,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                         fieldPath,
                         SecurityFieldProvenanceOrigins.OperatorFieldEdit,
                         clearedAt: stagedOverride.UpdatedAt,
-                        ct).ConfigureAwait(false);
+                        CancellationToken.None).ConfigureAwait(false);
                 }
                 else
                 {
@@ -343,11 +343,16 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                             // write holds its row lock. Ordering lineage by that authoritative write
                             // time prevents a delayed older edit from replacing a newer attribution.
                             RecordedAt: stagedOverride.UpdatedAt),
-                        ct).ConfigureAwait(false);
+                        CancellationToken.None).ConfigureAwait(false);
                 }
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex)
             {
+                // Cancellation is absorbed like any other lineage failure: the overlay patch and
+                // draft revision have already COMMITTED, so propagating an
+                // OperationCanceledException here would hide the durable draft from the caller —
+                // a retry would then stage a second same-field revision whose hidden sibling
+                // defers the security-level override decision until separately discovered.
                 var safeFieldPathForLog = SanitizeForLog(fieldPath);
                 _logger.LogWarning(
                     ex,
@@ -443,29 +448,12 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
         }
 
-        // Mirror the winner into the durable override read-model annotation for passport display. The
-        // authoritative resolution already succeeded above, so a mirror failure is logged rather than
-        // surfaced — it cannot lose the recorded winner or re-open the conflict.
-        try
-        {
-            var patch = new OperatorOverridesPatchRequest(
-                SetValues: new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    [$"conflict-resolution:{request.ConflictId:D}"] = request.ChosenWinnerSource ?? string.Empty,
-                },
-                RemoveKeys: null)
-            {
-                ReasonCode = request.Reason,
-            };
-            await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogWarning(
-                ex,
-                "Conflict {ConflictId} for {SecurityId} was resolved, but mirroring the winner into the override annotation failed; the authoritative resolution is recorded on the conflict.",
-                request.ConflictId, request.SecurityId);
-        }
+        // The winner is deliberately NOT mirrored into the governed override dictionary: the
+        // authoritative resolution (and its display surface) is the durable conflict record
+        // itself, and a PatchAsync mirror would reset the entire override row to Pending —
+        // minting a display-only value no approval workflow could ever decide, blocking governed
+        // runs behind SM_OVERRIDE_APPROVAL_REQUIRED and reopening previously Approved economic
+        // overrides on the same row.
 
         _logger.LogInformation(
             "Resolved Security Master conflict {ConflictId} for {SecurityId}: policy winner {PolicyWinner}, chosen {Chosen}, deviation {IsDeviation}",
@@ -524,8 +512,25 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             var result = await _approvalWorkflow.SubmitForApprovalAsync(workflowId, dto, ct).ConfigureAwait(false);
             if (!result.Success)
             {
-                throw new InvalidOperationException(
-                    $"Submit for approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
+                // RECONCILE a stranded half-submission instead of dead-ending. The gate submission
+                // is irreversible: if a prior attempt submitted the workflow but failed (or was
+                // canceled) before the revision transition below committed, the workflow is
+                // Submitted/ReviewerAssigned while the revision is still an unbound Draft — and
+                // the gate rejects every retry because the workflow is no longer draft-state, so
+                // without this branch the revision could never bind or submit, while the orphaned
+                // workflow stayed independently approvable. When the named workflow's submission
+                // has already been recorded, the retry completes the revision-side transition and
+                // binding; any other gate failure still rejects the submission.
+                var submittedWorkflow = await _approvalWorkflow.GetAsync(workflowId, ct).ConfigureAwait(false);
+                if (submittedWorkflow is not { ApprovalState: OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned })
+                {
+                    throw new InvalidOperationException(
+                        $"Submit for approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
+                }
+
+                _logger.LogWarning(
+                    "Approval gate workflow {WorkflowId} is already submitted while revision {RevisionId} for {SecurityId} is still an unbound Draft; reconciling the stranded revision transition and binding.",
+                    workflowId, request.RevisionId, request.SecurityId);
             }
 
             // Advance the durable revision lifecycle only after the gate accepts the submission, and
@@ -675,19 +680,24 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 var revisions = await _revisions.ListBySecurityAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
 
                 // Overlay ownership follows staging ORDER: the overlay key holds the value of the
-                // LATEST staged revision for the path. A LATER staged sibling means the discarded
-                // revision's value was already replaced — the key carries the sibling's value,
-                // still under review through its own revision, and stays. Otherwise the discarded
-                // revision owns the key and it is removed — even when OLDER staged siblings share
-                // the path: their values were superseded at staging time and are unrecoverable, so
-                // removal fails SAFE (approving an older sibling can no longer approve the
-                // discarded value) and those siblings must re-stage their edits.
-                var laterStagedSiblingOwnsPath = revisions.Any(other =>
+                // LATEST-staged live revision for the path. A LATER sibling that is Draft,
+                // Submitted, OR Approved means the discarded revision's value was already replaced
+                // — the key carries the sibling's value (still under review, or approved and
+                // awaiting its publish-time decision convergence) and stays; removing it would let
+                // an Approved sibling's publish retry see NotPending and publish without its
+                // approved economics. Otherwise the discarded revision owns the key and it is
+                // removed — even when OLDER staged siblings share the path: their values were
+                // superseded at staging time and are unrecoverable, so removal fails SAFE
+                // (approving an older sibling can no longer approve the discarded value) and
+                // those siblings must re-stage their edits.
+                var laterSiblingOwnsPath = revisions.Any(other =>
                     other.RevisionId != request.RevisionId
-                    && other.State is SecurityMasterRevisionStateDto.Draft or SecurityMasterRevisionStateDto.Submitted
+                    && other.State is SecurityMasterRevisionStateDto.Draft
+                        or SecurityMasterRevisionStateDto.Submitted
+                        or SecurityMasterRevisionStateDto.Approved
                     && string.Equals(other.FieldPath, revision.FieldPath, StringComparison.OrdinalIgnoreCase)
                     && other.CreatedAt > revision.CreatedAt);
-                if (laterStagedSiblingOwnsPath)
+                if (laterSiblingOwnsPath)
                 {
                     _logger.LogInformation(
                         "Discarded revision {RevisionId} for {SecurityId} left the staged override at {FieldPath} in place: a later staged revision owns the current value.",
@@ -997,10 +1007,28 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // failure HERE fails closed while the revision is still Approved — the publish retry
         // re-runs everything, so a published edit can never leave its override stuck Pending
         // behind SM_OVERRIDE_APPROVAL_REQUIRED.
+        // The recorded reviewer resolves from the BOUND APPROVED WORKFLOW, not from the request:
+        // the publish body's ApproverActor is caller-supplied text, so trusting it would let a
+        // publisher persist any name as the reviewer of governed approval evidence. The gate
+        // already recorded who actually decided; only when the revision carries no workflow (or
+        // the workflow records no reviewer) does the authenticated publisher stand in.
+        var decisionReviewer = request.Actor;
+        if (revision.WorkflowId is Guid decisionWorkflowId)
+        {
+            var decisionWorkflow = await _approvalWorkflow.GetAsync(decisionWorkflowId, ct).ConfigureAwait(false);
+            var workflowReviewer = decisionWorkflow?.Approvals
+                .Select(static approval => approval.Reviewer)
+                .LastOrDefault(static reviewer => !string.IsNullOrWhiteSpace(reviewer));
+            if (!string.IsNullOrWhiteSpace(workflowReviewer))
+            {
+                decisionReviewer = workflowReviewer!;
+            }
+        }
+
         var decisionOutcome = await TryRecordOverrideApprovalDecisionAsync(
             request.SecurityId,
             request.RevisionId,
-            string.IsNullOrWhiteSpace(request.ApproverActor) ? request.Actor : request.ApproverActor,
+            decisionReviewer,
             rationale: null,
             ct).ConfigureAwait(false);
         if (decisionOutcome == OverrideDecisionOutcome.Deferred)
