@@ -160,10 +160,32 @@ internal static class SecurityMasterConflictDetection
                 $"{entry.PaymentDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}:" +
                 entry.Amount.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)));
 
+    /// <summary>
+    /// The governed field paths whose values differ between <paramref name="current"/> and
+    /// <paramref name="incoming"/>, regardless of source. Cross-source disagreement is what OPENS a
+    /// conflict, but per-field attribution goes stale whenever a governed field changes hands —
+    /// including when the previous winner amends its own value — so retirement must not depend on
+    /// the same-source short-circuit that conflict creation uses.
+    /// </summary>
+    internal static IReadOnlyList<string> ChangedGovernedFieldPaths(
+        SecurityProjectionRecord current,
+        SecurityProjectionRecord incoming)
+        => DetectFieldConflictsCore(current, incoming, DateTimeOffset.UtcNow, requireDistinctSources: false)
+            .Select(static conflict => conflict.FieldPath)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
     public static IReadOnlyList<SecurityMasterConflict> DetectFieldConflicts(
         SecurityProjectionRecord current,
         SecurityProjectionRecord incoming,
         DateTimeOffset detectedAt)
+        => DetectFieldConflictsCore(current, incoming, detectedAt, requireDistinctSources: true);
+
+    private static IReadOnlyList<SecurityMasterConflict> DetectFieldConflictsCore(
+        SecurityProjectionRecord current,
+        SecurityProjectionRecord incoming,
+        DateTimeOffset detectedAt,
+        bool requireDistinctSources)
     {
         if (current.SecurityId != incoming.SecurityId)
         {
@@ -172,7 +194,7 @@ internal static class SecurityMasterConflictDetection
 
         var sourceA = SecurityMasterProvenanceReader.Read(current.Provenance).SourceSystem;
         var sourceB = SecurityMasterProvenanceReader.Read(incoming.Provenance).SourceSystem;
-        if (string.Equals(sourceA, sourceB, StringComparison.OrdinalIgnoreCase))
+        if (requireDistinctSources && string.Equals(sourceA, sourceB, StringComparison.OrdinalIgnoreCase))
         {
             return [];
         }

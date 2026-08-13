@@ -85,6 +85,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     {
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("structured-credit-io-po", profileVersion: 1);
 
         var request = new UpdateSecurityFieldRequest(
             SecurityId: SecurityId,
@@ -129,6 +130,100 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var accepted = await harness.Service.UpdateSecurityFieldAsync(EditWith("0.5"));
         accepted.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
             "a value satisfying the pinned profile's type and range must stage normally");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_UnresolvedPinnedProfile_FailsClosedForProfileFieldValues()
+    {
+        // profileFields values are governed by the pinned profile; when the projection carries no
+        // envelope (lag, legacy drift, catalog mismatch) a value edit must be rejected, not staged
+        // unvalidated with a draft revision and provenance row.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+        // No SetProjectionProfileEnvelope: the pinned profile cannot resolve.
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.currentFactor",
+            NewValue: "garbage",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Factor correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*pinned asset profile*");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_SubpathBeneathDeclaredScalarProfileField_IsRejected()
+    {
+        // Profile field types describe scalar values; a deeper path under a declared field would
+        // bypass its type/range validation and stage an undeclared override.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("structured-credit-io-po", profileVersion: 1);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.currentFactor.unit",
+            NewValue: "percent",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Factor unit annotation.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*no structured children*");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileFieldsReplacement_EnforcesDateOrderRules()
+    {
+        // The pinned profile's complete rule set includes cross-field date ordering: individually
+        // valid dates in reverse order violate the profile just as a mistyped value does.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("dated-profile", profileVersion: 1);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields",
+            NewValue: """{"startDate":"2026-06-01","endDate":"2026-01-01"}""",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Date correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*PF_DATE_ORDER*");
     }
 
     [Fact]
@@ -1083,8 +1178,13 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public ISecurityMasterRevisionStore Revisions { get; } = new InMemorySecurityMasterRevisionStore();
         public SecurityMasterWorkbenchCommandService Service { get; }
 
-        public Harness(long currentVersion, IEnumerable<ISecurityMasterRevisionPublishedHandler>? handlers = null)
+        public Harness(
+            long currentVersion,
+            IEnumerable<ISecurityMasterRevisionPublishedHandler>? handlers = null,
+            Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
         {
+            _assetProfileCatalog = assetProfileCatalog
+                ?? Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault();
             EventStore = new FakeEventStore(currentVersion);
 
             Overrides
@@ -1120,8 +1220,10 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance,
                 FieldProvenance.Object,
                 ProjectionStore.Object,
-                Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+                _assetProfileCatalog);
         }
+
+        private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog _assetProfileCatalog;
 
         /// <summary>
         /// Makes the projection store resolve the security with a pinned profile envelope so

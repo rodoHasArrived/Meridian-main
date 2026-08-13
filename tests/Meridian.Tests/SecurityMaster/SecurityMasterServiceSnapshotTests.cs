@@ -531,6 +531,33 @@ public sealed class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task AmendTermsAsync_WinningSourceAmendsItsOwnValue_StillRetiresStaleResolutionProvenance()
+    {
+        // The previous winner amending its OWN value opens no cross-source conflict, but the old
+        // ConflictResolution attribution is stale all the same — it selected an earlier value.
+        var (securityId, eventStore, service, conflictService, fieldProvenance) = BuildAmendHarness(
+            conflictRecordingFails: false);
+
+        await service.AmendTermsAsync(BuildConflictingAmend(securityId) with { SourceSystem = "provA" });
+
+        await conflictService.DidNotReceive().RecordFieldConflictsAsync(
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<CancellationToken>());
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+        await fieldProvenance.Received(1).RemoveAsync(
+            securityId,
+            "EconomicTerms.couponRate",
+            SecurityFieldProvenanceOrigins.ConflictResolution,
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<CancellationToken>());
+    }
+
     private static (Guid SecurityId,
         ISecurityMasterEventStore EventStore,
         SecurityMasterService Service,

@@ -168,9 +168,17 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 returning {ConflictColumns};
                 """;
             command.Parameters.AddWithValue("status", newStatus);
+            // Dismissals persist the acknowledged source too when one was selected: the workbench's
+            // DismissAsEquivalent flow requires a candidate and reports it as ChosenWinnerSource, so
+            // storing NULL here would expose the same decision WITH a winner through the workbench
+            // response but WITHOUT one through the authoritative conflict row. Field provenance is
+            // still only written for Resolved — a dismissal asserts equivalence, not attribution.
             command.Parameters.AddWithValue(
                 "resolved_winner_source",
-                newStatus == "Resolved" ? (object?)selectedSource ?? DBNull.Value : DBNull.Value);
+                newStatus == "Resolved"
+                    ? (object?)selectedSource ?? DBNull.Value
+                    : (object?)(string.IsNullOrWhiteSpace(request.ChosenWinnerSource) ? null : request.ChosenWinnerSource.Trim())
+                        ?? DBNull.Value);
             command.Parameters.AddWithValue("resolved_by", request.ResolvedBy);
             command.Parameters.AddWithValue("resolved_reason", (object?)request.Reason ?? DBNull.Value);
             command.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);

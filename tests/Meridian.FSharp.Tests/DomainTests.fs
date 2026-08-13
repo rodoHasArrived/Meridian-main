@@ -1260,6 +1260,20 @@ let ``Structured credit factors above one are rejected`` () =
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.0m } ] })
     |> should not' (contain "structured_credit_factor_schedule_invalid")
 
+    // A rising factor would GROW outstanding principal — invalid retained evidence for the
+    // factor-paydown workflow, however valid each individual factor is.
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.9m } ] })
+    |> should contain "structured_credit_factor_schedule_not_monotonic"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m }
+                                                                  { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m } ] })
+    |> should not' (contain "structured_credit_factor_schedule_not_monotonic")
+
 [<Fact>]
 let ``CustomAsset writes require the declared profile envelope in the document`` () =
     let kindWith termsJson =

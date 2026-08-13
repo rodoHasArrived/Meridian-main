@@ -674,9 +674,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     /// <c>profileFields.currentFactor = "garbage"</c> stages an invalid overlay (with a draft
     /// revision and provenance row) that only a later validation read exposes. Resolves the pinned
     /// profile from the persisted envelope and validates the edited field's declared type, range,
-    /// and enum constraints. Fail-open with a logged warning when the projection or profile cannot
-    /// be resolved, matching the asset-class fail-open above; undeclared keys pass through, since
-    /// the profile owns only its declared fields.
+    /// and enum constraints. Value edits fail CLOSED when the pinned profile cannot be resolved
+    /// (projection lag, missing envelope, catalog mismatch, unwired stores) — the reserved
+    /// namespace only accepts validated writes; undeclared keys still pass through, since the
+    /// profile owns only its declared fields.
     /// <para>Returns the canonical path: a declared profile field's key is normalized to the
     /// pinned definition's spelling, so <c>profileFields.currentFactor</c> and
     /// <c>profileFields.CurrentFactor</c> address ONE override key, revision lineage, and
@@ -687,42 +688,48 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     {
         var isWholeObject = string.Equals(canonicalFieldPath, ProfileFieldsRootPath, StringComparison.Ordinal);
         var isNestedField = canonicalFieldPath.StartsWith(ProfileFieldsNestedPrefix, StringComparison.Ordinal);
-        if ((!isWholeObject && !isNestedField)
-            || string.IsNullOrWhiteSpace(request.NewValue)
-            || _projectionStore is null
-            || _assetProfileCatalog is null)
+        if ((!isWholeObject && !isNestedField) || string.IsNullOrWhiteSpace(request.NewValue))
         {
             return canonicalFieldPath;
         }
 
         Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto? profile = null;
-        try
+        if (_projectionStore is not null && _assetProfileCatalog is not null)
         {
-            var projection = await _projectionStore.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
-            var terms = projection?.AssetSpecificTerms;
-            if (terms is { ValueKind: JsonValueKind.Object }
-                && terms.Value.TryGetProperty("customProfileId", out var profileId)
-                && profileId.ValueKind == JsonValueKind.String
-                && !string.IsNullOrWhiteSpace(profileId.GetString())
-                && terms.Value.TryGetProperty("profileVersion", out var versionElement)
-                && versionElement.TryGetInt32(out var profileVersion)
-                && _assetProfileCatalog.TryGetProfile(profileId.GetString()!, profileVersion, out var resolved))
+            try
             {
-                profile = resolved;
+                var projection = await _projectionStore.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
+                var terms = projection?.AssetSpecificTerms;
+                if (terms is { ValueKind: JsonValueKind.Object }
+                    && terms.Value.TryGetProperty("customProfileId", out var profileId)
+                    && profileId.ValueKind == JsonValueKind.String
+                    && !string.IsNullOrWhiteSpace(profileId.GetString())
+                    && terms.Value.TryGetProperty("profileVersion", out var versionElement)
+                    && versionElement.TryGetInt32(out var profileVersion)
+                    && _assetProfileCatalog.TryGetProfile(profileId.GetString()!, profileVersion, out var resolved))
+                {
+                    profile = resolved;
+                }
             }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogWarning(
-                ex,
-                "Resolving the pinned profile for {SecurityId} failed; staging profile-field edit {FieldPath} without profile validation.",
-                request.SecurityId, SanitizeForLog(canonicalFieldPath));
-            return canonicalFieldPath;
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Resolving the pinned profile for {SecurityId} failed while validating profile-field edit {FieldPath}.",
+                    request.SecurityId, SanitizeForLog(canonicalFieldPath));
+            }
         }
 
         if (profile is null)
         {
-            return canonicalFieldPath;
+            // Fail closed: profileFields values are governed by the pinned profile, so a value that
+            // cannot be validated against it must not stage — projection lag, a missing envelope,
+            // or a catalog mismatch would otherwise be exactly the window in which "garbage" slips
+            // into a governed field with a draft revision and provenance row.
+            throw new InvalidOperationException(
+                $"The pinned asset profile for security '{request.SecurityId:D}' could not be resolved, so the " +
+                "profileFields edit cannot be validated. Ensure the record carries a profile envelope pinned to a " +
+                "registered profile version and retry; the namespace only accepts validated writes.");
         }
 
         if (isWholeObject)
@@ -753,14 +760,42 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 }
             }
 
+            // The complete profile rule set includes cross-field date ordering, not just per-field
+            // shape: individually valid start/end dates in reverse order violate the pinned
+            // profile just as a mistyped value does.
+            foreach (var rule in profile.DateOrderRules)
+            {
+                if (TryReadProfileDate(document.RootElement, rule.StartFieldKey, out var start)
+                    && TryReadProfileDate(document.RootElement, rule.EndFieldKey, out var end)
+                    && start > end)
+                {
+                    throw new ArgumentException(
+                        $"profileFields replacement violates the pinned profile's date ordering " +
+                        $"[{rule.Code}]: {rule.Message}",
+                        nameof(request));
+                }
+            }
+
             return canonicalFieldPath;
         }
 
         var nestedRemainder = canonicalFieldPath[ProfileFieldsNestedPrefix.Length..];
         if (nestedRemainder.Contains('.', StringComparison.Ordinal))
         {
-            // Deeper paths address structure inside a declared field's own value; the profile
-            // declares only top-level field types.
+            // Profile field types describe SCALAR values; a deeper path beneath a declared field
+            // (profileFields.currentFactor.unit) would bypass its type/range validation and stage
+            // an undeclared override. Undeclared roots stay dynamic pass-through.
+            var rootSegment = nestedRemainder[..nestedRemainder.IndexOf('.', StringComparison.Ordinal)];
+            var declaredRoot = profile.Fields.FirstOrDefault(
+                field => string.Equals(field.Key, rootSegment, StringComparison.OrdinalIgnoreCase));
+            if (declaredRoot is not null)
+            {
+                throw new ArgumentException(
+                    $"Profile field '{declaredRoot.Key}' is declared as a scalar {declaredRoot.FieldType} by the " +
+                    "pinned profile and has no structured children; edit the field itself.",
+                    nameof(request));
+            }
+
             return canonicalFieldPath;
         }
 
@@ -779,6 +814,22 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // Persist under the pinned definition's key spelling — the case-insensitive lookup above
         // must not let casing variants fork the same profile field into separate overrides.
         return ProfileFieldsNestedPrefix + declared.Key;
+    }
+
+    private static bool TryReadProfileDate(JsonElement profileFields, string key, out DateOnly value)
+    {
+        value = default;
+        foreach (var property in profileFields.EnumerateObject())
+        {
+            if (string.Equals(property.Name, key, StringComparison.OrdinalIgnoreCase)
+                && property.Value.ValueKind == JsonValueKind.String
+                && DateOnly.TryParse(property.Value.GetString(), System.Globalization.CultureInfo.InvariantCulture, out value))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool ProfileFieldStringIsValid(

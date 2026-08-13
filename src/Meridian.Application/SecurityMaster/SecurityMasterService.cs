@@ -88,8 +88,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // governed resolution workflow. Conflict ids are deterministic, so a retried amendment
         // reuses the same rows, and a conflict recorded for an amendment that subsequently fails
         // still describes a real cross-source disagreement.
-        var fieldConflicts = await RecordFieldConflictsBeforePersistAsync(currentProjection, projection, ct)
-            .ConfigureAwait(false);
+        await RecordFieldConflictsBeforePersistAsync(currentProjection, projection, ct).ConfigureAwait(false);
 
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
@@ -104,9 +103,12 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
         await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
-        // A field that just changed hands invalidates any prior conflict-resolution attribution
-        // for that path: the previous winner no longer supplied the current value.
-        await TryRetireStaleFieldResolutionProvenanceAsync(fieldConflicts, request.SecurityId, ct).ConfigureAwait(false);
+        // A governed field that just changed invalidates any prior conflict-resolution attribution
+        // for that path: the recorded winner no longer supplied the current value. Changed paths
+        // are computed independently of cross-source conflict creation — the previous winner
+        // amending its OWN value opens no conflict, yet still makes the old attribution stale.
+        var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(currentProjection, projection);
+        await TryRetireStaleFieldResolutionProvenanceAsync(changedGovernedFields, request.SecurityId, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
@@ -323,23 +325,21 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// Detects and durably records field-level cross-source conflicts BEFORE the amendment
     /// persists. Failures propagate — accepting the amendment while losing the conflict would
     /// silently drop the challenger from the governed resolution workflow, and the caller can
-    /// safely retry because the amendment has not yet been written. Returns the detected
-    /// candidates so post-persist steps can retire stale per-field attribution.
+    /// safely retry because the amendment has not yet been written.
     /// </summary>
-    private async Task<IReadOnlyList<SecurityMasterConflict>> RecordFieldConflictsBeforePersistAsync(
+    private async Task RecordFieldConflictsBeforePersistAsync(
         SecurityProjectionRecord previous,
         SecurityProjectionRecord incoming,
         CancellationToken ct)
     {
         if (_conflictService is null)
-            return [];
+            return;
 
         var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
         if (candidates.Count == 0)
-            return candidates;
+            return;
 
         await _conflictService.RecordFieldConflictsAsync(previous, incoming, ct).ConfigureAwait(false);
-        return candidates;
     }
 
     /// <summary>
@@ -350,14 +350,14 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// logged and the next resolution overwrites the row.
     /// </summary>
     private async Task TryRetireStaleFieldResolutionProvenanceAsync(
-        IReadOnlyList<SecurityMasterConflict> fieldConflicts,
+        IReadOnlyList<string> changedFieldPaths,
         Guid securityId,
         CancellationToken ct)
     {
-        if (_fieldProvenance is null || fieldConflicts.Count == 0)
+        if (_fieldProvenance is null || changedFieldPaths.Count == 0)
             return;
 
-        foreach (var fieldPath in fieldConflicts.Select(static conflict => conflict.FieldPath).Distinct(StringComparer.Ordinal))
+        foreach (var fieldPath in changedFieldPaths)
         {
             try
             {

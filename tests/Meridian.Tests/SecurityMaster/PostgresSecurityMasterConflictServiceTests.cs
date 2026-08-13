@@ -383,12 +383,18 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         var conflict = open.Single(c =>
             c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
 
-        // A dismissal records no winner, so it must assert no field attribution.
+        // A dismissal asserts equivalence, not attribution: no field provenance is written, but the
+        // acknowledged source (required by the workbench's DismissAsEquivalent flow) is persisted on
+        // the conflict row so the durable record matches what the workbench reported.
         var dismissed = await service.ResolveAsync(
-            new ResolveConflictRequest(conflict.ConflictId, "Dismiss", "operator@meridian.test", "Values equivalent."),
+            new ResolveConflictRequest(
+                conflict.ConflictId, "Dismiss", "operator@meridian.test", "Values equivalent.",
+                ChosenWinnerSource: "provB"),
             CancellationToken.None);
         dismissed.Should().NotBeNull();
         dismissed!.Status.Should().Be("Dismissed");
+        dismissed.ResolvedWinnerSource.Should().Be("provB",
+            "the workbench reports the acknowledged source, so the authoritative row must carry it too");
 
         var provenanceStore = new PostgresSecurityFieldProvenanceStore(_fixture.Options);
         var lineage = await provenanceStore.GetAsync(securityId, CancellationToken.None);

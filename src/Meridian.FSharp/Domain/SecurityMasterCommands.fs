@@ -177,6 +177,14 @@ module SecurityMaster =
             @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
             @ require (terms.FactorScheduleEntries |> List.forall (fun entry -> entry.Factor >= 0m && entry.Factor <= 1m))
                 (error "structured_credit_factor_schedule_invalid" "StructuredCredit factor schedule factors must be between zero and one — factors above one project cash flows exceeding the original principal.")
+            @ require
+                (terms.FactorScheduleEntries
+                 |> List.sortBy (fun entry -> entry.AsOfDate)
+                 |> List.pairwise
+                 |> List.forall (fun (earlier, later) -> later.Factor <= earlier.Factor))
+                (error
+                    "structured_credit_factor_schedule_not_monotonic"
+                    "StructuredCredit factor schedule must be non-increasing in date order — a rising factor would grow outstanding principal, which the factor-paydown workflow treats as invalid retained evidence.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor
