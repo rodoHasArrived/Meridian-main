@@ -751,7 +751,31 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             using var document = JsonDocument.Parse(request.NewValue!);
             foreach (var field in profile.Fields)
             {
-                if (!document.RootElement.TryGetProperty(field.Key, out var value))
+                // Declared keys resolve CASE-INSENSITIVELY, matching the scalar edit route and
+                // every downstream term reader — an exact-case lookup would let "Maturity":
+                // "not-a-date" bypass the declared maturity field's validation entirely. Two
+                // casings of the same declared key are ambiguous (readers would pick one
+                // arbitrarily) and are rejected outright.
+                JsonElement? match = null;
+                var casingMatches = 0;
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    if (string.Equals(property.Name, field.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        match = property.Value;
+                        casingMatches++;
+                    }
+                }
+
+                if (casingMatches > 1)
+                {
+                    throw new ArgumentException(
+                        $"profileFields replacement contains multiple casings of declared profile field " +
+                        $"'{field.Key}'; collapse them to the pinned definition's spelling.",
+                        nameof(request));
+                }
+
+                if (match is null)
                 {
                     if (field.IsRequired)
                     {
@@ -764,7 +788,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                     continue;
                 }
 
-                if (!ProfileFieldElementIsValid(field, value, out var objectError))
+                if (!ProfileFieldElementIsValid(field, match.Value, out var objectError))
                 {
                     throw new ArgumentException(objectError, nameof(request));
                 }

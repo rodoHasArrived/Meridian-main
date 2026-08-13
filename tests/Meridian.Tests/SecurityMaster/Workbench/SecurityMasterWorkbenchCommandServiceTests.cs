@@ -387,6 +387,46 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_ProfileFieldsReplacement_ResolvesDeclaredKeysCaseInsensitively()
+    {
+        // A whole-object replacement must match declared keys the way scalar edits and downstream
+        // readers do — case-insensitively. An exact-case loop would let "Maturity":"not-a-date"
+        // bypass the declared optional maturity field's Date validation and stage an invalid
+        // value; two casings of the same declared key are ambiguous and rejected outright.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope("structured-credit-io-po", profileVersion: 1);
+
+        UpdateSecurityFieldRequest ReplaceWith(string json) => new(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields",
+            NewValue: json,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Profile fields replacement.");
+
+        const string requiredFields =
+            "\"tranche\":\"A-1\",\"poolId\":\"POOL-1\",\"currentFactor\":0.5,\"originalFace\":1000000," +
+            "\"couponOrIndex\":\"SOFR+250\",\"factorSchedule\":\"trustee\",\"collateralType\":\"CLO\"";
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(ReplaceWith(
+                "{" + requiredFields + ",\"Maturity\":\"not-a-date\"}")))
+            .Should().ThrowAsync<ArgumentException>("a miscased declared key must still hit its Date validation")
+            .WithMessage("*Date*");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(ReplaceWith(
+                "{" + requiredFields + ",\"maturity\":\"2031-06-15\",\"Maturity\":\"2032-06-15\"}")))
+            .Should().ThrowAsync<ArgumentException>("two casings of one declared key are ambiguous")
+            .WithMessage("*multiple casings*");
+
+        var staged = await harness.Service.UpdateSecurityFieldAsync(ReplaceWith(
+            "{" + requiredFields + ",\"Maturity\":\"2031-06-15\"}"));
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a miscased but VALID optional value passes the declared field's rules");
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ProfileFieldCasingVariant_PersistsUnderThePinnedProfileKey()
     {
         // The pinned-profile lookup is case-insensitive, so the persisted path must be rebuilt from

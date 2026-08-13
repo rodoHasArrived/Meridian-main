@@ -241,9 +241,15 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // Seed the outstanding factor from the typed factor schedule as of today, falling back to the
         // scalar current factor when no dated schedule point applies. The applied ENTRY (not just its
         // factor) is retained: a dated factor only reflects principal events up to its own as-of.
-        var contractualPrincipal = terms.PrincipalSchedule?
-            .Where(entry => entry.PaymentDate >= issueDate && entry.PaymentDate <= maturity)
-            .ToArray() ?? [];
+        // A contractual schedule needs a RESOLVABLE principal basis: without par/face/notional
+        // (DirectLoan carries none) the 100-unit fallback above would cap a real 1,000,000
+        // instalment at 100 and feed that distortion to the ledger bridge — so basis-less records
+        // keep the calculated bullet/sinker walk instead of treating the rows as contractual.
+        var contractualPrincipal = terms.PrincipalFace is > 0m
+            ? terms.PrincipalSchedule?
+                .Where(entry => entry.PaymentDate >= issueDate && entry.PaymentDate <= maturity)
+                .ToArray() ?? []
+            : [];
         StructuredFactorScheduleEntry? appliedFactorEntry = null;
         for (var i = terms.FactorSchedule.Count - 1; i >= 0; i--)
         {

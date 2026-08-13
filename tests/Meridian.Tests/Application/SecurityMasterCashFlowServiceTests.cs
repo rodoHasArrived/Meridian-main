@@ -146,6 +146,42 @@ public sealed class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
+    public async Task GetProjectionAsync_PrincipalScheduleWithoutPrincipalBasis_IsNotTreatedAsContractual()
+    {
+        // DirectLoan-shaped terms: a contractual schedule but no par/face/notional. The 100-unit
+        // fallback basis would cap a real 1,000,000 instalment at 100 and feed that distortion to
+        // the ledger bridge, so without a resolvable basis the schedule is not treated as
+        // contractual and the record keeps the calculated bullet walk.
+        var securityId = Guid.NewGuid();
+        var nextMonth = DateOnly.FromDateTime(DateTime.UtcNow.Date).AddMonths(1);
+        var issueDate = new DateOnly(nextMonth.Year, nextMonth.Month, 1);
+        var instalmentDate = issueDate.AddMonths(6);
+        var maturity = issueDate.AddYears(1);
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate,
+                maturityDate = maturity,
+                couponRate = 6m,
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                principalSchedule = new object[]
+                {
+                    new { paymentDate = instalmentDate, amount = 1_000_000m }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(100m,
+            "without a resolvable principal basis the record projects as a calculated bullet at the fallback basis");
+        projection.Schedule.Should().NotContain(row => row.PrincipalAmount == 1_000_000m,
+            "the schedule must not project instalments it has no basis to cap correctly");
+    }
+
+    [Fact]
     public async Task GetProjectionAsync_PrincipalPaymentAfterFactorAsOf_ReducesTheOpeningBalance()
     {
         // A DATED factor reflects principal events only up to its own as-of date. Here the factor

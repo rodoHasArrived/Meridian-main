@@ -334,8 +334,12 @@ public sealed class AssetObligationProjectionService
         // open a MissingEvidence variance against it). Completed payments the factor does not
         // already reflect (all of them when no factor exists, those after its as-of otherwise) are
         // excluded from the projected schedule below and reduce the opening principal instead.
+        // Contractual schedules also need a RESOLVABLE principal basis here: without par/face the
+        // 100-unit default in ResolveBondPrincipalBasis would cap real instalments, so basis-less
+        // records do not attach a sinking fund at all.
+        var hasPrincipalBasis = terms.PrincipalFace is > 0m;
         var completedPostFactorPrincipal = 0m;
-        if (terms.HasPrincipalSchedule)
+        if (terms.HasPrincipalSchedule && hasPrincipalBasis)
         {
             completedPostFactorPrincipal = terms.PrincipalSchedule!
                 .Where(entry => entry.PaymentDate >= issueDate
@@ -376,7 +380,7 @@ public sealed class AssetObligationProjectionService
                     null,
                     security.Version),
             security.Version,
-            SinkingFund: terms.HasPrincipalSchedule
+            SinkingFund: terms.HasPrincipalSchedule && hasPrincipalBasis
                 ? new BondSinkingFundDto(
                     security.SecurityId,
                     terms.PrincipalSchedule!

@@ -446,6 +446,66 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldDerivePaydownFromTypedFactorScheduleEntries()
+    {
+        // A canonical StructuredCredit can persist its factor history solely in the typed
+        // factorScheduleEntries array ({asOfDate, factor} rows, no per-row priorFactor). The
+        // adapter derives each prior from the ordered preceding entry — here the February 1.00
+        // pairs with the in-period March 0.97 — so the record produces the same paydown event a
+        // legacy factorSchedule row would.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-typed-factor-entries"));
+
+        var securityId = Guid.Parse("66666666-6666-4666-8666-666666666666");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL mortgage-backed typed-entry security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("66666666-6666-4666-8666-666666666667");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule: null,
+            typedFactorEntries:
+            [
+                (new DateOnly(2026, 2, 21), 1.00m),
+                (new DateOnly(2026, 3, 21), 0.97m)
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-typed-factor-entries"));
+
+        detail.Should().NotBeNull();
+        (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(static issue => issue.Code)
+            .Should().NotContain("FACTOR_SCHEDULE_MISSING");
+        detail.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 0.30m &&
+            item.EconomicEvent!.BookPositionId == positionId);
+    }
+
+    [Fact]
     public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPreserveMortgageBackedAssetClassForFactorPaydown()
     {
         var store = new StrategyRunStore();
@@ -1209,7 +1269,8 @@ public sealed class ReconciliationRunServiceTests
         string assetClass = "FixedIncome",
         string assetFamily = "FixedIncome",
         string subType = "CorporateBond",
-        string typeName = "CorporateBond")
+        string typeName = "CorporateBond",
+        IReadOnlyList<(DateOnly AsOfDate, decimal Factor)>? typedFactorEntries = null)
     {
         var commonTerms = JsonSerializer.SerializeToElement(new
         {
@@ -1287,7 +1348,17 @@ public sealed class ReconciliationRunServiceTests
                     new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero))
             ],
             LegacyAssetClass: null,
-            LegacyAssetSpecificTerms: null);
+            LegacyAssetSpecificTerms: typedFactorEntries is null
+                ? null
+                : JsonSerializer.SerializeToElement(new
+                {
+                    factorSchedule = "trustee-report-2026-03",
+                    factorScheduleEntries = typedFactorEntries.Select(static entry => new
+                    {
+                        asOfDate = entry.AsOfDate.ToString("yyyy-MM-dd"),
+                        factor = entry.Factor
+                    }).ToArray()
+                }));
     }
 
     private sealed record FactorScheduleSeed(

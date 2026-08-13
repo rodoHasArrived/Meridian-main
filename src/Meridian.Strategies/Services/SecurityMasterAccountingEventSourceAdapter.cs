@@ -279,6 +279,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         var entries = new List<SecurityFactorScheduleEntry>();
         foreach (var definition in definitions)
         {
+            var coveredDates = new HashSet<DateOnly>();
             foreach (var schedule in EnumerateFactorScheduleArrays(definition))
             {
                 foreach (var item in schedule.EnumerateArray())
@@ -304,6 +305,11 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         continue;
                     }
 
+                    if (!coveredDates.Add(asOfDate.Value))
+                    {
+                        continue;
+                    }
+
                     entries.Add(new SecurityFactorScheduleEntry(
                         definition.SecurityId,
                         asOfDate.Value,
@@ -316,6 +322,64 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         ReadString(item, "sourceHash") ??
                         ReadString(definition.Provenance, "sourceContentHash") ??
                         HashFactorRow(item)));
+                }
+            }
+
+            // Typed factorScheduleEntries rows ({asOfDate, factor}) written by the canonical F#
+            // StructuredCredit serializer carry no per-row priorFactor: the prior is the ORDERED
+            // preceding entry's factor, derived over the whole array so an in-period row whose
+            // predecessor falls outside the period still pairs correctly. The first observation
+            // has nothing to pay down FROM and produces no row. Dates already asserted by an
+            // explicit legacy row are skipped — the explicit prior is authoritative.
+            // The typed rows carry no per-row evidence link; the canonical StructuredCredit record
+            // retains its trustee-report pointer as the free-text factorSchedule field, which is
+            // the retained evidence the paydown projector requires. Rows with no resolvable
+            // evidence still surface — the projector fails them closed with its evidence-required
+            // issue rather than this adapter fabricating a link.
+            var typedRowEvidence = definition.LegacyAssetSpecificTerms is JsonElement legacyTermsForEvidence
+                ? ReadString(legacyTermsForEvidence, "factorSchedule")
+                    ?? ReadString(GetObject(legacyTermsForEvidence, "profileFields"), "factorSchedule")
+                : null;
+            foreach (var schedule in EnumerateTypedFactorScheduleArrays(definition))
+            {
+                var typedRows = new List<(DateOnly AsOfDate, decimal Factor, JsonElement Item)>();
+                foreach (var item in schedule.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    var asOfDate = ReadDate(item, "asOfDate") ??
+                        ReadDate(item, "factorDate") ??
+                        ReadDate(item, "date");
+                    var factor = ReadDecimal(item, "factor") ??
+                        ReadDecimal(item, "currentFactor");
+                    if (asOfDate is not null && factor is not null)
+                    {
+                        typedRows.Add((asOfDate.Value, factor.Value, item));
+                    }
+                }
+
+                var ordered = typedRows.OrderBy(static row => row.AsOfDate).ToArray();
+                for (var i = 1; i < ordered.Length; i++)
+                {
+                    var row = ordered[i];
+                    if (row.AsOfDate < periodStart ||
+                        row.AsOfDate > periodEnd ||
+                        !coveredDates.Add(row.AsOfDate))
+                    {
+                        continue;
+                    }
+
+                    entries.Add(new SecurityFactorScheduleEntry(
+                        definition.SecurityId,
+                        row.AsOfDate,
+                        ordered[i - 1].Factor,
+                        row.Factor,
+                        ReadString(row.Item, "source") ?? ReadString(definition.Provenance, "source") ?? "security-master",
+                        ReadString(row.Item, "evidenceLink") ?? typedRowEvidence,
+                        ReadString(definition.Provenance, "sourceContentHash") ?? HashFactorRow(row.Item)));
                 }
             }
         }
@@ -340,6 +404,28 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         if (TryGetArray(structuredProduct, "factorSchedule", out var structuredSchedule))
         {
             yield return structuredSchedule;
+        }
+    }
+
+    /// <summary>
+    /// The typed {asOfDate, factor} arrays the canonical F# StructuredCredit serializer persists:
+    /// at the asset-specific-terms root for first-class records, and beneath the profile envelope's
+    /// profileFields for profile-backed ones. Unlike the legacy arrays above, their rows carry no
+    /// per-row prior factor.
+    /// </summary>
+    private static IEnumerable<JsonElement> EnumerateTypedFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
+    {
+        if (TryGetArray(definition.LegacyAssetSpecificTerms, "factorScheduleEntries", out var rootEntries))
+        {
+            yield return rootEntries;
+        }
+
+        var profileFields = definition.LegacyAssetSpecificTerms is JsonElement legacyTerms
+            ? GetObject(legacyTerms, "profileFields")
+            : null;
+        if (TryGetArray(profileFields, "factorScheduleEntries", out var nestedEntries))
+        {
+            yield return nestedEntries;
         }
     }
 
