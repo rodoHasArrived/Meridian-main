@@ -466,8 +466,16 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         List<ExpectedJournalPreviewDto> previews,
         List<SecurityMasterAccountingIssueDto> issues)
     {
+        // UNCHANGED observations (prior == current) are factor COVERAGE, not paydowns: no
+        // principal moved, so there is nothing to project, post, or attribute — and therefore no
+        // durable position identity to demand. They are filtered BEFORE the identity precondition
+        // so a period whose only observation is an unchanged factor does not fail closed on
+        // FACTOR_PAYDOWN_POSITION_REQUIRED for an event that does not exist. (Handing an unchanged
+        // row to the projector would also fail closed on the evidence requirement when the
+        // schedule carries no optional evidence pointer.)
         var factors = (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
             .Where(entry => entry.SecurityId == security.SecurityId && entry.AsOfDate >= request.PeriodStart && entry.AsOfDate <= request.PeriodEnd)
+            .Where(static entry => entry.CurrentFactor != entry.PriorFactor)
             .OrderBy(static entry => entry.AsOfDate)
             .ToArray();
         var positionId = position.PositionId.GetValueOrDefault();
@@ -486,15 +494,6 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         var projectedPositionVersion = position.PositionVersion;
         foreach (var factor in factors)
         {
-            // An UNCHANGED observation (prior == current) is factor coverage, not a paydown: no
-            // principal moved, so there is nothing to project or post. Handing it to the projector
-            // would fail closed on the evidence requirement — a high-severity issue for a period
-            // in which nothing happened — when the schedule carries no optional evidence pointer.
-            if (factor.CurrentFactor == factor.PriorFactor)
-            {
-                continue;
-            }
-
             var projection = _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
                 security.SecurityId,
                 positionId,

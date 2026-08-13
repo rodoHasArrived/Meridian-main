@@ -379,7 +379,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             0,
             new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
             null);
-        return (SecurityMasterConflictDetection.ReadComparableFieldValue(detail, conflict.FieldPath), recordSourceSystem);
+        return (SecurityMasterConflictDetection.ReadComparableFieldValue(detail, conflict.FieldPath, _assetProfileCatalog), recordSourceSystem);
     }
 
     /// <summary>
@@ -581,7 +581,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         var incomingSource = SecurityMasterProvenanceReader.Read(incoming.Provenance).SourceSystem;
         foreach (var conflict in openConflicts)
         {
-            var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(incoming, conflict.FieldPath);
+            var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(incoming, conflict.FieldPath, _assetProfileCatalog);
             if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(conflict, persistedValue))
             {
                 continue;

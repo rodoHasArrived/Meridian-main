@@ -2438,16 +2438,108 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             .ReturnsAsync(SuccessTransition(newVersion: 6));
 
         await harness.Service.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
-            SecurityId, draft.RevisionId, "ops.analyst", "Submission abandoned."));
+            SecurityId, draft.RevisionId, "ops.reviewer", "Submission abandoned."));
 
         harness.Workflow.Verify(
             w => w.RejectWorkflowAsync(
                 workflowId,
                 It.Is<OperationsRejectWorkflowRequestDto>(reject =>
-                    reject.Reviewer == "ops.reviewer" && reject.ReasonCode == "SecurityMasterRevisionDiscarded"),
+                    reject.Actor == "ops.reviewer"
+                    && reject.Reviewer == "ops.reviewer"
+                    && reject.ReasonCode == "SecurityMasterRevisionDiscarded"),
                 It.IsAny<CancellationToken>()),
             Times.Once);
         (await harness.Revisions.GetAsync(draft.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Rejected);
+    }
+
+    [Fact]
+    public async Task Discard_ActorIsNotTheAssignedReviewer_RefusesTheDiscard()
+    {
+        // Reviewer evidence must name the person who actually decided: when the bound workflow has
+        // an assigned reviewer, another operator discarding the submission would record a
+        // rejection attributed to a reviewer who never made the decision — so only the assigned
+        // reviewer may discard it.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 3);
+        var draft = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.");
+        await harness.Revisions.TransitionAsync(
+            draft.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted,
+            "ops.analyst", workflowIdForSubmit: workflowId);
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Submitted, reviewer: "ops.reviewer"));
+
+        await harness.Service.Invoking(s => s.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+                SecurityId, draft.RevisionId, "ops.analyst", "Trying to discard someone else's review.")))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>()
+            .WithMessage("*only the assigned reviewer may discard*");
+
+        (await harness.Revisions.GetAsync(draft.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+        harness.Workflow.Verify(
+            w => w.RejectWorkflowAsync(It.IsAny<Guid>(), It.IsAny<OperationsRejectWorkflowRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ReplacementOmitsOptionalDate_IsNotValidatedAgainstTheSupersededCanonical()
+    {
+        // A successfully parsed whole-object replacement REPLACES the object, including ABSENCE:
+        // when it legitimately omits the optional endDate, a later scalar startDate edit must not
+        // be rejected against the canonical endDate the replacement already removed.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-profile",
+            1,
+            "Dated Profile",
+            "PrivateFunds",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "startDate", "Start date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "endDate", "End date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [new SecurityAssetProfileDateOrderRuleDto("startDate", "endDate", "PF_DATE_ORDER", "startDate must be on or before endDate.")],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "test profile");
+        var harness = new Harness(
+            currentVersion: 3,
+            assetProfileCatalog: new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]));
+        harness.SetPassportAssetClass("CustomAsset");
+        harness.SetProjectionProfileEnvelope(
+            "dated-profile", profileVersion: 1,
+            profileFields: new { startDate = "2026-01-01", endDate = "2026-02-01" });
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string>
+                {
+                    ["assetSpecificTerms.profileFields"] = """{"startDate":"2026-01-01"}"""
+                },
+                "ops.analyst",
+                DateTimeOffset.UtcNow.AddMinutes(-5)));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.profileFields.startDate",
+            NewValue: "2026-03-01",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Move the start after the replacement removed the end date.");
+
+        var result = await harness.Service.UpdateSecurityFieldAsync(request);
+
+        result.Should().NotBeNull(
+            "the staged replacement removed the optional endDate, so no date-order counterpart remains to violate");
     }
 
     [Fact]

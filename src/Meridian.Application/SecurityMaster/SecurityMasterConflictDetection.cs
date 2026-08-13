@@ -158,7 +158,10 @@ internal static class SecurityMasterConflictDetection
     /// normalized principal schedule) — the only representation against which a recorded candidate
     /// value can be meaningfully compared. Returns null for paths this detection does not compare.
     /// </summary>
-    internal static string? ReadComparableFieldValue(SecurityDetailDto detail, string fieldPath)
+    internal static string? ReadComparableFieldValue(
+        SecurityDetailDto detail,
+        string fieldPath,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
         var terms = StructuredCashFlowTermsResolver.Resolve(detail);
         return fieldPath switch
@@ -177,14 +180,34 @@ internal static class SecurityMasterConflictDetection
             _ => fieldPath.StartsWith(ProfileFieldPathPrefix, StringComparison.Ordinal)
                 ? ReadComparableProfileFieldValue(
                     GetProfileFields(detail.AssetSpecificTerms),
-                    fieldPath[ProfileFieldPathPrefix.Length..])
+                    fieldPath[ProfileFieldPathPrefix.Length..],
+                    ResolveDeclaredProfileFieldType(
+                        assetProfileCatalog,
+                        detail.AssetSpecificTerms,
+                        fieldPath[ProfileFieldPathPrefix.Length..]))
                 : null,
         };
     }
 
-    /// <inheritdoc cref="ReadComparableFieldValue(SecurityDetailDto, string)"/>
-    internal static string? ReadComparableFieldValue(SecurityProjectionRecord projection, string fieldPath)
-        => ReadComparableFieldValue(SecurityMasterMapping.ToDetail(projection), fieldPath);
+    /// <inheritdoc cref="ReadComparableFieldValue(SecurityDetailDto, string, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog?)"/>
+    internal static string? ReadComparableFieldValue(
+        SecurityProjectionRecord projection,
+        string fieldPath,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
+        => ReadComparableFieldValue(SecurityMasterMapping.ToDetail(projection), fieldPath, assetProfileCatalog);
+
+    /// <summary>
+    /// The declared type of one pinned-profile field, or null when no catalog is wired, the pin
+    /// does not resolve, or the profile does not declare the key — callers then compare the raw
+    /// spelling, matching the undeclared-key posture everywhere else.
+    /// </summary>
+    private static Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? ResolveDeclaredProfileFieldType(
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog,
+        JsonElement assetSpecificTerms,
+        string fieldKey)
+        => ResolveDeclaredProfileFields(assetProfileCatalog, assetSpecificTerms)
+            ?.FirstOrDefault(field => string.Equals(field.Key, fieldKey, StringComparison.OrdinalIgnoreCase))
+            ?.FieldType;
 
     /// <summary>
     /// The governed field paths whose values ARE numbers, and therefore the only paths where
@@ -412,25 +435,25 @@ internal static class SecurityMasterConflictDetection
             // comparing under the incumbent's declaration would treat old-profile fields retained
             // as pass-through metadata as governed economics and open false conflicts. The
             // incumbent is only the fallback when the incoming side does not resolve.
-            var declaredKeys = ResolveDeclaredProfileFieldKeys(
+            var declaredFields = ResolveDeclaredProfileFields(
                 assetProfileCatalog, incoming.AssetSpecificTerms, current.AssetSpecificTerms);
-            if (declaredKeys is null)
+            if (declaredFields is null)
             {
                 return;
             }
 
-            foreach (var key in declaredKeys)
+            foreach (var field in declaredFields)
             {
-                if (ProfileFieldComparisonExclusions.Contains(key))
+                if (ProfileFieldComparisonExclusions.Contains(field.Key))
                 {
                     continue;
                 }
 
                 CompareText(
-                    ProfileFieldPathPrefix + key,
+                    ProfileFieldPathPrefix + field.Key,
                     SecurityMasterConflictKinds.EconomicTermMismatch,
-                    ReadComparableProfileFieldValue(fieldsA, key),
-                    ReadComparableProfileFieldValue(fieldsB, key));
+                    ReadComparableProfileFieldValue(fieldsA, field.Key, field.FieldType),
+                    ReadComparableProfileFieldValue(fieldsB, field.Key, field.FieldType));
             }
         }
 
@@ -600,14 +623,14 @@ internal static class SecurityMasterConflictDetection
             : null;
 
     /// <summary>
-    /// The declared field keys of the record's PINNED profile, resolved from the FIRST envelope
-    /// whose pin is registered — callers pass the envelope that will govern the persisted record
-    /// first (the incoming side of an amendment, since a repin's submitted profile is the one the
-    /// record reads under after the write) and the fallback second. Null when no catalog is wired
-    /// or no side's pinned version is registered: no declaration means no basis to treat a key as
-    /// governed economics.
+    /// The declared field definitions of the record's PINNED profile, resolved from the FIRST
+    /// envelope whose pin is registered — callers pass the envelope that will govern the persisted
+    /// record first (the incoming side of an amendment, since a repin's submitted profile is the
+    /// one the record reads under after the write) and the fallback second. Null when no catalog
+    /// is wired or no side's pinned version is registered: no declaration means no basis to treat
+    /// a key as governed economics.
     /// </summary>
-    private static IReadOnlyList<string>? ResolveDeclaredProfileFieldKeys(
+    private static IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldDefinitionDto>? ResolveDeclaredProfileFields(
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog,
         params JsonElement[] envelopes)
     {
@@ -630,7 +653,7 @@ internal static class SecurityMasterConflictDetection
 
             if (assetProfileCatalog.TryGetProfile(profileId.GetString()!, profileVersion, out var profile))
             {
-                return profile.Fields.Select(static field => field.Key).ToArray();
+                return profile.Fields;
             }
         }
 
@@ -639,10 +662,18 @@ internal static class SecurityMasterConflictDetection
 
     /// <summary>
     /// Canonical comparable text for one governed profile-field value: numbers scale-normalized
-    /// (G29 drops trailing zeros), booleans lowercased, strings verbatim, structured values as raw
-    /// JSON. Null when the field is absent or JSON null — absence is incompleteness, not a value.
+    /// (G29 drops trailing zeros), booleans lowercased, structured values as raw JSON. String
+    /// values canonicalize through the pinned profile's DECLARED type when one is supplied —
+    /// dates to <c>yyyy-MM-dd</c>, security links to the canonical GUID spelling, declared
+    /// numerics through G29 — because write validation accepts multiple spellings of the same
+    /// typed value, and comparing raw spellings would open conflicts (and block resolutions) for
+    /// "2026-07-01" versus "07/01/2026". Text-like and undeclared fields keep their raw identity.
+    /// Null when the field is absent or JSON null — absence is incompleteness, not a value.
     /// </summary>
-    private static string? ReadComparableProfileFieldValue(JsonElement? profileFields, string key)
+    private static string? ReadComparableProfileFieldValue(
+        JsonElement? profileFields,
+        string key,
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? declaredType = null)
     {
         if (profileFields is not JsonElement fields
             || !SecurityTermReader.TryGetProperty(fields, key, out var value))
@@ -652,7 +683,7 @@ internal static class SecurityMasterConflictDetection
 
         return value.ValueKind switch
         {
-            JsonValueKind.String => value.GetString(),
+            JsonValueKind.String => CanonicalizeDeclaredProfileFieldText(declaredType, value.GetString()!),
             JsonValueKind.Number => value.TryGetDecimal(out var number)
                 ? number.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)
                 : value.GetRawText(),
@@ -662,6 +693,28 @@ internal static class SecurityMasterConflictDetection
             _ => value.GetRawText(),
         };
     }
+
+    /// <summary>
+    /// Canonical spelling of a string-carried profile-field value under its declared type; the
+    /// raw text when the type is text-like, undeclared, or the value does not parse (a
+    /// non-parsing value keeps its identity and surfaces as the disagreement it is).
+    /// </summary>
+    private static string CanonicalizeDeclaredProfileFieldText(
+        Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto? declaredType, string raw)
+        => declaredType switch
+        {
+            Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto.Date
+                when DateOnly.TryParse(raw.Trim(), System.Globalization.CultureInfo.InvariantCulture, out var date)
+                => date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto.SecurityLink
+                when Guid.TryParse(raw.Trim(), out var link)
+                => link.ToString("D"),
+            Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto.Decimal
+                or Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto.Integer
+                when decimal.TryParse(raw.Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var number)
+                => number.ToString("G29", System.Globalization.CultureInfo.InvariantCulture),
+            _ => raw,
+        };
 
     /// <summary>
     /// Stable id for a field conflict: the (source, value) sides are ordered before hashing so the

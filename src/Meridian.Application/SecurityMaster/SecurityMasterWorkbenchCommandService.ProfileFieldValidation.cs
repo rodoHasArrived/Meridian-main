@@ -48,10 +48,15 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                 try
                 {
                     using var replacement = JsonDocument.Parse(overrideValue);
-                    if (replacement.RootElement.ValueKind == JsonValueKind.Object
-                        && TryReadProfileDate(replacement.RootElement, fieldKey, out value))
+                    if (replacement.RootElement.ValueKind == JsonValueKind.Object)
                     {
-                        return true;
+                        // A successfully parsed replacement REPLACES the whole object: its answer
+                        // is authoritative, including ABSENCE. An optional date the replacement
+                        // legitimately omits is removed on the post-approval read, so probing the
+                        // canonical layer would validate a later scalar edit against a value the
+                        // replacement already deleted (e.g. rejecting a new start date against a
+                        // superseded canonical end date).
+                        return TryReadProfileDate(replacement.RootElement, fieldKey, out value);
                     }
                 }
                 catch (JsonException)

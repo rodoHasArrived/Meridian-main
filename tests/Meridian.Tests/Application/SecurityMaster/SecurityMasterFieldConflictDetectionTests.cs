@@ -627,6 +627,60 @@ public sealed class SecurityMasterFieldConflictDetectionTests
         openForField.Should().ContainSingle("one live disagreement must surface exactly one resolvable queue entry");
     }
 
+    [Fact]
+    public async Task RecordFieldConflictsAsync_DeclaredDateFieldSpelledDifferently_OpensNoConflict()
+    {
+        // Write validation accepts multiple DateOnly spellings, so two providers asserting the
+        // SAME date as "2026-07-01" and "07/01/2026" are agreeing, not disagreeing: declared
+        // Date fields canonicalize to yyyy-MM-dd before comparison, so no conflict opens and a
+        // resolution's persisted-value guard sees the alternate spelling as the same value.
+        var datedProfile = new SecurityAssetProfileDefinitionDto(
+            "dated-conflict-profile",
+            1,
+            "Dated Conflict Profile",
+            "PrivateDebt",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "reportDate", "Report date", SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "dated conflict profile");
+        var catalog = new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog([datedProfile]);
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance, catalog);
+
+        var current = Record("Bloomberg", new
+        {
+            customProfileId = "dated-conflict-profile",
+            profileVersion = 1,
+            profileFields = new { reportDate = "2026-07-01" }
+        });
+        var incoming = Record("Reuters", new
+        {
+            customProfileId = "dated-conflict-profile",
+            profileVersion = 1,
+            profileFields = new { reportDate = "07/01/2026" }
+        });
+
+        await service.RecordFieldConflictsAsync(current, incoming, CancellationToken.None);
+
+        var open = await service.GetOpenConflictsAsync(CancellationToken.None);
+        open.Should().NotContain(c => c.FieldPath == "ProfileFields.reportDate",
+            "both spellings canonicalize to the same 2026-07-01 date");
+    }
+
     [Theory]
     [InlineData("ProfileFields.poolId", "001", "1", false)]
     [InlineData("ProfileFields.poolId", "001", "001", true)]

@@ -430,16 +430,38 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     }
 
     [Fact]
-    public void Equity_LegacyRawOtherClassification_CanonicalizesAndThenRoundTripsByteStable()
+    public void Equity_LegacyRawOtherClassification_ReadCanonicalizesAndThenRoundTripsByteStable()
     {
-        // Rows written before the serializer emitted the "Other" discriminant carry the raw label in
-        // the classification slot. The read must tolerate them (Other(raw)), and the canonical form
-        // they re-serialize to must itself be stable.
-        var canonical = SerializeThroughDomain("Equity", new
-        {
-            shareClass = "T",
-            classification = "TrackingStock"
-        });
+        // Rows written before the serializer emitted the "Other" discriminant carry the raw label
+        // in the classification slot. The READ path must tolerate them (Other(raw)) — the WRITE
+        // path now rejects unknown discriminants outright — and the canonical form they
+        // re-serialize to must itself be stable.
+        var legacyProjection = new SecurityProjectionRecord(
+            Guid.NewGuid(),
+            "Equity",
+            SecurityStatusDto.Active,
+            "Legacy tracking stock",
+            "USD",
+            "InternalCode",
+            "LEGACY-EQ-1",
+            JsonSerializer.SerializeToElement(new { displayName = "Legacy tracking stock", currency = "USD" }),
+            JsonSerializer.SerializeToElement(new { shareClass = "T", classification = "TrackingStock" }),
+            JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "schema-round-trip-tests",
+                asOf = "2026-01-01T00:00:00+00:00",
+                updatedBy = "schema-round-trip-tests"
+            }),
+            1,
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            null,
+            [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "LEGACY-EQ-1", true, new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero))],
+            []);
+
+        var record = SecurityMasterMapping.ToRecord(legacyProjection);
+        var canonical = JsonDocument
+            .Parse(new SecurityMasterSnapshotWrapper(record).AssetSpecificTermsJson)
+            .RootElement.Clone();
 
         canonical.GetProperty("classification").GetString().Should().Be("Other");
         canonical.GetProperty("otherClassification").GetString().Should().Be("TrackingStock");

@@ -246,7 +246,7 @@ internal static class SecurityMasterMapping
             "Equity" => SecurityKind.NewEquity(new EquityTerms(
                 ToOption(GetOptionalString(json, "shareClass")),
                 ToVotingRightsCatOption(GetOptionalString(json, "votingRightsCat")),
-                ToEquityClassificationOption(json))),
+                ToEquityClassificationOption(json, mode))),
             "Option" => SecurityKind.NewOption(new OptionTerms(
                 SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingId")),
                 GetRequiredString(json, "putCall"),
@@ -827,7 +827,8 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "conversionStartDate")),
             ToOption(GetOptionalDateOnly(json, "conversionEndDate")));
 
-    private static FSharpOption<EquityClassification> ToEquityClassificationOption(JsonElement json)
+    private static FSharpOption<EquityClassification> ToEquityClassificationOption(
+        JsonElement json, SecurityKindMappingMode mode)
     {
         var raw = GetOptionalString(json, "classification");
         return raw switch
@@ -841,9 +842,25 @@ internal static class SecurityMasterMapping
                 EquityClassification.NewConvertiblePreferred(
                     ToPreferredTerms(GetRequiredObject(json, "preferredTerms")),
                     ToConvertibleTerms(GetRequiredObject(json, "convertibleTerms")))),
+            // A write selecting "Other" must NAME the classification: defaulting a missing
+            // otherClassification to the placeholder "Other" would persist an economically
+            // meaningless label as the security's classification.
+            "Other" when mode == SecurityKindMappingMode.Write =>
+                GetOptionalString(json, "otherClassification") is { } named && !string.IsNullOrWhiteSpace(named)
+                    ? FSharpOption<EquityClassification>.Some(EquityClassification.NewOther(named))
+                    : throw new InvalidOperationException(
+                        "An equity classification of 'Other' requires a non-empty 'otherClassification' naming the " +
+                        "classification. Supply it, or use one of the declared classifications " +
+                        "(Common, Preferred, Convertible, ConvertiblePreferred)."),
             "Other" => FSharpOption<EquityClassification>.Some(
                 EquityClassification.NewOther(GetOptionalString(json, "otherClassification") ?? "Other")),
             null => FSharpOption<EquityClassification>.None,
+            // A WRITE fails closed on an unrecognized discriminant: silently persisting a typo
+            // ("Commmon") as Other(raw) would change the security's economic classification.
+            _ when mode == SecurityKindMappingMode.Write =>
+                throw new InvalidOperationException(
+                    $"Unknown equity classification '{raw}'. Declared classifications are Common, Preferred, " +
+                    "Convertible, and ConvertiblePreferred; use 'Other' with 'otherClassification' for anything else."),
             // Read tolerance: rows written before the serializer emitted the "Other" discriminant
             // carry the raw label in the classification slot. Treat any unrecognized value as an
             // Other classification instead of failing every read of the row.

@@ -173,6 +173,58 @@ public sealed class SecurityMasterMappingInteropTests
     }
 
     [Fact]
+    public void ToCreateCommand_UnknownEquityClassification_RejectsTheWrite()
+    {
+        // Read tolerance (Other(raw) for legacy rows) must not leak into WRITES: a typo like
+        // "Commmon" would silently persist as Other("Commmon"), changing the security's economic
+        // classification instead of surfacing the mistake to the caller.
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(EquityCreateRequest(new
+            {
+                shareClass = "A",
+                classification = "Commmon"
+            })))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*Unknown equity classification 'Commmon'*");
+    }
+
+    [Fact]
+    public void ToCreateCommand_OtherClassificationWithoutName_RejectsTheWrite()
+    {
+        // A write explicitly selecting "Other" must NAME the classification: defaulting to the
+        // placeholder label would persist an economically meaningless classification.
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(EquityCreateRequest(new
+            {
+                shareClass = "A",
+                classification = "Other"
+            })))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*requires a non-empty 'otherClassification'*");
+    }
+
+    private static CreateSecurityRequest EquityCreateRequest(object assetSpecificTerms)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new CreateSecurityRequest(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: "Equity",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Equity classification write guard",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(assetSpecificTerms),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "EQ-CLASS-1", true, now)
+            ],
+            EffectiveFrom: now,
+            SourceSystem: "interop-tests",
+            UpdatedBy: "interop-tests",
+            SourceRecordId: "equity-classification-write-guard",
+            Reason: "Write mapping must fail closed on unknown classifications");
+    }
+
+    [Fact]
     public void ToCreateCommand_NonProviderSymbolIdentifier_PreservesProviderMetadata()
     {
         var now = DateTimeOffset.UtcNow;

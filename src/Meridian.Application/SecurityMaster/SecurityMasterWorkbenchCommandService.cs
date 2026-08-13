@@ -611,19 +611,29 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
 
             if (boundWorkflow is { ApprovalState: OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned })
             {
-                // The gate's reject transition enforces reviewer identity when one is assigned, so
-                // the rejection is recorded under the ASSIGNED reviewer (the discarding actor
-                // otherwise), with the discard reason as the audited rationale.
+                // Reviewer evidence must name the person who actually decided: when the workflow
+                // has an ASSIGNED reviewer, only that reviewer may discard the submission — the
+                // rejection record would otherwise attribute the decision to a reviewer who never
+                // made it. An unassigned workflow records the discarding actor.
                 var assignedReviewer = boundWorkflow.Approvals
                     .Select(static approval => approval.Reviewer)
-                    .LastOrDefault(static reviewer => !string.IsNullOrWhiteSpace(reviewer))
-                    ?? request.Actor;
+                    .LastOrDefault(static reviewer => !string.IsNullOrWhiteSpace(reviewer));
+                if (assignedReviewer is not null
+                    && !string.Equals(assignedReviewer.Trim(), request.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new SecurityMasterRevisionStateException(
+                        request.RevisionId,
+                        $"its bound approval workflow is assigned to reviewer '{assignedReviewer}'; only the assigned " +
+                        "reviewer may discard a submitted revision, so the rejection evidence names the person who " +
+                        "actually decided.");
+                }
+
                 var rejectResult = await _approvalWorkflow.RejectWorkflowAsync(
                     boundWorkflowId,
                     new OperationsRejectWorkflowRequestDto(
                         ExpectedVersion: boundWorkflow.Version,
                         Actor: request.Actor,
-                        Reviewer: assignedReviewer,
+                        Reviewer: request.Actor,
                         Rationale: string.IsNullOrWhiteSpace(request.Reason)
                             ? "Security Master revision discarded."
                             : request.Reason!,

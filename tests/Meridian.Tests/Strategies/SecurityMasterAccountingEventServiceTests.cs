@@ -505,6 +505,38 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_UnchangedFactorWithoutDurablePosition_DoesNotRequireAPositionIdentity()
+    {
+        // An unchanged observation is factor COVERAGE — no principal moved, so there is no
+        // paydown to attribute and no durable position identity to demand. A period whose only
+        // observation is unchanged must not fail closed on FACTOR_PAYDOWN_POSITION_REQUIRED for
+        // an event that does not exist.
+        var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(
+            position: new SecurityMasterAccountingPosition(
+                Symbol: "BOND1",
+                SecurityId: BondSecurityId,
+                AccountId: "acct-1",
+                ParAmount: 100_000m,
+                CarryingPrice: 0.94m,
+                PositionId: null),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 0.80m,
+                    CurrentFactor: 0.80m,
+                    Source: "trustee-report",
+                    SourceContentHash: "sha256:unchanged-factor-no-position")
+            ]));
+
+        result.Issues.Should().NotContain(issue => issue.Code == "FACTOR_PAYDOWN_POSITION_REQUIRED",
+            "coverage-only observations attribute nothing and need no position identity");
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
     public void Generate_UnchangedFactorObservation_IsCoverageNotAPaydown()
     {
         // An observation whose factor equals its prior is the period's factor COVERAGE — no
