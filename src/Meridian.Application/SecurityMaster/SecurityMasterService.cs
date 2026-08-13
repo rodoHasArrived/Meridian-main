@@ -19,6 +19,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private readonly IPolygonCorporateActionFetcher? _corporateActionFetcher;
     private readonly SecurityMasterProjectionCache? _projectionCache;
     private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
+    private readonly Validation.AssetClassValidatorRegistry? _assetClassValidators;
 
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
@@ -33,7 +34,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         ISecurityMasterConflictService? conflictService = null,
         IPolygonCorporateActionFetcher? corporateActionFetcher = null,
         SecurityMasterProjectionCache? projectionCache = null,
-        SecurityMasterCanonicalSymbolSeedService? seedService = null)
+        SecurityMasterCanonicalSymbolSeedService? seedService = null,
+        Validation.AssetClassValidatorRegistry? assetClassValidators = null)
     {
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
@@ -45,6 +47,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         _corporateActionFetcher = corporateActionFetcher;
         _projectionCache = projectionCache;
         _seedService = seedService;
+        _assetClassValidators = assetClassValidators;
     }
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
@@ -71,6 +74,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             currentProjection.Aliases,
             GetProfileBackedAssetClassOverride(currentProjection),
             GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch));
+        EnsureProfileBackedTermsAreCatalogValid(projection);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
@@ -218,6 +222,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             aliases: null,
             GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms),
             GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
+        EnsureProfileBackedTermsAreCatalogValid(projection);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
@@ -342,6 +347,83 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }
 
         EnsureEquityClassificationRoundTripsSafely(projection);
+        EnsureCustomAssetEnvelopeRoundTripsSafely(projection);
+    }
+
+    /// <summary>
+    /// Profile-backed records reference an approved profile that governs their dynamic fields, but
+    /// the F# domain command cannot see the profile catalog — without this check an unknown, draft,
+    /// or field-violating profile persists canonically and is only discovered by a later validation
+    /// read. Runs the registered profile validator BEFORE the create/amend/deactivate event is
+    /// appended and refuses the write on Error-severity issues. Skipped when no registry was
+    /// supplied (harnesses that exercise storage mechanics without reference data).
+    /// </summary>
+    private void EnsureProfileBackedTermsAreCatalogValid(SecurityProjectionRecord projection)
+    {
+        if (_assetClassValidators is null)
+        {
+            return;
+        }
+
+        var isCustomAsset = string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase);
+        var terms = projection.AssetSpecificTerms;
+        var referencesProfile = terms.ValueKind == JsonValueKind.Object
+            && terms.TryGetProperty("customProfileId", out var profileId)
+            && profileId.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(profileId.GetString());
+        if (!isCustomAsset && !referencesProfile)
+        {
+            return;
+        }
+
+        // The CustomAsset validator requires a profile reference; profile-backed records whose
+        // asset class resolved elsewhere validate the referenced profile through the optional
+        // OtherSecurity-keyed validator instead.
+        if (!_assetClassValidators.TryGetValidator(isCustomAsset ? "CustomAsset" : "OtherSecurity", out var validator))
+        {
+            return;
+        }
+
+        var issues = validator.Validate(new Validation.SecurityValidationContext(projection, DateTimeOffset.UtcNow));
+        var errors = issues
+            .Where(static issue => issue.Severity == SecurityValidationSeverityDto.Error)
+            .ToArray();
+        if (errors.Length > 0)
+        {
+            var summary = string.Join("; ", errors.Select(static issue => $"[{issue.Code}] {issue.Message}"));
+            throw new InvalidOperationException(
+                $"Security '{projection.SecurityId:D}' references an asset profile that fails catalog validation, " +
+                $"so the write is refused: {summary}");
+        }
+    }
+
+    /// <summary>
+    /// A legacy CustomAsset row that predates the profile envelope (no <c>customProfileId</c>)
+    /// deserializes through the OtherSecurity salvage path even though "CustomAsset" is a
+    /// catalog-recognized class, so an amend or deactivate would re-serialize the fallback as
+    /// OtherSecurity and drop the record's unmodeled custom fields. The envelope, not the catalog
+    /// name, is what makes the round-trip lossless — refuse the write when it is absent.
+    /// </summary>
+    private static void EnsureCustomAssetEnvelopeRoundTripsSafely(SecurityProjectionRecord projection)
+    {
+        if (!string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var terms = projection.AssetSpecificTerms;
+        var hasEnvelope = terms.ValueKind == JsonValueKind.Object
+            && terms.TryGetProperty("customProfileId", out var profileId)
+            && profileId.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(profileId.GetString());
+        if (!hasEnvelope)
+        {
+            throw new InvalidOperationException(
+                $"Security '{projection.SecurityId:D}' is a CustomAsset without a profile envelope (no customProfileId), " +
+                "so it reads through the OtherSecurity salvage path. Amending or deactivating it here would re-serialize " +
+                "that fallback and drop its custom fields, so the write is refused. Migrate the record to a profile-backed " +
+                "envelope through a governed amendment first.");
+        }
     }
 
     /// <summary>

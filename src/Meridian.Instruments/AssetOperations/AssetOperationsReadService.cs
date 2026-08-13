@@ -852,7 +852,11 @@ public static class AssetOperationsProjectionBuilder
         var par = bond.Lifecycle?.Par is decimal parValue && parValue > 0m
             ? parValue
             : DefaultPrincipalBasis;
-        var factor = bond.InflationLinked?.CurrentFactor is decimal currentFactor && currentFactor > 0m
+        // Zero is a REAL factor — a fully amortized pool — and must not be conflated with a
+        // missing one: substituting 1 would project full-face principal (and draftable ledger
+        // support) for a security with nothing outstanding. Only an absent or negative factor
+        // falls back to 1.
+        var factor = bond.InflationLinked?.CurrentFactor is decimal currentFactor && currentFactor >= 0m
             ? currentFactor
             : 1m;
         return RoundCash(par * factor);

@@ -261,6 +261,160 @@ public sealed class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task DeactivateAsync_LegacyCustomAssetWithoutProfileEnvelope_RefusesTheWrite()
+    {
+        // A CustomAsset row that predates the profile envelope reads through the OtherSecurity
+        // salvage path even though "CustomAsset" is in the catalog; re-serializing that fallback
+        // would drop the record's unmodeled custom fields, so the write must be refused.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var projection = CreateProjection(securityId, "CustomAsset", SecurityStatusDto.Active, "Legacy Custom", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                category = "Litigation Finance",
+                bespokeField = "unmodeled"
+            })
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(projection);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*without a profile envelope*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_CustomAssetWithUnknownProfile_RefusesTheCanonicalWrite()
+    {
+        // The F# domain command validates the envelope's shape but cannot see the profile catalog;
+        // without the catalog check an unknown or unapproved profile persists canonically and is
+        // only discovered by a later validation read.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            assetClassValidators: Meridian.Application.SecurityMaster.Validation.AssetClassValidatorRegistry.CreateDefault());
+
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                securityId,
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new { displayName = "Unknown Profile Asset", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "not-a-registered-profile",
+                    profileVersion = 1,
+                    profileFields = new { anything = "x" }
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "CUST-UNKNOWN", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*fails catalog validation*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_BondWithMalformedPrincipalScheduleContainer_Rejects()
+    {
+        // A principalSchedule that is present but not an array must fail the write instead of
+        // reading as absent — silently deleting the submitted schedule would persist a snapshot
+        // that projects the bond as a bullet.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        await service.Invoking(s => s.CreateAsync(new CreateSecurityRequest(
+                securityId,
+                "Bond",
+                JsonSerializer.SerializeToElement(new { displayName = "Malformed Sinker", currency = "USD" }),
+                JsonSerializer.SerializeToElement(new
+                {
+                    maturity = "2031-06-15",
+                    couponRate = 0.05m,
+                    principalSchedule = "not-an-array"
+                }),
+                new[]
+                {
+                    new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "BOND-MALF", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "create")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*'principalSchedule' must be a JSON array*");
+    }
+
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,
         string assetClass,

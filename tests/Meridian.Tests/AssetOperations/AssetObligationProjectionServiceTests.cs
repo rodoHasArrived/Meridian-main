@@ -63,6 +63,31 @@ public sealed class AssetObligationProjectionServiceTests
             "the as-of scheduled factor supersedes the stale scalar currentFactor");
     }
 
+    [Fact]
+    public void ProjectFromSecurityMaster_StructuredCredit_ZeroFactorProjectsNoPrincipal()
+    {
+        // Zero is a real factor — a fully amortized pool. Conflating it with a MISSING factor
+        // (which falls back to 1) would project a full-face maturity flow and draftable ledger
+        // support for a security with nothing outstanding.
+        var security = MakeStructuredCredit(assetTerms: new
+        {
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            maturity = "2031-06-15",
+            factorScheduleEntries = new[]
+            {
+                new { asOfDate = "2024-01-01", factor = 0m },
+            }
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        detail.ProjectedCashFlows.Should().BeEmpty(
+            "a fully amortized pool (factor 0) has no outstanding principal to project");
+    }
+
     private static SecurityDetailDto MakeStructuredCredit(object assetTerms)
         => new(
             Guid.NewGuid(),

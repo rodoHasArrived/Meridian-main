@@ -910,9 +910,13 @@ public static class SecurityMasterEndpoints
         {
             // The assetSpecificTerms.* namespace is reserved for the governed workbench edit route,
             // which schema-validates the key and type-coerces the value. Accepting those keys here
-            // would let a raw patch bypass that validation entirely.
+            // would let a raw patch bypass that validation entirely — and a raw REMOVAL would strip
+            // the overlay without the draft revision and provenance clean-up the workbench clear
+            // performs, leaving stale OperatorFieldEdit lineage behind.
             var reservedKey = request.SetValues?.Keys.FirstOrDefault(
-                static key => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(key));
+                    static key => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(key))
+                ?? request.RemoveKeys?.FirstOrDefault(
+                    static key => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(key));
             if (reservedKey is not null)
             {
                 return Results.Problem(
@@ -920,8 +924,9 @@ public static class SecurityMasterEndpoints
                     detail:
                         $"Override key '{reservedKey}' targets the assetSpecificTerms namespace, which is " +
                         "reserved for the schema-validated workbench field-edit route " +
-                        "(PUT security-master field edits). Use that route so the key and value are " +
-                        "validated against the asset class's declared term schema.",
+                        "(PUT security-master field edits). Use that route so sets are validated against " +
+                        "the asset class's declared term schema and clears retire the draft-revision and " +
+                        "provenance lineage with the overlay.",
                     statusCode: StatusCodes.Status400BadRequest);
             }
 

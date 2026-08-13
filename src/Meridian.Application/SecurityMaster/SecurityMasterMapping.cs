@@ -334,7 +334,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(terms, "currentFactor")),
                 GetRequiredString(terms, "couponOrIndex"),
                 ToOption(GetOptionalString(terms, "factorSchedule")),
-                ToFSharpList(GetOptionalArrayItems(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)))),
+                ToFSharpList(GetOptionalArrayItemsStrict(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -492,7 +492,7 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "legalFinalMaturity")),
             ToOption(GetOptionalDateOnly(json, "preRefundDate")),
             ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")),
-            ToFSharpList(GetOptionalArrayItems(json, "principalSchedule").Select(ToPrincipalPaymentEntry)));
+            ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)));
     }
 
     private static SwapLeg ToSwapLeg(JsonElement json)
@@ -631,6 +631,25 @@ internal static class SecurityMasterMapping
         {
             yield return item;
         }
+    }
+
+    /// <summary>
+    /// Like <see cref="GetOptionalArrayItems"/>, but a property that is PRESENT with the wrong JSON
+    /// kind fails instead of reading as absent. Used for contractual schedules: silently treating a
+    /// malformed <c>principalSchedule</c>/<c>factorScheduleEntries</c> as missing would let domain
+    /// validation succeed and persist a snapshot that deleted the submitted schedule — projecting a
+    /// sinker as a bullet — rather than rejecting the invalid terms.
+    /// </summary>
+    private static IEnumerable<JsonElement> GetOptionalArrayItemsStrict(JsonElement json, string propertyName)
+    {
+        if (json.TryGetProperty(propertyName, out var value)
+            && value.ValueKind is not (JsonValueKind.Array or JsonValueKind.Null or JsonValueKind.Undefined))
+        {
+            throw new InvalidOperationException(
+                $"Property '{propertyName}' must be a JSON array when present, but was {value.ValueKind}.");
+        }
+
+        return GetOptionalArrayItems(json, propertyName);
     }
 
     private static string GetRequiredString(JsonElement json, string propertyName)
