@@ -334,6 +334,8 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         foreach (var definition in definitions)
         {
             var coveredDates = new HashSet<DateOnly>();
+            var definitionStartCount = entries.Count;
+            SecurityFactorScheduleEntry? latestPrePeriod = null;
             foreach (var schedule in EnumerateFactorScheduleArrays(definition))
             {
                 foreach (var item in schedule.EnumerateArray())
@@ -353,7 +355,6 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     // Period end is EXCLUSIVE (ResolvePeriod supplies the next month's first day),
                     // so a month-boundary row surfaces in exactly one reconciliation.
                     if (asOfDate is null ||
-                        asOfDate < periodStart ||
                         asOfDate >= periodEnd ||
                         priorFactor is null ||
                         currentFactor is null)
@@ -361,12 +362,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         continue;
                     }
 
-                    if (!coveredDates.Add(asOfDate.Value))
-                    {
-                        continue;
-                    }
-
-                    entries.Add(new SecurityFactorScheduleEntry(
+                    var entry = new SecurityFactorScheduleEntry(
                         definition.SecurityId,
                         asOfDate.Value,
                         priorFactor.Value,
@@ -377,7 +373,28 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         ReadString(item, "contentHash") ??
                         ReadString(item, "sourceHash") ??
                         ReadString(definition.Provenance, "sourceContentHash") ??
-                        HashFactorRow(item)));
+                        HashFactorRow(item));
+
+                    if (asOfDate < periodStart)
+                    {
+                        // Pre-period rows never enter the request as coverage — but the LATEST one
+                        // is retained below when the security has no in-period observation at all,
+                        // so the coverage classifier can report FACTOR_STALE instead of the
+                        // indistinguishable FACTOR_SCHEDULE_MISSING.
+                        if (latestPrePeriod is null || entry.AsOfDate > latestPrePeriod.AsOfDate)
+                        {
+                            latestPrePeriod = entry;
+                        }
+
+                        continue;
+                    }
+
+                    if (!coveredDates.Add(asOfDate.Value))
+                    {
+                        continue;
+                    }
+
+                    entries.Add(entry);
                 }
             }
 
@@ -438,9 +455,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     // The period end is EXCLUSIVE: ResolvePeriod supplies the first day of the
                     // NEXT month, so an inclusive comparison would surface a month-boundary
                     // observation in two adjacent reconciliations as duplicate paydown evidence.
-                    if (row.AsOfDate < periodStart ||
-                        row.AsOfDate >= periodEnd ||
-                        !coveredDates.Add(row.AsOfDate))
+                    if (row.AsOfDate >= periodEnd)
                     {
                         continue;
                     }
@@ -449,7 +464,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     // the asserting provider under sourceSystem, so that vendor identity — not the
                     // generic security-master fallback — is the factor-source lineage the expected
                     // event must record.
-                    entries.Add(new SecurityFactorScheduleEntry(
+                    var typedEntry = new SecurityFactorScheduleEntry(
                         definition.SecurityId,
                         row.AsOfDate,
                         priorFactor,
@@ -458,8 +473,36 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                             ?? ResolveProvenanceSourceSystem(definition)
                             ?? "security-master",
                         ReadString(row.Item, "evidenceLink") ?? typedRowEvidence,
-                        ReadString(definition.Provenance, "sourceContentHash") ?? HashFactorRow(row.Item)));
+                        ReadString(definition.Provenance, "sourceContentHash") ?? HashFactorRow(row.Item));
+
+                    if (row.AsOfDate < periodStart)
+                    {
+                        if (latestPrePeriod is null || typedEntry.AsOfDate > latestPrePeriod.AsOfDate)
+                        {
+                            latestPrePeriod = typedEntry;
+                        }
+
+                        continue;
+                    }
+
+                    if (!coveredDates.Add(row.AsOfDate))
+                    {
+                        continue;
+                    }
+
+                    entries.Add(typedEntry);
                 }
+            }
+
+            // A factor-driven security whose observations ALL predate the period still needs its
+            // latest retained row in the request: the coverage classifier can distinguish
+            // FACTOR_STALE (evidence needs refreshing) from FACTOR_SCHEDULE_MISSING (no evidence
+            // at all) only when it sees that row. The paydown generator filters to in-period rows
+            // itself, so the retained observation never projects a paydown — and securities WITH
+            // in-period coverage never carry it, keeping paydown evidence period-scoped.
+            if (entries.Count == definitionStartCount && latestPrePeriod is not null)
+            {
+                entries.Add(latestPrePeriod);
             }
         }
 

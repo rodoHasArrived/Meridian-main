@@ -589,8 +589,24 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         var result = await _approvalWorkflow.ApproveWorkflowAsync(request.WorkflowId, dto, ct).ConfigureAwait(false);
         if (!result.Success)
         {
-            throw new InvalidOperationException(
-                $"Revision approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
+            // RECONCILE a stranded half-approval instead of dead-ending. The gate approval is
+            // irreversible: if a prior attempt approved the workflow but failed (or was canceled)
+            // before the revision transition below committed, the revision is still Submitted
+            // while the workflow is Approved — and the gate rejects every retry because it only
+            // accepts Submitted/ReviewerAssigned workflows, so without this branch the revision
+            // could never reach Approved or Published. When the BOUND workflow's decision has
+            // already been recorded, the retry completes the revision-side transition instead of
+            // failing forever; any other gate failure still rejects the approval.
+            var workflow = await _approvalWorkflow.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+            if (workflow is not { ApprovalState: OperationsApprovalStateDto.Approved })
+            {
+                throw new InvalidOperationException(
+                    $"Revision approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
+            }
+
+            _logger.LogWarning(
+                "Approval gate workflow {WorkflowId} is already Approved while revision {RevisionId} for {SecurityId} is still Submitted; reconciling the stranded revision transition.",
+                request.WorkflowId, request.RevisionId, request.SecurityId);
         }
 
         // Advance the durable revision lifecycle only after the gate records the approval.

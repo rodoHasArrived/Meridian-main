@@ -409,6 +409,66 @@ public sealed class SecurityMasterFieldConflictDetectionTests
     }
 
     [Fact]
+    public async Task RecordFieldConflictsAsync_RepinnedProfile_ComparesUnderTheIncomingDeclaration()
+    {
+        // An amendment may REPIN the record: the submitted profile is the one that will govern
+        // the persisted record, so declared-key resolution prefers the INCOMING envelope.
+        // Comparing under the incumbent's declaration would treat old-profile fields retained as
+        // pass-through metadata as governed economics and open false conflicts.
+        var legacyProfile = new SecurityAssetProfileDefinitionDto(
+            "legacy-profile",
+            1,
+            "Legacy Profile",
+            "PrivateDebt",
+            null,
+            SecurityAssetProfileStatusDto.Approved,
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "legacyRating", "Legacy rating", SecurityAssetProfileFieldTypeDto.Text, false, [], null, null, null, false, false)
+            ],
+            [],
+            ["Active"],
+            [],
+            [],
+            new DateOnly(2026, 1, 1),
+            null,
+            "governance.lead",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "legacy profile");
+        var catalog = new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog(
+            Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault()
+                .GetProfiles()
+                .Append(legacyProfile)
+                .ToArray());
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance, catalog);
+
+        var current = Record("Bloomberg", new
+        {
+            customProfileId = "legacy-profile",
+            profileVersion = 1,
+            profileFields = new { legacyRating = "AA", commitment = 1_000_000m }
+        });
+        var incoming = Record("Reuters", new
+        {
+            customProfileId = "private-fund-interest",
+            profileVersion = 1,
+            profileFields = new { legacyRating = "BBB", commitment = 2_000_000m }
+        });
+
+        await service.RecordFieldConflictsAsync(current, incoming, CancellationToken.None);
+
+        var open = await service.GetOpenConflictsAsync(CancellationToken.None);
+        open.Should().Contain(c => c.FieldPath == "ProfileFields.commitment",
+            "the incoming pinned profile declares commitment as governed economics");
+        open.Should().NotContain(c => c.FieldPath == "ProfileFields.legacyRating",
+            "a key only the incumbent profile declared is pass-through metadata under the incoming pin");
+    }
+
+    [Fact]
     public async Task RecordFieldConflictsAsync_UndeclaredProfileFieldKey_OpensNoConflict()
     {
         // Only fields the PINNED PROFILE declares are governed economics: two providers differing

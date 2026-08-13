@@ -495,6 +495,76 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithOnlyPrePeriodFactorRows_ShouldReportFactorStaleInsteadOfMissing()
+    {
+        // A factor-driven security whose retained observations ALL predate the period has
+        // evidence that needs REFRESHING, not absent evidence. The adapter retains the latest
+        // pre-period row so the coverage classifier reports FACTOR_STALE instead of the
+        // indistinguishable FACTOR_SCHEDULE_MISSING — while the paydown generator, which filters
+        // to in-period rows itself, still projects no paydown from the stale observation.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-stale-factor"));
+
+        var securityId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL mortgage-backed test security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("44444444-4444-4444-8444-444444444447");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 1, 20),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.99m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-01"),
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 2, 18),
+                    PriorFactor: 0.99m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-02")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-stale-factor"));
+
+        detail.Should().NotBeNull();
+        var issueCodes = (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(static issue => issue.Code)
+            .ToArray();
+        issueCodes.Should().Contain("FACTOR_STALE",
+            "evidence exists but its latest observation predates the period");
+        issueCodes.Should().NotContain("FACTOR_SCHEDULE_MISSING");
+        (detail.ExpectedAccountingEvents ?? Array.Empty<ExpectedAccountingEventDto>())
+            .Should().NotContain(static item => item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown,
+                "the retained pre-period observation classifies coverage but never projects a paydown");
+    }
+
+    [Fact]
     public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldDerivePaydownFromTypedFactorScheduleEntries()
     {
         // A canonical StructuredCredit can persist its factor history solely in the typed
@@ -1164,9 +1234,13 @@ public sealed class ReconciliationRunServiceTests
         var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-typed-presence-coverage"));
 
         detail.Should().NotBeNull();
+        // The typed schedule's presence marks the security factor-driven even without a scalar
+        // factor, and its only observation predates the period — so the retained pre-period row
+        // classifies coverage as STALE (evidence needs refreshing), the sharper break than the
+        // absent-evidence FACTOR_SCHEDULE_MISSING it previously collapsed into.
         (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
-            .Should().Contain(issue => issue.Code == "FACTOR_SCHEDULE_MISSING",
-                "the typed schedule's presence marks the security factor-driven even without a scalar factor");
+            .Should().Contain(issue => issue.Code == "FACTOR_STALE",
+                "the typed schedule's presence marks the security factor-driven and its latest observation predates the period");
         detail.ExpectedAccountingEvents.Should().NotContain(item =>
             item.SecurityId == securityId &&
             item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);

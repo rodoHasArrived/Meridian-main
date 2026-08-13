@@ -2259,6 +2259,59 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Approve_WorkflowAlreadyApproved_ReconcilesTheStrandedRevision()
+    {
+        // The gate approval is irreversible: if a prior attempt approved the workflow but crashed
+        // before the revision transition, the revision is Submitted while the workflow is Approved
+        // — and the gate rejects every retry (it only accepts Submitted/ReviewerAssigned
+        // workflows), so without reconciliation the revision could never reach Approved or
+        // Published. A retry against an already-Approved bound workflow completes the stranded
+        // revision-side transition instead of failing forever.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperationsTransitionResultDto(
+                false, "APPROVAL_SUBMISSION_REQUIRED", "Workflow must be submitted for approval before it can be approved.", null, [], []));
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperationsContinuityWorkflowDto(
+                workflowId,
+                Guid.NewGuid(),
+                "2026-06",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                CreatedAtUtc: DateTimeOffset.UtcNow.AddDays(-1),
+                UpdatedAtUtc: DateTimeOffset.UtcNow,
+                Version: 5,
+                OperationsWorkflowStatusDto.ApprovalPending,
+                OperationsBrokerIntakeStateDto.Complete,
+                OperationsSecurityMasterStateDto.Complete,
+                OperationsLedgerPostingStateDto.Complete,
+                OperationsReconciliationStateDto.Complete,
+                OperationsApprovalStateDto.Approved,
+                Gates: [],
+                Timeline: [],
+                BreakCases: [],
+                LedgerPreview: null,
+                Approvals: [],
+                ReportPackReadiness: new OperationsReportPackReadinessDto(true, "rp-1", null, []),
+                CloseChecklist: [],
+                EvidenceLinks: [],
+                Blockers: [],
+                NextActions: []));
+
+        var result = await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved,
+            "the already-approved workflow's decision is reconciled onto the stranded revision");
+    }
+
+    [Fact]
     public async Task Approve_WhileFieldEditIsMidFlight_WaitsForTheGateAndDefersTheDecision()
     {
         // The approval's staged-revision check and override decision run under the SAME

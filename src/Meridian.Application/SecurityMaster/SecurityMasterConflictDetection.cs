@@ -407,8 +407,13 @@ internal static class SecurityMasterConflictDetection
                 return;
             }
 
+            // The INCOMING envelope's pinned profile resolves first: an amendment may REPIN the
+            // record, and the submitted profile is the one that will govern the persisted record —
+            // comparing under the incumbent's declaration would treat old-profile fields retained
+            // as pass-through metadata as governed economics and open false conflicts. The
+            // incumbent is only the fallback when the incoming side does not resolve.
             var declaredKeys = ResolveDeclaredProfileFieldKeys(
-                assetProfileCatalog, current.AssetSpecificTerms, incoming.AssetSpecificTerms);
+                assetProfileCatalog, incoming.AssetSpecificTerms, current.AssetSpecificTerms);
             if (declaredKeys is null)
             {
                 return;
@@ -595,10 +600,12 @@ internal static class SecurityMasterConflictDetection
             : null;
 
     /// <summary>
-    /// The declared field keys of the record's PINNED profile (resolved from either side's
-    /// envelope — an amendment repinning the profile still names one), or null when no catalog is
-    /// wired or the pinned version is not registered: no declaration means no basis to treat a
-    /// key as governed economics.
+    /// The declared field keys of the record's PINNED profile, resolved from the FIRST envelope
+    /// whose pin is registered — callers pass the envelope that will govern the persisted record
+    /// first (the incoming side of an amendment, since a repin's submitted profile is the one the
+    /// record reads under after the write) and the fallback second. Null when no catalog is wired
+    /// or no side's pinned version is registered: no declaration means no basis to treat a key as
+    /// governed economics.
     /// </summary>
     private static IReadOnlyList<string>? ResolveDeclaredProfileFieldKeys(
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog,
