@@ -32,8 +32,15 @@ function profileWith(
 describe("isWriteSelectableAssetProfile", () => {
   const today = new Date("2026-08-13T12:00:00Z");
 
-  it("keeps Approved versions selectable regardless of effective window", () => {
-    expect(isWriteSelectableAssetProfile(profileWith("Approved", "2026-09-01", null), today)).toBe(true);
+  it("keeps a currently effective Approved version selectable", () => {
+    expect(isWriteSelectableAssetProfile(profileWith("Approved", "2026-05-29", null), today)).toBe(true);
+    expect(isWriteSelectableAssetProfile(profileWith("Approved", "2026-08-13", null), today)).toBe(true);
+  });
+
+  it("hides an Approved version whose effective window has not opened", () => {
+    // A freshly approved replacement with a future effectiveFrom cannot back a write today -
+    // write-time governance rejects it - so the form must not advertise it yet.
+    expect(isWriteSelectableAssetProfile(profileWith("Approved", "2026-09-01", null), today)).toBe(false);
   });
 
   it("keeps a Superseded version selectable while its effective window still covers today", () => {

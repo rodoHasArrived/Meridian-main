@@ -69,15 +69,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
         if (factorSchedule.Count > 0)
         {
-            // The period end is EXCLUSIVE (the next month's first day), so durable positions
-            // resolve as of the LAST in-period day: resolving at the boundary itself would ignore
-            // a position ending on the period's final day and could select its next-period
-            // successor for this period's paydowns.
-            positions = await ResolveDurablePositionsAsync(
-                    positions,
-                    periodEnd.AddDays(-1),
-                    factorSchedule.Select(static factor => factor.SecurityId).ToHashSet(),
-                    ct)
+            positions = await ResolveDurablePositionsAsync(positions, factorSchedule, ct)
                 .ConfigureAwait(false);
         }
 
@@ -117,8 +109,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 
     private async Task<List<SecurityMasterAccountingPosition>> ResolveDurablePositionsAsync(
         IReadOnlyList<SecurityMasterAccountingPosition> positions,
-        DateOnly asOfDate,
-        IReadOnlySet<Guid> factorSecurityIds,
+        IReadOnlyList<SecurityFactorScheduleEntry> factorSchedule,
         CancellationToken ct)
     {
         if (_assetOperationsQueryService is null)
@@ -126,11 +117,24 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return positions.ToList();
         }
 
+        // Durable ownership resolves as of each security's FACTOR OBSERVATION DATES, not one
+        // period-wide date: an observation belongs to whichever position held the security on the
+        // observation date, and resolving at the period's end could attach an early-month paydown
+        // to a successor position opened after the observation. When the period's observations do
+        // not all resolve to the SAME durable position (ownership changed between observations),
+        // the run position stays unresolved rather than mislabeling any observation - the single
+        // aggregated run position cannot faithfully represent a split-ownership period.
+        var observationDates = factorSchedule
+            .GroupBy(static factor => factor.SecurityId)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(static factor => factor.AsOfDate).Distinct().ToArray());
+
         var details = new Dictionary<Guid, AssetOperationsDetailDto?>();
         foreach (var securityId in positions
                      .Where(static position => position.SecurityId.HasValue)
                      .Select(static position => position.SecurityId!.Value)
-                     .Where(factorSecurityIds.Contains)
+                     .Where(observationDates.ContainsKey)
                      .Distinct())
         {
             ct.ThrowIfCancellationRequested();
@@ -150,27 +154,40 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         {
             if (position.SecurityId is not Guid securityId ||
                 !details.TryGetValue(securityId, out var detail) ||
-                detail is null)
+                detail is null ||
+                !observationDates.TryGetValue(securityId, out var securityObservationDates))
             {
                 return position;
             }
 
-            var candidates = detail.BookPositions
-                .Where(candidate => candidate.SecurityId == securityId)
-                .Where(candidate => position.PositionId is Guid suppliedPositionId
-                    ? candidate.PositionId == suppliedPositionId
-                    : string.Equals(candidate.PrimaryAccountId?.Trim(), position.AccountId.Trim(), StringComparison.OrdinalIgnoreCase))
-                .Where(candidate => candidate.EffectiveFrom <= asOfDate &&
-                    (candidate.EffectiveTo is null || candidate.EffectiveTo >= asOfDate))
-                .Where(candidate => string.Equals(candidate.Status?.Trim(), "Active", StringComparison.OrdinalIgnoreCase))
-                .ToArray();
+            BookPositionDto? resolved = null;
+            foreach (var asOfDate in securityObservationDates)
+            {
+                var candidates = detail.BookPositions
+                    .Where(candidate => candidate.SecurityId == securityId)
+                    .Where(candidate => position.PositionId is Guid suppliedPositionId
+                        ? candidate.PositionId == suppliedPositionId
+                        : string.Equals(candidate.PrimaryAccountId?.Trim(), position.AccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+                    .Where(candidate => candidate.EffectiveFrom <= asOfDate &&
+                        (candidate.EffectiveTo is null || candidate.EffectiveTo >= asOfDate))
+                    .Where(candidate => string.Equals(candidate.Status?.Trim(), "Active", StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
 
-            if (candidates.Length != 1)
+                if (candidates.Length != 1 ||
+                    (resolved is not null && resolved.PositionId != candidates[0].PositionId))
+                {
+                    return position;
+                }
+
+                resolved = candidates[0];
+            }
+
+            if (resolved is null)
             {
                 return position;
             }
 
-            var durable = candidates[0];
+            var durable = resolved;
             // Factor paydowns are computed against ORIGINAL face (factors are relative to it):
             // the run position's quantity may already be the factor-adjusted current face, so
             // when the durable book position retains its original/par face, that value — not the

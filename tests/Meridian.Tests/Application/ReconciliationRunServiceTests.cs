@@ -567,6 +567,73 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldResolveOwnershipOnObservationDate()
+    {
+        // Ownership changes mid-month: the original position closes March 15 and a successor in
+        // the same account opens March 16. The factor observation is dated March 10, so the
+        // paydown belongs to the ORIGINAL position - resolving durable ownership at the period's
+        // end would wrongly attach it to the successor that never held the security on the
+        // observation date.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-observation-ownership"));
+
+        var securityId = Guid.Parse("77777777-7777-4777-8777-777777777777");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL observation-ownership security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("77777777-7777-4777-8777-777777777778");
+        var successorId = Guid.Parse("77777777-7777-4777-8777-777777777779");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 10),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-03")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(
+                    securityId,
+                    positionId,
+                    positionEffectiveTo: new DateOnly(2026, 3, 15),
+                    successorPosition: (successorId, new DateOnly(2026, 3, 16)))));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-observation-ownership"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.EconomicEvent!.BookPositionId == positionId);
+        detail.ExpectedAccountingEvents.Should().NotContain(item =>
+            item.EconomicEvent != null &&
+            item.EconomicEvent.BookPositionId == successorId);
+    }
+
+    [Fact]
     public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldComputePaydownFromDurableOriginalFace()
     {
         // Factor paydowns are relative to ORIGINAL face. The run position's quantity (10) may
@@ -1976,7 +2043,8 @@ public sealed class ReconciliationRunServiceTests
         Guid securityId,
         Guid positionId,
         DateOnly? positionEffectiveTo = null,
-        decimal? originalFaceAmount = null)
+        decimal? originalFaceAmount = null,
+        (Guid PositionId, DateOnly EffectiveFrom)? successorPosition = null)
     {
         var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
         var ownerNodeId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
@@ -2027,9 +2095,24 @@ public sealed class ReconciliationRunServiceTests
                     Version: 1,
                     OriginalFaceAmount: originalFace)
                 : null);
+        var bookPositions = new List<BookPositionDto> { position };
+        if (successorPosition is (Guid successorId, DateOnly successorFrom))
+        {
+            bookPositions.Add(new BookPositionDto(
+                successorId,
+                securityId,
+                roleId,
+                bookContext,
+                BookPositionSides.Long,
+                "Active",
+                successorFrom,
+                Version: 1,
+                PrimaryAccountId: "unscoped-account"));
+        }
+
         var detail = new AssetOperationsDetailDto(subject, [], [], [], [], [], [], [], [], readiness, [])
         {
-            BookPositions = [position]
+            BookPositions = bookPositions
         };
         return new StaticAssetOperationsQueryService(detail);
     }

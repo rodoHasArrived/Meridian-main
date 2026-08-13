@@ -245,6 +245,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 ApprovalReference = approvalReference
             };
             ValidateProfileDefinition(approved);
+            EnsureTransitionDateSucceedsIncumbents(profiles, approved.ProfileId, approved.Version, request.EffectiveFrom);
             SupersedeCurrentApproved(profiles, approved.ProfileId, approved.Version, request.EffectiveFrom);
             UpsertProfile(profiles, approved);
 
@@ -312,6 +313,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 ApprovalReference = approvalReference
             };
             ValidateProfileDefinition(rollback);
+            EnsureTransitionDateSucceedsIncumbents(profiles, rollback.ProfileId, rollback.Version, request.EffectiveFrom);
             SupersedeCurrentApproved(profiles, rollback.ProfileId, rollback.Version, request.EffectiveFrom);
             UpsertProfile(profiles, rollback);
 
@@ -417,6 +419,33 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         else
         {
             profiles.Add(profile);
+        }
+    }
+
+    /// <summary>
+    /// A replacement (or rollback) whose effective date is on or before an incumbent approved
+    /// version's <c>EffectiveFrom</c> would assign that incumbent an <c>EffectiveTo</c> preceding
+    /// its own start — a corrupt window that strands every write date the incumbent formerly
+    /// governed. Backdating a transition requires a governed rebuild of the affected windows, not
+    /// a silent supersede, so the transition date must strictly succeed each incumbent's start.
+    /// </summary>
+    private static void EnsureTransitionDateSucceedsIncumbents(
+        List<SecurityAssetProfileDefinitionDto> profiles,
+        string profileId,
+        int approvedVersion,
+        DateOnly effectiveFrom)
+    {
+        var incumbent = profiles.FirstOrDefault(profile =>
+            string.Equals(profile.ProfileId, profileId, StringComparison.OrdinalIgnoreCase)
+            && profile.Version != approvedVersion
+            && profile.Status == SecurityAssetProfileStatusDto.Approved
+            && profile.EffectiveFrom >= effectiveFrom);
+        if (incumbent is not null)
+        {
+            throw new ArgumentException(
+                $"Effective date {effectiveFrom:yyyy-MM-dd} must be after the incumbent approved version " +
+                $"{incumbent.Version}'s effective start {incumbent.EffectiveFrom:yyyy-MM-dd}: superseding it with an " +
+                "earlier or equal date would leave its governed window ending before it began.");
         }
     }
 
@@ -706,7 +735,13 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         => (preferences ?? [])
             .Select(static preference => preference with { Reason = Required(preference.Reason, nameof(preference.Reason)) })
             .GroupBy(static preference => preference.Kind)
-            .Select(static group => group.First())
+            // Duplicate kinds merge with the STRICTEST close requirement retained: taking the
+            // first entry verbatim would let [Cusip optional, Cusip required] normalize to
+            // optional and silently drop an identifier the submitted profile declared mandatory.
+            .Select(static group => group.First() with
+            {
+                IsRequiredForClose = group.Any(static preference => preference.IsRequiredForClose)
+            })
             .OrderBy(static preference => preference.Kind.ToString(), StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
@@ -760,12 +795,24 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
             }
         }
 
-        var fieldKeys = profile.Fields.Select(static field => field.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var fieldsByKey = profile.Fields.ToDictionary(static field => field.Key, StringComparer.OrdinalIgnoreCase);
         foreach (var rule in profile.DateOrderRules)
         {
-            if (!fieldKeys.Contains(rule.StartFieldKey) || !fieldKeys.Contains(rule.EndFieldKey))
+            if (!fieldsByKey.TryGetValue(rule.StartFieldKey, out var startField)
+                || !fieldsByKey.TryGetValue(rule.EndFieldKey, out var endField))
             {
                 throw new ArgumentException("Date order rules must reference profile field keys.");
+            }
+
+            // Runtime enforcement (ValidateDateOrderRule) silently passes whenever either value
+            // cannot be read as a date, so a rule over non-Date fields would advertise an ordering
+            // control that never fires. Require Date-typed fields at definition time instead.
+            if (startField.FieldType != SecurityAssetProfileFieldTypeDto.Date
+                || endField.FieldType != SecurityAssetProfileFieldTypeDto.Date)
+            {
+                throw new ArgumentException(
+                    $"Date order rule '{rule.Code}' must reference Date-typed profile fields; " +
+                    $"'{rule.StartFieldKey}' is {startField.FieldType} and '{rule.EndFieldKey}' is {endField.FieldType}.");
             }
 
             _ = Required(rule.Code, nameof(rule.Code));
