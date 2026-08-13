@@ -275,14 +275,16 @@ internal static class SecurityMasterConflictDetection
     /// </summary>
     internal static IReadOnlyList<string> ChangedGovernedFieldPaths(
         SecurityProjectionRecord current,
-        SecurityProjectionRecord incoming)
+        SecurityProjectionRecord incoming,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
         => DetectFieldConflictsCore(
                 current, incoming, DateTimeOffset.UtcNow,
                 requireDistinctSources: false,
                 // A CLEARED value changed hands too: attribution for a value that no longer exists
                 // is exactly as stale as attribution for a replaced one, so absence transitions
                 // count as changes here even though conflict creation needs both values present.
-                includeAbsenceTransitions: true)
+                includeAbsenceTransitions: true,
+                assetProfileCatalog: assetProfileCatalog)
             .Select(static conflict => conflict.FieldPath)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
@@ -307,12 +309,14 @@ internal static class SecurityMasterConflictDetection
         SecurityProjectionRecord current,
         SecurityProjectionRecord incoming,
         DateTimeOffset detectedAt,
-        IReadOnlyDictionary<string, string>? incumbentFieldSources = null)
+        IReadOnlyDictionary<string, string>? incumbentFieldSources = null,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
         => DetectFieldConflictsCore(
             current, incoming, detectedAt,
             requireDistinctSources: true,
             includeAbsenceTransitions: false,
-            incumbentFieldSources);
+            incumbentFieldSources,
+            assetProfileCatalog);
 
     private static IReadOnlyList<SecurityMasterConflict> DetectFieldConflictsCore(
         SecurityProjectionRecord current,
@@ -320,7 +324,8 @@ internal static class SecurityMasterConflictDetection
         DateTimeOffset detectedAt,
         bool requireDistinctSources,
         bool includeAbsenceTransitions,
-        IReadOnlyDictionary<string, string>? incumbentFieldSources = null)
+        IReadOnlyDictionary<string, string>? incumbentFieldSources = null,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
         if (current.SecurityId != incoming.SecurityId)
         {
@@ -368,9 +373,13 @@ internal static class SecurityMasterConflictDetection
         // Governed profile fields ARE the economics of a profile-backed record (commitment,
         // fundedAmount, appraisalValue, latestValuation, ...), so a cross-source amendment
         // replacing them must open a conflict — and per-field attribution must track them — just
-        // like the shared fixed-income terms. Keys the typed comparisons above already cover
-        // through the resolver (and pool-factor evidence, which sources legitimately snapshot at
-        // different dates) are excluded to avoid double-reporting one disagreement.
+        // like the shared fixed-income terms. The comparison set is the PINNED PROFILE'S DECLARED
+        // fields: undeclared pass-through keys (operator metadata like operatorNote) are not
+        // governed economics and must not open conflicts or mint attribution. Declared keys the
+        // typed comparisons above already cover through the resolver (and pool-factor evidence,
+        // which sources legitimately snapshot at different dates) stay excluded so one
+        // disagreement is never reported under two paths. Without a resolvable pinned profile the
+        // comparison is skipped entirely — no declaration means no basis to call a key governed.
         void CompareProfileFields()
         {
             var fieldsA = GetProfileFields(current.AssetSpecificTerms);
@@ -380,27 +389,20 @@ internal static class SecurityMasterConflictDetection
                 return;
             }
 
-            var keys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var source in new[] { fieldsA, fieldsB })
+            var declaredKeys = ResolveDeclaredProfileFieldKeys(
+                assetProfileCatalog, current.AssetSpecificTerms, incoming.AssetSpecificTerms);
+            if (declaredKeys is null)
             {
-                if (source is not JsonElement fields)
+                return;
+            }
+
+            foreach (var key in declaredKeys)
+            {
+                if (ProfileFieldComparisonExclusions.Contains(key))
                 {
                     continue;
                 }
 
-                foreach (var property in fields.EnumerateObject())
-                {
-                    if (!ProfileFieldComparisonExclusions.Contains(property.Name))
-                    {
-                        // First-seen spelling wins (current record first), so the path is stable
-                        // across casing variants of the same governed key.
-                        keys.TryAdd(property.Name, property.Name);
-                    }
-                }
-            }
-
-            foreach (var key in keys.Values)
-            {
                 CompareText(
                     ProfileFieldPathPrefix + key,
                     SecurityMasterConflictKinds.EconomicTermMismatch,
@@ -573,6 +575,42 @@ internal static class SecurityMasterConflictDetection
            && profileFields.ValueKind == JsonValueKind.Object
             ? profileFields
             : null;
+
+    /// <summary>
+    /// The declared field keys of the record's PINNED profile (resolved from either side's
+    /// envelope — an amendment repinning the profile still names one), or null when no catalog is
+    /// wired or the pinned version is not registered: no declaration means no basis to treat a
+    /// key as governed economics.
+    /// </summary>
+    private static IReadOnlyList<string>? ResolveDeclaredProfileFieldKeys(
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog,
+        params JsonElement[] envelopes)
+    {
+        if (assetProfileCatalog is null)
+        {
+            return null;
+        }
+
+        foreach (var envelope in envelopes)
+        {
+            if (envelope.ValueKind != JsonValueKind.Object
+                || !envelope.TryGetProperty("customProfileId", out var profileId)
+                || profileId.ValueKind != JsonValueKind.String
+                || string.IsNullOrWhiteSpace(profileId.GetString())
+                || !envelope.TryGetProperty("profileVersion", out var versionElement)
+                || !versionElement.TryGetInt32(out var profileVersion))
+            {
+                continue;
+            }
+
+            if (assetProfileCatalog.TryGetProfile(profileId.GetString()!, profileVersion, out var profile))
+            {
+                return profile.Fields.Select(static field => field.Key).ToArray();
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Canonical comparable text for one governed profile-field value: numbers scale-normalized

@@ -58,11 +58,15 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
     public SecurityMasterConflictService(
         ISecurityMasterStore store,
-        ILogger<SecurityMasterConflictService> logger)
+        ILogger<SecurityMasterConflictService> logger,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
         _store = store;
         _logger = logger;
+        _assetProfileCatalog = assetProfileCatalog;
     }
+
+    private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
 
     public async Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
     {
@@ -161,7 +165,8 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
     public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
     {
-        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
+        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
+            previous, incoming, DateTimeOffset.UtcNow, assetProfileCatalog: _assetProfileCatalog);
 
         int newConflicts = 0;
         foreach (var conflict in candidates)

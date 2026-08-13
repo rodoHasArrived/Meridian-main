@@ -25,12 +25,16 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
     public PostgresSecurityMasterConflictService(
         ISecurityMasterStore store,
         SecurityMasterOptions options,
-        ILogger<PostgresSecurityMasterConflictService> logger)
+        ILogger<PostgresSecurityMasterConflictService> logger,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
         _store = store;
         _options = options;
         _logger = logger;
+        _assetProfileCatalog = assetProfileCatalog;
     }
+
+    private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
 
     public async Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
     {
@@ -494,7 +498,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         var incumbentFieldSources = await LoadConflictResolutionFieldSourcesAsync(
             connection, previous.SecurityId, ct).ConfigureAwait(false);
         var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
-            previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources);
+            previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources, _assetProfileCatalog);
 
         if (candidates.Count == 0)
         {

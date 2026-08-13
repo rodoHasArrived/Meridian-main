@@ -378,7 +378,10 @@ public sealed class SecurityMasterFieldConflictDetectionTests
         var store = Substitute.For<ISecurityMasterStore>();
         store.LoadAllAsync(Arg.Any<CancellationToken>())
             .Returns(Array.Empty<SecurityProjectionRecord>());
-        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+        var service = new SecurityMasterConflictService(
+            store,
+            NullLogger<SecurityMasterConflictService>.Instance,
+            Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
 
         var current = Record("Bloomberg", new
         {
@@ -403,6 +406,40 @@ public sealed class SecurityMasterFieldConflictDetectionTests
         conflict.ValueB.Should().Be("2000000");
         open.Should().NotContain(c => c.FieldPath == "ProfileFields.gpSponsor",
             "an agreeing governed field is not a disagreement");
+    }
+
+    [Fact]
+    public async Task RecordFieldConflictsAsync_UndeclaredProfileFieldKey_OpensNoConflict()
+    {
+        // Only fields the PINNED PROFILE declares are governed economics: two providers differing
+        // on pass-through metadata (operatorNote) must not open an EconomicTermMismatch or mint
+        // canonical field attribution.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+        var service = new SecurityMasterConflictService(
+            store,
+            NullLogger<SecurityMasterConflictService>.Instance,
+            Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault());
+
+        var current = Record("Bloomberg", new
+        {
+            customProfileId = "private-fund-interest",
+            profileVersion = 1,
+            profileFields = new { commitment = 1_000_000m, operatorNote = "seed note" }
+        });
+        var incoming = Record("Reuters", new
+        {
+            customProfileId = "private-fund-interest",
+            profileVersion = 1,
+            profileFields = new { commitment = 1_000_000m, operatorNote = "different note" }
+        });
+
+        await service.RecordFieldConflictsAsync(current, incoming, CancellationToken.None);
+
+        (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Should().NotContain(c => c.FieldPath.StartsWith("ProfileFields."),
+                "the profile does not declare operatorNote and the declared fields agree");
     }
 
     [Fact]

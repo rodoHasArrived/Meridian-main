@@ -502,6 +502,34 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 $"Revision approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
         }
 
+        // The browser workflow exposes ONE approval step: approving the revision IS approving the
+        // staged override carrying its value. PatchAsync marked the override Pending, and the
+        // validation read model keeps emitting SM_OVERRIDE_APPROVAL_REQUIRED — blocking governed
+        // runs, ledger, reconciliation, and report-pack use — until the override itself records a
+        // decision, so the override approval lands with the same gate approval. Idempotent on
+        // retries: an override already past Pending is left as-is.
+        try
+        {
+            var stagedOverride = await _overrides.GetAsync(request.SecurityId, ct).ConfigureAwait(false);
+            if (stagedOverride is { ApprovalStatus: SecurityOverrideApprovalStatusDto.Pending })
+            {
+                await _overrides.RecordApprovalDecisionAsync(
+                    request.SecurityId,
+                    new OperatorOverrideDecision(
+                        SecurityOverrideApprovalStatusDto.Approved,
+                        string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer,
+                        request.Rationale),
+                    ct).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            throw new InvalidOperationException(
+                $"The gate approved revision '{request.RevisionId:D}' but the staged operator override for " +
+                $"security '{request.SecurityId:D}' could not record the approval decision; the revision remains " +
+                "Submitted — retry the approval once the overlay store is reachable.", ex);
+        }
+
         // Advance the durable revision lifecycle only after the gate records the approval.
         await _revisions.TransitionAsync(
             request.RevisionId,
@@ -598,17 +626,20 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             throw new SecurityMasterPublishFailedException(request.SecurityId, request.RevisionId, failedHandlers);
         }
 
+        // Period-aware propagation resolves BEFORE the revision is marked Published: the
+        // closed-period restatement decision is a REQUIRED publish side effect, and resolving it
+        // after the transition would make a transient period-lock or report-index outage
+        // unretryable — the Approved-state precondition rejects the retry, permanently skipping
+        // the restatement decision for a back-dated edit. Resolving here keeps the revision
+        // Approved on failure so the caller can retry the whole idempotent publish.
+        var restatement = await _restatementResolver.ResolveAsync(evt, ct).ConfigureAwait(false);
+
         await _revisions.TransitionAsync(
             request.RevisionId,
             SecurityMasterRevisionStateDto.Approved,
             SecurityMasterRevisionStateDto.Published,
             request.Actor,
             ct: ct).ConfigureAwait(false);
-
-        // Period-aware propagation: after the side-effect handlers run, resolve whether any affected
-        // ledger book is in a closed period and therefore needs a governed restatement proposal rather
-        // than silent mutation. The authority is the ledger accounting-period status (default-deny).
-        var restatement = await _restatementResolver.ResolveAsync(evt, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Published Security Master revision {RevisionId} for {SecurityId} by {Actor} ({HandlerCount} handlers, restatementRequired={RestatementRequired})",
@@ -711,17 +742,22 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             return;
         }
 
-        SecurityProjectionRecord? projection = null;
+        SecurityProjectionRecord? projection;
         try
         {
             projection = await _projectionStore.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(
-                ex,
-                "Loading the projection for {SecurityId} failed while validating field edit {FieldPath} against the resolved kind's invariants.",
-                request.SecurityId, SanitizeForLog(canonicalFieldPath));
+            // FAIL CLOSED on a read FAILURE: the passport already resolved a first-class asset
+            // class, so a type-correct but invariant-violating value (StructuredCredit
+            // currentFactor = 2) would stage unvalidated for the whole outage if the transient
+            // failure were swallowed. A null RESULT (projection read model has no row yet) still
+            // skips below — there are no retained terms to reconstruct against.
+            throw new InvalidOperationException(
+                $"The retained terms for security '{request.SecurityId:D}' could not be loaded, so the edit cannot " +
+                "be validated against the resolved asset class's domain invariants. Retry once the projection is " +
+                "available; the namespace only accepts validated writes.", ex);
         }
 
         if (projection is null

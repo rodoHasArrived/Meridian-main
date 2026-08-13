@@ -132,7 +132,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // conflict detection) to minimize the window in which a concurrent reader sees the new
         // value with the old field attribution; true atomicity needs the shared-transaction seam
         // tracked as follow-up work.
-        var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(currentProjection, projection);
+        var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
+            currentProjection, projection, _assetProfileCatalog);
         await TryRetireStaleFieldResolutionProvenanceAsync(changedGovernedFields, request.SecurityId, ct).ConfigureAwait(false);
         await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
         // Open conflicts reconcile against the DURABLY persisted value only: superseding or
@@ -289,7 +290,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // baseline instead of a previous revision, and immediately after the projection write to
         // minimize the unattributed window.
         var seededGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
-            CreateEmptyGovernedBaseline(projection), projection);
+            CreateEmptyGovernedBaseline(projection), projection, _assetProfileCatalog);
         await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
 
@@ -382,7 +383,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var (incumbentFieldSources, attributionIsAuthoritative) =
             await TryLoadIncumbentFieldSourcesAsync(previous.SecurityId, ct).ConfigureAwait(false);
         var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
-            previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources);
+            previous, incoming, DateTimeOffset.UtcNow, incumbentFieldSources, _assetProfileCatalog);
         // The zero-candidate shortcut is only safe when the attribution read was AUTHORITATIVE
         // (it succeeded, or no attribution store is wired so record-level provenance is all that
         // exists). After a failed read, "no candidates" may just mean the same-source filter hid a

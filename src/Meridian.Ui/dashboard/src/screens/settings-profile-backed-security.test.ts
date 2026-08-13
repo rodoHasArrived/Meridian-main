@@ -124,6 +124,18 @@ describe("buildProfileFieldPayload numeric precision", () => {
     expect(invalidFields).toHaveLength(1);
   });
 
+  it("accepts small exact decimals that serialize in exponent form", () => {
+    // String(1e-7) is "1e-7", but the double holds exactly 0.0000001 and .NET decimal parses the
+    // serialized exponent form back exactly - the comparison is numeric fidelity, not spelling.
+    const fields = [numericField("rate", "Decimal")];
+    const { payload, invalidFields } = buildProfileFieldPayload(fields, {
+      rate: "0.0000001"
+    });
+
+    expect(invalidFields).toEqual([]);
+    expect(payload.rate).toBe(1e-7);
+  });
+
   it("accepts harmless textual normalization like trailing fractional zeros", () => {
     const fields = [numericField("ownershipPercent", "Decimal")];
     const { payload, invalidFields } = buildProfileFieldPayload(fields, {

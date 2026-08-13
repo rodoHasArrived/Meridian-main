@@ -833,6 +833,40 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_KindInvariantProjectionReadFails_RejectsTheEdit()
+    {
+        // A transient projection-store failure must not skip the resolved-kind invariant check:
+        // the passport already resolved a first-class class, so a type-correct but
+        // invariant-violating value would stage unvalidated for the whole outage.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("StructuredCredit");
+        harness.ProjectionStore
+            .Setup(p => p.GetProjectionAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("projection store down"));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 3,
+            FieldPath: "assetSpecificTerms.currentFactor",
+            NewValue: "0.5",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Factor correction.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*domain invariants*");
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<OperatorOverridesPatchRequest>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<long?>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_ClearingBoundTermOverride_RevalidatesEffectiveSchedule()
     {
         // Clearing a bound term is an edit to the effective overlay too: with par staged UP to 100
@@ -1806,6 +1840,44 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Approve_PendingOperatorOverride_RecordsOverrideApprovalWithTheGateDecision()
+    {
+        // The browser workflow exposes ONE approval step: approving the revision must also record
+        // the underlying override's approval decision, or the published edit stays Pending and
+        // SM_OVERRIDE_APPROVAL_REQUIRED keeps blocking governed runs despite the completed gate.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["EconomicDefinition.Coupon"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revisionId, workflowId, 4, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision =>
+                    decision.Decision == SecurityOverrideApprovalStatusDto.Approved
+                    && decision.Reviewer == "ops.reviewer"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+    }
+
+    [Fact]
     public async Task Approve_WhenGateBlocks_Throws()
     {
         var workflowId = Guid.NewGuid();
@@ -1851,6 +1923,37 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         result.RestatementRequired.Should().BeFalse();
         result.RestatementCandidates.Should().BeEmpty();
         result.InvalidatedProjections.Should().HaveCount(2);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
+    }
+
+    [Fact]
+    public async Task Publish_RestatementResolutionFails_KeepsRevisionApprovedForRetry()
+    {
+        // The closed-period restatement decision is a REQUIRED publish side effect: resolving it
+        // after the Published transition would make a transient period-lock outage unretryable
+        // (the Approved-state precondition rejects the retry), permanently skipping the decision.
+        var harness = new Harness(currentVersion: 4, handlers: [new RecordingHandler(order: 10)]);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
+        harness.Restatement
+            .Setup(r => r.ResolveAsync(It.IsAny<SecurityMasterRevisionPublishedEvent>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("period-lock index unavailable"));
+
+        var request = new PublishSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            ApproverActor: "ops.reviewer");
+
+        await harness.Service.Invoking(s => s.PublishRevisionAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>();
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved,
+            "a failed restatement resolution must leave the publish retryable");
+
+        // The resolver recovers and the SAME publish retries to completion (handlers are idempotent).
+        harness.Restatement
+            .Setup(r => r.ResolveAsync(It.IsAny<SecurityMasterRevisionPublishedEvent>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []));
+        await harness.Service.PublishRevisionAsync(request);
         (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
     }
 

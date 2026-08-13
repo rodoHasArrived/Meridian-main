@@ -83,7 +83,7 @@ function defaultProfileFieldValue(field: SecurityAssetProfileFieldDefinition): s
  * Canonical text form of a plain decimal input ("+" stripped, leading integer zeros collapsed,
  * trailing fractional zeros and a bare "." dropped), or null when the input is not plain decimal
  * notation. Used to detect binary rounding: JavaScript Number is an IEEE double, so an input whose
- * canonical form differs from String(Number(input)) was silently altered by the conversion.
+ * canonical form differs from the parsed double's exact decimal expansion was silently altered.
  */
 function canonicalDecimalText(raw: string): string | null {
   const match = /^([+-]?)(\d*)(?:\.(\d*))?$/.exec(raw);
@@ -94,6 +94,33 @@ function canonicalDecimalText(raw: string): string | null {
   if (intPart === "") intPart = "0";
   if (intPart === "0" && fracPart === "") return "0";
   return fracPart ? `${sign}${intPart}.${fracPart}` : `${sign}${intPart}`;
+}
+
+/**
+ * The parsed double's round-trip string expanded to PLAIN decimal notation ("1e-7" becomes
+ * "0.0000001"), so small exact values that JavaScript renders in exponent form still compare
+ * equal to the operator's plain-decimal input - the comparison is numeric fidelity, not spelling.
+ */
+function toPlainDecimalString(value: number): string {
+  const text = String(value);
+  const match = /^(-?)(\d+)(?:\.(\d+))?e([+-]\d+)$/i.exec(text);
+  if (!match) return text;
+  const sign = match[1];
+  const digits = (match[2] ?? "") + (match[3] ?? "");
+  const pointIndex = (match[2] ?? "").length + Number(match[4]);
+  if (pointIndex <= 0) {
+    return `${sign}0.${"0".repeat(-pointIndex)}${digits}`;
+  }
+  if (pointIndex >= digits.length) {
+    return `${sign}${digits}${"0".repeat(pointIndex - digits.length)}`;
+  }
+  return `${sign}${digits.slice(0, pointIndex)}.${digits.slice(pointIndex)}`;
+}
+
+/** Whether the operator's text and the double it parsed to assert the SAME exact decimal value. */
+function numberRoundTripsExactly(raw: string, parsed: number): boolean {
+  const canonical = canonicalDecimalText(raw);
+  return canonical !== null && toPlainDecimalString(parsed) === canonical;
 }
 
 /**
@@ -127,8 +154,7 @@ export function buildProfileFieldPayload(
           invalidFields.push(`${field.label}: enter a valid number.`);
           break;
         }
-        const canonical = canonicalDecimalText(raw);
-        if (canonical === null || String(parsed) !== canonical) {
+        if (!numberRoundTripsExactly(raw, parsed)) {
           invalidFields.push(`${field.label}: this value cannot be submitted exactly (the browser would round it); enter fewer significant digits.`);
           break;
         }
@@ -141,8 +167,7 @@ export function buildProfileFieldPayload(
           invalidFields.push(`${field.label}: enter a whole number.`);
           break;
         }
-        const canonical = canonicalDecimalText(raw);
-        if (canonical === null || String(parsed) !== canonical) {
+        if (!numberRoundTripsExactly(raw, parsed)) {
           invalidFields.push(`${field.label}: this value cannot be submitted exactly (the browser would round it); enter a smaller whole number.`);
           break;
         }
