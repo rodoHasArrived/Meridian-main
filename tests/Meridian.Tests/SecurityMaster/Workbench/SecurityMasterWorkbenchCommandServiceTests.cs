@@ -2027,7 +2027,9 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 false, "APPROVAL_ALREADY_SUBMITTED", "Workflow has already been submitted for approval.", null, [], []));
         harness.Workflow
             .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Submitted, reviewer: "ops.reviewer"));
+            .ReturnsAsync(BuildWorkflowDto(
+                workflowId, OperationsApprovalStateDto.Submitted, reviewer: "ops.reviewer",
+                submissionRationale: $"Retry after a crashed submission. [security-master-revision:{revisionId:D}]"));
 
         var request = new SubmitSecurityMasterRevisionRequest(
             SecurityId: SecurityId,
@@ -2048,6 +2050,45 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             "the already-submitted workflow's recorded submission is reconciled onto the stranded revision");
         stored.WorkflowId.Should().Be(workflowId,
             "the reconciled submission still binds the workflow so approval stays restricted to this lane");
+    }
+
+    [Fact]
+    public async Task Submit_WorkflowSubmittedForAnotherRevision_IsRejected()
+    {
+        // The reconciliation is scoped to the EXACT interrupted submission: the workflow's
+        // recorded submission evidence carries a revision-identity marker, and a workflow
+        // submitted for a DIFFERENT revision (even another security's) must not be claimable as
+        // this draft's interrupted submission — binding it would let one gate approval decide
+        // multiple unrelated edits.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 2);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft);
+        harness.Workflow
+            .Setup(w => w.SubmitForApprovalAsync(workflowId, It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperationsTransitionResultDto(
+                false, "APPROVAL_ALREADY_SUBMITTED", "Workflow has already been submitted for approval.", null, [], []));
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildWorkflowDto(
+                workflowId, OperationsApprovalStateDto.Submitted, reviewer: "ops.reviewer",
+                submissionRationale: $"Another edit. [security-master-revision:{Guid.NewGuid():D}]"));
+
+        var request = new SubmitSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            Note: "Attempt to claim someone else's submitted workflow.",
+            FundProfileId: null,
+            WorkflowId: workflowId,
+            ExpectedWorkflowVersion: 2,
+            Reviewer: "ops.reviewer",
+            ReportPackId: "rp-1");
+
+        await harness.Service.Invoking(s => s.SubmitForApprovalAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*blocked*");
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "a workflow submitted for a different revision must not be claimed by this draft");
     }
 
     [Fact]
@@ -2465,10 +2506,12 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     {
         // Overlay ownership follows staging ORDER: revision A stages a par value, revision B later
         // replaces it. Discarding B must REMOVE the overlay key — leaving it in place would let
-        // A's approval approve B's discarded value — even though A remains staged (its superseded
-        // value is unrecoverable and must be re-staged).
+        // A's approval approve B's discarded value. A's superseded value is unrecoverable, so A
+        // cannot stay approvable either: it is terminalized to Rejected with the withdrawal —
+        // otherwise A could later approve and publish through a NotPending override decision with
+        // its approved value present nowhere.
         var harness = new Harness(currentVersion: 3);
-        await harness.Revisions.CreateDraftAsync(
+        var superseded = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit (100).");
         await Task.Delay(10);
         var latest = await harness.Revisions.CreateDraftAsync(
@@ -2486,6 +2529,38 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 It.IsAny<CancellationToken>(),
                 It.IsAny<long?>()),
             Times.Once);
+        (await harness.Revisions.GetAsync(superseded.RevisionId))!.State.Should().Be(
+            SecurityMasterRevisionStateDto.Rejected,
+            "the superseded draft's unrecoverable value must not stay approvable once the key is withdrawn");
+    }
+
+    [Fact]
+    public async Task Discard_OlderSubmittedSiblingSharesThePath_RefusesTheDiscard()
+    {
+        // An older SUBMITTED same-path sibling is under active review — silently invalidating its
+        // (unrecoverable) staged value is not the discarding actor's call, so the discard fails
+        // closed before any transition: the sibling must be decided or discarded first.
+        var harness = new Harness(currentVersion: 3);
+        var submitted = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit (100).");
+        await harness.Revisions.TransitionAsync(
+            submitted.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        await Task.Delay(10);
+        var latest = await harness.Revisions.CreateDraftAsync(
+            SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Second edit (200).");
+
+        await harness.Service.Invoking(s => s.DiscardRevisionAsync(new DiscardSecurityMasterRevisionRequest(
+                SecurityId, latest.RevisionId, "ops.analyst", "Second edit abandoned.")))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>()
+            .WithMessage("*already Submitted or Approved*");
+
+        (await harness.Revisions.GetAsync(latest.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Draft,
+            "the refused discard must leave the revision untouched");
+        harness.Overrides.Verify(
+            o => o.PatchAsync(
+                It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>(), It.IsAny<long?>()),
+            Times.Never);
     }
 
     [Fact]
@@ -2670,7 +2745,8 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     private static OperationsContinuityWorkflowDto BuildWorkflowDto(
-        Guid workflowId, OperationsApprovalStateDto approvalState, string? reviewer = null)
+        Guid workflowId, OperationsApprovalStateDto approvalState, string? reviewer = null,
+        string? submissionRationale = null)
         => new(
             workflowId,
             Guid.NewGuid(),
@@ -2697,7 +2773,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                     approvalState,
                     "ops.analyst",
                     reviewer,
-                    "Submitted for review.",
+                    submissionRationale ?? "Submitted for review.",
                     DateTimeOffset.UtcNow.AddHours(-1),
                     null,
                     [])
@@ -2759,6 +2835,50 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         result.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
         (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved,
             "the already-approved workflow's decision is reconciled onto the stranded revision");
+    }
+
+    [Fact]
+    public async Task Approve_ReconciledDecision_RecordsTheWorkflowReviewer()
+    {
+        // A reconciling retry did not decide anything — the workflow's retained approval did. The
+        // retrying caller can be a DIFFERENT ModifySecurityMaster user (the endpoint server-binds
+        // the request reviewer to the current actor), so the override decision recorded during
+        // reconciliation must name the workflow's retained reviewer, not the retrying caller;
+        // publish cannot repair the attribution later because the overlay is already Approved.
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperationsTransitionResultDto(
+                false, "APPROVAL_SUBMISSION_REQUIRED", "Workflow must be submitted for approval before it can be approved.", null, [], []));
+        harness.Workflow
+            .Setup(w => w.GetAsync(workflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildWorkflowDto(workflowId, OperationsApprovalStateDto.Approved, reviewer: "gate.reviewer"));
+        harness.Overrides
+            .Setup(o => o.GetAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorOverridesDto(
+                SecurityId,
+                new Dictionary<string, string> { ["EconomicDefinition.Coupon"] = "4.5" },
+                "ops.analyst",
+                DateTimeOffset.UtcNow)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+            });
+
+        await harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
+            SecurityId, revisionId, workflowId, 4, "retrying.caller", "retrying.caller", "Retry.", "rp-1"));
+
+        harness.Overrides.Verify(
+            o => o.RecordApprovalDecisionAsync(
+                SecurityId,
+                It.Is<OperatorOverrideDecision>(decision =>
+                    decision.Decision == SecurityOverrideApprovalStatusDto.Approved
+                    && decision.Reviewer == "gate.reviewer"),
+                It.IsAny<CancellationToken>()),
+            Times.Once,
+            "the reconciled override decision must name the workflow's retained reviewer, not the retrying caller");
     }
 
     [Fact]

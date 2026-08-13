@@ -495,6 +495,65 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_LegacyFactorRowWithoutRowSource_UsesTheProvenanceSourceSystem()
+    {
+        // A legacy factor-schedule row that omits its optional row-level source must fall back to
+        // the record's asserting provider — the canonical provenance sourceSystem — exactly like
+        // typed rows do. Falling back to the legacy free-text provenance 'source' key (or the
+        // terminal 'security-master') would persist the wrong factor-source lineage on generated
+        // paydown events even though a vendor supplied the schedule.
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-legacy-factor-provenance"));
+
+        var securityId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL mortgage-backed test security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("44444444-4444-4444-8444-444444444446");
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: null,
+                    EvidenceLink: "factor-evidence-2026-03")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-legacy-factor-provenance"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.Provenance.Contains("factor-source:vendor-trustee", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task RunAsync_WithClosedHistoricalOwner_ShouldStillGenerateTheHistoricalPaydown()
     {
         // Activity is judged AS OF the observation date by the position's effective window, not by
@@ -2373,7 +2432,7 @@ public sealed class ReconciliationRunServiceTests
         DateOnly AsOfDate,
         decimal PriorFactor,
         decimal CurrentFactor,
-        string Source,
+        string? Source,
         string? EvidenceLink);
 
     // -----------------------------------------------------------------------

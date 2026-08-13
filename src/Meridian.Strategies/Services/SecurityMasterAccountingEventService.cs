@@ -78,6 +78,13 @@ public sealed record SecurityMasterAccountingPosition(
     /// original face into ParAmount would overstate expected interest by the paid-down portion.
     /// </summary>
     public decimal? OriginalFaceAmount { get; init; }
+
+    /// <summary>
+    /// True when the source position is a SHORT exposure. <see cref="ParAmount"/> always carries
+    /// the absolute magnitude, so without this flag a short would be indistinguishable from a
+    /// long holding and would generate long-side income and receivable events for a liability.
+    /// </summary>
+    public bool IsShort { get; init; }
 }
 
 public sealed record SecurityFactorScheduleEntry(
@@ -162,6 +169,23 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
 
         foreach (var position in request.Positions)
         {
+            // SHORT positions fail closed BEFORE any generation: the position magnitudes are
+            // absolute, so running a short through the long-side generators would manufacture
+            // positive interest-income, coupon-receipt, and principal-receipt events for what is
+            // actually a liability. Until short-liability accounting exists, the short surfaces
+            // as an explicit completeness break instead of silently booking long-side events.
+            if (position.IsShort)
+            {
+                issues.Add(CreateIssue(
+                    "SM_SHORT_POSITION_UNSUPPORTED",
+                    "security-master",
+                    position.Symbol,
+                    position.AccountId,
+                    $"Position '{position.Symbol}' is a short exposure; short-liability accounting is not supported by the Security Master accounting-event slice, so no expected events were generated.",
+                    ReconciliationBreakSeverity.High));
+                continue;
+            }
+
             var security = ResolveSecurity(position, securities, securitiesBySymbol);
             if (security is null)
             {

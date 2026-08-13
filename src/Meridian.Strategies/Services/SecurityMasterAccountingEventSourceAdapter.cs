@@ -87,7 +87,11 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 {
                     // The durable position's original face is identity-scoped (every row in the
                     // group shares the position id), so it carries through unsummed.
-                    OriginalFaceAmount = first.OriginalFaceAmount
+                    OriginalFaceAmount = first.OriginalFaceAmount,
+                    // ParAmount sums absolute magnitudes, so a group mixing long and short rows
+                    // would otherwise read as one large long exposure — any short row fails the
+                    // whole group closed.
+                    IsShort = group.Any(static position => position.IsShort)
                 };
             })
             .Where(static position => position.ParAmount != 0m)
@@ -247,7 +251,13 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     position.Symbol.Trim().ToUpperInvariant(),
                     position.Security.SecurityId,
                     ResolveAccountId(position.AccountScopeId, detail.Portfolio.AccountScopeId),
-                    Math.Abs((decimal)position.Quantity)));
+                    Math.Abs((decimal)position.Quantity))
+                {
+                    // ParAmount is an absolute magnitude, so the direction must travel separately:
+                    // dropping it would present a short as a long holding and generate long-side
+                    // income and receivable events for a liability.
+                    IsShort = position.IsShort || position.Quantity < 0
+                });
             }
         }
 
@@ -273,7 +283,10 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 line.Security.SecurityId,
                 ResolveAccountId(line.AccountScopeId ?? line.FinancialAccountId, detail.Ledger.AccountScopeId),
                 Math.Abs(line.Balance),
-                PositionId: line.Dimensions?.PositionId));
+                PositionId: line.Dimensions?.PositionId)
+            {
+                IsShort = line.Balance < 0m
+            });
         }
 
         return positions;
@@ -380,7 +393,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         asOfDate.Value,
                         priorFactor.Value,
                         currentFactor.Value,
-                        ReadString(item, "source") ?? ReadString(definition.Provenance, "source") ?? "security-master",
+                        ReadString(item, "source") ?? ResolveProvenanceSourceSystem(definition) ?? "security-master",
                         ReadString(item, "evidenceLink") ?? ReadString(item, "evidenceId") ?? ReadString(item, "evidenceRoute"),
                         ReadString(item, "sourceContentHash") ??
                         ReadString(item, "contentHash") ??

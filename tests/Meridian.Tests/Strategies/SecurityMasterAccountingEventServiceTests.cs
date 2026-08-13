@@ -74,6 +74,45 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_ShortPosition_FailsClosedWithUnsupportedBreak()
+    {
+        // Position magnitudes are absolute, so a short run through the long-side generators would
+        // manufacture positive interest-income, coupon-receipt, and principal-receipt events for a
+        // liability. Until short-liability accounting exists the short fails closed: no events, no
+        // previews — an explicit completeness break instead.
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            position: new SecurityMasterAccountingPosition(
+                Symbol: "BOND1",
+                SecurityId: BondSecurityId,
+                AccountId: "acct-1",
+                ParAmount: 100_000m,
+                CarryingPrice: 0.94m,
+                PositionId: BondPositionId)
+            {
+                IsShort = true
+            },
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "evidence://factor/bond-2026-01",
+                    SourceContentHash: "sha256:bond-factor-2026-01")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.ExpectedEvents.Should().BeEmpty("a short position must not generate long-side expected events");
+        result.AccrualCalculations.Should().BeEmpty();
+        result.JournalPreviews.Should().BeEmpty();
+        result.Issues.Should().ContainSingle(issue => issue.Code == "SM_SHORT_POSITION_UNSUPPORTED");
+    }
+
+    [Fact]
     public void Generate_MortgageBackedFactorPaydown_ShouldUseSecurityMasterFactorSchedule()
     {
         var service = new SecurityMasterAccountingEventService();
