@@ -709,9 +709,14 @@ public sealed partial class OrderManagementSystem
         // A contract is not a share. Measuring an option amendment at quantity x premium
         // would assess an increase from 10 to 100 contracts at $5 as a $450 increment
         // instead of $45,000, and the per-order rule would see a $500 order.
-        var measured = Math.Abs(quantity) * resolved
+        //
+        // Scale percentage-of-par before multiplying, matching OrderNotionalResolver: dividing the
+        // product instead lets the intermediate overflow on a notional that is perfectly
+        // representable, and here that throws inside the amendment probe — before any risk decision
+        // or dispatch — so ModifyOrderAsync raises instead of returning a structured refusal.
+        var effectivePrice = usesFaceValuePercentageOfPar ? resolved / 100m : resolved;
+        return Math.Abs(quantity) * effectivePrice
             * (contractMultiplier > 0m ? contractMultiplier : 1m);
-        return usesFaceValuePercentageOfPar ? measured / 100m : measured;
     }
 
     /// <summary>
@@ -764,14 +769,23 @@ public sealed partial class OrderManagementSystem
     /// project $3k. When both sizes are measurable, this returns a probe carrying only the
     /// incremental value, so snapshot + probe equals the post-amendment book.
     /// <para>
-    /// The increment is only stamped when the order's own price is the price it will pay —
-    /// a buy limit. Everything else (any sell, a stop-market trigger, an unpriced order)
-    /// executes at the market, which the OMS cannot see, so an increment computed from the
-    /// order's own fields would understate it: raising a sell limited at $1 from 100 to 200
-    /// shares while the mark is $100 is a $10,000 increase, not $100. In those cases the
-    /// probe carries the whole amended order, which the rules price at the mark. That
-    /// double-counts the working order's existing reservation, but over-reserving can only
-    /// refuse an amendment, never admit one that breaches a ceiling.
+    /// An amendment that does not raise the order's own measured value stamps an increment of
+    /// zero, whatever its side: it adds nothing to a book the snapshot already reserves. This is
+    /// what keeps unchanged and reducing amendments routable — projecting the full order on top of
+    /// the reservation it replaces reads an unchanged $10,000 sell as $20,000, and a gross ceiling
+    /// between the two refuses it, tripping the breaker at Critical severity over an amendment that
+    /// changed no exposure at all.
+    /// </para>
+    /// <para>
+    /// For an <em>increase</em>, the incremental value is stamped only when the order's own price
+    /// is the price it will pay — a buy limit. Everything else (any sell, a stop-market trigger, an
+    /// unpriced order) executes at the market, which the OMS cannot see, so an increment computed
+    /// from the order's own fields would understate it: raising a sell limited at $1 from 100 to
+    /// 200 shares while the mark is $100 is a $10,000 increase, not $100. Those carry the whole
+    /// amended order for the rules to price at the mark, double-counting the existing reservation —
+    /// but over-reserving an increase can only refuse an amendment, never admit one that breaches a
+    /// ceiling. That argument holds for increases and <b>only</b> for increases, which is why the
+    /// zero case above is decided first and without reference to side.
     /// </para>
     /// </summary>
     private static OrderRequest BuildAmendmentProbe(OrderState state, OrderModification modification)
@@ -785,10 +799,6 @@ public sealed partial class OrderManagementSystem
         var pricePaidIsCapped = state.Side == OrderSide.Buy
             && state.LimitPrice is > 0m
             && amended.LimitPrice is > 0m;
-        if (!pricePaidIsCapped)
-        {
-            return amended with { Metadata = probeMetadata };
-        }
 
         var currentValue = MeasureOrderValue(
             state.Quantity,
@@ -806,6 +816,8 @@ public sealed partial class OrderManagementSystem
             state.UsesFaceValuePercentageOfPar);
         if (currentValue is not { } current || amendedValue is not { } proposed)
         {
+            // Genuinely unmeasurable on both sides of the comparison: nothing to difference, so the
+            // rules price the whole amended order at the mark and over-reserve.
             return amended with { Metadata = probeMetadata };
         }
 
@@ -813,17 +825,40 @@ public sealed partial class OrderManagementSystem
         // real post-amendment position; only the notional-based rules read the incremental
         // value, because the snapshot already reserves the working order's current size.
         //
-        // A reduction contributes nothing. Falling through to the full amended order here would
-        // project it *on top of* a snapshot that still reserves the larger original — a $10,000
-        // working buy cut to $9,000 reads as $19,000 — so a gross ceiling between the two refuses
-        // the amendment, and at Critical severity trips the breaker, for lowering exposure. That
-        // was harmless while only increases were revalidated, because over-reserving an increase
-        // can refuse but never admit; once every supplied price is revalidated the same
-        // over-reservation starts blocking the de-risking direction, which is the one a desk most
-        // needs to stay open.
-        var increment = proposed > current ? proposed - current : 0m;
+        // An amendment that does not raise the order's own measured value adds nothing to the book,
+        // whatever its side. Falling through to the full amended order projects it *on top of* a
+        // snapshot that still reserves the original — an unchanged $10,000 sell reads as $20,000,
+        // and a $10,000 buy cut to $9,000 reads as $19,000 — so a gross ceiling between the two
+        // refuses the amendment, and at Critical severity trips the breaker, over an amendment that
+        // lowered exposure or changed none of it.
+        //
+        // That over-reservation was harmless while only *increases* were revalidated, because
+        // over-reserving an increase can refuse but never admit. Revalidating every supplied price
+        // brought unchanged and reducing amendments down the same path, where the same arithmetic
+        // blocks the two directions a desk most needs to stay open. The zero case is therefore
+        // side-neutral: an earlier revision scoped it to capped buys and left every sell and stop
+        // double-counted, including the explicitly-unchanged price this gate deliberately
+        // revalidates.
+        if (proposed <= current)
+        {
+            probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
+                0m.ToString("G29", CultureInfo.InvariantCulture);
+            return amended with { Metadata = probeMetadata };
+        }
+
+        if (!pricePaidIsCapped)
+        {
+            // An increase whose own price is not what it pays — any sell, a stop-market trigger,
+            // an unpriced order. The increment computed from the order's own fields would
+            // understate it (raising a sell limited at $1 from 100 to 200 shares while the mark is
+            // $100 is a $10,000 increase, not $100), so the whole amended order goes to the rules
+            // to be priced at the mark. Over-reserving in this direction is the conservative
+            // answer: it can refuse, never admit.
+            return amended with { Metadata = probeMetadata };
+        }
+
         probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
-            increment.ToString("G29", CultureInfo.InvariantCulture);
+            (proposed - current).ToString("G29", CultureInfo.InvariantCulture);
         return amended with { Metadata = probeMetadata };
     }
 

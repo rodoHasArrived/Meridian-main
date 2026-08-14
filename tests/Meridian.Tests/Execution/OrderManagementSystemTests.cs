@@ -1621,15 +1621,29 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     /// <summary>
-    /// A de-risking amendment must not be projected on top of the reservation it replaces. The
-    /// exposure snapshot still holds the working order at its original size, so handing the rules
-    /// the full amended order reads a $1,000 buy cut to $900 as $1,900 — and a gross ceiling
-    /// between the two then refuses the amendment, tripping the breaker at Critical severity for
-    /// lowering exposure. Harmless while only increases were revalidated; not once every supplied
-    /// price is.
+    /// An amendment that does not raise exposure must not be projected on top of the reservation it
+    /// replaces. The snapshot still holds the working order at its original size, so handing the
+    /// rules the full amended order reads an unchanged $1,000 sell as $2,000 and a $1,000 buy cut
+    /// to $900 as $1,900 — a gross ceiling between the two then refuses the amendment and, at
+    /// Critical severity, trips the breaker over an amendment that lowered exposure or changed
+    /// none of it. Harmless while only increases were revalidated; not once every supplied price
+    /// is, which is when unchanged and reducing amendments started coming down this path.
+    /// <para>
+    /// Every side is covered because the first fix was scoped to buy limits and left sells and
+    /// stops double-counted — including the explicitly-unchanged price the gate deliberately
+    /// revalidates, which is the case guaranteed to occur.
+    /// </para>
     /// </summary>
-    [Fact]
-    public async Task ModifyOrderAsync_PriceReducingAmendment_DoesNotDoubleCountTheWorkingOrder()
+    [Theory]
+    [InlineData(OrderSide.Buy, OrderType.Limit, 90.0, "reducing a buy limit adds nothing")]
+    [InlineData(OrderSide.Buy, OrderType.Limit, 100.0, "an unchanged buy limit adds nothing")]
+    [InlineData(OrderSide.Sell, OrderType.Limit, 90.0, "reducing a sell limit adds nothing")]
+    [InlineData(OrderSide.Sell, OrderType.Limit, 100.0, "an unchanged sell limit adds nothing")]
+    public async Task ModifyOrderAsync_NonIncreasingAmendment_DoesNotDoubleCountTheWorkingOrder(
+        OrderSide side,
+        OrderType orderType,
+        double amendedPrice,
+        string because)
     {
         var riskValidator = Substitute.For<IRiskValidator>();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
@@ -1642,11 +1656,11 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
             Symbol = "AAPL",
-            Side = OrderSide.Buy,
-            Type = OrderType.Limit,
+            Side = side,
+            Type = orderType,
             Quantity = 10m,
             LimitPrice = 100m,
-            ClientOrderId = "CLIENT-PRICE-REDUCE"
+            ClientOrderId = $"CLIENT-NONINCREASING-{side}-{amendedPrice}"
         });
         placed.Success.Should().BeTrue();
 
@@ -1660,16 +1674,67 @@ public sealed class OrderManagementSystemGateTests : IDisposable
 
         var modified = await oms.ModifyOrderAsync(
             placed.OrderId,
-            new OrderModification { NewLimitPrice = 90m });
+            new OrderModification { NewLimitPrice = (decimal)amendedPrice });
 
         modified.Success.Should().BeTrue();
         probes.Should().NotBeEmpty("the amendment is revalidated");
 
         var probe = probes[^1];
-        probe.Metadata.Should().ContainKey(RiskEscalationQueueService.IncrementalNotionalMetadataKey,
-            "a reduction still has to state its increment rather than fall through to the full order");
+        probe.Metadata.Should().ContainKey(
+            RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+            "a non-increasing amendment states its increment rather than falling through to the full order");
         probe.Metadata![RiskEscalationQueueService.IncrementalNotionalMetadataKey]
-            .Should().Be("0", "reducing a working order adds nothing to the book");
+            .Should().Be("0", because);
+    }
+
+    /// <summary>
+    /// The zero case must not swallow a genuine increase on a market-executed order. A sell's own
+    /// limit is not what it pays, so the increment cannot be computed from the order's fields — the
+    /// whole amended order goes to the rules to be priced at the mark, over-reserving in the one
+    /// direction where over-reserving can only refuse and never admit.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_SellQuantityIncrease_StillCarriesTheFullAmendedOrder()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-SELL-INCREASE"
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewQuantity = 100m, NewLimitPrice = 100m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty();
+
+        var probe = probes[^1];
+        probe.Metadata.Should().NotContainKey(
+            RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+            "a sell's own limit understates what it pays, so the rules price the whole order at the mark");
+        probe.Quantity.Should().Be(100m);
     }
 
     [Fact]
