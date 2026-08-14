@@ -168,12 +168,24 @@ concurrent callers can complete out of order.
 
 An absolute ceiling of twenty times the count cap stops a pathological burst from growing memory
 without bound. **When that ceiling bites, the effect is operational, not cosmetic:**
-`RetentionWindowComplete` goes false, and it stays false until the discarded region itself ages past
-the window — completeness is judged from what was dropped, not from whether the retained set happens
-to fit again. `RiskRuleRuntimeService` reads it and refuses to report *any* rule healthy while it is
-false, so a readiness gate cannot mistake an hour nobody kept records for a quiet one. Raise
+completeness goes false, and it stays false until the discarded region itself ages out —
+completeness is judged from what was dropped, not from whether the retained set happens to fit
+again. `RiskRuleRuntimeService` reads it and refuses to report *any* rule healthy while it is false,
+so a readiness gate cannot mistake an hour nobody kept records for a quiet one. Raise
 `InMemoryRetentionWindow` or `InMemoryRetention` for deployments whose event rate makes that ceiling
 reachable; the shortfall is logged once per process when it first occurs.
+
+**Ask completeness at your own horizon.** `RetentionWindowCompleteFor(horizon)` answers for the span
+the caller reasons over; the `RetentionWindowComplete` property is the same question asked at this
+trail's retention window. Because incompleteness *blocks* callers, the difference is operational: a
+discard can only hide something from a caller if it fell inside that caller's horizon, so a trail
+keeping two hours and a consumer claiming one must stop reporting a gap once the discard is an hour
+old, not two. `RiskRuleRuntimeService` passes its one-hour liveness window for exactly this reason —
+measuring at the trail's window instead would hold order readiness closed for a second hour in which
+nothing the consumer could assert about was ever missing. This is orthogonal to whether the horizon
+fits at all: a consumer whose horizon exceeds `InMemoryRetentionWindow` loses entries to age-based
+trimming that never register as discards, so it must compare the two windows as well. Neither check
+subsumes the other, and the service performs both.
 
 OMS runtime guardrails are configuration-backed under `Execution:OrderManagement`:
 `MaxRetainedOrders`, `ExecutionChannelCapacity`, and `CancelAllMaxConcurrency`. Reg T margin rates

@@ -266,8 +266,14 @@ public sealed class RiskRuleRuntimeService
         // so a 45-minute-old breach under a 30-minute retention window is trimmed silently while
         // this service still promises to treat it as live. The consumer states its horizon, so the
         // consumer is what has to check it.
+        // Completeness is asked at *this* service's horizon, not at the trail's retention window.
+        // A gap only hides something from this claim while it is inside the liveness window, so a
+        // two-hour trail and a one-hour claim must stop reporting constrained once the discard is an
+        // hour old. Asking the trail's own window instead would block order readiness through
+        // BuildRiskRuleGate for a second hour in which nothing assertable here was ever missing.
         var horizonCovered = auditTrail.InMemoryRetentionWindow >= ViolationLivenessWindow;
-        if (horizonCovered && auditTrail.RetentionWindowComplete)
+        var horizonComplete = auditTrail.RetentionWindowCompleteFor(ViolationLivenessWindow);
+        if (horizonCovered && horizonComplete)
         {
             return statuses;
         }
@@ -275,10 +281,10 @@ public sealed class RiskRuleRuntimeService
         _logger.LogWarning(
             "Risk rule status reported constrained: the execution audit trail cannot establish the absence "
             + "of a breach over the {LivenessWindow} liveness window (retention window {RetentionWindow}, "
-            + "complete: {Complete}).",
+            + "complete over that horizon: {Complete}).",
             ViolationLivenessWindow,
             auditTrail.InMemoryRetentionWindow,
-            auditTrail.RetentionWindowComplete);
+            horizonComplete);
 
         return statuses
             .Select(static status => status.IsBreached

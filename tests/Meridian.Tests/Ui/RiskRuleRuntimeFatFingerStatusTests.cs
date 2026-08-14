@@ -401,6 +401,86 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
     }
 
     /// <summary>
+    /// Coverage has to recover when the gap leaves <em>the consumer's</em> horizon, not when it
+    /// leaves the trail's longer retention window. The discards below sit 70 minutes back: outside
+    /// the one-hour liveness window this service reasons over, still inside the two-hour window the
+    /// trail keeps. Measuring completeness at the trail's window would keep every non-breached rule
+    /// <c>Constrained</c> — and order readiness blocked — for another 50 minutes over a gap that can
+    /// no longer hide anything this service would assert about.
+    /// </summary>
+    [Fact]
+    public async Task RuleStatus_WhenTheGapHasLeftTheLivenessWindow_ReportsHealthyAgain()
+    {
+        var now = DateTimeOffset.UtcNow;
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-gap-aged-out"),
+                InMemoryRetention: 100,
+                InMemoryRetentionWindow: TimeSpan.FromHours(2)),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        // Overflow the hard ceiling with entries 70 minutes old, forcing discards from inside the
+        // trail's window but outside the liveness window.
+        for (var i = 0; i < 2_100; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddMinutes(-70).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        audit.RetentionWindowComplete.Should().BeFalse(
+            "the gap is still inside the trail's own two-hour window");
+        audit.RetentionWindowCompleteFor(TimeSpan.FromHours(1)).Should().BeTrue(
+            "no entry inside a one-hour horizon was discarded");
+
+        var statuses = await BuildService(audit).GetAllStatusesAsync();
+
+        statuses.Should().NotBeEmpty();
+        statuses.Should().NotContain(
+            status => status.State == "Constrained",
+            "the liveness window this service claims is fully covered");
+    }
+
+    /// <summary>
+    /// The horizon-scoped question must still fail closed while the gap is genuinely inside the
+    /// caller's horizon — the recovery above must come from the gap ageing out, not from asking a
+    /// shorter question.
+    /// </summary>
+    [Fact]
+    public async Task RetentionCompleteness_WhenTheGapIsInsideTheHorizon_StaysIncomplete()
+    {
+        var now = DateTimeOffset.UtcNow;
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-gap-inside-horizon"),
+                InMemoryRetention: 100,
+                InMemoryRetentionWindow: TimeSpan.FromHours(2)),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        for (var i = 0; i < 2_100; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddMinutes(-10).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        audit.RetentionWindowCompleteFor(TimeSpan.FromHours(1)).Should().BeFalse(
+            "a ten-minute-old discard is inside a one-hour horizon");
+
+        var statuses = await BuildService(audit).GetAllStatusesAsync();
+
+        statuses.Should().OnlyContain(status => status.State == "Constrained");
+    }
+
+    /// <summary>
     /// A retention window shorter than the liveness window is the subtler shortfall: nothing is
     /// ever reported as a gap, because completeness is measured against the audit trail's own
     /// window, so a 45-minute-old breach under 30-minute retention is trimmed silently while the

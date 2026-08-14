@@ -79,16 +79,44 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     /// fits the cap — those differ exactly when it matters, because once entries have been dropped
     /// the retained set can fit again while the dropped ones are still inside the window.
     /// </para>
+    /// <para>
+    /// This answers for <em>this trail's</em> window. A consumer reasoning over a shorter span
+    /// should ask <see cref="RetentionWindowCompleteFor"/> instead, or it will keep failing closed
+    /// after the gap has already left its own horizon.
+    /// </para>
     /// </summary>
-    public bool RetentionWindowComplete
+    public bool RetentionWindowComplete => RetentionWindowCompleteFor(_inMemoryRetentionWindow);
+
+    /// <summary>
+    /// Whether every entry inside the caller's <paramref name="horizon"/> is retained — the same
+    /// question <see cref="RetentionWindowComplete"/> answers, asked at the span the caller actually
+    /// reasons over rather than at this trail's retention window.
+    /// <para>
+    /// The distinction is not cosmetic, because incompleteness blocks callers. A discard is only
+    /// capable of hiding something from a caller if it fell inside <em>that caller's</em> horizon,
+    /// so a trail retaining two hours and a consumer claiming one must stop reporting a gap once the
+    /// discarded entry is an hour old, not two. Measuring against the longer window instead keeps
+    /// every non-breached rule <c>Constrained</c> — and order readiness blocked — for an extra hour
+    /// in which no breach the consumer could assert about was ever missing.
+    /// </para>
+    /// <para>
+    /// This is orthogonal to whether the horizon fits at all: a caller whose horizon exceeds
+    /// <see cref="InMemoryRetentionWindow"/> loses entries to age-based trimming that never register
+    /// as discards, so it must compare the two windows as well. Neither check subsumes the other.
+    /// </para>
+    /// </summary>
+    /// <param name="horizon">The span the caller reasons over. Non-positive values ask nothing.</param>
+    public bool RetentionWindowCompleteFor(TimeSpan horizon)
     {
-        get
+        if (horizon <= TimeSpan.Zero)
         {
-            lock (_lock)
-            {
-                return _newestDiscardedInsideWindow is not { } discarded
-                    || discarded < DateTimeOffset.UtcNow - _inMemoryRetentionWindow;
-            }
+            return true;
+        }
+
+        lock (_lock)
+        {
+            return _newestDiscardedInsideWindow is not { } discarded
+                || discarded < DateTimeOffset.UtcNow - horizon;
         }
     }
 
