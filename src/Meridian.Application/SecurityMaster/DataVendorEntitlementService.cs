@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -81,7 +82,4 @@ public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
 
         return DataVendorEntitlementStatus.Active;
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

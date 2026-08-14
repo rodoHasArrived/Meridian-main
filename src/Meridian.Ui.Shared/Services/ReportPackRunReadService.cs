@@ -7,6 +7,7 @@ using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -2362,9 +2363,6 @@ public sealed partial class ReportPackRunReadService
         // default to the token-gated secure portal for channels without an explicit egress hint.
         return ReportPackDeliveryModeDto.SecurePortal;
     }
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static WorkstationReportPackDistributionPayload BuildDistribution(
         ReportPackDistributionPolicy policy,

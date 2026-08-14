@@ -9,6 +9,7 @@ using Meridian.Storage.Store;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -985,9 +986,6 @@ internal static class DailyValuationScheduleProjection
             normalized,
             StringComparison.OrdinalIgnoreCase);
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)

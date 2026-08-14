@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -179,9 +180,6 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
 
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     internal static AccountingPolicyRulePackDto NormalizeRulePack(
         AccountingPolicyRulePackDto? rulePack,

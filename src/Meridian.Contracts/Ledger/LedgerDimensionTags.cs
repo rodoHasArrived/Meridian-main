@@ -1,3 +1,4 @@
+using static Meridian.Contracts.Text.TextPrimitives;
 namespace Meridian.Contracts.Ledger;
 
 /// <summary>
@@ -145,7 +146,4 @@ public static class LedgerDimensionTags
         => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
             ? NormalizeOptional(value[prefix.Length..])
             : null;
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

@@ -7,6 +7,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 

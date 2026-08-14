@@ -10,6 +10,7 @@ using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Storage.Export;
 using Meridian.Ui.Shared.Serialization;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -1054,10 +1055,4 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
     private static string ComputeSha256(ReadOnlySpan<byte> content) =>
         Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
 }
