@@ -4014,6 +4014,8 @@ Meridian-main
 │   │   │   ├── FundProfileTenancy.cs
 │   │   │   ├── FundScopedWriteTenantGate.cs
 │   │   │   └── TenantReadPredicate.cs
+│   │   ├── Text
+│   │   │   └── TextPrimitives.cs
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
@@ -6592,6 +6594,7 @@ Meridian-main
 │   │   │   │   │   ├── workspace-surface.css
 │   │   │   │   │   └── workspace-workbench-shell.css
 │   │   │   │   ├── test
+│   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── render.tsx
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
@@ -8929,6 +8932,8 @@ Meridian-main
 │   │   │   │   └── Sha256DigestTests.cs
 │   │   │   ├── Ledger
 │   │   │   │   └── LedgerDimensionTagsTests.cs
+│   │   │   ├── Text
+│   │   │   │   └── TextPrimitivesTests.cs
 │   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── DataProvenanceTests.cs
