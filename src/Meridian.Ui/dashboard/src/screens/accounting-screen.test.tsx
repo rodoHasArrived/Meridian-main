@@ -5252,7 +5252,8 @@ describe("AccountingScreen", () => {
     expect(api.resolveSecurityConflict).toHaveBeenCalledWith({
       conflictId: "conflict-1",
       resolution: "AcceptA",
-      resolvedBy: "operator"
+      resolvedBy: "operator",
+      reason: "AcceptA action from the shared conflict queue."
     });
   });
 

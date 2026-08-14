@@ -7,6 +7,20 @@ public interface ISecurityAssetProfileCatalog
     IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles();
     bool TryGetProfile(string profileId, int version, out SecurityAssetProfileDefinitionDto profile);
     bool TryGetLatestApprovedProfile(string profileId, out SecurityAssetProfileDefinitionDto profile);
+
+    /// <summary>
+    /// The profile versions selectable for a write EFFECTIVE AT <paramref name="effectiveAt"/> —
+    /// write-time governance evaluates against the request's effective date, not today, so a
+    /// legitimately backdated create/amend must be able to discover the historical (now
+    /// superseded) version whose window covered that date. The default filters the current
+    /// selectable set by window; catalogs holding full lineage should override to expose eligible
+    /// historical versions too.
+    /// </summary>
+    IReadOnlyList<SecurityAssetProfileDefinitionDto> GetProfiles(DateOnly effectiveAt)
+        => GetProfiles()
+            .Where(profile => profile.EffectiveFrom <= effectiveAt
+                && (profile.EffectiveTo is not DateOnly effectiveTo || effectiveAt <= effectiveTo))
+            .ToArray();
 }
 
 public sealed class StaticSecurityAssetProfileCatalog : ISecurityAssetProfileCatalog
@@ -68,7 +82,8 @@ internal static class SecurityAssetProfileSeeds
                     RequiredDecimal("originalFace", "Original face", 0.01m, null, projected: true),
                     RequiredText("couponOrIndex", "Coupon/index", projected: true, searchable: true),
                     RequiredText("factorSchedule", "Factor schedule", projected: true, searchable: true),
-                    RequiredEnum("collateralType", "Collateral type", Taxonomy(SecurityReferenceTaxonomyKeys.CollateralType), projected: true, searchable: true)
+                    RequiredEnum("collateralType", "Collateral type", Taxonomy(SecurityReferenceTaxonomyKeys.CollateralType), projected: true, searchable: true),
+                    OptionalDate("maturity", "Maturity", projected: true)
                 ],
                 [
                     new(SecurityIdentifierKind.Cusip, true, "Structured-credit strips should carry CUSIP coverage when available."),
@@ -174,7 +189,8 @@ internal static class SecurityAssetProfileSeeds
             null,
             "Meridian",
             ApprovedAtUtc,
-            "Seeded starter template for governed custom asset profile validation.");
+            "Seeded starter template for governed custom asset profile validation.",
+            ApprovalReference: "MERIDIAN-SEED-APPROVAL");
 
     private static IReadOnlyList<string> Taxonomy(string taxonomyKey)
         => SecurityReferenceTaxonomyCatalog.Default.GetValues(taxonomyKey);
@@ -187,6 +203,9 @@ internal static class SecurityAssetProfileSeeds
 
     private static SecurityAssetProfileFieldDefinitionDto RequiredDate(string key, string label, bool projected)
         => Field(key, label, SecurityAssetProfileFieldTypeDto.Date, true, [], null, null, projected, searchable: false);
+
+    private static SecurityAssetProfileFieldDefinitionDto OptionalDate(string key, string label, bool projected)
+        => Field(key, label, SecurityAssetProfileFieldTypeDto.Date, false, [], null, null, projected, searchable: false);
 
     private static SecurityAssetProfileFieldDefinitionDto RequiredInteger(string key, string label, decimal? minValue, decimal? maxValue, bool projected)
         => Field(key, label, SecurityAssetProfileFieldTypeDto.Integer, true, [], minValue, maxValue, projected, searchable: false);

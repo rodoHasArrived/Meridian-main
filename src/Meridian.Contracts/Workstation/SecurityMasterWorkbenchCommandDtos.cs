@@ -81,6 +81,19 @@ public sealed record SubmitSecurityMasterRevisionRequest(
     string? Reviewer = null,
     string? ReportPackId = null);
 
+/// <summary>
+/// Discards a staged (Draft or Submitted) revision, transitioning it to Rejected and withdrawing
+/// the staged override value it governs. This is the terminal path for abandoned drafts and
+/// gate-rejected submissions: without it a staged sibling defers the security-level override
+/// decision forever, leaving governed runs blocked behind a Pending overlay no revision can ever
+/// approve.
+/// </summary>
+public sealed record DiscardSecurityMasterRevisionRequest(
+    Guid SecurityId,
+    Guid RevisionId,
+    string Actor,
+    string? Reason = null);
+
 /// <summary>Approves a submitted revision through the operations-continuity approval gate.</summary>
 public sealed record ApproveSecurityMasterRevisionRequest(
     Guid SecurityId,

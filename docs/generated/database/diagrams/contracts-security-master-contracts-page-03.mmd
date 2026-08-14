@@ -1,5 +1,27 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine["StructuredCashFlowLedgerLine"] {
+        +string Account
+        +string AccountType
+        +decimal Credit
+        +decimal Debit
+        +string? FinancialAccountId
+        +string? Symbol
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting["StructuredCashFlowLedgerPosting"] {
+        +string Description
+        +bool IsBalanced
+        +IReadOnlyList~StructuredCashFlowLedgerLine~ Lines
+        +DateTimeOffset PeriodDate
+        +decimal TotalCredits
+        +decimal TotalDebits
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult["StructuredCashFlowLedgerPostingResult"] {
+        +string? BlockedReason
+        +bool IsPostable
+        +IReadOnlyList~StructuredCashFlowLedgerPosting~ Postings
+        +Guid SecurityId
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
         +decimal? CurrentIndexRate
         +string? DayCountConvention
@@ -54,12 +76,17 @@ classDiagram
         +DateOnly? MaturityDate
         +string? PaymentFrequency
         +decimal? PrincipalFace
+        +IReadOnlyList~StructuredPrincipalScheduleEntry~? PrincipalSchedule
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsResolver["StructuredCashFlowTermsResolver"] {
     }
     class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
         +DateOnly AsOfDate
         +decimal Factor
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
+        +decimal Amount
+        +DateOnly PaymentDate
     }
     class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
         +DateTimeOffset AsOf
@@ -109,6 +136,8 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario
@@ -119,4 +148,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
     Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind

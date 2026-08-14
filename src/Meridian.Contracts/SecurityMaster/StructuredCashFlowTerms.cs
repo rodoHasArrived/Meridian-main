@@ -15,7 +15,8 @@ public sealed record StructuredCashFlowTerms(
     string? PaymentFrequency,
     string? DayCountConvention,
     IReadOnlyList<StructuredFactorScheduleEntry> FactorSchedule,
-    IReadOnlyList<StructuredCashFlowLeg>? Legs = null)
+    IReadOnlyList<StructuredCashFlowLeg>? Legs = null,
+    IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null)
 {
     /// <summary>An empty term set used when a security carries no readable structured terms.</summary>
     public static StructuredCashFlowTerms Empty { get; } = new(
@@ -33,6 +34,9 @@ public sealed record StructuredCashFlowTerms(
 
     /// <summary>True when typed cash-flow legs were resolved (multi-leg or floating-rate structure).</summary>
     public bool HasLegs => Legs is { Count: > 0 };
+
+    /// <summary>True when contractual principal payment dates and amounts were resolved.</summary>
+    public bool HasPrincipalSchedule => PrincipalSchedule is { Count: > 0 };
 
     /// <summary>
     /// Returns the pool factor in effect on <paramref name="asOf"/> — the latest scheduled factor
