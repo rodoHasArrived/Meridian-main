@@ -441,8 +441,97 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
 
         statuses.Should().NotBeEmpty();
         statuses.Should().NotContain(
-            status => status.State == "Constrained",
+            status => status.Summary.Contains("Audit retention does not cover"),
             "the liveness window this service claims is fully covered");
+    }
+
+    /// <summary>
+    /// Discarding records nobody could have reasoned with is not a coverage gap. Timestamps are
+    /// caller-supplied, so counting an implausibly future-dated discard would hold completeness
+    /// false until wall-clock time reached that date — entries stamped years ahead would keep every
+    /// rule <c>Constrained</c> and order readiness closed for years, turning a writable audit path
+    /// into an availability control.
+    /// </summary>
+    [Fact]
+    public async Task RetentionCompleteness_WhenDiscardsAreImplausiblyFutureDated_IsNotTreatedAsAGap()
+    {
+        var now = DateTimeOffset.UtcNow;
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-future-dated"),
+                InMemoryRetention: 100,
+                InMemoryRetentionWindow: TimeSpan.FromHours(2)),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        // Well past the hard ceiling, every entry dated three years ahead.
+        for (var i = 0; i < 2_100; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddYears(3).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        audit.RetentionWindowCompleteFor(TimeSpan.FromHours(1)).Should().BeTrue(
+            "no plausibly dated record was lost");
+        audit.RetentionWindowComplete.Should().BeTrue();
+
+        var statuses = await BuildService(audit).GetAllStatusesAsync();
+
+        // Assert on the coverage rewrite specifically, not on State: a flood this size genuinely
+        // breaches the order-rate rule, and WithAuditCoverageApplied only rewrites *non-breached*
+        // statuses. Asserting "nothing is Constrained" would fail on a real breach the test itself
+        // manufactured, which says nothing about retention coverage.
+        statuses.Should().NotBeEmpty();
+        statuses.Should().NotContain(
+            status => status.Summary.Contains("Audit retention does not cover"),
+            "readiness must not be blocked by records the consumer would discard as implausible");
+    }
+
+    /// <summary>
+    /// The plausibility bound must not swallow a real gap that happens to sit next to future-dated
+    /// noise: the newest <em>plausible</em> discard is what counts, not the newest discard.
+    /// </summary>
+    [Fact]
+    public async Task RetentionCompleteness_WithFutureDatedNoiseAboveARealGap_StillReportsTheGap()
+    {
+        var now = DateTimeOffset.UtcNow;
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-mixed-dating"),
+                InMemoryRetention: 100,
+                InMemoryRetentionWindow: TimeSpan.FromHours(2)),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        // Real, recent entries first, then future-dated ones. Both are discarded when the ceiling
+        // bites; the real ones are the gap.
+        for (var i = 0; i < 1_500; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddMinutes(-10).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        for (var i = 0; i < 1_500; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddYears(3).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        audit.RetentionWindowCompleteFor(TimeSpan.FromHours(1)).Should().BeFalse(
+            "ten-minute-old records were discarded inside the horizon");
     }
 
     /// <summary>

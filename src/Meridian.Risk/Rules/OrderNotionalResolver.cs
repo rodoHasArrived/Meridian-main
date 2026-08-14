@@ -245,10 +245,14 @@ internal static class OrderNotionalResolver
         }
 
         var price = referencePrice.Value;
-        var notional = Math.Abs(request.Quantity) * price;
         // Fixed-income Qty is par value and its clean price is a percentage of par: 100,000
-        // face at 101.25 is $101,250, not $10,125,000.
-        return usesFaceValuePercentageOfPar ? notional / 100m : notional;
+        // face at 101.25 is $101,250, not $10,125,000. Scale the price *before* multiplying —
+        // dividing the product instead lets the intermediate overflow on a representable result,
+        // and the rules turn that exception into RISK_RULE_EVALUATION_FAILED rather than measuring
+        // the order against their thresholds. A percentage of par is a fraction of par, so
+        // converting it once up front is also the more direct statement of what the price means.
+        var effectivePrice = usesFaceValuePercentageOfPar ? price / 100m : price;
+        return Math.Abs(request.Quantity) * effectivePrice;
     }
 
     /// <summary>

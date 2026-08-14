@@ -124,6 +124,20 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     public static readonly TimeSpan DefaultInMemoryRetentionWindow = TimeSpan.FromHours(2);
 
     /// <summary>
+    /// How far ahead of now a caller-stamped timestamp is still treated as real when deciding
+    /// whether discarding it left a coverage gap. Writers do not share a clock, so a little drift is
+    /// ordinary; a record stamped well beyond it is not evidence any consumer would have reasoned
+    /// with, and counting its loss as a gap would let a caller hold completeness false — and order
+    /// readiness closed — until wall-clock time caught up with the date it chose.
+    /// <para>
+    /// Consumers apply their own plausibility bound when reading (<c>RiskRuleRuntimeService</c> uses
+    /// a five-minute violation clock-skew allowance). This is the trail's own, deliberately not
+    /// shared: a consumer tightening its reading must not silently change what this records as lost.
+    /// </para>
+    /// </summary>
+    public static readonly TimeSpan WriterClockSkewAllowance = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// The window this instance actually keeps. A consumer whose own claim spans longer than this
     /// cannot establish that claim from this trail, however complete the window is — completeness
     /// is measured against <em>this</em> window, so an entry older than it is trimmed without ever
@@ -432,9 +446,25 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
         // a burst had already dropped entries, a single backdated append could leave the retained
         // set fitting the cap and flip the window back to "complete" while the dropped entries were
         // still inside it, letting a consumer resume asserting safety over a gap.
-        var newestRemoved = _entries[removeCount - 1].OccurredAt;
-        if (newestRemoved >= cutoff)
+        //
+        // A gap is only a gap over records a consumer would have used. Timestamps come from the
+        // caller, so an implausibly future-dated entry is not evidence anybody can reason with, and
+        // recording one as the newest discard would keep completeness false until wall-clock time
+        // reached that date — entries stamped years ahead would hold every rule Constrained, and
+        // order readiness closed, for years. That turns a writable audit path into an availability
+        // control, so the plausible-dated newest discard is what gets recorded. The removed prefix
+        // is ascending, so scanning back finds it and stops immediately in the ordinary case where
+        // nothing is future-dated.
+        var plausibleThrough = DateTimeOffset.UtcNow + WriterClockSkewAllowance;
+        var newestPlausibleIndex = removeCount - 1;
+        while (newestPlausibleIndex >= 0 && _entries[newestPlausibleIndex].OccurredAt > plausibleThrough)
         {
+            newestPlausibleIndex--;
+        }
+
+        if (newestPlausibleIndex >= 0 && _entries[newestPlausibleIndex].OccurredAt >= cutoff)
+        {
+            var newestRemoved = _entries[newestPlausibleIndex].OccurredAt;
             _newestDiscardedInsideWindow =
                 _newestDiscardedInsideWindow is { } existing && existing > newestRemoved
                     ? existing

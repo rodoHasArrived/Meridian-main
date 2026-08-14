@@ -4403,12 +4403,14 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
+│   │   ├── IFaceValueOrderSizingGateway.cs
 │   │   ├── INotionalOrderSizingGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── OrderSizingMetadata.cs
 │   │   ├── PositionExtensions.cs
 │   │   ├── README.md
 │   │   ├── RiskContracts.cs
