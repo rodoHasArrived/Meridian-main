@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-12
+**Reviewed:** 2026-08-14 (verification pass; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -24,13 +24,19 @@ documented, guarded decision, the review says so rather than reporting it as dri
 
 The Security Master is **structurally sound and unusually well governed for its stage**, but it is
 **not yet uniformly extensible across asset classes**. The write model (F# `SecurityKind`) is a
-closed 25-case discriminated union whose economics are shallower than the taxonomy it advertises,
+closed 26-case discriminated union whose economics are shallower than the taxonomy it advertises,
 and adding an asset class currently requires coordinated hand-edits across roughly seven
 independent registries. The governed edit workflow governs an *annotation overlay*, not the golden
 record.
 
 Nothing here is a correctness emergency. The risks are extensibility and institutional-completeness
 risks that compound as new asset classes land.
+
+> **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
+> below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
+> risk items have since closed or materially narrowed. See
+> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the current open list and
+> re-ranked priorities.
 
 ---
 
@@ -109,6 +115,14 @@ bond cannot carry its sink schedule, even though `DirectLoanTerms` already has
 index ratio. The subclass becomes a label that downstream cashflow, amortization, and NAV math
 cannot act on.
 
+> **Status (2026-08-14): partially closed.** `BondTerms.PrincipalSchedule: PrincipalPaymentEntry list`
+> now exists (`SecurityMaster.fs:257`), is declared in `SecurityAssetTermsSchema` as
+> `principalSchedule`, and is read by `StructuredCashFlowTermsResolver.ReadPrincipalSchedule` — so
+> sinking-fund and amortizing bonds are now representable and computable. `BondCouponStructure`
+> remains three cases (`Fixed` / `Floating` / `ZeroCoupon`), so **step-rate and inflation-linked
+> bonds are still classifiable but not computable**. Ten of the 21 `BondSubclass` members still have
+> no term data that distinguishes them economically.
+
 ### 2. One concept, three or four modeling routes
 
 MBS/ABS/CLO/CMBS can be modeled as `Bond` with `BondSubclass.MortgageBacked` / `Cmo` / `Clo`, or as
@@ -145,6 +159,12 @@ domain concept.
 The same collapse applies to any asset class a node does not recognize. Read tolerance is correct;
 amend-after-degrade is a write-side data-loss path that the tolerance comment does not cover.
 
+> **Status (2026-08-14): closed.** `SecurityKind.CustomAsset of CustomAssetTerms` is a first-class DU
+> case (`SecurityMaster.fs:566`), the profile envelope round-trips through both codec sides, and
+> amend/deactivate refuse records whose stored asset class the node cannot round-trip. All four
+> class-count surfaces now agree at 26 (F# DU, `AssetClassRegistry`, `SecurityAssetTermsSchema`,
+> `SecurityAssetClassCatalog` — the catalog's 27th entry is the `Unknown` default descriptor).
+
 ### 4. Adding an asset class touches ~7 registries
 
 A new class must be added to: the F# `SecurityKind` DU **and** `AssetClassRegistry.keyOf` **and**
@@ -154,12 +174,21 @@ serializer (`Interop.SecurityMaster.fs`); the C# deserializer (`SecurityMasterMa
 and optionally a projection interface + Postgres store + migration + DI registration.
 
 The count of declared classes already differs by surface: F# DU 25, catalog 26, terms schema 26,
-kind mapping 26, projection writers 11. Tests lock catalog↔registry and catalog↔terms-schema, but
+kind mapping 26, projection writers 11 (*as of 2026-08-12; the DU/catalog/schema surfaces now all
+read 26 — see below*). Tests lock catalog↔registry and catalog↔terms-schema, but
 nothing locks the *codec* surfaces — and `SecurityAssetTermsSchema`'s own docstring is explicit
 that the field table was "hand-maintained three times … which let them silently drift (e.g. the
 projection store reading a nested `coupon` object the serializer never wrote, so bond coupon columns
 landed null)". The schema table is a drift **detector**; it is not yet a drift **eliminator**,
 because both codec sides are still hand-written.
+
+> **Status (2026-08-14): narrowed, not closed.** `SecurityAssetTermsSchemaRoundTripTests` (558 lines)
+> now walks every entry in `SecurityAssetTermsSchema.AssetClasses` with a fully-populated payload and
+> asserts the F#→C#→F# loop is byte-stable and that the serialized field set equals the declared
+> schema exactly. The declared-class surfaces are locked to each other and the codecs are locked to
+> the schema table. **The codecs are still two hand-written arms per class** — the guard now catches
+> drift at commit time rather than in production, but adding an asset class still means editing both
+> sides by hand plus the ~7 registries above.
 
 ### 5. The governed edit workflow does not reach the golden record
 
@@ -187,6 +216,21 @@ decision D2 as amended: a partial field-edit payload appended to the economic st
 the definition on replay). The rationale is right. The gap is that no *typed amendment* path was
 built alongside it, so the workbench remains an annotation surface rather than a correction surface.
 
+> **Status (2026-08-14): first bullet closed; second and third still open — this is now the single
+> largest institutional gap.** `SecurityAssetTermsFieldEditValidator` anchors every
+> `assetSpecificTerms.*` edit to the declared schema for the record's asset class (key must exist or
+> resolve through a declared alias, value must coerce to the declared type, aliases collapse to one
+> canonical persisted path). But `OperatorOverridesDto.Values` is still
+> `IReadOnlyDictionary<string, string>` and its docstring still reads "*without amending the
+> canonical security terms*". The two registered `ISecurityMasterRevisionPublishedHandler`
+> implementations are `CoverageInvalidationHandler` and `SecurityProjectionRebuildHandler` — neither
+> writes an approved override back into the canonical terms. An approved coupon correction still has
+> no effect on cash-flow projection, amortization, pricing, or NAV.
+>
+> Related: `ProviderLedgerReconciliationService` injects `IOperatorOverridesStore` and never reads it
+> (`ProviderLedgerReconciliationService.cs:48,63,76`) — a dead dependency that reads as an
+> override-aware reconciliation path but is not one.
+
 ### 6. Provenance is record-level; field-level attribution is synthesized
 
 `Provenance` carries one `(sourceSystem, sourceRecordId, asOf, updatedBy, reason)` per record.
@@ -198,6 +242,15 @@ For a golden record assembled from multiple vendors this is the central missing 
 resolution picks a winner per field, the system cannot durably answer "which vendor supplied this
 maturity, as of when, at what confidence". `security_master_conflicts` records the resolution
 event, but the resolved field's provenance is not written back onto the record.
+
+> **Status (2026-08-14): closed.** Migration 027 adds `security_field_provenance`; migration 028 adds
+> versioned attribution. `SecurityFieldProvenanceRecord` is keyed `(security_id, field_path, origin)`
+> with a typed origin vocabulary (`ConflictResolution` / `OperatorFieldEdit` / `CanonicalWrite`), an
+> `OriginReference` back to the conflict or revision that asserted it, and a `SourceVersion` commit
+> ordinal so a late-arriving attribution for v2 cannot overwrite v3's. Conflict resolution writes the
+> winning attribution in the same transaction that closes the conflict. This is a stronger design
+> than the original recommendation — the `CanonicalWrite` origin means the true incumbent is
+> nameable even for fields that were never conflicted.
 
 ### 7. Corporate actions use one wide table with per-event-type columns
 
@@ -226,6 +279,15 @@ terms. A third type, `SecurityFactorScheduleEntry`, is declared separately in
 The typed contract's own docstring says it "replaces the free-text 'factor schedule' term" — but the
 free-text term is still what the domain model and terms schema declare, so the replacement is
 half-landed.
+
+> **Status (2026-08-14): narrowed.** `StructuredCreditTerms` now carries
+> `FactorScheduleEntries: FactorScheduleEntry list` alongside the retained free-text
+> `FactorSchedule: string option`, declared as `factorScheduleEntries` in the terms schema and
+> consumed by `StructuredCashFlowTermsResolver`'s `FactorAsOf` lookup; a `Maturity` anchor was added
+> so the schedule has a production effect. **Three shapes still coexist** — the free-text legacy
+> term, the domain `FactorScheduleEntry`, and the separately-declared `SecurityFactorScheduleEntry`
+> in `Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:90`. The duplicate in
+> `Meridian.Strategies` is now the remaining half of this item.
 
 ### 9. Equity has bespoke amendment endpoints no other class has
 
@@ -339,6 +401,80 @@ effective-interest amortization (item 10); distributed projection-cache invalida
 
 ---
 
+## Verification pass — 2026-08-14
+
+Re-read against current source at `4b39e9da8`, two days and roughly four review rounds after the
+original assessment. No code was changed by this pass; no tests were run.
+
+### Closed since 2026-08-12
+
+| # | Item | Evidence |
+| --- | --- | --- |
+| 3 | `CustomAsset` does not round-trip | `SecurityKind.CustomAsset` is a first-class DU case; amend refuses non-round-trippable classes |
+| 6 | Field-level provenance is synthesized | Migrations 027/028; `security_field_provenance` with typed origins, origin references, and version ordering |
+| — | Class counts differ by surface | F# DU, `AssetClassRegistry`, terms schema, and catalog all read 26 |
+| — | Codec drift is undetected | `SecurityAssetTermsSchemaRoundTripTests` walks all 26 declared classes and asserts byte-stable round-trip plus exact field-set equality |
+
+### Narrowed but still open
+
+| # | Item | What remains |
+| --- | --- | --- |
+| 1 | Taxonomy outruns term model | `BondTerms.PrincipalSchedule` landed; `BondCouponStructure` is still 3 cases — step-rate and inflation-linked remain classifiable but not computable |
+| 4 | ~7 registries per asset class | Drift is now test-caught, not prevented; both codec arms are still hand-written |
+| 5 | Governed edits do not reach the golden record | Field paths and types are now schema-validated; **no merge path exists** — no publish handler writes an approved override into canonical terms |
+| 8 | Factor schedules exist in incompatible shapes | Typed `FactorScheduleEntries` landed and is consumed; the third shape (`SecurityFactorScheduleEntry` in `Meridian.Strategies`) is still duplicated |
+
+### Unchanged and open
+
+| # | Item | Current state |
+| --- | --- | --- |
+| 2 | Three modeling routes for MBS/ABS/CLO | No canonical-home ruling; `Bond` subclasses, `StructuredCredit`, and `CustomAsset` all remain legitimate |
+| 7 | Corporate actions: wide table, per-event-type columns | Migration 021 added four more nullable columns; 8 typed payload columns for 18 declared event types, no JSONB envelope |
+| 9 | Equity has bespoke amendment endpoints | `PATCH` on preferred/convertible equity terms routes straight to `ISecurityMasterService.Amend…`, bypassing the workbench Draft→Submitted→Approved→Published gate that every generic field edit goes through. Permission-gated and rate-limited, but no maker-checker. No equivalent exists for a bond call schedule or swap leg |
+| 10 | Straight-line amortization only | `BondAmortizationMethod.ConstantYield` remains an enum member with no implementation |
+| 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a `ConcurrentDictionary` with no eviction; `ReplaceAll` still clears before repopulating, so a reader between the two sees an empty master |
+| 10 | Valid-time term history | `securities` still holds one current row; term history is reachable only by event replay. Identifiers are effective-dated, terms are not |
+| — | Relational projections | 11 asset projection stores for 26 classes; the 15 uncovered are the private/alternative classes central to fund operations. Declared and test-guarded via `IntentionallyUnprojectedAssetClasses` |
+
+### Re-ranked priorities
+
+The original priority order was right for its date. With (2) `CustomAsset`, (3) field provenance, and
+the round-trip guard from (1) landed, the ranking shifts:
+
+**1. Close the merge path from the governed workbench to the golden record.**
+Everything else about this workflow is now built — durable revision lifecycle, independent-reviewer
+gate, period-aware restatement resolution, schema-validated field paths, typed value coercion,
+provenance lineage under a distinct origin. The one missing link is a publish handler that emits a
+*complete* economic-definition event (current definition plus the one typed field change) so replay
+stays correct. Until that lands, the entire approval apparatus governs a side table, and an approved
+correction to a coupon rate still cannot reach NAV. *Highest institutional value; the surrounding
+machinery is already paid for.*
+
+**2. Rule on one canonical home per instrument, and enforce it.**
+Item 2 is the only finding that makes downstream reporting, risk, and reconciliation unable to assume
+a stable partition. It needs a decision, not an implementation — then validators that reject the
+other routes. *Cheapest to decide, compounding cost to defer.*
+
+**3. Deepen `BondCouponStructure` to match the subclass taxonomy.**
+Add step-schedule and inflation-linked cases. The principal-schedule slice proved the pattern and the
+round-trip guard now covers the codec cost. Ten `BondSubclass` members are still labels.
+
+**4. Retire the third factor-schedule shape and generalize the corporate-action envelope.**
+Collapse `SecurityFactorScheduleEntry` onto the domain `FactorScheduleEntry`. Separately, move
+corporate-action economics to a JSONB payload keyed by event type — eight columns for eighteen types
+means every new type is another nullable column, and six declared types already have none.
+
+**5. Make the projection cache multi-node-safe.**
+Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master to
+concurrent readers. Migration 025 moved the conflict and revision stores off process-local memory
+specifically for scale-out; this cache did not follow.
+
+*Deferred but worth tracking:* effective-interest amortization (GAAP materiality question, not an
+architecture question); relational projections for the private/alternative classes; valid-time term
+history; asset-class-scoped projection replay.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -347,5 +483,10 @@ plus `Validation/`, `Rebuild/`, `CorporateActions/`, `CashFlow/`), `src/Meridian
 (43 files plus 26 migrations), `src/Meridian.ReferenceData/SecurityMaster/`, `src/Meridian.Instruments/`
 projection services, `src/Meridian.Ui/dashboard/src/` Security Master screens and the passport editor,
 `tests/Meridian.Tests/SecurityMaster/` (65 files), and `docs/plans/security-master-passport-workbench.md`.
+
+The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meridian.Contracts`
+Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46
+`Meridian.Storage` stores and 28 migrations, the workstation endpoint surfaces, and the codec
+round-trip and asset-class-support test suites.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
