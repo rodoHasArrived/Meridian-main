@@ -103,7 +103,7 @@ request body.
 
 ### 1. The taxonomy outruns the term model
 
-`BondSubclass` declares 21 subclasses — `SinkingFund`, `StepRate`, `FixedToFloat`,
+`BondSubclass` declares 24 cases — `SinkingFund`, `StepRate`, `FixedToFloat`,
 `InflationLinked`, `Vrdn`, `AuctionRate`, `Cmo`, `Clo`, `PrincipalOnly`, `InterestOnly`,
 `InverseInterestOnly` and more (`SecurityMaster.fs:174-219`). But `BondCouponStructure` has exactly
 three cases — `Fixed`, `Floating`, `ZeroCoupon` (`:222-225`) — and `BondTerms` has no principal
@@ -120,8 +120,8 @@ cannot act on.
 > `principalSchedule`, and is read by `StructuredCashFlowTermsResolver.ReadPrincipalSchedule` — so
 > sinking-fund and amortizing bonds are now representable and computable. `BondCouponStructure`
 > remains three cases (`Fixed` / `Floating` / `ZeroCoupon`), so **step-rate and inflation-linked
-> bonds are still classifiable but not computable**. Ten of the 21 `BondSubclass` members still have
-> no term data that distinguishes them economically.
+> bonds are still classifiable but not computable**. Multiple `BondSubclass` cases still have no
+> term data that distinguishes them economically.
 
 ### 2. One concept, three or four modeling routes
 
@@ -183,9 +183,9 @@ landed null)". The schema table is a drift **detector**; it is not yet a drift *
 because both codec sides are still hand-written.
 
 > **Status (2026-08-14): narrowed, not closed.** `SecurityAssetTermsSchemaRoundTripTests` (558 lines)
-> now walks every entry in `SecurityAssetTermsSchema.AssetClasses` with a fully-populated payload and
-> asserts the F#→C#→F# loop is byte-stable and that the serialized field set equals the declared
-> schema exactly. The declared-class surfaces are locked to each other and the codecs are locked to
+> walks every entry in `SecurityAssetTermsSchema.AssetClasses` and asserts byte-stable round-trip for
+> all 26 classes. Non-`CustomAsset` classes must match the declared field set exactly; `CustomAsset`
+> must preserve its required envelope while allowing dynamic profile keys. The codecs are locked to
 > the schema table. **The codecs are still two hand-written arms per class** — the guard now catches
 > drift at commit time rather than in production, but adding an asset class still means editing both
 > sides by hand plus the ~7 registries above.
@@ -413,7 +413,7 @@ original assessment. No code was changed by this pass; no tests were run.
 | 3 | `CustomAsset` does not round-trip | `SecurityKind.CustomAsset` is a first-class DU case; amend refuses non-round-trippable classes |
 | 6 | Field-level provenance is synthesized | Migrations 027/028; `security_field_provenance` with typed origins, origin references, and version ordering |
 | — | Class counts differ by surface | F# DU, `AssetClassRegistry`, terms schema, and catalog all read 26 |
-| — | Codec drift is undetected | `SecurityAssetTermsSchemaRoundTripTests` walks all 26 declared classes and asserts byte-stable round-trip plus exact field-set equality |
+| — | Codec drift is undetected | `SecurityAssetTermsSchemaRoundTripTests` checks byte-stable round-trip for all 26 classes; exact field-set equality applies to non-`CustomAsset` classes, while `CustomAsset` preserves its required envelope |
 
 ### Narrowed but still open
 
