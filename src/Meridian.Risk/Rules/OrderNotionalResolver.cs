@@ -193,9 +193,15 @@ internal static class OrderNotionalResolver
             return ResolveDerivative(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
         }
 
+        var usesFaceValuePercentageOfPar =
+            OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata);
+
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")
-        // routes the metadata dollars, not quantity x price — value exactly what routes.
-        if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
+        // routes the metadata dollars, not quantity x price — value exactly what routes. Fixed
+        // income is the exception: the gateway discards that metadata and routes Quantity as
+        // face value, so the rails must ignore it too.
+        if (!usesFaceValuePercentageOfPar
+            && BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
         {
             return brokerNotional;
         }
@@ -233,7 +239,16 @@ internal static class OrderNotionalResolver
         // symbol at the mark would measure $100k for a harmless order and could reject it
         // — or, at Critical severity, halt the desk on it.
 
-        return referencePrice is { } price and > 0m ? Math.Abs(request.Quantity) * price : null;
+        if (referencePrice is null or <= 0m)
+        {
+            return null;
+        }
+
+        var price = referencePrice.Value;
+        var notional = Math.Abs(request.Quantity) * price;
+        // Fixed-income Qty is par value and its clean price is a percentage of par: 100,000
+        // face at 101.25 is $101,250, not $10,125,000.
+        return usesFaceValuePercentageOfPar ? notional / 100m : notional;
     }
 
     /// <summary>

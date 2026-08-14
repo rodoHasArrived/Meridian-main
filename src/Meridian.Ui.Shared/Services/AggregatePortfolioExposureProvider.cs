@@ -408,6 +408,10 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             else if (price > 0m)
             {
                 workingNotional = remaining * price;
+                if (order.UsesFaceValuePercentageOfPar)
+                {
+                    workingNotional /= 100m;
+                }
             }
             else
             {

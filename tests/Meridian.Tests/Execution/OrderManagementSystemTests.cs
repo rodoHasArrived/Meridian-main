@@ -205,12 +205,15 @@ public sealed class OrderManagementSystemTests : IDisposable
 
     /// <summary>Routes notional dollars except for fixed income, mirroring Alpaca.</summary>
     private sealed class AssetClassAwareNotionalGateway(string gatewayId)
-        : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway
+        : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway, IFaceValueOrderSizingGateway
     {
+        public bool UsesFaceValuePercentageOfPar(OrderRequest request) =>
+            request.Metadata is not null
+            && request.Metadata.TryGetValue("asset_class", out var assetClass)
+            && assetClass is "treasury" or "corporate";
+
         public bool RoutesNotionalMetadata(OrderRequest request) =>
-            !(request.Metadata is not null &&
-              request.Metadata.TryGetValue("asset_class", out var assetClass) &&
-              assetClass is "treasury" or "corporate");
+            !UsesFaceValuePercentageOfPar(request);
     }
 
     [Fact]
@@ -1249,6 +1252,42 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     [Fact]
+    public async Task PlaceOrderAsync_CallerFaceValueSizingMarker_IsStrippedBeforeRisk()
+    {
+        OrderRequest? validatedRequest = null;
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                validatedRequest = callInfo.Arg<OrderRequest>();
+                return RiskValidationResult.Approved();
+            });
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 100m,
+            Metadata = new Dictionary<string, string>
+            {
+                [OrderSizingMetadata.FaceValuePercentageOfParKey] = "true"
+            }
+        });
+
+        result.Success.Should().BeTrue();
+        validatedRequest.Should().NotBeNull();
+        OrderSizingMetadata.UsesFaceValuePercentageOfPar(validatedRequest!.Metadata).Should().BeFalse(
+            "only the active gateway may choose face-value sizing semantics");
+        result.OrderState!.UsesFaceValuePercentageOfPar.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task PlaceOrderAsync_WhenGateRejects_ReturnsFailureWithoutSubmittingToGateway()
     {
         var gate = new RejectAllGate("UNKNWN is not in Security Master");
@@ -1484,6 +1523,164 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         modified.Success.Should().BeFalse("a risk-increasing amendment is a new risk decision");
         modified.ErrorMessage.Should().Contain("Order notional limit");
         oms.GetOrder(placed.OrderId)!.Quantity.Should().Be(10m, "the refused amendment leaves the original order intact");
+    }
+
+    [Theory]
+    [InlineData(OrderType.Limit, OrderSide.Sell)]
+    [InlineData(OrderType.StopMarket, OrderSide.Buy)]
+    public async Task ModifyOrderAsync_DangerousPriceDecrease_IsRevalidated(
+        OrderType orderType,
+        OrderSide side)
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = side,
+            Type = orderType,
+            Quantity = 10m,
+            LimitPrice = orderType is OrderType.Limit ? 100m : null,
+            StopPrice = orderType is OrderType.StopMarket ? 110m : null,
+            ClientOrderId = $"CLIENT-PRICE-AMEND-{orderType}"
+        });
+        placed.Success.Should().BeTrue();
+
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("Fat-finger price control rejected the amendment"));
+
+        var modification = orderType is OrderType.Limit
+            ? new OrderModification { NewLimitPrice = 1m }
+            : new OrderModification { NewStopPrice = 1m };
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, modification);
+
+        modified.Success.Should().BeFalse("every supplied routed price needs a fresh risk decision");
+        modified.ErrorMessage.Should().Contain("Fat-finger price control");
+        oms.GetOrder(placed.OrderId)!.LimitPrice.Should().Be(placed.OrderState!.LimitPrice);
+        oms.GetOrder(placed.OrderId)!.StopPrice.Should().Be(placed.OrderState.StopPrice);
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_ExplicitUnchangedPrice_IsRevalidated()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-UNCHANGED-PRICE-AMEND"
+        });
+        placed.Success.Should().BeTrue();
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewLimitPrice = 100m });
+
+        modified.Success.Should().BeTrue();
+        await riskValidator.Received(2).ValidateOrderAsync(
+            Arg.Any<OrderRequest>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_FaceValueSizing_PreservesGatewayResolvedSemantics()
+    {
+        var gateway = Substitute.For<IExecutionGateway, IFaceValueOrderSizingGateway>();
+        gateway.GatewayId.Returns("paper");
+        ((IFaceValueOrderSizingGateway)gateway)
+            .UsesFaceValuePercentageOfPar(Arg.Any<OrderRequest>())
+            .Returns(callInfo =>
+            {
+                var metadata = callInfo.Arg<OrderRequest>().Metadata;
+                return metadata is not null
+                    && metadata.TryGetValue("asset_class", out var assetClass)
+                    && assetClass == "treasury";
+            });
+
+        OrderRequest? submittedRequest = null;
+        gateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                submittedRequest = callInfo.Arg<OrderRequest>();
+                return new ExecutionReport
+                {
+                    OrderId = submittedRequest.ClientOrderId ?? "FACE-VALUE-1",
+                    ClientOrderId = submittedRequest.ClientOrderId,
+                    ReportType = ExecutionReportType.New,
+                    Symbol = submittedRequest.Symbol,
+                    Side = submittedRequest.Side,
+                    OrderStatus = OrderStatus.Accepted,
+                    OrderQuantity = submittedRequest.Quantity,
+                    Timestamp = DateTimeOffset.UtcNow
+                };
+            });
+        gateway.ModifyOrderAsync(
+                Arg.Any<string>(),
+                Arg.Any<OrderModification>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo => new ExecutionReport
+            {
+                OrderId = callInfo.ArgAt<string>(0),
+                ReportType = ExecutionReportType.Modified,
+                Symbol = "912797AB1",
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        var validatedRequests = new List<OrderRequest>();
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(
+                Arg.Do<OrderRequest>(validatedRequests.Add),
+                Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "912797AB1",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 100_000m,
+            LimitPrice = 101.25m,
+            ClientOrderId = "FACE-VALUE-1",
+            Metadata = new Dictionary<string, string> { ["asset_class"] = "treasury" }
+        });
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewLimitPrice = 101m });
+
+        placed.Success.Should().BeTrue();
+        modified.Success.Should().BeTrue();
+        submittedRequest.Should().NotBeNull();
+        submittedRequest!.Metadata.Should().NotContainKey(
+            OrderSizingMetadata.FaceValuePercentageOfParKey,
+            "the server-only risk marker must not be sent to the broker");
+        validatedRequests.Should().HaveCount(2);
+        validatedRequests.Should().OnlyContain(request =>
+            OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata));
+        var tracked = oms.GetOrder(placed.OrderId)!;
+        tracked.UsesFaceValuePercentageOfPar.Should().BeTrue();
+        tracked.LimitPrice.Should().Be(101m);
     }
 
     [Fact]

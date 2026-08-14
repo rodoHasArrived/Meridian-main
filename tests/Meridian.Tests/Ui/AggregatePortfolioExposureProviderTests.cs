@@ -266,6 +266,40 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_WorkingFaceValueOrder_UsesPercentageOfPar()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "treasury-1",
+                Symbol = "912797AB1",
+                Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = 100_000m,
+                LimitPrice = 101.25m,
+                UsesFaceValuePercentageOfPar = true,
+                Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        var snapshot = provider.GetSnapshot();
+        snapshot.GrossExposure.Should().Be(101_250m);
+        snapshot.NetExposure.Should().Be(101_250m);
+        snapshot.GetSymbolExposure("912797AB1").GrossExposure.Should().Be(101_250m);
+        snapshot.GetSymbolExposure("912797AB1").NetNotional.Should().Be(101_250m);
+    }
+
+    [Fact]
     public void GetSnapshot_NotionalOrderPartialFill_RetiresReserveByFilledDollars()
     {
         var aggregate = new Mock<IAggregatePortfolioService>();

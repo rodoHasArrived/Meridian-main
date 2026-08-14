@@ -210,6 +210,7 @@ public sealed partial class OrderManagementSystem
             Status = OrderStatus.PendingNew,
             CreatedAt = timestamp,
             ContractMultiplier = tracked?.ContractMultiplier ?? 1m,
+            UsesFaceValuePercentageOfPar = tracked?.UsesFaceValuePercentageOfPar ?? false,
             OptionContract = tracked?.OptionContract,
             Legs = tracked?.Legs
         };
@@ -514,16 +515,17 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>
-    /// Metadata keys only this OMS's internal amendment probe may set. The evaluation-only
-    /// flag suppresses governed-approval parking, and the incremental notional tells the
-    /// portfolio rules to charge less than the order's full size — a caller who could set
-    /// either would obtain a parked outcome with no queue entry behind it, or declare their
-    /// own order to add zero exposure and walk past the gross and concentration ceilings.
+    /// Metadata keys only this OMS may set. The evaluation-only flag suppresses governed-approval
+    /// parking, the incremental notional tells portfolio rules to charge less than the order's
+    /// full size, and the sizing marker records a decision made by the active gateway. A caller
+    /// who could set them could bypass escalation, declare zero exposure, or opt out of the unit
+    /// ceiling by pretending an ordinary quantity were fixed-income face value.
     /// </summary>
     private static readonly string[] InternalRiskMetadataKeys =
     [
         RiskEscalationQueueService.EvaluationOnlyMetadataKey,
-        RiskEscalationQueueService.IncrementalNotionalMetadataKey
+        RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+        OrderSizingMetadata.FaceValuePercentageOfParKey
     ];
 
     /// <summary>
@@ -532,16 +534,21 @@ public sealed partial class OrderManagementSystem
     /// </summary>
     private static OrderRequest StripInternalRiskMetadata(OrderRequest request)
     {
-        if (request.Metadata is null ||
-            !InternalRiskMetadataKeys.Any(request.Metadata.ContainsKey))
+        if (request.Metadata is null
+            || !request.Metadata.Keys.Any(candidate => InternalRiskMetadataKeys.Any(
+                key => string.Equals(candidate, key, StringComparison.OrdinalIgnoreCase))))
         {
             return request;
         }
 
-        var sanitized = new Dictionary<string, string>(request.Metadata, StringComparer.OrdinalIgnoreCase);
-        foreach (var key in InternalRiskMetadataKeys)
+        var sanitized = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (candidate, value) in request.Metadata)
         {
-            sanitized.Remove(key);
+            if (!InternalRiskMetadataKeys.Any(
+                    key => string.Equals(candidate, key, StringComparison.OrdinalIgnoreCase)))
+            {
+                sanitized[candidate] = value;
+            }
         }
 
         return request with { Metadata = sanitized };
@@ -685,7 +692,8 @@ public sealed partial class OrderManagementSystem
         decimal? limitPrice,
         decimal? stopPrice,
         decimal? routedNotional,
-        decimal contractMultiplier = 1m)
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePercentageOfPar = false)
     {
         if (routedNotional is { } notional && notional > 0m)
         {
@@ -701,34 +709,28 @@ public sealed partial class OrderManagementSystem
         // A contract is not a share. Measuring an option amendment at quantity x premium
         // would assess an increase from 10 to 100 contracts at $5 as a $450 increment
         // instead of $45,000, and the per-order rule would see a $500 order.
-        return Math.Abs(quantity) * resolved * (contractMultiplier > 0m ? contractMultiplier : 1m);
+        var measured = Math.Abs(quantity) * resolved
+            * (contractMultiplier > 0m ? contractMultiplier : 1m);
+        return usesFaceValuePercentageOfPar ? measured / 100m : measured;
     }
 
     /// <summary>
-    /// True when a modification could increase the order's measured exposure. This mirrors
-    /// the enforcement valuation (<c>OrderNotionalResolver</c>), which values an order at
-    /// the larger of its own price and the live mark: a higher price raises the measured
-    /// notional on either side, so a raised sell limit is risk-increasing too. Quantity
-    /// increases always qualify. When neither the current nor the amended order carries a
-    /// price, the amendment is treated as risk-increasing so the rules get to decide.
+    /// True when a modification needs a fresh risk decision. Quantity increases qualify because
+    /// they raise exposure. Every supplied limit or stop price also qualifies even when notional
+    /// falls: the dangerous direction is side- and order-type-specific, so a side-neutral numeric
+    /// increase test lets a sell limit or buy stop be amended through the market without the price
+    /// controls seeing it. Presence, rather than equality with the initially read state, also
+    /// prevents a concurrent amendment from turning an apparent no-op into an unvalidated price
+    /// reversal. Quantity-only reductions still bypass the gate so de-risking is never blocked.
     /// </summary>
-    private static bool IsRiskIncreasing(OrderState state, OrderModification modification)
+    private static bool RequiresRiskRevalidation(OrderState state, OrderModification modification)
     {
         if (modification.NewQuantity is { } newQuantity && Math.Abs(newQuantity) > Math.Abs(state.Quantity))
         {
             return true;
         }
 
-        // Any price increase raises the measured notional under the enforcement model,
-        // regardless of side. A price decrease can only lower it (a marketable order is
-        // already valued at the mark), so it is never risk-increasing.
-        if (modification.NewLimitPrice is { } newLimit &&
-            newLimit > (state.LimitPrice ?? 0m))
-        {
-            return true;
-        }
-
-        return modification.NewStopPrice is { } newStop && newStop > (state.StopPrice ?? 0m);
+        return modification.NewLimitPrice is not null || modification.NewStopPrice is not null;
     }
 
     /// <summary>
@@ -746,6 +748,9 @@ public sealed partial class OrderManagementSystem
         ClientOrderId = state.OrderId,
         StrategyId = state.StrategyId,
         FundAccountId = state.FundAccountId,
+        Metadata = state.UsesFaceValuePercentageOfPar
+            ? OrderSizingMetadata.WithFaceValuePercentageOfPar(metadata: null)
+            : null,
         // Without the derivative identity the rules re-value the amended order as shares,
         // repeating the 1x mistake the multiplier above exists to prevent.
         OptionContract = state.OptionContract,
@@ -772,10 +777,10 @@ public sealed partial class OrderManagementSystem
     private static OrderRequest BuildAmendmentProbe(OrderState state, OrderModification modification)
     {
         var amended = BuildAmendedRequest(state, modification);
-        var probeMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            [RiskEscalationQueueService.EvaluationOnlyMetadataKey] = "true"
-        };
+        var probeMetadata = amended.Metadata is null
+            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, string>(amended.Metadata, StringComparer.OrdinalIgnoreCase);
+        probeMetadata[RiskEscalationQueueService.EvaluationOnlyMetadataKey] = "true";
 
         var pricePaidIsCapped = state.Side == OrderSide.Buy
             && state.LimitPrice is > 0m
@@ -786,9 +791,19 @@ public sealed partial class OrderManagementSystem
         }
 
         var currentValue = MeasureOrderValue(
-            state.Quantity, state.LimitPrice, state.StopPrice, state.RoutedNotional, state.ContractMultiplier);
+            state.Quantity,
+            state.LimitPrice,
+            state.StopPrice,
+            state.RoutedNotional,
+            state.ContractMultiplier,
+            state.UsesFaceValuePercentageOfPar);
         var amendedValue = MeasureOrderValue(
-            amended.Quantity, amended.LimitPrice, amended.StopPrice, routedNotional: null, state.ContractMultiplier);
+            amended.Quantity,
+            amended.LimitPrice,
+            amended.StopPrice,
+            routedNotional: null,
+            state.ContractMultiplier,
+            state.UsesFaceValuePercentageOfPar);
         if (currentValue is not { } current || amendedValue is not { } proposed || proposed <= current)
         {
             return amended with { Metadata = probeMetadata };

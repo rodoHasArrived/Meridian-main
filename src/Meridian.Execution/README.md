@@ -56,11 +56,18 @@ and contradict an accounting handoff that already happened. An order that execut
 Every path between the gate and the venue must settle exactly once; a leaked reservation
 permanently consumes capacity and eventually blocks every later order.
 
-Order amendments follow the same rules. `ReserveAmendedExposureAsync` revalidates a risk-increasing
-modification through the same reserving rules a placement uses, so it takes real capacity; the
+Order amendments follow the same rules. `ReserveAmendedExposureAsync` revalidates quantity
+increases and every supplied limit or stop price through the same reserving rules a placement uses,
+so both exposure and directional price controls run before the amendment reaches the venue; the
 decision rides on `AmendmentGateResult` and settles at the modify boundary — rolled back on refusal,
 on losing the exposure-publish race, on cancellation, and on a broker rejection; committed once the
 gateway accepts, and on a non-cancellation fault after dispatch.
+
+Order sizing follows the active gateway rather than asset-class text alone. A gateway implementing
+`IFaceValueOrderSizingGateway` can identify an order whose quantity is face value and whose price is
+a percentage of par; the OMS stamps that fact only into the risk request, retains it on `OrderState`,
+and keeps it through amendments and working-order exposure reserves. Caller-supplied copies of the
+internal marker are stripped before validation.
 
 The OMS rolls reservations back on any non-approved decision rather than assuming the validator
 already did. `CompositeRiskValidator` does release its own capacity before returning a block, but the

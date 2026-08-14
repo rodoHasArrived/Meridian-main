@@ -36,6 +36,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly OrderManagementSystemOptions _options;
     private readonly ExecutionMode _gatewayExecutionMode;
     private readonly INotionalOrderSizingGateway? _notionalSizingGateway;
+    private readonly IFaceValueOrderSizingGateway? _faceValueOrderSizingGateway;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
@@ -147,6 +148,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // route quantity for another. Everything else routes Quantity, so measuring those
         // orders at the metadata amount hands the rails a number the broker never sees.
         _notionalSizingGateway = gateway as INotionalOrderSizingGateway;
+        _faceValueOrderSizingGateway = gateway as IFaceValueOrderSizingGateway;
         // ExecutionReports is a best-effort observer stream: order state, session fill history,
         // and the durable accounting handoff own correctness. The previous FullMode.Wait made a
         // slow (or absent — there is no production reader today) subscriber block WriteAsync on
@@ -248,6 +250,18 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 rejectionSource: "notional metadata gate")
                 .ConfigureAwait(false);
         }
+
+        // Asset-class labels alone do not define quantity semantics: Alpaca routes fixed-income
+        // Qty as face value, while IB routes a count of $1,000 bonds under the generic "bond"
+        // class. Ask the active gateway, then carry only that server-resolved fact into risk.
+        var usesFaceValuePercentageOfPar =
+            _faceValueOrderSizingGateway?.UsesFaceValuePercentageOfPar(safeRequest) is true;
+        var riskRequest = usesFaceValuePercentageOfPar
+            ? safeRequest with
+            {
+                Metadata = OrderSizingMetadata.WithFaceValuePercentageOfPar(safeRequest.Metadata)
+            }
+            : safeRequest;
 
         var placementGate = BrokerageOrderPlacementGate.Evaluate(
             _brokerageConfiguration,
@@ -368,7 +382,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             if (_riskValidator is not null)
             {
-                var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
+                var riskResult = await _riskValidator.ValidateOrderAsync(riskRequest, ct).ConfigureAwait(false);
                 riskDecision = riskResult;
                 if (!riskResult.IsApproved)
                 {
@@ -452,6 +466,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 // Broker-native notional orders route dollars and discard quantity; the
                 // exposure reserve for this working order must value what actually routes.
                 RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity),
+                UsesFaceValuePercentageOfPar = usesFaceValuePercentageOfPar,
                 // A working option order reserves contract notional, not share notional:
                 // 100 contracts at a $5 limit hold back $50k, not $500. The derivative
                 // identity travels too, so the reserve and any amendment are valued exactly
@@ -862,15 +877,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
-        // A modification that raises quantity or price is a new risk decision: without this
-        // the portfolio-aware rails could be bypassed by placing a small order and amending
-        // it upward. Validation and the amended reservation run under the same gate as a
-        // placement so a concurrent order cannot slip past the increased exposure.
+        // A quantity increase or any supplied limit/stop price is a new risk decision. Notional
+        // increases are not the only dangerous direction: lowering a sell limit or a buy stop can
+        // move an accepted order straight through the market. Validation and the amended
+        // reservation run under the same gate as placement so neither exposure nor price controls
+        // can be bypassed through modification.
         OrderState? speculativeReservation = null;
         RiskValidationResult? amendmentDecision = null;
         var amendmentDispatchAttempted = false;
         IReadOnlyList<string>? amendmentWarnings = null;
-        if (IsRiskIncreasing(state, modification))
+        if (RequiresRiskRevalidation(state, modification))
         {
             var gate = await ReserveAmendedExposureAsync(orderId, state, modification, ct).ConfigureAwait(false);
             amendmentWarnings = gate.Warnings;

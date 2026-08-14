@@ -49,10 +49,11 @@ public readonly record struct FatFingerThresholds(
 ///     <see cref="OrderRequest.LimitPrice"/>. The paper gateway lets a caller supply one as its
 ///     simulated market observation, so on a market order that value is not an operator's typed
 ///     limit and must not be compared against the live book.</item>
-///   <item><see cref="OrderType.LimitOnOpen"/> and <see cref="OrderType.LimitOnClose"/> are
-///     excluded: their limit applies to a future auction, not the continuous touch. Measuring one
-///     against the present BBO rejects routine auction orders, and pre-open there may be no fresh
-///     BBO at all, which would make every auction order unmeasurable.</item>
+///   <item><see cref="OrderType.LimitOnOpen"/> and <see cref="OrderType.LimitOnClose"/> carry a
+///     broker-enforced limit, but this rule has no indicative-auction or prior-close reference.
+///     They therefore fail closed as unmeasurable while the deviation band is configured rather
+///     than comparing an auction price with the unrelated continuous touch or routing it
+///     unchecked.</item>
 ///   <item><see cref="OrderType.TrailingStop"/> is excluded: its trigger is derived by the broker
 ///     from <see cref="OrderRequest.TrailPrice"/> or <see cref="OrderRequest.TrailPercent"/> and
 ///     moves with the market, so comparing a snapshot of it against the current touch measures
@@ -73,16 +74,16 @@ public readonly record struct FatFingerThresholds(
 /// settled before the limit.
 /// </para>
 /// <para>
-/// The quantity limb is likewise skipped for a <b>broker-notional</b> order. Alpaca-style gateways
-/// route a metadata dollar amount and discard <see cref="OrderRequest.Quantity"/>, so on those
-/// orders the quantity field carries dollars — comparing it to a share ceiling would reject a valid
-/// $5,000 order against a 1,000-share limit. Their economic size is gated by
-/// <see cref="OrderNotionalRule"/>, which reads the routed notional from the same place the gateway
-/// does.
+/// The quantity limb is likewise skipped when <see cref="OrderRequest.Quantity"/> is not a unit
+/// count. Alpaca-style broker-notional orders carry dollars in that field, while fixed-income
+/// orders carry face value in denominations from 1,000 through 1,000,000. Comparing either with a
+/// share/contract ceiling would reject ordinary orders, while raising that ceiling enough for face
+/// value would disable it for equities. Their economic size remains gated by
+/// <see cref="OrderNotionalRule"/>.
 /// </para>
 /// <para>
-/// Every excluded order still passes through the quantity limb, and its economic size is still
-/// gated by <see cref="OrderNotionalRule"/>.
+/// Every order excluded from the price limb still passes through the applicable quantity limb,
+/// and every order's economic size is still gated by <see cref="OrderNotionalRule"/>.
 /// </para>
 /// <para>
 /// With the deviation band configured, a priced order whose symbol has no reference price is
@@ -164,6 +165,8 @@ public sealed class FatFingerRule : IRiskRule
         // it. BrokerNotionalMetadata is the same seam the gateway reads, so the two cannot
         // disagree about whether this order routes dollars.
         var routesDollars = BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null;
+        var routesFaceValue = OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata);
+        var quantityIsUnitCount = !routesDollars && !routesFaceValue;
 
         // For a package the gateway routes each leg at Quantity x RatioQuantity, so the top-level
         // count understates what actually reaches the venue: 100 packages with a mistyped ratio of
@@ -173,10 +176,10 @@ public sealed class FatFingerRule : IRiskRule
         // meaningless for a dollar-sized order and must not run for a package the price limb
         // already excludes, or an arithmetic edge there would refuse an order this rule does not
         // even gate.
-        var quantityMagnitude = !routesDollars && maxQuantity is > 0m
+        var quantityMagnitude = quantityIsUnitCount && maxQuantity is > 0m
             ? ResolveEffectiveQuantity(request)
             : 0m;
-        if (!routesDollars && maxQuantity is > 0m && quantityMagnitude > maxQuantity.Value)
+        if (quantityIsUnitCount && maxQuantity is > 0m && quantityMagnitude > maxQuantity.Value)
         {
             var quantityDecision = Interop.RiskInterop.EvaluateFatFinger(
                 Interop.RiskInterop.CreateFatFingerContext(
@@ -259,12 +262,18 @@ public sealed class FatFingerRule : IRiskRule
         // that is what it is measured against. Falling back to the touch instead would reject the
         // ordinary protective orders this rule exists to preserve. A stop-limit that reaches here
         // with no usable trigger is malformed, and its null reference takes the unmeasurable path.
-        var referencePrice = request.Type is OrderType.StopLimit
-            ? stopPrice
-            : _exposureProvider.TryGetTouchPrice(request.Symbol, request.Side);
+        var isAuctionLimit = request.Type is OrderType.LimitOnOpen or OrderType.LimitOnClose;
+        var referencePrice = request.Type switch
+        {
+            OrderType.StopLimit => stopPrice,
+            OrderType.LimitOnOpen or OrderType.LimitOnClose => null,
+            _ => _exposureProvider.TryGetTouchPrice(request.Symbol, request.Side)
+        };
         if (referencePrice is null or <= 0m)
         {
-            return Task.FromResult(Unmeasurable(request, "the order price"));
+            return Task.FromResult(Unmeasurable(
+                request,
+                isAuctionLimit ? "the auction limit" : "the order price"));
         }
 
         var decision = Interop.RiskInterop.EvaluateFatFinger(
@@ -346,13 +355,14 @@ public sealed class FatFingerRule : IRiskRule
 
     /// <summary>
     /// Whether this order shape carries any price this rule can measure at all. A package never
-    /// does — its prices belong to the combination, not to the top-level symbol — and the types
-    /// listed here are the only ones whose prices mean something against the current continuous
-    /// market. See the type remarks for the reasoning behind each exclusion.
+    /// does — its prices belong to the combination, not to the top-level symbol. Auction limits
+    /// are included because they carry a routed price, but take the explicit unmeasurable path
+    /// until an auction-appropriate reference exists. See the type remarks for each order shape.
     /// </summary>
     private static bool IsPriceLimbApplicable(OrderRequest request) =>
         request.Legs is null or { Count: 0 }
-        && request.Type is OrderType.Limit or OrderType.StopMarket or OrderType.StopLimit;
+        && request.Type is OrderType.Limit or OrderType.StopMarket or OrderType.StopLimit
+            or OrderType.LimitOnOpen or OrderType.LimitOnClose;
 
     /// <summary>Order types whose <see cref="OrderRequest.StopPrice"/> is a fixed trigger.</summary>
     private static bool HasMeasurableTrigger(OrderRequest request) =>
@@ -360,7 +370,8 @@ public sealed class FatFingerRule : IRiskRule
 
     /// <summary>Order types whose <see cref="OrderRequest.LimitPrice"/> is an operator-entered limit.</summary>
     private static bool HasMeasurableLimit(OrderRequest request) =>
-        request.Type is OrderType.Limit or OrderType.StopLimit;
+        request.Type is OrderType.Limit or OrderType.StopLimit
+            or OrderType.LimitOnOpen or OrderType.LimitOnClose;
 
     /// <summary>
     /// The side whose aggressive direction is the mirror of this one's. A stop trigger is

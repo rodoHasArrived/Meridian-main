@@ -513,16 +513,19 @@ public sealed class FatFingerRuleTests
     [Theory]
     [InlineData(OrderType.LimitOnOpen)]
     [InlineData(OrderType.LimitOnClose)]
-    public async Task Price_AuctionOnlyLimits_AreNotMeasuredAgainstTheContinuousTouch(OrderType type)
+    public async Task Price_AuctionOnlyLimits_FailClosedWithoutAnAuctionReference(OrderType type)
     {
         var rule = Rule(maxDeviationPercent: 10m);
 
         // An auction limit is priced for the opening or closing cross, not the current
-        // continuous market. Measuring it against the present BBO rejects routine auction
-        // orders, and pre-open there may be no fresh BBO at all.
+        // continuous market. The rule has no auction-indicative/prior-close seam yet, so it must
+        // refuse the routed limit as unmeasurable rather than compare it with the BBO or let a
+        // $1,000 typo route unchecked.
         var result = await rule.EvaluateAsync(Order(limitPrice: 1_000m, type: type));
 
-        result.IsApproved.Should().BeTrue();
+        result.IsApproved.Should().BeFalse();
+        result.IsUnmeasurable.Should().BeTrue();
+        result.Code.Should().Be(FatFingerRule.UnmeasurableCode);
     }
 
     [Fact]
@@ -637,6 +640,41 @@ public sealed class FatFingerRuleTests
         var result = await rule.EvaluateAsync(order);
 
         result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Quantity_ServerResolvedFaceValue_IsNotComparedWithTheUnitCeiling()
+    {
+        var rule = Rule(maxQuantity: 10_000m);
+        var order = Order(quantity: 100_000m, type: OrderType.Market, symbol: "912828YY0") with
+        {
+            Metadata = OrderSizingMetadata.WithFaceValuePercentageOfPar(
+                new Dictionary<string, string> { ["asset_class"] = "treasury" })
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeTrue(
+            "fixed-income quantity is routed face value and belongs on the economic-notional rail");
+    }
+
+    [Fact]
+    public async Task Quantity_GenericBondClassWithoutGatewayMarker_CannotBypassTheCeiling()
+    {
+        var rule = Rule(maxQuantity: 10_000m);
+        var order = Order(quantity: 100_000m, type: OrderType.Market) with
+        {
+            Metadata = new Dictionary<string, string>
+            {
+                ["asset_class"] = "bond"
+            }
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse(
+            "asset-class text alone cannot choose face-value semantics across brokers");
+        result.Code.Should().Be(FatFingerRule.QuantityCode);
     }
 
     [Fact]

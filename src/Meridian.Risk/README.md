@@ -36,10 +36,11 @@ to whichever exposure ceiling its size happened to breach. Both thresholds are o
 through the runtime service and null-disables the limb; an entirely unconfigured rule approves
 without measuring.
 
-- **Quantity ceiling** - the largest quantity any single leg actually routes, which for a package
-  is `Quantity x RatioQuantity` rather than the top-level count. Skipped for a broker-notional
-  order, whose `Quantity` field carries dollars rather than a share count; those are gated by
-  `OrderNotionalRule` instead.
+- **Quantity ceiling** - the largest unit count any single leg actually routes, which for a package
+  is `Quantity x RatioQuantity` rather than the top-level count. Skipped for broker-notional
+  orders, whose `Quantity` field carries dollars, and fixed-income orders, whose field carries face
+  value after the active gateway has resolved that sizing semantic; both are gated on economic size
+  by `OrderNotionalRule` instead.
 - **Price-deviation band** - directional, not symmetric. Only the aggressive side is measured
   (a buy paying above the reference, a sell hitting below it), because a symmetric band would
   reject the entire resting book.
@@ -80,20 +81,20 @@ questions:
 
 - **A stop-limit's limit** is measured against *its own trigger*, which is what it is priced off.
 
-These limbs gate **submission**. `OrderManagementSystem.IsRiskIncreasing` revalidates only quantity
-increases and numerically *higher* limit or stop prices, so an amendment that moves a price the
-dangerous way — a sell limit downward, or a buy stop down onto the wrong side of the market — does
-not currently re-enter the validator. Closing that is an OMS-wide change tracked on
-`W9-SAFETY-007`, not a property of this rule. The rule also reads only the top-level `LimitPrice`
-and `StopPrice`, so the attached legs of an Alpaca bracket, OCO, or OTO order — routed from
-metadata — are not measured either; that gap is recorded on the same row.
+These limbs gate both submission and every amendment that supplies a limit or stop price. The OMS
+re-enters the validator regardless of numeric direction, because lowering a sell limit or buy stop
+can be more dangerous even while measured notional falls. The rule still reads only the top-level
+`LimitPrice` and `StopPrice`, so the attached legs of an Alpaca bracket, OCO, or OTO order — routed
+from metadata — are not measured; that gap remains recorded on the roadmap row.
 
 Both thresholds are read as a single `FatFingerThresholds` value rather than two accessors, so an
 evaluation cannot straddle a two-field configuration update and observe a pair that never existed.
 
-Market, auction (`LimitOnOpen`/`LimitOnClose`), trailing-stop, and multi-leg orders contribute no
-price at all; `FatFingerRule`'s type remarks carry the reason for each exclusion. With the band
-configured, a measurable order whose symbol has no reference price is refused as
+Market, trailing-stop, and multi-leg orders contribute no price at all; `FatFingerRule`'s type
+remarks carry the reason for each exclusion. Auction limits carry a routed price but currently have
+no auction-indicative or prior-close reference seam, so they fail closed as unmeasurable while the
+band is configured instead of being compared with the continuous BBO or routed unchecked. With the
+band configured, a measurable order whose symbol has no reference price is refused as
 `FAT_FINGER_UNMEASURABLE` rather than approved — a band an unpriceable order sails past is not a
 band — and that refusal is deliberately unmeasurable rather than a breach, so a pricing gap does not
 trip the circuit breaker.
