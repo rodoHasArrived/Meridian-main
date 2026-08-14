@@ -804,7 +804,7 @@ public sealed partial class OrderManagementSystem
             routedNotional: null,
             state.ContractMultiplier,
             state.UsesFaceValuePercentageOfPar);
-        if (currentValue is not { } current || amendedValue is not { } proposed || proposed <= current)
+        if (currentValue is not { } current || amendedValue is not { } proposed)
         {
             return amended with { Metadata = probeMetadata };
         }
@@ -812,8 +812,18 @@ public sealed partial class OrderManagementSystem
         // Quantity stays the FULL amended quantity so the position-limit rule projects the
         // real post-amendment position; only the notional-based rules read the incremental
         // value, because the snapshot already reserves the working order's current size.
+        //
+        // A reduction contributes nothing. Falling through to the full amended order here would
+        // project it *on top of* a snapshot that still reserves the larger original — a $10,000
+        // working buy cut to $9,000 reads as $19,000 — so a gross ceiling between the two refuses
+        // the amendment, and at Critical severity trips the breaker, for lowering exposure. That
+        // was harmless while only increases were revalidated, because over-reserving an increase
+        // can refuse but never admit; once every supplied price is revalidated the same
+        // over-reservation starts blocking the de-risking direction, which is the one a desk most
+        // needs to stay open.
+        var increment = proposed > current ? proposed - current : 0m;
         probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
-            (proposed - current).ToString("G29", CultureInfo.InvariantCulture);
+            increment.ToString("G29", CultureInfo.InvariantCulture);
         return amended with { Metadata = probeMetadata };
     }
 

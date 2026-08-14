@@ -217,6 +217,20 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 LogSanitizer.Sanitize(request.Symbol));
         }
 
+        // Snapshot the caller's metadata once, before anything reads it. RemoveBrokerAccountAndOverrideKeys
+        // hands back the original request when there is nothing to strip, so until this copy
+        // safeRequest.Metadata *is* the caller's dictionary — and an in-process caller can hold a
+        // mutable one across the awaits below. Sizing capability, risk validation, retained state,
+        // and gateway submission all read metadata at different points in this method, so without a
+        // snapshot a caller could flip asset_class after the sizing decision and have risk measure a
+        // treasury while the gateway routes equity shares, with the order state under-reserving it
+        // as face value for the rest of its life. One read, one copy, one order.
+        safeRequest = safeRequest.Metadata is { } callerMetadata
+            // Same construction the sizing stamp uses, so the request's key comparer and duplicate
+            // handling survive: broker metadata readers have ordered alias rules of their own.
+            ? safeRequest with { Metadata = new Dictionary<string, string>(callerMetadata) }
+            : safeRequest;
+
         // A duplicate client order id must never reach the state table or the gateway: every
         // downstream write in this method (including gate rejections) keys on orderId, so a
         // replayed or colliding id would overwrite the tracked state (fills, status history)

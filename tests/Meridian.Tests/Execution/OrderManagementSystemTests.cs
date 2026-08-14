@@ -1566,6 +1566,112 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         oms.GetOrder(placed.OrderId)!.StopPrice.Should().Be(placed.OrderState.StopPrice);
     }
 
+    /// <summary>
+    /// The caller's metadata dictionary is read at several points in placement — sizing capability,
+    /// risk validation, retained state, gateway submission — with awaits between them. An in-process
+    /// caller holding a mutable dictionary could otherwise change it mid-flight and have risk
+    /// measure a different order from the one routed, so placement snapshots it once.
+    /// </summary>
+    [Fact]
+    public async Task PlaceOrderAsync_WhenCallerMutatesMetadataMidFlight_ValidatesAndRoutesOneOrder()
+    {
+        var callerMetadata = new Dictionary<string, string>
+        {
+            ["runId"] = "RUN-1",
+            ["asset_class"] = "us_treasury"
+        };
+
+        IReadOnlyDictionary<string, string>? seenByRisk = null;
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                seenByRisk = call.Arg<OrderRequest>().Metadata;
+                // The caller flips the class while validation is in flight.
+                callerMetadata["asset_class"] = "us_equity";
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-METADATA-RACE",
+            Metadata = callerMetadata
+        });
+
+        placed.Success.Should().BeTrue();
+        seenByRisk.Should().NotBeNull();
+        seenByRisk!["asset_class"].Should().Be(
+            "us_treasury",
+            "risk must measure the order as submitted, not as the caller later rewrote it");
+
+        // The snapshot is a copy, so the caller's later write is visible on their own dictionary
+        // and nowhere else — that separation is the whole property.
+        callerMetadata["asset_class"].Should().Be("us_equity");
+        seenByRisk.Should().NotBeSameAs(callerMetadata);
+    }
+
+    /// <summary>
+    /// A de-risking amendment must not be projected on top of the reservation it replaces. The
+    /// exposure snapshot still holds the working order at its original size, so handing the rules
+    /// the full amended order reads a $1,000 buy cut to $900 as $1,900 — and a gross ceiling
+    /// between the two then refuses the amendment, tripping the breaker at Critical severity for
+    /// lowering exposure. Harmless while only increases were revalidated; not once every supplied
+    /// price is.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_PriceReducingAmendment_DoesNotDoubleCountTheWorkingOrder()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-PRICE-REDUCE"
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewLimitPrice = 90m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty("the amendment is revalidated");
+
+        var probe = probes[^1];
+        probe.Metadata.Should().ContainKey(RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+            "a reduction still has to state its increment rather than fall through to the full order");
+        probe.Metadata![RiskEscalationQueueService.IncrementalNotionalMetadataKey]
+            .Should().Be("0", "reducing a working order adds nothing to the book");
+    }
+
     [Fact]
     public async Task ModifyOrderAsync_ExplicitUnchangedPrice_IsRevalidated()
     {
