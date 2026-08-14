@@ -568,6 +568,41 @@ public sealed class FatFingerRuleTests
         result.Code.Should().Be(FatFingerRule.QuantityCode);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Quantity_AtTheDecimalExtremes_ReportsTheStructuredBreachRatherThanThrowing(bool onTheLeg)
+    {
+        var rule = Rule(maxQuantity: 1_000m);
+
+        // decimal.MinValue reaches this rule because the OMS validates risk before the gateway
+        // validates the request, so the gateway's "positive whole ratios" contract has not been
+        // enforced yet. Unlike the integral types, decimal's range is symmetric - MinValue is
+        // exactly -MaxValue - so Math.Abs is total over it and cannot overflow; the saturation
+        // above then keeps the product finite. Both the top-level quantity and the leg ratio are
+        // covered, because the two feed different arms of ResolveEffectiveQuantity.
+        var order = onTheLeg
+            ? Order(quantity: 100m, limitPrice: 5m) with
+            {
+                Legs =
+                [
+                    new OrderLeg { Symbol = "AAPL_C1", Side = OrderSide.Buy, RatioQuantity = decimal.MinValue }
+                ]
+            }
+            : Order(quantity: decimal.MinValue, limitPrice: 5m);
+
+        var act = async () => await rule.EvaluateAsync(order);
+
+        await act.Should().NotThrowAsync<OverflowException>();
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse();
+        result.Code.Should().Be(FatFingerRule.QuantityCode, "the breach keeps its stable code");
+        result.ObservedValue.Should().Be(decimal.MaxValue, "the magnitude saturates rather than wrapping");
+        result.LimitValue.Should().Be(1_000m);
+    }
+
     [Fact]
     public async Task Quantity_LimbDisabled_DoesNotEvaluateEffectiveQuantityForAnExcludedPackage()
     {
