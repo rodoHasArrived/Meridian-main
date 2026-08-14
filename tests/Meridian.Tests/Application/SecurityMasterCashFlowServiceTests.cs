@@ -57,6 +57,148 @@ public sealed class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
+    public async Task GetProjectionAsync_FutureDatedScalarFactor_DoesNotReduceTodaysBalance()
+    {
+        // A scalar currentFactor dated NEXT MONTH does not describe today's balance: applying it
+        // would understate today's outstanding — and every projected interest row and the
+        // maturity principal — by the factor's paydown. Until the factor's date arrives, the
+        // unfactored balance (or the latest eligible schedule point) governs.
+        var securityId = Guid.Parse("33333333-cccc-cccc-cccc-333333333333");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    currentFactor = 0.8m,
+                    factorDate = asOf.AddMonths(1)
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Last().PrincipalAmount.Should().Be(100m,
+            "a factor dated after the projection as-of must not reduce today's outstanding");
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_AssertedEmptyScheduleOnSinker_PaysPrincipalAtMaturity()
+    {
+        // principalSchedule: [] is an ASSERTED contractual bullet structure, not absence: a bullet
+        // record misassigned CalculatedSinker must not synthesize equal instalments its own
+        // schedule contradicts — principal pays at maturity, and projected interest accrues on
+        // the full balance until then.
+        var securityId = Guid.Parse("44444444-dddd-dddd-dddd-444444444444");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedSinker,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    principalSchedule = Array.Empty<object>()
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().HaveCount(2);
+        projection.Schedule[0].PrincipalAmount.Should().Be(0m,
+            "the asserted-empty schedule contractually pays no interim principal");
+        projection.Schedule.Last().PrincipalAmount.Should().Be(100m,
+            "the asserted bullet structure pays all principal at maturity");
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_AssertedEmptyScheduleWithoutFace_PaysPrincipalAtMaturity()
+    {
+        // DirectLoan-style records REQUIRE a principal schedule but expose no par/face: an
+        // asserted principalSchedule: [] on such a record is still a contractual bullet claim, so
+        // schedule presence must not be gated on a resolvable principal basis — only NONEMPTY
+        // contractual amounts need one. A CalculatedSinker assignment must not synthesize interim
+        // instalments the empty schedule contradicts.
+        var securityId = Guid.Parse("55555555-eeee-eeee-eeee-555555555555");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedSinker,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    principalSchedule = Array.Empty<object>()
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().HaveCount(2);
+        projection.Schedule[0].PrincipalAmount.Should().Be(0m,
+            "the asserted-empty schedule contractually pays no interim principal even without a face amount");
+        projection.Schedule.Last().PrincipalAmount.Should().BeGreaterThan(0m,
+            "the bullet structure pays the outstanding balance at maturity");
+    }
+
+    [Fact]
     public async Task GetProjectionAsync_CalculatedSinker_ShouldAmortizePrincipalAcrossScheduleDates()
     {
         var securityId = Guid.Parse("22222222-bbbb-bbbb-bbbb-222222222222");
@@ -98,6 +240,256 @@ public sealed class SecurityMasterCashFlowServiceTests
         projection.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(120m);
         projection.Schedule.Last().Factor.Should().Be(0m);
         projection.Schedule.First().InterestAmount.Should().BeGreaterThan(0m);
+    }
+
+    [Theory]
+    [InlineData(StructuredCashFlowSourceKind.CalculatedBullet)]
+    [InlineData(StructuredCashFlowSourceKind.CalculatedSinker)]
+    public async Task GetProjectionAsync_ContractualPrincipalSchedule_ShouldOverrideSyntheticPrincipal(
+        StructuredCashFlowSourceKind sourceKind)
+    {
+        var securityId = Guid.NewGuid();
+        var nextMonth = DateOnly.FromDateTime(DateTime.UtcNow.Date).AddMonths(1);
+        var issueDate = new DateOnly(nextMonth.Year, nextMonth.Month, 1);
+        var firstPrincipalDate = issueDate.AddMonths(3);
+        var firstCouponDate = issueDate.AddMonths(6);
+        var secondPrincipalDate = issueDate.AddMonths(9);
+        var maturity = issueDate.AddYears(1);
+        var service = BuildService(
+            StoreWith(securityId, sourceKind),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate,
+                maturityDate = maturity,
+                par = 100m,
+                couponRate = 6m,
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                principalSchedule = new object[]
+                {
+                    new { paymentDate = secondPrincipalDate, amount = 20m },
+                    new { paymentDate = firstPrincipalDate, amount = 30m }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule
+            .Select(static row => DateOnly.FromDateTime(row.PeriodDate.UtcDateTime.Date))
+            .Should().Equal(firstPrincipalDate, firstCouponDate, secondPrincipalDate, maturity);
+        projection.Schedule.Select(static row => row.PrincipalAmount)
+            .Should().Equal(30m, 0m, 20m, 50m);
+        projection.Schedule.Select(static row => row.InterestAmount)
+            .Should().Equal(new[] { 0m, 2.55m, 0m, 1.8m },
+                "interest accrues on each balance segment and is paid only on coupon dates");
+        projection.Schedule.Last().Factor.Should().Be(0m);
+        projection.TermsUsed!.PrincipalSchedule.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_PrincipalScheduleWithoutPrincipalBasis_IsNotTreatedAsContractual()
+    {
+        // DirectLoan-shaped terms: a contractual schedule but no par/face/notional. The 100-unit
+        // fallback basis would cap a real 1,000,000 instalment at 100 and feed that distortion to
+        // the ledger bridge, so without a resolvable basis the schedule is not treated as
+        // contractual and the record keeps the calculated bullet walk.
+        var securityId = Guid.NewGuid();
+        var nextMonth = DateOnly.FromDateTime(DateTime.UtcNow.Date).AddMonths(1);
+        var issueDate = new DateOnly(nextMonth.Year, nextMonth.Month, 1);
+        var instalmentDate = issueDate.AddMonths(6);
+        var maturity = issueDate.AddYears(1);
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate,
+                maturityDate = maturity,
+                couponRate = 6m,
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                principalSchedule = new object[]
+                {
+                    new { paymentDate = instalmentDate, amount = 1_000_000m }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(100m,
+            "without a resolvable principal basis the record projects as a calculated bullet at the fallback basis");
+        projection.Schedule.Should().NotContain(row => row.PrincipalAmount == 1_000_000m,
+            "the schedule must not project instalments it has no basis to cap correctly");
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_PrincipalPaymentAfterFactorAsOf_ReducesTheOpeningBalance()
+    {
+        // A DATED factor reflects principal events only up to its own as-of date. Here the factor
+        // (0.8, as of five months ago) predates a completed contractual payment of 10 (four months
+        // ago): today's opening balance is 100 x 0.8 - 10 = 70, not 80 — treating the stale factor
+        // as current overstates later interest, maturity principal, and ledger postings.
+        var securityId = Guid.Parse("55555555-eeee-eeee-eeee-555555555555");
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueDate = new DateOnly(today.Year, today.Month, 1).AddMonths(-6);
+        var factorDate = issueDate.AddMonths(1);
+        var completedPaymentDate = issueDate.AddMonths(2);
+        var maturity = issueDate.AddMonths(24);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate,
+                    maturityDate = maturity,
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    factorScheduleEntries = new object[]
+                    {
+                        new { asOfDate = factorDate, factor = 0.8m }
+                    },
+                    principalSchedule = new object[]
+                    {
+                        new { paymentDate = completedPaymentDate, amount = 10m }
+                    }
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(70m,
+            "the completed contractual payment dated after the factor's as-of must reduce the opening balance");
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_PrincipalPaymentAfterScalarFactorDate_ReducesTheOpeningBalance()
+    {
+        // Same dated-factor rule for a SCALAR currentFactor with a retained factorDate: the 0.8
+        // factor is evidence through its own date only, so the completed payment of 10 dated after
+        // it still reduces today's opening balance (100 x 0.8 - 10 = 70). Only a genuinely undated
+        // scalar is assumed current.
+        var securityId = Guid.Parse("66666666-eeee-eeee-eeee-666666666666");
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueDate = new DateOnly(today.Year, today.Month, 1).AddMonths(-6);
+        var factorDate = issueDate.AddMonths(1);
+        var completedPaymentDate = issueDate.AddMonths(2);
+        var maturity = issueDate.AddMonths(24);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate,
+                    maturityDate = maturity,
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    currentFactor = 0.8m,
+                    factorDate,
+                    principalSchedule = new object[]
+                    {
+                        new { paymentDate = completedPaymentDate, amount = 10m }
+                    }
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(70m,
+            "the completed contractual payment dated after the scalar factor's retained date must reduce the opening balance");
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_ProfileNestedScalarFactorDate_ReducesTheOpeningBalance()
+    {
+        // A profile-backed record persists its governed scalar terms beneath profileFields, where
+        // the term resolver reads the factor and schedule from. The factor-date lookup must walk
+        // the SAME nested-first sources: probing only the envelope root would miss the retained
+        // date, treat the dated 0.8 factor as current, and skip the completed-payment deduction.
+        var securityId = Guid.Parse("77777777-eeee-eeee-eeee-777777777777");
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueDate = new DateOnly(today.Year, today.Month, 1).AddMonths(-6);
+        var factorDate = issueDate.AddMonths(1);
+        var completedPaymentDate = issueDate.AddMonths(2);
+        var maturity = issueDate.AddMonths(24);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "structured-credit-io-po",
+                    profileVersion = 1,
+                    profileFields = new
+                    {
+                        issueDate,
+                        maturityDate = maturity,
+                        par = 100m,
+                        couponRate = 6m,
+                        paymentFrequency = "SemiAnnual",
+                        dayCountConvention = "30/360",
+                        currentFactor = 0.8m,
+                        factorDate,
+                        principalSchedule = new object[]
+                        {
+                            new { paymentDate = completedPaymentDate, amount = 10m }
+                        }
+                    }
+                })));
+        var service = new SecurityMasterCashFlowService(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(70m,
+            "the profile-nested factor date is dated evidence exactly as a root-level one is");
     }
 
     [Fact]
@@ -159,6 +551,44 @@ public sealed class SecurityMasterCashFlowServiceTests
         // this is a floor rather than an equality); the one-day stub the old schedule produced
         // accrued about 0.01.
         projection.Schedule.Should().OnlyContain(static row => row.InterestAmount > 0.9m);
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_MidPeriod_ShouldAccrueThroughCompletedPrincipalWithoutReemittingIt()
+    {
+        var securityId = Guid.NewGuid();
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueMonth = asOf.AddMonths(-4);
+        var issueDate = new DateOnly(issueMonth.Year, issueMonth.Month, 1);
+        var completedPrincipalDate = issueDate.AddMonths(3);
+        var firstCouponDate = issueDate.AddMonths(6);
+        var maturity = issueDate.AddYears(1);
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedSinker),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate,
+                maturityDate = maturity,
+                par = 100m,
+                couponRate = 6m,
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                principalSchedule = new object[]
+                {
+                    new { paymentDate = completedPrincipalDate, amount = 30m }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().NotContain(row =>
+            DateOnly.FromDateTime(row.PeriodDate.UtcDateTime.Date) == completedPrincipalDate);
+        projection.Schedule.First().Should().Match<StructuredCashFlowScheduleEntry>(row =>
+            DateOnly.FromDateTime(row.PeriodDate.UtcDateTime.Date) == firstCouponDate
+            && row.PrincipalAmount == 0m
+            && row.InterestAmount == 2.55m);
+        projection.Schedule.Last().PrincipalAmount.Should().Be(70m);
     }
 
     [Fact]
