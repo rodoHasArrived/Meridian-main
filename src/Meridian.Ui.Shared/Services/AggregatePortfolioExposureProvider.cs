@@ -407,11 +407,13 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             }
             else if (price > 0m)
             {
-                workingNotional = remaining * price;
-                if (order.UsesFaceValuePercentageOfPar)
-                {
-                    workingNotional /= 100m;
-                }
+                // Scale percentage-of-par before multiplying, matching OrderNotionalResolver and the
+                // amendment resolver. Dividing the product instead lets the intermediate overflow on
+                // a notional that is representable, and this runs inside GetSnapshot() — so it would
+                // throw during portfolio validation and risk-status reads for an order the OMS has
+                // already accepted, rather than at the boundary that could still refuse it.
+                var effectivePrice = order.UsesFaceValuePercentageOfPar ? price / 100m : price;
+                workingNotional = remaining * effectivePrice;
             }
             else
             {

@@ -613,7 +613,12 @@ public sealed partial class OrderManagementSystem
                     var refusal = amendedRisk.RequiresApproval
                         ? $"Modification requires governed approval and was not applied: {amendedRisk.RejectReason}"
                         : amendedRisk.RejectReason ?? "Modification rejected by risk validation.";
-                    return new AmendmentGateResult(null, refusal, warnings);
+                    // Carry the decision itself, not just its headline. A composite rejection takes
+                    // its message from the highest-severity rule and keeps the rest in Violations,
+                    // so a fat-finger breach behind a gross-exposure headline exists only here —
+                    // dropping it leaves the amendment audit unable to show it, and rule status
+                    // reporting Healthy for a rule that is actively refusing amendments.
+                    return new AmendmentGateResult(null, refusal, warnings, amendedRisk);
                 }
             }
 
@@ -769,12 +774,20 @@ public sealed partial class OrderManagementSystem
     /// project $3k. When both sizes are measurable, this returns a probe carrying only the
     /// incremental value, so snapshot + probe equals the post-amendment book.
     /// <para>
-    /// An amendment that does not raise the order's own measured value stamps an increment of
-    /// zero, whatever its side: it adds nothing to a book the snapshot already reserves. This is
-    /// what keeps unchanged and reducing amendments routable — projecting the full order on top of
-    /// the reservation it replaces reads an unchanged $10,000 sell as $20,000, and a gross ceiling
-    /// between the two refuses it, tripping the breaker at Critical severity over an amendment that
-    /// changed no exposure at all.
+    /// An amendment that adds no exposure stamps an increment of zero, whatever its side: it adds
+    /// nothing to a book the snapshot already reserves. This is what keeps unchanged and reducing
+    /// amendments routable — projecting the full order on top of the reservation it replaces reads
+    /// an unchanged $10,000 sell as $20,000, and a gross ceiling between the two refuses it,
+    /// tripping the breaker at Critical severity over an amendment that changed no exposure at all.
+    /// </para>
+    /// <para>
+    /// What proves "adds no exposure" differs by whether the measure can be trusted. For a capped
+    /// buy the order's own price is what it pays, so a non-increasing measured value settles it.
+    /// For everything else the measure understates, and measured value can fall while exposure
+    /// rises — a sell amended from 10 shares at $100 to 100 at $1 measures downward while real
+    /// exposure at a $100 mark grows tenfold. The mark is common to both sides of such an
+    /// amendment, so exposure tracks quantity there, and a non-increasing quantity is the proof.
+    /// Using the measured comparison alone would under-reserve exactly that case.
     /// </para>
     /// <para>
     /// For an <em>increase</em>, the incremental value is stamped only when the order's own price
@@ -839,7 +852,17 @@ public sealed partial class OrderManagementSystem
         // side-neutral: an earlier revision scoped it to capped buys and left every sell and stop
         // double-counted, including the explicitly-unchanged price this gate deliberately
         // revalidates.
-        if (proposed <= current)
+        // ...but "measured value did not rise" only proves "exposure did not rise" when the measure
+        // is trustworthy, which is exactly when the order's own price is what it pays. For an
+        // uncapped order the measure understates, so the two can move in opposite directions: a sell
+        // amended from 10 shares at $100 to 100 at $1 measures 1,000 -> 100 while real exposure at a
+        // $100 mark goes 1,000 -> 10,000. Zeroing that would under-reserve a tenfold increase and
+        // let the portfolio rules approve it against the original reservation. What is common to
+        // both sides of an uncapped amendment is the mark, so exposure tracks quantity: a
+        // non-increasing quantity is what proves the uncapped case, and the measured comparison is
+        // what proves the capped one.
+        var quantityIncreases = Math.Abs(amended.Quantity) > Math.Abs(state.Quantity);
+        if (proposed <= current && (pricePaidIsCapped || !quantityIncreases))
         {
             probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
                 0m.ToString("G29", CultureInfo.InvariantCulture);

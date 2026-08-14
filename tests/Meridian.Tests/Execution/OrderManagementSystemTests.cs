@@ -1688,6 +1688,129 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     /// <summary>
+    /// A composite rejection headlines its highest-severity rule and keeps the rest in
+    /// <c>Violations</c>. Recording only the modification fields therefore loses a fat-finger breach
+    /// sitting behind a gross-exposure headline entirely — and the rule then reports Healthy while
+    /// actively rejecting amendments, because rule status is projected from the audit trail. The
+    /// placement path already carries these; the amendment path makes the same claim about the same
+    /// rules and needs the same evidence.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_RiskRefusal_RecordsTheViolationsBehindTheHeadline()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        var tempRoot = Path.Combine(Path.GetTempPath(), "meridian-amend-violations-" + Guid.NewGuid().ToString("N"));
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            auditTrail: auditTrail);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-AMEND-VIOLATIONS"
+        });
+        placed.Success.Should().BeTrue();
+
+        // Headline from the higher-severity rule; the fat-finger breach survives only in Violations.
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("Gross exposure ceiling breached.") with
+            {
+                Violations =
+                [
+                    new RiskViolation(
+                        "GrossExposure",
+                        RiskRuleSeverity.Critical,
+                        "GROSS_EXPOSURE_EXCEEDED",
+                        "Gross exposure ceiling breached."),
+                    new RiskViolation(
+                        "FatFinger",
+                        RiskRuleSeverity.Error,
+                        "FAT_FINGER_PRICE_DEVIATION_EXCEEDED",
+                        "Fat-finger price band breached.")
+                ]
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewQuantity = 10_000m });
+
+        modified.Success.Should().BeFalse();
+
+        var entries = await auditTrail.GetRecentAsync(50);
+        var rejection = entries.LastOrDefault(entry => entry.Action == "OrderModifyRejected");
+        rejection.Should().NotBeNull("the refusal is audited");
+        rejection!.Metadata.Should().NotBeNull();
+        rejection.Metadata!.Values.Should().Contain(
+            value => value.Contains("FatFinger"),
+            "a breach behind the headline has to reach the trail or rule status cannot see it");
+    }
+
+    /// <summary>
+    /// On an uncapped order the measured value understates, so measured value and real exposure can
+    /// move in opposite directions: a sell amended from 10 shares at $100 to 100 at $1 measures
+    /// 1,000 down to 100 while exposure at a $100 mark grows tenfold. Treating "measured value did
+    /// not rise" as "adds no exposure" would stamp a zero increment and let the portfolio rules
+    /// approve a tenfold increase against the original reservation — under-reserving, which admits
+    /// a breach rather than refusing one. The mark is common to both sides, so quantity is what
+    /// proves the uncapped case.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_UncappedQuantityIncreaseWithLowerPrice_IsNotTreatedAsZeroExposure()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-UNCAPPED-QTY-UP"
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        // Measured value falls 1,000 -> 100; real exposure rises tenfold.
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewQuantity = 100m, NewLimitPrice = 1m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty();
+
+        var probe = probes[^1];
+        probe.Metadata.Should().NotContainKey(
+            RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+            "a quantity increase on an uncapped order must be valued at the mark, not zeroed");
+        probe.Quantity.Should().Be(100m);
+    }
+
+    /// <summary>
     /// The zero case must not swallow a genuine increase on a market-executed order. A sell's own
     /// limit is not what it pays, so the increment cannot be computed from the order's fields — the
     /// whole amended order goes to the rules to be priced at the mark, over-reserving in the one

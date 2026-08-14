@@ -913,7 +913,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     state: state,
                     report: null,
                     message: gate.Refusal,
-                    metadata: BuildOrderModificationAuditMetadata(modification, state, report: null, amendmentWarnings),
+                    metadata: BuildOrderModificationAuditMetadata(
+                        modification, state, report: null, amendmentWarnings, gate.RiskDecision),
                     ct: ct).ConfigureAwait(false);
 
                 return new OrderResult
