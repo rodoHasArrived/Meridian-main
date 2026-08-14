@@ -1114,7 +1114,7 @@ export function getTradingWorkspace(options: ApiRequestOptions & { fundAccountId
 
 export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
   const { fundAccountId, ...requestOptions } = options;
-  return getJson<TradingOperatorReadiness | null>(workstationTradingReadinessEndpoint(fundAccountId), requestOptions);
+  return getJson<TradingOperatorReadiness>(workstationTradingReadinessEndpoint(fundAccountId), requestOptions);
 }
 
 export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOptions = {}) {

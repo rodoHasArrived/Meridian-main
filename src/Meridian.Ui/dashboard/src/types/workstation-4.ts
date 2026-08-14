@@ -1126,13 +1126,8 @@ export interface ReportPackDeliveryPackage {
   reportId: string;
   distributionId: string;
   deliveryMode: ReportPackDeliveryMode;
-  // Nullable because the delivery-history view renders a dedicated "link suppressed" state for a
-  // package that has no secure link (reporting-screen.delivery-history.tsx), which the previous
-  // non-nullable `string` made reachable only for the empty string. `portalRoute` is paired with it
-  // by the same suppression path; it currently has no reader, so that half is inferred from the
-  // pairing rather than from a consumer, and is the half to challenge if this is wrong.
-  secureLink: string | null;
-  portalRoute: string | null;
+  secureLink: string;
+  portalRoute: string;
   formats: GovernanceReportArtifactFormat[];
   artifacts: ReportPackDeliveryArtifact[];
   createdAtUtc: string;
