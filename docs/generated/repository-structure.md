@@ -1096,12 +1096,14 @@ Meridian-main
 │       │   ├── apiclient-caller-baseline.json
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-dashboard-type-barrel.py
+│       │   ├── check-duplicate-helpers.py
 │       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
 │       │   ├── dispatch-targeted-test.py
+│       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
@@ -10244,6 +10246,7 @@ Meridian-main
 │   │   ├── test_check_codex_skills.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_dashboard_type_barrel.py
+│   │   ├── test_check_duplicate_helpers.py
 │   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
