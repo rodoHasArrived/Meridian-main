@@ -1393,11 +1393,13 @@ internal static class ReportingOperationalStoreJson
         }
     }
 
+    // Delegating rather than rewriting call sites: this type declares both overloads and its
+    // callers qualify them, so which overload a call resolves to depends on the argument type.
     internal static string ComputeSha256(string value) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(value));
+        Sha256Digest.ComputeUtf8(value);
 
     internal static string ComputeSha256(ReadOnlySpan<byte> value) =>
-        Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
+        Sha256Digest.Compute(value);
 
     private static void WriteCanonical(Utf8JsonWriter writer, JsonElement element)
     {

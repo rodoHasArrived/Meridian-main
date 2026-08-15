@@ -135,7 +135,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 declaration.FileName,
                 declaration.ContentType,
                 content.LongLength,
-                ComputeSha256(content)));
+                Sha256Digest.Compute(content)));
         }
 
         descriptors.Add(new ReportingRetainedManifestArtifactDescriptor(
@@ -245,7 +245,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             || !Sha256Digest.IsWellFormed(document.CertifiedDatasetHashSha256)
             || !Sha256Digest.IsWellFormed(document.ParametersHash)
             || !string.Equals(
-                ComputeSha256(Encoding.UTF8.GetBytes(document.ParametersCanonicalJson)),
+                Sha256Digest.Compute(Encoding.UTF8.GetBytes(document.ParametersCanonicalJson)),
                 document.ParametersHash,
                 StringComparison.OrdinalIgnoreCase))
         {
@@ -464,7 +464,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         foreach (var artifact in reportPack.Artifacts)
         {
             if (!string.Equals(
-                    ComputeSha256(artifact.GetBytes()),
+                    Sha256Digest.Compute(artifact.GetBytes()),
                     artifact.ChecksumSha256,
                     StringComparison.OrdinalIgnoreCase))
             {
@@ -479,7 +479,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 .OrderBy(static artifact => artifact.Name, StringComparer.Ordinal)
                 .Select(static artifact => $"{artifact.Name}:{artifact.ChecksumSha256}"));
         if (!string.Equals(
-                ComputeSha256(Utf8(signaturePayload)),
+                Sha256Digest.Compute(Utf8(signaturePayload)),
                 reportPack.Signature.PayloadChecksumSha256,
                 StringComparison.OrdinalIgnoreCase))
         {
@@ -976,7 +976,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             }
             writer.WriteEndArray();
         }
-        return ComputeSha256(stream.ToArray());
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void AppendCsvRow(StringBuilder builder, params string?[] values)
@@ -1053,6 +1053,4 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         stream.Write(bytes, 0, bytes.Length);
     }
 
-    private static string ComputeSha256(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
 }

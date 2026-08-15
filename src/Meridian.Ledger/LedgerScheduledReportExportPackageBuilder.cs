@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ledger;
 
@@ -195,11 +196,14 @@ public static class LedgerScheduledReportExportPackageBuilder
         return new LedgerReportPackArtifact("regulatory-summary.xml", "application/xml", content, ComputeSha256(content));
     }
 
+    // Both overloads delegate rather than being replaced at the call sites: this type declares
+    // two of them, so a name-only rewrite cannot tell which one a given call meant. The duplicated
+    // hashing is gone either way, which is the part that could drift.
     private static string ComputeSha256(string value)
-        => ComputeSha256(Encoding.UTF8.GetBytes(value));
+        => Sha256Digest.ComputeUtf8(value);
 
     private static string ComputeSha256(byte[] bytes)
-        => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        => Sha256Digest.Compute(bytes);
 
     private static string FormatDecimal(decimal value)
         => value.ToString("0.############################", CultureInfo.InvariantCulture);
