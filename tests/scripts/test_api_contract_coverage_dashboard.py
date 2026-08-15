@@ -168,6 +168,33 @@ class GeneratorContractTests(unittest.TestCase):
         # half the guard against a metric that inflates itself.
         self.assertEqual(("docs/status", "docs/generated"), module.GENERATED_DOC_ROOTS)
 
+    def test_non_contract_doc_roots_stay_excluded(self) -> None:
+        # Prose that argues about a symbol is not documentation of it. A draft under docs/product/
+        # that described no API flipped an endpoint to Documented on one explanatory sentence
+        # (#2703). Pinned as a tuple so widening the corpus is a deliberate edit, not a drift.
+        self.assertEqual(("docs/product", "docs/plans"), module.NON_CONTRACT_DOC_ROOTS)
+
+    def test_a_prose_root_is_dropped_from_the_corpus(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            route = "/api/auth/accounts/{username}/password-reset"
+            for rel in ("docs/product/analysis.md", "docs/plans/roadmap-note.md"):
+                path = root / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(f"The sweep misclassifies `{route}` today.\n", encoding="utf-8")
+
+            self.assertFalse(documents_route(route, module._load_docs_text(root)))
+
+            reference = root / "docs/reference/auth-api.md"
+            reference.parent.mkdir(parents=True, exist_ok=True)
+            reference.write_text(f"### `POST {route}`\n\nResets a password.\n", encoding="utf-8")
+
+            # The same route in a reference document still counts, so the exclusion narrows the
+            # corpus rather than breaking the metric.
+            self.assertTrue(documents_route(route, module._load_docs_text(root)))
+
     def test_the_boundary_rule_is_reachable_from_the_dashboard(self) -> None:
         # `_index_docs` replaced a per-item scan that these tests used to call directly. Once the
         # scan was no longer on the hot path, tests against it proved nothing about the artifact.
@@ -187,6 +214,25 @@ class _CoverageModuleTestCase(unittest.TestCase):
         self.cov = importlib.util.module_from_spec(spec_cov)
         sys.modules[spec_cov.name] = self.cov
         spec_cov.loader.exec_module(self.cov)
+
+
+class CoverageCorpusExclusionTests(_CoverageModuleTestCase):
+    """The public-type metric shares the corpus flaw, so it takes the same exclusion (#2703)."""
+
+    def test_prose_roots_are_excluded_from_the_type_corpus(self) -> None:
+        # Ten types were credited by one draft under docs/product/, four of them appearing only
+        # inside a passage arguing that those very classes are not persistent stores.
+        self.assertIn("docs/product/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
+        self.assertIn("docs/plans/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
+
+    def test_reference_roots_stay_in_the_type_corpus(self) -> None:
+        # The counterweight: an earlier over-exclusion here dropped 41 files and marked 763
+        # genuinely documented types as gaps. These roots carry real reference material.
+        for kept in ("docs/reference/", "docs/generated/database/", "docs/architecture/"):
+            self.assertFalse(
+                kept.startswith(self.cov.DOC_CONTENT_EXCLUDE_PREFIXES),
+                f"{kept} must remain in the documentation corpus",
+            )
 
 
 class NamesTermTests(_CoverageModuleTestCase):
@@ -495,17 +541,24 @@ class CoverageReportBoundaryTests(_CoverageModuleTestCase):
         self.assertTrue(self._documented("PriceMark", "The `PriceMark` record carries"))
         self.assertTrue(self._documented("PriceMark", "PriceMark."))
 
-    def test_only_the_self_referential_reports_are_excluded(self) -> None:
-        # Narrow on purpose. `repository-structure.md` lists every path in the repository and
+    def test_the_corpus_excludes_self_referential_reports_and_prose_roots(self) -> None:
+        # Two separate reasons, both narrow on purpose.
+        #
+        # Self-referential: `repository-structure.md` lists every path in the repository and
         # `documentation-coverage.md` is this generator's own output, so both would let a type
         # count as documented for existing or for being reported undocumented. Excluding the
         # whole `docs/generated/` subtree instead — which an earlier revision of this branch did —
         # dropped 41 files and marked 763 genuinely documented types as gaps.
+        #
+        # Prose: `docs/product/` and `docs/plans/` argue and plan rather than describe contracts,
+        # so a type named there is mentioned rather than documented (#2703).
         self.assertEqual(
             (
                 "docs/status/",
                 "docs/generated/documentation-coverage.md",
                 "docs/generated/repository-structure.md",
+                "docs/product/",
+                "docs/plans/",
             ),
             self.cov.DOC_CONTENT_EXCLUDE_PREFIXES,
         )

@@ -44,7 +44,7 @@ DATA_SOURCES = [
     "src/**/*.cs endpoint mappings",
     "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Contracts/Workstation/*.cs",
-    "docs/**/*.md (excluding generated report roots)",
+    "docs/**/*.md (excluding generated report roots and non-contract prose roots)",
 ]
 
 # Generated reports live under these roots and echo route paths and contract names verbatim —
@@ -53,6 +53,23 @@ DATA_SOURCES = [
 # run wrote it into a report. That inflates coverage toward 100% and leaves the artifact unable to
 # converge, since each run's output changes the next run's input.
 GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
+
+# Roots whose purpose is to argue, plan, or assess rather than to describe a contract. A symbol
+# named in prose is "mentioned", not "documented", and crediting it moves the score without a
+# document being written -- the same failure GENERATED_DOC_ROOTS guards against, arriving by a
+# different route (#2703). The issue was found by tripping it: a draft under docs/product/ that
+# documented no API flipped an endpoint to Documented on the strength of one sentence explaining
+# why an authorization sweep misclassifies it.
+#
+# Measured against this repository, excluding these two roots costs 4 endpoints and 32 workstation
+# contracts -- credits that exist only because a planning document named the symbol. The roots that
+# actually carry reference material are untouched: docs/reference alone is the only source for 150
+# endpoints and 26 contracts, and dropping it would gut the metric.
+#
+# Deliberately narrow. docs/ai, docs/architecture, and docs/development each contribute credits
+# that are arguably real documentation, so they stay in pending a decision on what the corpus is
+# meant to contain; see the attribution table on the pull request for #2703.
+NON_CONTRACT_DOC_ROOTS = ("docs/product", "docs/plans")
 
 
 def _should_skip(path: Path) -> bool:
@@ -168,12 +185,20 @@ def _scan_workstation_contracts(root: Path) -> list[dict[str, object]]:
     return contracts
 
 
-def _is_generated_doc(root: Path, path: Path) -> bool:
+def _is_under(root: Path, path: Path, doc_roots: tuple[str, ...]) -> bool:
     relative = _rel(root, path)
     return any(
-        relative == generated_root or relative.startswith(generated_root + "/")
-        for generated_root in GENERATED_DOC_ROOTS
+        relative == doc_root or relative.startswith(doc_root + "/")
+        for doc_root in doc_roots
     )
+
+
+def _is_generated_doc(root: Path, path: Path) -> bool:
+    return _is_under(root, path, GENERATED_DOC_ROOTS)
+
+
+def _is_non_contract_doc(root: Path, path: Path) -> bool:
+    return _is_under(root, path, NON_CONTRACT_DOC_ROOTS)
 
 
 def _load_docs_text(root: Path) -> str:
@@ -183,7 +208,7 @@ def _load_docs_text(root: Path) -> str:
 
     chunks: list[str] = []
     for path in _iter_files(docs_dir, ".md"):
-        if _is_generated_doc(root, path):
+        if _is_generated_doc(root, path) or _is_non_contract_doc(root, path):
             continue
         chunks.append(_read_text(path))
     normalized = "\n".join(chunks)
