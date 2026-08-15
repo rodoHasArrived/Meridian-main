@@ -2,6 +2,7 @@ using Meridian.Reporting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Text.Json;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -197,11 +198,5 @@ public static class ReportingSecureDistributionServiceCollectionExtensions
         }
 
         return TimeSpan.FromSeconds(seconds);
-    }
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 }

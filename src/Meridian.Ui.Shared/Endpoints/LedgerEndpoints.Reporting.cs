@@ -8,6 +8,7 @@ using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.AspNetCore.Http;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 

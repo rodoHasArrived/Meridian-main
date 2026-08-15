@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -1464,9 +1465,6 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         return value.Trim();
     }
 
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static string? FirstNonEmpty(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
@@ -2383,5 +2381,4 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private static readonly StringComparison PathComparison = OperatingSystem.IsWindows()
         ? StringComparison.OrdinalIgnoreCase
         : StringComparison.Ordinal;
-
 }

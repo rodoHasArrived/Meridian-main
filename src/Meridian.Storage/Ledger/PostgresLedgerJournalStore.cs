@@ -5,6 +5,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Ledger;
 using Npgsql;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 

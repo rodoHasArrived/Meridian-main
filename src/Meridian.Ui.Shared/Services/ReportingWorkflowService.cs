@@ -7,6 +7,7 @@ using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -571,9 +572,6 @@ public sealed class ReportTemplateRegistryService
 
         return normalized;
     }
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<ReportWriterMetricDefinitionDto> NormalizeGridMetrics(IReadOnlyList<ReportWriterMetricDefinitionDto>? metrics) =>
         metrics?

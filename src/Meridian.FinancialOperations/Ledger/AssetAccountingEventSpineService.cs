@@ -6,6 +6,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -1246,9 +1247,6 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     private static bool IsSha256(string? value)
         => Sha256Digest.IsWellFormed(value)
            && value!.Any(static character => character != '0');
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void RequireAssertion(bool condition, string message)
     {

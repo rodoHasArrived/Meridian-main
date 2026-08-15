@@ -12,6 +12,7 @@ using Meridian.Reporting;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -600,7 +601,6 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                     throw new InvalidDataException(
                         $"The reporting schedule snapshot contains duplicate release handoff '{handoff.HandoffId}'.");
                 }
-
             }
         }
     }
@@ -931,9 +931,6 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
 
     private static string ComputeSha256(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string CanonicalizeJson(string rawJson)
     {
@@ -2212,7 +2209,6 @@ public sealed partial class ReportingScheduleService
             .ThenBy(static handoff => handoff.HandoffId, StringComparer.Ordinal)
             .ToArray();
     }
-
 
     private IReadOnlyList<IReadOnlyDictionary<string, string>>? ResolveDatasetRows(
         ReportingScheduleRecordDto schedule,
