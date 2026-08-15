@@ -492,6 +492,51 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
     }
 
     /// <summary>
+    /// Future-dated records must not hold the retention cap either. They sort after every real
+    /// entry, so a "keep the newest" trim drops them last: once enough of them fill the cap, each
+    /// genuine entry arriving afterwards becomes the oldest and is discarded on arrival, so the
+    /// trail stops retaining current activity at all. Bounding their effect on gap *reporting* did
+    /// not address that.
+    /// </summary>
+    [Fact]
+    public async Task Retention_WhenFutureDatedRecordsFillTheCap_StillRetainsNewRealEntries()
+    {
+        var now = DateTimeOffset.UtcNow;
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(
+                Path.Combine(_root, "audit-future-floods-cap"),
+                InMemoryRetention: 100,
+                InMemoryRetentionWindow: TimeSpan.FromHours(2)),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        // Flood the hard ceiling with future-dated records.
+        for (var i = 0; i < 2_500; i++)
+        {
+            await audit.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: now.AddYears(3).AddMilliseconds(i),
+                Symbol: "MSFT"));
+        }
+
+        // A genuine event arrives afterwards and must survive.
+        await audit.RecordAsync(new ExecutionAuditEntry(
+            AuditId: "REAL-ENTRY",
+            Category: "Risk",
+            Action: "RiskRuleBreached",
+            Outcome: "Rejected",
+            OccurredAt: now,
+            Symbol: "AAPL"));
+
+        var recent = await audit.GetRecentAsync(5_000);
+        recent.Should().Contain(
+            entry => entry.AuditId == "REAL-ENTRY",
+            "a flood of future-dated records must not starve current activity out of the trail");
+    }
+
+    /// <summary>
     /// The plausibility bound must not swallow a real gap that happens to sit next to future-dated
     /// noise: the newest <em>plausible</em> discard is what counts, not the newest discard.
     /// </summary>
@@ -506,9 +551,9 @@ public sealed class RiskRuleRuntimeFatFingerStatusTests : IDisposable
                 InMemoryRetentionWindow: TimeSpan.FromHours(2)),
             NullLogger<ExecutionAuditTrailService>.Instance);
 
-        // Real, recent entries first, then future-dated ones. Both are discarded when the ceiling
-        // bites; the real ones are the gap.
-        for (var i = 0; i < 1_500; i++)
+        // Enough recent entries to overrun the ceiling on their own, so real records are genuinely
+        // lost — future-dated eviction cannot rescue this one, and must not hide it either.
+        for (var i = 0; i < 2_500; i++)
         {
             await audit.RecordAsync(new ExecutionAuditEntry(
                 AuditId: Guid.NewGuid().ToString("N"),

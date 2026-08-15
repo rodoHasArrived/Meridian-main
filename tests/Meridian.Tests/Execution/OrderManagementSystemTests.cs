@@ -1639,6 +1639,9 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [InlineData(OrderSide.Buy, OrderType.Limit, 100.0, "an unchanged buy limit adds nothing")]
     [InlineData(OrderSide.Sell, OrderType.Limit, 90.0, "reducing a sell limit adds nothing")]
     [InlineData(OrderSide.Sell, OrderType.Limit, 100.0, "an unchanged sell limit adds nothing")]
+    // An uncapped order repriced *upward* at the same quantity is still the same shares against the
+    // same mark, so it adds no exposure either — the entered price is not what a sell receives.
+    [InlineData(OrderSide.Sell, OrderType.Limit, 110.0, "repricing a sell upward adds no exposure")]
     public async Task ModifyOrderAsync_NonIncreasingAmendment_DoesNotDoubleCountTheWorkingOrder(
         OrderSide side,
         OrderType orderType,

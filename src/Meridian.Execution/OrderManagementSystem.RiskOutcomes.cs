@@ -781,24 +781,26 @@ public sealed partial class OrderManagementSystem
     /// tripping the breaker at Critical severity over an amendment that changed no exposure at all.
     /// </para>
     /// <para>
-    /// What proves "adds no exposure" differs by whether the measure can be trusted. For a capped
-    /// buy the order's own price is what it pays, so a non-increasing measured value settles it.
-    /// For everything else the measure understates, and measured value can fall while exposure
-    /// rises — a sell amended from 10 shares at $100 to 100 at $1 measures downward while real
-    /// exposure at a $100 mark grows tenfold. The mark is common to both sides of such an
-    /// amendment, so exposure tracks quantity there, and a non-increasing quantity is the proof.
-    /// Using the measured comparison alone would under-reserve exactly that case.
+    /// Two kinds of order prove that differently, so they are decided by different evidence rather
+    /// than by one test with exceptions attached.
     /// </para>
     /// <para>
-    /// For an <em>increase</em>, the incremental value is stamped only when the order's own price
-    /// is the price it will pay — a buy limit. Everything else (any sell, a stop-market trigger, an
-    /// unpriced order) executes at the market, which the OMS cannot see, so an increment computed
-    /// from the order's own fields would understate it: raising a sell limited at $1 from 100 to
-    /// 200 shares while the mark is $100 is a $10,000 increase, not $100. Those carry the whole
-    /// amended order for the rules to price at the mark, double-counting the existing reservation —
-    /// but over-reserving an increase can only refuse an amendment, never admit one that breaches a
-    /// ceiling. That argument holds for increases and <b>only</b> for increases, which is why the
-    /// zero case above is decided first and without reference to side.
+    /// <b>Capped buy</b> — the limit is the price paid, so the measured value <em>is</em> exposure.
+    /// The increment is the measured difference, floored at zero.
+    /// </para>
+    /// <para>
+    /// <b>Everything else</b> (any sell, a stop-market trigger, an unpriced order) — the order's own
+    /// price is not what it pays, so measured value is not exposure and the two can move in opposite
+    /// directions: a sell amended from 10 shares at $100 to 100 at $1 measures downward while real
+    /// exposure at a $100 mark grows tenfold. What both sides share is the mark, and exposure is
+    /// quantity × mark, so exposure moves with <em>quantity</em> alone. A non-increasing quantity
+    /// proves no added exposure however the entered price moved — a 100-share sell repriced $100 to
+    /// $110 is the same shares against the same mark, and charging the full amended order for it
+    /// reads $21,000 against a $10,000 book. An increasing quantity cannot be valued here at all,
+    /// because the increase is Δquantity × mark and the OMS has no mark, so it carries the whole
+    /// amended order for the rules to price. That double-counts the existing reservation, but
+    /// over-reserving in this one direction can only refuse an amendment, never admit one that
+    /// breaches a ceiling.
     /// </para>
     /// </summary>
     private static OrderRequest BuildAmendmentProbe(OrderState state, OrderModification modification)
@@ -848,40 +850,41 @@ public sealed partial class OrderManagementSystem
         // That over-reservation was harmless while only *increases* were revalidated, because
         // over-reserving an increase can refuse but never admit. Revalidating every supplied price
         // brought unchanged and reducing amendments down the same path, where the same arithmetic
-        // blocks the two directions a desk most needs to stay open. The zero case is therefore
-        // side-neutral: an earlier revision scoped it to capped buys and left every sell and stop
-        // double-counted, including the explicitly-unchanged price this gate deliberately
-        // revalidates.
-        // ...but "measured value did not rise" only proves "exposure did not rise" when the measure
-        // is trustworthy, which is exactly when the order's own price is what it pays. For an
-        // uncapped order the measure understates, so the two can move in opposite directions: a sell
-        // amended from 10 shares at $100 to 100 at $1 measures 1,000 -> 100 while real exposure at a
-        // $100 mark goes 1,000 -> 10,000. Zeroing that would under-reserve a tenfold increase and
-        // let the portfolio rules approve it against the original reservation. What is common to
-        // both sides of an uncapped amendment is the mark, so exposure tracks quantity: a
-        // non-increasing quantity is what proves the uncapped case, and the measured comparison is
-        // what proves the capped one.
-        var quantityIncreases = Math.Abs(amended.Quantity) > Math.Abs(state.Quantity);
-        if (proposed <= current && (pricePaidIsCapped || !quantityIncreases))
+        // blocks the directions a desk most needs to stay open.
+        //
+        // Which comparison proves "adds no exposure" depends on whether the order's own price is
+        // what it pays, so the two cases are decided by different evidence rather than by one test
+        // with exceptions bolted on:
+        //
+        //   Capped buy — the limit IS the price paid, so measured value is exact. The increment is
+        //   simply the measured difference, floored at zero for a reduction or an unchanged price.
+        //
+        //   Everything else (any sell, a stop-market trigger, an unpriced order) — the order's own
+        //   price is not what it pays, so measured value is not exposure. What both sides of the
+        //   amendment share is the mark, and exposure is quantity x mark, so exposure moves with
+        //   QUANTITY alone. A non-increasing quantity therefore proves no added exposure however
+        //   the entered price moved: a 100-share sell repriced $100 -> $110 is the same 100 shares
+        //   against the same mark, and charging the full amended order for it reads $21,000 against
+        //   a $10,000 book. An increasing quantity cannot be valued here at all — the increase is
+        //   Δquantity x mark and the OMS has no mark — so it goes to the rules whole.
+        if (pricePaidIsCapped)
         {
+            var increment = proposed > current ? proposed - current : 0m;
             probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
-                0m.ToString("G29", CultureInfo.InvariantCulture);
+                increment.ToString("G29", CultureInfo.InvariantCulture);
             return amended with { Metadata = probeMetadata };
         }
 
-        if (!pricePaidIsCapped)
+        if (Math.Abs(amended.Quantity) > Math.Abs(state.Quantity))
         {
-            // An increase whose own price is not what it pays — any sell, a stop-market trigger,
-            // an unpriced order. The increment computed from the order's own fields would
-            // understate it (raising a sell limited at $1 from 100 to 200 shares while the mark is
-            // $100 is a $10,000 increase, not $100), so the whole amended order goes to the rules
-            // to be priced at the mark. Over-reserving in this direction is the conservative
-            // answer: it can refuse, never admit.
+            // Priced at the mark by the rules, double-counting the working order's reservation.
+            // Over-reserving is the conservative answer in this one direction: it can refuse an
+            // amendment, never admit one that breaches a ceiling.
             return amended with { Metadata = probeMetadata };
         }
 
         probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
-            (proposed - current).ToString("G29", CultureInfo.InvariantCulture);
+            0m.ToString("G29", CultureInfo.InvariantCulture);
         return amended with { Metadata = probeMetadata };
     }
 

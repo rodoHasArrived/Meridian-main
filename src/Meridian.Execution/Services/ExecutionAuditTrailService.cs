@@ -431,6 +431,33 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
             insideWindow++;
         }
 
+        // Implausibly future-dated records are evicted before anything else, and before the cap is
+        // applied. They sort after every real entry, so leaving them in place makes them the last
+        // things a "keep the newest" trim would ever drop: once enough of them fill the cap, every
+        // genuine entry that arrives afterwards becomes the oldest and is discarded immediately —
+        // the trail stops retaining current activity at all, and each discard refreshes the
+        // incompleteness timestamp so readiness never recovers. Bounding their effect on gap
+        // reporting was not enough while they could still hold the whole cap.
+        var plausibleThrough = DateTimeOffset.UtcNow + WriterClockSkewAllowance;
+        var futureFrom = _entries.Count;
+        while (futureFrom > 0 && _entries[futureFrom - 1].OccurredAt > plausibleThrough)
+        {
+            futureFrom--;
+        }
+
+        if (futureFrom < _entries.Count)
+        {
+            var futureCount = _entries.Count - futureFrom;
+            // Keep them only while there is room to spare, so an ordinary clock skew does not lose
+            // records, but never at the expense of a plausible one.
+            var spare = Math.Max(0, (_inMemoryRetention * RetentionHardCapMultiplier) - futureFrom);
+            if (futureCount > spare)
+            {
+                _entries.RemoveRange(futureFrom + spare, futureCount - spare);
+                insideWindow = Math.Min(insideWindow, _entries.Count);
+            }
+        }
+
         var hardCap = _inMemoryRetention * RetentionHardCapMultiplier;
         var keep = Math.Min(Math.Max(_inMemoryRetention, insideWindow), hardCap);
         if (_entries.Count <= keep)
@@ -455,7 +482,8 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
         // control, so the plausible-dated newest discard is what gets recorded. The removed prefix
         // is ascending, so scanning back finds it and stops immediately in the ordinary case where
         // nothing is future-dated.
-        var plausibleThrough = DateTimeOffset.UtcNow + WriterClockSkewAllowance;
+        // Reuses the bound computed for cap eviction above: a few future-dated records can still
+        // survive that pass when there was room to spare, so this scan is still needed.
         var newestPlausibleIndex = removeCount - 1;
         while (newestPlausibleIndex >= 0 && _entries[newestPlausibleIndex].OccurredAt > plausibleThrough)
         {
