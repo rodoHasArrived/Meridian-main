@@ -71,6 +71,23 @@ does not address this, because the exposure is same-repo.
 The privileged repair must run **trusted base-revision tooling** in a job that does not execute the
 pull request's code.
 
+**The writer also needs its own path allowlist, and this is a different concern from constraint 4.**
+Those two are easy to conflate and must not be:
+
+- *discovery* scope — which artifacts need regenerating — must be derived from the job's generation
+  sequence rather than hand-enumerated (constraint 4);
+- *write* authorization — which paths a privileged writer may commit — must be a **fixed,
+  base-owned manifest** rooted at the generated directories.
+
+Without the second, constraint 5's "commit allowlisted output produced by an unprivileged PR-code
+job" option is a hole: a same-repository pull request can modify a generator to emit a change to an
+arbitrary tracked file — source, or a governance file such as a workflow — and have the App- or
+PAT-backed writer push it. The job's final diff is repository-wide and does not distinguish
+generated paths from source ones, so nothing downstream catches it.
+
+The manifest must come from the base revision, never from the pull request. Any path the repair
+wants to write that is not in it goes to manual review rather than being committed.
+
 ### 2. The repair must retrigger checks on its own result
 
 A push made with the default `GITHUB_TOKEN` starts no workflow run, so the repaired head would
@@ -122,6 +139,9 @@ Three illustrations of why any list keeps failing:
 None of these is the last such case. The job's generation sequence is the source of truth, and it
 must be read from the workflow rather than restated here — this note has already been wrong about
 the boundary twice.
+
+This constraint governs *discovery* only. It does not license a privileged writer to commit
+whatever a generator emits: that trust boundary is a fixed base-owned manifest, per constraint 1.
 
 ### 5. Generator-changing pull requests need their own path
 
