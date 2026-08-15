@@ -691,7 +691,7 @@ public sealed partial class OrderManagementSystem
                 Quantity = modification.NewQuantity ?? state.Quantity,
                 LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
                 StopPrice = modification.NewStopPrice ?? state.StopPrice,
-                RoutedNotional = null,
+                RoutedNotional = ResolveAmendedRoutedNotional(state, modification),
                 LastUpdatedAt = DateTimeOffset.UtcNow
             };
             if (_orders.TryUpdate(orderId, reservation, state))
@@ -826,6 +826,35 @@ public sealed partial class OrderManagementSystem
         OptionContract = state.OptionContract,
         Legs = state.Legs
     };
+
+    /// <summary>
+    /// The dollar sizing the broker still holds after an amendment. Nulling it instead makes the
+    /// exposure provider fall back to <c>Quantity × price</c>, and for a notional order the quantity
+    /// field is a placeholder rather than a size — a $2,500 buy carried as <c>Quantity = 1</c>
+    /// repriced to a $90 limit would reserve $90, and later orders would clear portfolio ceilings
+    /// against exposure understated by more than an order of magnitude. Under-reserving is the
+    /// direction that admits a breach, so this errs the other way.
+    /// <para>
+    /// A price-only amendment cannot change the routed dollars at all, so they carry over. A
+    /// quantity amendment is ambiguous without knowing which shape the order is — <c>notional=2500</c>
+    /// beside a placeholder quantity, or <c>notional=true</c> where the quantity field <em>is</em> the
+    /// dollars — and the resolved value no longer distinguishes them. Taking the larger of the two is
+    /// correct for the first shape, correct for an increase in the second, and over-reserves for a
+    /// decrease in the second, which is the only one of those three that can be wrong and is wrong
+    /// in the safe direction.
+    /// </para>
+    /// </summary>
+    private static decimal? ResolveAmendedRoutedNotional(OrderState state, OrderModification modification)
+    {
+        if (state.RoutedNotional is not { } routedNotional || routedNotional <= 0m)
+        {
+            return null;
+        }
+
+        return modification.NewQuantity is { } newQuantity
+            ? Math.Max(routedNotional, Math.Abs(newQuantity))
+            : routedNotional;
+    }
 
     /// <summary>
     /// Restores the order's sizing classification onto the rebuilt amendment. An amended request is

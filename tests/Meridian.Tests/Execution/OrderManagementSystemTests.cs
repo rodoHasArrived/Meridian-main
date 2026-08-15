@@ -1033,6 +1033,14 @@ public sealed class OrderManagementSystemTests : IDisposable
         BrokerNotionalMetadata.TryRead(probe.Metadata, probe.Quantity).Should().Be(
             2_500m,
             "the rules must still read this order's quantity as dollars, not as 2,500 shares");
+
+        // The probe is only half of it. The accepted state feeds the exposure provider, which falls
+        // back to Quantity x price when there is no routed notional — so dropping it here would
+        // reserve the working order at a fraction of the dollars the broker holds and let later
+        // orders clear portfolio ceilings against understated exposure.
+        oms.GetOrder(placed.OrderId)!.RoutedNotional.Should().Be(
+            2_500m,
+            "a price-only amendment cannot change the dollars the broker routed");
     }
 
     private sealed class NotionalSizingPaperExecutionGateway(string gatewayId)
