@@ -202,7 +202,7 @@ public sealed class FatFingerRule : IRiskRule
             });
         }
 
-        if (maxDeviationPercent is not > 0m || !IsPriceLimbApplicable(request))
+        if (maxDeviationPercent is not > 0m || !OrderPriceLimbs.AppliesTo(request))
         {
             return Task.FromResult(RiskValidationResult.Approved());
         }
@@ -211,26 +211,25 @@ public sealed class FatFingerRule : IRiskRule
         // the two mistakes, because a stop-market order that fires on acceptance routes with no
         // price protection at all — so when an order carries both mistakes, the rejection names
         // the one that would have cost more.
-        var stopPrice = HasMeasurableTrigger(request) ? request.StopPrice : null;
-        if (stopPrice is > 0m)
+        //
+        // Which prices are measurable and what each is measured against comes from OrderPriceLimbs,
+        // shared with the price collar: the two controls differ by band and severity, and must not
+        // differ about what they are looking at.
+        var stopPrice = OrderPriceLimbs.HasMeasurableTrigger(request) ? request.StopPrice : null;
+        var triggerLimb = OrderPriceLimbs.ResolveTrigger(request, _exposureProvider);
+        if (triggerLimb.State is PriceLimbState.Unmeasurable)
         {
-            // A trigger is measured against the traded price, NOT the crossing touch the limit limb
-            // uses, because that is what the matcher fires it off. Measuring a trigger against the
-            // side the order would cross at reads a wide book as crossed when the matcher does not:
-            // with a 100/120 quote and the last trade at 100, a buy stop at 105 is still resting,
-            // yet against the 120 ask — or even the 110 midpoint the valuation mark would give —
-            // it looks already crossed.
-            var triggerReference = _exposureProvider.TryGetTriggerReferencePrice(request.Symbol, request.Side);
-            if (triggerReference is null or <= 0m)
-            {
-                return Task.FromResult(Unmeasurable(request, "the stop trigger"));
-            }
+            return Task.FromResult(Unmeasurable(request, triggerLimb.Label));
+        }
 
+        if (triggerLimb.State is PriceLimbState.Measured)
+        {
+            var triggerReference = triggerLimb.Reference;
             var triggerDecision = Interop.RiskInterop.EvaluateFatFingerStopTrigger(
                 Interop.RiskInterop.CreateFatFingerContext(
                     request,
                     referencePrice: triggerReference,
-                    orderPrice: stopPrice,
+                    orderPrice: triggerLimb.Price,
                     maxOrderQuantity: default(decimal?),
                     maxPriceDeviationPercent: maxDeviationPercent));
 
@@ -246,35 +245,26 @@ public sealed class FatFingerRule : IRiskRule
                     Code = StopTriggerCode,
                     // Mirrored orientation: for a trigger the wrong side is the opposite of a
                     // limit's, so the reported number is taken as though the sides were swapped.
-                    ObservedValue = ResolveAggressiveDeviationPercent(Mirror(request.Side), stopPrice, triggerReference),
+                    ObservedValue = OrderPriceLimbs.AggressiveDeviationPercent(
+                        triggerLimb.Orientation, triggerLimb.Price, triggerReference),
                     LimitValue = maxDeviationPercent
                 });
             }
         }
 
-        var orderPrice = HasMeasurableLimit(request) ? request.LimitPrice : null;
-        if (orderPrice is not > 0m)
+        var limitLimb = OrderPriceLimbs.ResolveLimit(request, _exposureProvider);
+        if (limitLimb.State is PriceLimbState.NotApplicable)
         {
             return Task.FromResult(RiskValidationResult.Approved());
         }
 
-        // A stop-limit's limit is priced off its own trigger rather than off today's market, so
-        // that is what it is measured against. Falling back to the touch instead would reject the
-        // ordinary protective orders this rule exists to preserve. A stop-limit that reaches here
-        // with no usable trigger is malformed, and its null reference takes the unmeasurable path.
-        var isAuctionLimit = request.Type is OrderType.LimitOnOpen or OrderType.LimitOnClose;
-        var referencePrice = request.Type switch
+        if (limitLimb.State is PriceLimbState.Unmeasurable)
         {
-            OrderType.StopLimit => stopPrice,
-            OrderType.LimitOnOpen or OrderType.LimitOnClose => null,
-            _ => _exposureProvider.TryGetTouchPrice(request.Symbol, request.Side)
-        };
-        if (referencePrice is null or <= 0m)
-        {
-            return Task.FromResult(Unmeasurable(
-                request,
-                isAuctionLimit ? "the auction limit" : "the order price"));
+            return Task.FromResult(Unmeasurable(request, limitLimb.Label));
         }
+
+        var orderPrice = (decimal?)limitLimb.Price;
+        var referencePrice = (decimal?)limitLimb.Reference;
 
         var decision = Interop.RiskInterop.EvaluateFatFinger(
             Interop.RiskInterop.CreateFatFingerContext(
@@ -297,7 +287,7 @@ public sealed class FatFingerRule : IRiskRule
             decision.Reasons.FirstOrDefault() ?? "Fat-finger price band breached.") with
         {
             Code = PriceDeviationCode,
-            ObservedValue = ResolveAggressiveDeviationPercent(request.Side, orderPrice, referencePrice),
+            ObservedValue = OrderPriceLimbs.AggressiveDeviationPercent(request.Side, orderPrice, referencePrice),
             LimitValue = maxDeviationPercent
         });
     }
@@ -380,50 +370,4 @@ public sealed class FatFingerRule : IRiskRule
     /// </summary>
     private static OrderSide Mirror(OrderSide side) =>
         side is OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
-
-    /// <summary>
-    /// Signed deviation of the order's price from the reference, oriented so that a positive
-    /// value always means "aggressive" — a buy paying above the market, or a sell hitting below
-    /// it. Mirrors the F# policy's orientation so the reported number matches the one compared,
-    /// including its saturation: a ratio whose scaling by 100 would exceed
-    /// <see cref="decimal.MaxValue"/> is capped rather than thrown, so the evidence attached to a
-    /// breach can never itself turn a structured rejection into an evaluation failure.
-    /// </summary>
-    private static decimal? ResolveAggressiveDeviationPercent(
-        OrderSide side,
-        decimal? orderPrice,
-        decimal? referencePrice)
-    {
-        if (orderPrice is not > 0m || referencePrice is not > 0m)
-        {
-            return null;
-        }
-
-        // Mirrors the F# helper exactly, including why the quotient is never formed when it
-        // could overflow: MaxValue over a 0.1 reference overflows the division itself, before
-        // any scaling. The comparison uses cap x reference, which is representable precisely
-        // when the reference is at most 100 (cap x 100 = MaxValue); above that the ratio cannot
-        // reach the cap, because the numerator is bounded by MaxValue.
-        const decimal hundred = 100m;
-        var cap = decimal.MaxValue / hundred;
-        var difference = orderPrice.Value - referencePrice.Value;
-
-        decimal signedDeviation;
-        if (referencePrice.Value > hundred)
-        {
-            signedDeviation = difference / referencePrice.Value * hundred;
-        }
-        else
-        {
-            var limit = cap * referencePrice.Value;
-            signedDeviation = difference switch
-            {
-                _ when difference > limit => decimal.MaxValue,
-                _ when difference < -limit => decimal.MinValue,
-                _ => difference / referencePrice.Value * hundred
-            };
-        }
-
-        return side is OrderSide.Buy ? signedDeviation : -signedDeviation;
-    }
 }
