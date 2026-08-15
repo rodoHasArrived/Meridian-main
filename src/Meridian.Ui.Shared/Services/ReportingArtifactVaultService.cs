@@ -115,7 +115,7 @@ public sealed class ReportingArtifactVaultService
         {
             cancellationToken.ThrowIfCancellationRequested();
             var content = artifact.Content.ToArray();
-            var expectedHash = ComputeSha256(content);
+            var expectedHash = Sha256Digest.Compute(content);
             var expectedIdentity = new ReportingArtifactIdentity(request.Scope.TenantId, expectedHash);
             var write = await _artifactStore
                 .StoreAsync(new ReportingArtifactWriteRequest(request.Scope.TenantId, content), cancellationToken)
@@ -453,7 +453,7 @@ public sealed class ReportingArtifactVaultService
                 nameof(request));
         }
 
-        var renderedManifestHash = ComputeSha256(manifestArtifacts[0].Content.Span);
+        var renderedManifestHash = Sha256Digest.Compute(manifestArtifacts[0].Content.Span);
         if (!string.Equals(renderedManifestHash, request.ManifestHash, StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException(
@@ -683,7 +683,7 @@ public sealed class ReportingArtifactVaultService
                 $"catalog size {record.ByteLength} does not match retrieved size {read.Content.LongLength}");
         }
 
-        var actualHash = ComputeSha256(read.Content);
+        var actualHash = Sha256Digest.Compute(read.Content);
         if (!string.Equals(actualHash, record.Identity.ContentHashSha256, StringComparison.OrdinalIgnoreCase))
         {
             throw new ReportingArtifactIntegrityException(
@@ -832,6 +832,4 @@ public sealed class ReportingArtifactVaultService
         string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right)
         || Same(left, right);
 
-    private static string ComputeSha256(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
 }

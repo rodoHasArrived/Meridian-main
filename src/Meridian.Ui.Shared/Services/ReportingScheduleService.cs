@@ -403,7 +403,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             var archivedAtUtc = DateTimeOffset.UtcNow;
             var archivedPayloadHash = ComputeCanonicalHash(state.Snapshot.LegacySchedules);
             var receipt = new ReportingLegacyArchiveReceipt(
-                ComputeSha256(JsonSerializer.Serialize(new
+                Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
                 {
                     kind = "schedule",
                     actor = recoveryAuthority.ActorPrincipalId!.Trim(),
@@ -531,8 +531,8 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             NormalizeOptional(schedule.TenantId),
             NormalizeOptional(schedule.CompanyId),
             rawPayload,
-            ComputeSha256(rawPayload),
-            ComputeSha256(CanonicalizeJson(rawPayload)),
+            Sha256Digest.ComputeUtf8(rawPayload),
+            Sha256Digest.ComputeUtf8(CanonicalizeJson(rawPayload)),
             LegacyScheduleRemediation);
     }
 
@@ -617,10 +617,10 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
                 || (string.IsNullOrWhiteSpace(entry.TenantId) != string.IsNullOrWhiteSpace(entry.CompanyId))
                 || string.IsNullOrWhiteSpace(entry.RawPayloadJson)
                 || !string.Equals(entry.Remediation, LegacyScheduleRemediation, StringComparison.Ordinal)
-                || !Sha256Digest.FixedEquals(entry.RawPayloadHashSha256, ComputeSha256(entry.RawPayloadJson))
+                || !Sha256Digest.FixedEquals(entry.RawPayloadHashSha256, Sha256Digest.ComputeUtf8(entry.RawPayloadJson))
                 || !Sha256Digest.FixedEquals(
                     entry.CanonicalPayloadHashSha256,
-                    ComputeSha256(CanonicalizeJson(entry.RawPayloadJson))))
+                    Sha256Digest.ComputeUtf8(CanonicalizeJson(entry.RawPayloadJson))))
             {
                 throw new InvalidDataException(
                     "Archived legacy reporting schedule inventory checksum or schema is invalid.");
@@ -901,7 +901,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             throw new InvalidDataException("Legacy reporting schedule archive receipt is invalid.");
         }
 
-        var expectedId = ComputeSha256(JsonSerializer.Serialize(new
+        var expectedId = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
             kind = "schedule",
             actor = receipt.ActorPrincipalId,
@@ -919,7 +919,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         IReadOnlyList<ReportingScheduleEntry> schedules,
         IReadOnlyList<LegacyReportingScheduleEntry> legacySchedules,
         ReportingLegacyArchiveReceipt? archiveReceipt) =>
-        ComputeSha256(JsonSerializer.Serialize(new
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
             schedules,
             legacySchedules,
@@ -927,10 +927,7 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         }, _jsonOptions));
 
     private string ComputeCanonicalHash<T>(T value) =>
-        ComputeSha256(JsonSerializer.Serialize(value, _jsonOptions));
-
-    private static string ComputeSha256(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(value, _jsonOptions));
 
     private static string CanonicalizeJson(string rawJson)
     {

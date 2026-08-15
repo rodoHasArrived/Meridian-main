@@ -670,7 +670,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             || !Sha256Digest.IsWellFormed(snapshot.ReconciliationCheckpointHash)
             || !Sha256Digest.IsWellFormed(parametersHash)
             || string.IsNullOrWhiteSpace(parametersJson)
-            || !string.Equals(ComputeSha256(parametersJson), parametersHash, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Sha256Digest.ComputeUtf8(parametersJson), parametersHash, StringComparison.OrdinalIgnoreCase)
             || source.AsOfDate != contract.AsOfDate
             || parameters.AsOfDate != contract.AsOfDate
             || !string.Equals(source.AccountingBasis, expectedBasis, StringComparison.Ordinal)
@@ -1586,9 +1586,6 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
     private static int ResolveRunAttemptOrdinal(ReportingOutputManifest manifest)
         => manifest.RunAttemptOrdinal is > 0 ? manifest.RunAttemptOrdinal.Value : 1;
-
-    private static string ComputeSha256(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
     private sealed record ReportingRunVersionPlan(
         string RunSeriesId,

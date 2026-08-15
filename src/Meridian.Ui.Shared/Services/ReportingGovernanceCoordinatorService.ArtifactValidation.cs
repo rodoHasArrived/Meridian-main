@@ -125,7 +125,7 @@ public sealed partial class ReportingGovernanceCoordinatorService
                 artifact.ArtifactId,
                 production.ManifestArtifactId,
                 StringComparison.Ordinal);
-            var contentHash = ComputeSha256(artifact.Content.Span);
+            var contentHash = Sha256Digest.Compute(artifact.Content.Span);
             if (!descriptors.TryGetValue(artifact.ArtifactId, out var descriptor)
                 || !string.Equals(descriptor.FileName, artifact.FileName, StringComparison.Ordinal)
                 || !string.Equals(descriptor.ContentType, artifact.ContentType, StringComparison.Ordinal)
@@ -265,7 +265,7 @@ public sealed partial class ReportingGovernanceCoordinatorService
     {
         var manifestArtifact = production.Artifacts.Single(artifact =>
             string.Equals(artifact.ArtifactId, production.ManifestArtifactId, StringComparison.Ordinal));
-        var manifestHash = ComputeSha256(manifestArtifact.Content.Span);
+        var manifestHash = Sha256Digest.Compute(manifestArtifact.Content.Span);
         var retentionRequest = new ReportingArtifactPackageRetentionRequest(
             BuildPackageId(run),
             run.RunId,
@@ -325,7 +325,7 @@ public sealed partial class ReportingGovernanceCoordinatorService
                 || record.ByteLength != download.Content.LongLength
                 || !string.Equals(
                     record.Identity.ContentHashSha256,
-                    ComputeSha256(download.Content),
+                    Sha256Digest.Compute(download.Content),
                     StringComparison.OrdinalIgnoreCase))
             {
                 throw new ReportingArtifactCatalogIntegrityException(

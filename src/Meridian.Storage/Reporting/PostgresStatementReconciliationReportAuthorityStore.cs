@@ -248,7 +248,7 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
         // Caller-owned memory may be mutated while persistence is awaiting I/O. Retain one exact
         // byte sequence for both the independently computed identity and the artifact-store write.
         var retainedContent = content.ToArray();
-        var expectedHash = ComputeSha256(retainedContent);
+        var expectedHash = Sha256Digest.Compute(retainedContent);
         var transactionalArtifactStore = RequireTransactionalArtifactStore();
 
         await using var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -1008,9 +1008,6 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
         return BinaryPrimitives.ReadInt64BigEndian(
             SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity)));
     }
-
-    private static string ComputeSha256(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
 
     private static DateTimeOffset ReadUtcTimestamp(NpgsqlDataReader reader, int ordinal) =>
         new(DateTime.SpecifyKind(reader.GetDateTime(ordinal), DateTimeKind.Utc));
