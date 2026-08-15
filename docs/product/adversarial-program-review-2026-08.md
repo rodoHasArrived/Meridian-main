@@ -11,6 +11,12 @@ This pass deliberately re-tests the [2026-07-21](adversarial-program-review-2026
 [2026-07-26](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md) reviews before
 adding new findings, so remediated items are credited rather than re-litigated.
 
+> **Re-verified 2026-08-15 at `4dc2b1ff0`** (233 commits later). The four new findings still hold
+> unchanged: no `ETag`/`If-Match`/`RowVersion` anywhere in `src/`; `AddOpenTelemetryTracing` still has
+> no caller; still one `/api/v*` route group; still no route serving `/api/openapi.json`. The
+> individual `file:line` anchors below were captured at `01ad9aeb` and were not all re-checked, so
+> line numbers may have drifted.
+
 ## Headline
 
 The two prior reviews found, in order, "built but not wired" and "a broken first mile and an

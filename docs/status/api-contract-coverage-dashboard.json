@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.2,
-  "endpoint_coverage_percent": 40.1,
+  "score_percent": 29.4,
+  "endpoint_coverage_percent": 40.4,
   "contract_coverage_percent": 12.8,
   "summary": {
     "endpoint_count": 621,
-    "documented_endpoint_count": 249,
-    "undocumented_endpoint_count": 372,
+    "documented_endpoint_count": 251,
+    "undocumented_endpoint_count": 370,
     "workstation_contract_count": 917,
     "documented_workstation_contract_count": 117,
     "undocumented_workstation_contract_count": 800
@@ -480,13 +480,13 @@
       "method": "POST",
       "path": "/api/auth/accounts/{username}/password-reset",
       "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:252",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
       "path": "/api/auth/accounts/{username}/disable",
       "source": "src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:312",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",

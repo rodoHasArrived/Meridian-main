@@ -1855,6 +1855,7 @@ Meridian-main
 │   │   └── security-master-passport-workbench.md
 │   ├── product
 │   │   ├── adversarial-program-review-2026-07.md
+│   │   ├── adversarial-program-review-2026-08.md
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── excel-onboarding-workbook-brainstorm-2026-07.md
