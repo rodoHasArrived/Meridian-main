@@ -46,50 +46,33 @@ STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
 DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
-# Two *self-referential* reports are excluded, not the whole generated tree.
+# The corpus is an allowlist of roots that exist to describe contracts, not a denylist of prose.
 #
-# `docs/generated/repository-structure.md` lists every path in the repository, and a C# file is
-# conventionally named for the single public type it holds — so a type counted as documented
-# purely because its own source file exists. `docs/generated/documentation-coverage.md` is this
-# generator's own output, which names every undocumented item it finds: counting it would let a
-# type become documented by being reported as undocumented.
+# Subtracting prose was tried first and does not converge: four review rounds on #2703 each found a
+# document where root-, file-, or heading-level filtering guessed wrong, because these roots
+# interleave description and argument inside single documents. A delivery plan can state a DTO's
+# complete field set in order to argue that the DTO is missing something.
 #
-# The rest of `docs/generated/` stays in the corpus, and that distinction matters:
-# `docs/generated/database/**` is the PostgreSQL data-object catalog
-# (`docs/generated/README.md`), and pages like
-# `docs/generated/database/contracts/ledger-contracts-page-01.md` carry real field-level reference
-# documentation for types such as `AccountingApprovalQueueConfigurationDto`. An earlier revision
-# excluded the whole subtree: 41 files left the corpus and 763 genuinely documented types were
-# marked as gaps.
+# docs/generated/database/** is included because it is the PostgreSQL data-object catalog
+# (docs/generated/README.md), and pages such as
+# docs/generated/database/contracts/ledger-contracts-page-01.md carry real field-level reference
+# documentation. An earlier revision excluded that subtree: 41 files left the corpus and 763
+# genuinely documented types were marked as gaps. It is reference material and belongs here.
 #
-# docs/product/ is filtered for a different reason (see PROSE_DOC_PREFIXES below): it mostly
-# argues and assesses rather than describing
-# contracts, so a type named there is "mentioned", not "documented" (#2703). The issue was found by
-# tripping it -- a draft under docs/product/ moved documented types from 2,791 to 2,801, and four
-# of the ten additions appeared *only inside a passage arguing that those classes are not
-# persistent stores*. Arguing four classes should not count caused them to count.
-#
-# docs/plans/ is deliberately NOT excluded, though the issue groups the two together. Its credits
-# come from blueprints such as security-master-passport-workbench.md, whose "Interface & API
-# Contracts" section defines the contracts verbatim -- excluding that root would repeat the
-# 763-type mistake above on a smaller scale.
+# The two self-referential reports below stay excluded regardless. Neither is reachable under the
+# current allowlist, but the guard is kept so widening the allowlist cannot silently reintroduce
+# them: repository-structure.md lists every path in the repository, so a type would count as
+# documented purely because its own source file exists, and documentation-coverage.md is this
+# generator's own output, so a type would count by being reported as undocumented.
+DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
+    "docs/reference/",
+    "docs/generated/database/",
+)
+
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
     "docs/generated/documentation-coverage.md",
     "docs/generated/repository-structure.md",
-)
-
-# Prose roots are filtered per document rather than wholesale. A root is the wrong granularity:
-# two rounds of review on #2703 each produced a blueprint filed under one of these roots whose
-# contract section defines shipped types verbatim, so excluding the root manufactured false gaps.
-# A document here is dropped only when it carries no contract heading.
-PROSE_DOC_PREFIXES: Tuple[str, ...] = ("docs/product/",)
-
-# Validated against every docs/product file that credits anything: the six prose files match none
-# of these, the blueprints match. Kept tight -- a bare "API" would match "## API notes" in a review.
-CONTRACT_SECTION_HEADING_RE = re.compile(
-    r"^#{1,6}\s+.*\b(?:Contracts?|Interfaces?|API Surface|DTOs?)\b",
-    re.MULTILINE | re.IGNORECASE,
 )
 
 # Regex: public (static )?(sealed )?(partial )?(class|interface|record|enum) Name
@@ -855,20 +838,13 @@ def _load_doc_contents(root: Path) -> Dict[str, str]:
     if docs_dir.is_dir():
         for md_file in _collect_files(docs_dir, DOC_FILE_EXTENSIONS):
             rel_path = _rel(md_file, root)
+            if not rel_path.startswith(DOC_CONTENT_INCLUDE_PREFIXES):
+                continue
             if rel_path.startswith(DOC_CONTENT_EXCLUDE_PREFIXES):
                 continue
-            text = _read_text_safe(md_file)
-            if rel_path.startswith(PROSE_DOC_PREFIXES) and not CONTRACT_SECTION_HEADING_RE.search(text):
-                continue
-            contents[rel_path] = text
-    # Also include CLAUDE.md at repo root
-    claude_md = root / "CLAUDE.md"
-    if claude_md.is_file():
-        contents[_rel(claude_md, root)] = _read_text_safe(claude_md)
-    # And README.md
-    readme = root / "README.md"
-    if readme.is_file():
-        contents[_rel(readme, root)] = _read_text_safe(readme)
+            contents[rel_path] = _read_text_safe(md_file)
+    # CLAUDE.md and README.md are deliberately absent: both are project orientation prose, and a
+    # type named in either was being counted as documented on the same footing as a reference page.
     return contents
 
 

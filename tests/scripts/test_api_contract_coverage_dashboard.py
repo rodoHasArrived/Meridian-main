@@ -168,21 +168,24 @@ class GeneratorContractTests(unittest.TestCase):
         # half the guard against a metric that inflates itself.
         self.assertEqual(("docs/status", "docs/generated"), module.GENERATED_DOC_ROOTS)
 
-    def test_non_contract_doc_roots_stay_excluded(self) -> None:
-        # Prose that argues about a symbol is not documentation of it. A draft under docs/product/
-        # that described no API flipped an endpoint to Documented on one explanatory sentence
-        # (#2703). Pinned as a tuple so widening the corpus is a deliberate edit, not a drift.
-        self.assertEqual(("docs/product",), module.NON_CONTRACT_DOC_ROOTS)
+    def test_the_corpus_is_an_allowlist_of_contract_roots(self) -> None:
+        # Subtracting prose does not converge -- four review rounds on #2703 each found a document
+        # where root, file, or heading filtering guessed wrong. The corpus is now the roots that
+        # exist to describe contracts. Pinned so widening it is a deliberate edit, not a drift.
+        self.assertEqual(("docs/reference",), module.CONTRACT_DOC_ROOTS)
 
-    def test_a_prose_root_is_dropped_from_the_corpus(self) -> None:
+    def test_a_document_outside_the_allowlist_is_dropped(self) -> None:
         import tempfile
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             route = "/api/auth/accounts/{username}/password-reset"
-            prose = root / "docs/product/analysis.md"
-            prose.parent.mkdir(parents=True, exist_ok=True)
-            prose.write_text(f"The sweep misclassifies `{route}` today.\n", encoding="utf-8")
+            # Both a prose review and a delivery plan that states a contract's field set while
+            # arguing it is incomplete -- the shape no syntactic rule separated reliably.
+            for rel in ("docs/product/analysis.md", "docs/product/w9-delivery-plan.md"):
+                path = root / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(f"### W9-INGEST-009\n\n`{route}` carries no scope.\n", encoding="utf-8")
 
             self.assertFalse(documents_route(route, module._load_docs_text(root)))
 
@@ -194,10 +197,10 @@ class GeneratorContractTests(unittest.TestCase):
             # corpus rather than breaking the metric.
             self.assertTrue(documents_route(route, module._load_docs_text(root)))
 
-    def test_a_contract_bearing_blueprint_in_a_prose_root_is_kept(self) -> None:
-        # Two rounds of review on #2703 each found a blueprint filed under a prose root whose
-        # contract section defines shipped types. A root-level exclusion turned those into false
-        # gaps; the per-document check is what stops that.
+    def test_a_contract_heading_outside_the_allowlist_does_not_rescue_a_document(self) -> None:
+        # The heading rule this replaced would have credited this. It is dropped now because the
+        # question is no longer "does this document look like a contract description" -- which was
+        # not decidable -- but "is it reference documentation".
         import tempfile
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -208,7 +211,7 @@ class GeneratorContractTests(unittest.TestCase):
             blueprint.write_text(
                 f"## 7. Contracts summary\n\n- **New wire:** `GET {route}`\n", encoding="utf-8")
 
-            self.assertTrue(documents_route(route, module._load_docs_text(root)))
+            self.assertFalse(documents_route(route, module._load_docs_text(root)))
 
     def test_the_boundary_rule_is_reachable_from_the_dashboard(self) -> None:
         # `_index_docs` replaced a per-item scan that these tests used to call directly. Once the
@@ -234,30 +237,23 @@ class _CoverageModuleTestCase(unittest.TestCase):
 class CoverageCorpusExclusionTests(_CoverageModuleTestCase):
     """The public-type metric shares the corpus flaw, so it takes the same exclusion (#2703)."""
 
-    def test_prose_roots_are_filtered_from_the_type_corpus(self) -> None:
-        # Ten types were credited by one draft under docs/product/, four of them appearing only
-        # inside a passage arguing that those very classes are not persistent stores. Filtered per
-        # document rather than per root, so blueprints filed there keep their credits.
-        self.assertIn("docs/product/", self.cov.PROSE_DOC_PREFIXES)
-        self.assertNotIn("docs/product/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
+    def test_the_type_corpus_is_an_allowlist(self) -> None:
+        self.assertEqual(
+            ("docs/reference/", "docs/generated/database/"),
+            self.cov.DOC_CONTENT_INCLUDE_PREFIXES,
+        )
 
-    def test_a_contract_heading_keeps_a_prose_root_document(self) -> None:
-        self.assertIsNotNone(
-            self.cov.CONTRACT_SECTION_HEADING_RE.search("## 7. Contracts summary\n\n- `FooDto`"))
-        self.assertIsNotNone(
-            self.cov.CONTRACT_SECTION_HEADING_RE.search("## Interface & API Contracts\n"))
-        # A review that merely discusses an API is not a contract description.
-        self.assertIsNone(
-            self.cov.CONTRACT_SECTION_HEADING_RE.search("## API notes\n\nthe sweep misreads it"))
+    def test_the_database_catalog_stays_in_the_type_corpus(self) -> None:
+        # The counterweight. Excluding docs/generated/ wholesale once dropped 41 files and marked
+        # 763 genuinely documented types as gaps; the catalog is reference material.
+        self.assertIn("docs/generated/database/", self.cov.DOC_CONTENT_INCLUDE_PREFIXES)
 
     def test_reference_roots_stay_in_the_type_corpus(self) -> None:
         # The counterweight: an earlier over-exclusion here dropped 41 files and marked 763
         # genuinely documented types as gaps. These roots carry real reference material.
-        # docs/plans/ is on this list on purpose: its credits come from blueprints whose
-        # "Interface & API Contracts" sections define the contracts verbatim (#2710 review).
-        for kept in ("docs/reference/", "docs/generated/database/", "docs/architecture/", "docs/plans/"):
-            self.assertFalse(
-                kept.startswith(self.cov.DOC_CONTENT_EXCLUDE_PREFIXES),
+        for kept in ("docs/reference/", "docs/generated/database/"):
+            self.assertTrue(
+                kept.startswith(self.cov.DOC_CONTENT_INCLUDE_PREFIXES),
                 f"{kept} must remain in the documentation corpus",
             )
 

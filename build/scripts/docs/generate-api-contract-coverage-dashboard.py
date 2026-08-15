@@ -44,7 +44,7 @@ DATA_SOURCES = [
     "src/**/*.cs endpoint mappings",
     "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Contracts/Workstation/*.cs",
-    "docs/**/*.md (excluding generated report roots and non-contract prose roots)",
+    "docs/reference/**/*.md (contract reference documentation only)",
 ]
 
 # Generated reports live under these roots and echo route paths and contract names verbatim —
@@ -54,32 +54,24 @@ DATA_SOURCES = [
 # converge, since each run's output changes the next run's input.
 GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
 
-# A root whose documents mostly argue and assess rather than describe a contract. A symbol named
-# in prose is "mentioned", not "documented", and crediting it moves the score without a document
-# being written -- the same failure GENERATED_DOC_ROOTS guards against, arriving by a different
-# route (#2703). Found by tripping it: a draft under docs/product/ that documented no API flipped
-# an endpoint to Documented on one sentence explaining why an authorization sweep misclassifies it.
+# The corpus is an allowlist of roots that exist to describe contracts, not a denylist of prose.
 #
-# Membership of this tuple does not exclude a file on its own. Each document is checked for a
-# contract heading, because a root is the wrong granularity: two rounds of review on #2703 each
-# produced a blueprint filed under a prose root whose contract section defines shipped types
-# verbatim, and excluding the root wholesale turned those into false gaps.
+# Subtracting prose was tried first and does not converge: four review rounds on #2703 each found a
+# document where root-, file-, or heading-level filtering guessed wrong, because these roots
+# interleave description and argument inside single documents. `w9-close-out-delivery-plan` states
+# StatementRunCreateDto's complete field set -- in order to argue the DTO is missing accounting
+# scope. No cheap syntactic proxy separates "describes a contract" from "argues about one".
 #
-# docs/plans is not listed at all. All 18 of its contract credits come from one blueprint,
-# security-master-passport-workbench.md, so there is no prose inflation there to remove.
+# So the metric answers a question that can be answered instead: is this endpoint or contract
+# described in reference documentation? Naming a symbol in a review, brainstorm, roadmap, or
+# delivery plan no longer moves the score, and there is no per-file adjudication to maintain.
 #
-# docs/ai, docs/architecture, and docs/development each contribute credits that are arguably real
-# documentation, so they stay in pending a decision on what the corpus is meant to contain; see the
-# attribution table on the pull request for #2703.
-NON_CONTRACT_DOC_ROOTS = ("docs/product",)
-
-# A markdown heading that introduces a contract description. Validated against every docs/product
-# file that credits anything: the six prose files match none, the two blueprints match five and
-# one. Kept deliberately tight -- a bare "API" would match "## API notes" in a review.
-CONTRACT_SECTION_HEADING_RE = re.compile(
-    r"^#{1,6}\s+.*\b(?:Contracts?|Interfaces?|API Surface|DTOs?)\b",
-    re.MULTILINE | re.IGNORECASE,
-)
+# The cost is a smaller number -- 251 endpoints and 117 contracts become 199 and 34. That drop is
+# the point: the old figures were an unknown mixture of documented and merely-named symbols, which
+# is what #2703 filed. This is the issue's suggestion 1; its suggestion 3, deriving coverage from
+# request/response schemas in a served OpenAPI document, remains the better answer once #2695
+# provides one, and would replace this rule rather than extend it.
+CONTRACT_DOC_ROOTS = ("docs/reference",)
 
 
 def _should_skip(path: Path) -> bool:
@@ -207,23 +199,9 @@ def _is_generated_doc(root: Path, path: Path) -> bool:
     return _is_under(root, path, GENERATED_DOC_ROOTS)
 
 
-def _is_non_contract_doc(root: Path, path: Path) -> bool:
-    """True for a prose-root document that describes no contract.
-
-    Checked per document rather than per root. Two rounds of review on #2703 each produced a
-    blueprint filed under a prose root whose contract section defines shipped types verbatim, so
-    excluding the root wholesale manufactured false gaps. A heading is the discriminator because
-    it is what separates the two kinds cleanly here: across every docs/product file that credits
-    anything, the six prose ones carry no contract heading at all, while the two blueprints carry
-    five and one.
-
-    A heuristic, and it fails in a knowable direction either way -- a prose file that grows a
-    contract heading is let back in, a blueprint that describes contracts under some other heading
-    stays out. That is preferable to the root rule, which had no way to tell the two apart.
-    """
-    if not _is_under(root, path, NON_CONTRACT_DOC_ROOTS):
-        return False
-    return CONTRACT_SECTION_HEADING_RE.search(_read_text(path)) is None
+def _is_contract_doc(root: Path, path: Path) -> bool:
+    """True for a document under a root that exists to describe contracts."""
+    return _is_under(root, path, CONTRACT_DOC_ROOTS)
 
 
 def _load_docs_text(root: Path) -> str:
@@ -233,7 +211,7 @@ def _load_docs_text(root: Path) -> str:
 
     chunks: list[str] = []
     for path in _iter_files(docs_dir, ".md"):
-        if _is_generated_doc(root, path) or _is_non_contract_doc(root, path):
+        if not _is_contract_doc(root, path) or _is_generated_doc(root, path):
             continue
         chunks.append(_read_text(path))
     normalized = "\n".join(chunks)
