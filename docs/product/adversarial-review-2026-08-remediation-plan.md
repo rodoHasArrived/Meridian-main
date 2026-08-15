@@ -783,29 +783,54 @@ still `in_progress`.
   **Change:** keep the artifacts tracked — `docs/documentation-ownership.md:23` designates
   `docs/status/` automation-owned output that must stay "at the paths consumed by tooling", so
   untracking them in favour of CI-only artifacts is out of policy. Automate the regeneration
-  instead: have the docs workflow commit the regenerated artifacts back to the pull-request branch
-  when it detects drift, and fail only where it cannot push (forks, protected contexts), so the
-  job repairs the condition it currently only reports. **The push must be made with a GitHub App
-  token or PAT, not the default `GITHUB_TOKEN`** — GitHub suppresses workflow runs triggered by a
-  `GITHUB_TOKEN` push, which would move the PR head while the authoritative `regenerate-docs` run
-  stayed attached to the superseded SHA, leaving the new head unchecked. A `.gitattributes` merge
-  driver is **not** a viable alternative and was considered and rejected: a custom driver runs only
-  where `merge.<driver>.driver` is configured locally, and GitHub's server-side merge inherits no
-  contributor configuration, so it would not run for the normal pull-request merge this item
-  exists to fix. Whichever design is chosen, document the single regeneration command next to the
-  check so a contributor who hits it need not reconstruct it from the workflow.
+  instead, subject to three constraints that a naive implementation gets wrong:
+
+  1. **Never hand a write token to a job that runs pull-request code.** The current
+     `regenerate-docs` job checks out the PR revision and executes its
+     `build/scripts/docs/requirements.txt`, its Python generators, and its npm scripts
+     (`.github/workflows/documentation.yml:104-152`). Adding an App token or PAT to *that* job
+     would let any same-repository pull request rewrite those programs to capture the credential;
+     refusing pushes from forks does not address it, because the exposure is same-repo. The
+     privileged repair must run **trusted base-revision tooling** in a separate job or workflow
+     that does not execute the PR's code, and must commit only an explicit allowlist of generated
+     paths under `docs/status/`.
+  2. **The push must retrigger checks on the new head.** GitHub suppresses workflow runs caused by
+     a push made with the default `GITHUB_TOKEN`, so a repair committed that way would move the PR
+     head while the authoritative `regenerate-docs` run stayed attached to the superseded SHA,
+     leaving the merged commit unchecked. Use a GitHub App token or PAT for the push itself.
+  3. **Trigger on the generator's real input corpus, not a curated path list.** The workflow's
+     `pull_request` paths (`.github/workflows/documentation.yml:15-26`) cover `docs/**` and a
+     handful of script paths, while `generate-health-dashboard.py:52-57` counts every markdown file
+     outside its exclusion set — which includes root files such as `README.md`, `AGENTS.md`, and
+     `CLAUDE.md`, plus `.agents/**` and `Meridian Design System/**`. A pull request touching only
+     `README.md` therefore changes the expected dashboard without starting the repair, and nothing
+     else catches it: `scripts/ci.sh`'s `verify-docs` lane invokes `run-docs-automation.py` with an
+     explicit `--scripts` list that does not include the health generator, so the stale artifact
+     lands silently.
+
+  A `.gitattributes` merge driver is **not** a viable alternative and was considered and rejected:
+  a custom driver runs only where `merge.<driver>.driver` is configured locally, and GitHub's
+  server-side merge inherits no contributor configuration. Whichever design is chosen, document the
+  single regeneration command next to the check so a contributor who hits it need not reconstruct
+  it from the workflow.
   **Governance:** the implementation necessarily edits `.github/workflows/documentation.yml`,
-  including its `permissions` block. That is a protected governance file under
-  `.github/pull_request_template.md`, so the implementing pull request must declare the governance
-  change and carry explicit human approval. It is not an ordinary automation task, and this item
-  does not authorise treating it as one.
-  **Verify:** merge a branch that edits markdown inside the health dashboard's corpus into a branch
-  that edits different such markdown, and confirm `regenerate-docs` ends green on the final head
-  without a human running the profile. Assert the outcome — a clean dashboard matching the merged
-  tree, checked on the SHA that is actually merged — rather than the mechanism.
-  **Effort:** S to implement, but **gated**: governance review of the workflow change is the long
-  pole, not the code · **Sequence:** independent of the other W10 items; the sooner it lands, the
-  fewer merges pay the toll
+  including its `permissions` block, and introduces a privileged token. That is a protected
+  governance file under `.github/pull_request_template.md`, so the implementing pull request must
+  declare the governance change and carry explicit human approval. Constraint 1 above is a
+  security requirement, not a style preference, and should be reviewed as one. This item does not
+  authorise treating any of it as ordinary automation work.
+  **Verify:** two scenarios, because per-branch correctness does not imply a correct merge result.
+  (a) Merge a branch editing markdown inside the health corpus into a branch editing different such
+  markdown, and confirm `regenerate-docs` ends green **on the final head**, without a human running
+  the profile. (b) Put two pull requests that each edit in-corpus markdown into the merge queue
+  together and confirm the dashboard is correct on the tree that actually merges: each head can be
+  individually repaired while their combined tree is stale, and `documentation.yml` has no
+  `merge_group` trigger (`:3-41`) while `meridian-ci.yml` does (`:3-11`) but never runs the health
+  generator — so a merge-group-aware gate or a trusted post-merge repair on `main` is required.
+  Assert the outcome, a dashboard matching the merged tree, rather than the mechanism.
+  **Effort:** M, not S — the security isolation in constraint 1 and the merge-group case in (b) are
+  the substance; the regeneration itself is one command · **Sequence:** independent of the other
+  W10 items, but **gated**: governance review of the workflow and token change is the long pole
 
 - [ ] **AR8-56 — Wire Polygon streaming credentials, or keep it unadvertised.**
   **Evidence:** `ProviderFeatureRegistration.Registry.cs:77-82` constructs `PolygonMarketDataClient`
