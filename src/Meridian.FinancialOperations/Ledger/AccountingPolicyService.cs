@@ -51,15 +51,20 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
 
     private readonly TimeProvider _timeProvider;
 
-    /// <param name="timeProvider">
-    /// Supplies "now" when a query does not carry an explicit effective date. Optional so the
-    /// existing call sites keep compiling; defaults to <see cref="TimeProvider.System"/>, which is
-    /// the behaviour this replaces. Injecting it is what makes the undated-query path testable at a
-    /// period boundary rather than only on whatever day the suite happens to run.
-    /// </param>
-    public AccountingPolicyService(TimeProvider? timeProvider = null)
+    public AccountingPolicyService()
+        : this(TimeProvider.System)
     {
-        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
+    /// <param name="timeProvider">
+    /// Supplies "now" when a query does not carry an explicit effective date. Injecting it is what
+    /// makes the undated-query path testable at a period boundary rather than only on whatever day
+    /// the suite happens to run.
+    /// </param>
+    public AccountingPolicyService(TimeProvider timeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        _timeProvider = timeProvider;
 
         foreach (var policy in BuildDefaultPolicies())
         {

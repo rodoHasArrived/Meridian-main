@@ -77,10 +77,16 @@ public sealed class AccountingPolicyClockTests
     }
 
     [Fact]
+    public void PublicConstructor_PreservesParameterlessClrSignature()
+    {
+        Assert.NotNull(typeof(AccountingPolicyService).GetConstructor(Type.EmptyTypes));
+    }
+
+    [Fact]
     public async Task DefaultConstructor_StillUsesTheSystemClock()
     {
-        // The parameter is optional so the twenty-odd existing call sites keep compiling; this pins
-        // that the default is TimeProvider.System rather than something inert.
+        // The explicit parameterless constructor preserves existing callers and defaults to
+        // TimeProvider.System rather than something inert.
         var service = new AccountingPolicyService();
 
         var resolved = await service.ResolvePolicyAsync(new AccountingPolicyQuery());
