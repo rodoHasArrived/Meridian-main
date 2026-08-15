@@ -695,7 +695,7 @@
     {
       "method": "GET",
       "path": "/api/backfill/completeness",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:207",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs:213",
       "documented": false
     },
     {
@@ -1769,25 +1769,25 @@
     {
       "method": "POST",
       "path": "/api/ingestion/jobs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:110",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:116",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ingestion/jobs/resumable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:149",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:160",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ingestion/summary",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:160",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:171",
       "documented": true
     },
     {
       "method": "DELETE",
       "path": "/api/ingestion/jobs/{jobId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:171",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:182",
       "documented": true
     },
     {
@@ -2429,25 +2429,25 @@
     {
       "method": "GET",
       "path": "/api/messaging/publishing",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:266",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:274",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/messaging/queues/{queueName}/purge",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:283",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:291",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/messaging/errors",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:309",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:317",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/messaging/errors/{messageId}/retry",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:330",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:338",
       "documented": false
     },
     {
@@ -3653,61 +3653,61 @@
     {
       "method": "POST",
       "path": "/api/symbols/validate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:264",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:270",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/{symbol}/archive",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:283",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:289",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/bulk-add",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:302",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:308",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/bulk-remove",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:342",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:348",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/search",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:363",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:369",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/batch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:387",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:393",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/create",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:435",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:441",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/symbols/{symbol}/update",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:475",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:481",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/symbols/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:525",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:531",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/indices/{indexName}/constituents",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:553",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:559",
       "documented": false
     },
     {

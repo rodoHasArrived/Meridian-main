@@ -233,6 +233,14 @@ public static class MessagingEndpoints
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // The caller hung up. Propagate instead of recording a delivery failure: the
+                // counters and error log below are operator-visible, so counting an aborted
+                // request as a failed send would put a webhook delivery that never happened
+                // into the messaging error queue.
+                throw;
+            }
             catch (Exception ex)
             {
                 sw.Stop();
@@ -378,6 +386,12 @@ public static class MessagingEndpoints
                     message = success ? "Message retried successfully" : "Retry failed",
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // The caller hung up mid-retry. Propagate rather than answering 200 with
+                // retried = false, which reads as "the retry ran and failed".
+                throw;
             }
             catch (Exception ex)
             {

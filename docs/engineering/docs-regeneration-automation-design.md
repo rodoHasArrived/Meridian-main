@@ -209,16 +209,22 @@ reviewed as one.
 
 ## Verification
 
-Assert the outcome — every artifact produced by the **full `regenerate-docs` generation sequence**,
-including the post-profile diagram, workflow-overview, and manifest steps, matching the merged tree
-— rather than the mechanism. Cover:
+Assert the outcome — every artifact **the job's final drift check enforces** matching the merged
+tree — rather than the mechanism. That check is
+`git diff --exit-code -- . ':(exclude)docs/diagrams/uml/*.png' ':(exclude)docs/diagrams/uml/*.svg'`
+(`:220-224`), so the boundary is the full generation sequence *minus* the UML binaries, which are
+rendered `continue-on-error` and deliberately excluded. Requiring those to match would make
+verification impossible whenever Docker is unavailable, and would have the bot commit best-effort
+binaries the authoritative check ignores. Cover:
 
 1. a merge of a branch editing in-corpus markdown into a branch editing different in-corpus
    markdown, confirming `regenerate-docs` ends green **on the final head** with no human running
    the profile;
-2. two pull requests entering the merge queue together — asserting whichever behaviour constraint
-   7's chosen shape commits to, since the combined tree cannot be repaired in place: either the
-   follow-up repair pull request is raised, or the documented staleness window is what occurs;
+2. two pull requests entering the merge queue together — asserting that the window **closes**, not
+   merely that it was documented: since the combined tree cannot be repaired in place, the chosen
+   shape must raise the follow-up repair pull request, and the test asserts that pull request's
+   head passes the authoritative regeneration check. An implementation that leaves the artifacts
+   stale indefinitely satisfies no acceptable reading of constraint 7;
 3. a pull request that adds or renames a **non-markdown** tracked file, exercising
    `repository-structure.md` through a path the current triggers miss;
 4. a documentation pull request that adds a `TODO:` annotation, exercising `docs/status/TODO.md`;
@@ -227,7 +233,10 @@ including the post-profile diagram, workflow-overview, and manifest steps, match
    write, asserting the writer refuses the stale artifact rather than committing it;
 7. a second concurrent-update case where the **head is unchanged and `main` advances**, which a
    writer checking only the head would wrongly accept — this is the case that actually exercises
-   the base half of constraint 6's compare-and-swap;
+   the base half of constraint 6's compare-and-swap. Refusal is not the end state: assert that
+   generation is automatically re-enqueued against the new base and that the replacement run
+   leaves the final head green, since a refusal that stops there leaves the contributor to restart
+   the repair by hand, which is the toll this item exists to remove;
 8. a fork pull request, asserting the documented fallback path is what runs rather than a silent
    failure or a red check with no route forward.
 

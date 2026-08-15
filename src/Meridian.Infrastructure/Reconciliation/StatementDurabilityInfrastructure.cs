@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Meridian.Contracts.Text;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
 
@@ -694,11 +695,11 @@ public static class StatementBreakCaseworkFingerprint
             Action = update.Action.Trim(),
             CommandId = update.CommandId.Trim(),
             CorrelationId = update.CorrelationId.Trim(),
-            Reason = Normalize(update.Reason),
-            Disposition = Normalize(update.Disposition),
-            ApprovalActor = Normalize(update.ApprovalActor),
-            ApprovalReference = Normalize(update.ApprovalReference),
-            SupersedingBreakId = Normalize(update.SupersedingBreakId),
+            Reason = TextPrimitives.NormalizeOptional(update.Reason),
+            Disposition = TextPrimitives.NormalizeOptional(update.Disposition),
+            ApprovalActor = TextPrimitives.NormalizeOptional(update.ApprovalActor),
+            ApprovalReference = TextPrimitives.NormalizeOptional(update.ApprovalReference),
+            SupersedingBreakId = TextPrimitives.NormalizeOptional(update.SupersedingBreakId),
             EvidenceLinks = NormalizeEvidence(update.EvidenceLinks),
             OccurredAtUtc = update.OccurredAtUtc.ToUniversalTime()
         }, StatementLegacyCaseworkJsonContext.Default.StatementBreakCaseworkUpdate);
@@ -714,8 +715,6 @@ public static class StatementBreakCaseworkFingerprint
             .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 public static class StatementDurabilityHashing

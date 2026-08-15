@@ -1097,6 +1097,7 @@ Meridian-main
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-dashboard-type-barrel.py
 │       │   ├── check-duplicate-helpers.py
+│       │   ├── check-endpoint-cancellation.py
 │       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-sample-config-datasources.py
@@ -5349,8 +5350,10 @@ Meridian-main
 │   │   │   ├── GrossExposureRule.cs
 │   │   │   ├── OrderNotionalResolver.cs
 │   │   │   ├── OrderNotionalRule.cs
+│   │   │   ├── OrderPriceLimbs.cs
 │   │   │   ├── OrderRateThrottle.cs
 │   │   │   ├── PositionLimitRule.cs
+│   │   │   ├── PriceCollarRule.cs
 │   │   │   └── SymbolConcentrationRule.cs
 │   │   ├── CompositeRiskValidator.cs
 │   │   ├── IRiskRule.cs
@@ -9117,6 +9120,7 @@ Meridian-main
 │   │   │   ├── Ledger
 │   │   │   │   ├── AccountingBasisProjectionSetServiceTests.cs
 │   │   │   │   ├── AccountingJournalDraftServiceTests.cs
+│   │   │   │   ├── AccountingPolicyClockTests.cs
 │   │   │   │   ├── AccountingPolicyServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
@@ -9489,6 +9493,7 @@ Meridian-main
 │   │   │   ├── OrderRateThrottleTests.cs
 │   │   │   ├── PortfolioRiskRulesTests.cs
 │   │   │   ├── PositionLimitRuleTests.cs
+│   │   │   ├── PriceCollarRuleTests.cs
 │   │   │   ├── RiskEscalationQueueServiceTests.cs
 │   │   │   └── RiskIntegrationTests.cs
 │   │   ├── Scripts
@@ -9854,6 +9859,7 @@ Meridian-main
 │   │   │   ├── RiskEndpointsTests.cs
 │   │   │   ├── RiskRuleRuntimeFatFingerStatusTests.cs
 │   │   │   ├── RiskRuleRuntimeOrderRateStatusTests.cs
+│   │   │   ├── RiskRuleRuntimePriceCollarConfigTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs
@@ -10259,6 +10265,7 @@ Meridian-main
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_dashboard_type_barrel.py
 │   │   ├── test_check_duplicate_helpers.py
+│   │   ├── test_check_endpoint_cancellation.py
 │   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py

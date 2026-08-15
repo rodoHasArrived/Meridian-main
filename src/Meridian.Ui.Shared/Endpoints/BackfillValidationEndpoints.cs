@@ -185,6 +185,12 @@ public static class BackfillValidationEndpoints
                         allGaps.AddRange(DetectSymbolGaps(symbolGroup, symbolGroup.Key));
                     }
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // A caller who hung up is not a non-critical gap-detection failure. Swallowing
+                    // it here would answer 200 with silently incomplete gap data.
+                    throw;
+                }
                 catch { /* non-critical */ }
             }
 
@@ -226,6 +232,12 @@ public static class BackfillValidationEndpoints
                     {
                         completenessScores[symbolGroup.Key] = CalculateSymbolCompleteness(symbolGroup);
                     }
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // As above: an aborted request must not be reported as a completeness score
+                    // computed over partial data.
+                    throw;
                 }
                 catch { /* non-critical */ }
             }
