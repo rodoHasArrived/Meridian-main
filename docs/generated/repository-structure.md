@@ -1097,6 +1097,7 @@ Meridian-main
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-dashboard-type-barrel.py
 │       │   ├── check-duplicate-helpers.py
+│       │   ├── check-endpoint-cancellation.py
 │       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-test-skip-register.py
@@ -10249,6 +10250,7 @@ Meridian-main
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_dashboard_type_barrel.py
 │   │   ├── test_check_duplicate_helpers.py
+│   │   ├── test_check_endpoint_cancellation.py
 │   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py

@@ -2429,25 +2429,25 @@
     {
       "method": "GET",
       "path": "/api/messaging/publishing",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:266",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:274",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/messaging/queues/{queueName}/purge",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:283",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:291",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/messaging/errors",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:309",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:317",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/messaging/errors/{messageId}/retry",
-      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:330",
+      "source": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:338",
       "documented": false
     },
     {
