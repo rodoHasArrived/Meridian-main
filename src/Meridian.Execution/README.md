@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-11
 ---
 
 # src/Meridian.Execution
@@ -56,11 +56,18 @@ and contradict an accounting handoff that already happened. An order that execut
 Every path between the gate and the venue must settle exactly once; a leaked reservation
 permanently consumes capacity and eventually blocks every later order.
 
-Order amendments follow the same rules. `ReserveAmendedExposureAsync` revalidates a risk-increasing
-modification through the same reserving rules a placement uses, so it takes real capacity; the
+Order amendments follow the same rules. `ReserveAmendedExposureAsync` revalidates quantity
+increases and every supplied limit or stop price through the same reserving rules a placement uses,
+so both exposure and directional price controls run before the amendment reaches the venue; the
 decision rides on `AmendmentGateResult` and settles at the modify boundary — rolled back on refusal,
 on losing the exposure-publish race, on cancellation, and on a broker rejection; committed once the
 gateway accepts, and on a non-cancellation fault after dispatch.
+
+Order sizing follows the active gateway rather than asset-class text alone. A gateway implementing
+`IFaceValueOrderSizingGateway` can identify an order whose quantity is face value and whose price is
+a percentage of par; the OMS stamps that fact only into the risk request, retains it on `OrderState`,
+and keeps it through amendments and working-order exposure reserves. Caller-supplied copies of the
+internal marker are stripped before validation.
 
 The OMS rolls reservations back on any non-approved decision rather than assuming the validator
 already did. `CompositeRiskValidator` does release its own capacity before returning a block, but the
@@ -158,6 +165,35 @@ review. Shared `/api/execution/controls/*` endpoints expose the snapshot plus se
 the global circuit breaker, default position limit, symbol position limits, and manual override
 create/clear actions so browser and desktop clients do not need client-local execution-control
 state.
+`ExecutionAuditTrailService` retains entries in memory by **count and time**, not count alone.
+`InMemoryRetention` (default 1,000) is the ordinary bound, and `InMemoryRetentionWindow` (default
+two hours) is kept regardless of it — because every consumer reasons about this trail in time, and a
+count cap cannot support a claim like "no breach in the last hour": enough unrelated activity inside
+the window silently evicts the very entry the claim is about. Entries are inserted in timestamp
+order rather than appended, since `RecordAsync` accepts a caller-built entry with any timestamp and
+concurrent callers can complete out of order.
+
+An absolute ceiling of twenty times the count cap stops a pathological burst from growing memory
+without bound. **When that ceiling bites, the effect is operational, not cosmetic:**
+completeness goes false, and it stays false until the discarded region itself ages out —
+completeness is judged from what was dropped, not from whether the retained set happens to fit
+again. `RiskRuleRuntimeService` reads it and refuses to report *any* rule healthy while it is false,
+so a readiness gate cannot mistake an hour nobody kept records for a quiet one. Raise
+`InMemoryRetentionWindow` or `InMemoryRetention` for deployments whose event rate makes that ceiling
+reachable; the shortfall is logged once per process when it first occurs.
+
+**Ask completeness at your own horizon.** `RetentionWindowCompleteFor(horizon)` answers for the span
+the caller reasons over; the `RetentionWindowComplete` property is the same question asked at this
+trail's retention window. Because incompleteness *blocks* callers, the difference is operational: a
+discard can only hide something from a caller if it fell inside that caller's horizon, so a trail
+keeping two hours and a consumer claiming one must stop reporting a gap once the discard is an hour
+old, not two. `RiskRuleRuntimeService` passes its one-hour liveness window for exactly this reason —
+measuring at the trail's window instead would hold order readiness closed for a second hour in which
+nothing the consumer could assert about was ever missing. This is orthogonal to whether the horizon
+fits at all: a consumer whose horizon exceeds `InMemoryRetentionWindow` loses entries to age-based
+trimming that never register as discards, so it must compare the two windows as well. Neither check
+subsumes the other, and the service performs both.
+
 OMS runtime guardrails are configuration-backed under `Execution:OrderManagement`:
 `MaxRetainedOrders`, `ExecutionChannelCapacity`, and `CancelAllMaxConcurrency`. Reg T margin rates
 are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
@@ -194,6 +230,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W7-LIVE-001` | Live-readiness governance |
+| `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

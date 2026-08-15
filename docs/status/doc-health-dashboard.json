@@ -1,11 +1,11 @@
 {
   "total_files": 646,
-  "total_lines": 126631,
+  "total_lines": 126753,
   "orphaned_count": 255,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 223,
-  "average_lines": 196.0,
+  "todo_count": 222,
+  "average_lines": 196.2,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2610,9 +2610,9 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10434,
+      "line_count": 10438,
       "has_heading": true,
-      "todo_count": 8,
+      "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3570,7 +3570,7 @@
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 199,
+      "line_count": 202,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5130,7 +5130,7 @@
     },
     {
       "path": "src/Meridian.Execution.Sdk/README.md",
-      "line_count": 90,
+      "line_count": 95,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5138,7 +5138,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 218,
+      "line_count": 255,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5298,7 +5298,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 111,
+      "line_count": 183,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5338,7 +5338,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2225,
+      "line_count": 2226,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

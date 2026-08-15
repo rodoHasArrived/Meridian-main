@@ -41,11 +41,25 @@ public sealed partial class OrderManagementSystem
         OrderModification modification,
         OrderState state,
         ExecutionReport? report,
-        IReadOnlyList<string>? riskWarnings = null)
+        IReadOnlyList<string>? riskWarnings = null,
+        RiskValidationResult? riskDecision = null)
     {
         var metadata = new Dictionary<string, string>(
             BuildOrderLifecycleAuditMetadata(state, report) ?? new Dictionary<string, string>(),
             StringComparer.OrdinalIgnoreCase);
+
+        // Structured violations, when the caller has a decision to attribute. A composite rejection
+        // headlines the highest-severity rule and keeps the others in Violations, so without these
+        // an amendment refused partly on a fat-finger breach records no trace of it and the rule
+        // reports Healthy while actively rejecting amendments. Placement already does this; the
+        // amendment path is the same claim about the same rules.
+        if (riskDecision is { } decision && BuildRiskDecisionAuditMetadata(decision) is { } riskMetadata)
+        {
+            foreach (var (key, value) in riskMetadata)
+            {
+                metadata[key] = value;
+            }
+        }
 
         metadata["newQuantity"] = modification.NewQuantity?.ToString("G29") ?? string.Empty;
         metadata["newLimitPrice"] = modification.NewLimitPrice?.ToString("G29") ?? string.Empty;
