@@ -55,10 +55,15 @@ RAW_STRING_OPEN = re.compile(r'\$*(?P<quotes>"{3,})')
 # The optional type group only matches `Exception` itself, so `catch (ArgumentException ex)`
 # and `catch (OperationCanceledException)` fall through without matching. Requiring the
 # opening brace is what keeps the bare form from matching a typed clause.
+# `SystemException` is included because OperationCanceledException derives from it, so
+# `catch (SystemException ex)` swallows a disconnect exactly like `catch (Exception ex)`.
+# The filter sub-pattern allows two levels of nesting, so `when (ShouldHandle(ex, Ctx()))`
+# is recognised rather than silently failing to match the clause at all.
+_FILTER = r"(?:[^()]|\((?:[^()]|\([^()]*\))*\))*"
 CATCH_ALL = re.compile(
     r"\bcatch"
-    r"(?:\s*\(\s*(?:global::)?(?:System\.)?Exception\b[^()]*\))?"
-    r"(?:\s*when\s*\((?P<filter>[^()]*(?:\([^()]*\)[^()]*)*)\))?"
+    r"(?:\s*\(\s*(?:global::)?(?:System\.)?(?:System)?Exception\b[^()]*\))?"
+    rf"(?:\s*when\s*\((?P<filter>{_FILTER})\))?"
     r"\s*\{"
 )
 
@@ -70,19 +75,27 @@ CHAIN_CLAUSE = re.compile(
     r"|finally)\s*$"
 )
 
-# A cancellation token passed as an argument. Matches the positional form, the named form
-# (`cancellationToken: whatever`), member access such as `context.RequestAborted` or
-# `cts.Token`, and any identifier whose name ends in Token/Cancellation/Aborted — so a
-# handler that spells its parameter `requestCancellation` is still seen.
-TOKEN_ARGUMENT = re.compile(
-    r"(?:^|[(,]\s*)"
-    r"(?:cancellationToken\s*:\s*[\w.]+"
-    r"|ct|token"
-    r"|[\w.]*(?:CancellationToken|Cancellation|RequestAborted|Aborted|\.Token)"
-    r"|\w*(?:cancellationToken|cancellation))"
-    r"\s*[,)]",
-    re.IGNORECASE,
+# Token names are read out of the file rather than guessed from an allowlist: every
+# `CancellationToken foo` declaration contributes `foo`, so a handler that spells its
+# parameter `requestToken` or `stoppingToken` is recognised without the pattern having to
+# anticipate it — and, just as importantly, without matching an `authToken` or `accessToken`
+# that has nothing to do with cancellation.
+TOKEN_DECLARATION = re.compile(r"\bCancellationToken\s+(?P<name>\w+)")
+
+# Token expressions that are not plain parameter names.
+TOKEN_EXPRESSIONS = (
+    r"[\w.]*\bRequestAborted\b",   # context.RequestAborted
+    r"[\w.]*\bToken\b",            # cts.Token, linkedCts.Token
 )
+
+
+def token_argument_pattern(source: str) -> re.Pattern:
+    """A matcher for "a cancellation token appears as an argument", specific to this file."""
+    names = {match.group("name") for match in TOKEN_DECLARATION.finditer(source)}
+    alternatives = [re.escape(name) for name in sorted(names)] + list(TOKEN_EXPRESSIONS)
+    body = "|".join(alternatives)
+    # Positional (`, ct)`) or named (`cancellationToken: ct`).
+    return re.compile(rf"(?:^|[(,]\s*)(?:\w+\s*:\s*)?(?:{body})\s*[,)]")
 
 # An earlier clause in the chain that catches cancellation. `catch (TaskCanceledException)` is
 # deliberately not accepted: it derives from OperationCanceledException, so it cannot catch the
@@ -90,7 +103,7 @@ TOKEN_ARGUMENT = re.compile(
 # wave through a handler that still swallows a disconnect.
 CANCELLATION_GUARD = re.compile(
     r"\bcatch\s*\(\s*(?:global::)?(?:System\.)?OperationCanceledException\b[^()]*\)"
-    r"(?:\s*when\s*\((?P<filter>[^()]*(?:\([^()]*\)[^()]*)*)\))?"
+    rf"(?:\s*when\s*\((?P<filter>{_FILTER})\))?"
 )
 # A guard clause only guards if its own filter is true for an aborted request. An unfiltered
 # clause always is; `when (ct.IsCancellationRequested)` is the repo's idiom and is; a negated
@@ -98,8 +111,12 @@ CANCELLATION_GUARD = re.compile(
 GUARD_FILTER_HOLDS = re.compile(r"^\s*[\w.]*\bIsCancellationRequested\s*$")
 
 # An explicit check is its own cancellation source: it throws straight into the generic catch
-# even when no awaited call in the body takes a token.
-EXPLICIT_THROW_IF_CANCELLED = re.compile(r"\bThrowIfCancellationRequested\s*\(")
+# even when no awaited call in the body takes a token. The hand-rolled equivalent
+# (`if (ct.IsCancellationRequested) throw new OperationCanceledException(ct);`) counts too.
+EXPLICIT_CANCELLATION = re.compile(
+    r"\bThrowIfCancellationRequested\s*\("
+    r"|\bthrow\s+new\s+(?:global::)?(?:System\.)?(?:Operation|Task)CanceledException\b"
+)
 
 
 def chain_guards_cancellation(chain: str) -> bool:
@@ -118,8 +135,12 @@ def chain_guards_cancellation(chain: str) -> bool:
 # hung up the filter is false, so the exception propagates untouched. Anything else — an
 # opaque predicate, a call, a type list naming a cancellation or base type — is not trusted,
 # because a predicate that happens to accept an OperationCanceledException still swallows it.
+# Only excluding OperationCanceledException itself is sufficient. `ex is not
+# TaskCanceledException` is not: TaskCanceledException is a *subclass*, so a base
+# OperationCanceledException from ct.ThrowIfCancellationRequested() still satisfies the filter
+# and reaches the generic handler.
 FILTER_NEGATES_TYPE = re.compile(
-    r"\bis\s+not\s+(?:global::)?(?:System\.)?(?:Operation|Task)CanceledException\b")
+    r"\bis\s+not\s+(?:global::)?(?:System\.)?OperationCanceledException\b")
 FILTER_NEGATES_REQUEST = re.compile(r"^\s*!\s*[\w.]*\bIsCancellationRequested\s*$")
 FILTER_TYPE_TEST = re.compile(r"^\s*\w+\s+is\s+(?P<types>[\w.]+(?:\s+or\s+[\w.]+)*)\s*$")
 UNTRUSTED_FILTER_TYPES = {
@@ -310,6 +331,7 @@ def find_violations(root: Path, scan_dirs: tuple[str, ...] = DEFAULT_SCAN_DIRS) 
                 continue
             raw = path.read_text(encoding="utf-8")
             code = blank_literals(raw)
+            token_argument = token_argument_pattern(code)
             for match in CATCH_ALL.finditer(code):
                 filter_text = match.group("filter")
                 if filter_text and filter_excludes_cancellation(filter_text):
@@ -323,8 +345,8 @@ def find_violations(root: Path, scan_dirs: tuple[str, ...] = DEFAULT_SCAN_DIRS) 
                 body_open = code.find("{", try_index)
                 body = code[body_open:matching_close(code, body_open)]
                 reachable = (
-                    EXPLICIT_THROW_IF_CANCELLED.search(body) is not None
-                    or any(TOKEN_ARGUMENT.search(call) for call in awaited_calls(body))
+                    EXPLICIT_CANCELLATION.search(body) is not None
+                    or any(token_argument.search(call) for call in awaited_calls(body))
                 )
                 if not reachable:
                     continue  # no cancellation can land here, so the catch cannot swallow one

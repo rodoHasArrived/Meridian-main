@@ -311,6 +311,71 @@ class RawStringLiteralTests(unittest.TestCase):
         self.assertEqual(found, [])
 
 
+class TokenNamingTests(unittest.TestCase):
+    """Token names come from `CancellationToken foo` declarations, not from an allowlist."""
+
+    def test_arbitrary_token_parameter_name_is_detected(self):
+        found = scan(BARE_WITH_TOKEN
+                     .replace("CancellationToken ct", "CancellationToken requestToken")
+                     .replace("service.RunAsync(request, ct)", "service.RunAsync(request, requestToken)"))
+        self.assertEqual(len(found), 1)
+
+    def test_stopping_token_name_is_detected(self):
+        found = scan(BARE_WITH_TOKEN
+                     .replace("CancellationToken ct", "CancellationToken stoppingToken")
+                     .replace("service.RunAsync(request, ct)", "service.RunAsync(request, stoppingToken)"))
+        self.assertEqual(len(found), 1)
+
+    def test_an_auth_token_is_not_mistaken_for_cancellation(self):
+        """The old suffix allowlist would have matched `authToken` and flagged valid code."""
+        found = scan(BARE_WITH_TOKEN
+                     .replace("async (Service service, CancellationToken ct)",
+                              "async (Service service, string authToken)")
+                     .replace("service.RunAsync(request, ct)", "service.RunAsync(request, authToken)"))
+        self.assertEqual(found, [])
+
+
+class CatchAllTypeTests(unittest.TestCase):
+    def test_system_exception_is_a_catch_all(self):
+        """OperationCanceledException derives from SystemException."""
+        found = scan(BARE_WITH_TOKEN.replace("catch (Exception ex)", "catch (SystemException ex)"))
+        self.assertEqual(len(found), 1)
+
+    def test_qualified_system_exception_is_a_catch_all(self):
+        found = scan(BARE_WITH_TOKEN.replace("catch (Exception ex)", "catch (System.SystemException ex)"))
+        self.assertEqual(len(found), 1)
+
+
+class FilterPrecisionTests(unittest.TestCase):
+    def test_excluding_only_task_canceled_is_not_trusted(self):
+        """TaskCanceledException is a subclass, so a base OperationCanceledException still
+        satisfies `is not TaskCanceledException` and reaches the generic handler."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)", "catch (Exception ex) when (ex is not TaskCanceledException)"))
+        self.assertEqual(len(found), 1)
+
+    def test_excluding_operation_canceled_is_trusted(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)", "catch (Exception ex) when (ex is not OperationCanceledException)"))
+        self.assertEqual(found, [])
+
+    def test_nested_call_in_a_filter_is_still_parsed(self):
+        """A filter the pattern cannot parse would drop the clause entirely rather than
+        report it, so nesting has to be consumed."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)", "catch (Exception ex) when (ShouldHandle(ex, GetContext()))"))
+        self.assertEqual(len(found), 1)
+
+
+class ExplicitThrowTests(unittest.TestCase):
+    def test_hand_rolled_cancellation_throw_is_a_source(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "                var result = await service.RunAsync(request, ct);",
+            "                if (ct.IsCancellationRequested) throw new OperationCanceledException(ct);\n"
+            "                var result = await service.RunAsync(request);"))
+        self.assertEqual(len(found), 1)
+
+
 class ScanScopeTests(unittest.TestCase):
     def test_missing_scan_directory_is_an_error(self):
         """Silently scanning zero files would disable the gate exactly when scope drifts."""
