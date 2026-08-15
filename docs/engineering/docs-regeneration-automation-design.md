@@ -30,14 +30,32 @@ a corpus that `build/scripts/docs/generate-health-dashboard.py:52-57` narrows by
 Any merge combining two branches' edits to markdown inside that corpus leaves the dashboard stale,
 because neither parent's copy describes the merged tree.
 
-The `regenerate-docs` job in `.github/workflows/documentation.yml` re-runs the core docs-automation
-profile and fails on the diff, which catches the drift only after the merge is pushed. Fifteen
-commits since June exist for no purpose other than re-running that profile and committing the
-result — `2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`, `603d98cfe`, `fc8344145`, and
-`fb94b95cd` among them, across several unrelated branches, one of which paid it three times.
+`regenerate-docs` in `.github/workflows/documentation.yml` re-runs the core docs-automation profile
+and fails on the diff. **For a pull request whose changed paths match the workflow's filter this
+detection is pre-merge, not post-merge:** the job checks out with no explicit `ref`, so on a
+`pull_request` event it evaluates `refs/pull/<n>/merge` — the simulated merge of head into base
+(`:100-152`). Aggregate drift for the merge tree is therefore normally caught while the pull request
+is still open.
 
-This is not a correctness bug. It is a standing toll on everyone who merges `main`, and it trains
-contributors to read a red `regenerate-docs` as routine noise rather than signal.
+That makes the toll a **manual pre-merge repair**, not a post-merge surprise, and it is the case
+the automation should target. Fifteen commits since June exist for no purpose other than re-running
+the profile and committing the result — `2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`,
+`603d98cfe`, `fc8344145`, and `fb94b95cd` among them, across several unrelated branches, one of
+which paid it three times. This is not a correctness bug; it is a standing toll on everyone whose
+pull request touches documentation, and it trains contributors to read a red `regenerate-docs` as
+routine noise rather than signal.
+
+Two narrower classes *do* escape pre-merge detection entirely, and they are worse because nothing
+reports them:
+
+- **path-filter misses** — a pull request touching `README.md`, `.agents/**`, or a non-markdown
+  tracked file that moves `repository-structure.md` never starts this workflow at all
+  (constraint 3), and `verify-docs` does not run these generators, so stale output lands silently;
+- **merge-queue combinations** — two individually-clean pull requests whose combined tree is stale,
+  with no `merge_group` trigger to notice (constraint 7).
+
+An implementation that only automates the first case leaves these two; one that assumes the toll is
+post-merge will optimise for the wrong detection point.
 
 ## Constraints
 

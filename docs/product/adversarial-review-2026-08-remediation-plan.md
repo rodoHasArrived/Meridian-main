@@ -766,9 +766,11 @@ still `in_progress`.
 - [ ] **AR8-57 — Stop paying the post-merge docs-regeneration toll by hand.**
   **Evidence:** generated documentation artifacts are recomputed from the whole tree, so any merge
   combining two branches' edits leaves them stale — neither parent's copy describes the merged
-  result. `regenerate-docs` in `.github/workflows/documentation.yml` catches that only after the
-  merge is pushed. Fifteen commits since June exist for no purpose other than re-running the
-  profile and committing the result (`2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`,
+  result. `regenerate-docs` in `.github/workflows/documentation.yml` normally catches that
+  **pre-merge**, on the simulated merge revision, and the toll is the human regeneration its red
+  check then demands; path-filter misses and merge-queue combinations escape it entirely. Fifteen
+  commits since June exist for no purpose other than re-running the profile and committing the
+  result (`2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`,
   `603d98cfe`, `fc8344145`, `fb94b95cd` among them), across several unrelated branches, one of
   which paid it three times. Not a correctness bug — a standing toll on everyone who merges `main`,
   which trains contributors to read a red `regenerate-docs` as noise rather than signal.
