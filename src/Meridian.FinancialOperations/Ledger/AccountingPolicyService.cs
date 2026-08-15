@@ -49,8 +49,23 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
 {
     private readonly ConcurrentDictionary<string, AccountingPolicyDto> _policies = new(StringComparer.OrdinalIgnoreCase);
 
+    private readonly TimeProvider _timeProvider;
+
     public AccountingPolicyService()
+        : this(TimeProvider.System)
     {
+    }
+
+    /// <param name="timeProvider">
+    /// Supplies "now" when a query does not carry an explicit effective date. Injecting it is what
+    /// makes the undated-query path testable at a period boundary rather than only on whatever day
+    /// the suite happens to run.
+    /// </param>
+    public AccountingPolicyService(TimeProvider timeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        _timeProvider = timeProvider;
+
         foreach (var policy in BuildDefaultPolicies())
         {
             _policies[Key(policy.AccountingBasis, policy.PolicyId, policy.Version)] = policy;
@@ -85,7 +100,7 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
     public Task<AccountingPolicyDto> ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var effectiveDate = query.EffectiveDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var effectiveDate = query.EffectiveDate ?? DateOnly.FromDateTime(_timeProvider.GetUtcNow().UtcDateTime);
         var policies = _policies.Values
             .Where(policy => policy.AccountingBasis == query.AccountingBasis)
             .Where(policy => string.IsNullOrWhiteSpace(query.PolicyId)

@@ -1100,6 +1100,7 @@ Meridian-main
 │       │   ├── check-endpoint-cancellation.py
 │       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
+│       │   ├── check-sample-config-datasources.py
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
@@ -1856,6 +1857,8 @@ Meridian-main
 │   │   └── security-master-passport-workbench.md
 │   ├── product
 │   │   ├── adversarial-program-review-2026-07.md
+│   │   ├── adversarial-program-review-2026-08.md
+│   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── excel-onboarding-workbook-brainstorm-2026-07.md
@@ -2141,7 +2144,6 @@ Meridian-main
 │   │   │   ├── web-settings-workspace.png
 │   │   │   ├── web-strategy-covered-call.png
 │   │   │   ├── web-strategy-designer.png
-│   │   │   ├── web-strategy-formula-workbench.png
 │   │   │   ├── web-strategy-lab.png
 │   │   │   ├── web-strategy-promotions.png
 │   │   │   ├── web-strategy-quant-lab.png
@@ -4414,12 +4416,14 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
+│   │   ├── IFaceValueOrderSizingGateway.cs
 │   │   ├── INotionalOrderSizingGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── OrderSizingMetadata.cs
 │   │   ├── PositionExtensions.cs
 │   │   ├── README.md
 │   │   ├── RiskContracts.cs
@@ -5341,6 +5345,7 @@ Meridian-main
 │   ├── Meridian.Risk
 │   │   ├── Rules
 │   │   │   ├── DrawdownCircuitBreaker.cs
+│   │   │   ├── FatFingerRule.cs
 │   │   │   ├── GrossExposureRule.cs
 │   │   │   ├── OrderNotionalResolver.cs
 │   │   │   ├── OrderNotionalRule.cs
@@ -6542,6 +6547,7 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-panel.view-model.ts
 │   │   │   │   │   ├── statement-import-preview.tsx
 │   │   │   │   │   ├── statement-import-screen.tsx
+│   │   │   │   │   ├── strategy-designer-screen.copy.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
@@ -8953,6 +8959,7 @@ Meridian-main
 │   │   │   │   ├── AppConfigJsonOptionsTests.cs
 │   │   │   │   ├── ConfigEnvironmentOverrideTests.cs
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
+│   │   │   │   ├── ConfigTemplateGeneratorTests.cs
 │   │   │   │   ├── ConfigValidationPipelineTests.cs
 │   │   │   │   ├── ConfigValidatorTests.cs
 │   │   │   │   ├── ConfigWatcherTests.cs
@@ -9110,6 +9117,7 @@ Meridian-main
 │   │   │   ├── Ledger
 │   │   │   │   ├── AccountingBasisProjectionSetServiceTests.cs
 │   │   │   │   ├── AccountingJournalDraftServiceTests.cs
+│   │   │   │   ├── AccountingPolicyClockTests.cs
 │   │   │   │   ├── AccountingPolicyServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
@@ -9478,6 +9486,7 @@ Meridian-main
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
 │   │   │   ├── EnforcedRiskValidatorCompositionTests.cs
+│   │   │   ├── FatFingerRuleTests.cs
 │   │   │   ├── OrderRateThrottleTests.cs
 │   │   │   ├── PortfolioRiskRulesTests.cs
 │   │   │   ├── PositionLimitRuleTests.cs
@@ -9844,6 +9853,7 @@ Meridian-main
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
+│   │   │   ├── RiskRuleRuntimeFatFingerStatusTests.cs
 │   │   │   ├── RiskRuleRuntimeOrderRateStatusTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs

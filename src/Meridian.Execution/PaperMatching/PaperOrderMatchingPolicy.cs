@@ -175,8 +175,9 @@ public static class PaperOrderMatchingPolicy
             return false;
         }
 
-        var tradeSide = observation.LastTradePrice ?? observation.BarClose;
-        var trigger = tradeSide ?? (IsBuy(side) ? observation.AskPrice : observation.BidPrice);
+        // Shared with the pre-trade fat-finger guard, so the control that refuses wrong-side
+        // stops and the engine that fires them can never disagree about what a stop triggers on.
+        var trigger = observation.ResolveStopTriggerPrice(side);
         if (trigger is not { } price)
         {
             return false;
@@ -191,12 +192,10 @@ public static class PaperOrderMatchingPolicy
     /// opposite side of the book alone is never used — that would fill better than any
     /// real counterparty offered.
     /// </summary>
-    private static decimal? AggressiveReferencePrice(OrderSide side, in PaperMarketObservation observation)
-    {
-        return IsBuy(side)
-            ? observation.AskPrice ?? observation.LastTradePrice ?? observation.BarClose
-            : observation.BidPrice ?? observation.LastTradePrice ?? observation.BarClose;
-    }
+    // Shared with the pre-trade fat-finger guard, so the control that refuses limits priced through
+    // the market and the engine that fills them read the same observation the same way.
+    private static decimal? AggressiveReferencePrice(OrderSide side, in PaperMarketObservation observation) =>
+        observation.ResolveAggressiveReferencePrice(side);
 
     private static decimal ClampToEnvelope(decimal price, in PaperMarketObservation observation)
     {

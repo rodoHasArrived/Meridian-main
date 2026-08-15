@@ -1,3 +1,4 @@
+using Meridian.Execution.Sdk;
 using Meridian.Execution.Interfaces;
 
 namespace Meridian.Execution.PaperMatching;
@@ -48,6 +49,36 @@ public readonly record struct PaperMarketObservation
     /// <summary>Quote midpoint when both sides of the book have been observed.</summary>
     public decimal? MidPrice =>
         BidPrice is { } bid && AskPrice is { } ask ? (bid + ask) / 2m : null;
+
+    /// <summary>
+    /// The price a stop on <paramref name="side"/> triggers against: the last trade, then the
+    /// bar close, and only then the side the order would cross. <see langword="null"/> when
+    /// nothing has been observed.
+    /// <para>
+    /// This is the single definition of that precedence, and it exists as one method precisely
+    /// so it cannot drift. Both the matcher (which decides whether a stop fires) and the
+    /// pre-trade fat-finger guard (which decides whether a stop is on the wrong side of the
+    /// market and would fire on arrival) resolve through here. A guard that reconstructed the
+    /// precedence separately would disagree with the engine on exactly the cases that matter —
+    /// approving an already-triggered stop, or refusing one that is still resting.
+    /// </para>
+    /// </summary>
+    /// <summary>
+    /// The price an order on <paramref name="side"/> would trade against: the side it crosses,
+    /// then the last trade, then the bar close. <see langword="null"/> when nothing is observed.
+    /// <para>
+    /// The single definition of that precedence, shared for the same reason as
+    /// <see cref="ResolveStopTriggerPrice"/>: the matcher decides whether a limit is marketable
+    /// from this, and the pre-trade fat-finger guard decides whether that limit is priced through
+    /// the market. A guard missing a leg the matcher has — the bar close, on a bar-driven session
+    /// with no quote or print — refuses as unmeasurable an order the engine would happily evaluate.
+    /// </para>
+    /// </summary>
+    public decimal? ResolveAggressiveReferencePrice(OrderSide side) =>
+        (side == OrderSide.Buy ? AskPrice : BidPrice) ?? LastTradePrice ?? BarClose;
+
+    public decimal? ResolveStopTriggerPrice(OrderSide side) =>
+        LastTradePrice ?? BarClose ?? (side == OrderSide.Buy ? AskPrice : BidPrice);
 
     /// <summary>
     /// Captures the current observation for <paramref name="symbol"/> from a live feed

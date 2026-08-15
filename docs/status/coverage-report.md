@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**2790 / 8793** items documented (**31.7%**) &mdash; Grade: **F**
+**2821 / 8783** items documented (**32.1%**) &mdash; Grade: **F**
 
 ```text
-[======--------------] 31.7%
+[======--------------] 32.1%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2693 | 8311 | 32.4% | F |
+| Public Classes / Interfaces | 2724 | 8314 | 32.8% | F |
 | API Endpoints | 85 | 329 | 25.8% | F |
-| Configuration Options | 1 | 142 | 0.7% | F |
+| Configuration Options | 1 | 129 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (5618 undocumented)
+### Public Classes / Interfaces (5590 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `MeridianDeploymentPostureServiceCollectionExtensions` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:34` |
 | `PersistenceStatusSnapshot` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:11` |
 | `PersistenceConfigurationStatus` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:28` |
-| ... and 5568 more | |
+| ... and 5540 more | |
 
 ### API Endpoints (244 undocumented)
 
@@ -135,7 +135,7 @@
 | `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:546` |
 | ... and 194 more | |
 
-### Configuration Options (141 undocumented)
+### Configuration Options (128 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -189,13 +189,13 @@
 | `Backfill.ProviderPriority` | `config/appsettings.sample.json` |
 | `Backfill.EnableRateLimitRotation` | `config/appsettings.sample.json` |
 | `Backfill.RateLimitRotationThreshold` | `config/appsettings.sample.json` |
-| ... and 91 more | |
+| ... and 78 more | |
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 5618 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 5590 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 244 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
-3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+3. **Configuration Options**: 128 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
 
