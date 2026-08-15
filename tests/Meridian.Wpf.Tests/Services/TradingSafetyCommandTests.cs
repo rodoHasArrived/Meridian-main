@@ -39,7 +39,7 @@ public sealed class TradingSafetyCommandTests
 
         foreach (var command in safety)
         {
-            var wired = TradingWorkspaceShellPresentationService.IsSafetyCommand(command.Id);
+            var wired = TradingSafetyCommandService.IsSafetyCommand(command.Id);
             if (wired)
             {
                 command.IsEnabled.Should().BeTrue($"{command.Id} reaches the shared execution service");
@@ -77,8 +77,8 @@ public sealed class TradingSafetyCommandTests
         var client = new RecordingSafetyControlClient();
         var service = CreateService(client);
 
-        (await service.ExecuteSafetyCommandAsync("CancelAll")).Succeeded.Should().BeTrue();
-        (await service.ExecuteSafetyCommandAsync("Stop")).Succeeded.Should().BeTrue();
+        (await service.ExecuteAsync("CancelAll")).Succeeded.Should().BeTrue();
+        (await service.ExecuteAsync("Stop")).Succeeded.Should().BeTrue();
 
         client.CancelAllCalls.Should().Be(1);
         client.HaltCalls.Should().Be(1);
@@ -99,7 +99,7 @@ public sealed class TradingSafetyCommandTests
                 "Kill-switch cancel-all cancelled 1 of 2 open order(s); 1 still working and requiring manual cancellation: ord-2 (MSFT).")
         };
 
-        var outcome = await CreateService(client).ExecuteSafetyCommandAsync("CancelAll");
+        var outcome = await CreateService(client).ExecuteAsync("CancelAll");
 
         outcome.Succeeded.Should().BeFalse();
         outcome.Message.Should().Contain("ord-2", "the operator needs the order that survived");
@@ -112,7 +112,7 @@ public sealed class TradingSafetyCommandTests
     [Fact]
     public async Task WithoutAComposedClient_TheCommandReportsThatNothingWasSent()
     {
-        var outcome = await CreateService(safetyControlClient: null).ExecuteSafetyCommandAsync("Stop");
+        var outcome = await CreateService(safetyControlClient: null).ExecuteAsync("Stop");
 
         outcome.Succeeded.Should().BeFalse();
         outcome.Message.Should().Contain("not sent");
@@ -125,27 +125,18 @@ public sealed class TradingSafetyCommandTests
     [InlineData("PositionBlotter")]
     public async Task UnwiredAndNavigationCommands_AreNotTreatedAsSafetyCommands(string commandId)
     {
-        TradingWorkspaceShellPresentationService.IsSafetyCommand(commandId).Should().BeFalse();
+        TradingSafetyCommandService.IsSafetyCommand(commandId).Should().BeFalse();
 
         var client = new RecordingSafetyControlClient();
-        var outcome = await CreateService(client).ExecuteSafetyCommandAsync(commandId);
+        var outcome = await CreateService(client).ExecuteAsync(commandId);
 
         outcome.Succeeded.Should().BeFalse();
         client.CancelAllCalls.Should().Be(0);
         client.HaltCalls.Should().Be(0);
     }
 
-    private static TradingWorkspaceShellPresentationService CreateService(
-        IExecutionSafetyControlClient? safetyControlClient) =>
-        new(
-            runService: null!,
-            fundContextService: null!,
-            operatingContextService: null,
-            cashFinancingReadService: null!,
-            shellContextService: null!,
-            workflowSummaryService: null,
-            operatorReadinessService: null,
-            safetyControlClient: safetyControlClient);
+    private static TradingSafetyCommandService CreateService(
+        IExecutionSafetyControlClient? safetyControlClient) => new(safetyControlClient);
 
     private sealed class RecordingSafetyControlClient : IExecutionSafetyControlClient
     {

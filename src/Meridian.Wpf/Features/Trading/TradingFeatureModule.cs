@@ -31,6 +31,7 @@ public sealed class TradingFeatureModule : IDesktopFeatureModule
         // service treats an absent client as a command that did not send, which is honest but is
         // not a state a real workstation should be in.
         services.AddSingleton<IExecutionSafetyControlClient, ExecutionSafetyControlClient>();
+        services.AddSingleton<TradingSafetyCommandService>();
         services.AddWorkspaceScoped<TradingWorkspaceShellPresentationService>();
         services.AddTransient<TradingWorkspaceShellStateProvider>();
         services.AddTransient<TradingWorkspaceShellViewModel>();

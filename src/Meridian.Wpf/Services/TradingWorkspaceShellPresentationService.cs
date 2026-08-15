@@ -16,7 +16,6 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
     private readonly WorkspaceShellContextService _shellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private readonly TradingOperatorReadinessService? _operatorReadinessService;
-    private readonly IExecutionSafetyControlClient? _safetyControlClient;
     private bool _started;
 
     public TradingWorkspaceShellPresentationService(
@@ -26,8 +25,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         CashFinancingReadService cashFinancingReadService,
         WorkspaceShellContextService shellContextService,
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
-        TradingOperatorReadinessService? operatorReadinessService = null,
-        IExecutionSafetyControlClient? safetyControlClient = null)
+        TradingOperatorReadinessService? operatorReadinessService = null)
     {
         _runService = runService ?? throw new ArgumentNullException(nameof(runService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -36,7 +34,6 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         _shellContextService = shellContextService ?? throw new ArgumentNullException(nameof(shellContextService));
         _workflowSummaryService = workflowSummaryService;
         _operatorReadinessService = operatorReadinessService;
-        _safetyControlClient = safetyControlClient;
     }
 
     public event EventHandler? PresentationInvalidated;
@@ -149,48 +146,6 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
             RiskRailText = "Cockpit refresh degraded. Trading posture and broker validation details may be stale until the shell can refresh again.",
             DeskActionStatusText = "Cockpit refresh failed. Recheck desktop API connectivity, run-state services, and broker validation before relying on this shell state.",
             CommandGroup = BuildCommandGroup()
-        };
-    }
-
-    /// <summary>
-    /// Command ids that must reach the shared execution service rather than only rearranging
-    /// panes. Every other command in the bar is navigation.
-    /// </summary>
-    public static bool IsSafetyCommand(string? commandId) =>
-        commandId is "Stop" or "CancelAll";
-
-    /// <summary>
-    /// Carries out a desk safety command against the shared execution service and returns what it
-    /// actually achieved.
-    /// <para>
-    /// Returns a failed outcome rather than null when no client is composed, because the caller
-    /// cannot distinguish "not wired in this host" from "nothing to report" — and on a safety
-    /// control the difference is whether an operator believes the desk is halted.
-    /// </para>
-    /// </summary>
-    public async Task<SafetyCommandOutcome> ExecuteSafetyCommandAsync(
-        string commandId,
-        CancellationToken ct = default)
-    {
-        if (!IsSafetyCommand(commandId))
-        {
-            return new SafetyCommandOutcome(false, $"'{commandId}' is not a desk safety command.");
-        }
-
-        if (_safetyControlClient is null)
-        {
-            return new SafetyCommandOutcome(
-                false,
-                "This workstation has no execution-control connection, so the command was not sent. Halt the desk from the browser workstation or the broker.");
-        }
-
-        return commandId switch
-        {
-            "Stop" => await _safetyControlClient
-                .HaltTradingAsync("Halted from the WPF Trading command bar.", ct)
-                .ConfigureAwait(false),
-            "CancelAll" => await _safetyControlClient.CancelAllOrdersAsync(ct).ConfigureAwait(false),
-            _ => new SafetyCommandOutcome(false, $"'{commandId}' is not a desk safety command.")
         };
     }
 

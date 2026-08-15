@@ -7504,6 +7504,7 @@ Meridian-main
 │   │   │   ├── TickerStripService.cs
 │   │   │   ├── ToastNotificationService.cs
 │   │   │   ├── TooltipService.cs
+│   │   │   ├── TradingSafetyCommandService.cs
 │   │   │   ├── TradingWorkspaceShellPresentationService.cs
 │   │   │   ├── TypeForwards.cs
 │   │   │   ├── ViewModelViewResolver.cs
