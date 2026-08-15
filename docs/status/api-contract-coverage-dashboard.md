@@ -2,7 +2,7 @@
 
 _Auto-generated from canonical JSON payload._
 _Generated: 1970-01-01T00:00:00+00:00_
-Data sources: `src/**/*.cs endpoint mappings`, `src/Meridian.Contracts/Api/UiApiRoutes.cs`, `src/Meridian.Contracts/Workstation/*.cs`, `docs/reference/**/*.md and docs/docfx/api/**/*.md (reference documentation only)`
+Data sources: `src/**/*.cs endpoint mappings`, `src/Meridian.Contracts/Api/UiApiRoutes.cs`, `src/Meridian.Contracts/Workstation/*.cs`, `docs/reference/**/*.md (contract reference documentation only)`
 
 
 Tracks whether mapped API routes and workstation DTO contracts are visible in the Markdown documentation set.

@@ -44,7 +44,7 @@ DATA_SOURCES = [
     "src/**/*.cs endpoint mappings",
     "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Contracts/Workstation/*.cs",
-    "docs/reference/**/*.md and docs/docfx/api/**/*.md (reference documentation only)",
+    "docs/reference/**/*.md (contract reference documentation only)",
 ]
 
 # Generated reports live under these roots and echo route paths and contract names verbatim —
@@ -71,7 +71,7 @@ GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
 # is what #2703 filed. This is the issue's suggestion 1; its suggestion 3, deriving coverage from
 # request/response schemas in a served OpenAPI document, remains the better answer once #2695
 # provides one, and would replace this rule rather than extend it.
-CONTRACT_DOC_ROOTS = ("docs/reference", "docs/docfx/api")
+CONTRACT_DOC_ROOTS = ("docs/reference",)
 
 
 def _should_skip(path: Path) -> bool:

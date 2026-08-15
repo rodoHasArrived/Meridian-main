@@ -172,7 +172,7 @@ class GeneratorContractTests(unittest.TestCase):
         # Subtracting prose does not converge -- four review rounds on #2703 each found a document
         # where root, file, or heading filtering guessed wrong. The corpus is now the roots that
         # exist to describe contracts. Pinned so widening it is a deliberate edit, not a drift.
-        self.assertEqual(("docs/reference", "docs/docfx/api"), module.CONTRACT_DOC_ROOTS)
+        self.assertEqual(("docs/reference",), module.CONTRACT_DOC_ROOTS)
 
     def test_a_document_outside_the_allowlist_is_dropped(self) -> None:
         import tempfile
@@ -239,16 +239,22 @@ class CoverageCorpusExclusionTests(_CoverageModuleTestCase):
 
     def test_the_type_corpus_is_an_allowlist(self) -> None:
         self.assertEqual(
-            ("docs/reference/", "docs/generated/database/", "docs/docfx/api/"),
+            ("docs/reference/", "docs/generated/database/"),
             self.cov.DOC_CONTENT_INCLUDE_PREFIXES,
         )
 
-    def test_the_remediation_targets_are_inside_the_corpus(self) -> None:
-        # A report that recommends an action which cannot move the number it prints is worse than
-        # one that prints the wrong number. docfx.json writes to docs/docfx/api, and the
-        # public-type recommendation names DocFX, so that root has to be scanned (#2710 review).
-        self.assertIn("docs/docfx/api/", self.cov.DOC_CONTENT_INCLUDE_PREFIXES)
+    def test_the_corpus_holds_no_gitignored_root(self) -> None:
+        # docs/docfx/api/*.yml is gitignored (.gitignore:235) and rebuilt locally, so scanning it
+        # would make coverage depend on whether the operator had run DocFX -- a number CI and a
+        # developer would disagree about. The remediation must name a tracked root instead.
+        self.assertNotIn("docs/docfx/api/", self.cov.DOC_CONTENT_INCLUDE_PREFIXES)
         self.assertTrue("docs/reference/".startswith(self.cov.DOC_CONTENT_INCLUDE_PREFIXES))
+
+    def test_the_public_type_remediation_names_a_scanned_root(self) -> None:
+        source = (SCRIPTS / "generate-coverage.py").read_text(encoding="utf-8")
+        recommendations = source[source.index("def _recommendations("):]
+        self.assertIn("docs/reference/", recommendations)
+        self.assertNotIn("Consider generating API docs with DocFX", recommendations)
 
     def test_the_database_catalog_stays_in_the_type_corpus(self) -> None:
         # The counterweight. Excluding docs/generated/ wholesale once dropped 41 files and marked
