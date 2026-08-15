@@ -18,16 +18,21 @@ unsupported last mile." Sixteen days on, **the first mile is genuinely fixed** �
 bundle is committed, the demo seeds six subsystems, paper fills cost money, and two institutional
 statement formats landed. The theme has moved again:
 
-> **Meridian is now a credible single-operator workbench that cannot yet be operated as a system.**
+> **Meridian is now a credible single-operator workbench that is not yet a multi-operator system.**
 > The product a user drives is real and increasingly honest. What is missing is everything *around*
-> the user: it emits no telemetry (the OpenTelemetry layer has zero callers), it has no published or
-> versioned API contract (1 of ~1,168 routes is versioned, and no route serves the OpenAPI document
-> the code can already render), it cannot safely host two people editing the same record (no ETag /
-> If-Match / row-version anywhere in the codebase), and 56 production stores are whole-file JSON
-> guarded by an in-process semaphore, which caps the product at one host.
+> the user: it cannot safely host two people editing the same record (no ETag / If-Match / row-version
+> anywhere in the codebase), 56 production stores are whole-file JSON guarded by an in-process
+> semaphore — which caps the product at one host — it has no published or versioned API contract (1 of
+> ~1,168 routes is versioned, and no route serves the OpenAPI document the code can already render),
+> and the surfaces where operators do the highest-volume work have no bulk actions.
 
 The prior reviews asked "is the number real?" That question is now mostly answered. The unasked
-question is "**can anyone run, integrate with, or staff this thing?**" — and today the answer is no.
+question is "**can a team — rather than a person — run this, integrate with it, and work in it at
+volume?**" Today the answer is no, and none of the four reasons is a hard problem.
+
+One correction to the 07-26 review's "monitoring is decorative" line, which this pass tested and found
+overstated: `/metrics` serves a real Prometheus registry and `/health` is dependency-aware. The
+genuine gap is narrower and is recorded as N1.
 
 ## Scorecard: what moved since 2026-07-26
 
@@ -50,29 +55,29 @@ the second.
 
 ## New findings
 
-### N1. The observability layer emits nothing (high — blocks operating the product)
+### N1. Distributed tracing is dead code — every span is dropped (medium)
 
-`OpenTelemetrySetup` is a ~470-line tracing and metrics layer with OTLP exporters, sampling config,
-and dev/prod profiles. Eleven production call sites create spans through `MarketDataTracing`
-(backfill fetch, storage, WAL recovery, pipeline processing).
+*Scoped claim. Metrics and health are genuinely wired and are not part of this finding:*
+`/metrics` serves the `prometheus-net` `DefaultRegistry` plus ten legacy hand-written series
+(`src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:319-343`), and `/health` returns a
+dependency-aware response covering provider connectivity and storage health, with a 503 path
+(`src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:28`). Counters and health work.
 
-**`AddOpenTelemetryTracing` and `Initialize` have zero callers anywhere in `src/`.** No
-`TracerProvider` or `MeterProvider` is ever registered, so every `Activity` those eleven sites create
-has no listener and is dropped. The instrumentation cost is paid; nothing is ever exported.
+**Tracing does not.** `OpenTelemetrySetup` is a ~470-line layer with OTLP exporters, sampling config,
+and dev/prod profiles, and eleven production call sites create spans through `MarketDataTracing`
+(backfill fetch, storage, WAL recovery, pipeline processing). But **`AddOpenTelemetryTracing` and
+`Initialize` have zero callers anywhere in `src/`** — no `TracerProvider` is ever registered, so every
+`Activity` those eleven sites create has no listener and is discarded.
 
 - `src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs:33,116` — the two entrypoints, uncalled
 - `src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:558,609,633` — spans created into the void
 
-There is also no `AddHealthChecks`/`MapHealthChecks` registration; `/health` and `/healthz` are
-hand-rolled handlers (`src/Meridian.Application/Composition/HostAdapters.cs:60,71`).
-
-**User impact:** when a backfill stalls, a reconciliation run hangs, or a report pack times out, there
-is no trace, no metric, and no dependency-aware health signal to diagnose it with. Nobody can operate
-this in production, and nobody can answer "why was it slow yesterday."
-**Improvement:** call `AddOpenTelemetryTracing` from host composition, export the pipeline/backfill/
-storage meters that already exist, and back `/health` with real dependency probes. **Value: high.
-Effort: S** — the layer is already written; this is a wiring fix, the same shape as the 07-21 review's
-highest-ROI items.
+**User impact:** counters tell an operator *that* backfill throughput dropped; nothing lets them follow
+one slow backfill across fetch → validate → store to find *where*. For multi-stage pipelines — which is
+most of what Meridian does — aggregate metrics without spans is the hard half of diagnosis missing.
+The instrumentation cost is already being paid for no return.
+**Improvement:** call `AddOpenTelemetryTracing` from host composition and point it at the OTLP endpoint
+the config already models. **Value: medium. Effort: S** — the layer is written; this is a wiring fix.
 
 ### N2. No optimistic concurrency — two operators silently overwrite each other (high)
 
@@ -200,7 +205,7 @@ ratchet exists in CI, which stops regression but has not driven reduction.
 | --- | --- | --- | --- |
 | 1 | **Agree the journal→transaction projection and populate the ledger side of reconciliation** | Today every transaction line is a break; this is the wedge and it does not close | L |
 | 2 | **Bulk selection + batch actions on break queue, close checklist, journal drafts** | Highest value-to-effort ratio in the review; it is why teams keep the spreadsheet | M |
-| 3 | **Wire OpenTelemetry; back `/health` with dependency probes** | The product becomes operable and diagnosable; the layer is already written | S |
+| 3 | **Register the TracerProvider so the eleven existing span sites emit** | Turns aggregate counters into per-request diagnosis across pipeline stages; the layer is already written | S |
 | 4 | **Optimistic concurrency on every money-path aggregate** | Stops silent lost updates that the audit trail records as success | M |
 | 5 | **Serve OpenAPI; freeze a `/api/v1` surface for ledger, exports, reconciliation status** | Unlocks the integration story the wedge depends on | M |
 | 6 | **Move casework and money-path aggregates off whole-file JSON** | Removes the single-host ceiling and the O(n) write cliff at real volumes | L |
@@ -218,5 +223,79 @@ primitive: it makes a whole class of regression impossible by construction rathe
 shared route-constant contract keeps two clients honest without hand-sync. The reconciliation
 population provider's decision to fail closed rather than fabricate matches, and to *document why in
 the source*, is exactly the judgement this product needs. Ingestion breadth now covers the
-institutional formats. Paper fills cost money. The demo path works from a clean clone. And the browser
-workstation remains a mature, accessible, deeply-built surface — its problem has never been the UI.
+institutional formats. Paper fills cost money. The demo path works from a clean clone. The Prometheus
+registry and dependency-aware health endpoint are real working monitoring, not the decoration an
+earlier review took them for. And the browser workstation remains a mature, accessible, deeply-built
+surface — its problem has never been the UI.
+
+## Relationship to the existing tracker
+
+The `PRD-000`…`PRD-019` production-readiness issues already name several items restated here —
+`PRD-001` (fail-closed authorization and tenancy), `PRD-009` (durability under concurrency),
+`PRD-015` (backup, restore, and DR), `PRD-019` (probe/scrape auth). Those rows stay authoritative;
+this review adds evidence to them rather than opening a competing lane.
+
+Findings not covered by an existing row were opened as issues:
+
+| Finding | Issue |
+| --- | --- |
+| N2 — optimistic concurrency / silent lost updates | [#2694](https://github.com/rodoHasArrived/Meridian-main/issues/2694) |
+| N3 — no published or versioned API contract | [#2695](https://github.com/rodoHasArrived/Meridian-main/issues/2695) |
+| N1 — tracing registered nowhere | [#2696](https://github.com/rodoHasArrived/Meridian-main/issues/2696) |
+| N4 — whole-file JSON persistence ceiling | [#2697](https://github.com/rodoHasArrived/Meridian-main/issues/2697) |
+
+Two findings went to existing rows instead of new issues: N5 (bulk actions) as evidence on
+`W10-RECON-002` [#2639](https://github.com/rodoHasArrived/Meridian-main/issues/2639), and the
+baseline-accuracy question on `W9-GOV-008`
+[#2633](https://github.com/rodoHasArrived/Meridian-main/issues/2633).
+
+## Brainstorm — where the next unit of effort buys the most user value
+
+*Speculative. Nothing below is evidence; it is idea generation prompted by the findings above, and
+should be treated as working input rather than a proposal.*
+
+**1. Break triage autopilot.** Breaks arrive in families — one bad FX rate makes 200 breaks, one
+missed corporate action makes 40. Cluster by signature (same security, same delta shape, same
+custodian, same day), then let the operator dispose of the cluster with one governed decision that
+records the rule it applied. Over time the accepted rules become proposals. This turns the highest
+volume work into the fastest work and produces training data for `W10-RECON-004`. Pairs naturally
+with `W10-RECON-002`. **Value: very high. Effort: M.**
+
+**2. Make "prove the number" a literal gesture.** Every figure on every screen becomes
+right-clickable: source document, transform, journal line, approval, and the report it landed in —
+one drawer, one path, from anywhere. `W10-PROV-001` proposes this for ledger amounts; the
+generalization is what would make the brand claim demonstrable in a sales call rather than argued.
+**Value: very high. Effort: M** on top of `W10-PROV-001`.
+
+**3. Close as a burndown with a critical path.** Instead of a checklist, one number — "9 blockers,
+critical path runs through the custodian statement that hasn't arrived" — with the dependency graph
+behind it. Close is a scheduling problem and the product currently presents it as a list. This is
+the screen a controller would keep open all day, which makes it the natural home screen.
+**Value: high. Effort: M.**
+
+**4. Governed Excel round-trip.** Ops teams will not stop using Excel; the winning move is to make
+the loop safe rather than to fight it. Export a working sheet with row identities and a checksum,
+let them edit it in Excel, re-import with a diff preview showing exactly which cells changed and
+which need approval. This converts the product's biggest competitor into a supported input surface,
+and it reuses the statement-import machinery that already exists. **Value: high. Effort: M.**
+
+**5. A daily "what changed and what's at risk" digest.** One email per morning: new breaks by
+materiality, marks going stale, approvals waiting on you, close blockers that moved. Meridian
+currently requires someone to come looking; this makes it push. Cheap to build on the read models
+that already exist, and it is how the product stays in a customer's routine between closes.
+**Value: high. Effort: S.**
+
+**6. Declarative connector packs as a customer-extensible surface.** The `IStatementConnector` seam
+is clean and the CSV/OFX mapping profiles are already declarative. Publishing that as a documented
+pack format — with a validator and a test harness — lets a customer's own analyst onboard their
+custodian's format without a Meridian release. This is the highest-leverage answer to "we can't
+ingest most institutional formats," because it stops requiring the vendor to write every one.
+Depends on the API contract work in [#2695](https://github.com/rodoHasArrived/Meridian-main/issues/2695).
+**Value: high. Effort: M–L.**
+
+**7. Package one bounded product rather than the platform.** The 07-21 review's focus argument, put
+commercially: "bank and custody reconciliation for fund administrators" is a product a buyer can
+evaluate in an afternoon and a team can support. The platform underneath can stay broad; what ships,
+gets documented, gets a demo script, and gets a support envelope should be one slice. Every finding
+in this review is cheaper to fix inside one bounded slice than across seven workspaces.
+**Value: strategic. Effort: ongoing.**
