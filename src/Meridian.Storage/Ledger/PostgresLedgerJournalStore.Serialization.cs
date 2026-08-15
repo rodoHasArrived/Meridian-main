@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Npgsql;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -219,9 +220,6 @@ public sealed partial class PostgresLedgerJournalStore
 
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static JsonSerializerOptions CreateJsonOptions()
     {

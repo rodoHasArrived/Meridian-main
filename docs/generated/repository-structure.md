@@ -4014,6 +4014,8 @@ Meridian-main
 │   │   │   ├── FundProfileTenancy.cs
 │   │   │   ├── FundScopedWriteTenantGate.cs
 │   │   │   └── TenantReadPredicate.cs
+│   │   ├── Text
+│   │   │   └── TextPrimitives.cs
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
@@ -8933,6 +8935,8 @@ Meridian-main
 │   │   │   │   └── Sha256DigestTests.cs
 │   │   │   ├── Ledger
 │   │   │   │   └── LedgerDimensionTagsTests.cs
+│   │   │   ├── Text
+│   │   │   │   └── TextPrimitivesTests.cs
 │   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── DataProvenanceTests.cs

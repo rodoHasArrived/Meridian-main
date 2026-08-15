@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "e25b43c92e66c1773a4eae8a7a2b651a5ea7b18f78b9c8e474472b5eaa15dcf7",
+      "fingerprint": "1f12781b85ec66fd54427934331b17bbdaee752636fcedd572825b9f44dcf5d2",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1577,6 +1577,7 @@
         "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
         "Meridian.Contracts.Tenancy.IFundScopeTenantAccessor",
         "Meridian.Contracts.Tenancy.TenantReadPredicate",
+        "Meridian.Contracts.Text.TextPrimitives",
         "Meridian.Contracts.Treasury.MmfDetailDto",
         "Meridian.Contracts.Treasury.MmfFundFamilyDto",
         "Meridian.Contracts.Treasury.MmfLiquidityDto",
@@ -3517,7 +3518,7 @@
       ]
     }
   ],
-  "fingerprint": "fde137d6616b62b1e575c84fe22199315df7fc4b0100394cca7b4b0c5d5bb660",
+  "fingerprint": "931f2fddccbe2a61d2483653211f1397998354e9414c2fd126a7fb06981f6419",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4861,7 +4862,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "b1fdbdbfe6c38c449b2ea4edabdde1f216db9c95f450a51de58d07d3663d8134",
+      "fingerprint": "65f49383949f34527b3ac5b4c27eb898c59e9ff757e125e96fc7c185942009a7",
       "mapped_schemas": [
         "ledger"
       ],
@@ -5626,6 +5627,17 @@
         "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
         "Meridian.Contracts.Tenancy.IFundScopeTenantAccessor",
         "Meridian.Contracts.Tenancy.TenantReadPredicate"
+      ]
+    },
+    {
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "fingerprint": "822f15e32082cc3119cc3e46da21ac0e40ca47cdfbac8c4c9a0757d1bb5883c8",
+      "mapped_schemas": [],
+      "namespace": "Meridian.Contracts.Text",
+      "object_ids": [
+        "Meridian.Contracts.Text.TextPrimitives"
       ]
     },
     {
@@ -161664,7 +161676,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "0586ecc89269b920de4da94b7cb27cee3e856332d821c6b2ff3c0316424b5866",
+      "fingerprint": "96accb6ecd8fbddff459c8a41fac536a99488d541bfeb99d5c74d246e91b1a23",
       "full_name": "Meridian.Contracts.Ledger.LedgerDimensionTags",
       "id": "Meridian.Contracts.Ledger.LedgerDimensionTags",
       "kind": "class",
@@ -161678,12 +161690,12 @@
       "qualified_name": "Meridian.Contracts.Ledger.LedgerDimensionTags",
       "references": [],
       "source": {
-        "line": 20,
+        "line": 21,
         "path": "src/Meridian.Contracts/Ledger/LedgerDimensionTags.cs"
       },
       "sources": [
         {
-          "line": 20,
+          "line": 21,
           "path": "src/Meridian.Contracts/Ledger/LedgerDimensionTags.cs"
         }
       ],
@@ -220878,6 +220890,39 @@
         {
           "line": 22,
           "path": "src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "23f1c8a8c42d07fb7baf55c96bf4d3b0d04811611bb1793a7528b9a2fe96fb80",
+      "full_name": "Meridian.Contracts.Text.TextPrimitives",
+      "id": "Meridian.Contracts.Text.TextPrimitives",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "TextPrimitives",
+      "namespace": "Meridian.Contracts.Text",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Text.TextPrimitives",
+      "references": [],
+      "source": {
+        "line": 33,
+        "path": "src/Meridian.Contracts/Text/TextPrimitives.cs"
+      },
+      "sources": [
+        {
+          "line": 33,
+          "path": "src/Meridian.Contracts/Text/TextPrimitives.cs"
         }
       ],
       "type_parameters": []

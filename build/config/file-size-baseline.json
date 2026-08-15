@@ -13,7 +13,7 @@
     "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs": 2062,
     "src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs": 2027,
     "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs": 2384,
-    "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs": 2824,
+    "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs": 2825,
     "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs": 4478,
     "src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs": 2703,
     "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs": 2387,

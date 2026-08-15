@@ -9400,6 +9400,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Text.TextPrimitives"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Treasury.MmfDetailDto"
     },
     {
@@ -42592,7 +42598,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0def570c60839abd761d664124bd228511ecfe8c0bee78660bf2990716508dfa",
+  "fingerprint": "d79d268442b47844ef3c11cde67ceff2288e61cad7f8ce40d34a227c2be99a63",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -52040,6 +52046,12 @@
       "id": "contract:Meridian.Contracts.Tenancy.TenantReadPredicate",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Tenancy.TenantReadPredicate"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Text.TextPrimitives",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Text.TextPrimitives"
     },
     {
       "classification": "dto",
@@ -62117,10 +62129,10 @@
   ],
   "summary": {
     "contract_references": 2932,
-    "contract_set_memberships": 3355,
-    "edges": 7080,
+    "contract_set_memberships": 3356,
+    "edges": 7081,
     "foreign_keys": 95,
     "logical_references": 6,
-    "nodes": 3361
+    "nodes": 3362
   }
 }

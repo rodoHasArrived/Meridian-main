@@ -6,6 +6,7 @@ using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -125,12 +126,6 @@ public sealed partial class ReportingGovernanceCoordinatorService
     private static bool SameOptional(string? left, string? right) =>
         string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right)
         || string.Equals(left?.Trim(), right?.Trim(), StringComparison.Ordinal);
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
 
     private static void RequireText(string? value, string parameterName)
     {

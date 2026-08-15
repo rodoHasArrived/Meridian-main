@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -716,9 +717,6 @@ public sealed class AccountingMigrationRunExecutionService
 
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? DefaultFundProfileId : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string Sanitize(string value)
     {

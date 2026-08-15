@@ -7,6 +7,7 @@ using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 

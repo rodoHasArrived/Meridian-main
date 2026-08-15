@@ -10,6 +10,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingSystem;
 
@@ -2129,7 +2130,6 @@ public sealed class AccountingSystemIntegrationService
            index >= reference.Length ||
            reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
-
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
         if (actionOrigin != OperationsActionOriginDto.HumanOperator)
@@ -2150,9 +2150,6 @@ public sealed class AccountingSystemIntegrationService
 
     private static string NormalizeFundProfileId(string? fundProfileId)
         => string.IsNullOrWhiteSpace(fundProfileId) ? DefaultFundProfileId : fundProfileId.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string ImportKey(
         string providerId,

@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Reporting;
 
@@ -1585,12 +1586,6 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
     private static int ResolveRunAttemptOrdinal(ReportingOutputManifest manifest)
         => manifest.RunAttemptOrdinal is > 0 ? manifest.RunAttemptOrdinal.Value : 1;
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
 
     private static string ComputeSha256(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();

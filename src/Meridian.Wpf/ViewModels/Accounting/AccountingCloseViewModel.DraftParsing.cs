@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Contracts.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 

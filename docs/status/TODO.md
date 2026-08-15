@@ -60,8 +60,8 @@ Total items: **239**
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs` | 111 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs` | 103 | `NOTE` | ❌ | Note: request.Note.Trim(), |
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 817 | `NOTE` | ❌ | Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
-| `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2044 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
-| `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2098 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
+| `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2045 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
+| `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2099 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 144 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 299 | `NOTE` | ❌ | Note: "Clear the durable statement casework evidence-handoff obligation.", |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 387 | `NOTE` | ❌ | note: "Heartbeat delayed" |

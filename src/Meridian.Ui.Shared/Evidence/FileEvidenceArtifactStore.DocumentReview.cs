@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Evidence;
 

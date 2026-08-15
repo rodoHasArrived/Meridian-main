@@ -9,6 +9,7 @@ using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Events;
 
@@ -928,9 +929,6 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
     private static string FormatDecimal(decimal value)
         => value.ToString("G29", CultureInfo.InvariantCulture);
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record LedgerPostingSecurityGateResult(
         bool CanPost,
