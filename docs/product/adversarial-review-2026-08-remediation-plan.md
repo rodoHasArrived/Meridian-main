@@ -763,6 +763,36 @@ still `in_progress`.
 
 ## W10 — Make CI verify what users run
 
+- [ ] **AR8-57 — Stop paying the post-merge docs-regeneration tax by hand.**
+  **Evidence:** `docs/status/doc-health-dashboard.{json,md}` and the coverage/API dashboards are
+  derived from line counts across every tracked markdown file, so *any* merge that combines two
+  branches' documentation edits leaves them stale — neither parent's copy describes the merge
+  result. The `regenerate-docs` job in `.github/workflows/documentation.yml` re-runs the core
+  docs-automation profile and fails on the diff, which catches the drift only after the merge is
+  already pushed. Fifteen commits since June exist for no other purpose than re-running that
+  profile and committing the result — `2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`,
+  `603d98cfe`, `fc8344145`, and `fb94b95cd` among them, across several unrelated branches. The
+  same branch paid it three separate times. This is not a correctness bug; it is a recurring toll
+  on every contributor who merges `main`, and it trains people to read a red `regenerate-docs` as
+  routine noise rather than signal.
+  **Change:** keep the artifacts tracked — `docs/documentation-ownership.md:23` designates
+  `docs/status/` automation-owned output that must stay "at the paths consumed by tooling", so
+  untracking them in favour of CI-only artifacts is out of policy. Automate the regeneration
+  instead. Preferred: have `regenerate-docs` commit the regenerated artifacts back to the pull
+  request branch when it detects drift, and fail only where it cannot push (forks, protected
+  contexts), so the job repairs the condition it currently just reports. Cheaper alternative if a
+  bot commit on PR branches is unwanted: register a git merge driver in `.gitattributes` for these
+  paths that re-runs the generator instead of attempting a textual merge, which also removes the
+  conflicts these files produce on every merge. Either way, document the single regeneration
+  command next to the check so a contributor who hits it does not have to reconstruct it from the
+  workflow.
+  **Verify:** merge a branch that edits any tracked markdown into a branch that edits different
+  markdown, and confirm `regenerate-docs` ends green without a human running the profile. Assert
+  the outcome — a clean dashboard matching the merged tree — not the mechanism, so either design
+  above satisfies it.
+  **Effort:** S · **Sequence:** independent of the other W10 items; the sooner it lands, the fewer
+  merges pay the toll
+
 - [ ] **AR8-56 — Wire Polygon streaming credentials, or keep it unadvertised.**
   **Evidence:** `ProviderFeatureRegistration.Registry.cs:77-82` constructs `PolygonMarketDataClient`
   with `reconnectionMetrics:` only, never passing `PolygonOptions`, and the constructor
@@ -1150,14 +1180,14 @@ the review and `AR8-` identifiers per workstream here.
 miscount): §1 first mile 7 · §2 activation 7 · §3 truth 7 · §4 gates 9 · §5 durability 5 ·
 §6 UX 7 · §7 assurance 6 · program-level 3.
 
-**This plan carries 55 numbered todos**, `AR8-01`–`AR8-56` with `AR8-04` reserved as an alias of
+**This plan carries 56 numbered todos**, `AR8-01`–`AR8-57` with `AR8-04` reserved as an alias of
 `AR8-Q3` rather than a separate item: W1 (7) · W2 (3) · W3 (3) · W4 (1) · W5 (1) · W6 (8) ·
-W7 (2) · W8 (6) · W9 (3) · W10 (7) · W11 (7) · W12 (4) · W13 (3) = 55. Count every marker: a
+W7 (2) · W8 (6) · W9 (3) · W10 (8) · W11 (7) · W12 (4) · W13 (3) = 56. Count every marker: a
 todo may be `- [ ]` open, `- [x]` done, or `- [~]` partial, and the two partial items (`AR8-43`,
 `AR8-44`) are deliberately left open — skipping them understates remaining work. The six `AR8-Q*` quick wins
 are sequencing aliases of items that also appear in a workstream, so they are not counted again.
 
-**Reconciliation of 51 findings to 55 todos** — four todos have no 1:1 finding because they are
+**Reconciliation of 51 findings to 56 todos** — five todos have no 1:1 finding because they are
 mechanisms the findings imply rather than describe. Ids repeat across the rows below, because a
 §-row maps a review section's findings onto whichever todos cover them and those todos may live in
 different workstreams:
@@ -1170,10 +1200,10 @@ different workstreams:
 | §4 gates | 9 | `AR8-13`, `AR8-14`, `AR8-16`, `AR8-09`, `AR8-11`, `AR8-35`, `AR8-32`, `AR8-33`, `AR8-34` **+ `AR8-10`** (the fat-finger/collar rules named as `W9-SAFETY-007`'s remainder) |
 | §5 durability | 5 | `AR8-27`, `AR8-28`, `AR8-29`, `AR8-30`, `AR8-31` |
 | §6 UX | 7 | `AR8-44`, `AR8-45`, `AR8-46`, `AR8-47`, `AR8-48`, `AR8-51`, `AR8-52` |
-| §7 assurance | 6 | `AR8-36`, `AR8-37`, `AR8-38`, `AR8-39`, `AR8-40`, `AR8-41` **+ `AR8-56`** (the Polygon credential path this PR found unwired while removing it from the Docker template) |
+| §7 assurance | 6 | `AR8-36`, `AR8-37`, `AR8-38`, `AR8-39`, `AR8-40`, `AR8-41` **+ `AR8-56`** (the Polygon credential path found unwired while removing it from the Docker template) **+ `AR8-57`** (the post-merge docs-regeneration toll, a mechanism the CI findings imply rather than name) |
 | program-level | 3 | `AR8-53`, `AR8-54`, `AR8-55` |
 
-51 findings + 4 implied mechanisms = 55 todos, with every finding represented.
+51 findings + 5 implied mechanisms = 56 todos, with every finding represented.
 
 Strengths named in the review — the ADR-019 composition policy, the bias-disclosure report, the
 reconciliation matching engine, OMS pre-trade enforcement, the durability primitives, and the auth

@@ -1,6 +1,6 @@
 {
   "total_files": 648,
-  "total_lines": 128490,
+  "total_lines": 128520,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2929,7 +2929,7 @@
     },
     {
       "path": "docs/product/adversarial-review-2026-08-remediation-plan.md",
-      "line_count": 1182,
+      "line_count": 1212,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
