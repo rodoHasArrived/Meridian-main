@@ -449,6 +449,13 @@ public static class WorkstationServiceCollectionExtensions
                 exposureProvider,
                 () => runtime.FatFingerThresholds,
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.FatFingerRule>>()));
+            // Immediately behind the fat-finger band (Priority -9) and over the same shared price
+            // limbs, so an order that is both mistyped and beyond the collar is refused as the typo
+            // rather than offered a release for an order nobody meant to send.
+            rules.Add(new Meridian.Risk.Rules.PriceCollarRule(
+                exposureProvider,
+                () => runtime.PriceCollarThresholds,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PriceCollarRule>>()));
             rules.Add(new Meridian.Risk.Rules.GrossExposureRule(
                 exposureProvider,
                 () => runtime.MaxGrossExposure,
