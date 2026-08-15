@@ -10,6 +10,7 @@ import {
   ReportPreviewValidationScreen,
   ReportRunDetailScreen
 } from "@/screens/finance-standard-pages-screen";
+import { requireFirst } from "@/test/fixtures";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { AccountingWorkspaceResponse } from "@/types";
 
@@ -140,7 +141,7 @@ describe("finance standard pages", () => {
       ...data,
       reporting: {
         ...data.reporting,
-        recentRuns: [{ ...data.reporting.recentRuns[0], validationWarnings: [] }]
+        recentRuns: [{ ...requireFirst(data.reporting.recentRuns, "reporting.recentRuns"), validationWarnings: [] }]
       }
     } as unknown as AccountingWorkspaceResponse;
 
@@ -158,8 +159,8 @@ describe("finance standard pages", () => {
       ...data,
       reporting: {
         ...data.reporting,
-        templates: [{ ...data.reporting.templates[0], lifecycleStatus: "Draft" }],
-        recentRuns: [{ ...data.reporting.recentRuns[0], validationWarnings: [] }]
+        templates: [{ ...requireFirst(data.reporting.templates, "reporting.templates"), lifecycleStatus: "Draft" }],
+        recentRuns: [{ ...requireFirst(data.reporting.recentRuns, "reporting.recentRuns"), validationWarnings: [] }]
       }
     } as unknown as AccountingWorkspaceResponse;
 
@@ -178,8 +179,8 @@ describe("finance standard pages", () => {
       reporting: {
         ...data.reporting,
         recentRuns: [
-          { ...data.reporting.recentRuns[0], runId: "run-first", reportName: "First recent report", validationWarnings: [] },
-          { ...data.reporting.recentRuns[0], runId: "run-selected", reportName: "Requested report", validationWarnings: ["Requested-run warning"] }
+          { ...requireFirst(data.reporting.recentRuns, "reporting.recentRuns"), runId: "run-first", reportName: "First recent report", validationWarnings: [] },
+          { ...requireFirst(data.reporting.recentRuns, "reporting.recentRuns"), runId: "run-selected", reportName: "Requested report", validationWarnings: ["Requested-run warning"] }
         ]
       }
     } as unknown as AccountingWorkspaceResponse;
@@ -197,7 +198,7 @@ describe("finance standard pages", () => {
       reporting: {
         ...data.reporting,
         recentRuns: [{
-          ...data.reporting.recentRuns[0],
+          ...requireFirst(data.reporting.recentRuns, "reporting.recentRuns"),
           status: "AwaitingApproval",
           asOfDate: null,
           sectionCount: 1,

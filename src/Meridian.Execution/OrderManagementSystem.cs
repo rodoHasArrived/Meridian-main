@@ -36,6 +36,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly OrderManagementSystemOptions _options;
     private readonly ExecutionMode _gatewayExecutionMode;
     private readonly INotionalOrderSizingGateway? _notionalSizingGateway;
+    private readonly IFaceValueOrderSizingGateway? _faceValueOrderSizingGateway;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
@@ -147,6 +148,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // route quantity for another. Everything else routes Quantity, so measuring those
         // orders at the metadata amount hands the rails a number the broker never sees.
         _notionalSizingGateway = gateway as INotionalOrderSizingGateway;
+        _faceValueOrderSizingGateway = gateway as IFaceValueOrderSizingGateway;
         // ExecutionReports is a best-effort observer stream: order state, session fill history,
         // and the durable accounting handoff own correctness. The previous FullMode.Wait made a
         // slow (or absent — there is no production reader today) subscriber block WriteAsync on
@@ -206,14 +208,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         request.Metadata?.TryGetValue("runId", out runId);
         request.Metadata?.TryGetValue("sessionId", out sessionId);
 
-        var safeRequest = ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys(request);
-        if (!ReferenceEquals(safeRequest, request))
-        {
-            _logger.LogWarning(
-                "Order {OrderId} for {Symbol} contained server-owned broker routing metadata; routing keys were removed before gateway submission.",
-                LogSanitizer.Sanitize(orderId),
-                LogSanitizer.Sanitize(request.Symbol));
-        }
+        var safeRequest = SanitizeAndSnapshotRequest(request, orderId);
 
         // A duplicate client order id must never reach the state table or the gateway: every
         // downstream write in this method (including gate rejections) keys on orderId, so a
@@ -248,6 +243,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 rejectionSource: "notional metadata gate")
                 .ConfigureAwait(false);
         }
+
+        var usesFaceValuePercentageOfPar = ResolvesFaceValuePercentageOfPar(safeRequest);
+        var riskRequest = StampResolvedOrderSizing(safeRequest, usesFaceValuePercentageOfPar);
 
         var placementGate = BrokerageOrderPlacementGate.Evaluate(
             _brokerageConfiguration,
@@ -368,7 +366,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             if (_riskValidator is not null)
             {
-                var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
+                var riskResult = await _riskValidator.ValidateOrderAsync(riskRequest, ct).ConfigureAwait(false);
                 riskDecision = riskResult;
                 if (!riskResult.IsApproved)
                 {
@@ -452,6 +450,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 // Broker-native notional orders route dollars and discard quantity; the
                 // exposure reserve for this working order must value what actually routes.
                 RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity),
+                UsesFaceValuePercentageOfPar = usesFaceValuePercentageOfPar,
                 // A working option order reserves contract notional, not share notional:
                 // 100 contracts at a $5 limit hold back $50k, not $500. The derivative
                 // identity travels too, so the reserve and any amendment are valued exactly
@@ -862,15 +861,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
-        // A modification that raises quantity or price is a new risk decision: without this
-        // the portfolio-aware rails could be bypassed by placing a small order and amending
-        // it upward. Validation and the amended reservation run under the same gate as a
-        // placement so a concurrent order cannot slip past the increased exposure.
+        // A quantity increase or any supplied limit/stop price is a new risk decision. Notional
+        // increases are not the only dangerous direction: lowering a sell limit or a buy stop can
+        // move an accepted order straight through the market. Validation and the amended
+        // reservation run under the same gate as placement so neither exposure nor price controls
+        // can be bypassed through modification.
         OrderState? speculativeReservation = null;
         RiskValidationResult? amendmentDecision = null;
         var amendmentDispatchAttempted = false;
         IReadOnlyList<string>? amendmentWarnings = null;
-        if (IsRiskIncreasing(state, modification))
+        if (RequiresRiskRevalidation(state, modification))
         {
             var gate = await ReserveAmendedExposureAsync(orderId, state, modification, ct).ConfigureAwait(false);
             amendmentWarnings = gate.Warnings;
@@ -883,7 +883,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     state: state,
                     report: null,
                     message: gate.Refusal,
-                    metadata: BuildOrderModificationAuditMetadata(modification, state, report: null, amendmentWarnings),
+                    metadata: BuildOrderModificationAuditMetadata(modification, state, report: null, amendmentWarnings, gate.RiskDecision),
                     ct: ct).ConfigureAwait(false);
 
                 return new OrderResult

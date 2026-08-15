@@ -40,8 +40,24 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway
+public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway
 {
+    /// <inheritdoc />
+    public bool UsesFaceValuePercentageOfPar(OrderRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return IsFixedIncomeAssetClass(
+            ReadMetadataString(
+                request.Metadata,
+                out var assetClass,
+                "asset_class",
+                "assetClass",
+                "alpaca:asset_class")
+                ? NormalizeAssetClass(assetClass)
+                : null);
+    }
+
     /// <inheritdoc />
     /// <remarks>
     /// Alpaca reads the notional metadata keys and sends the dollar amount as the order's
@@ -54,10 +70,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        return !IsFixedIncomeAssetClass(
-            ReadMetadataString(request.Metadata, out var assetClass, "asset_class", "assetClass", "alpaca:asset_class")
-                ? NormalizeAssetClass(assetClass)
-                : null);
+        return !UsesFaceValuePercentageOfPar(request);
     }
 
     private const string PaperBaseUrl = "https://paper-api.alpaca.markets";

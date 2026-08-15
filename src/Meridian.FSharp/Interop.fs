@@ -298,6 +298,10 @@ type RiskInterop private () =
             MaxSymbolConcentrationPercent = None
             MaxOrderNotional = None
             EscalateOrderNotional = None
+            ReferencePrice = None
+            OrderPrice = None
+            MaxOrderQuantity = None
+            MaxPriceDeviationPercent = None
         }
 
     /// Context for the portfolio-aware rules: gross-exposure, symbol-concentration,
@@ -332,6 +336,42 @@ type RiskInterop private () =
             MaxSymbolConcentrationPercent = if maxSymbolConcentrationPercent.HasValue then Some maxSymbolConcentrationPercent.Value else None
             MaxOrderNotional = if maxOrderNotional.HasValue then Some maxOrderNotional.Value else None
             EscalateOrderNotional = if escalateOrderNotional.HasValue then Some escalateOrderNotional.Value else None
+            ReferencePrice = None
+            OrderPrice = None
+            MaxOrderQuantity = None
+            MaxPriceDeviationPercent = None
+        }
+
+    /// Context for the fat-finger gate. Carries only the order's own typed price and the
+    /// reference it is measured against; the caller is responsible for supplying a limit
+    /// price rather than a stop price, since a stop is away from the market by design.
+    static member CreateFatFingerContext(
+        request: Meridian.Execution.Sdk.OrderRequest,
+        referencePrice: Nullable<decimal>,
+        orderPrice: Nullable<decimal>,
+        maxOrderQuantity: Nullable<decimal>,
+        maxPriceDeviationPercent: Nullable<decimal>) : RiskContext =
+        {
+            Request = request
+            CurrentPositionQuantity = 0m
+            MaxPositionSize = None
+            PortfolioValue = None
+            InitialCapital = None
+            MaxDrawdownPercent = None
+            RecentOrderRate = None
+            PortfolioExposure = None
+            SymbolExposure = None
+            SignedSymbolExposure = None
+            OrderNotional = None
+            SignedOrderNotional = None
+            MaxGrossExposure = None
+            MaxSymbolConcentrationPercent = None
+            MaxOrderNotional = None
+            EscalateOrderNotional = None
+            ReferencePrice = if referencePrice.HasValue then Some referencePrice.Value else None
+            OrderPrice = if orderPrice.HasValue then Some orderPrice.Value else None
+            MaxOrderQuantity = if maxOrderQuantity.HasValue then Some maxOrderQuantity.Value else None
+            MaxPriceDeviationPercent = if maxPriceDeviationPercent.HasValue then Some maxPriceDeviationPercent.Value else None
         }
 
     static member EvaluatePositionLimit(ctx: RiskContext) : RiskDecisionDto =
@@ -348,6 +388,12 @@ type RiskInterop private () =
 
     static member EvaluateOrderNotional(ctx: RiskContext) : RiskDecisionDto =
         RiskRules.orderNotional ctx |> RiskInterop.ToDto
+
+    static member EvaluateFatFinger(ctx: RiskContext) : RiskDecisionDto =
+        RiskRules.fatFinger ctx |> RiskInterop.ToDto
+
+    static member EvaluateFatFingerStopTrigger(ctx: RiskContext) : RiskDecisionDto =
+        RiskRules.fatFingerStopTrigger ctx |> RiskInterop.ToDto
 
     static member Aggregate(decisions: seq<RiskDecisionDto>) : RiskDecisionDto =
         let unionDecisions =

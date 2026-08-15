@@ -1096,6 +1096,7 @@ Meridian-main
 │       │   ├── apiclient-caller-baseline.json
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-dashboard-type-barrel.py
+│       │   ├── check-duplicate-helpers.py
 │       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-sample-config-datasources.py
@@ -1103,6 +1104,7 @@ Meridian-main
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
 │       │   ├── dispatch-targeted-test.py
+│       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
@@ -1400,6 +1402,7 @@ Meridian-main
 │   │   ├── provider-management.md
 │   │   ├── README.md
 │   │   ├── runtime-component-state-boundaries.md
+│   │   ├── security-master-extensibility-review.md
 │   │   ├── storage-design.md
 │   │   ├── strategy-builder-integration.md
 │   │   ├── strategy-engine-foundation.md
@@ -1441,6 +1444,7 @@ Meridian-main
 │   │   ├── git-hooks.md
 │   │   ├── github-actions-summary.md
 │   │   ├── github-actions-testing.md
+│   │   ├── god-file-burn-down-plan.md
 │   │   ├── modular-desktop-architecture.md
 │   │   ├── otlp-trace-visualization.md
 │   │   ├── process-lifecycle-diagnostics.md
@@ -1864,6 +1868,7 @@ Meridian-main
 │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── README.md
 │   │   ├── w10-depth-slate-2026-07.md
+│   │   ├── w9-close-out-delivery-plan-2026-08.md
 │   │   ├── web-ui-improvements-brainstorm-2026-07.md
 │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   ├── web-ui-report-run-stream-blueprint-2026-07.md
@@ -3525,6 +3530,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
+│   │   │   ├── KeyedGatePool.cs
 │   │   │   ├── NullSecurityMasterClearwaterServices.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── PostgresSecurityMasterConflictService.cs
@@ -3556,6 +3562,9 @@ Meridian-main
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs
 │   │   │   ├── SecurityMasterWorkbenchOptions.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   └── SymbolResolutionMismatchTracker.cs
@@ -3887,6 +3896,8 @@ Meridian-main
 │   │   ├── Integrations
 │   │   │   ├── ProviderIntegrationContracts.cs
 │   │   │   └── ProviderIntegrationContractsJsonContext.cs
+│   │   ├── Integrity
+│   │   │   └── Sha256Digest.cs
 │   │   ├── Ledger
 │   │   │   ├── AccountingBookContextDtos.cs
 │   │   │   ├── AccountingConfigurationCloseReportingDtos.cs
@@ -3965,6 +3976,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
+│   │   │   ├── SecurityAssetTermsFieldEditValidator.cs
 │   │   │   ├── SecurityAssetTermsSchema.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
@@ -4006,6 +4018,8 @@ Meridian-main
 │   │   │   ├── FundProfileTenancy.cs
 │   │   │   ├── FundScopedWriteTenantGate.cs
 │   │   │   └── TenantReadPredicate.cs
+│   │   ├── Text
+│   │   │   └── TextPrimitives.cs
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
@@ -4401,12 +4415,14 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
+│   │   ├── IFaceValueOrderSizingGateway.cs
 │   │   ├── INotionalOrderSizingGateway.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── OrderSizingMetadata.cs
 │   │   ├── PositionExtensions.cs
 │   │   ├── README.md
 │   │   ├── RiskContracts.cs
@@ -5328,6 +5344,7 @@ Meridian-main
 │   ├── Meridian.Risk
 │   │   ├── Rules
 │   │   │   ├── DrawdownCircuitBreaker.cs
+│   │   │   ├── FatFingerRule.cs
 │   │   │   ├── GrossExposureRule.cs
 │   │   │   ├── OrderNotionalResolver.cs
 │   │   │   ├── OrderNotionalRule.cs
@@ -5612,7 +5629,9 @@ Meridian-main
 │   │   │   │   ├── 023_security_master_quality_reports.sql
 │   │   │   │   ├── 024_security_master_schema_version_column.sql
 │   │   │   │   ├── 025_security_master_audit_stores.sql
-│   │   │   │   └── 026_security_master_operator_override_approvals.sql
+│   │   │   │   ├── 026_security_master_operator_override_approvals.sql
+│   │   │   │   ├── 027_security_master_field_provenance.sql
+│   │   │   │   └── 028_security_master_revision_values_and_versioned_provenance.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -5627,6 +5646,7 @@ Meridian-main
 │   │   │   ├── IMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── IOperatorOverridesStore.cs
 │   │   │   ├── IOptionReferenceProjectionStore.cs
+│   │   │   ├── ISecurityFieldProvenanceStore.cs
 │   │   │   ├── ISecurityMasterCashFlowStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterPricingStore.cs
@@ -5646,6 +5666,7 @@ Meridian-main
 │   │   │   ├── PostgresMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── PostgresOperatorOverridesStore.cs
 │   │   │   ├── PostgresOptionReferenceProjectionStore.cs
+│   │   │   ├── PostgresSecurityFieldProvenanceStore.cs
 │   │   │   ├── PostgresSecurityMasterCashFlowStore.cs
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
 │   │   │   ├── PostgresSecurityMasterPricingStore.cs
@@ -6502,6 +6523,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.workbench-context.tsx
 │   │   │   │   │   ├── reporting-screen.workflow-continuity.ts
 │   │   │   │   │   ├── settings-mutation-confirm-dialog.tsx
+│   │   │   │   │   ├── settings-profile-backed-security.test.ts
+│   │   │   │   │   ├── settings-profile-backed-security.ts
 │   │   │   │   │   ├── settings-route-state.test.ts
 │   │   │   │   │   ├── settings-route-state.ts
 │   │   │   │   │   ├── settings-screen.a11y.test.tsx
@@ -6579,6 +6602,7 @@ Meridian-main
 │   │   │   │   │   ├── workspace-surface.css
 │   │   │   │   │   └── workspace-workbench-shell.css
 │   │   │   │   ├── test
+│   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── render.tsx
 │   │   │   │   │   ├── setup.ts
 │   │   │   │   │   └── verified-operation-outcome.ts
@@ -6588,6 +6612,7 @@ Meridian-main
 │   │   │   │   │   ├── data-operations-assurance.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
+│   │   │   │   │   ├── jest-axe.d.ts
 │   │   │   │   │   ├── lifecycle.ts
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
@@ -6641,7 +6666,7 @@ Meridian-main
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
 │   │   │   ├── tsconfig.reporting-p0.json
-│   │   │   ├── tsconfig.strict-null.json
+│   │   │   ├── tsconfig.strict.json
 │   │   │   └── vite.config.ts
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
@@ -8075,7 +8100,9 @@ Meridian-main
 │   │   └── ValidationTests.fs
 │   ├── Meridian.FundStructure.Tests
 │   │   ├── EnvironmentDesignerServiceTests.cs
+│   │   ├── FakeFundStructureStore.cs
 │   │   ├── FundStructurePolicyServiceTests.cs
+│   │   ├── FundStructureScopeContractTests.cs
 │   │   ├── FundStructureSetupWorkflowServiceTests.cs
 │   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── GovernanceSharedDataAccessServiceTests.cs
@@ -8888,6 +8915,7 @@ Meridian-main
 │   │   ├── AssetOperations
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
+│   │   │   ├── AssetObligationProjectionServiceTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── FactorPaydownProjectionServiceTests.cs
@@ -8910,8 +8938,12 @@ Meridian-main
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
+│   │   │   ├── Integrity
+│   │   │   │   └── Sha256DigestTests.cs
 │   │   │   ├── Ledger
 │   │   │   │   └── LedgerDimensionTagsTests.cs
+│   │   │   ├── Text
+│   │   │   │   └── TextPrimitivesTests.cs
 │   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── DataProvenanceTests.cs
@@ -9452,6 +9484,7 @@ Meridian-main
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
 │   │   │   ├── EnforcedRiskValidatorCompositionTests.cs
+│   │   │   ├── FatFingerRuleTests.cs
 │   │   │   ├── OrderRateThrottleTests.cs
 │   │   │   ├── PortfolioRiskRulesTests.cs
 │   │   │   ├── PositionLimitRuleTests.cs
@@ -9484,6 +9517,7 @@ Meridian-main
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
 │   │   │   ├── FaceValueLotTests.cs
+│   │   │   ├── KeyedGatePoolTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
@@ -9493,6 +9527,8 @@ Meridian-main
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterTests.cs
+│   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
+│   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
@@ -9815,12 +9851,14 @@ Meridian-main
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
+│   │   │   ├── RiskRuleRuntimeFatFingerStatusTests.cs
 │   │   │   ├── RiskRuleRuntimeOrderRateStatusTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │   │   ├── SecurityMasterInstrumentPassportTests.cs
+│   │   │   ├── SecurityMasterLegacyConflictActionTests.cs
 │   │   │   ├── SecurityMasterOperatorOverrideDecisionEndpointsTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
@@ -10219,6 +10257,8 @@ Meridian-main
 │   │   ├── test_check_codex_skills.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_dashboard_type_barrel.py
+│   │   ├── test_check_duplicate_helpers.py
+│   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_test_skip_register.py

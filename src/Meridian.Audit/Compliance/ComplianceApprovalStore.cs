@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Audit.Compliance;
 
@@ -251,9 +252,6 @@ public sealed class FileComplianceApprovalStore : IComplianceApprovalStore
 
     private static ComplianceApprovalRequestRecord Copy(ComplianceApprovalRequestRecord request)
         => request with { Decisions = request.Decisions.ToArray() };
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void ValidateAuthenticatedActor(string actorId, string parameterName)
     {

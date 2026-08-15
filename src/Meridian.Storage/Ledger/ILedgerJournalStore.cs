@@ -3,6 +3,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Npgsql;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -161,9 +162,6 @@ public sealed record LedgerPostingIdentity(
             write.SourceEventId,
             NormalizeOptional(write.Entry.Metadata.IdempotencyKey));
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 /// <summary>

@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Microsoft.AspNetCore.Http;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -149,7 +150,4 @@ public static partial class LedgerEndpoints
 
         return normalized;
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

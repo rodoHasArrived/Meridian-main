@@ -10,6 +10,7 @@ using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -1123,9 +1124,6 @@ public sealed partial class ManualJournalEntryWorkbenchService
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"{parameterName} is required.", parameterName)
             : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<string> NormalizePrincipalIds(IReadOnlyList<string>? values)
         => values?

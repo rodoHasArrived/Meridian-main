@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **236**
+Total items: **239**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -60,8 +60,8 @@ Total items: **236**
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs` | 111 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs` | 103 | `NOTE` | ❌ | Note: request.Note.Trim(), |
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 817 | `NOTE` | ❌ | Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
-| `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2043 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
-| `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2097 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
+| `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2045 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
+| `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2099 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 144 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 299 | `NOTE` | ❌ | Note: "Clear the durable statement casework evidence-handoff obligation.", |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 387 | `NOTE` | ❌ | note: "Heartbeat delayed" |
@@ -141,7 +141,7 @@ Total items: **236**
 | `src/Meridian.Ui/dashboard/src/screens/margin-control-center-screen.test.tsx` | 135 | `NOTE` | ❌ | note: "Reviewed provider statement and position contributions." |
 | `src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.test.tsx` | 44 | `NOTE` | ❌ | note: "Ready" |
 | `src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.view-model.test.ts` | 129 | `NOTE` | ❌ | note: "Ready" |
-| `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 191 | `NOTE` | ❌ | note: "Ready", |
+| `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 192 | `NOTE` | ❌ | note: "Ready", |
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.test.tsx` | 41 | `NOTE` | ❌ | note: null, |
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.test.tsx` | 63 | `NOTE` | ❌ | note: null, |
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.test.ts` | 67 | `NOTE` | ❌ | note: "  earnings prep  " |
@@ -177,27 +177,27 @@ Total items: **236**
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4564 | `NOTE` | ❌ | note: "Board package." |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4604 | `NOTE` | ❌ | note: "Board package.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4645 | `NOTE` | ❌ | note: "Delivered after approval.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4712 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4734 | `NOTE` | ❌ | note: "Board package.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4780 | `NOTE` | ❌ | note: "Board package.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4982 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4717 | `NOTE` | ❌ | note: "Board package." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4739 | `NOTE` | ❌ | note: "Board package.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4785 | `NOTE` | ❌ | note: "Board package.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4987 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2770 | `NOTE` | ❌ | note: note \|\| null |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 2783 | `NOTE` | ❌ | note: draft.deliveryNote, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 203 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 488 | `NOTE` | ❌ | note: "Starter target" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 619 | `NOTE` | ❌ | note: "Board package." |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 524 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1593 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1601 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1611 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1733 | `NOTE` | ❌ | note: "Approved after identity review.", |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1833 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1918 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1936 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1986 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2007 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1479 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1606 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1664 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1672 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1682 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1804 | `NOTE` | ❌ | note: "Approved after identity review.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1904 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1989 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2007 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2057 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2078 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1474 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1601 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 429 | `NOTE` | ❌ | note: "Close evidence reviewed." |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 437 | `NOTE` | ❌ | note: "Published to investor portal." |
 | `src/Meridian.Ui/dashboard/src/types/reporting-governance.ts` | 124 | `NOTE` | ❌ | note: string \| null; |
@@ -219,11 +219,14 @@ Total items: **236**
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1632 | `NOTE` | ❌ | note: "Canonical pilot run created from the certified renderer manifest."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1645 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1658 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 258 | `NOTE` | ❌ | Note: "Ready for review."); |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 284 | `NOTE` | ❌ | Note: "Submit through gate.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 313 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 338 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 362 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2102 | `NOTE` | ❌ | Note: "Ready for review."); |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2128 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2173 | `NOTE` | ❌ | Note: "Retry after a crashed submission.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2215 | `NOTE` | ❌ | Note: "Attempt to claim someone else's submitted workflow.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2240 | `NOTE` | ❌ | Note: "Submit.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2265 | `NOTE` | ❌ | Note: "Submit.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2289 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 3339 | `NOTE` | ❌ | Note: "Submit while an edit is mid-flight.", |
 | `tests/Meridian.Tests/Storage/StorageChecksumServiceTests.cs` | 99 | `NOTE` | ❌ | // NOTE: File.WriteAllTextAsync uses UTF-8 with BOM by default on some platforms, |
 | `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 868 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
 | `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 5504 | `NOTE` | ❌ | Note: "Delivered after approval.", |

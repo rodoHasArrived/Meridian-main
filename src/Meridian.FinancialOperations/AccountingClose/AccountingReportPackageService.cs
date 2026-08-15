@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 using static Meridian.Contracts.Ledger.LedgerDimensionTags;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -2212,9 +2213,6 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         return $"tenant-{Sanitize(normalizedTenantId ?? "default")}-company-{Sanitize(normalizedCompanyId ?? "default")}";
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)

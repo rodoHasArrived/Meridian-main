@@ -5,6 +5,7 @@ using Meridian.Storage.Archival;
 namespace Meridian.PortfolioRecords.FundAccounts;
 
 using Meridian.PortfolioRecords.Accounts;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 public sealed class AccountStatusPolicyException : InvalidOperationException
 {
@@ -1325,9 +1326,6 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         return value.Trim();
     }
 
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private (long Version, string Json)? CaptureSnapshotLocked()
     {
         if (_persistencePath is null)
@@ -1464,5 +1462,4 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             return Task.FromResult<IReadOnlyList<AccountOpenBreakView>>(results);
         }
     }
-
 }

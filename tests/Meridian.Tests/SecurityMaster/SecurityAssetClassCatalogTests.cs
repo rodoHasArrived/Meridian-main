@@ -93,13 +93,11 @@ public sealed class SecurityAssetClassCatalogTests
     [Fact]
     public void Catalog_StaysInLockstepWithTheFSharpAssetClassRegistry()
     {
-        // CustomAsset is C#-side only: it shares the OtherSecurity SecurityKind, so the kind-keyed
-        // F# registry cannot carry a distinct row for it. Every other class must exist in both
-        // lanes — this is the guard that keeps the two canonical tables from drifting apart.
-        var catalogClasses = SecurityAssetClassCatalog.AssetClasses
-            .Where(assetClass => assetClass != "CustomAsset");
-
-        catalogClasses.Should().BeEquivalentTo(AssetClassRegistry.assetClasses);
+        // Every catalog class must exist in the kind-keyed F# registry and vice versa — this is
+        // the guard that keeps the two canonical tables from drifting apart. CustomAsset gained a
+        // first-class SecurityKind (profile envelope + verbatim document), so the historical
+        // C#-side-only exclusion no longer applies.
+        SecurityAssetClassCatalog.AssetClasses.Should().BeEquivalentTo(AssetClassRegistry.assetClasses);
     }
 
     [Fact]

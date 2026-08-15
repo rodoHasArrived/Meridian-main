@@ -229,6 +229,45 @@ public static partial class WorkstationEndpoints
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status422UnprocessableEntity);
 
+        group.MapPost(SecurityMasterSubroute(UiApiRoutes.SecurityMasterWorkbenchDiscard), async (
+            Guid securityId,
+            DiscardSecurityMasterRevisionRequest? request,
+            HttpContext context,
+            [FromServices] ISecurityMasterWorkbenchCommandService? service) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (service is null)
+            {
+                return WorkbenchServiceUnavailable();
+            }
+
+            if (request is null)
+            {
+                return WorkbenchMissingPayload("A DiscardSecurityMasterRevisionRequest body is required.");
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            // Discard is the terminal path for an abandoned Draft or gate-rejected Submitted
+            // revision; without it a staged sibling defers the security-level override decision
+            // forever. Actor is the server-derived principal, matching the other governed writes.
+            var bound = request with { SecurityId = securityId, Actor = actor };
+            return await ExecuteWorkbenchAsync(
+                () => service.DiscardRevisionAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
+        })
+        .WithName("SecurityMasterWorkbenchDiscard")
+        .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status422UnprocessableEntity);
+
         group.MapPost(SecurityMasterSubroute(UiApiRoutes.SecurityMasterWorkbenchPublish), async (
             Guid securityId,
             PublishSecurityMasterRevisionRequest? request,

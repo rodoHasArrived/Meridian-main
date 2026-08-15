@@ -1,4 +1,5 @@
 using Meridian.Infrastructure.Contracts;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Infrastructure.Shared;
 
@@ -388,9 +389,6 @@ public sealed class SubscriptionManager : IDisposable
             _symbolsByKind.Clear();
         }
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private int AddSubscriptionCore(string normalizedSymbol, string normalizedKind, string? sourceOfRequest)
     {

@@ -239,6 +239,13 @@ public sealed record OrderState
     public decimal? RoutedNotional { get; init; }
 
     /// <summary>
+    /// The active gateway routes <see cref="Quantity"/> as face value and quotes the order price
+    /// as a percentage of par. Retained so working-order reserves and amendments use the same
+    /// economic sizing semantics as initial validation.
+    /// </summary>
+    public bool UsesFaceValuePercentageOfPar { get; init; }
+
+    /// <summary>
     /// Contract multiplier for a derivative order: the notional one unit of
     /// <see cref="Quantity"/> represents. 1 for outright instruments, 100 for standard
     /// equity option contracts. A working-order exposure reserve that ignores it holds back

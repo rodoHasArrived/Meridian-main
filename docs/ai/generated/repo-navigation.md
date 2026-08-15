@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-11T17:27:44Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-15T12:47:37Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Core/Config/ConfigTemplateGenerator.cs` | Host and Composition | `aa767fb1` (2026-08-11T17:07:11+00:00) | 10 |
-| `src/Meridian.Core/Config/ConfigEnvironmentOverride.cs` | Host and Composition | `e1cfef1b` (2026-08-11T16:12:55+00:00) | 5 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `cb1743c3` (2026-08-11T15:59:53+00:00) | 10 |
-| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx` | Desktop and UI Workflows | `6daeb936` (2026-08-11T09:56:20+00:00) | 6 |
-| `src/Meridian.Mcp/Tools/ConventionTools.cs` | MCP Integration | `01652ac3` (2026-08-11T09:42:23+00:00) | 4 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `80440650` (2026-08-11T09:39:23+00:00) | 7 |
-| `src/Meridian.Wpf/Services/StrategyWorkspaceShellPresentationService.cs` | Desktop and UI Workflows | `80440650` (2026-08-11T09:39:23+00:00) | 4 |
-| `src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs` | Desktop and UI Workflows | `80440650` (2026-08-11T09:39:23+00:00) | 4 |
-| `src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx` | Desktop and UI Workflows | `9b6f2914` (2026-08-11T09:36:32+00:00) | 6 |
-| `src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs` | Desktop and UI Workflows | `1e14cf1e` (2026-08-11T09:23:31+00:00) | 4 |
-| `src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml` | Desktop and UI Workflows | `1e14cf1e` (2026-08-11T09:23:31+00:00) | 4 |
-| `src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml` | Desktop and UI Workflows | `1e14cf1e` (2026-08-11T09:23:31+00:00) | 4 |
-| `src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml.cs` | Desktop and UI Workflows | `1e14cf1e` (2026-08-11T09:23:31+00:00) | 4 |
-| `src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs` | Desktop and UI Workflows | `1e14cf1e` (2026-08-11T09:23:31+00:00) | 4 |
-| `src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx` | Desktop and UI Workflows | `21cd5ebc` (2026-08-11T09:18:32+00:00) | 7 |
+| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | `e8823fbcc` (2026-08-12T14:47:39+00:00) | 4 |
+| `src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs` | Host and Composition | `e8823fbcc` (2026-08-12T14:47:39+00:00) | 3 |
+| `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Unmapped | `d6bb9d45f` (2026-08-12T04:17:31+00:00) | 3 |
+| `src/Meridian.Application/README.md` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 6 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationQuarantineReplayService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 3 |
+| `src/Meridian.Application/Integrations/ProviderIntegrationFieldTransforms.cs` | Host and Composition | `8ae514295` (2026-08-11T18:36:49+00:00) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Dimensions.cs` | Desktop and UI Workflows | `1ec2e63f3` (2026-08-11T17:59:58+00:00) | 4 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | `1ec2e63f3` (2026-08-11T17:59:58+00:00) | 4 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `69881b684` (2026-08-11T17:54:42+00:00) | 6 |
+| `src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs` | Unmapped | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Reporting/ReportGenerationService.cs` | Unmapped | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs` | Providers and Storage | `69881b684` (2026-08-11T17:54:42+00:00) | 3 |
+| `src/Meridian.Contracts/Ledger/LedgerDimensionTags.cs` | Host and Composition | `69881b684` (2026-08-11T17:54:42+00:00) | 1 |
 

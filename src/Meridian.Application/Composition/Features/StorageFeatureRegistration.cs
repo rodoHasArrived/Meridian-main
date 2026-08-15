@@ -275,6 +275,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IMoneyMarketFundReferenceProjectionStore, PostgresMoneyMarketFundReferenceProjectionStore>();
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
+            services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
             services.AddSingleton<SecurityMasterProjectionCache>();
@@ -416,6 +417,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ICorporateActionRestatementTrigger, NullCorporateActionRestatementTrigger>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
+        services.TryAddSingleton<ISecurityFieldProvenanceStore, NullSecurityFieldProvenanceStore>();
         services.TryAddSingleton<ISecurityMasterPricingService, NullSecurityMasterPricingService>();
         services.TryAddSingleton<ISecurityMasterCashFlowService, NullSecurityMasterCashFlowService>();
         services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();

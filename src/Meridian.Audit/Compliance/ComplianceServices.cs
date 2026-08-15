@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using Meridian.Identity.Auth;
 using Meridian.Storage.Archival;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Audit.Compliance;
 
@@ -126,9 +127,6 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
            && string.Equals(approval.ObjectType, request.ObjectType, StringComparison.OrdinalIgnoreCase)
            && string.Equals(approval.ObjectId, request.ObjectId, StringComparison.Ordinal)
            && string.Equals(approval.EntityId, NormalizeOptional(request.EntityId), StringComparison.Ordinal);
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 public sealed class ImmutableAuditLogService
