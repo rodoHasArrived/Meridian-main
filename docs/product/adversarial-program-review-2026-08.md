@@ -230,9 +230,23 @@ produced the error.
 1. **O(n) write amplification.** Every mutation re-serializes the whole collection, so cost grows with
    the data an engaged customer accumulates. This is a property of the design, not a defect, and it
    only matters above some volume this review did not establish — no benchmark was run.
-2. **Lease coverage across the other 55 stores is unverified.** The break queue's `FileShare.None`
-   lease is the correct pattern; whether the others have an equivalent is unknown. A store without one
-   carries a genuine multi-process hazard.
+2. **Lease coverage across the other file-backed stores is unverified.** The break queue's
+   `FileShare.None` lease is the correct pattern; whether the others have an equivalent is unknown. A
+   store without one carries a genuine multi-process hazard.
+
+*On the count.* Earlier drafts said "56 production classes." Enumerating the distinct class names
+matched by the pattern used (`class File*Store`, `class File*Repository`, `class Jsonl*`) gives **56
+types, of which 52 are genuine file- or JSONL-backed stores and repositories** — from
+`FileAccountingConfigurationStore` through `JsonlStrategyDesignRepository`. The other four are
+`JsonlBatchOptions`, `JsonlStoragePolicy`, `JsonlReplayer`, and `JsonlStorageSink`, which the `Jsonl*`
+half of the pattern swept in. **52 is the number to audit.**
+
+A fourth-round review comment argued this set contained "at least ten" non-stores, citing
+`FilePermissionsOptions`, `FileSearchResult`, `FileToDelete`, and `FileDropRouter`. Those four classes
+exist in the repository but do **not** match the pattern used here — none ends in `Store` or
+`Repository` — so they were never in the count. That specific evidence does not hold; the smaller
+correction above does, and is applied. Recorded because a review that has been wrong repeatedly still
+has to check the corrections.
 
 **Improvement:** audit the file stores for lease coverage and standardize on the break queue's pattern
 — small, mechanical, and it either confirms the layer is sound or finds the real gaps. Defer any
