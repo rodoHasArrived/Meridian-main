@@ -11,21 +11,30 @@ This pass deliberately re-tests the [2026-07-21](adversarial-program-review-2026
 [2026-07-26](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md) reviews before
 adding new findings, so remediated items are credited rather than re-litigated.
 
-> **Corrected 2026-08-15 after automated review of PR #2698.** Seven claims in the first draft were
-> checked against source and found wrong or overstated; all seven are corrected below, and the
-> sections they touched are rewritten rather than annotated. The errors shared two causes worth
-> recording, because they are the failure modes of this review method:
+> **Corrected twice, 2026-08-15, after two rounds of automated review on PR #2698.** Eleven claims
+> were checked against source and found wrong, overstated, or unsupported — seven in the first draft,
+> four more in the first correction. All are rewritten below rather than annotated.
 >
-> 1. **Truncated searches read as exhaustive.** The claim "version-checked writes exist in exactly two
->    subsystems" came from a `grep … | head -10`. The real count is 366 occurrences across dozens of
->    files, including a dedicated `SecurityMasterConcurrencyException`.
-> 2. **Absence of one idiom read as absence of the capability.** The claim "no route serves the OpenAPI
->    document" came from searching for `AddOpenApi`/`MapOpenApi`/`openapi.json` — the .NET 9+ built-in
->    API. Meridian uses Swashbuckle, and serves `/swagger/v1/swagger.json`.
+> Three failure modes, recorded because they are what this review method does wrong:
 >
-> A negative finding in a codebase this size needs a positive search for the thing that would refute it.
+> 1. **Truncated searches read as exhaustive.** "Version-checked writes exist in exactly two
+>    subsystems" came from a `grep … | head -10`. The real count is 366.
+> 2. **Absence of one idiom read as absence of the capability.** "No route serves the OpenAPI document"
+>    came from searching for `AddOpenApi`/`MapOpenApi` — the .NET 9+ built-in. Meridian uses
+>    Swashbuckle and serves `/swagger/v1/swagger.json`.
+> 3. **A scenario asserted without being found.** The "crash mid-workflow across breaks, journals, and
+>    report packs" hazard was constructed from the shape of the storage layer, not observed. No such
+>    write path exists.
+>
+> Worth stating plainly: **the second round of errors repeated the first.** After documenting
+> "truncated searches read as exhaustive" as a root cause, the correction then counted version
+> references inside `FileManualJournalEntryDraftStore`, found zero, and reported journal drafts as
+> unguarded — while the guard sat in `ManualJournalEntryWorkbenchService`. Naming a bias is not the
+> same as removing it; the counter-search has to actually be run, per claim, at the layer where the
+> mechanism would live.
+>
 > Where a corrected finding survives at reduced scope, that is stated; where it does not survive, it is
-> struck. The individual `file:line` anchors were captured at `01ad9aeb` and may have drifted.
+> withdrawn. The `file:line` anchors were captured at `01ad9aeb` and may have drifted.
 
 ## Headline
 
@@ -34,13 +43,12 @@ unsupported last mile." Sixteen days on, **the first mile is genuinely fixed** �
 bundle is committed, the demo seeds six subsystems, paper fills cost money, and two institutional
 statement formats landed. The theme has moved again:
 
-> **Meridian's remaining gap is mostly the last mile of things already built.** After correction,
-> this review found very little that is missing outright. It found capability that is present but
-> unreachable, uneven, or unversioned: bulk reconciliation casework implemented end-to-end and called
-> by no screen; a tracing layer with eleven instrumented sites and no registered provider; concurrency
-> control implemented per-service but with no uniform HTTP-level contract and at least one aggregate
-> with no guard at all; a served Swagger document over a route surface where 1 of ~1,168 routes is
-> versioned.
+> **Meridian's remaining gap is mostly the last mile of things already built.** After two rounds of
+> correction, this review found almost nothing missing outright. What it found is capability that is
+> present but unreachable or inconsistent: bulk reconciliation casework implemented end-to-end and
+> called by no screen; a tracing layer with eleven instrumented sites and no registered provider;
+> working concurrency control whose request/response shape differs per route family; a served Swagger
+> document over a route surface where 1 of ~1,168 routes is versioned.
 
 That is a materially more favourable read than the first draft, and the correction is the finding:
 **this codebase is consistently better than a survey of it suggests**, which is the same trap the
@@ -110,30 +118,37 @@ That was wrong — it came from a truncated search. `expectedVersion` appears **
 `ScopedAccessAssignmentStore`, and there is a dedicated `SecurityMasterConcurrencyException`. The
 money paths named in the first draft as unguarded are largely guarded.
 
-What survives is narrower and still worth fixing:
+**Corrected a second time.** The first correction claimed manual journal drafts had no guard (0 version
+references) and that there was "no HTTP-level concurrency contract." Both were wrong, and by the same
+mechanism as the original error — counting inside one file and generalizing:
 
-**Coverage is uneven.** Spot-checking mutable aggregates for any version reference:
+- Journal drafts **are** guarded, at the service layer:
+  `ManualJournalEntryWorkbenchService.cs:284` (`existing.Version != request.Draft.Version`), with
+  further checks at `:371`, `:425`, and `AccountingCloseReceipts.cs:141`, returning 409 to the caller.
+  Counting references inside `FileManualJournalEntryDraftStore` missed all of it.
+- HTTP-level conflict signalling **does** exist — it is body-based rather than header-based. Security
+  Master and fund-structure routes return `409 Conflict`
+  (`SecurityMasterEndpoints.cs:860,1035,1104`; `FundStructureEndpoints.cs:1363-1413`), and
+  automated-journal and manual-journal routes accept a version and 409 on stale writes.
 
-| Aggregate | Version references |
-| --- | ---: |
-| `InMemoryFundStructureService` | 24 |
-| `FileGovernanceReportPackRepository` | 11 |
-| `FileStatementMappingProfileStore` | 6 |
-| `FileManualJournalEntryDraftStore` | **0** |
+After two corrections this finding has shrunk to something genuinely minor, and it is more honest to
+say so than to keep it at its original weight:
 
-Manual journal drafts — a preparer/reviewer surface by definition — appear to have no guard.
-A per-aggregate inventory would establish whether that is the only gap; this review did not do one,
-and the corrected claim should not be generalized beyond it.
+**What is left.** There is no `ETag`/`If-Match` *header* convention — those names appear nowhere in
+`src/` — and the body-based contract that replaces it is not uniform. Different route families carry
+the expected version under different field names and return different 409 response shapes (a
+`ProblemDetails` in some places, a typed readiness DTO in others). A generic client cannot implement
+one conflict-handling path; it must special-case per family.
 
-**There is no HTTP-level concurrency contract.** `ETag`, `If-Match`, and `RowVersion` genuinely do not
-appear anywhere in `src/`. Concurrency is enforced per-service by callers passing `expectedVersion`,
-which means it is correct where a caller remembered and absent where one did not, and a browser or
-WPF client has no uniform way to detect a conflict and offer a merge.
+There is also a narrower real defect worth separating out: several service-layer guards are
+read-check-write sequences rather than atomic compare-and-swap, so two simultaneous requests can both
+pass the version check before either writes. Whether that is reachable depends on the store's locking
+underneath (see N4), which differs per store.
 
-**Improvement:** inventory mutable aggregates for guard coverage and close the gaps (journal drafts
-first); then surface the version that already exists as an `ETag` and accept `If-Match`, returning 409
-with current state. This is mostly exposing an existing mechanism at the transport layer, not building
-one. **Value: medium. Effort: M.**
+**Improvement:** standardize the conflict contract — one field name for the expected version, one 409
+body shape — and document it; separately, confirm the check-then-write sequences are covered by a
+lease or make them atomic. **Value: low–medium. Effort: S–M.** This is consistency work on a mechanism
+that is present and largely working, not a missing capability.
 
 ### N3. The API surface is served and documented, but unversioned (medium)
 
@@ -181,23 +196,35 @@ writing (`FileReconciliationBreakQueueRepository.cs:226-231,524-529`). That is a
 multi-process guard, and reading `SemaphoreSlim` without reading the persistence partial is what
 produced the error.
 
-**56 production classes** are file-backed JSON/JSONL stores. Two concerns survive, both narrower:
+**Corrected a second time.** Two further claims in the first correction were unsupported:
 
-1. **O(n) write amplification.** Every mutation re-serializes the whole collection. A break queue
-   holding tens of thousands of breaks — an ordinary month for a mid-size administrator —
-   re-serializes all of them on each edit, so cost grows with the data an engaged customer
-   accumulates.
-2. **No cross-store transaction.** A workflow touching breaks, journals, and report packs commits to
-   three files independently; a crash between them leaves inconsistent state the audit trail cannot
-   flag.
+- **The "no cross-store transaction" concern was invented, not found.** I asserted "a workflow touching
+  breaks, journals, and report packs" without identifying one. Searching for classes referencing both
+  the break-queue and report-pack repositories returns four: `FundOperationsWorkspaceReadService` (a
+  read service that writes only report packs), `WorkstationServiceCollectionExtensions` (DI
+  composition), `LedgerAmountProvenanceService` (provenance reads), and `DemoTenantProvisioner` (the
+  demo seeder). None is a transactional three-store mutation. **The claim is withdrawn**; if such a
+  path exists, this review did not find it, and the crash-inconsistency scenario built on it was
+  hypothetical presented as observed.
+- **"Move behind the Postgres stores that already exist" understated the work.** There is **no**
+  Postgres implementation of `IReconciliationBreakQueueRepository` or `IGovernanceReportPackRepository`
+  — a search for `class Postgres*ReconciliationBreak*` / `*GovernanceReportPack*` returns zero. The
+  Postgres stores that exist serve other domains and cannot be substituted. This is a new durable
+  store plus schema, backfill, and cutover, not a migration.
 
-**The locking is also not uniform.** The break queue's lease is the good case; whether the other 55
-stores have an equivalent is unverified, and that inconsistency is the actionable part. A store with
-no lease has the multi-process hazard the first draft wrongly attributed to the whole layer.
+**What survives** is one measurable concern and one open question:
 
-**Improvement:** audit the file stores for lease coverage and standardize on the break queue's pattern;
-separately, move the highest-growth collections behind the Postgres stores that already exist.
-**Value: medium. Effort: M** for the lease audit, **L** for migration.
+1. **O(n) write amplification.** Every mutation re-serializes the whole collection, so cost grows with
+   the data an engaged customer accumulates. This is a property of the design, not a defect, and it
+   only matters above some volume this review did not establish — no benchmark was run.
+2. **Lease coverage across the other 55 stores is unverified.** The break queue's `FileShare.None`
+   lease is the correct pattern; whether the others have an equivalent is unknown. A store without one
+   carries a genuine multi-process hazard.
+
+**Improvement:** audit the file stores for lease coverage and standardize on the break queue's pattern
+— small, mechanical, and it either confirms the layer is sound or finds the real gaps. Defer any
+durable-store work until a volume measurement justifies it. **Value: medium for the audit; unproven
+for migration. Effort: S** for the audit.
 
 ### N5. Bulk reconciliation casework is built end-to-end and reachable from no screen (high)
 
@@ -285,9 +312,9 @@ which is both the cheapest and the most reliable kind of change.
 | 2 | **Agree the journal→transaction projection so imported transactions can match** | Balances and positions already reconcile; transaction rows all become breaks. Bounded modeling decision, not a rebuild | L |
 | 3 | **Fix the authorization sweep to post valid bodies, then re-derive the count** | The ratchet is a good primitive currently producing a number nobody should quote; today it conflates 400-on-bad-body with unguarded | S |
 | 4 | **Register the TracerProvider so the eleven existing span sites emit** | Turns aggregate counters into per-request diagnosis across pipeline stages; the layer is written | S |
-| 5 | **Close the concurrency-guard gaps (journal drafts first), then expose versions as `ETag`/`If-Match`** | Most money paths are already guarded; this makes coverage uniform and gives clients a conflict contract | M |
-| 6 | **Freeze a `/api/v1` surface for the routes external systems bind to** | The contract is already discoverable via Swagger; what is missing is a stability promise | M |
-| 7 | **Audit file stores for cross-process lease coverage; migrate the highest-growth collections** | The break queue's lease pattern is correct — standardize it, and remove the O(n) rewrite cliff | M–L |
+| 5 | **Freeze a `/api/v1` surface for the routes external systems bind to** | The contract is already discoverable via Swagger; what is missing is a stability promise | M |
+| 6 | **Audit file stores for cross-process lease coverage** | The break queue's lease pattern is correct — standardize it, and find any store that lacks one | S |
+| 7 | **Standardize the 409 conflict contract across route families** | Concurrency control works; its request/response shape differs per family, so no generic client can handle conflicts once | S–M |
 | 8 | **Fail-closed tenancy and a hash-chained journal** | The two governance claims the brand rests on that are genuinely not yet true | L |
 
 Items 1, 3, and 4 are small and unblock disproportionate value. Item 1 is the one a user would notice
@@ -327,9 +354,9 @@ draft's claims and have been corrected in place, so read the issue rather than t
 | Finding | Issue | Post-correction state |
 | --- | --- | --- |
 | N1 — tracing registered nowhere | [#2696](https://github.com/rodoHasArrived/Meridian-main/issues/2696) | Unchanged; the only new finding that survived review intact |
-| N2 — concurrency coverage uneven, no HTTP contract | [#2694](https://github.com/rodoHasArrived/Meridian-main/issues/2694) | Rewritten — the "exactly two subsystems" premise was false |
+| N2 — inconsistent 409 contract shape | [#2694](https://github.com/rodoHasArrived/Meridian-main/issues/2694) | Rewritten twice — both the "two subsystems" and the "no HTTP contract" premises were false; now a consistency item |
 | N3 — unversioned route surface | [#2695](https://github.com/rodoHasArrived/Meridian-main/issues/2695) | Rewritten — Swagger *is* served; only versioning survives |
-| N4 — rewrite cost and inconsistent lease coverage | [#2697](https://github.com/rodoHasArrived/Meridian-main/issues/2697) | Rewritten — the representative store has a cross-process lease |
+| N4 — file-store lease-coverage audit | [#2697](https://github.com/rodoHasArrived/Meridian-main/issues/2697) | Rewritten twice — the lease exists, the cross-store hazard was withdrawn, and no Postgres counterpart exists to migrate to |
 
 Two findings went to existing rows instead of new issues: N5 (bulk actions) as evidence on
 `W10-RECON-002` [#2639](https://github.com/rodoHasArrived/Meridian-main/issues/2639), and the
@@ -337,12 +364,24 @@ baseline-accuracy question on `W9-GOV-008`
 [#2633](https://github.com/rodoHasArrived/Meridian-main/issues/2633). Both carry follow-up comments
 correcting the same errors.
 
-**On the review method itself.** One of five new findings survived unchanged; the automated review of
-PR #2698 caught the rest. That ratio is the most useful output of this pass. A source-evidence review
-run without the ability to build or execute the system will over-produce absence claims, because
-absence is the one thing a search can appear to prove and cannot. The mitigation is not more searching
-— it is requiring, for every negative finding, a positive search for the mechanism that would refute
-it, named in whatever idiom the codebase actually uses.
+**On the review method itself.** Across two rounds, automated review found **eleven** wrong,
+overstated, or unsupported claims. Exactly one of five new findings survived unchanged (N1, unwired
+tracing); N5 survived with its scope inverted from "missing" to "built but unwired"; N2 and N4 shrank
+to consistency and audit items; N3 lost its larger half. That record, not the findings, is the most
+useful output of this pass.
+
+Two conclusions follow. First, **a source-evidence review with no ability to build or run the system
+will over-produce absence claims**, because absence is the one thing a search can appear to prove and
+cannot. Second, and less comfortable: **naming that bias did not prevent repeating it.** The first
+correction reproduced the original error one paragraph after documenting it. The mitigation has to be
+procedural rather than intentional — for every negative claim, run the counter-search at the layer
+where the mechanism would plausibly live (service, not just store; endpoint, not just service), and
+record what was searched. A claim of the form "X does not exist" that cannot name where it looked
+should not ship.
+
+A practical consequence for anyone reading this document: **its positive observations are more
+reliable than its negative ones.** Where it says something exists and works, that was seen. Where it
+says something is missing, treat it as a hypothesis until someone with a running system confirms it.
 
 ## Brainstorm — where the next unit of effort buys the most user value
 

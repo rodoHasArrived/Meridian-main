@@ -1,11 +1,11 @@
 {
   "total_files": 647,
-  "total_lines": 127159,
+  "total_lines": 127198,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 223,
-  "average_lines": 196.5,
+  "average_lines": 196.6,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2921,7 +2921,7 @@
     },
     {
       "path": "docs/product/adversarial-program-review-2026-08.md",
-      "line_count": 397,
+      "line_count": 436,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
