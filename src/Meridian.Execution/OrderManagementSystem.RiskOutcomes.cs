@@ -182,6 +182,59 @@ public sealed partial class OrderManagementSystem
     /// order-notional, gross-exposure, and concentration rules while the broker fills all
     /// 100,000 shares. Refusing beats measuring one size and routing another.
     /// </summary>
+    /// <summary>
+    /// Strips server-owned routing keys a caller must not supply, then copies the metadata once,
+    /// before anything reads it.
+    /// <para>
+    /// <see cref="ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys"/> hands back the
+    /// original request when there is nothing to strip, so without the copy the sanitized request's
+    /// metadata <em>is</em> the caller's dictionary — and an in-process caller can hold a mutable one
+    /// across the awaits in placement. Sizing capability, risk validation, retained state, and
+    /// gateway submission each read metadata at a different point, so a caller could otherwise flip
+    /// <c>asset_class</c> after the sizing decision and have risk measure a treasury while the
+    /// gateway routes equity shares, with the order state under-reserving it as face value for the
+    /// rest of its life. One read, one copy, one order.
+    /// </para>
+    /// </summary>
+    private OrderRequest SanitizeAndSnapshotRequest(OrderRequest request, string orderId)
+    {
+        var safeRequest = ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys(request);
+        if (!ReferenceEquals(safeRequest, request))
+        {
+            _logger.LogWarning(
+                "Order {OrderId} for {Symbol} contained server-owned broker routing metadata; routing keys were removed before gateway submission.",
+                LogSanitizer.Sanitize(orderId),
+                LogSanitizer.Sanitize(request.Symbol));
+        }
+
+        return safeRequest.Metadata is { } callerMetadata
+            // Same construction the sizing stamp uses, so the request's key comparer and duplicate
+            // handling survive: broker metadata readers have ordered alias rules of their own.
+            ? safeRequest with { Metadata = new Dictionary<string, string>(callerMetadata) }
+            : safeRequest;
+    }
+
+    /// <summary>
+    /// Whether the active gateway routes this order's quantity as face value priced as a percentage
+    /// of par. Asset-class labels alone do not define quantity semantics: Alpaca routes fixed-income
+    /// <c>Qty</c> as face value, while IB routes a count of $1,000 bonds under the generic "bond"
+    /// class — so the gateway is asked rather than the label read.
+    /// </summary>
+    private bool ResolvesFaceValuePercentageOfPar(OrderRequest request) =>
+        _faceValueOrderSizingGateway?.UsesFaceValuePercentageOfPar(request) is true;
+
+    /// <summary>
+    /// Carries the gateway-resolved sizing fact into the request the risk rules evaluate, and only
+    /// there: the marker is server-owned, so it is stamped on a copy rather than on anything a
+    /// caller supplied or the gateway will receive.
+    /// </summary>
+    private static OrderRequest StampResolvedOrderSizing(
+        OrderRequest request,
+        bool usesFaceValuePercentageOfPar) =>
+        usesFaceValuePercentageOfPar
+            ? request with { Metadata = OrderSizingMetadata.WithFaceValuePercentageOfPar(request.Metadata) }
+            : request;
+
     private bool CarriesUnroutableNotionalMetadata(OrderRequest request) =>
         BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null &&
         _notionalSizingGateway?.RoutesNotionalMetadata(request) is not true;

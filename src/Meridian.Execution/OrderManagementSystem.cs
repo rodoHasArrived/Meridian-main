@@ -208,28 +208,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         request.Metadata?.TryGetValue("runId", out runId);
         request.Metadata?.TryGetValue("sessionId", out sessionId);
 
-        var safeRequest = ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys(request);
-        if (!ReferenceEquals(safeRequest, request))
-        {
-            _logger.LogWarning(
-                "Order {OrderId} for {Symbol} contained server-owned broker routing metadata; routing keys were removed before gateway submission.",
-                LogSanitizer.Sanitize(orderId),
-                LogSanitizer.Sanitize(request.Symbol));
-        }
-
-        // Snapshot the caller's metadata once, before anything reads it. RemoveBrokerAccountAndOverrideKeys
-        // hands back the original request when there is nothing to strip, so until this copy
-        // safeRequest.Metadata *is* the caller's dictionary — and an in-process caller can hold a
-        // mutable one across the awaits below. Sizing capability, risk validation, retained state,
-        // and gateway submission all read metadata at different points in this method, so without a
-        // snapshot a caller could flip asset_class after the sizing decision and have risk measure a
-        // treasury while the gateway routes equity shares, with the order state under-reserving it
-        // as face value for the rest of its life. One read, one copy, one order.
-        safeRequest = safeRequest.Metadata is { } callerMetadata
-            // Same construction the sizing stamp uses, so the request's key comparer and duplicate
-            // handling survive: broker metadata readers have ordered alias rules of their own.
-            ? safeRequest with { Metadata = new Dictionary<string, string>(callerMetadata) }
-            : safeRequest;
+        var safeRequest = SanitizeAndSnapshotRequest(request, orderId);
 
         // A duplicate client order id must never reach the state table or the gateway: every
         // downstream write in this method (including gate rejections) keys on orderId, so a
@@ -265,17 +244,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 .ConfigureAwait(false);
         }
 
-        // Asset-class labels alone do not define quantity semantics: Alpaca routes fixed-income
-        // Qty as face value, while IB routes a count of $1,000 bonds under the generic "bond"
-        // class. Ask the active gateway, then carry only that server-resolved fact into risk.
-        var usesFaceValuePercentageOfPar =
-            _faceValueOrderSizingGateway?.UsesFaceValuePercentageOfPar(safeRequest) is true;
-        var riskRequest = usesFaceValuePercentageOfPar
-            ? safeRequest with
-            {
-                Metadata = OrderSizingMetadata.WithFaceValuePercentageOfPar(safeRequest.Metadata)
-            }
-            : safeRequest;
+        var usesFaceValuePercentageOfPar = ResolvesFaceValuePercentageOfPar(safeRequest);
+        var riskRequest = StampResolvedOrderSizing(safeRequest, usesFaceValuePercentageOfPar);
 
         var placementGate = BrokerageOrderPlacementGate.Evaluate(
             _brokerageConfiguration,
@@ -913,8 +883,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     state: state,
                     report: null,
                     message: gate.Refusal,
-                    metadata: BuildOrderModificationAuditMetadata(
-                        modification, state, report: null, amendmentWarnings, gate.RiskDecision),
+                    metadata: BuildOrderModificationAuditMetadata(modification, state, report: null, amendmentWarnings, gate.RiskDecision),
                     ct: ct).ConfigureAwait(false);
 
                 return new OrderResult
