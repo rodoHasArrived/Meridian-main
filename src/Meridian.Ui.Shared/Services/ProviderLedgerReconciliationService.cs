@@ -135,7 +135,7 @@ public sealed partial class ProviderLedgerReconciliationService
 
         var operationId = NormalizeOperationId(request.OperationId);
         var requestHash = ComputeRequestHash(accountId, accessScope, request);
-        var operationLockKey = $"{accountId:N}:{ComputeSha256(operationId)}";
+        var operationLockKey = $"{accountId:N}:{Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(operationId)}";
         var operationGate = OperationLocks.GetOrAdd(operationLockKey, static _ => new SemaphoreSlim(1, 1));
         await operationGate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -1981,7 +1981,7 @@ public sealed partial class ProviderLedgerReconciliationService
                 .Append('|');
         }
 
-        return ComputeSha256(builder.ToString());
+        return Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static ReconciliationBreakCategory MapCorporateActionCandidateCategory(

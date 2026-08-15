@@ -114,14 +114,11 @@ public sealed partial class ReportingGovernanceCoordinatorService
     private static string BuildPackageId(GovernedReportingRun run)
     {
         var canonical = $"{run.Scope.TenantId}\n{run.RunId}\n{run.Revision.ToString(CultureInfo.InvariantCulture)}";
-        return $"report-package-{ComputeSha256(Encoding.UTF8.GetBytes(canonical))}";
+        return $"report-package-{Sha256Digest.Compute(Encoding.UTF8.GetBytes(canonical))}";
     }
 
     private static string BuildSourceCheckpointEvidence(string checkpointId, string checkpointHash) =>
         $"reporting-source-checkpoint:{checkpointId}:{checkpointHash.ToLowerInvariant()}";
-
-    private static string ComputeSha256(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
 
     private static bool SameOptional(string? left, string? right) =>
         string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right)
