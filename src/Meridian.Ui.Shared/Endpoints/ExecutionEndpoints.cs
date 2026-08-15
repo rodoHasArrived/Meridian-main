@@ -275,14 +275,23 @@ public static class ExecutionEndpoints
             var actionId = GenerateActionId();
             var openCount = oms.GetOpenOrders().Count;
 
-            await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
+            var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                ?? KillSwitchSweepResult.Unestablished(openCount);
 
-            logger.LogInformation("Trading action {ActionId}: cancel-all — cancelled {Count} open orders", actionId, openCount);
+            logger.LogInformation(
+                "Trading action {ActionId}: cancel-all — cancelled {Cancelled} of {Requested} open order(s), {StillWorking} still working",
+                actionId,
+                sweep.Cancelled,
+                sweep.Requested,
+                sweep.StillWorking.Count);
 
+            // The operator is told what the sweep achieved, not that it was requested. A ticket
+            // reading "Completed" over a book that still has working orders is the specific
+            // failure this endpoint used to produce.
             var actionResult = new TradingActionResult(
                 ActionId: actionId,
-                Status: "Completed",
-                Message: $"Cancellation requested for {openCount} open order(s).",
+                Status: sweep.Outcome.ToString(),
+                Message: sweep.Describe(),
                 OccurredAt: DateTimeOffset.UtcNow);
 
             return Results.Json(actionResult, jsonOptions);
@@ -440,19 +449,38 @@ public static class ExecutionEndpoints
                 var openCount = oms.GetOpenOrders().Count;
                 try
                 {
-                    await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
-                    GetLogger(context.RequestServices).LogInformation(
-                        "Circuit breaker opened by {Actor}; cancel-all issued for {Count} open order(s)",
-                        actor, openCount);
+                    // A null sweep is an order manager that established nothing about the book.
+                    // Fail closed on it rather than dereferencing: the kill switch reporting
+                    // "object reference not set" tells an operator nothing about their orders.
+                    var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                        ?? KillSwitchSweepResult.Unestablished(openCount);
+
+                    // Outcome, not invocation. The Failed branch below fires only on a thrown
+                    // exception, so a broker that merely refuses a cancellation never reaches it —
+                    // which is how a half-fired kill switch used to be audited as Completed.
+                    if (sweep.RequiresOperatorAction)
+                    {
+                        GetLogger(context.RequestServices).LogError(
+                            "Circuit breaker opened by {Actor} but the cancel-all sweep left {StillWorking} order(s) working; manual cancellation is required",
+                            actor,
+                            sweep.StillWorking.Count);
+                    }
+                    else
+                    {
+                        GetLogger(context.RequestServices).LogInformation(
+                            "Circuit breaker opened by {Actor}; cancel-all emptied the book of {Count} open order(s)",
+                            actor, sweep.Requested);
+                    }
+
                     if (auditTrail is not null)
                     {
                         await auditTrail.RecordAsync(
                                 "controls",
                                 "CircuitBreakerCancelAll",
-                                "Completed",
+                                sweep.Outcome.ToString(),
                                 actor: actor,
                                 correlationId: request.CorrelationId,
-                                message: $"Kill-switch cancel-all issued for {openCount} open order(s).",
+                                message: sweep.Describe(),
                                 ct: CancellationToken.None)
                             .ConfigureAwait(false);
                     }

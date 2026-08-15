@@ -451,11 +451,30 @@ public sealed class ExecutionOperatorControlService
                 ExecutionManualOverrideKinds.BypassOrderControls,
                 ManualOverrideTarget.ForOrder(request, runId));
 
-            if (_circuitBreaker.IsOpen && bypassOverride is null)
+            if (_circuitBreaker.IsOpen)
             {
-                return ExecutionControlDecision.Rejected(
-                    _circuitBreaker.Reason ?? "Execution circuit breaker is open.",
-                    "CIRCUIT_BREAKER_OPEN");
+                if (bypassOverride is null)
+                {
+                    return ExecutionControlDecision.Rejected(
+                        _circuitBreaker.Reason ?? "Execution circuit breaker is open.",
+                        "CIRCUIT_BREAKER_OPEN");
+                }
+
+                // Close-only. A bypass override exists so an operator can flatten a book the kill
+                // switch just halted, and revoking it outright would trap the desk in exactly the
+                // positions the halt was raised over. But the kill switch is also supposed to block
+                // new submissions, and an unrestricted bypass let an override admit fresh risk while
+                // the breaker was open — the book refilling behind the sweep that emptied it.
+                //
+                // The narrow exception is the one the override is actually for: an order that moves
+                // an existing position toward flat, and no further.
+                if (!ReducesExistingPosition(request, portfolioState))
+                {
+                    return ExecutionControlDecision.Rejected(
+                        $"Execution circuit breaker is open: manual override {bypassOverride.OverrideId} admits only orders that "
+                        + $"reduce an existing {request.Symbol} position. Clear the breaker to open or increase risk.",
+                        "CIRCUIT_BREAKER_CLOSE_ONLY");
+                }
             }
 
             var limit = ResolvePositionLimitLocked(request.Symbol);
@@ -485,6 +504,46 @@ public sealed class ExecutionOperatorControlService
 
             return ExecutionControlDecision.Approved(bypassOverride?.OverrideId);
         }
+    }
+
+    /// <summary>
+    /// Whether an order moves an existing position toward flat without crossing through it.
+    /// <para>
+    /// Deliberately strict on three counts, because this is the one door left open in a halted
+    /// desk. An order larger than the position is refused rather than partly admitted: selling 150
+    /// against a 100 long closes the long and opens a 50 short, which is new risk wearing a
+    /// reduction's clothes, and the operator can send 100 instead. A flat position admits nothing,
+    /// because there is no exposure to reduce. And an absent portfolio state refuses rather than
+    /// assuming — under an open breaker, being unable to establish that an order reduces risk is
+    /// not a reason to route it.
+    /// </para>
+    /// </summary>
+    private static bool ReducesExistingPosition(OrderRequest request, IPortfolioState? portfolioState)
+    {
+        if (portfolioState is null)
+        {
+            return false;
+        }
+
+        var normalizedSymbol = request.Symbol.Trim().ToUpperInvariant();
+        if (!portfolioState.Positions.TryGetValue(normalizedSymbol, out var position))
+        {
+            return false;
+        }
+
+        // Unrounded, for the reason the position-limit gate gives: a fractional holding rounded to
+        // zero would read as flat and refuse a legitimate close.
+        var held = position.ExactQuantity;
+        if (held == 0m)
+        {
+            return false;
+        }
+
+        var opposesPosition = held > 0m
+            ? request.Side == OrderSide.Sell
+            : request.Side == OrderSide.Buy;
+
+        return opposesPosition && Math.Abs(request.Quantity) <= Math.Abs(held);
     }
 
     /// <summary>

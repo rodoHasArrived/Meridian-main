@@ -1016,28 +1016,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     }
 
     /// <inheritdoc />
-    public async Task CancelAllAsync(CancellationToken ct = default)
-    {
-        using var operation = EnterOperation();
-
-        await WithdrawAllParkedEscalationsAsync(ct).ConfigureAwait(false);
-
-        var openOrders = GetOpenOrders();
-        _logger.LogInformation("Cancelling all {Count} open orders", openOrders.Count);
-
-        await Parallel.ForEachAsync(
-            openOrders,
-            new ParallelOptions
-            {
-                CancellationToken = ct,
-                MaxDegreeOfParallelism = _options.ValidatedCancelAllMaxConcurrency
-            },
-            async (order, token) =>
-            {
-                await CancelOrderCoreAsync(order.OrderId, token).ConfigureAwait(false);
-            }).ConfigureAwait(false);
-    }
-
     /// <summary>
     /// Compatibility bridge for callers that cannot yet use <c>await using</c>. Shutdown is
     /// executed on the thread pool so a single-threaded synchronization context cannot prevent
