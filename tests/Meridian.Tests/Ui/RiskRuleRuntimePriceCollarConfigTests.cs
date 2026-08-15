@@ -3,7 +3,9 @@ using FluentAssertions;
 using Meridian.Execution.Services;
 using Meridian.Risk.Rules;
 using Meridian.Ui.Shared.Services;
+using Meridian.Tests.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -295,6 +297,77 @@ public sealed class RiskRuleRuntimePriceCollarConfigTests : IDisposable
         await attempt.Should().ThrowAsync<ArgumentOutOfRangeException>();
     }
 
+    /// <summary>
+    /// A collar at or above the fat-finger band can never park an order, because the harder rule
+    /// refuses first. That is accepted rather than refused — either configuration order can produce
+    /// it — so the evidence has to be emitted, and from <em>both</em> update paths: setting a wide
+    /// collar and narrowing the band beneath an existing one leave the same dead control, and a
+    /// warning on only one of them would be silent exactly when an operator tightened a rail and
+    /// stranded its neighbour without touching it.
+    /// </summary>
+    [Theory]
+    [InlineData("PriceCollar")]
+    [InlineData("FatFinger")]
+    public async Task Collar_StrandedBehindTheFatFingerBand_IsReportedFromEitherUpdatePath(string secondUpdate)
+    {
+        var logger = new CapturingLogger<RiskRuleRuntimeService>();
+        var service = BuildService(logger: logger);
+
+        // Whichever rail is set second, the end state is the same: a 10% collar behind a 10% band.
+        if (secondUpdate == "PriceCollar")
+        {
+            await service.UpdateConfigAsync(
+                "FatFinger",
+                new RiskRuleConfigUpdateRequest(MaxPriceDeviationPercent: 10m),
+                actor: "operator");
+            await service.UpdateConfigAsync(
+                "PriceCollar",
+                new RiskRuleConfigUpdateRequest(PriceCollarPercent: 10m),
+                actor: "operator");
+        }
+        else
+        {
+            await service.UpdateConfigAsync(
+                "PriceCollar",
+                new RiskRuleConfigUpdateRequest(PriceCollarPercent: 10m),
+                actor: "operator");
+            await service.UpdateConfigAsync(
+                "FatFinger",
+                new RiskRuleConfigUpdateRequest(MaxPriceDeviationPercent: 10m),
+                actor: "operator");
+        }
+
+        logger.Entries.Should().Contain(
+            entry => entry.Level == LogLevel.Warning && entry.Message.Contains("can never park an order"),
+            "an operator who has configured a control that cannot fire must be told");
+
+        // Warned, not refused: both values are still live, so the desk keeps the rail it asked for.
+        service.PriceCollarThresholds.CollarPercent.Should().Be(10m);
+        service.FatFingerThresholds.MaxPriceDeviationPercent.Should().Be(10m);
+    }
+
+    /// <summary>
+    /// The converse, so the warning is not simply always emitted: a collar tighter than the band
+    /// is the intended configuration and must pass without comment.
+    /// </summary>
+    [Fact]
+    public async Task Collar_InsideTheFatFingerBand_IsNotReportedAsStranded()
+    {
+        var logger = new CapturingLogger<RiskRuleRuntimeService>();
+        var service = BuildService(logger: logger);
+
+        await service.UpdateConfigAsync(
+            "FatFinger",
+            new RiskRuleConfigUpdateRequest(MaxPriceDeviationPercent: 10m),
+            actor: "operator");
+        await service.UpdateConfigAsync(
+            "PriceCollar",
+            new RiskRuleConfigUpdateRequest(PriceCollarPercent: 3m),
+            actor: "operator");
+
+        logger.Entries.Should().NotContain(entry => entry.Message.Contains("can never park an order"));
+    }
+
     private ExecutionAuditTrailService NewAudit() => new(
         Path.Combine(_root, "audit"),
         NullLogger<ExecutionAuditTrailService>.Instance);
@@ -333,7 +406,8 @@ public sealed class RiskRuleRuntimePriceCollarConfigTests : IDisposable
 
     private RiskRuleRuntimeService BuildService(
         ExecutionAuditTrailService? audit = null,
-        string? snapshotPath = null)
+        string? snapshotPath = null,
+        ILogger<RiskRuleRuntimeService>? logger = null)
     {
         var services = new ServiceCollection();
         if (audit is not null)
@@ -345,7 +419,7 @@ public sealed class RiskRuleRuntimePriceCollarConfigTests : IDisposable
         // real risk-rule settings.
         return new RiskRuleRuntimeService(
             services.BuildServiceProvider(),
-            NullLogger<RiskRuleRuntimeService>.Instance,
+            logger ?? NullLogger<RiskRuleRuntimeService>.Instance,
             new RiskRuleRuntimeOptions(snapshotPath ?? Path.Combine(_root, "risk-rules.json")));
     }
 
