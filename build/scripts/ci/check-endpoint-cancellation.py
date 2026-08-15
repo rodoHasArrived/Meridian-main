@@ -9,14 +9,20 @@ happened into operator-visible state.
 
 Only one shape is a defect:
 
-  * a *bare* `catch (Exception ...)` — a `when` filter such as
-    `when (ex is ArgumentException or FormatException)` or
-    `when (ex is not OperationCanceledException)` already lets cancellation past;
+  * a `catch (Exception ...)` whose `when` filter does not *provably* exclude
+    cancellation. `when (ex is ArgumentException or FormatException)` and
+    `when (ex is not OperationCanceledException)` do; an opaque predicate such as
+    `when (ShouldHandle(ex))` does not, because it may well accept an
+    OperationCanceledException, so it is reported rather than trusted;
   * with no earlier `catch (OperationCanceledException)` in the same catch-chain
     (whether that clause re-throws or answers 499, cancellation never reaches the
-    generic handler); and
-  * whose `try` body actually passes a cancellation token to an awaited call, so a
-    client disconnect can reach it at all.
+    generic handler). An earlier `catch (TaskCanceledException)` does *not* count:
+    it derives from OperationCanceledException, so it cannot catch the base type
+    that `ct.ThrowIfCancellationRequested()` throws; and
+  * whose `try` body passes a cancellation token to an *awaited* call, so a client
+    disconnect can reach the catch at all. The token has to be an argument of the
+    awaited invocation itself — `await Run(); Register(ct);` passes no token to
+    anything awaited and is not a defect.
 
 A synchronous handler with a bare catch is untidy but cannot swallow a disconnect, so it is
 not reported here — see the issue for the separate consolidation lane.
@@ -39,11 +45,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_SCAN_DIRS = ("src/Meridian.Ui.Shared/Endpoints",)
 
-# A `catch (Exception ...)` clause plus its optional `when (...)` filter. The inner
-# alternation lets a filter contain one level of nested parentheses, which covers the
-# `when (ex is A or B)` and `when (Foo(ex))` shapes used in this repo.
+# A `catch (Exception ...)` clause plus its optional `when (...)` filter. The type may be
+# written qualified — `catch (System.Exception ex)` swallows cancellation exactly like the
+# unqualified spelling. The inner alternation lets a filter contain one level of nested
+# parentheses, which covers the `when (ex is A or B)` and `when (Foo(ex))` shapes.
 CATCH_EXCEPTION = re.compile(
-    r"catch\s*\(\s*Exception\b[^()]*\)"
+    r"catch\s*\(\s*(?:global::)?(?:System\.)?Exception\b[^()]*\)"
     r"(?:\s*when\s*\((?P<filter>[^()]*(?:\([^()]*\)[^()]*)*)\))?"
 )
 
@@ -55,15 +62,90 @@ CHAIN_CLAUSE = re.compile(
     r"|finally)\s*$"
 )
 
-# A cancellation token passed as an argument, rather than merely named somewhere.
+# A cancellation token passed as an argument. Matches the positional form, the named form
+# (`cancellationToken: whatever`), member access such as `context.RequestAborted` or
+# `cts.Token`, and any identifier whose name ends in Token/Cancellation/Aborted — so a
+# handler that spells its parameter `requestCancellation` is still seen.
 TOKEN_ARGUMENT = re.compile(
     r"(?:^|[(,]\s*)"
-    r"(?:ct|cancellationToken|token|linkedCts\.Token|cts\.Token"
-    r"|(?:\w+\.)?RequestAborted)"
-    r"\s*[,)]"
+    r"(?:cancellationToken\s*:\s*[\w.]+"
+    r"|ct|token"
+    r"|[\w.]*(?:CancellationToken|Cancellation|RequestAborted|Aborted|\.Token)"
+    r"|\w*(?:cancellationToken|cancellation))"
+    r"\s*[,)]",
+    re.IGNORECASE,
 )
 
-CANCELLATION_TYPES = ("OperationCanceledException", "TaskCanceledException")
+# `catch (TaskCanceledException)` is deliberately absent: it derives from
+# OperationCanceledException, so it cannot catch the base type that
+# ct.ThrowIfCancellationRequested() throws, and treating it as a guard would wave through a
+# handler that still swallows a disconnect.
+CANCELLATION_GUARD = re.compile(r"\bcatch\s*\(\s*(?:global::)?(?:System\.)?OperationCanceledException\b")
+
+# Three filter shapes provably keep a client disconnect out of the generic handler:
+#   ex is not OperationCanceledException          — excludes the type outright
+#   ex is ArgumentException or FormatException    — admits only unrelated types
+#   !ct.IsCancellationRequested                   — declines to catch anything while cancelled
+# The third is a distinct idiom from the re-throw and is equally safe: when the caller has
+# hung up the filter is false, so the exception propagates untouched. Anything else — an
+# opaque predicate, a call, a type list naming a cancellation or base type — is not trusted,
+# because a predicate that happens to accept an OperationCanceledException still swallows it.
+FILTER_NEGATES_TYPE = re.compile(
+    r"\bis\s+not\s+(?:global::)?(?:System\.)?(?:Operation|Task)CanceledException\b")
+FILTER_NEGATES_REQUEST = re.compile(r"^\s*!\s*[\w.]*\bIsCancellationRequested\s*$")
+FILTER_TYPE_TEST = re.compile(r"^\s*\w+\s+is\s+(?P<types>[\w.]+(?:\s+or\s+[\w.]+)*)\s*$")
+UNTRUSTED_FILTER_TYPES = {
+    "Exception", "SystemException", "OperationCanceledException", "TaskCanceledException",
+}
+
+
+def _conjunct_excludes_cancellation(text: str) -> bool:
+    if FILTER_NEGATES_TYPE.search(text) or FILTER_NEGATES_REQUEST.match(text):
+        return True
+    match = FILTER_TYPE_TEST.match(text)
+    if match is None:
+        return False
+    return all(
+        name.split(".")[-1] not in UNTRUSTED_FILTER_TYPES
+        for name in re.split(r"\s+or\s+", match.group("types"))
+    )
+
+
+def filter_excludes_cancellation(filter_text: str) -> bool:
+    """True only when the `when` clause provably cannot admit an OperationCanceledException.
+
+    A disjunction is safe only if every branch is safe — one permissive branch is enough to
+    let a cancellation through. A conjunction is safe as soon as one term excludes it.
+    """
+    return all(
+        any(_conjunct_excludes_cancellation(conjunct) for conjunct in disjunct.split("&&"))
+        for disjunct in filter_text.split("||")
+    )
+
+
+def awaited_calls(body: str) -> list[str]:
+    """The text of each awaited statement, from `await` to the end of that statement.
+
+    Bounding at the statement terminator is what ties a token to the awaited invocation:
+    in `await Run(); Register(ct);` the awaited slice stops before `Register(ct)`, so the
+    token is correctly not credited to the awaited call.
+    """
+    slices: list[str] = []
+    for match in re.finditer(r"\bawait\b", body):
+        depth, index = 0, match.end()
+        while index < len(body):
+            char = body[index]
+            if char in "([{":
+                depth += 1
+            elif char in ")]}":
+                if depth == 0:
+                    break
+                depth -= 1
+            elif char == ";" and depth == 0:
+                break
+            index += 1
+        slices.append(body[match.end():index])
+    return slices
 
 
 def blank_literals(text: str) -> str:
@@ -177,24 +259,30 @@ def find_violations(root: Path, scan_dirs: tuple[str, ...] = DEFAULT_SCAN_DIRS) 
     for scan_dir in scan_dirs:
         base = root / scan_dir
         if not base.is_dir():
-            continue
+            # Skipping would scan zero files and report success, silently disabling the gate
+            # exactly when its scope has drifted.
+            raise FileNotFoundError(
+                f"Scan directory '{scan_dir}' does not exist under {root}. "
+                "Update --scan-dir (or DEFAULT_SCAN_DIRS) if the endpoint surface moved."
+            )
         for path in sorted(base.rglob("*.cs")):
             if any(part in {"bin", "obj"} for part in path.parts):
                 continue
             raw = path.read_text(encoding="utf-8")
             code = blank_literals(raw)
             for match in CATCH_EXCEPTION.finditer(code):
-                if match.group("filter"):
-                    continue  # a filter already lets cancellation past
+                filter_text = match.group("filter")
+                if filter_text and filter_excludes_cancellation(filter_text):
+                    continue  # the filter provably cannot admit a cancellation
                 walked = walk_to_try(code, match.start())
                 if walked is None:
                     continue
                 try_index, chain = walked
-                if any(name in chain for name in CANCELLATION_TYPES):
+                if CANCELLATION_GUARD.search(chain):
                     continue  # an earlier clause in the chain already handles it
                 body_open = code.find("{", try_index)
                 body = code[body_open:matching_close(code, body_open)]
-                if "await" not in body or not TOKEN_ARGUMENT.search(body):
+                if not any(TOKEN_ARGUMENT.search(call) for call in awaited_calls(body)):
                     continue  # no token reaches an awaited call, so no disconnect can land here
                 line = raw.count("\n", 0, match.start()) + 1
                 violations.append((str(path.relative_to(root)), line))

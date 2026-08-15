@@ -121,6 +121,112 @@ class AlreadyCorrectShapesTests(unittest.TestCase):
         self.assertEqual(found, [])
 
 
+class CatchSpellingTests(unittest.TestCase):
+    def test_fully_qualified_exception_is_detected(self):
+        """`catch (System.Exception ex)` swallows cancellation exactly like the short form."""
+        found = scan(BARE_WITH_TOKEN.replace("catch (Exception ex)", "catch (System.Exception ex)"))
+        self.assertEqual(len(found), 1)
+
+    def test_global_qualified_exception_is_detected(self):
+        found = scan(BARE_WITH_TOKEN.replace("catch (Exception ex)", "catch (global::System.Exception ex)"))
+        self.assertEqual(len(found), 1)
+
+
+class GuardClauseTests(unittest.TestCase):
+    def test_task_canceled_alone_does_not_count_as_a_guard(self):
+        """TaskCanceledException derives from OperationCanceledException, so it cannot catch
+        the base type that ct.ThrowIfCancellationRequested() throws."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "            catch (Exception ex)",
+            "            catch (TaskCanceledException)\n"
+            "            {\n"
+            "                throw;\n"
+            "            }\n"
+            "            catch (Exception ex)",
+        ))
+        self.assertEqual(len(found), 1)
+
+    def test_qualified_operation_canceled_counts_as_a_guard(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "            catch (Exception ex)",
+            "            catch (System.OperationCanceledException)\n"
+            "            {\n"
+            "                throw;\n"
+            "            }\n"
+            "            catch (Exception ex)",
+        ))
+        self.assertEqual(found, [])
+
+
+class FilterTrustTests(unittest.TestCase):
+    def test_opaque_predicate_filter_is_not_trusted(self):
+        """`when (ShouldHandle(ex))` may well accept a cancellation, so it stays a violation."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)", "catch (Exception ex) when (ShouldHandle(ex))"))
+        self.assertEqual(len(found), 1)
+
+    def test_negated_is_cancellation_requested_is_trusted(self):
+        """A distinct but equally safe idiom: while cancelled, the catch declines entirely."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)", "catch (Exception) when (!ct.IsCancellationRequested)"))
+        self.assertEqual(found, [])
+
+    def test_type_list_naming_a_base_type_is_not_trusted(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)", "catch (Exception ex) when (ex is Exception)"))
+        self.assertEqual(len(found), 1)
+
+    def test_disjunction_with_one_permissive_branch_is_not_trusted(self):
+        """A safe branch does not redeem the filter — the permissive branch still admits it."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)",
+            "catch (Exception ex) when (ex is ArgumentException || ShouldHandle(ex))"))
+        self.assertEqual(len(found), 1)
+
+    def test_conjunction_containing_a_safe_term_is_trusted(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "catch (Exception ex)",
+            "catch (Exception ex) when (ShouldHandle(ex) && !ct.IsCancellationRequested)"))
+        self.assertEqual(found, [])
+
+
+class TokenReachesTheAwaitTests(unittest.TestCase):
+    def test_token_on_a_later_unawaited_call_is_not_a_violation(self):
+        """The token must belong to the awaited invocation, not merely share the try body."""
+        found = scan(BARE_WITH_TOKEN.replace(
+            "                var result = await service.RunAsync(request, ct);",
+            "                var result = await service.RunAsync(request);\n"
+            "                service.Register(ct);"))
+        self.assertEqual(found, [])
+
+    def test_named_token_argument_is_detected(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "service.RunAsync(request, ct)", "service.RunAsync(request, cancellationToken: ct)"))
+        self.assertEqual(len(found), 1)
+
+    def test_unconventionally_named_token_is_detected(self):
+        found = scan(BARE_WITH_TOKEN
+                     .replace("CancellationToken ct", "CancellationToken requestCancellation")
+                     .replace("service.RunAsync(request, ct)", "service.RunAsync(request, requestCancellation)"))
+        self.assertEqual(len(found), 1)
+
+    def test_token_across_a_multi_line_awaited_call_is_detected(self):
+        found = scan(BARE_WITH_TOKEN.replace(
+            "                var result = await service.RunAsync(request, ct);",
+            "                var result = await service\n"
+            "                    .RunAsync(request, ct)\n"
+            "                    .ConfigureAwait(false);"))
+        self.assertEqual(len(found), 1)
+
+
+class ScanScopeTests(unittest.TestCase):
+    def test_missing_scan_directory_is_an_error(self):
+        """Silently scanning zero files would disable the gate exactly when scope drifts."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaises(FileNotFoundError):
+                guard.find_violations(Path(temp_dir), ("src/does/not/exist",))
+
+
 class LiteralHandlingTests(unittest.TestCase):
     def test_catch_written_in_a_comment_is_ignored(self):
         found = scan(BARE_WITH_TOKEN.replace(
