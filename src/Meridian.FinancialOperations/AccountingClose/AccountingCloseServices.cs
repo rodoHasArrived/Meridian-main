@@ -569,7 +569,7 @@ public sealed class TrialBalanceProjectionService
 
         if (actual is null)
         {
-            return !HasAnyDimension(expected);
+            return !LedgerDimensionTags.HasAnyDimension(expected);
         }
 
         return Matches(expected.FundId, actual.FundId) &&
@@ -632,7 +632,7 @@ public sealed class TrialBalanceProjectionService
 
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
     {
-        if (dimensions is null || !HasAnyDimension(dimensions))
+        if (dimensions is null || !LedgerDimensionTags.HasAnyDimension(dimensions))
         {
             return "dimension:none";
         }
@@ -666,27 +666,6 @@ public sealed class TrialBalanceProjectionService
             ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
             : signature;
     }
-
-    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions.FundId) ||
-            !string.IsNullOrWhiteSpace(dimensions.EntityId) ||
-            !string.IsNullOrWhiteSpace(dimensions.SleeveId) ||
-            !string.IsNullOrWhiteSpace(dimensions.StrategyId) ||
-            !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
-            !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
-            dimensions.InstrumentId.HasValue ||
-            dimensions.PositionId.HasValue ||
-            !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
-            !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
-            !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||
-            !string.IsNullOrWhiteSpace(dimensions.OrganizationId) ||
-            !string.IsNullOrWhiteSpace(dimensions.PortfolioId) ||
-            !string.IsNullOrWhiteSpace(dimensions.BookId) ||
-            !string.IsNullOrWhiteSpace(dimensions.AccountId) ||
-            !string.IsNullOrWhiteSpace(dimensions.CustomerId) ||
-            !string.IsNullOrWhiteSpace(dimensions.VendorId) ||
-            !string.IsNullOrWhiteSpace(dimensions.ProjectId) ||
-            dimensions.ExternalGlDimensions.Any(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value));
 
     private static string NormalizeToken(string? value)
         => string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToUpperInvariant();
