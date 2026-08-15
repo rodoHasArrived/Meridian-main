@@ -18,7 +18,7 @@ digraph WpfSettingsScreens {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.2, arrowsize=0.75];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 81f6d97dd2cd\nSettings screens: 18\nSections: 6"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 459cb7f377ef\nSettings screens: 18\nSections: 6"];
   workspace [shape=folder, fillcolor="#0f766e", color="#2dd4bf", label="Settings workspace\nPrimary 6 | Secondary 6 | Overflow 6"];
   generated -> workspace [color="#38bdf8"];
 
