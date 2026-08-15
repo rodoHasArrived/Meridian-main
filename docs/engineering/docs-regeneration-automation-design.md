@@ -9,11 +9,12 @@ that item states the problem and points here for the constraints an implementati
 
 Four review rounds each proposed a concrete repair, and each was refuted by a different
 interaction. The constraints below are what survived. **Two of them conflict**, so "design
-something that satisfies all eight" is the work — this is not a preamble to an obvious one-liner.
+something that satisfies all nine" is the work — this is not a preamble to an obvious one-liner.
 
-The scope was also mis-stated four times, each time by enumerating affected artifacts and each
-time incompletely. Constraint 4 records the general form instead: derive the scope from the
-profile, never from a hand-written list.
+The scope was also mis-stated repeatedly — first by enumerating affected artifacts, then by taking
+the `core` profile as the boundary, and each version was still incomplete. Constraint 4 records the
+general form instead: derive the scope from the `regenerate-docs` job's full generation sequence,
+never from a hand-written list.
 
 ## The problem
 
@@ -66,11 +67,19 @@ with an explicit `--scripts` list that omits both generators, so stale output la
 
 Compute the trigger set from the generators rather than maintaining a parallel path list.
 
-### 4. Derive the repair scope from the profile; do not enumerate it
+### 4. Derive the repair scope from the job's whole generation sequence; do not enumerate it
 
-The repair must cover *every* artifact the `core` profile regenerates for the change at hand,
-computed from the profile rather than from a fixed allowlist. Two illustrations of why a list keeps
-failing:
+The repair must cover *every* artifact `regenerate-docs` regenerates for the change at hand,
+computed from the job's full sequence rather than from a fixed allowlist — **and the `core` profile
+is not that boundary either.** After the profile, the same job renders roadmap and source Mermaid
+diagrams, WPF UI diagrams via `npm run generate-diagrams`, UML output, the workflow overview
+(`generate-structure-docs.py --workflows-only`), and the workflow manifest, all before its final
+repository-wide diff (`.github/workflows/documentation.yml:126-152`). A WPF navigation or
+source-registry change can therefore move a diagram artifact while every core-profile artifact is
+already current, leaving the check red for an implementation that scoped itself to
+`PROFILE_CONFIG["core"]`.
+
+Three illustrations of why any list keeps failing:
 
 - `generate-structure-docs` (`run-docs-automation.py:293-299`) rewrites
   `docs/generated/repository-structure.md` from `git ls-files --cached`
@@ -78,9 +87,12 @@ failing:
   moves it — not merely markdown;
 - `scan-todos` reads `.md` among its `TEXT_EXTENSIONS` and rewrites tracked `docs/status/TODO.md`,
   so a documentation pull request adding a legitimate `TODO:` or `FIXME:` annotation dirties a
-  second artifact.
+  second artifact;
+- the post-profile diagram and workflow-overview steps above sit outside the profile entirely.
 
-Neither is the last such case. The profile is the source of truth.
+None of these is the last such case. The job's generation sequence is the source of truth, and it
+must be read from the workflow rather than restated here — this note has already been wrong about
+the boundary twice.
 
 ### 5. Generator-changing pull requests need their own path
 
@@ -119,7 +131,19 @@ policy-compliant but reintroduces a human merge, which does not meet the no-manu
 A merge-group-safe pre-merge design is therefore the only route that fully satisfies the item. If a
 repair pull request is chosen instead, its manual gate must be stated as an accepted limitation.
 
-### 8. Keep the artifacts tracked
+### 8. Fork pull requests cannot be repaired automatically — say so
+
+When the head belongs to a fork, neither a GitHub App installed on the base repository nor a
+maintainer PAT normally has permission to push into the contributor-owned fork branch, and the
+fork's workflow run cannot be handed the write credential instead (which is the same property that
+makes constraint 1 necessary). No automated repair is possible for that case.
+
+Scope the automation explicitly to writable same-repository heads, and document the fallback for
+forks — manual regeneration by the contributor, or a maintainer-owned branch that carries the
+repair. State this as a known limitation of the outcome rather than leaving it implied; the
+"no manual toll" goal holds for same-repository pull requests only.
+
+### 9. Keep the artifacts tracked
 
 `docs/documentation-ownership.md:23` designates `docs/status/` automation-owned output that must
 stay "at the paths consumed by tooling", so untracking these files in favour of CI-only artifacts is
@@ -154,7 +178,9 @@ the mechanism. Cover:
 4. a documentation pull request that adds a `TODO:` annotation, exercising `docs/status/TODO.md`;
 5. a pull request that changes a generator itself;
 6. a concurrent-update case where the head advances between generation and the privileged write,
-   asserting the writer refuses the stale artifact rather than committing it.
+   asserting the writer refuses the stale artifact rather than committing it;
+7. a fork pull request, asserting the documented fallback path is what runs rather than a silent
+   failure or a red check with no route forward.
 
 ## Also document
 

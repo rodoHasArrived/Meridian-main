@@ -774,12 +774,13 @@ still `in_progress`.
   which trains contributors to read a red `regenerate-docs` as noise rather than signal.
   **Change:** automate the regeneration, keeping the artifacts tracked as
   `docs/documentation-ownership.md:23` requires. The design is genuinely constrained — a write
-  token must not reach pull-request code, the repair scope must be derived from the profile rather
-  than enumerated, and the merge-queue case has no free answer — so the constraints live in
+  token must not reach pull-request code, the repair scope must be derived from the workflow's full
+  generation sequence rather than enumerated, and neither the merge-queue nor the fork case has a
+  free answer — so the constraints live in
   [Docs Regeneration Automation — Design Constraints](../engineering/docs-regeneration-automation-design.md)
   rather than here. Read that note before implementing; four earlier attempts at a one-line fix
   were each refuted by a different interaction.
-  **Verify:** per the note's verification section, which enumerates six scenarios. Assert that
+  **Verify:** per the note's verification section, which enumerates seven scenarios. Assert that
   every artifact the profile regenerates matches the merged tree, on the SHA that actually merges.
   **Effort:** L, with a design step before implementation · **Sequence:** independent of the other
   W10 items, but **gated** on governance review — the implementation edits a protected workflow
