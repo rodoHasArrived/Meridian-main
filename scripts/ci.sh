@@ -208,6 +208,12 @@ verify_docs() {
   run_step "Validate observability contract" \
     "$python_cmd" build/scripts/ci/validate-observability-contract.py --summary
 
+  # The shipped sample config is what operators copy first. A provider value that is not a
+  # DataSourceKind member throws at startup because the converter fails closed, and a
+  # secret-shaped key teaches users to keep credentials in JSON the sample itself disclaims.
+  run_step "Validate sample config data sources" \
+    "$python_cmd" build/scripts/ci/check-sample-config-datasources.py
+
   # The contract gate is static. It cannot tell whether a rule fires on the condition it
   # claims, which is where every monitoring regression here has actually lived, so promtool
   # runs the rule unit tests and `docker compose config` renders the deployed stacks.

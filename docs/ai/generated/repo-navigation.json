@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T10:32:01Z",
+  "generatedAt": "2026-08-15T12:47:37Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -181,6 +181,7 @@
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
         "src/Meridian.Ui/dashboard/package.json",
+        "src/Meridian.Ui/dashboard/src/app.tsx",
         "src/Meridian.Ui/dashboard/src/main.tsx",
         "src/Meridian.Wpf/App.xaml.cs",
         "src/Meridian.Wpf/MainWindow.xaml",
@@ -1244,7 +1245,8 @@
       ],
       "entrypoints": [
         "src/Meridian.Ui/dashboard/package.json",
-        "src/Meridian.Ui/dashboard/src/main.tsx"
+        "src/Meridian.Ui/dashboard/src/main.tsx",
+        "src/Meridian.Ui/dashboard/src/app.tsx"
       ],
       "keyContracts": [
         "src/Meridian.Ui/dashboard/package.json",
@@ -2223,324 +2225,324 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Storage/Archival/AtomicFileWriter.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-12T14:47:39+00:00",
+      "lastCommit": "e8823fbcc",
+      "lastSummary": "Write persisted OAuth tokens owner-only",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-12T14:47:39+00:00",
+      "lastCommit": "e8823fbcc",
+      "lastSummary": "Write persisted OAuth tokens owner-only",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-12T04:17:31+00:00",
+      "lastCommit": "d6bb9d45f",
+      "lastSummary": "Create the provider credential vault key with owner-only permissions",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T18:36:49+00:00",
+      "lastCommit": "8ae514295",
+      "lastSummary": "Give provider-integration field transforms a single owner",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T18:36:49+00:00",
+      "lastCommit": "8ae514295",
+      "lastSummary": "Give provider-integration field transforms a single owner",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationQuarantineReplayService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T18:36:49+00:00",
+      "lastCommit": "8ae514295",
+      "lastSummary": "Give provider-integration field transforms a single owner",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T18:36:49+00:00",
+      "lastCommit": "8ae514295",
+      "lastSummary": "Give provider-integration field transforms a single owner",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationFieldTransforms.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T18:36:49+00:00",
+      "lastCommit": "8ae514295",
+      "lastSummary": "Give provider-integration field transforms a single owner",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Dimensions.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T17:59:58+00:00",
+      "lastCommit": "1ec2e63f3",
+      "lastSummary": "Keep LedgerEndpoints.cs at its file-size ratchet cap",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T17:59:58+00:00",
+      "lastCommit": "1ec2e63f3",
+      "lastSummary": "Keep LedgerEndpoints.cs at its file-size ratchet cap",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T17:54:42+00:00",
+      "lastCommit": "69881b684",
+      "lastSummary": "Give ledger GL dimensions a single owner",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T17:54:42+00:00",
+      "lastCommit": "69881b684",
+      "lastSummary": "Give ledger GL dimensions a single owner",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Reporting/ReportGenerationService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-11T17:54:42+00:00",
+      "lastCommit": "69881b684",
+      "lastSummary": "Give ledger GL dimensions a single owner",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-11T17:54:42+00:00",
+      "lastCommit": "69881b684",
+      "lastSummary": "Give ledger GL dimensions a single owner",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Contracts/Ledger/LedgerDimensionTags.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T17:54:42+00:00",
+      "lastCommit": "69881b684",
+      "lastSummary": "Give ledger GL dimensions a single owner",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Core/Config/ConfigTemplateGenerator.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T17:07:11+00:00",
+      "lastCommit": "aa767fb17",
+      "lastSummary": "Stop treating a missing backfill opt-in as a passing one",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Core/Config/ConfigEnvironmentOverride.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-11T16:12:55+00:00",
+      "lastCommit": "e1cfef1b2",
+      "lastSummary": "Stop MDC_SYMBOLS re-enabling depth the template turned off",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T15:59:53+00:00",
+      "lastCommit": "cb1743c3e",
+      "lastSummary": "Stop the Docker template requesting depth no advertised provider serves",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.formulas-tab.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:56:20+00:00",
+      "lastCommit": "6daeb9360",
+      "lastSummary": "Mirror the runtime secret predicate, fix a vacuous test, and regenerate nav last",
+      "touches": 5
+    },
+    {
       "path": "src/Meridian.Mcp/Tools/ConventionTools.cs",
       "subsystem": "MCP Integration",
-      "lastModified": "2026-08-11T09:42:23Z",
+      "lastModified": "2026-08-11T09:42:23+00:00",
       "lastCommit": "01652ac36",
       "lastSummary": "Fix the blocking-async detector's false positives and its blind spot",
-      "touches": 1
+      "touches": 3
     },
     {
       "path": "src/Meridian.Wpf/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:39:23Z",
+      "lastModified": "2026-08-11T09:39:23+00:00",
       "lastCommit": "80440650a",
       "lastSummary": "Address Codex review: overflow parity and a real producer",
-      "touches": 4
+      "touches": 6
     },
     {
       "path": "src/Meridian.Wpf/Services/StrategyWorkspaceShellPresentationService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:39:23Z",
+      "lastModified": "2026-08-11T09:39:23+00:00",
       "lastCommit": "80440650a",
       "lastSummary": "Address Codex review: overflow parity and a real producer",
-      "touches": 1
+      "touches": 3
     },
     {
       "path": "src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:39:23Z",
+      "lastModified": "2026-08-11T09:39:23+00:00",
       "lastCommit": "80440650a",
       "lastSummary": "Address Codex review: overflow parity and a real producer",
-      "touches": 1
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/quant-lab-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T09:36:32+00:00",
+      "lastCommit": "9b6f29142",
+      "lastSummary": "Stop advertising Yahoo as a real-time source and align the guard with the converter",
+      "touches": 5
     },
     {
       "path": "src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:23:31Z",
+      "lastModified": "2026-08-11T09:23:31+00:00",
       "lastCommit": "1e14cf1e0",
       "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
-      "touches": 1
+      "touches": 3
     },
     {
       "path": "src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:23:31Z",
+      "lastModified": "2026-08-11T09:23:31+00:00",
       "lastCommit": "1e14cf1e0",
       "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
-      "touches": 1
+      "touches": 3
     },
     {
       "path": "src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:23:31Z",
+      "lastModified": "2026-08-11T09:23:31+00:00",
       "lastCommit": "1e14cf1e0",
       "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
-      "touches": 1
+      "touches": 3
     },
     {
       "path": "src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:23:31Z",
+      "lastModified": "2026-08-11T09:23:31+00:00",
       "lastCommit": "1e14cf1e0",
       "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
-      "touches": 1
+      "touches": 3
     },
     {
       "path": "src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T09:23:31Z",
+      "lastModified": "2026-08-11T09:23:31+00:00",
       "lastCommit": "1e14cf1e0",
       "lastSummary": "Separate disabled reasons from descriptions in WPF command bars",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-11T07:52:29Z",
-      "lastCommit": "0f9e40d8d",
-      "lastSummary": "W9-GOV-008: guard 40 unguarded mutating routes; ratchet 152 -> 112",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-10T19:58:43Z",
-      "lastCommit": "679371700",
-      "lastSummary": "W9-SAFETY-007: kill-switch activation now sweeps the open book; registry scoped honestly to in_progress",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.FSharp/Risk/RiskRules.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-08-10T14:05:53-07:00",
-      "lastCommit": "62e512f6b",
-      "lastSummary": "Fail closed on concentration with exhausted NAV",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:58:58Z",
-      "lastCommit": "c10b0e057",
-      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:58:58Z",
-      "lastCommit": "c10b0e057",
-      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
-      "touches": 2
+      "lastModified": "2026-08-11T09:18:32+00:00",
+      "lastCommit": "21cd5ebc9",
+      "lastSummary": "Fix the god-file ratchet breach and make the disabled reasons reachable",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:58:58Z",
-      "lastCommit": "c10b0e057",
-      "lastSummary": "Repair CI gates: WPF test compile, god-file ratchet, generated-artifact drift",
-      "touches": 1
+      "lastModified": "2026-08-11T09:18:32+00:00",
+      "lastCommit": "21cd5ebc9",
+      "lastSummary": "Fix the god-file ratchet breach and make the disabled reasons reachable",
+      "touches": 4
     },
     {
-      "path": "src/Meridian/UiServer.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui.Services/Services/StatusServiceBase.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 2
+      "lastModified": "2026-08-11T09:18:32+00:00",
+      "lastCommit": "21cd5ebc9",
+      "lastSummary": "Fix the god-file ratchet breach and make the disabled reasons reachable",
+      "touches": 3
     },
     {
-      "path": "src/Meridian/DemoWorkspaceCli.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian/Meridian.csproj",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Operations/DataProvenance.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.copy.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
+      "lastModified": "2026-08-11T09:18:32+00:00",
+      "lastCommit": "21cd5ebc9",
+      "lastSummary": "Fix the god-file ratchet breach and make the disabled reasons reachable",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.test.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
+      "lastModified": "2026-08-11T09:02:26+00:00",
+      "lastCommit": "0dca8544a",
+      "lastSummary": "Wire the sample-config guard into CI and make the designer tell one story",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ReportPackValidationService.cs",
+      "path": "src/Meridian.Ui/dashboard/src/lib/api-errors.test.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e26",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Wpf/Features/Portfolio/Shell/PortfolioWorkspaceShellPage.xaml.cs",
+      "path": "src/Meridian.Ui/dashboard/src/lib/api-errors.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e26",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Wpf/Services/WorkspaceShellContextService.cs",
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.test.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e26",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs",
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e26",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 4
     },
     {
-      "path": "src/Meridian/WorkstationAssetTree.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "9f2d6a492",
-      "lastSummary": "Roadmap registry: record W9-TRUTH-001 completion and PRD-018 closure candidate",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/command-palette.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e26",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/AmountCell-DE93_Bra.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "17f70d72e",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/wwwroot/workstation/assets/LedgerTable-aYH95ble.js",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-09T19:46:22Z",
-      "lastCommit": "17f70d72e",
-      "lastSummary": "W9-TRUTH-001 remainder and PRD-018: per-screen labels, entry-time provenance blocks, startup assertion, one workstation asset tree",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-11T08:16:24+00:00",
+      "lastCommit": "a291b4e26",
+      "lastSummary": "Implement the first remediation items: unwired-route guard, error detail, devcontainer durability, honest designer buttons",
+      "touches": 3
     }
   ],
   "recentChangesWindowDays": 14,

@@ -146,7 +146,15 @@ export const SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS = [
  * primary navigation and the command palette so operators are not steered into
  * dead ends. Remove a route from this set when its read model lands.
  */
-export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set<string>();
+export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set<string>([
+  // FamilyOfficeScreen is mounted without an entityStructure prop, so it defaults to null and
+  // always renders the "Family office data is not connected" empty state.
+  WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
+  // The Quant Lab formulas tab renders a hardcoded "not connected" card; the built
+  // strategy-formula-workbench component has no formula-catalog endpoint behind it. Only the
+  // formulas deep link is unwired — the Quant Lab route itself stays navigable.
+  `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}?view=formulas`
+]);
 
 const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
   trading: WORKSTATION_ROUTE_CATALOG.trading,

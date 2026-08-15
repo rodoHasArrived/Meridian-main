@@ -1,11 +1,11 @@
 {
-  "total_files": 646,
-  "total_lines": 126757,
-  "orphaned_count": 255,
+  "total_files": 648,
+  "total_lines": 128495,
+  "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 223,
-  "average_lines": 196.2,
+  "todo_count": 233,
+  "average_lines": 198.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -222,7 +222,6 @@
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
     "docs/integrations/tastytrade-endpoint-coverage.md",
-    "docs/product/adversarial-program-review-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -1130,7 +1129,7 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.providers.md",
-      "line_count": 882,
+      "line_count": 880,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2010,7 +2009,7 @@
     },
     {
       "path": "docs/development/web-ui-structural-improvement-proposal.md",
-      "line_count": 408,
+      "line_count": 414,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2610,7 +2609,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10442,
+      "line_count": 10447,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2794,7 +2793,7 @@
     },
     {
       "path": "docs/operators/provider-credentials.md",
-      "line_count": 119,
+      "line_count": 122,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2921,6 +2920,22 @@
       "stale": false
     },
     {
+      "path": "docs/product/adversarial-program-review-2026-08.md",
+      "line_count": 556,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/adversarial-review-2026-08-remediation-plan.md",
+      "line_count": 1182,
+      "has_heading": true,
+      "todo_count": 7,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/data-provider-accounting-brainstorm-2026-07.md",
       "line_count": 640,
       "has_heading": true,
@@ -2986,9 +3001,9 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 279,
+      "line_count": 290,
       "has_heading": true,
-      "todo_count": 2,
+      "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3106,7 +3121,7 @@
     },
     {
       "path": "docs/reference/appsettings-schema.md",
-      "line_count": 54,
+      "line_count": 53,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3186,7 +3201,7 @@
     },
     {
       "path": "docs/reference/environment-variables.md",
-      "line_count": 243,
+      "line_count": 218,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5346,7 +5361,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1370,
+      "line_count": 1373,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
