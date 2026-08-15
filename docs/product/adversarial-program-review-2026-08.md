@@ -11,11 +11,12 @@ This pass deliberately re-tests the [2026-07-21](adversarial-program-review-2026
 [2026-07-26](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md) reviews before
 adding new findings, so remediated items are credited rather than re-litigated.
 
-> **Corrected twice, 2026-08-15, after two rounds of automated review on PR #2698.** Eleven claims
-> were checked against source and found wrong, overstated, or unsupported — seven in the first draft,
-> four more in the first correction. All are rewritten below rather than annotated.
+> **Corrected three times, 2026-08-15, across three rounds of automated review on PR #2698.**
+> **Fifteen** claims were checked against source and found wrong, overstated, or unsupported — seven
+> in the first draft, four in the first correction, four in the second. All are rewritten below rather
+> than annotated.
 >
-> Three failure modes, recorded because they are what this review method does wrong:
+> Four failure modes, recorded because they are what this review method does wrong:
 >
 > 1. **Truncated searches read as exhaustive.** "Version-checked writes exist in exactly two
 >    subsystems" came from a `grep … | head -10`. The real count is 366.
@@ -25,6 +26,10 @@ adding new findings, so remediated items are credited rather than re-litigated.
 > 3. **A scenario asserted without being found.** The "crash mid-workflow across breaks, journals, and
 >    report packs" hazard was constructed from the shape of the storage layer, not observed. No such
 >    write path exists.
+>
+> 4. **Counting the wrong unit.** "Eleven call sites create spans" counted symbol occurrences, not
+>    span-producing calls (seven). "Exactly one route is versioned" counted a `MapGroup` call, not
+>    routes (seven), against a denominator counting `Map*` call sites. Both were quoted in the headline.
 >
 > Worth stating plainly: **the second round of errors repeated the first.** After documenting
 > "truncated searches read as exhaustive" as a root cause, the correction then counted version
@@ -43,12 +48,13 @@ unsupported last mile." Sixteen days on, **the first mile is genuinely fixed** �
 bundle is committed, the demo seeds six subsystems, paper fills cost money, and two institutional
 statement formats landed. The theme has moved again:
 
-> **Meridian's remaining gap is mostly the last mile of things already built.** After two rounds of
+> **Meridian's remaining gap is mostly the last mile of things already built.** After three rounds of
 > correction, this review found almost nothing missing outright. What it found is capability that is
 > present but unreachable or inconsistent: bulk reconciliation casework implemented end-to-end and
-> called by no screen; a tracing layer with eleven instrumented sites and no registered provider;
+> called by no screen; a tracing layer with seven span-producing sites and no registered provider;
 > working concurrency control whose request/response shape differs per route family; a served Swagger
-> document over a route surface where 1 of ~1,168 routes is versioned.
+> document over a route surface where a single seven-route group is versioned, and it mirrors an
+> unversioned twin.
 
 That is a materially more favourable read than the first draft, and the correction is the finding:
 **this codebase is consistently better than a survey of it suggests**, which is the same trap the
@@ -75,8 +81,8 @@ Two corrections to prior reviews, both of which this pass tested and found overs
 | RBAC non-uniform across routes | **Partial, and now measured.** A mechanical sweep enumerates every mutating route and fails on new unguarded ones; 40 routes guarded, baseline ratcheted 152 → 112 | `tests/.../EndpointAuthorizationCoverageTests.cs`; commit `0f9e40d8` |
 | Tenancy reads fail open | **Open.** A tenantless caller still gets no predicate, so every row passes | `src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:33` |
 | Journal ledger has no hash chain | **Open.** No hash reference of any kind in the Postgres journal store | `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs` |
-| Money-path stores silently fall back to in-memory | **Open.** Banking, money-market, and direct-lending all take an unannounced in-memory `else` branch | `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs:539-563,576-578` |
-| Reconciliation never sees the ledger side | **Open by design.** Ledger-transaction population is intentionally empty and fails closed to breaks | `src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs` |
+| Money-path stores fall back to in-memory | **Corrected — announced, not silent.** Forced non-real provenance label, a registration guard, and a `PERSISTENCE: NONE` readiness line. Durability limit, not a truthfulness gap | `src/Meridian/UiServer.cs:516-519,968-988`; `ProductionRegistrationGuardService.cs:30-43` |
+| Reconciliation never sees the ledger side | **Corrected — partially open.** Cash and positions populate and match; only ledger-transaction population is empty, so transaction rows alone become breaks | `RetainedInternalReconciliationPopulationProvider.cs:86-89`; `StatementMatchingEngine.cs:111-163` |
 
 The remediation stream is real and is hitting the things prior reviews named. The pattern worth
 noting: **every fixed row was a bounded, in-product defect; every still-open row is a systemic or
@@ -94,10 +100,10 @@ dependency-aware response covering provider connectivity and storage health, wit
 (`src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:28`). Counters and health work.
 
 **Tracing does not.** `OpenTelemetrySetup` is a ~470-line layer with OTLP exporters, sampling config,
-and dev/prod profiles, and eleven production call sites create spans through `MarketDataTracing`
+and dev/prod profiles, and seven production call sites create spans through `MarketDataTracing`
 (backfill fetch, storage, WAL recovery, pipeline processing). But **`AddOpenTelemetryTracing` and
 `Initialize` have zero callers anywhere in `src/`** — no `TracerProvider` is ever registered, so every
-`Activity` those eleven sites create has no listener and is discarded.
+`Activity` those seven sites create has no listener and is discarded.
 
 - `src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs:33,116` — the two entrypoints, uncalled
 - `src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:558,609,633` — spans created into the void
@@ -161,9 +167,16 @@ and missed Swashbuckle. A discoverable contract exists.
 
 What survives is the versioning half:
 
-Meridian maps roughly **1,168 routes across 107 endpoint files**. Exactly **one** is versioned:
-`app.MapGroup("/api/v1/risk")` (`src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:80`). Everything
-else is unversioned `/api/<family>`. The Swagger document is titled "v1" but describes a route surface
+**Corrected a third time.** The first draft said "exactly one route is versioned," counting the
+`MapGroup` call rather than routes. `MapRiskRoutes` maps **seven** endpoints, so seven versioned
+routes exist — and the same method is invoked twice, at `/api/risk` (`RiskEndpoints.cs:78`) *and*
+`/api/v1/risk` (`:80`), so the versioned group is a mirror of an unversioned twin rather than a
+migration. The `~1,168` denominator counts `Map*` call sites and is a different unit again; both
+numbers should be re-derived from the composed `EndpointDataSource` before either is quoted.
+
+What is not in doubt is the shape: **one route family out of roughly fifty carries a version**, it
+duplicates rather than replaces its unversioned form, and every other family is unversioned
+`/api/<family>`. The Swagger document is titled "v1" but describes a route surface
 that carries no version in its paths, so the document's version and the routes' stability are
 unrelated.
 
@@ -243,17 +256,53 @@ calls" (`w10-depth-slate-2026-07.md:255-259`).
 The UI-side measurement stands: across 353 `.tsx` files only **8** reference multi-select or
 bulk-action patterns.
 
-**User impact:** unchanged and still the highest value-to-effort item in this review. Reconciliation
-and close work is batch-shaped — "accept these 200 sub-cent FX breaks", "assign this custodian's 80
-breaks to one owner" — and a one-at-a-time UI is the most common reason ops teams keep the spreadsheet
-they were told to replace. What changed is the cost: this is selection state and a bulk-action bar
-wired to retained, idempotent, dry-run-capable rails that already exist and are already tested.
-**Improvement:** wire the break-queue grid to the existing bulk routes, then extend the same selection
-pattern to the close checklist and journal drafts. Keep the existing one-receipt-per-batch semantics so
-a bulk sweep stays distinguishable from N reviewed decisions in the audit trail.
-**Value: high. Effort: S–M.**
+**The rails have a hard 100-case cap.** `MaximumBulkCaseCount = 100`
+(`FileReconciliationBreakQueueRepository.cs:17`), and `ValidateBulkRequest` rejects any request whose
+`BreakIds.Count` exceeds it regardless of the caller's `MaxCaseCount`
+(`FileReconciliationBreakQueueRepository.Casework.cs:428-431`). So a grid that selects 200 rows and
+calls execute once gets a rejection. Chunking works, but each chunk carries its own idempotency key and
+produces its own receipt — which is a UX decision (partial-failure handling across chunks) and an audit
+decision (one operator action appearing as N receipts), not just a loop.
 
-### N6. Maintainability hazards have not improved (medium)
+**User impact:** still the highest value-to-effort item in this review. Reconciliation and close work is
+batch-shaped — "accept these 140 sub-cent FX breaks", "assign this custodian's 80 breaks to one owner"
+— and a one-at-a-time UI is the most common reason ops teams keep the spreadsheet they were told to
+replace.
+**Improvement:** wire the break-queue grid to the existing bulk routes. Decide the >100 case first:
+either raise the backend cap, or chunk and define how partial failure and multi-receipt audit trails
+are presented. Then extend the same selection pattern to the close checklist and journal drafts, and
+keep receipts distinguishable from N individually reviewed decisions.
+**Value: high. Effort: M** — raised from S–M, since the cap makes this more than pure wiring.
+
+### N6. The API contract-coverage metric can be moved by prose (medium)
+
+Found accidentally, by this PR moving it. The generated dashboard scores an endpoint as `Documented`
+if its route path appears anywhere in the documentation corpus — including documents that describe no
+contract at all.
+
+This review mentions `POST /api/auth/accounts/{username}/password-reset` while explaining why an
+authorization sweep misclassifies it. That mention alone flipped the entry:
+
+```
+merge base:  | POST | /api/auth/accounts/{username}/password-reset | Gap        |    249 / 621 documented
+this branch: | POST | /api/auth/accounts/{username}/password-reset | Documented |    250 / 621 documented
+```
+
+No request shape, response shape, or usage was documented anywhere. A review document that criticizes
+the route improved the route's documentation score.
+
+**Why it matters:** this is a governed dashboard used as evidence of contract coverage, and it is
+gameable by accident — any prose naming a path raises it. The number therefore cannot distinguish
+"documented" from "mentioned," which makes it unusable for the purpose it exists to serve. The failure
+is silent and one-directional: scores drift up as documentation volume grows, regardless of whether
+contract documentation was written.
+
+**Improvement:** restrict the generator's coverage corpus to actual contract/reference documentation
+(`docs/reference/**`, the OpenAPI document from N3), or require a route to appear in a structured
+contract block rather than free text. Tracked separately — this is a generator fix in
+`build/scripts/docs/**`, which is a governed surface and does not belong in this PR.
+
+### N7. Maintainability hazards have not improved (medium)
 
 The 07-21 review flagged 4,000–7,400-line files. At this commit the largest are:
 
@@ -311,7 +360,7 @@ which is both the cheapest and the most reliable kind of change.
 | 1 | **Wire the break-queue grid to the bulk rails that already exist** | Highest value-to-effort item in the review; batch work is why teams keep the spreadsheet, and the idempotent dry-run backend is built and tested | S–M |
 | 2 | **Agree the journal→transaction projection so imported transactions can match** | Balances and positions already reconcile; transaction rows all become breaks. Bounded modeling decision, not a rebuild | L |
 | 3 | **Fix the authorization sweep to post valid bodies, then re-derive the count** | The ratchet is a good primitive currently producing a number nobody should quote; today it conflates 400-on-bad-body with unguarded | S |
-| 4 | **Register the TracerProvider so the eleven existing span sites emit** | Turns aggregate counters into per-request diagnosis across pipeline stages; the layer is written | S |
+| 4 | **Register the TracerProvider so the seven existing span sites emit** | Turns aggregate counters into per-request diagnosis across pipeline stages; the layer is written | S |
 | 5 | **Freeze a `/api/v1` surface for the routes external systems bind to** | The contract is already discoverable via Swagger; what is missing is a stability promise | M |
 | 6 | **Audit file stores for cross-process lease coverage** | The break queue's lease pattern is correct — standardize it, and find any store that lacks one | S |
 | 7 | **Standardize the 409 conflict contract across route families** | Concurrency control works; its request/response shape differs per family, so no generic client can handle conflicts once | S–M |
@@ -364,11 +413,18 @@ baseline-accuracy question on `W9-GOV-008`
 [#2633](https://github.com/rodoHasArrived/Meridian-main/issues/2633). Both carry follow-up comments
 correcting the same errors.
 
-**On the review method itself.** Across two rounds, automated review found **eleven** wrong,
-overstated, or unsupported claims. Exactly one of five new findings survived unchanged (N1, unwired
-tracing); N5 survived with its scope inverted from "missing" to "built but unwired"; N2 and N4 shrank
-to consistency and audit items; N3 lost its larger half. That record, not the findings, is the most
-useful output of this pass.
+**On the review method itself.** Across three rounds, automated review found **fifteen** wrong,
+overstated, or unsupported claims. No new finding survived entirely unchanged: N1 held in substance
+but overcounted its evidence (eleven "instrumented sites" were seven span-producing calls); N5
+survived with its scope inverted from "missing" to "built but unwired," then had a 100-case backend
+cap added; N2 and N4 shrank to consistency and audit items; N3 lost its larger half and then its
+numerator. That record, not the findings, is the most useful output of this pass.
+
+A fourth failure mode joins the three above, visible only in the third round: **counting the wrong
+unit.** "Eleven call sites create spans" counted symbol occurrences, not span-producing calls.
+"Exactly one route is versioned" counted a `MapGroup` call, not routes, against a denominator that
+counted `Map*` call sites. Both numbers were quoted in the headline. A ratio is worth stating only
+when numerator and denominator are the same unit and both were counted deliberately.
 
 Two conclusions follow. First, **a source-evidence review with no ability to build or run the system
 will over-produce absence claims**, because absence is the one thing a search can appear to prove and
