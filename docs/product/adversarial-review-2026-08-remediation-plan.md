@@ -764,110 +764,26 @@ still `in_progress`.
 ## W10 — Make CI verify what users run
 
 - [ ] **AR8-57 — Stop paying the post-merge docs-regeneration toll by hand.**
-  **Evidence:** `docs/status/doc-health-dashboard.{json,md}` reports totals derived from markdown
-  line counts, over a corpus `build/scripts/docs/generate-health-dashboard.py:52-57` narrows by
-  excluding `.github`, `.claude`, `.codex`, `archive`, `artifacts`, vendor trees, and
-  `docs/status/` itself. Any merge that combines two branches' edits to markdown *inside* that
-  corpus leaves the dashboard stale, because neither parent's copy describes the merged tree. The
-  `regenerate-docs` job in `.github/workflows/documentation.yml` re-runs the core docs-automation
-  profile and fails on the diff, catching the drift only after the merge is pushed. Fifteen
-  commits since June exist for no purpose other than re-running that profile and committing the
-  result — `2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`, `603d98cfe`, `fc8344145`, and
-  `fb94b95cd` among them, across several unrelated branches, one of which paid it three times.
-  Scope note: the coverage and API-contract dashboards are *not* part of this class.
-  `generate-coverage.py` and `generate-api-contract-coverage-dashboard.py` measure documented
-  source constructs — public types, endpoint mappings — so they drift when a merge combines
-  changes to `src/`, not to prose. A documentation-only edit moves the health dashboard alone.
-  This is not a correctness bug; it is a standing toll on everyone who merges `main`, and it
-  trains contributors to read a red `regenerate-docs` as routine noise rather than signal.
-  **Change:** keep the artifacts tracked — `docs/documentation-ownership.md:23` designates
-  `docs/status/` automation-owned output that must stay "at the paths consumed by tooling", so
-  untracking them in favour of CI-only artifacts is out of policy. Beyond that, this item
-  deliberately specifies **constraints rather than a mechanism.** Three review rounds each proposed
-  a concrete repair and each was refuted by a different interaction; the constraints below are what
-  survived, and they conflict with one another. Treat "design something that satisfies all eight"
-  as the work, not as preamble to an obvious one-liner.
-
-  1. **No write token in a job that runs pull-request code.** `regenerate-docs` checks out the PR
-     revision and executes its requirements file, Python generators, and npm scripts
-     (`.github/workflows/documentation.yml:104-152`). A token there is capturable by any
-     same-repository pull request; a fork restriction does not address it.
-  2. **The repair must retrigger checks on its own result.** A push made with the default
-     `GITHUB_TOKEN` starts no workflow run, so the repaired head would carry the verdict of the
-     SHA it replaced.
-  3. **Triggers must cover the generator's real corpus.** The workflow's `pull_request` paths
-     (`:15-26`) cover `docs/**` and some scripts; `generate-health-dashboard.py:52-57` counts every
-     markdown outside its exclusion set, including `README.md`, `AGENTS.md`, `CLAUDE.md`,
-     `.agents/**`, and `Meridian Design System/**`. Nothing else catches the gap — `scripts/ci.sh`'s
-     `verify-docs` runs `run-docs-automation.py` with an explicit `--scripts` list that omits the
-     health generator, so a stale artifact lands silently.
-  4. **Derive the repair scope from the profile; do not enumerate it.** Four review rounds each
-     extended a hand-written list of affected artifacts and each list was still incomplete, so the
-     constraint is the general one: the repair must cover *every* artifact the `core` profile
-     regenerates for the change at hand, computed from the profile rather than from a fixed
-     allowlist. As illustrations of why a list keeps failing — `generate-structure-docs`
-     (`run-docs-automation.py:293-299`) rewrites `docs/generated/repository-structure.md` from
-     `git ls-files --cached` (`generate-structure-docs.py:_git_visible_files`), so **any** tracked
-     file added, removed, or renamed moves it, not merely markdown; and `scan-todos` reads `.md`
-     among its `TEXT_EXTENSIONS` and rewrites tracked `docs/status/TODO.md`, so a documentation
-     pull request that adds a legitimate `TODO:` or `FIXME:` annotation dirties a second artifact.
-     Neither is the last such case; the profile is the source of truth.
-  5. **Trigger on the union of the generators' input corpora, computed the same way.** The
-     workflow's `pull_request` paths (`.github/workflows/documentation.yml:15-26`) are a curated
-     list covering `docs/**` and some scripts. The health generator counts markdown outside its
-     exclusion set — including `README.md`, `AGENTS.md`, `CLAUDE.md`, `.agents/**`, and
-     `Meridian Design System/**` — and the structure generator's corpus is every tracked file, so
-     a change to a C# or configuration file also moves a generated artifact. Nothing else catches
-     the gap: `scripts/ci.sh`'s `verify-docs` runs `run-docs-automation.py` with an explicit
-     `--scripts` list that omits both generators, so stale output lands silently.
-  6. **Generator-changing pull requests need their own path.** If a write token is kept away from
-     pull-request code by running trusted base-revision tooling, a PR that legitimately changes
-     `generate-health-dashboard.py` gets regenerated by the *old* generator while `regenerate-docs`
-     validates with the *new* one — the bot commits stale output and the check stays red, or loops.
-     Either commit allowlisted output produced by an unprivileged PR-code job, or exclude this
-     subset and require manual regeneration for it.
-  7. **Bind generated output to the exact tree it was computed from.** If the privileged writer
-     consumes an artifact produced by an unprivileged job, that artifact must record the PR head
-     and base (or merge) SHA, and the writer must compare-and-swap against both before committing.
-     The workflow's `concurrency` block (`:46-48`) groups by pull-request number with
-     `cancel-in-progress`, which is a cancellation policy and not a ref guard: the PR can
-     synchronize, or `main` can advance, between generation and the privileged write, so output
-     computed from an obsolete tree would be committed onto a newer head — overwriting newer
-     generated changes and re-triggering the same red check.
-  8. **Neither pre- nor post-merge repair is free.** Per-branch repair does not fix the merge-queue
-     tree: two queued PRs can each be individually correct while their combined tree is stale, and
-     `documentation.yml` has no `merge_group` trigger (`:3-41`) while `meridian-ci.yml` has one
-     (`:3-11`) but never runs the health generator. The obvious escape — a bot commit to `main`
-     after the merge — is **not** available: `main` is protected and `AGENTS.md:12-15` forbids
-     bypassing branch protections, so a privileged direct push is prohibited rather than merely
-     awkward. Routing the repair through a follow-up pull request is policy-compliant but
-     reintroduces a human merge, which does not meet this item's own no-manual-toll outcome. A
-     merge-group-safe pre-merge design is therefore the only route that fully satisfies the item;
-     if a repair PR is chosen instead, its manual gate must be stated as an accepted limitation.
-
-  A `.gitattributes` merge driver is **not** a viable alternative and was considered and rejected:
-  a custom driver runs only where `merge.<driver>.driver` is configured locally, and GitHub's
-  server-side merge inherits no contributor configuration. Whichever design is chosen, document the
-  single regeneration command next to the check so a contributor who hits it need not reconstruct
-  it from the workflow.
-  **Governance:** the implementation necessarily edits `.github/workflows/documentation.yml`,
-  including its `permissions` block, and introduces a privileged token. That is a protected
-  governance file under `.github/pull_request_template.md`, so the implementing pull request must
-  declare the governance change and carry explicit human approval. Constraint 1 is a security
-  requirement and should be reviewed as one.
-  **Verify:** (a) merge a branch editing in-corpus markdown into a branch editing different
-  in-corpus markdown and confirm `regenerate-docs` ends green **on the final head** with no human
-  running the profile; (b) the same for two pull requests entering the merge queue together,
-  asserting the tree that actually merges; (c) a pull request that adds or renames a **non-markdown**
-  tracked file, so `repository-structure.md` is exercised through a path the current triggers miss;
-  (d) a documentation pull request that adds a `TODO:` annotation, so `docs/status/TODO.md` is
-  exercised; (e) a pull request that changes a generator itself; (f) a concurrent-update case where
-  the head advances between generation and the privileged write, asserting the writer refuses the
-  stale artifact rather than committing it. Assert the outcome — every artifact the profile
-  regenerates matching the merged tree — rather than the mechanism.
-  **Effort:** L, and it needs a design step before implementation. The regeneration is one command;
-  the eight constraints above, two of which conflict, are the actual work · **Sequence:** independent
-  of the other W10 items, but **gated** on governance review of the workflow and token change
+  **Evidence:** generated documentation artifacts are recomputed from the whole tree, so any merge
+  combining two branches' edits leaves them stale — neither parent's copy describes the merged
+  result. `regenerate-docs` in `.github/workflows/documentation.yml` catches that only after the
+  merge is pushed. Fifteen commits since June exist for no purpose other than re-running the
+  profile and committing the result (`2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`,
+  `603d98cfe`, `fc8344145`, `fb94b95cd` among them), across several unrelated branches, one of
+  which paid it three times. Not a correctness bug — a standing toll on everyone who merges `main`,
+  which trains contributors to read a red `regenerate-docs` as noise rather than signal.
+  **Change:** automate the regeneration, keeping the artifacts tracked as
+  `docs/documentation-ownership.md:23` requires. The design is genuinely constrained — a write
+  token must not reach pull-request code, the repair scope must be derived from the profile rather
+  than enumerated, and the merge-queue case has no free answer — so the constraints live in
+  [Docs Regeneration Automation — Design Constraints](../engineering/docs-regeneration-automation-design.md)
+  rather than here. Read that note before implementing; four earlier attempts at a one-line fix
+  were each refuted by a different interaction.
+  **Verify:** per the note's verification section, which enumerates six scenarios. Assert that
+  every artifact the profile regenerates matches the merged tree, on the SHA that actually merges.
+  **Effort:** L, with a design step before implementation · **Sequence:** independent of the other
+  W10 items, but **gated** on governance review — the implementation edits a protected workflow
+  file and introduces a privileged token
 
 - [ ] **AR8-56 — Wire Polygon streaming credentials, or keep it unadvertised.**
   **Evidence:** `ProviderFeatureRegistration.Registry.cs:77-82` constructs `PolygonMarketDataClient`
