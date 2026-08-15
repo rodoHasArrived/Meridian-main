@@ -67,6 +67,10 @@ DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
 DOC_CONTENT_INCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/reference/",
     "docs/generated/database/",
+    # docfx.json writes generated API reference here. It is in the allowlist so this report's own
+    # primary remediation -- "generate API docs with DocFX" for the public-type gap -- can actually
+    # move the number it is printed next to. Leaving it out made the advice inert.
+    "docs/docfx/api/",
 )
 
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
@@ -892,8 +896,8 @@ def _recommendations(report: CoverageReport) -> List[str]:  # noqa: C901
             elif count > 0:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented type(s). "
-                    "Add entries to `docs/reference/api-reference.md` or relevant "
-                    "architecture docs for the most important ones."
+                    "Add entries to `docs/reference/api-reference.md` for the most "
+                    "important ones."
                 )
 
         elif cat.category == "API Endpoints":
