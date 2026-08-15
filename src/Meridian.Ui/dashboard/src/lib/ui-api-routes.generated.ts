@@ -469,6 +469,7 @@ export const UI_API_ROUTES = {
   ExecutionOrderById: "/api/execution/orders/{orderId}",
   ExecutionOrderSubmit: "/api/execution/orders/submit",
   ExecutionOrderCancel: "/api/execution/orders/{orderId}/cancel",
+  ExecutionOrdersCancelAll: "/api/execution/orders/cancel-all",
   ExecutionPositionActionClose: "/api/execution/positions/actions/close",
   ExecutionPositionActionUpsize: "/api/execution/positions/actions/upsize",
   ExecutionPortfolio: "/api/execution/portfolio",
