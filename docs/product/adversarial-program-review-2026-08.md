@@ -2,7 +2,7 @@
 
 **Status:** independent review input; not a governance or roadmap-status document
 **Owner:** review author (independent adversarial pass)
-**Reviewed:** 2026-08-11 at commit `01ad9aeb`
+**Reviewed:** 2026-08-11 at commit `01ad9aeb`; corrected 2026-08-15 after review of PR #2698
 **Scope:** whole-program review of Meridian's high-level functionality, focused on end-user value
 **Method:** source-evidence audit of the wired code paths. This checkout has no .NET SDK, so **no
 finding below was confirmed at runtime** — every claim is anchored to `file:line` and is a
@@ -11,11 +11,21 @@ This pass deliberately re-tests the [2026-07-21](adversarial-program-review-2026
 [2026-07-26](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md) reviews before
 adding new findings, so remediated items are credited rather than re-litigated.
 
-> **Re-verified 2026-08-15 at `4dc2b1ff0`** (233 commits later). The four new findings still hold
-> unchanged: no `ETag`/`If-Match`/`RowVersion` anywhere in `src/`; `AddOpenTelemetryTracing` still has
-> no caller; still one `/api/v*` route group; still no route serving `/api/openapi.json`. The
-> individual `file:line` anchors below were captured at `01ad9aeb` and were not all re-checked, so
-> line numbers may have drifted.
+> **Corrected 2026-08-15 after automated review of PR #2698.** Seven claims in the first draft were
+> checked against source and found wrong or overstated; all seven are corrected below, and the
+> sections they touched are rewritten rather than annotated. The errors shared two causes worth
+> recording, because they are the failure modes of this review method:
+>
+> 1. **Truncated searches read as exhaustive.** The claim "version-checked writes exist in exactly two
+>    subsystems" came from a `grep … | head -10`. The real count is 366 occurrences across dozens of
+>    files, including a dedicated `SecurityMasterConcurrencyException`.
+> 2. **Absence of one idiom read as absence of the capability.** The claim "no route serves the OpenAPI
+>    document" came from searching for `AddOpenApi`/`MapOpenApi`/`openapi.json` — the .NET 9+ built-in
+>    API. Meridian uses Swashbuckle, and serves `/swagger/v1/swagger.json`.
+>
+> A negative finding in a codebase this size needs a positive search for the thing that would refute it.
+> Where a corrected finding survives at reduced scope, that is stated; where it does not survive, it is
+> struck. The individual `file:line` anchors were captured at `01ad9aeb` and may have drifted.
 
 ## Headline
 
@@ -24,21 +34,27 @@ unsupported last mile." Sixteen days on, **the first mile is genuinely fixed** �
 bundle is committed, the demo seeds six subsystems, paper fills cost money, and two institutional
 statement formats landed. The theme has moved again:
 
-> **Meridian is now a credible single-operator workbench that is not yet a multi-operator system.**
-> The product a user drives is real and increasingly honest. What is missing is everything *around*
-> the user: it cannot safely host two people editing the same record (no ETag / If-Match / row-version
-> anywhere in the codebase), 56 production stores are whole-file JSON guarded by an in-process
-> semaphore — which caps the product at one host — it has no published or versioned API contract (1 of
-> ~1,168 routes is versioned, and no route serves the OpenAPI document the code can already render),
-> and the surfaces where operators do the highest-volume work have no bulk actions.
+> **Meridian's remaining gap is mostly the last mile of things already built.** After correction,
+> this review found very little that is missing outright. It found capability that is present but
+> unreachable, uneven, or unversioned: bulk reconciliation casework implemented end-to-end and called
+> by no screen; a tracing layer with eleven instrumented sites and no registered provider; concurrency
+> control implemented per-service but with no uniform HTTP-level contract and at least one aggregate
+> with no guard at all; a served Swagger document over a route surface where 1 of ~1,168 routes is
+> versioned.
 
-The prior reviews asked "is the number real?" That question is now mostly answered. The unasked
-question is "**can a team — rather than a person — run this, integrate with it, and work in it at
-volume?**" Today the answer is no, and none of the four reasons is a hard problem.
+That is a materially more favourable read than the first draft, and the correction is the finding:
+**this codebase is consistently better than a survey of it suggests**, which is the same trap the
+2026-07-21 review named as "built but not wired" and which this review fell into from the other side.
+An adverse pass that greps for absence will systematically under-credit a codebase where the
+capability exists under a different name, in a different layer, or behind one unwired call site.
 
-One correction to the 07-26 review's "monitoring is decorative" line, which this pass tested and found
-overstated: `/metrics` serves a real Prometheus registry and `/health` is dependency-aware. The
-genuine gap is narrower and is recorded as N1.
+Two corrections to prior reviews, both of which this pass tested and found overstated:
+
+- The 07-26 review's "monitoring is decorative": `/metrics` serves a real Prometheus registry and
+  `/health` is dependency-aware. Only tracing is unwired (N1).
+- The 07-21 and 07-26 reviews' "silent in-memory fallback": the host now reports
+  `PERSISTENCE: NONE — every money-path store is in-memory and loses data on restart` at readiness, and
+  forces a non-real provenance label. The durability limitation is real; the silence is not.
 
 ## Scorecard: what moved since 2026-07-26
 
@@ -85,88 +101,130 @@ The instrumentation cost is already being paid for no return.
 **Improvement:** call `AddOpenTelemetryTracing` from host composition and point it at the OTLP endpoint
 the config already models. **Value: medium. Effort: S** — the layer is written; this is a wiring fix.
 
-### N2. No optimistic concurrency — two operators silently overwrite each other (high)
+### N2. Concurrency control is real but uneven, and has no HTTP-level contract (medium)
 
-The codebase contains **zero** occurrences of `ETag`, `If-Match`, `RowVersion`, `ConcurrencyToken`, or
-`xmin`. Version-checked writes exist in exactly two subsystems:
+**Corrected.** The first draft claimed version-checked writes existed in "exactly two subsystems."
+That was wrong — it came from a truncated search. `expectedVersion` appears **366 times** across
+`src/`, including `PostgresLedgerJournalStore`, `PostgresDirectLendingStateStore`,
+`PostgresSecurityMasterEventStore`, `OperationsContinuityWorkflowService`, and
+`ScopedAccessAssignmentStore`, and there is a dedicated `SecurityMasterConcurrencyException`. The
+money paths named in the first draft as unguarded are largely guarded.
 
-- `src/Meridian.Reporting/ReportingGovernanceService.cs:112,137` (`expectedVersion`)
-- `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:999`
+What survives is narrower and still worth fixing:
 
-Everywhere else — journal entries and drafts, fund structure, capital accounts, close checklists,
-report packs outside the governance path, statement mapping profiles — a write is a blind overwrite.
+**Coverage is uneven.** Spot-checking mutable aggregates for any version reference:
 
-**User impact:** this is a product sold on approvals, evidence, and four-eyes control. Two accountants
-with the same close checklist open, or a preparer and a reviewer on the same journal draft, produce a
-silent lost update with **no conflict, no warning, and an audit trail that records both edits as
-successful**. That is a worse failure than a wrong number, because the evidence chain says it was fine.
-**Improvement:** add a version column and `If-Match`/`expectedVersion` enforcement to every mutable
-money-path aggregate, returning 409 with the current state so the UI can offer a merge. The pattern
-is already proven in `ReportingGovernanceService` — generalize it. **Value: high. Effort: M.**
+| Aggregate | Version references |
+| --- | ---: |
+| `InMemoryFundStructureService` | 24 |
+| `FileGovernanceReportPackRepository` | 11 |
+| `FileStatementMappingProfileStore` | 6 |
+| `FileManualJournalEntryDraftStore` | **0** |
 
-### N3. No published or versioned API contract (high — blocks the integration wedge)
+Manual journal drafts — a preparer/reviewer surface by definition — appear to have no guard.
+A per-aggregate inventory would establish whether that is the only gap; this review did not do one,
+and the corrected claim should not be generalized beyond it.
+
+**There is no HTTP-level concurrency contract.** `ETag`, `If-Match`, and `RowVersion` genuinely do not
+appear anywhere in `src/`. Concurrency is enforced per-service by callers passing `expectedVersion`,
+which means it is correct where a caller remembered and absent where one did not, and a browser or
+WPF client has no uniform way to detect a conflict and offer a merge.
+
+**Improvement:** inventory mutable aggregates for guard coverage and close the gaps (journal drafts
+first); then surface the version that already exists as an `ETag` and accept `If-Match`, returning 409
+with current state. This is mostly exposing an existing mechanism at the transport layer, not building
+one. **Value: medium. Effort: M.**
+
+### N3. The API surface is served and documented, but unversioned (medium)
+
+**Corrected.** The first draft claimed no route serves an OpenAPI document. That was wrong: the host
+registers a v1 Swagger document via `AddSwaggerGen` (`src/Meridian/UiServer.cs:428-442`) and serves it
+through `UseSwagger()`/`UseSwaggerUI()` at `/swagger/v1/swagger.json`
+(`UiServer.cs:566-573`); `docs/reference/api-reference.md:116` advertises `/swagger`. The search that
+produced the error looked for `AddOpenApi`/`MapOpenApi`/`openapi.json` — the .NET 9+ built-in idiom —
+and missed Swashbuckle. A discoverable contract exists.
+
+What survives is the versioning half:
 
 Meridian maps roughly **1,168 routes across 107 endpoint files**. Exactly **one** is versioned:
 `app.MapGroup("/api/v1/risk")` (`src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:80`). Everything
-else is unversioned `/api/<family>`.
+else is unversioned `/api/<family>`. The Swagger document is titled "v1" but describes a route surface
+that carries no version in its paths, so the document's version and the routes' stability are
+unrelated.
 
-`ApiDocumentationService` can already render an OpenAPI spec and Swagger UI
-(`src/Meridian.Platform/ApiDocumentation/ApiDocumentationService.cs:49-51`) and is DI-registered
-(`DiagnosticsFeatureRegistration.cs:81`) — but **no route serves `/api/openapi.json`**, and there is
-no `AddOpenApi`/`MapOpenApi` call in the repository.
+There is also a second, unused renderer — `ApiDocumentationService`
+(`src/Meridian.Platform/ApiDocumentation/ApiDocumentationService.cs:49-51`), DI-registered at
+`DiagnosticsFeatureRegistration.cs:81` — which generates its own spec and Swagger UI page and is
+reachable from no route. Two documentation paths where one is served is a smaller version of the same
+built-but-unwired pattern.
 
 There is a strong *internal* contract: 857 route constants in `src/Meridian.Contracts/Api/UiApiRoutes.cs`
 mirrored into `src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts`. That keeps the two
 first-party clients honest; it does nothing for anyone outside the repo.
 
-**User impact:** the stated wedge is a control tower that "sits above spreadsheets, custodians,
-brokers, administrators, portfolio systems, general ledgers, banks, and document stores." Every one of
-those integrations is someone else's system calling Meridian or Meridian calling out on a stable
-contract. Today a customer's BI tool, GL connector, or auditor's extract script has no documented,
-discoverable, or version-stable surface to bind to — and any refactor silently breaks them.
-**Improvement:** serve the OpenAPI document the code already generates, freeze a `/api/v1` prefix for
-the routes external parties need first (ledger reads, report-pack exports, reconciliation status), and
-publish a deprecation policy. **Value: high. Effort: M.**
+**User impact:** an integrator can discover the surface, which is the larger half of the problem and
+is solved. What they cannot get is a stability promise. A customer's BI tool, GL connector, or
+auditor's extract script binds to paths that carry no version, so any refactor breaks them with no
+deprecation window and no signal — and the team has no way to make a breaking change deliberately.
+**Improvement:** decide which routes are external (ledger reads, report-pack exports, reconciliation
+status are the plausible first set), move them under `/api/v1/*` with the current paths kept as
+redirects, mark the boundary in `UiApiRoutes.cs`, and publish a compatibility policy. Separately,
+delete or serve the unused `ApiDocumentationService`. **Value: medium. Effort: M.**
 
-### N4. Whole-file JSON persistence caps the product at one host (high)
+### N4. File-backed stores scale by rewrite, and their locking is inconsistent (medium)
 
-**56 production classes** are file-backed JSON/JSONL stores. The reconciliation break queue — core to
-the product's wedge — is representative: mutations serialize on an in-process `SemaphoreSlim` and
-rewrite the whole file atomically.
+**Corrected.** The first draft claimed the representative store was protected only by an in-process
+semaphore and that a second process "necessarily corrupts" it. That was wrong: every mutation also
+acquires a cross-process lease — a `FileStream` opened with `FileShare.None`
+(`FileReconciliationBreakQueueRepository.Persistence.cs:248-267`) — and then reloads state before
+writing (`FileReconciliationBreakQueueRepository.cs:226-231,524-529`). That is a genuine
+multi-process guard, and reading `SemaphoreSlim` without reading the persistence partial is what
+produced the error.
 
-- `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:25,48,97` — `SemaphoreSlim(1,1)`, `AtomicFileWriter.WriteAsync`
-- Other examples: `FileStatementMappingProfileStore`, `FileGovernanceReportPackRepository`, `FileManualJournalEntryDraftStore`, `RolePermissionProfileStore`, `FileOperationalCaseHistoryStore`
+**56 production classes** are file-backed JSON/JSONL stores. Two concerns survive, both narrower:
 
-Three consequences follow directly:
+1. **O(n) write amplification.** Every mutation re-serializes the whole collection. A break queue
+   holding tens of thousands of breaks — an ordinary month for a mid-size administrator —
+   re-serializes all of them on each edit, so cost grows with the data an engaged customer
+   accumulates.
+2. **No cross-store transaction.** A workflow touching breaks, journals, and report packs commits to
+   three files independently; a crash between them leaves inconsistent state the audit trail cannot
+   flag.
 
-1. **Single-process only.** The semaphore is in-process; a second host instance or a maintenance CLI
-   writing concurrently corrupts state. This forecloses horizontal scale, rolling restarts, and any
-   HA posture.
-2. **O(n) write amplification.** Every break comment rewrites the entire break file. A queue with tens
-   of thousands of breaks — a normal month for a mid-size fund administrator — degrades on each edit.
-3. **No cross-store transaction.** A workflow touching breaks, journals, and report packs cannot commit
-   atomically, so a crash mid-workflow leaves inconsistent state that the audit trail will not flag.
+**The locking is also not uniform.** The break queue's lease is the good case; whether the other 55
+stores have an equivalent is unverified, and that inconsistency is the actionable part. A store with
+no lease has the multi-process hazard the first draft wrongly attributed to the whole layer.
 
-This is also the layer the demo and evaluation path runs on, so an evaluator's smooth experience does
-not predict production behavior at volume.
-**Improvement:** move the money-path and casework aggregates behind the Postgres stores that already
-exist for ledger/banking/security-master, and keep file stores for genuinely single-writer local state.
-**Value: high. Effort: L.**
+**Improvement:** audit the file stores for lease coverage and standardize on the break queue's pattern;
+separately, move the highest-growth collections behind the Postgres stores that already exist.
+**Value: medium. Effort: M** for the lease audit, **L** for migration.
 
-### N5. Bulk operations are missing where the work is highest-volume (medium)
+### N5. Bulk reconciliation casework is built end-to-end and reachable from no screen (high)
 
-Across 353 `.tsx` files, only **8** reference multi-select or bulk-action patterns; 28 reference
-keyboard handling. The command palette is 72 lines
-(`src/Meridian.Ui/dashboard/src/app-shell.command-palette.ts`).
+**Corrected in scope, and the correction makes this cheaper, not smaller.** The first draft treated
+bulk actions as missing and recommended building batch endpoints. The backend already exists:
 
-**User impact:** reconciliation and close work is inherently batch-shaped — "accept these 200 sub-cent
-FX breaks," "assign this custodian's 80 breaks to Priya," "re-run these 12 report packs." A
-one-at-a-time UI turns a 10-minute task into an afternoon, and it is the single most common reason ops
-teams keep the spreadsheet they were told to give up. This is the highest ratio of user-value to
-engineering effort in this review.
-**Improvement:** add selection state + a bulk-action bar to the break queue, close checklist, and
-journal-draft grids, backed by batch endpoints that record one approval event per batch.
-**Value: high. Effort: M.**
+- `src/Meridian.Contracts/Api/UiApiRoutes.cs:891-894` — bulk dry-run, execute, status, and result routes
+- `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2158-2209` — all four mapped
+- `src/Meridian.Ui/dashboard/src/lib/api.ts:3209-3217` — browser client functions
+
+The repo's own W10 assessment already records this precisely: bulk casework is "implemented end to end
+and unwired… contracts with an idempotency key and a bounded case count, a repository implementation
+with dry-run and retained receipts, a mapped endpoint, and browser client functions that no screen
+calls" (`w10-depth-slate-2026-07.md:255-259`).
+
+The UI-side measurement stands: across 353 `.tsx` files only **8** reference multi-select or
+bulk-action patterns.
+
+**User impact:** unchanged and still the highest value-to-effort item in this review. Reconciliation
+and close work is batch-shaped — "accept these 200 sub-cent FX breaks", "assign this custodian's 80
+breaks to one owner" — and a one-at-a-time UI is the most common reason ops teams keep the spreadsheet
+they were told to replace. What changed is the cost: this is selection state and a bulk-action bar
+wired to retained, idempotent, dry-run-capable rails that already exist and are already tested.
+**Improvement:** wire the break-queue grid to the existing bulk routes, then extend the same selection
+pattern to the close checklist and journal drafts. Keep the existing one-receipt-per-batch semantics so
+a bulk sweep stays distinguishable from N reviewed decisions in the audit trail.
+**Value: high. Effort: S–M.**
 
 ### N6. Maintainability hazards have not improved (medium)
 
@@ -189,36 +247,50 @@ ratchet exists in CI, which stops regression but has not driven reduction.
   caller, and the documented semantic is "no predicate at all, so every row passes"
   (`src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:26-34`). Defensible for one-company
   deployments; disqualifying for any shared one.
-- **112 mutating routes still process a permissionless caller**, per the repo's own frozen baseline
-  (`tests/.../EndpointAuthorizationCoverageTests.cs:53-167`), including
-  `POST /api/auth/accounts/{username}/password-reset`, `POST /api/auth/accounts/{username}/disable`,
-  and the whole `POST /api/fund-structure/*` family. *Caveat: this baseline was captured by a run this
-  checkout cannot reproduce, and at least one listed route — `POST /api/execution/orders/submit` — has
-  a permission check as its first statement (`ExecutionEndpoints.cs:131`). The baseline should be
-  re-derived and pruned; the count may be pessimistic.*
+- **The 112-route unguarded baseline measures the wrong thing and should not be read as security
+  posture.** *Corrected:* the first draft cited `POST /api/auth/accounts/{username}/password-reset`
+  and `.../disable` as routes a permissionless caller can execute. Both are guarded — they call
+  `ResolveManageUsersActor` and return 401/403 (`AuthEndpoints.cs:267-275,327-335`). They appear in
+  the baseline because the sweep posts `{}`, the handler rejects the body/route username mismatch with
+  a **400** before reaching the permission check, and the test counts any non-401/403 as unguarded.
+  The same artifact explains `POST /api/execution/orders/submit`, whose first statement is a
+  permission check (`ExecutionEndpoints.cs:131`). The ratchet is a good primitive measuring badly: it
+  needs valid request bodies, and the count re-derived, before any number is quoted.
 - **No hash chain on the authoritative journal**, so the ledger that the whole "prove the number"
   promise rests on is not tamper-evident.
-- **Money-path stores fall back to in-memory without announcement**, so ledger/banking/MMF state
-  evaporates on restart in any deployment that has not set the connection-string environment variables.
-- **Reconciliation still cannot see the ledger side.** Ledger-transaction population is deliberately
-  empty and fails closed, so **every transaction line on an imported statement becomes a break**. The
-  code's reasoning is sound (a wrong projection is worse than none), but the user-visible result is that
-  cash and transaction reconciliation — the reason to buy this — does not yet function end to end.
+- **Money-path in-memory fallback is a durability limit, not a truthfulness one.** *Corrected:* the
+  first draft called it unannounced. It is announced — the host forces a non-real provenance label
+  (`UiServer.cs:516-519`), `ProductionRegistrationGuardService.cs:30-43` refuses an unlabeled local
+  graph where durability is required, and readiness reports `PERSISTENCE: PARTIAL` or
+  `PERSISTENCE: NONE — every money-path store is in-memory and loses data on restart`
+  (`UiServer.cs:968-988`). Production posture fails readiness rather than proceeding quietly. State
+  still evaporates on restart in that mode; the operator is told.
+- **Reconciliation covers cash and positions; transaction matching is the gap.** *Corrected:* the
+  first draft said cash and transaction reconciliation "does not function end to end." Cash and
+  positions are populated (`RetainedInternalReconciliationPopulationProvider.cs:86-89`, covered by
+  `RetainedInternalReconciliationPopulationProviderTests.cs:22-51`) and `StatementMatchingEngine.cs:111-163`
+  matches cash within tolerance. Only the ledger-transaction population is deliberately empty, so
+  **imported transaction rows become unmatched breaks** while balances and positions reconcile against
+  the retained book. The remaining work is the journal→transaction projection, which is a bounded
+  modeling decision rather than the whole wedge.
 
 ## Prioritized improvement list (by end-user value uplift)
 
+Reordered after correction. Three of the top four are now **wiring work on things already built**,
+which is both the cheapest and the most reliable kind of change.
+
 | # | Improvement | Why it is high-value to the end user | Effort |
 | --- | --- | --- | --- |
-| 1 | **Agree the journal→transaction projection and populate the ledger side of reconciliation** | Today every transaction line is a break; this is the wedge and it does not close | L |
-| 2 | **Bulk selection + batch actions on break queue, close checklist, journal drafts** | Highest value-to-effort ratio in the review; it is why teams keep the spreadsheet | M |
-| 3 | **Register the TracerProvider so the eleven existing span sites emit** | Turns aggregate counters into per-request diagnosis across pipeline stages; the layer is already written | S |
-| 4 | **Optimistic concurrency on every money-path aggregate** | Stops silent lost updates that the audit trail records as success | M |
-| 5 | **Serve OpenAPI; freeze a `/api/v1` surface for ledger, exports, reconciliation status** | Unlocks the integration story the wedge depends on | M |
-| 6 | **Move casework and money-path aggregates off whole-file JSON** | Removes the single-host ceiling and the O(n) write cliff at real volumes | L |
-| 7 | **Fail-closed tenancy, hash-chained journal, finish the RBAC ratchet, announce in-memory fallback** | Makes the governance brand real rather than asserted | L |
-| 8 | **Re-derive the unguarded-route baseline; prune false entries** | The ratchet is the right mechanism; it needs an accurate starting number | S |
+| 1 | **Wire the break-queue grid to the bulk rails that already exist** | Highest value-to-effort item in the review; batch work is why teams keep the spreadsheet, and the idempotent dry-run backend is built and tested | S–M |
+| 2 | **Agree the journal→transaction projection so imported transactions can match** | Balances and positions already reconcile; transaction rows all become breaks. Bounded modeling decision, not a rebuild | L |
+| 3 | **Fix the authorization sweep to post valid bodies, then re-derive the count** | The ratchet is a good primitive currently producing a number nobody should quote; today it conflates 400-on-bad-body with unguarded | S |
+| 4 | **Register the TracerProvider so the eleven existing span sites emit** | Turns aggregate counters into per-request diagnosis across pipeline stages; the layer is written | S |
+| 5 | **Close the concurrency-guard gaps (journal drafts first), then expose versions as `ETag`/`If-Match`** | Most money paths are already guarded; this makes coverage uniform and gives clients a conflict contract | M |
+| 6 | **Freeze a `/api/v1` surface for the routes external systems bind to** | The contract is already discoverable via Swagger; what is missing is a stability promise | M |
+| 7 | **Audit file stores for cross-process lease coverage; migrate the highest-growth collections** | The break queue's lease pattern is correct — standardize it, and remove the O(n) rewrite cliff | M–L |
+| 8 | **Fail-closed tenancy and a hash-chained journal** | The two governance claims the brand rests on that are genuinely not yet true | L |
 
-Items 3, 5, and 8 are small and unblock disproportionate value. Item 2 is the one a user would notice
+Items 1, 3, and 4 are small and unblock disproportionate value. Item 1 is the one a user would notice
 within an hour of real work.
 
 ## What is genuinely strong (so fixes do not regress it)
@@ -234,6 +306,14 @@ registry and dependency-aware health endpoint are real working monitoring, not t
 earlier review took them for. And the browser workstation remains a mature, accessible, deeply-built
 surface — its problem has never been the UI.
 
+Four more, all of which this review initially got wrong and which deserve explicit credit: the
+in-memory fallback is **announced**, loudly, at readiness and through forced provenance labelling —
+the truth-discipline work of `W9-TRUTH-001` did land. The break queue's file store holds a real
+cross-process lease, not just an in-process gate. `expectedVersion` concurrency control is applied
+across the ledger, direct-lending, security-master, operations-continuity, and scoped-access stores,
+with its own exception type. And the reconciliation path genuinely matches cash within tolerance and
+positions against the retained book — the deliberate gap is transaction rows alone.
+
 ## Relationship to the existing tracker
 
 The `PRD-000`…`PRD-019` production-readiness issues already name several items restated here —
@@ -241,19 +321,28 @@ The `PRD-000`…`PRD-019` production-readiness issues already name several items
 `PRD-015` (backup, restore, and DR), `PRD-019` (probe/scrape auth). Those rows stay authoritative;
 this review adds evidence to them rather than opening a competing lane.
 
-Findings not covered by an existing row were opened as issues:
+Findings not covered by an existing row were opened as issues. Three were opened against the first
+draft's claims and have been corrected in place, so read the issue rather than the original title:
 
-| Finding | Issue |
-| --- | --- |
-| N2 — optimistic concurrency / silent lost updates | [#2694](https://github.com/rodoHasArrived/Meridian-main/issues/2694) |
-| N3 — no published or versioned API contract | [#2695](https://github.com/rodoHasArrived/Meridian-main/issues/2695) |
-| N1 — tracing registered nowhere | [#2696](https://github.com/rodoHasArrived/Meridian-main/issues/2696) |
-| N4 — whole-file JSON persistence ceiling | [#2697](https://github.com/rodoHasArrived/Meridian-main/issues/2697) |
+| Finding | Issue | Post-correction state |
+| --- | --- | --- |
+| N1 — tracing registered nowhere | [#2696](https://github.com/rodoHasArrived/Meridian-main/issues/2696) | Unchanged; the only new finding that survived review intact |
+| N2 — concurrency coverage uneven, no HTTP contract | [#2694](https://github.com/rodoHasArrived/Meridian-main/issues/2694) | Rewritten — the "exactly two subsystems" premise was false |
+| N3 — unversioned route surface | [#2695](https://github.com/rodoHasArrived/Meridian-main/issues/2695) | Rewritten — Swagger *is* served; only versioning survives |
+| N4 — rewrite cost and inconsistent lease coverage | [#2697](https://github.com/rodoHasArrived/Meridian-main/issues/2697) | Rewritten — the representative store has a cross-process lease |
 
 Two findings went to existing rows instead of new issues: N5 (bulk actions) as evidence on
 `W10-RECON-002` [#2639](https://github.com/rodoHasArrived/Meridian-main/issues/2639), and the
 baseline-accuracy question on `W9-GOV-008`
-[#2633](https://github.com/rodoHasArrived/Meridian-main/issues/2633).
+[#2633](https://github.com/rodoHasArrived/Meridian-main/issues/2633). Both carry follow-up comments
+correcting the same errors.
+
+**On the review method itself.** One of five new findings survived unchanged; the automated review of
+PR #2698 caught the rest. That ratio is the most useful output of this pass. A source-evidence review
+run without the ability to build or execute the system will over-produce absence claims, because
+absence is the one thing a search can appear to prove and cannot. The mitigation is not more searching
+— it is requiring, for every negative finding, a positive search for the mechanism that would refute
+it, named in whatever idiom the codebase actually uses.
 
 ## Brainstorm — where the next unit of effort buys the most user value
 
@@ -263,9 +352,10 @@ should be treated as working input rather than a proposal.*
 **1. Break triage autopilot.** Breaks arrive in families — one bad FX rate makes 200 breaks, one
 missed corporate action makes 40. Cluster by signature (same security, same delta shape, same
 custodian, same day), then let the operator dispose of the cluster with one governed decision that
-records the rule it applied. Over time the accepted rules become proposals. This turns the highest
-volume work into the fastest work and produces training data for `W10-RECON-004`. Pairs naturally
-with `W10-RECON-002`. **Value: very high. Effort: M.**
+records the rule it applied. Over time the accepted rules become proposals. Cheaper than it looks:
+the bulk execute/dry-run/receipt rails already exist and are idempotent (N5), so this is a clustering
+function plus a screen, not a new backend. Produces training data for `W10-RECON-004`; pairs with
+`W10-RECON-002`. **Value: very high. Effort: M.**
 
 **2. Make "prove the number" a literal gesture.** Every figure on every screen becomes
 right-clickable: source document, transform, journal line, approval, and the report it landed in —

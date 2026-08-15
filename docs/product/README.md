@@ -33,8 +33,11 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
   - [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md) — independent
-    source-evidence pass at commit `01ad9aeb`; scores the 2026-07 reviews' items as fixed or open and
-    adds operability findings (telemetry, concurrency, API contract, persistence ceiling)
+    source-evidence pass at commit `01ad9aeb`; scores the 2026-07 reviews' items as fixed or open.
+    Seven of its first-draft claims were corrected after automated review found them wrong or
+    overstated; the surviving findings are unwired tracing, uneven concurrency-guard coverage, an
+    unversioned route surface, file-store rewrite cost, and bulk casework that is built but reachable
+    from no screen. Read the corrected document, not summaries of the original
   - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — the prior
     independent pass this review re-tests; retained for the "built but not wired" framing
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
