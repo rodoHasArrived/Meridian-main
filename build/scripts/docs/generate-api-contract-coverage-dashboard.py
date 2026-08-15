@@ -54,22 +54,34 @@ DATA_SOURCES = [
 # converge, since each run's output changes the next run's input.
 GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
 
-# Roots whose purpose is to argue, plan, or assess rather than to describe a contract. A symbol
-# named in prose is "mentioned", not "documented", and crediting it moves the score without a
-# document being written -- the same failure GENERATED_DOC_ROOTS guards against, arriving by a
-# different route (#2703). The issue was found by tripping it: a draft under docs/product/ that
-# documented no API flipped an endpoint to Documented on the strength of one sentence explaining
-# why an authorization sweep misclassifies it.
+# A root whose purpose is to argue and assess rather than to describe a contract. A symbol named
+# in prose is "mentioned", not "documented", and crediting it moves the score without a document
+# being written -- the same failure GENERATED_DOC_ROOTS guards against, arriving by a different
+# route (#2703). The issue was found by tripping it: a draft under docs/product/ that documented no
+# API flipped an endpoint to Documented on the strength of one sentence explaining why an
+# authorization sweep misclassifies it.
 #
-# Measured against this repository, excluding these two roots costs 4 endpoints and 32 workstation
-# contracts -- credits that exist only because a planning document named the symbol. The roots that
-# actually carry reference material are untouched: docs/reference alone is the only source for 150
-# endpoints and 26 contracts, and dropping it would gut the metric.
+# Measured per file rather than assumed per root, because root-level exclusion is a blunt
+# instrument and this generator's sibling already carries a scar from over-excluding (see
+# generate-coverage.py: dropping docs/generated/ wholesale cost 763 genuinely documented types).
+# Of the eight docs/product files that credit anything, seven are prose -- adversarial reviews,
+# brainstorms, a todo list, a delivery plan -- together supplying every one of the 3 endpoint
+# credits and 13 of the 14 contract credits.
 #
-# Deliberately narrow. docs/ai, docs/architecture, and docs/development each contribute credits
-# that are arguably real documentation, so they stay in pending a decision on what the corpus is
-# meant to contain; see the attribution table on the pull request for #2703.
-NON_CONTRACT_DOC_ROOTS = ("docs/product", "docs/plans")
+# The known cost is one credit: portfolio-cash-ladder-blueprint-2026-07.md carries a real contract
+# section and is the only source for one workstation contract. Accepted deliberately -- a metric
+# that under-counts by one is worth more than one that over-counts by thirteen -- and recorded here
+# so it is a known false negative rather than a silent one.
+#
+# docs/plans is deliberately NOT excluded. The issue groups it with docs/product, but all 18 of its
+# contract credits come from a single blueprint, security-master-passport-workbench.md, whose
+# "Interface & API Contracts" section defines those contracts verbatim. Excluding that root would
+# drop 18 legitimate credits and no prose ones.
+#
+# docs/ai, docs/architecture, and docs/development each contribute credits that are arguably real
+# documentation, so they stay in pending a decision on what the corpus is meant to contain; see the
+# attribution table on the pull request for #2703.
+NON_CONTRACT_DOC_ROOTS = ("docs/product",)
 
 
 def _should_skip(path: Path) -> bool:

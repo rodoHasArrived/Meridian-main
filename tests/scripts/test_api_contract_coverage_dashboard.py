@@ -172,7 +172,7 @@ class GeneratorContractTests(unittest.TestCase):
         # Prose that argues about a symbol is not documentation of it. A draft under docs/product/
         # that described no API flipped an endpoint to Documented on one explanatory sentence
         # (#2703). Pinned as a tuple so widening the corpus is a deliberate edit, not a drift.
-        self.assertEqual(("docs/product", "docs/plans"), module.NON_CONTRACT_DOC_ROOTS)
+        self.assertEqual(("docs/product",), module.NON_CONTRACT_DOC_ROOTS)
 
     def test_a_prose_root_is_dropped_from_the_corpus(self) -> None:
         import tempfile
@@ -180,10 +180,9 @@ class GeneratorContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             route = "/api/auth/accounts/{username}/password-reset"
-            for rel in ("docs/product/analysis.md", "docs/plans/roadmap-note.md"):
-                path = root / rel
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(f"The sweep misclassifies `{route}` today.\n", encoding="utf-8")
+            prose = root / "docs/product/analysis.md"
+            prose.parent.mkdir(parents=True, exist_ok=True)
+            prose.write_text(f"The sweep misclassifies `{route}` today.\n", encoding="utf-8")
 
             self.assertFalse(documents_route(route, module._load_docs_text(root)))
 
@@ -223,12 +222,13 @@ class CoverageCorpusExclusionTests(_CoverageModuleTestCase):
         # Ten types were credited by one draft under docs/product/, four of them appearing only
         # inside a passage arguing that those very classes are not persistent stores.
         self.assertIn("docs/product/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
-        self.assertIn("docs/plans/", self.cov.DOC_CONTENT_EXCLUDE_PREFIXES)
 
     def test_reference_roots_stay_in_the_type_corpus(self) -> None:
         # The counterweight: an earlier over-exclusion here dropped 41 files and marked 763
         # genuinely documented types as gaps. These roots carry real reference material.
-        for kept in ("docs/reference/", "docs/generated/database/", "docs/architecture/"):
+        # docs/plans/ is on this list on purpose: its credits come from blueprints whose
+        # "Interface & API Contracts" sections define the contracts verbatim (#2710 review).
+        for kept in ("docs/reference/", "docs/generated/database/", "docs/architecture/", "docs/plans/"):
             self.assertFalse(
                 kept.startswith(self.cov.DOC_CONTENT_EXCLUDE_PREFIXES),
                 f"{kept} must remain in the documentation corpus",
@@ -558,7 +558,6 @@ class CoverageReportBoundaryTests(_CoverageModuleTestCase):
                 "docs/generated/documentation-coverage.md",
                 "docs/generated/repository-structure.md",
                 "docs/product/",
-                "docs/plans/",
             ),
             self.cov.DOC_CONTENT_EXCLUDE_PREFIXES,
         )

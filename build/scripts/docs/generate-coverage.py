@@ -62,20 +62,21 @@ DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
 # excluded the whole subtree: 41 files left the corpus and 763 genuinely documented types were
 # marked as gaps.
 #
-# docs/product/ and docs/plans/ are excluded for a different reason: they argue, plan, and assess
-# rather than describe contracts, so a type named there is "mentioned", not "documented" (#2703).
-# The issue was found by tripping it -- a draft under docs/product/ moved documented types from
-# 2,791 to 2,801, and four of the ten additions appeared *only inside a passage arguing that those
-# classes are not persistent stores*. Arguing four classes should not count caused them to count.
+# docs/product/ is excluded for a different reason: it argues and assesses rather than describing
+# contracts, so a type named there is "mentioned", not "documented" (#2703). The issue was found by
+# tripping it -- a draft under docs/product/ moved documented types from 2,791 to 2,801, and four
+# of the ten additions appeared *only inside a passage arguing that those classes are not
+# persistent stores*. Arguing four classes should not count caused them to count.
 #
-# This exclusion is narrower than the 763-type mistake above because these roots are not reference
-# material by design; the reference roots stay in the corpus untouched.
+# docs/plans/ is deliberately NOT excluded, though the issue groups the two together. Its credits
+# come from blueprints such as security-master-passport-workbench.md, whose "Interface & API
+# Contracts" section defines the contracts verbatim -- excluding that root would repeat the
+# 763-type mistake above on a smaller scale.
 DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
     "docs/status/",
     "docs/generated/documentation-coverage.md",
     "docs/generated/repository-structure.md",
     "docs/product/",
-    "docs/plans/",
 )
 
 # Regex: public (static )?(sealed )?(partial )?(class|interface|record|enum) Name

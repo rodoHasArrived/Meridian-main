@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 27.6,
+  "score_percent": 28.4,
   "endpoint_coverage_percent": 39.8,
-  "contract_coverage_percent": 9.2,
+  "contract_coverage_percent": 11.2,
   "summary": {
     "endpoint_count": 621,
     "documented_endpoint_count": 247,
     "undocumented_endpoint_count": 374,
     "workstation_contract_count": 917,
-    "documented_workstation_contract_count": 84,
-    "undocumented_workstation_contract_count": 833
+    "documented_workstation_contract_count": 103,
+    "undocumented_workstation_contract_count": 814
   },
   "endpoints": [
     {
@@ -5650,7 +5650,7 @@
     {
       "name": "ReportPackChangedLineDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1698",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReportPackLineProvenanceDto",
@@ -5780,7 +5780,7 @@
     {
       "name": "SubmitForApproval",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:28",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ApproveWorkflow",
@@ -5900,7 +5900,7 @@
     {
       "name": "OperationsGateKeyDto",
       "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:42",
-      "documented": false
+      "documented": true
     },
     {
       "name": "OperationsBrokerIntakeStateDto",
@@ -6730,7 +6730,7 @@
     {
       "name": "SecurityMasterChangeHistoryItemDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:194",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterScheduleSummaryDto",
@@ -6785,7 +6785,7 @@
     {
       "name": "SecurityMasterImpactLinkDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:361",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterRecommendedActionDto",
@@ -6795,7 +6795,7 @@
     {
       "name": "InstrumentPassportProviderConfidenceDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:382",
-      "documented": false
+      "documented": true
     },
     {
       "name": "InstrumentPassportReferenceDataWorkbenchDto",
@@ -6885,27 +6885,27 @@
     {
       "name": "SecurityMasterEditOrigin",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:10",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterRevisionStateDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:21",
-      "documented": false
+      "documented": true
     },
     {
       "name": "UpdateSecurityFieldRequest",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:41",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ResolveSourceConflictRequest",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SubmitSecurityMasterRevisionRequest",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:73",
-      "documented": false
+      "documented": true
     },
     {
       "name": "DiscardSecurityMasterRevisionRequest",
@@ -6915,42 +6915,42 @@
     {
       "name": "ApproveSecurityMasterRevisionRequest",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:98",
-      "documented": false
+      "documented": true
     },
     {
       "name": "PublishSecurityMasterRevisionRequest",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:116",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterEditResultDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:124",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterConflictResolutionDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:132",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterPublishResultDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:145",
-      "documented": false
+      "documented": true
     },
     {
       "name": "RestatementCandidateDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:157",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterConflictAuthorityDecision",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterRevisionPublishedEvent",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:178",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityClassificationSummaryDto",
