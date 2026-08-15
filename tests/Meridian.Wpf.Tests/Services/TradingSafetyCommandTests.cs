@@ -67,7 +67,7 @@ public sealed class TradingSafetyCommandTests
     {
         var request = TradingWorkspaceShellPresentationService.CreateActionRequest(commandId);
 
-        request.ConfirmationMessage.Should().BeNull(
+        request.StatusMessage.Should().BeNull(
             "pane layout must not claim a desk action took place");
     }
 
