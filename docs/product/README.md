@@ -27,6 +27,11 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
     live status stays in the roadmap registry
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md) — independent
+    source-evidence pass at commit `01ad9aeb`; scores the 2026-07 reviews' items as fixed or open and
+    adds operability findings (telemetry, concurrency, API contract, persistence ceiling)
+  - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — the prior
+    independent pass this review re-tests; retained for the "built but not wired" framing
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
   - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
